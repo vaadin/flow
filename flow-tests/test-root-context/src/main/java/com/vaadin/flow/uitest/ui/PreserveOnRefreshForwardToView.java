@@ -25,20 +25,16 @@ import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.uitest.ui.PreserveOnRefreshForwardToView")
 @PreserveOnRefresh
-public class PreserveOnRefreshForwardToView extends Div
-        implements BeforeEnterObserver {
+public class PreserveOnRefreshForwardToView extends Div implements BeforeEnterObserver {
 
     public PreserveOnRefreshForwardToView() {
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        if (event.getLocation().getPathWithQueryParameters()
-                .contains("initial")) {
-            QueryParameters queryParameters = QueryParameters.of("afterforward",
-                    "true");
-            Location location = new Location(event.getLocation().getPath(),
-                    queryParameters);
+        if (event.getLocation().getPathWithQueryParameters().contains("initial")) {
+            QueryParameters queryParameters = QueryParameters.of("afterforward", "true");
+            Location location = new Location(event.getLocation().getPath(), queryParameters);
             event.getUI().getPage().getHistory().replaceState(null, location);
         }
     }

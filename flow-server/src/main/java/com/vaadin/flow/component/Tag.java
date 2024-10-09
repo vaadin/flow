@@ -23,8 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines the tag to use for the root element for a component created using the
- * default {@link Component} constructor.
+ * Defines the tag to use for the root element for a component created using the default {@link Component} constructor.
  *
  * @author Vaadin Ltd
  * @since 1.0

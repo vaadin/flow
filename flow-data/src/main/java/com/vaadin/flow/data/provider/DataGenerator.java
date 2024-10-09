@@ -20,8 +20,8 @@ import java.io.Serializable;
 import elemental.json.JsonObject;
 
 /**
- * A data generator for {@link DataCommunicator}. Used to inject custom data to
- * data items sent to the client for extension purposes.
+ * A data generator for {@link DataCommunicator}. Used to inject custom data to data items sent to the client for
+ * extension purposes.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -33,9 +33,8 @@ import elemental.json.JsonObject;
 public interface DataGenerator<T> extends Serializable {
 
     /**
-     * Adds custom data for the given item to its serialized {@code JsonObject}
-     * representation. This JSON object will be sent to client-side
-     * DataProvider.
+     * Adds custom data for the given item to its serialized {@code JsonObject} representation. This JSON object will be
+     * sent to client-side DataProvider.
      *
      * @param item
      *            the data item being serialized
@@ -45,9 +44,8 @@ public interface DataGenerator<T> extends Serializable {
     void generateData(T item, JsonObject jsonObject);
 
     /**
-     * Informs the {@code DataGenerator} that the given data item has been
-     * dropped and is no longer needed. This method should clean up any unneeded
-     * information stored for this item.
+     * Informs the {@code DataGenerator} that the given data item has been dropped and is no longer needed. This method
+     * should clean up any unneeded information stored for this item.
      *
      * @param item
      *            the dropped data item
@@ -56,15 +54,15 @@ public interface DataGenerator<T> extends Serializable {
     }
 
     /**
-     * Informs the {@code DataGenerator} that all data has been dropped. This
-     * method should clean up any unneeded information stored for items.
+     * Informs the {@code DataGenerator} that all data has been dropped. This method should clean up any unneeded
+     * information stored for items.
      */
     default void destroyAllData() {
     }
 
     /**
-     * Informs the {@code DataGenerator} that a data object has been updated.
-     * This method should update any unneeded information stored for given item.
+     * Informs the {@code DataGenerator} that a data object has been updated. This method should update any unneeded
+     * information stored for given item.
      *
      * @param item
      *            the updated item

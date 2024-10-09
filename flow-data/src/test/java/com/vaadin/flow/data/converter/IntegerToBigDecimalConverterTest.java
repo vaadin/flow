@@ -40,13 +40,11 @@ public class IntegerToBigDecimalConverterTest {
 
     @Test
     public void testConvertToModel() {
-        assertEquals(Result.ok(BigDecimal.valueOf(42)),
-                converter.convertToModel(42, null));
+        assertEquals(Result.ok(BigDecimal.valueOf(42)), converter.convertToModel(42, null));
     }
 
     @Test
     public void testConvertToPresentation() {
-        assertEquals(Integer.valueOf(42),
-                converter.convertToPresentation(BigDecimal.valueOf(42), null));
+        assertEquals(Integer.valueOf(42), converter.convertToPresentation(BigDecimal.valueOf(42), null));
     }
 }

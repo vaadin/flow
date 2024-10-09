@@ -75,8 +75,7 @@ public class TreeData<T> implements Serializable {
     private final Map<T, HierarchyWrapper<T>> itemToWrapperMap;
 
     /**
-     * Creates an initially empty hierarchical data representation to which
-     * items can be added or removed.
+     * Creates an initially empty hierarchical data representation to which items can be added or removed.
      */
     public TreeData() {
         itemToWrapperMap = new LinkedHashMap<>();
@@ -91,8 +90,7 @@ public class TreeData<T> implements Serializable {
      * @return this
      *
      * @throws IllegalArgumentException
-     *             if any of the given items have already been added to this
-     *             structure
+     *             if any of the given items have already been added to this structure
      * @throws NullPointerException
      *             if any of the items are {code null}
      */
@@ -109,8 +107,7 @@ public class TreeData<T> implements Serializable {
      * @return this
      *
      * @throws IllegalArgumentException
-     *             if any of the given items have already been added to this
-     *             structure
+     *             if any of the given items have already been added to this structure
      * @throws NullPointerException
      *             if any of the items are {code null}
      */
@@ -127,8 +124,7 @@ public class TreeData<T> implements Serializable {
      * @return this
      *
      * @throws IllegalArgumentException
-     *             if any of the given items have already been added to this
-     *             structure
+     *             if any of the given items have already been added to this structure
      * @throws NullPointerException
      *             if any of the items are {code null}
      */
@@ -138,9 +134,8 @@ public class TreeData<T> implements Serializable {
     }
 
     /**
-     * Adds a data item as a child of {@code parent}. Call with {@code null} as
-     * parent to add a root level item. The given parent item must already exist
-     * in this structure, and an item can only be added to this structure once.
+     * Adds a data item as a child of {@code parent}. Call with {@code null} as parent to add a root level item. The
+     * given parent item must already exist in this structure, and an item can only be added to this structure once.
      *
      * @param parent
      *            the parent item for which the items are added as children
@@ -159,22 +154,19 @@ public class TreeData<T> implements Serializable {
         Objects.requireNonNull(item, "Item cannot be null");
         if (parent != null && !contains(parent)) {
             throw new IllegalArgumentException(
-                    "Parent needs to be added before children. "
-                            + "To add root items, call with parent as null");
+                    "Parent needs to be added before children. " + "To add root items, call with parent as null");
         }
         if (contains(item)) {
-            throw new IllegalArgumentException(
-                    "Cannot add the same item multiple times: " + item);
+            throw new IllegalArgumentException("Cannot add the same item multiple times: " + item);
         }
         putItem(item, parent);
         return this;
     }
 
     /**
-     * Adds a list of data items as children of {@code parent}. Call with
-     * {@code null} as parent to add root level items. The given parent item
-     * must already exist in this structure, and an item can only be added to
-     * this structure once.
+     * Adds a list of data items as children of {@code parent}. Call with {@code null} as parent to add root level
+     * items. The given parent item must already exist in this structure, and an item can only be added to this
+     * structure once.
      *
      * @param parent
      *            the parent item for which the items are added as children
@@ -185,22 +177,19 @@ public class TreeData<T> implements Serializable {
      * @throws IllegalArgumentException
      *             if parent is not null and not already added to this structure
      * @throws IllegalArgumentException
-     *             if any of the given items have already been added to this
-     *             structure
+     *             if any of the given items have already been added to this structure
      * @throws NullPointerException
      *             if any of the items are null
      */
-    public TreeData<T> addItems(T parent,
-            @SuppressWarnings("unchecked") T... items) {
+    public TreeData<T> addItems(T parent, @SuppressWarnings("unchecked") T... items) {
         Arrays.stream(items).forEach(item -> addItem(parent, item));
         return this;
     }
 
     /**
-     * Adds a list of data items as children of {@code parent}. Call with
-     * {@code null} as parent to add root level items. The given parent item
-     * must already exist in this structure, and an item can only be added to
-     * this structure once.
+     * Adds a list of data items as children of {@code parent}. Call with {@code null} as parent to add root level
+     * items. The given parent item must already exist in this structure, and an item can only be added to this
+     * structure once.
      *
      * @param parent
      *            the parent item for which the items are added as children
@@ -211,8 +200,7 @@ public class TreeData<T> implements Serializable {
      * @throws IllegalArgumentException
      *             if parent is not null and not already added to this structure
      * @throws IllegalArgumentException
-     *             if any of the given items have already been added to this
-     *             structure
+     *             if any of the given items have already been added to this structure
      * @throws NullPointerException
      *             if any of the items are null
      */
@@ -222,10 +210,9 @@ public class TreeData<T> implements Serializable {
     }
 
     /**
-     * Adds data items contained in a stream as children of {@code parent}. Call
-     * with {@code null} as parent to add root level items. The given parent
-     * item must already exist in this structure, and an item can only be added
-     * to this structure once.
+     * Adds data items contained in a stream as children of {@code parent}. Call with {@code null} as parent to add root
+     * level items. The given parent item must already exist in this structure, and an item can only be added to this
+     * structure once.
      *
      * @param parent
      *            the parent item for which the items are added as children
@@ -236,8 +223,7 @@ public class TreeData<T> implements Serializable {
      * @throws IllegalArgumentException
      *             if parent is not null and not already added to this structure
      * @throws IllegalArgumentException
-     *             if any of the given items have already been added to this
-     *             structure
+     *             if any of the given items have already been added to this structure
      * @throws NullPointerException
      *             if any of the items are null
      */
@@ -247,18 +233,16 @@ public class TreeData<T> implements Serializable {
     }
 
     /**
-     * Adds the given items as root items and uses the given value provider to
-     * recursively populate children of the root items.
+     * Adds the given items as root items and uses the given value provider to recursively populate children of the root
+     * items.
      *
      * @param rootItems
      *            the root items to add
      * @param childItemProvider
-     *            the value provider used to recursively populate this TreeData
-     *            from the given root items
+     *            the value provider used to recursively populate this TreeData from the given root items
      * @return this
      */
-    public TreeData<T> addItems(Collection<T> rootItems,
-            ValueProvider<T, Collection<T>> childItemProvider) {
+    public TreeData<T> addItems(Collection<T> rootItems, ValueProvider<T, Collection<T>> childItemProvider) {
         rootItems.forEach(item -> {
             addItem(null, item);
             Collection<T> childItems = childItemProvider.apply(item);
@@ -269,27 +253,23 @@ public class TreeData<T> implements Serializable {
     }
 
     /**
-     * Adds the given items as root items and uses the given value provider to
-     * recursively populate children of the root items.
+     * Adds the given items as root items and uses the given value provider to recursively populate children of the root
+     * items.
      *
      * @param rootItems
      *            the root items to add
      * @param childItemProvider
-     *            the value provider used to recursively populate this TreeData
-     *            from the given root items
+     *            the value provider used to recursively populate this TreeData from the given root items
      * @return this
      */
-    public TreeData<T> addItems(Stream<T> rootItems,
-            ValueProvider<T, Stream<T>> childItemProvider) {
+    public TreeData<T> addItems(Stream<T> rootItems, ValueProvider<T, Stream<T>> childItemProvider) {
         // Must collect to lists since the algorithm iterates multiple times
         return addItems(rootItems.collect(Collectors.toList()),
-                item -> childItemProvider.apply(item)
-                        .collect(Collectors.toList()));
+                item -> childItemProvider.apply(item).collect(Collectors.toList()));
     }
 
     /**
-     * Remove a given item from this structure. Additionally, this will
-     * recursively remove any descendants of the item.
+     * Remove a given item from this structure. Additionally, this will recursively remove any descendants of the item.
      *
      * @param item
      *            the item to remove, or null to clear all data
@@ -300,12 +280,10 @@ public class TreeData<T> implements Serializable {
      */
     public TreeData<T> removeItem(T item) {
         if (!contains(item)) {
-            throw new IllegalArgumentException(
-                    "Item '" + item + "' not in the hierarchy");
+            throw new IllegalArgumentException("Item '" + item + "' not in the hierarchy");
         }
         new ArrayList<>(getChildren(item)).forEach(child -> removeItem(child));
-        itemToWrapperMap.get(itemToWrapperMap.get(item).getParent())
-                .removeChild(item);
+        itemToWrapperMap.get(itemToWrapperMap.get(item).getParent()).removeChild(item);
         if (item != null) {
             // remove non root item from backing map
             itemToWrapperMap.remove(item);
@@ -314,8 +292,7 @@ public class TreeData<T> implements Serializable {
     }
 
     /**
-     * Clear all items from this structure. Shorthand for calling
-     * {@link #removeItem(Object)} with null.
+     * Clear all items from this structure. Shorthand for calling {@link #removeItem(Object)} with null.
      *
      * @return this
      */
@@ -337,8 +314,7 @@ public class TreeData<T> implements Serializable {
      * Get the immediate child items for the given item.
      *
      * @param item
-     *            the item for which to retrieve child items for, null to
-     *            retrieve all root items
+     *            the item for which to retrieve child items for, null to retrieve all root items
      * @return an unmodifiable list of child items for the given item
      *
      * @throws IllegalArgumentException
@@ -346,11 +322,9 @@ public class TreeData<T> implements Serializable {
      */
     public List<T> getChildren(T item) {
         if (!contains(item)) {
-            throw new IllegalArgumentException(
-                    "Item '" + item + "' not in the hierarchy");
+            throw new IllegalArgumentException("Item '" + item + "' not in the hierarchy");
         }
-        return Collections
-                .unmodifiableList(itemToWrapperMap.get(item).getChildren());
+        return Collections.unmodifiableList(itemToWrapperMap.get(item).getChildren());
     }
 
     /**
@@ -358,46 +332,39 @@ public class TreeData<T> implements Serializable {
      *
      * @param item
      *            the item for which to retrieve the parent item for
-     * @return parent item for the given item or {@code null} if the item is a
-     *         root item.
+     * @return parent item for the given item or {@code null} if the item is a root item.
      * @throws IllegalArgumentException
      *             if the item does not exist in this structure
      */
     public T getParent(T item) {
         if (!contains(item)) {
-            throw new IllegalArgumentException(
-                    "Item '" + item + "' not in hierarchy");
+            throw new IllegalArgumentException("Item '" + item + "' not in hierarchy");
         }
         return itemToWrapperMap.get(item).getParent();
     }
 
     /**
-     * Moves an item to become a child of the given parent item. The new parent
-     * item must exist in the hierarchy. Setting the parent to {@code null}
-     * makes the item a root item. After making changes to the tree data,
+     * Moves an item to become a child of the given parent item. The new parent item must exist in the hierarchy.
+     * Setting the parent to {@code null} makes the item a root item. After making changes to the tree data,
      * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param item
      *            the item to be set as the child of {@code parent}
      * @param parent
-     *            the item to be set as parent or {@code null} to set the item
-     *            as root
+     *            the item to be set as parent or {@code null} to set the item as root
      */
     public void setParent(T item, T parent) {
         if (!contains(item)) {
-            throw new IllegalArgumentException(
-                    "Item '" + item + "' not in the hierarchy");
+            throw new IllegalArgumentException("Item '" + item + "' not in the hierarchy");
         }
 
         if (parent != null && !contains(parent)) {
             throw new IllegalArgumentException(
-                    "Parent needs to be added before children. "
-                            + "To set as root item, call with parent as null");
+                    "Parent needs to be added before children. " + "To set as root item, call with parent as null");
         }
 
         if (item.equals(parent)) {
-            throw new IllegalArgumentException(
-                    "Item cannot be the parent of itself");
+            throw new IllegalArgumentException("Item cannot be the parent of itself");
         }
 
         T oldParent = itemToWrapperMap.get(item).getParent();
@@ -415,9 +382,8 @@ public class TreeData<T> implements Serializable {
     }
 
     /**
-     * Moves an item to the position immediately after a sibling item. The two
-     * items must have the same parent. After making changes to the tree data,
-     * {@link TreeDataProvider#refreshAll()} should be called.
+     * Moves an item to the position immediately after a sibling item. The two items must have the same parent. After
+     * making changes to the tree data, {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param item
      *            the item to be moved
@@ -427,29 +393,25 @@ public class TreeData<T> implements Serializable {
      */
     public void moveAfterSibling(T item, T sibling) {
         if (!contains(item)) {
-            throw new IllegalArgumentException(
-                    "Item '" + item + "' not in the hierarchy");
+            throw new IllegalArgumentException("Item '" + item + "' not in the hierarchy");
         }
 
         if (sibling == null) {
-            List<T> children = itemToWrapperMap.get(getParent(item))
-                    .getChildren();
+            List<T> children = itemToWrapperMap.get(getParent(item)).getChildren();
 
             // Move item to first position
             children.remove(item);
             children.add(0, item);
         } else {
             if (!contains(sibling)) {
-                throw new IllegalArgumentException(
-                        "Item '" + sibling + "' not in the hierarchy");
+                throw new IllegalArgumentException("Item '" + sibling + "' not in the hierarchy");
             }
 
             T parent = itemToWrapperMap.get(item).getParent();
 
-            if (!Objects.equals(parent,
-                    itemToWrapperMap.get(sibling).getParent())) {
-                throw new IllegalArgumentException("Items '" + item + "' and '"
-                        + sibling + "' don't have the same parent");
+            if (!Objects.equals(parent, itemToWrapperMap.get(sibling).getParent())) {
+                throw new IllegalArgumentException(
+                        "Items '" + item + "' and '" + sibling + "' don't have the same parent");
             }
 
             List<T> children = itemToWrapperMap.get(parent).getChildren();
@@ -465,8 +427,7 @@ public class TreeData<T> implements Serializable {
      *
      * @param item
      *            the item to check
-     * @return {@code true} if the item is in this hierarchy, {@code false} if
-     *         not
+     * @return {@code true} if the item is in this hierarchy, {@code false} if not
      */
     public boolean contains(T item) {
         return itemToWrapperMap.containsKey(item);
@@ -480,8 +441,7 @@ public class TreeData<T> implements Serializable {
         itemToWrapperMap.put(item, wrappedItem);
     }
 
-    private void addItemsRecursively(Collection<T> items,
-            ValueProvider<T, Collection<T>> childItemProvider) {
+    private void addItemsRecursively(Collection<T> items, ValueProvider<T, Collection<T>> childItemProvider) {
         items.forEach(item -> {
             Collection<T> childItems = childItemProvider.apply(item);
             addItems(item, childItems);

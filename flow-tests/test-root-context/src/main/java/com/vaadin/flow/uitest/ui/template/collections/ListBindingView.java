@@ -52,14 +52,12 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
 
     public ListBindingView() {
         setId("template");
-        getModel().setMessages(
-                Collections.singletonList(new Message(INITIAL_STATE)));
+        getModel().setMessages(Collections.singletonList(new Message(INITIAL_STATE)));
     }
 
     @EventHandler
     private void reset() {
-        getModel().setMessages(RESET_STATE.stream().map(Message::new)
-                .collect(Collectors.toList()));
+        getModel().setMessages(RESET_STATE.stream().map(Message::new).collect(Collectors.toList()));
     }
 
     @EventHandler
@@ -79,15 +77,13 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
 
     @EventHandler
     private void addNumerousElements() {
-        List<Message> newMessages = Arrays.asList(new Message("4"),
-                new Message("5"));
+        List<Message> newMessages = Arrays.asList(new Message("4"), new Message("5"));
         getModel().getMessages().addAll(newMessages);
     }
 
     @EventHandler
     private void addNumerousElementsByIndex() {
-        List<Message> newMessages = Arrays.asList(new Message("4"),
-                new Message("5"));
+        List<Message> newMessages = Arrays.asList(new Message("4"), new Message("5"));
         getModel().getMessages().addAll(0, newMessages);
     }
 
@@ -125,13 +121,11 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
 
     @EventHandler
     private void sortDescending() {
-        getModel().getMessages()
-                .sort(Comparator.comparing(Message::getText).reversed());
+        getModel().getMessages().sort(Comparator.comparing(Message::getText).reversed());
     }
 
     @EventHandler
     private void setInitialStateToEachMessage() {
-        getModel().getMessages()
-                .forEach(message -> message.setText(INITIAL_STATE));
+        getModel().getMessages().forEach(message -> message.setText(INITIAL_STATE));
     }
 }

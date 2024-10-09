@@ -25,8 +25,7 @@ public class ByteCodeScanningView extends Div {
     public static final String COMPONENT_ID = "myButton";
 
     public ByteCodeScanningView() throws Exception {
-        Class<?> clazz = Class.forName(
-                "com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.MyButton");
+        Class<?> clazz = Class.forName("com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.MyButton");
         Component button = (Component) clazz.newInstance();
         button.setId(COMPONENT_ID);
         add(button);

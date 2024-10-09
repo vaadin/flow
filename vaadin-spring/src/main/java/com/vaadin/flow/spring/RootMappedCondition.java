@@ -27,15 +27,12 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
- * Condition to check whether the Vaadin servlet is mapped to the root
- * ({@literal "/*"}).
+ * Condition to check whether the Vaadin servlet is mapped to the root ({@literal "/*"}).
  * <p>
- * In this case a {@link DispatcherServlet} is used. It's mapped to the root
- * instead of VaadinServlet and forwards requests to {@link VaadinServlet}. If
- * there are other mappings (via Spring endpoints e.g.) then
- * {@link DispatcherServlet} makes it possible to handle them properly via those
- * endpoints. Otherwise {@link VaadinServlet} will handle all the URLs because
- * it has the highest priority.
+ * In this case a {@link DispatcherServlet} is used. It's mapped to the root instead of VaadinServlet and forwards
+ * requests to {@link VaadinServlet}. If there are other mappings (via Spring endpoints e.g.) then
+ * {@link DispatcherServlet} makes it possible to handle them properly via those endpoints. Otherwise
+ * {@link VaadinServlet} will handle all the URLs because it has the highest priority.
  *
  * @author Vaadin Ltd
  *
@@ -45,16 +42,14 @@ public class RootMappedCondition implements Condition {
     public static final String URL_MAPPING_PROPERTY = "vaadin.urlMapping";
 
     @Override
-    public boolean matches(ConditionContext context,
-            AnnotatedTypeMetadata metadata) {
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 
         String urlMapping = getUrlMapping(context.getEnvironment());
         return isRootMapping(urlMapping);
     }
 
     /**
-     * Gets the url mapping in a way compatible with both plain Spring and
-     * Spring Boot.
+     * Gets the url mapping in a way compatible with both plain Spring and Spring Boot.
      *
      * @param environment
      *            the application environment
@@ -63,15 +58,12 @@ public class RootMappedCondition implements Condition {
     public static String getUrlMapping(Environment environment) {
         if (SpringUtil.isSpringBoot()) {
             try {
-                return (String) Class.forName(
-                        "com.vaadin.flow.spring.VaadinConfigurationProperties")
-                        .getMethod("getUrlMapping", Environment.class)
-                        .invoke(null, environment);
-            } catch (IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException | NoSuchMethodException
-                    | SecurityException | ClassNotFoundException e) {
-                LoggerFactory.getLogger(RootMappedCondition.class)
-                        .error("Unable to find urlMapping from properties", e);
+                return (String) Class.forName("com.vaadin.flow.spring.VaadinConfigurationProperties")
+                        .getMethod("getUrlMapping", Environment.class).invoke(null, environment);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+                LoggerFactory.getLogger(RootMappedCondition.class).error("Unable to find urlMapping from properties",
+                        e);
                 return null;
             }
         } else {
@@ -80,16 +72,13 @@ public class RootMappedCondition implements Condition {
     }
 
     /**
-     * Returns {@code true} if {@code mapping} is the root mapping
-     * ({@literal "/*"}).
+     * Returns {@code true} if {@code mapping} is the root mapping ({@literal "/*"}).
      * <p>
-     * The mapping is controlled via the {@code vaadin.urlMapping} property
-     * value. By default it's {@literal "/*"}.
+     * The mapping is controlled via the {@code vaadin.urlMapping} property value. By default it's {@literal "/*"}.
      *
      * @param mapping
      *            the mapping string to check
-     * @return {@code true} if {@code mapping} is the root mapping and
-     *         {@code false} otherwise
+     * @return {@code true} if {@code mapping} is the root mapping and {@code false} otherwise
      */
     public static boolean isRootMapping(String mapping) {
         if (mapping == null) {

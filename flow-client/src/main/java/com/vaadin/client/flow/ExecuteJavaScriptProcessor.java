@@ -34,8 +34,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Processes the result of
- * {@link Page#executeJs(String, java.io.Serializable...)} on the client.
+ * Processes the result of {@link Page#executeJs(String, java.io.Serializable...)} on the client.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -79,18 +78,14 @@ public class ExecuteJavaScriptProcessor {
         JsMap<Object, StateNode> map = JsCollections.map();
         for (int i = 0; i < parameterCount; i++) {
             JsonValue parameterJson = invocation.get(i);
-            Object parameter = ClientJsonCodec.decodeWithTypeInfo(tree,
-                    parameterJson);
+            Object parameter = ClientJsonCodec.decodeWithTypeInfo(tree, parameterJson);
             parameters.push(parameter);
             parameterNamesAndCode[i] = "$" + i;
-            StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
-                    parameterJson);
+            StateNode stateNode = ClientJsonCodec.decodeStateNode(tree, parameterJson);
             if (stateNode != null) {
-                if (isVirtualChildAwaitingInitialization(stateNode)
-                        || !isBound(stateNode)) {
+                if (isVirtualChildAwaitingInitialization(stateNode) || !isBound(stateNode)) {
                     stateNode.addDomNodeSetListener(node -> {
-                        Reactive.addPostFlushListener(
-                                () -> handleInvocation(invocation));
+                        Reactive.addPostFlushListener(() -> handleInvocation(invocation));
                         return true;
                     });
                     return;
@@ -107,27 +102,22 @@ public class ExecuteJavaScriptProcessor {
     }
 
     private boolean isVirtualChildAwaitingInitialization(StateNode node) {
-        if (node.getDomNode() != null
-                || node.getTree().getNode(node.getId()) == null) {
+        if (node.getDomNode() != null || node.getTree().getNode(node.getId()) == null) {
             return false;
         }
-        if (node.getMap(NodeFeatures.ELEMENT_DATA)
-                .hasPropertyValue(NodeProperties.PAYLOAD)) {
-            Object value = node.getMap(NodeFeatures.ELEMENT_DATA)
-                    .getProperty(NodeProperties.PAYLOAD).getValue();
+        if (node.getMap(NodeFeatures.ELEMENT_DATA).hasPropertyValue(NodeProperties.PAYLOAD)) {
+            Object value = node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.PAYLOAD).getValue();
             if (value instanceof JsonObject) {
                 JsonObject object = (JsonObject) value;
                 String type = object.getString(NodeProperties.TYPE);
-                return NodeProperties.INJECT_BY_ID.equals(type)
-                        || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type);
+                return NodeProperties.INJECT_BY_ID.equals(type) || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type);
             }
         }
         return false;
     }
 
     protected boolean isBound(StateNode node) {
-        boolean isNodeBound = node.getDomNode() != null
-                && !SimpleElementBindingStrategy.needsRebind(node);
+        boolean isNodeBound = node.getDomNode() != null && !SimpleElementBindingStrategy.needsRebind(node);
         if (!isNodeBound || node.getParent() == null) {
             return isNodeBound;
         }
@@ -135,19 +125,16 @@ public class ExecuteJavaScriptProcessor {
     }
 
     /**
-     * Executes the actual invocation. This method is protected instead of
-     * private for testing purposes.
+     * Executes the actual invocation. This method is protected instead of private for testing purposes.
      *
      * @param parameterNamesAndCode
-     *            an array consisting of parameter names followed by the
-     *            JavaScript expression to execute
+     *            an array consisting of parameter names followed by the JavaScript expression to execute
      * @param parameters
      *            an array of parameter values
      * @param nodeParameters
      *            the node parameters
      */
-    protected void invoke(String[] parameterNamesAndCode,
-            JsArray<Object> parameters,
+    protected void invoke(String[] parameterNamesAndCode, JsArray<Object> parameters,
             JsMap<Object, StateNode> nodeParameters) {
         assert parameterNamesAndCode.length == parameters.length() + 1;
 
@@ -161,8 +148,7 @@ public class ExecuteJavaScriptProcessor {
             }), parameters);
         } catch (Exception exception) {
             Console.reportStacktrace(exception);
-            Console.error(
-                    "Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.");
+            Console.error("Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.");
             if (!registry.getApplicationConfiguration().isProductionMode()) {
                 StringBuilder codeBuilder = new StringBuilder("[");
                 String delimiter = "";
@@ -179,14 +165,12 @@ public class ExecuteJavaScriptProcessor {
                 if (code.charAt(code.length() - 1) == ']') {
                     code = code.substring(0, code.length() - 1);
                 }
-                Console.error("The error has occurred in the JS code: '" + code
-                        + "'");
+                Console.error("The error has occurred in the JS code: '" + code + "'");
             }
         }
     }
 
-    private boolean handleRemoveExistingNode(Integer removedId, int nodeId,
-            JsonArray invocation) {
+    private boolean handleRemoveExistingNode(Integer removedId, int nodeId, JsonArray invocation) {
         if (removedId.intValue() == nodeId) {
             Reactive.addPostFlushListener(() -> handleInvocation(invocation));
             return true;
@@ -198,8 +182,8 @@ public class ExecuteJavaScriptProcessor {
         return registry.getApplicationConfiguration().getApplicationId();
     }
 
-    private native JsonObject getContextExecutionObject(
-            JsMap<Object, StateNode> nodeParameters, Runnable stopApplication)
+    private native JsonObject getContextExecutionObject(JsMap<Object, StateNode> nodeParameters,
+            Runnable stopApplication)
     /*-{
           var object = {};
           object.getNode = $entry(function (element) {

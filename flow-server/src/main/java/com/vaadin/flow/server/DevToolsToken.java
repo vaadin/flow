@@ -26,11 +26,9 @@ import java.util.UUID;
 import org.slf4j.LoggerFactory;
 
 /**
- * Representation of the security token exchanged with the Dev Tools client to
- * validate websocket connections.
+ * Representation of the security token exchanged with the Dev Tools client to validate websocket connections.
  *
- * The token is temporarily stored locally to prevent websocket connection to be
- * refused after a server restart.
+ * The token is temporarily stored locally to prevent websocket connection to be refused after a server restart.
  *
  * For internal yse only.
  */
@@ -42,40 +40,32 @@ public class DevToolsToken implements Serializable {
     private static String randomDevToolsToken = UUID.randomUUID().toString();
 
     /**
-     * Initialize the dev-tools token, potentially loading a value generated
-     * previously, before a server shutdown.
+     * Initialize the dev-tools token, potentially loading a value generated previously, before a server shutdown.
      *
      * @param vaadinService
      *            Vaadin service instance
      */
     static synchronized void init(VaadinService vaadinService) {
-        File projectFolder = vaadinService.getDeploymentConfiguration()
-                .getProjectFolder();
+        File projectFolder = vaadinService.getDeploymentConfiguration().getProjectFolder();
         if (projectFolder != null) {
             String uniqueUid = UUID
-                    .nameUUIDFromBytes((projectFolder.getAbsolutePath())
-                            .getBytes(StandardCharsets.UTF_8))
-                    .toString();
-            File tokenFile = new File(System.getProperty("java.io.tmpdir"),
-                    uniqueUid);
+                    .nameUUIDFromBytes((projectFolder.getAbsolutePath()).getBytes(StandardCharsets.UTF_8)).toString();
+            File tokenFile = new File(System.getProperty("java.io.tmpdir"), uniqueUid);
             if (tokenFile.exists()) {
                 try {
-                    randomDevToolsToken = UUID
-                            .fromString(Files.readString(tokenFile.toPath()))
-                            .toString();
+                    randomDevToolsToken = UUID.fromString(Files.readString(tokenFile.toPath())).toString();
                 } catch (Exception e) {
-                    LoggerFactory.getLogger(DevToolsToken.class).debug(
-                            "Cannot read dev-tools token file, using a random new token. "
+                    LoggerFactory.getLogger(DevToolsToken.class)
+                            .debug("Cannot read dev-tools token file, using a random new token. "
                                     + "Browser page might need a reload to make dev-tools websocket establish a connection.",
-                            e);
+                                    e);
                 }
             } else {
                 try {
                     Files.writeString(tokenFile.toPath(), randomDevToolsToken);
                 } catch (IOException e) {
                     LoggerFactory.getLogger(DevToolsToken.class).debug(
-                            "Cannot write dev-tools token file. A new token will be generated on server restart.",
-                            e);
+                            "Cannot write dev-tools token file. A new token will be generated on server restart.", e);
                 }
             }
         }

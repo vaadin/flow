@@ -48,8 +48,7 @@ public class JsonSerializerTest {
     public record SomeRecord(String name, int age) {
     }
 
-    public record RecordWithRecordAndObject(SomeRecord record,
-            ObjectWithSimpleTypes object) {
+    public record RecordWithRecordAndObject(SomeRecord record, ObjectWithSimpleTypes object) {
     }
 
     public static class ObjectWithSimpleTypes {
@@ -279,8 +278,7 @@ public class JsonSerializerTest {
             return linkedListOfBooleans;
         }
 
-        public void setLinkedListOfBooleans(
-                LinkedList<Boolean> linkedListOfBooleans) {
+        public void setLinkedListOfBooleans(LinkedList<Boolean> linkedListOfBooleans) {
             this.linkedListOfBooleans = linkedListOfBooleans;
         }
 
@@ -296,64 +294,53 @@ public class JsonSerializerTest {
     @Test
     public void serializeBasicTypes_returnJsonBasicTypes() {
         JsonValue json = JsonSerializer.toJson("someString");
-        Assert.assertTrue("The JsonValue should be instanceof JsonString",
-                json instanceof JsonString);
+        Assert.assertTrue("The JsonValue should be instanceof JsonString", json instanceof JsonString);
         Assert.assertEquals("someString", json.asString());
 
         json = JsonSerializer.toJson(0);
-        Assert.assertTrue("The JsonValue should be instanceof JsonNumber",
-                json instanceof JsonNumber);
+        Assert.assertTrue("The JsonValue should be instanceof JsonNumber", json instanceof JsonNumber);
         Assert.assertEquals(0.0, json.asNumber(), PRECISION);
 
         json = JsonSerializer.toJson(0.0);
-        Assert.assertTrue("The JsonValue should be instanceof JsonNumber",
-                json instanceof JsonNumber);
+        Assert.assertTrue("The JsonValue should be instanceof JsonNumber", json instanceof JsonNumber);
         Assert.assertEquals(0.0, json.asNumber(), PRECISION);
 
         json = JsonSerializer.toJson(0l);
-        Assert.assertTrue("The JsonValue should be instanceof JsonNumber",
-                json instanceof JsonNumber);
+        Assert.assertTrue("The JsonValue should be instanceof JsonNumber", json instanceof JsonNumber);
         Assert.assertEquals(0.0, json.asNumber(), PRECISION);
 
         json = JsonSerializer.toJson((byte) 0);
-        Assert.assertTrue("The JsonValue should be instanceof JsonNumber",
-                json instanceof JsonNumber);
+        Assert.assertTrue("The JsonValue should be instanceof JsonNumber", json instanceof JsonNumber);
         Assert.assertEquals(0.0, json.asNumber(), PRECISION);
 
         json = JsonSerializer.toJson((short) 0);
-        Assert.assertTrue("The JsonValue should be instanceof JsonNumber",
-                json instanceof JsonNumber);
+        Assert.assertTrue("The JsonValue should be instanceof JsonNumber", json instanceof JsonNumber);
         Assert.assertEquals(0.0, json.asNumber(), PRECISION);
 
         json = JsonSerializer.toJson(true);
-        Assert.assertTrue("The JsonValue should be instanceof JsonBoolean",
-                json instanceof JsonBoolean);
+        Assert.assertTrue("The JsonValue should be instanceof JsonBoolean", json instanceof JsonBoolean);
         Assert.assertTrue(json.asBoolean());
 
         json = JsonSerializer.toJson(false);
-        Assert.assertTrue("The JsonValue should be instanceof JsonBoolean",
-                json instanceof JsonBoolean);
+        Assert.assertTrue("The JsonValue should be instanceof JsonBoolean", json instanceof JsonBoolean);
         Assert.assertFalse(json.asBoolean());
 
         json = JsonSerializer.toJson(SomeEnum.SOME_VALUE_1);
-        Assert.assertTrue("The JsonValue should be instanceof JsonString",
-                json instanceof JsonString);
+        Assert.assertTrue("The JsonValue should be instanceof JsonString", json instanceof JsonString);
         Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(), json.asString());
     }
 
     @Test
     public void serializeNull_returnNull() {
         JsonValue json = JsonSerializer.toJson((Object) null);
-        Assert.assertTrue("The JsonValue should be instanceof JsonNull",
-                json instanceof JsonNull);
+        Assert.assertTrue("The JsonValue should be instanceof JsonNull", json instanceof JsonNull);
     }
 
     @Test
     public void serializeEmptyObjectWithBasicTypes_returnJsonObjectWithEmptyProperties() {
         ObjectWithSimpleTypes bean = new ObjectWithSimpleTypes();
         JsonValue json = JsonSerializer.toJson(bean);
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject object = (JsonObject) json;
         assertObjectHasNullValueForKey(object, "stringProperty");
@@ -374,8 +361,7 @@ public class JsonSerializerTest {
 
         // char is a different case, it is a string at the json
         Assert.assertTrue(object.hasKey("charProperty"));
-        Assert.assertEquals((char) 0,
-                object.getString("charProperty").charAt(0));
+        Assert.assertEquals((char) 0, object.getString("charProperty").charAt(0));
 
         bean = JsonSerializer.toObject(ObjectWithSimpleTypes.class, json);
         Assert.assertNotNull(bean);
@@ -402,32 +388,25 @@ public class JsonSerializerTest {
         ObjectWithSimpleTypes bean = getPopulatedObjectWithSimpleTypes();
 
         JsonValue json = JsonSerializer.toJson(bean);
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject object = (JsonObject) json;
         Assert.assertEquals("someProperty", object.getString("stringProperty"));
         Assert.assertEquals(1, object.getNumber("intProperty"), PRECISION);
         Assert.assertEquals(2, object.getNumber("integerProperty"), PRECISION);
         Assert.assertEquals(3, object.getNumber("longProperty"), PRECISION);
-        Assert.assertEquals(4, object.getNumber("longObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(4, object.getNumber("longObjectProperty"), PRECISION);
         Assert.assertEquals(5, object.getNumber("shortProperty"), PRECISION);
-        Assert.assertEquals(6, object.getNumber("shortObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(6, object.getNumber("shortObjectProperty"), PRECISION);
         Assert.assertEquals(7, object.getNumber("doubleProperty"), PRECISION);
-        Assert.assertEquals(8, object.getNumber("doubleObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(8, object.getNumber("doubleObjectProperty"), PRECISION);
         Assert.assertEquals(9, object.getNumber("byteProperty"), PRECISION);
-        Assert.assertEquals(10, object.getNumber("byteObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(10, object.getNumber("byteObjectProperty"), PRECISION);
         Assert.assertEquals(true, object.getBoolean("booleanProperty"));
         Assert.assertEquals(false, object.getBoolean("booleanObjectProperty"));
         Assert.assertEquals('c', object.getString("charProperty").charAt(0));
-        Assert.assertEquals('C',
-                object.getString("characterProperty").charAt(0));
-        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
-                object.getString("enumProperty"));
+        Assert.assertEquals('C', object.getString("characterProperty").charAt(0));
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(), object.getString("enumProperty"));
 
         bean = JsonSerializer.toObject(ObjectWithSimpleTypes.class, json);
         Assert.assertNotNull(bean);
@@ -437,13 +416,11 @@ public class JsonSerializerTest {
         Assert.assertEquals(3, bean.getLongProperty());
         Assert.assertEquals(Long.valueOf(4), bean.getLongObjectProperty());
         Assert.assertEquals(5, bean.getShortProperty());
-        Assert.assertEquals(Short.valueOf((short) 6),
-                bean.getShortObjectProperty());
+        Assert.assertEquals(Short.valueOf((short) 6), bean.getShortObjectProperty());
         Assert.assertEquals(7, bean.getDoubleProperty(), 0.00001);
         Assert.assertEquals(Double.valueOf(8), bean.getDoubleObjectProperty());
         Assert.assertEquals(9, bean.getByteProperty());
-        Assert.assertEquals(Byte.valueOf((byte) 10),
-                bean.getByteObjectProperty());
+        Assert.assertEquals(Byte.valueOf((byte) 10), bean.getByteObjectProperty());
         Assert.assertEquals(true, bean.isBooleanProperty());
         Assert.assertEquals(Boolean.FALSE, bean.getBooleanObjectProperty());
         Assert.assertEquals('c', bean.getCharProperty());
@@ -457,8 +434,7 @@ public class JsonSerializerTest {
 
         JsonValue json = JsonSerializer.toJson(bean);
 
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject jsonObject = (JsonObject) json;
         Assert.assertTrue(jsonObject.hasKey("object1"));
@@ -470,8 +446,7 @@ public class JsonSerializerTest {
 
         bean = JsonSerializer.toObject(ObjectWithOtherObjects.class, json);
 
-        Assert.assertNotNull("The deserialized object should not be null",
-                bean);
+        Assert.assertNotNull("The deserialized object should not be null", bean);
         Assert.assertNull(bean.getObject1());
         Assert.assertNull(bean.getObject2());
         Assert.assertNull(bean.getRecord());
@@ -507,8 +482,7 @@ public class JsonSerializerTest {
 
         JsonValue json = JsonSerializer.toJson(bean);
 
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject object = ((JsonObject) json).getObject("object1");
         Assert.assertNotNull("The object1 should be not be null", object);
@@ -517,51 +491,38 @@ public class JsonSerializerTest {
         Assert.assertEquals(1, object.getNumber("intProperty"), PRECISION);
         Assert.assertEquals(2, object.getNumber("integerProperty"), PRECISION);
         Assert.assertEquals(3, object.getNumber("longProperty"), PRECISION);
-        Assert.assertEquals(4, object.getNumber("longObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(4, object.getNumber("longObjectProperty"), PRECISION);
         Assert.assertEquals(5, object.getNumber("shortProperty"), PRECISION);
-        Assert.assertEquals(6, object.getNumber("shortObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(6, object.getNumber("shortObjectProperty"), PRECISION);
         Assert.assertEquals(7, object.getNumber("doubleProperty"), PRECISION);
-        Assert.assertEquals(8, object.getNumber("doubleObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(8, object.getNumber("doubleObjectProperty"), PRECISION);
         Assert.assertEquals(9, object.getNumber("byteProperty"), PRECISION);
-        Assert.assertEquals(10, object.getNumber("byteObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(10, object.getNumber("byteObjectProperty"), PRECISION);
         Assert.assertEquals(true, object.getBoolean("booleanProperty"));
         Assert.assertEquals(false, object.getBoolean("booleanObjectProperty"));
         Assert.assertEquals('c', object.getString("charProperty").charAt(0));
-        Assert.assertEquals('C',
-                object.getString("characterProperty").charAt(0));
-        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
-                object.getString("enumProperty"));
+        Assert.assertEquals('C', object.getString("characterProperty").charAt(0));
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(), object.getString("enumProperty"));
 
         object = ((JsonObject) json).getObject("object2");
         Assert.assertNotNull("The object2 should be not be null", object);
 
-        Assert.assertEquals("someOtherProperty",
-                object.getString("stringProperty"));
+        Assert.assertEquals("someOtherProperty", object.getString("stringProperty"));
         Assert.assertEquals(10, object.getNumber("intProperty"), PRECISION);
         Assert.assertEquals(20, object.getNumber("integerProperty"), PRECISION);
         Assert.assertEquals(30, object.getNumber("longProperty"), PRECISION);
-        Assert.assertEquals(40, object.getNumber("longObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(40, object.getNumber("longObjectProperty"), PRECISION);
         Assert.assertEquals(50, object.getNumber("shortProperty"), PRECISION);
-        Assert.assertEquals(60, object.getNumber("shortObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(60, object.getNumber("shortObjectProperty"), PRECISION);
         Assert.assertEquals(70, object.getNumber("doubleProperty"), PRECISION);
-        Assert.assertEquals(80, object.getNumber("doubleObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(80, object.getNumber("doubleObjectProperty"), PRECISION);
         Assert.assertEquals(90, object.getNumber("byteProperty"), PRECISION);
-        Assert.assertEquals(100, object.getNumber("byteObjectProperty"),
-                PRECISION);
+        Assert.assertEquals(100, object.getNumber("byteObjectProperty"), PRECISION);
         Assert.assertEquals(true, object.getBoolean("booleanProperty"));
         Assert.assertEquals(false, object.getBoolean("booleanObjectProperty"));
         Assert.assertEquals('d', object.getString("charProperty").charAt(0));
-        Assert.assertEquals('D',
-                object.getString("characterProperty").charAt(0));
-        Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(),
-                object.getString("enumProperty"));
+        Assert.assertEquals('D', object.getString("characterProperty").charAt(0));
+        Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(), object.getString("enumProperty"));
 
         object = ((JsonObject) json).getObject("record");
         Assert.assertNotNull("The record should be not be null", object);
@@ -575,8 +536,7 @@ public class JsonSerializerTest {
 
         JsonValue json = JsonSerializer.toJson(bean);
 
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject jsonObject = (JsonObject) json;
         Assert.assertTrue(jsonObject.hasKey("recursive"));
@@ -585,8 +545,7 @@ public class JsonSerializerTest {
 
         bean = JsonSerializer.toObject(RecursiveObject.class, json);
 
-        Assert.assertNotNull("The deserialized object should not be null",
-                bean);
+        Assert.assertNotNull("The deserialized object should not be null", bean);
         Assert.assertNull(bean.getRecursive());
         Assert.assertEquals(0, bean.getIndex());
     }
@@ -597,8 +556,7 @@ public class JsonSerializerTest {
         RecursiveObject bean = createRecusiveObject(recursions, 0);
 
         JsonValue json = JsonSerializer.toJson(bean);
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject object = ((JsonObject) json);
         for (int i = 0; i < recursions; i++) {
@@ -623,16 +581,14 @@ public class JsonSerializerTest {
         ObjectWithBasicCollections bean = new ObjectWithBasicCollections();
 
         /*
-         * private List<String> listOfStrings; private Set<Integer>
-         * setOfIntegers; private LinkedList<Boolean> linkedListOfBooleans;
-         * private ArrayList<Double> arrayListOfDoubles;
+         * private List<String> listOfStrings; private Set<Integer> setOfIntegers; private LinkedList<Boolean>
+         * linkedListOfBooleans; private ArrayList<Double> arrayListOfDoubles;
          *
          */
 
         JsonValue json = JsonSerializer.toJson(bean);
 
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject jsonObject = (JsonObject) json;
         Assert.assertTrue(jsonObject.hasKey("listOfStrings"));
@@ -640,16 +596,13 @@ public class JsonSerializerTest {
         Assert.assertTrue(jsonObject.hasKey("setOfIntegers"));
         Assert.assertTrue(jsonObject.get("setOfIntegers") instanceof JsonNull);
         Assert.assertTrue(jsonObject.hasKey("linkedListOfBooleans"));
-        Assert.assertTrue(
-                jsonObject.get("linkedListOfBooleans") instanceof JsonNull);
+        Assert.assertTrue(jsonObject.get("linkedListOfBooleans") instanceof JsonNull);
         Assert.assertTrue(jsonObject.hasKey("arrayListOfDoubles"));
-        Assert.assertTrue(
-                jsonObject.get("arrayListOfDoubles") instanceof JsonNull);
+        Assert.assertTrue(jsonObject.get("arrayListOfDoubles") instanceof JsonNull);
 
         bean = JsonSerializer.toObject(ObjectWithBasicCollections.class, json);
 
-        Assert.assertNotNull("The deserialized object should not be null",
-                bean);
+        Assert.assertNotNull("The deserialized object should not be null", bean);
         Assert.assertNull(bean.getListOfStrings());
         Assert.assertNull(bean.getSetOfIntegers());
         Assert.assertNull(bean.getLinkedListOfBooleans());
@@ -662,14 +615,12 @@ public class JsonSerializerTest {
 
         bean.setListOfStrings(Arrays.asList("string1", "string2"));
         bean.setSetOfIntegers(new LinkedHashSet<>(Arrays.asList(3, 4)));
-        bean.setLinkedListOfBooleans(
-                new LinkedList<>(Arrays.asList(true, false)));
+        bean.setLinkedListOfBooleans(new LinkedList<>(Arrays.asList(true, false)));
         bean.setArrayListOfDoubles(new ArrayList<>(Arrays.asList(5.0, 6.0)));
 
         JsonValue json = JsonSerializer.toJson(bean);
 
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject jsonObject = (JsonObject) json;
         JsonArray array = (JsonArray) jsonObject.get("listOfStrings");
@@ -690,13 +641,10 @@ public class JsonSerializerTest {
 
         bean = JsonSerializer.toObject(ObjectWithBasicCollections.class, json);
 
-        Assert.assertNotNull("The deserialized object should not be null",
-                bean);
-        assertCollectionItemsAreEqual(bean.getListOfStrings(), "string1",
-                "string2");
+        Assert.assertNotNull("The deserialized object should not be null", bean);
+        assertCollectionItemsAreEqual(bean.getListOfStrings(), "string1", "string2");
         assertCollectionItemsAreEqual(bean.getSetOfIntegers(), 3, 4);
-        assertCollectionItemsAreEqual(bean.getLinkedListOfBooleans(), true,
-                false);
+        assertCollectionItemsAreEqual(bean.getLinkedListOfBooleans(), true, false);
         assertCollectionItemsAreEqual(bean.getArrayListOfDoubles(), 5.0, 6.0);
     }
 
@@ -704,12 +652,10 @@ public class JsonSerializerTest {
     public void serializeRecordWithRecordAndObject_returnJsonObjectWithPopulatedProperties() {
         SomeRecord record = new SomeRecord("someone", 42);
         ObjectWithSimpleTypes bean = getPopulatedObjectWithSimpleTypes();
-        RecordWithRecordAndObject mainRecord = new RecordWithRecordAndObject(
-                record, bean);
+        RecordWithRecordAndObject mainRecord = new RecordWithRecordAndObject(record, bean);
 
         JsonValue json = JsonSerializer.toJson(mainRecord);
-        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
-                json instanceof JsonObject);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject", json instanceof JsonObject);
 
         JsonObject object = (JsonObject) json;
         JsonObject nestedRecord = object.getObject("record");
@@ -720,39 +666,24 @@ public class JsonSerializerTest {
         Assert.assertEquals("someone", nestedRecord.getString("name"));
         Assert.assertEquals(42, nestedRecord.getNumber("age"), PRECISION);
 
-        Assert.assertEquals("someProperty",
-                nestedObject.getString("stringProperty"));
-        Assert.assertEquals(1, nestedObject.getNumber("intProperty"),
-                PRECISION);
-        Assert.assertEquals(2, nestedObject.getNumber("integerProperty"),
-                PRECISION);
-        Assert.assertEquals(3, nestedObject.getNumber("longProperty"),
-                PRECISION);
-        Assert.assertEquals(4, nestedObject.getNumber("longObjectProperty"),
-                PRECISION);
-        Assert.assertEquals(5, nestedObject.getNumber("shortProperty"),
-                PRECISION);
-        Assert.assertEquals(6, nestedObject.getNumber("shortObjectProperty"),
-                PRECISION);
-        Assert.assertEquals(7, nestedObject.getNumber("doubleProperty"),
-                PRECISION);
-        Assert.assertEquals(8, nestedObject.getNumber("doubleObjectProperty"),
-                PRECISION);
-        Assert.assertEquals(9, nestedObject.getNumber("byteProperty"),
-                PRECISION);
-        Assert.assertEquals(10, nestedObject.getNumber("byteObjectProperty"),
-                PRECISION);
+        Assert.assertEquals("someProperty", nestedObject.getString("stringProperty"));
+        Assert.assertEquals(1, nestedObject.getNumber("intProperty"), PRECISION);
+        Assert.assertEquals(2, nestedObject.getNumber("integerProperty"), PRECISION);
+        Assert.assertEquals(3, nestedObject.getNumber("longProperty"), PRECISION);
+        Assert.assertEquals(4, nestedObject.getNumber("longObjectProperty"), PRECISION);
+        Assert.assertEquals(5, nestedObject.getNumber("shortProperty"), PRECISION);
+        Assert.assertEquals(6, nestedObject.getNumber("shortObjectProperty"), PRECISION);
+        Assert.assertEquals(7, nestedObject.getNumber("doubleProperty"), PRECISION);
+        Assert.assertEquals(8, nestedObject.getNumber("doubleObjectProperty"), PRECISION);
+        Assert.assertEquals(9, nestedObject.getNumber("byteProperty"), PRECISION);
+        Assert.assertEquals(10, nestedObject.getNumber("byteObjectProperty"), PRECISION);
         Assert.assertTrue(nestedObject.getBoolean("booleanProperty"));
         Assert.assertFalse(nestedObject.getBoolean("booleanObjectProperty"));
-        Assert.assertEquals('c',
-                nestedObject.getString("charProperty").charAt(0));
-        Assert.assertEquals('C',
-                nestedObject.getString("characterProperty").charAt(0));
-        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
-                nestedObject.getString("enumProperty"));
+        Assert.assertEquals('c', nestedObject.getString("charProperty").charAt(0));
+        Assert.assertEquals('C', nestedObject.getString("characterProperty").charAt(0));
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(), nestedObject.getString("enumProperty"));
 
-        mainRecord = JsonSerializer.toObject(RecordWithRecordAndObject.class,
-                json);
+        mainRecord = JsonSerializer.toObject(RecordWithRecordAndObject.class, json);
         Assert.assertNotNull(mainRecord);
 
         SomeRecord deserializedRecord = mainRecord.record;
@@ -760,31 +691,22 @@ public class JsonSerializerTest {
         Assert.assertEquals(42, deserializedRecord.age);
 
         ObjectWithSimpleTypes deserializedObject = mainRecord.object;
-        Assert.assertEquals("someProperty",
-                deserializedObject.getStringProperty());
+        Assert.assertEquals("someProperty", deserializedObject.getStringProperty());
         Assert.assertEquals(1, deserializedObject.getIntProperty());
-        Assert.assertEquals(Integer.valueOf(2),
-                deserializedObject.getIntegerProperty());
+        Assert.assertEquals(Integer.valueOf(2), deserializedObject.getIntegerProperty());
         Assert.assertEquals(3, deserializedObject.getLongProperty());
-        Assert.assertEquals(Long.valueOf(4),
-                deserializedObject.getLongObjectProperty());
+        Assert.assertEquals(Long.valueOf(4), deserializedObject.getLongObjectProperty());
         Assert.assertEquals(5, deserializedObject.getShortProperty());
-        Assert.assertEquals(Short.valueOf((short) 6),
-                deserializedObject.getShortObjectProperty());
+        Assert.assertEquals(Short.valueOf((short) 6), deserializedObject.getShortObjectProperty());
         Assert.assertEquals(7, deserializedObject.getDoubleProperty(), 0.00001);
-        Assert.assertEquals(Double.valueOf(8),
-                deserializedObject.getDoubleObjectProperty());
+        Assert.assertEquals(Double.valueOf(8), deserializedObject.getDoubleObjectProperty());
         Assert.assertEquals(9, deserializedObject.getByteProperty());
-        Assert.assertEquals(Byte.valueOf((byte) 10),
-                deserializedObject.getByteObjectProperty());
+        Assert.assertEquals(Byte.valueOf((byte) 10), deserializedObject.getByteObjectProperty());
         Assert.assertEquals(true, deserializedObject.isBooleanProperty());
-        Assert.assertEquals(Boolean.FALSE,
-                deserializedObject.getBooleanObjectProperty());
+        Assert.assertEquals(Boolean.FALSE, deserializedObject.getBooleanObjectProperty());
         Assert.assertEquals('c', deserializedObject.getCharProperty());
-        Assert.assertEquals((Character) 'C',
-                deserializedObject.getCharacterProperty());
-        Assert.assertEquals(SomeEnum.SOME_VALUE_2,
-                deserializedObject.getEnumProperty());
+        Assert.assertEquals((Character) 'C', deserializedObject.getCharacterProperty());
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2, deserializedObject.getEnumProperty());
     }
 
     private static ObjectWithSimpleTypes getPopulatedObjectWithSimpleTypes() {
@@ -808,8 +730,7 @@ public class JsonSerializerTest {
         return bean;
     }
 
-    private <T> void assertCollectionItemsAreEqual(Collection<T> collection,
-            T... values) {
+    private <T> void assertCollectionItemsAreEqual(Collection<T> collection, T... values) {
         int index = 0;
         for (T collectionValue : collection) {
             Assert.assertEquals(collectionValue, values[index]);
@@ -828,25 +749,18 @@ public class JsonSerializerTest {
     }
 
     private void assertObjectHasNullValueForKey(JsonObject object, String key) {
-        Assert.assertTrue(key + " should be present in the JsonObject",
-                object.hasKey(key));
-        Assert.assertTrue(key + " property should be JsonNull",
-                object.get(key) instanceof JsonNull);
+        Assert.assertTrue(key + " should be present in the JsonObject", object.hasKey(key));
+        Assert.assertTrue(key + " property should be JsonNull", object.get(key) instanceof JsonNull);
     }
 
     private void assertObjectHas0ValueForKey(JsonObject object, String key) {
-        Assert.assertTrue(key + " should be present in the JsonObject",
-                object.hasKey(key));
-        Assert.assertEquals(key + " should be 0.0 in the JsonObject", 0.0,
-                object.getNumber(key), PRECISION);
+        Assert.assertTrue(key + " should be present in the JsonObject", object.hasKey(key));
+        Assert.assertEquals(key + " should be 0.0 in the JsonObject", 0.0, object.getNumber(key), PRECISION);
     }
 
-    private void assertObjectHasFalseValueForKey(JsonObject object,
-            String key) {
-        Assert.assertTrue(key + " should be present in the JsonObject",
-                object.hasKey(key));
-        Assert.assertEquals(key + " should be false in the JsonObject", false,
-                object.getBoolean(key));
+    private void assertObjectHasFalseValueForKey(JsonObject object, String key) {
+        Assert.assertTrue(key + " should be present in the JsonObject", object.hasKey(key));
+        Assert.assertEquals(key + " should be false in the JsonObject", false, object.getBoolean(key));
     }
 
 }

@@ -35,8 +35,7 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 
 /**
- * A registry of singleton instances, such as {@link ServerRpcQueue}, which can
- * be looked up based on their class.
+ * A registry of singleton instances, such as {@link ServerRpcQueue}, which can be looked up based on their class.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -59,9 +58,8 @@ public class Registry {
     /**
      * Stores an instance of the given type.
      * <p>
-     * Note that instances by default are considered final, and you are not
-     * allowed to update an instance of any given type manually. In case
-     * instance is allowed to be recreated use {@link #set(Class, Supplier)}.
+     * Note that instances by default are considered final, and you are not allowed to update an instance of any given
+     * type manually. In case instance is allowed to be recreated use {@link #set(Class, Supplier)}.
      *
      * @param type
      *            the type to store
@@ -71,17 +69,15 @@ public class Registry {
      *            the type
      */
     protected final <T> void set(Class<T> type, T instance) {
-        assert !lookupTable.has(type) : "Registry already has a class of type "
-                + type.getName() + " registered";
+        assert !lookupTable.has(type) : "Registry already has a class of type " + type.getName() + " registered";
         lookupTable.set(type, instance);
     }
 
     /**
      * Stores an instance of the given type.
      * <p>
-     * Note that instances by default are considered final, and you are not
-     * allowed to update an instance of any given type manually. Uses resettable
-     * supplier to allow Registry to recreate given instances.
+     * Note that instances by default are considered final, and you are not allowed to update an instance of any given
+     * type manually. Uses resettable supplier to allow Registry to recreate given instances.
      *
      * @param type
      *            the type to store
@@ -106,8 +102,8 @@ public class Registry {
      */
     @SuppressWarnings("unchecked")
     protected final <T> T get(Class<T> type) {
-        assert lookupTable.has(type) : "Tried to lookup type " + type.getName()
-                + " but no instance has been registered";
+        assert lookupTable.has(type)
+                : "Tried to lookup type " + type.getName() + " but no instance has been registered";
         return (T) lookupTable.get(type);
     }
 

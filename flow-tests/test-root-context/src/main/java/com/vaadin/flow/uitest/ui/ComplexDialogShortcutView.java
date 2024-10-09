@@ -21,23 +21,20 @@ public class ComplexDialogShortcutView extends DialogShortcutView {
         super.open(dialog);
         // the shortcut listener is not added yet, add the element locator data
         final String overlayId = OVERLAY_ID + dialog.index;
-        final String overlayFetchJS = "document.getElementById('" + overlayId
-                + "')";
+        final String overlayFetchJS = "document.getElementById('" + overlayId + "')";
         Shortcuts.setShortcutListenOnElement(overlayFetchJS, dialog);
         // simulate a fake overlay element
         fakeOverlayElement = new Div();
         fakeOverlayElement.setId(overlayId);
         getUI().orElse(UI.getCurrent()).add(fakeOverlayElement);
         // transport the dialog contents to overlay element
-        dialog.getElement().executeJs(
-                overlayFetchJS + ".appendChild(this.firstElementChild);");
+        dialog.getElement().executeJs(overlayFetchJS + ".appendChild(this.firstElementChild);");
     }
 
     @Override
     public void close(Dialog dialog) {
         super.close(dialog);
 
-        fakeOverlayElement.getUI()
-                .ifPresent(ui -> ui.remove(fakeOverlayElement));
+        fakeOverlayElement.getUI().ifPresent(ui -> ui.remove(fakeOverlayElement));
     }
 }

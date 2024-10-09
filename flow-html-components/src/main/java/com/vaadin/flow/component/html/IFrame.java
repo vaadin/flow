@@ -31,9 +31,8 @@ import java.util.stream.Stream;
  * @author Vaadin Ltd
  * @since 1.3
  *
- * @see <a href=
- *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#Attributes">The
- *      Inline Frame element</a>
+ * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#Attributes">The Inline Frame
+ *      element</a>
  */
 @Tag(Tag.IFRAME)
 public class IFrame extends HtmlComponent implements HasAriaLabel {
@@ -72,10 +71,8 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
             return value;
         }
 
-        private static Optional<ImportanceType> fromAttributeValue(
-                String value) {
-            return Stream.of(values()).filter(type -> type.value.equals(value))
-                    .findFirst();
+        private static Optional<ImportanceType> fromAttributeValue(String value) {
+            return Stream.of(values()).filter(type -> type.value.equals(value)).findFirst();
         }
     }
 
@@ -93,11 +90,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
         ALLOW_PRESENTATION("allow-presentation"),
         ALLOW_SAME_ORIGIN("allow-same-origin"),
         ALLOW_SCRIPTS("allow-scripts"),
-        ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
-                "allow-storage-access-by-user-activation"),
+        ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION("allow-storage-access-by-user-activation"),
         ALLOW_TOP_NAVIGATION("allow-top-navigation"),
-        ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
-                "allow-top-navigation-by-user-activation");
+        ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION("allow-top-navigation-by-user-activation");
 
         private final String value;
 
@@ -110,8 +105,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
         }
 
         private static Optional<SandboxType> fromAttributeValue(String value) {
-            return Stream.of(values()).filter(type -> type.value.equals(value))
-                    .findFirst();
+            return Stream.of(values()).filter(type -> type.value.equals(value)).findFirst();
         }
 
     }
@@ -133,9 +127,8 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     }
 
     /**
-     * Sets the source of the iframe. If the contents at the src of the IFrame
-     * has changed and you want to refresh it in the user's browser, the src
-     * does not to be reset. In this case use the #reload() method.
+     * Sets the source of the iframe. If the contents at the src of the IFrame has changed and you want to refresh it in
+     * the user's browser, the src does not to be reset. In this case use the #reload() method.
      *
      * @param src
      *            Source URL.
@@ -178,9 +171,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param allow
      *            the allow attribute value.
      *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy">Feature
-     *      Policy</a>.
+     * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy">Feature Policy</a>.
      */
     public void setAllow(String allow) {
         set(allowDescriptor, allow);
@@ -215,8 +206,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     }
 
     /**
-     * Sets the importance attribute to the specified {@link ImportanceType}
-     * value.
+     * Sets the importance attribute to the specified {@link ImportanceType} value.
      *
      * @param importance
      *            {@link ImportanceType} value.
@@ -235,8 +225,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @see ImportanceType
      */
     public Optional<ImportanceType> getImportance() {
-        return get(importanceDescriptor)
-                .flatMap(ImportanceType::fromAttributeValue);
+        return get(importanceDescriptor).flatMap(ImportanceType::fromAttributeValue);
     }
 
     /**
@@ -256,8 +245,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
             set(sandboxDescriptor, "allow-all");
 
         } else {
-            set(sandboxDescriptor, Stream.of(types).map(SandboxType::getValue)
-                    .collect(Collectors.joining(" ")));
+            set(sandboxDescriptor, Stream.of(types).map(SandboxType::getValue).collect(Collectors.joining(" ")));
         }
     }
 
@@ -268,12 +256,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     public Optional<SandboxType[]> getSandbox() {
         return get(sandboxDescriptor)
-                .map(value -> Stream.of(value.split(" "))
-                        .map(SandboxType::fromAttributeValue)
-                        .filter(Optional::isPresent).map(Optional::get)
-                        .collect(Collectors.toList()))
-                .map(collection -> collection
-                        .toArray(new SandboxType[collection.size()]));
+                .map(value -> Stream.of(value.split(" ")).map(SandboxType::fromAttributeValue)
+                        .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()))
+                .map(collection -> collection.toArray(new SandboxType[collection.size()]));
     }
 
     /**

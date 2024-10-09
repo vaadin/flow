@@ -59,22 +59,19 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Processes a UIDL request from the client.
  *
- * Uses {@link ServerRpcHandler} to execute client-to-server RPC invocations and
- * {@link UidlWriter} to write state changes and client RPC calls back to the
- * client.
+ * Uses {@link ServerRpcHandler} to execute client-to-server RPC invocations and {@link UidlWriter} to write state
+ * changes and client RPC calls back to the client.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class UidlRequestHandler extends SynchronizedRequestHandler
-        implements SessionExpiredHandler {
+public class UidlRequestHandler extends SynchronizedRequestHandler implements SessionExpiredHandler {
 
     private AtomicReference<ServerRpcHandler> rpcHandler = new AtomicReference<>();
 
-    public static final Pattern HASH_PATTERN = Pattern
-            .compile("window.location.hash ?= ?'(.*?)'");
+    public static final Pattern HASH_PATTERN = Pattern.compile("window.location.hash ?= ?'(.*?)'");
     public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
     public static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
     public static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, null, '%s'));";
@@ -100,14 +97,13 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         UI uI = session.getService().findUI(request);
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            commitJsonResponse(response,
-                    VaadinService.createUINotFoundJSON(false));
+            commitJsonResponse(response, VaadinService.createUINotFoundJSON(false));
             return true;
         }
 
@@ -122,16 +118,13 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             writeRefresh(response);
             return true;
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().warn("Invalid security key received from {}",
-                    request.getRemoteHost());
+            getLogger().warn("Invalid security key received from {}", request.getRemoteHost());
             // Refresh on client side
             writeRefresh(response);
             return true;
         } catch (DauEnforcementException e) {
-            getLogger().warn(
-                    "Daily Active User limit reached. Blocking new user request");
-            response.setHeader(DAUUtils.STATUS_CODE_KEY, String
-                    .valueOf(HttpStatusCode.SERVICE_UNAVAILABLE.getCode()));
+            getLogger().warn("Daily Active User limit reached. Blocking new user request");
+            response.setHeader(DAUUtils.STATUS_CODE_KEY, String.valueOf(HttpStatusCode.SERVICE_UNAVAILABLE.getCode()));
             String json = DAUUtils.jsonEnforcementResponse(request, e);
             commitJsonResponse(response, json);
             return true;
@@ -147,8 +140,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private void writeRefresh(VaadinResponse response) throws IOException {
-        String json = VaadinService.createCriticalNotificationJSON(null, null,
-                null, null);
+        String json = VaadinService.createCriticalNotificationJSON(null, null, null, null);
         commitJsonResponse(response, json);
     }
 
@@ -173,19 +165,16 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     /*
      * (non-Javadoc)
      *
-     * @see
-     * com.vaadin.server.SessionExpiredHandler#handleSessionExpired(com.vaadin
-     * .server.VaadinRequest, com.vaadin.server.VaadinResponse)
+     * @see com.vaadin.server.SessionExpiredHandler#handleSessionExpired(com.vaadin .server.VaadinRequest,
+     * com.vaadin.server.VaadinResponse)
      */
     @Override
-    public boolean handleSessionExpired(VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    public boolean handleSessionExpired(VaadinRequest request, VaadinResponse response) throws IOException {
         if (!HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             return false;
         }
         VaadinService service = request.getService();
-        service.writeUncachedStringResponse(response,
-                JsonConstants.JSON_CONTENT_TYPE,
+        service.writeUncachedStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
                 VaadinService.createSessionExpiredJSON(false));
 
         return true;
@@ -201,9 +190,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     /**
-     * Commit the JSON response. We can't write immediately to the output stream
-     * as we want to write only a critical notification if something goes wrong
-     * during the response handling.
+     * Commit the JSON response. We can't write immediately to the output stream as we want to write only a critical
+     * notification if something goes wrong during the response handling.
      *
      * @param response
      *            The response to write to
@@ -212,8 +200,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * @throws IOException
      *             If there was an exception while writing to the output
      */
-    public static void commitJsonResponse(VaadinResponse response, String json)
-            throws IOException {
+    public static void commitJsonResponse(VaadinResponse response, String json) throws IOException {
         response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
 
         // Ensure that the browser does not cache UIDL responses.
@@ -267,11 +254,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             idx = idx >= 0 ? idx : exec.length();
             JsonArray arr = Json.createArray();
             arr.set(0, "");
-            arr.set(1,
-                    String.format(
-                            location.startsWith("http") ? PUSH_STATE_LOCATION
-                                    : PUSH_STATE_HASH,
-                            location));
+            arr.set(1, String.format(location.startsWith("http") ? PUSH_STATE_LOCATION : PUSH_STATE_HASH, location));
             exec.set(idx, arr);
         }
     }
@@ -296,13 +279,11 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private String removeHashInChange(JsonArray change) {
-        if (change.length() < 3
-                || !change.get(2).getType().equals(JsonType.ARRAY)) {
+        if (change.length() < 3 || !change.get(2).getType().equals(JsonType.ARRAY)) {
             return null;
         }
         JsonArray value = change.getArray(2);
-        if (value.length() < 2
-                || !value.get(1).getType().equals(JsonType.OBJECT)) {
+        if (value.length() < 2 || !value.get(1).getType().equals(JsonType.OBJECT)) {
             return null;
         }
         JsonObject location = value.getObject(1);
@@ -320,10 +301,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     private String removeHashInRpc(JsonArray rpc) {
         if (rpc.length() != 4 || !rpc.get(1).getType().equals(JsonType.STRING)
-                || !rpc.get(2).getType().equals(JsonType.STRING)
-                || !rpc.get(3).getType().equals(JsonType.ARRAY)
-                || !"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc"
-                        .equals(rpc.getString(1))
+                || !rpc.get(2).getType().equals(JsonType.STRING) || !rpc.get(3).getType().equals(JsonType.ARRAY)
+                || !"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc".equals(rpc.getString(1))
                 || !"executeJavaScript".equals(rpc.getString(2))) {
             return null;
         }

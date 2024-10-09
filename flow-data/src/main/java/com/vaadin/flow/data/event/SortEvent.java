@@ -26,8 +26,7 @@ import com.vaadin.flow.data.provider.SortOrder;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Event describing a change in sorting of a {@link DataProvider}. Fired by
- * {@link SortNotifier SortNotifiers}.
+ * Event describing a change in sorting of a {@link DataProvider}. Fired by {@link SortNotifier SortNotifiers}.
  *
  * @see SortOrder
  * @param <T>
@@ -38,8 +37,7 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class SortEvent<T extends Component, S extends SortOrder<?>>
-        extends ComponentEvent<T> {
+public class SortEvent<T extends Component, S extends SortOrder<?>> extends ComponentEvent<T> {
 
     private final List<S> sortOrder;
 
@@ -51,8 +49,7 @@ public class SortEvent<T extends Component, S extends SortOrder<?>>
      * @param sortOrder
      *            the new sort order list
      * @param fromClient
-     *            <code>true</code> if event is a result of user interaction,
-     *            <code>false</code> if from API call
+     *            <code>true</code> if event is a result of user interaction, <code>false</code> if from API call
      */
     public SortEvent(T source, List<S> sortOrder, boolean fromClient) {
         super(source, fromClient);
@@ -69,8 +66,7 @@ public class SortEvent<T extends Component, S extends SortOrder<?>>
     }
 
     /**
-     * The interface for adding and removing listeners for {@link SortEvent
-     * SortEvents}.
+     * The interface for adding and removing listeners for {@link SortEvent SortEvents}.
      *
      * @param <T>
      *            the event source type
@@ -78,18 +74,15 @@ public class SortEvent<T extends Component, S extends SortOrder<?>>
      *            the type of the sorting information
      */
     @FunctionalInterface
-    public interface SortNotifier<T extends Component, S extends SortOrder<?>>
-            extends Serializable {
+    public interface SortNotifier<T extends Component, S extends SortOrder<?>> extends Serializable {
 
         /**
-         * Adds a sort order change listener that gets notified when the sort
-         * order changes.
+         * Adds a sort order change listener that gets notified when the sort order changes.
          *
          * @param listener
          *            the sort order change listener to add
          * @return a registration object for removing the listener
          */
-        Registration addSortListener(
-                ComponentEventListener<SortEvent<T, S>> listener);
+        Registration addSortListener(ComponentEventListener<SortEvent<T, S>> listener);
     }
 }

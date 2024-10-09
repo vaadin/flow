@@ -36,13 +36,11 @@ abstract class PushConfigurationTest extends ChromeBrowserTest {
     }
 
     protected void disablePush() throws InterruptedException {
-        findElement(By.id("push-mode")).findElement(
-                By.id(PushMode.DISABLED.name().toLowerCase(Locale.ENGLISH)));
+        findElement(By.id("push-mode")).findElement(By.id(PushMode.DISABLED.name().toLowerCase(Locale.ENGLISH)));
 
         int counter = getServerCounter();
         Thread.sleep(2000);
-        Assert.assertEquals("Server count changed without push enabled",
-                counter, getServerCounter());
+        Assert.assertEquals("Server count changed without push enabled", counter, getServerCounter());
     }
 
     protected int getServerCounter() {
@@ -57,14 +55,13 @@ abstract class PushConfigurationTest extends ChromeBrowserTest {
 
     @SuppressWarnings("unchecked")
     protected Map<String, ?> getClientPushConfig() {
-        return (Map<String, ?>) getCommandExecutor().executeScript(
-                "return window.Vaadin.Flow.clients.view.debug().pushConfiguration;");
+        return (Map<String, ?>) getCommandExecutor()
+                .executeScript("return window.Vaadin.Flow.clients.view.debug().pushConfiguration;");
     }
 
     @SuppressWarnings("unchecked")
     protected Map<String, ?> getClientPushConfigParams() {
-        Map<String, ?> map = (Map<String, ?>) getClientPushConfig()
-                .get("parameters");
+        Map<String, ?> map = (Map<String, ?>) getClientPushConfig().get("parameters");
         return (Map<String, ?>) map.get("pushConfigurationParameters");
     }
 

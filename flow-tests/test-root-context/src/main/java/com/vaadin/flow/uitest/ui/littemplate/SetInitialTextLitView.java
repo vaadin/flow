@@ -13,8 +13,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.SetInitialTextLitView", layout = ViewTestLayout.class)
 @Tag("set-initial-text-lit")
 @JsModule("./lit-templates/SetInitialText.js")
-public class SetInitialTextLitView extends LitTemplate
-        implements HasComponents {
+public class SetInitialTextLitView extends LitTemplate implements HasComponents {
 
     @Id("child")
     private Div child;
@@ -25,8 +24,7 @@ public class SetInitialTextLitView extends LitTemplate
         child.setText("");
         setId("set-initial-text");
 
-        NativeButton button = new NativeButton("Add a new child",
-                event -> addChild());
+        NativeButton button = new NativeButton("Add a new child", event -> addChild());
         button.setId("add-child");
         add(button);
     }

@@ -44,18 +44,13 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
         List<WebElement> scriptTags = findElements(By.tagName("script"));
         Assert.assertTrue(
                 "External JS annotated with @JsModule annotation should be added as a script tag with module type to the page!",
-                scriptTags.stream().anyMatch(
-                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL
-                                .equals(scriptTag.getAttribute("src"))
-                                && "module".equals(
-                                        scriptTag.getAttribute("type"))));
+                scriptTags.stream().anyMatch(scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL
+                        .equals(scriptTag.getAttribute("src")) && "module".equals(scriptTag.getAttribute("type"))));
         Assert.assertTrue(
                 "External JS without protocol annotated with @JsModule annotation should be added as a script tag with module type to the page!",
                 scriptTags.stream()
-                        .anyMatch(scriptTag -> EXPECTED_SRC_FOR_NO_PROTOCOL
-                                .equals(scriptTag.getAttribute("src"))
-                                && "module".equals(
-                                        scriptTag.getAttribute("type"))));
+                        .anyMatch(scriptTag -> EXPECTED_SRC_FOR_NO_PROTOCOL.equals(scriptTag.getAttribute("src"))
+                                && "module".equals(scriptTag.getAttribute("type"))));
     }
 
     @Test
@@ -66,24 +61,17 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
         List<WebElement> scriptTags = findElements(By.tagName("script"));
         Assert.assertTrue(
                 "When a component is added to the page, external JS annotated with @JsModule annotation in the component should be added as a script tag with module type to the page!",
-                scriptTags.stream().anyMatch(
-                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL
-                                .equals(scriptTag.getAttribute("src"))
-                                && "module".equals(
-                                        scriptTag.getAttribute("type"))));
+                scriptTags.stream().anyMatch(scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL
+                        .equals(scriptTag.getAttribute("src")) && "module".equals(scriptTag.getAttribute("type"))));
         Assert.assertTrue(
                 "When a component is added to the page, external JS without protocol annotated with @JsModule annotation in the component should be added as a script tag with module type to the page!",
                 scriptTags.stream()
-                        .anyMatch(scriptTag -> EXPECTED_SRC_FOR_NO_PROTOCOL
-                                .equals(scriptTag.getAttribute("src"))
-                                && "module".equals(
-                                        scriptTag.getAttribute("type"))));
+                        .anyMatch(scriptTag -> EXPECTED_SRC_FOR_NO_PROTOCOL.equals(scriptTag.getAttribute("src"))
+                                && "module".equals(scriptTag.getAttribute("type"))));
 
         Assert.assertTrue(
                 "When a component is added to the page, non-external JS annotated with @JsModule annotation in the component should not be added as a script tag to the page!",
-                scriptTags.stream().noneMatch(scriptTag -> scriptTag
-                        .getAttribute("src") != null
-                        && scriptTag.getAttribute("src").endsWith(
-                                ComponentWithExternalJsModule.NON_EXTERNAL_JS_MODULE_NAME)));
+                scriptTags.stream().noneMatch(scriptTag -> scriptTag.getAttribute("src") != null && scriptTag
+                        .getAttribute("src").endsWith(ComponentWithExternalJsModule.NON_EXTERNAL_JS_MODULE_NAME)));
     }
 }

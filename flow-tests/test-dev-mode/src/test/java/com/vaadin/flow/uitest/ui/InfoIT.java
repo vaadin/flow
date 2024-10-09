@@ -36,10 +36,9 @@ public class InfoIT extends ChromeBrowserTest {
 
     private String getInfoValue(String string) {
         String prefix = string + ": ";
-        List<WebElement> divs = findElement(By.className("infoContainer"))
-                .findElements(By.tagName("div"));
-        Optional<String> infoText = divs.stream().map(WebElement::getText)
-                .filter(text -> text.startsWith(prefix)).findFirst();
+        List<WebElement> divs = findElement(By.className("infoContainer")).findElements(By.tagName("div"));
+        Optional<String> infoText = divs.stream().map(WebElement::getText).filter(text -> text.startsWith(prefix))
+                .findFirst();
 
         return infoText.get().replace(prefix, "");
     }

@@ -59,8 +59,7 @@ public abstract class NodeChange implements Serializable {
      * Serializes this change to JSON.
      *
      * @param constantPool
-     *            the constant pool to use for serializing constant pool
-     *            references
+     *            the constant pool to use for serializing constant pool references
      *
      * @return a json representation of this change
      */
@@ -80,9 +79,7 @@ public abstract class NodeChange implements Serializable {
      * @param json
      *            the json object to populate
      * @param constantPool
-     *            the constant pool to use for serializing constant pool
-     *            references
+     *            the constant pool to use for serializing constant pool references
      */
-    protected abstract void populateJson(JsonObject json,
-            ConstantPool constantPool);
+    protected abstract void populateJson(JsonObject json, ConstantPool constantPool);
 }

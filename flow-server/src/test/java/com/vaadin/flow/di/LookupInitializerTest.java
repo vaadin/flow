@@ -68,8 +68,7 @@ public class LookupInitializerTest {
     private LookupInitializer initializer = new LookupInitializer();
 
     @Test(expected = IllegalStateException.class)
-    public void createLookup_instantiatorsAreProvidedAsAService_lookupThrows()
-            throws ServletException {
+    public void createLookup_instantiatorsAreProvidedAsAService_lookupThrows() throws ServletException {
         // Java standard SPI is used to register several instantiators via
         // META-INF/services
         Lookup lookup = initializer.createLookup(null, new HashMap<>());
@@ -80,17 +79,14 @@ public class LookupInitializerTest {
     @Test(expected = IllegalStateException.class)
     public void createLookup_instantiatorsAreProvidedAsScannedClasses_multipleInstantiatorInstances_lookupThrows()
             throws ServletException {
-        Lookup lookup = initializer.createLookup(null,
-                Collections.singletonMap(InstantiatorFactory.class,
-                        Arrays.asList(TestInstantiatorFactory.class,
-                                AnotherTestInstantiatorFactory.class)));
+        Lookup lookup = initializer.createLookup(null, Collections.singletonMap(InstantiatorFactory.class,
+                Arrays.asList(TestInstantiatorFactory.class, AnotherTestInstantiatorFactory.class)));
 
         lookup.lookup(InstantiatorFactory.class);
     }
 
     @Test
-    public void initialize_noResourcePorvider_defaultResourceProviderIsCreated()
-            throws ServletException, IOException {
+    public void initialize_noResourcePorvider_defaultResourceProviderIsCreated() throws ServletException, IOException {
         AtomicReference<Lookup> capture = new AtomicReference<>();
         initializer.initialize(null, new HashMap<>(), capture::set);
 
@@ -99,20 +95,16 @@ public class LookupInitializerTest {
     }
 
     @Test
-    public void initialize_noStaticFileHandlerFactory_defaultStaticFileHandlerFactoryCreated()
-            throws ServletException {
+    public void initialize_noStaticFileHandlerFactory_defaultStaticFileHandlerFactoryCreated() throws ServletException {
         AtomicReference<Lookup> capture = new AtomicReference<>();
         initializer.initialize(null, new HashMap<>(), capture::set);
 
         Lookup lookup = capture.get();
-        StaticFileHandlerFactory factory = lookup
-                .lookup(StaticFileHandlerFactory.class);
+        StaticFileHandlerFactory factory = lookup.lookup(StaticFileHandlerFactory.class);
 
         VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
         ClassLoader loader = Mockito.mock(ClassLoader.class);
         Mockito.when(service.getClassLoader()).thenReturn(loader);
 
@@ -122,16 +114,14 @@ public class LookupInitializerTest {
     }
 
     @Test
-    public void initialize_StaticFileHandlerFactoryIdDelegatedToEnsureService()
-            throws ServletException {
+    public void initialize_StaticFileHandlerFactoryIdDelegatedToEnsureService() throws ServletException {
         Map mock = Mockito.mock(Map.class);
         AtomicBoolean factoryIsPassed = new AtomicBoolean();
         initializer = new LookupInitializer() {
 
             @Override
-            protected <T> void ensureService(
-                    Map<Class<?>, Collection<Class<?>>> services,
-                    Class<T> serviceType, Class<? extends T> serviceImpl) {
+            protected <T> void ensureService(Map<Class<?>, Collection<Class<?>>> services, Class<T> serviceType,
+                    Class<? extends T> serviceImpl) {
                 Assert.assertSame(mock, services);
                 if (StaticFileHandlerFactory.class.equals(serviceType)) {
                     factoryIsPassed.set(true);
@@ -147,14 +137,12 @@ public class LookupInitializerTest {
     }
 
     @Test
-    public void initialize_hasOneTimeInitializerPredicate_predicateReturnsTrue()
-            throws ServletException, IOException {
+    public void initialize_hasOneTimeInitializerPredicate_predicateReturnsTrue() throws ServletException, IOException {
         AtomicReference<Lookup> capture = new AtomicReference<>();
         initializer.initialize(null, new HashMap<>(), capture::set);
 
         Lookup lookup = capture.get();
-        OneTimeInitializerPredicate predicate = lookup
-                .lookup(OneTimeInitializerPredicate.class);
+        OneTimeInitializerPredicate predicate = lookup.lookup(OneTimeInitializerPredicate.class);
         Assert.assertNotNull(predicate);
         Assert.assertTrue(predicate.runOnce());
     }
@@ -162,8 +150,7 @@ public class LookupInitializerTest {
     @Test
     public void ensureResourceProvider_defaultImplClassIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        initializer.ensureService(map, ResourceProvider.class,
-                ResourceProviderImpl.class);
+        initializer.ensureService(map, ResourceProvider.class, ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -174,10 +161,8 @@ public class LookupInitializerTest {
     @Test
     public void ensureResourceProvider_defaultImplClassIsProvided_defaultImplIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        map.put(ResourceProvider.class,
-                Collections.singletonList(ResourceProviderImpl.class));
-        initializer.ensureService(map, ResourceProvider.class,
-                ResourceProviderImpl.class);
+        map.put(ResourceProvider.class, Collections.singletonList(ResourceProviderImpl.class));
+        initializer.ensureService(map, ResourceProvider.class, ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -188,8 +173,7 @@ public class LookupInitializerTest {
     @Test
     public void ensureRoutePathResolver_defaultImplClassIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        initializer.ensureService(map, RoutePathProvider.class,
-                DefaultRoutePathProvider.class);
+        initializer.ensureService(map, RoutePathProvider.class, DefaultRoutePathProvider.class);
 
         Collection<Class<?>> collection = map.get(RoutePathProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -200,10 +184,8 @@ public class LookupInitializerTest {
     @Test
     public void ensureRoutePathResolver_defaultImplClassIsProvided_defaultImplIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        map.put(RoutePathProvider.class,
-                Collections.singletonList(DefaultRoutePathProvider.class));
-        initializer.ensureService(map, RoutePathProvider.class,
-                DefaultRoutePathProvider.class);
+        map.put(RoutePathProvider.class, Collections.singletonList(DefaultRoutePathProvider.class));
+        initializer.ensureService(map, RoutePathProvider.class, DefaultRoutePathProvider.class);
 
         Collection<Class<?>> collection = map.get(RoutePathProvider.class);
         Assert.assertEquals(1, collection.size());
@@ -215,16 +197,14 @@ public class LookupInitializerTest {
     public void ensureApplicationConfigurationFactories_defaultFactoryOnly_defaultFactoryIsReturned()
             throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        map.put(ApplicationConfigurationFactory.class, Collections
-                .singletonList(DefaultApplicationConfigurationFactory.class));
+        map.put(ApplicationConfigurationFactory.class,
+                Collections.singletonList(DefaultApplicationConfigurationFactory.class));
         initializer.ensureService(map, ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
 
-        Collection<Class<?>> factories = map
-                .get(ApplicationConfigurationFactory.class);
+        Collection<Class<?>> factories = map.get(ApplicationConfigurationFactory.class);
         Assert.assertEquals(1, factories.size());
-        Assert.assertEquals(DefaultApplicationConfigurationFactory.class,
-                factories.iterator().next());
+        Assert.assertEquals(DefaultApplicationConfigurationFactory.class, factories.iterator().next());
     }
 
     @Test
@@ -235,29 +215,23 @@ public class LookupInitializerTest {
         initializer.ensureService(map, ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
 
-        Collection<Class<?>> collection = map
-                .get(ApplicationConfigurationFactory.class);
+        Collection<Class<?>> collection = map.get(ApplicationConfigurationFactory.class);
         Assert.assertEquals(1, collection.size());
         Class<?> clazz = collection.iterator().next();
-        Assert.assertEquals(DefaultApplicationConfigurationFactory.class,
-                clazz);
+        Assert.assertEquals(DefaultApplicationConfigurationFactory.class, clazz);
     }
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void createLookup_createLookupIsInvoked_lookupcontainsProvidedServices()
-            throws ServletException {
+    public void createLookup_createLookupIsInvoked_lookupcontainsProvidedServices() throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(List.class, Arrays.asList(ArrayList.class, LinkedList.class));
-        map.put(ResourceProvider.class,
-                Collections.singletonList(TestResourceProvider.class));
+        map.put(ResourceProvider.class, Collections.singletonList(TestResourceProvider.class));
 
         Lookup lookup = initializer.createLookup(null, map);
 
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
-        Assert.assertEquals(TestResourceProvider.class,
-                resourceProvider.getClass());
+        ResourceProvider resourceProvider = lookup.lookup(ResourceProvider.class);
+        Assert.assertEquals(TestResourceProvider.class, resourceProvider.getClass());
 
         Collection<List> lists = lookup.lookupAll(List.class);
         Assert.assertEquals(2, lists.size());
@@ -274,8 +248,7 @@ public class LookupInitializerTest {
     public void createLookup_instantiatorsAreProvidedAsScannedClassAndAsAService_lookupReturnsTheProviderInstance_lookupAllReturnsAllInstances()
             throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
-        map.put(InstantiatorFactory.class,
-                Collections.singleton(TestInstantiatorFactory.class));
+        map.put(InstantiatorFactory.class, Collections.singleton(TestInstantiatorFactory.class));
 
         Lookup lookup = initializer.createLookup(null, map);
 
@@ -283,49 +256,39 @@ public class LookupInitializerTest {
         Assert.assertNotNull(factory);
         Assert.assertEquals(TestInstantiatorFactory.class, factory.getClass());
 
-        Collection<InstantiatorFactory> factories = lookup
-                .lookupAll(InstantiatorFactory.class);
+        Collection<InstantiatorFactory> factories = lookup.lookupAll(InstantiatorFactory.class);
 
         Assert.assertEquals(3, factories.size());
 
         Iterator<InstantiatorFactory> iterator = factories.iterator();
-        Assert.assertEquals(TestInstantiatorFactory.class,
-                iterator.next().getClass());
+        Assert.assertEquals(TestInstantiatorFactory.class, iterator.next().getClass());
 
         Set<Class<?>> factoryClasses = new HashSet<>();
         factoryClasses.add(iterator.next().getClass());
         factoryClasses.add(iterator.next().getClass());
 
-        Assert.assertTrue(
-                factoryClasses.contains(AnotherTestInstantiatorFactory.class));
-        Assert.assertTrue(
-                factoryClasses.contains(OneMoreTestInstantiatorFactory.class));
+        Assert.assertTrue(factoryClasses.contains(AnotherTestInstantiatorFactory.class));
+        Assert.assertTrue(factoryClasses.contains(OneMoreTestInstantiatorFactory.class));
     }
 
     @Test
-    public void resourceProviderImpl_returnsClassPathResources()
-            throws IOException {
+    public void resourceProviderImpl_returnsClassPathResources() throws IOException {
         assertResourceProvider(new ResourceProviderImpl());
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void initialize_callEnsureMethodsAndBootstrap()
-            throws ServletException {
+    public void initialize_callEnsureMethodsAndBootstrap() throws ServletException {
         LookupInitializer initializer = Mockito.spy(LookupInitializer.class);
-        Map<Class<?>, Collection<Class<?>>> services = Mockito
-                .mock(HashMap.class);
+        Map<Class<?>, Collection<Class<?>>> services = Mockito.mock(HashMap.class);
         VaadinApplicationInitializationBootstrap bootstrap = Mockito
                 .mock(VaadinApplicationInitializationBootstrap.class);
         initializer.initialize(null, services, bootstrap);
 
-        Mockito.verify(initializer).ensureService(services,
-                ResourceProvider.class, ResourceProviderImpl.class);
-        Mockito.verify(initializer).ensureService(services,
-                ApplicationConfigurationFactory.class,
+        Mockito.verify(initializer).ensureService(services, ResourceProvider.class, ResourceProviderImpl.class);
+        Mockito.verify(initializer).ensureService(services, ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
-        Mockito.verify(initializer).ensureService(services,
-                AppShellPredicate.class, AppShellPredicateImpl.class);
+        Mockito.verify(initializer).ensureService(services, AppShellPredicate.class, AppShellPredicateImpl.class);
         Mockito.verify(bootstrap).bootstrap(Mockito.any());
     }
 
@@ -359,40 +322,32 @@ public class LookupInitializerTest {
         initializer.ensureService(services, List.class, ArrayList.class);
     }
 
-    private void assertResourceProvider(ResourceProvider resourceProvider)
-            throws IOException {
-        Assert.assertEquals(ResourceProviderImpl.class,
-                resourceProvider.getClass());
+    private void assertResourceProvider(ResourceProvider resourceProvider) throws IOException {
+        Assert.assertEquals(ResourceProviderImpl.class, resourceProvider.getClass());
         // ======== resourceProvider.getApplicationResource(s)(String)
-        URL applicationResource = resourceProvider
-                .getApplicationResource("resource-provider/some-resource.json");
+        URL applicationResource = resourceProvider.getApplicationResource("resource-provider/some-resource.json");
 
         Assert.assertNotNull(applicationResource);
 
-        List<URL> resources = resourceProvider.getApplicationResources(
-                "resource-provider/some-resource.json");
+        List<URL> resources = resourceProvider.getApplicationResources("resource-provider/some-resource.json");
 
         Assert.assertEquals(1, resources.size());
 
         Assert.assertNotNull(resources.get(0));
 
-        URL nonExistent = resourceProvider
-                .getApplicationResource("resource-provider/non-existent.txt");
+        URL nonExistent = resourceProvider.getApplicationResource("resource-provider/non-existent.txt");
 
         Assert.assertNull(nonExistent);
 
         // =========== resourceProvider.getClientResource
 
-        URL clientResource = resourceProvider
-                .getClientResource("resource-provider/some-resource.json");
+        URL clientResource = resourceProvider.getClientResource("resource-provider/some-resource.json");
 
         Assert.assertNotNull(clientResource);
 
-        InputStream stream = resourceProvider.getClientResourceAsStream(
-                "resource-provider/some-resource.json");
+        InputStream stream = resourceProvider.getClientResourceAsStream("resource-provider/some-resource.json");
 
-        String content = IOUtils.readLines(stream, StandardCharsets.UTF_8)
-                .stream().collect(Collectors.joining("\n"));
+        String content = IOUtils.readLines(stream, StandardCharsets.UTF_8).stream().collect(Collectors.joining("\n"));
         JsonObject object = Json.parse(content);
         Assert.assertTrue(object.getBoolean("client-resource"));
     }

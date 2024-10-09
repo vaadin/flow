@@ -26,14 +26,11 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
 @Component(service = ApplicationConfigurationFactory.class, property = org.osgi.framework.Constants.SERVICE_RANKING
         + ":Integer=" + Integer.MAX_VALUE)
-public class ItApplicationConfigurationFactory
-        extends DefaultApplicationConfigurationFactory {
+public class ItApplicationConfigurationFactory extends DefaultApplicationConfigurationFactory {
 
     @Override
-    protected ApplicationConfigurationImpl doCreate(VaadinContext context,
-            Map<String, String> properties) {
-        properties.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
-                Boolean.TRUE.toString());
+    protected ApplicationConfigurationImpl doCreate(VaadinContext context, Map<String, String> properties) {
+        properties.put(Constants.ALLOW_APPSHELL_ANNOTATIONS, Boolean.TRUE.toString());
         return super.doCreate(context, properties);
     }
 }

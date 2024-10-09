@@ -58,8 +58,7 @@ import elemental.json.JsonObject;
  * Includes:
  * <ul>
  * <li>{@link PwaConfiguration} - basic info
- * <li>List of {@link PwaIcon}:s - different sizes of icons for header and
- * manifest
+ * <li>List of {@link PwaIcon}:s - different sizes of icons for header and manifest
  * <li>Offline page
  * <li>Manifest json
  * <li>Service worker
@@ -97,8 +96,7 @@ public class PwaRegistry implements Serializable {
      * @throws IOException
      *             when icon or offline resources are not found.
      */
-    public PwaRegistry(PWA pwa, ServletContext servletContext)
-            throws IOException {
+    public PwaRegistry(PWA pwa, ServletContext servletContext) throws IOException {
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
@@ -106,8 +104,7 @@ public class PwaRegistry implements Serializable {
 
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = pwa == null ? new PwaConfiguration()
-                : new PwaConfiguration(pwa);
+        pwaConfiguration = pwa == null ? new PwaConfiguration() : new PwaConfiguration(pwa);
 
         // Build pwa elements only if they are enabled
         initializeResources(servletContext);
@@ -117,19 +114,16 @@ public class PwaRegistry implements Serializable {
         return baseImage;
     }
 
-    private void initializeResources(ServletContext servletContext)
-            throws IOException {
+    private void initializeResources(ServletContext servletContext) throws IOException {
         if (!pwaConfiguration.isEnabled()) {
             return;
         }
         long start = System.currentTimeMillis();
 
-        URL logo = getResourceUrl(servletContext,
-                pwaConfiguration.relIconPath());
+        URL logo = getResourceUrl(servletContext, pwaConfiguration.relIconPath());
 
         URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
-                ? getResourceUrl(servletContext,
-                        pwaConfiguration.relOfflinePath())
+                ? getResourceUrl(servletContext, pwaConfiguration.relOfflinePath())
                 : null;
 
         // Load base logo from servlet context if available
@@ -153,23 +147,19 @@ public class PwaRegistry implements Serializable {
 
         // Initialize sw-runtime.js
         runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
-        getLogger().debug(
-                getClass().getSimpleName() + " initialization took {}ms",
-                System.currentTimeMillis() - start);
+        getLogger().debug(getClass().getSimpleName() + " initialization took {}ms", System.currentTimeMillis() - start);
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(PwaRegistry.class);
     }
 
-    private URL getResourceUrl(ServletContext context, String path)
-            throws MalformedURLException {
+    private URL getResourceUrl(ServletContext context, String path) throws MalformedURLException {
         URL resourceUrl = VaadinServletService.getStaticResource(context, path);
         if (resourceUrl == null) {
             // this is a workaround specific for Spring default static resources
             // location: see #8705
-            String cpPath = path.startsWith("/") ? META_INF_RESOURCES + path
-                    : META_INF_RESOURCES + "/" + path;
+            String cpPath = path.startsWith("/") ? META_INF_RESOURCES + path : META_INF_RESOURCES + "/" + path;
             resourceUrl = PwaRegistry.class.getResource(cpPath);
         }
         return resourceUrl;
@@ -197,8 +187,7 @@ public class PwaRegistry implements Serializable {
             manifestData.put("description", pwaConfiguration.getDescription());
         }
         manifestData.put("display", pwaConfiguration.getDisplay());
-        manifestData.put("background_color",
-                pwaConfiguration.getBackgroundColor());
+        manifestData.put("background_color", pwaConfiguration.getBackgroundColor());
         manifestData.put("theme_color", pwaConfiguration.getThemeColor());
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
 
@@ -216,28 +205,24 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeRuntimeServiceWorker(
-            ServletContext servletContext) {
+    private String initializeRuntimeServiceWorker(ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
         // List of files to precache
-        Collection<String> filesToCache = getIcons().stream()
-                .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        Collection<String> filesToCache = getIcons().stream().filter(PwaIcon::shouldBeCached)
+                .map(PwaIcon::getCacheFormat).collect(Collectors.toCollection(LinkedHashSet::new));
 
         // When custom offlinePath is in use, it is also an offline resource to
         // precache
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            filesToCache
-                    .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
+            filesToCache.add(offlinePageCache(pwaConfiguration.getOfflinePath()));
         } else if (shouldCacheRoot()) {
             // No offlinePath configured, cache the root (#13987):
             filesToCache.add(offlinePageCache("."));
         }
 
         // Offline stub to be shown within an <iframe> in the app shell
-        filesToCache
-                .add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
+        filesToCache.add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
 
         // Add manifest to precache
         filesToCache.add(manifestCache());
@@ -246,8 +231,8 @@ public class PwaRegistry implements Serializable {
         // file system location from which a resource is served depends on
         // the (configurable) web app logic (#8996).
         for (String resource : pwaConfiguration.getOfflineResources()) {
-            filesToCache.add(String.format(WORKBOX_CACHE_FORMAT,
-                    resource.replaceAll("'", ""), servletContext.hashCode()));
+            filesToCache
+                    .add(String.format(WORKBOX_CACHE_FORMAT, resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
         // Precaching
@@ -259,37 +244,30 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * Gets the pwa registry for the given servlet context. If the servlet
-     * context has no pwa registry, a new instance is created and assigned to
-     * the context.
+     * Gets the pwa registry for the given servlet context. If the servlet context has no pwa registry, a new instance
+     * is created and assigned to the context.
      *
      * @param servletContext
-     *            the servlet context for which to get a route registry, not
-     *            <code>null</code>
+     *            the servlet context for which to get a route registry, not <code>null</code>
      *
-     * @return a registry instance for the given servlet context, not
-     *         <code>null</code>
+     * @return a registry instance for the given servlet context, not <code>null</code>
      */
     public static PwaRegistry getInstance(ServletContext servletContext) {
         assert servletContext != null;
 
         Object attribute;
         synchronized (servletContext) {
-            attribute = servletContext
-                    .getAttribute(PwaRegistry.class.getName());
+            attribute = servletContext.getAttribute(PwaRegistry.class.getName());
 
             if (attribute == null) {
-                VaadinServletContext context = new VaadinServletContext(
-                        servletContext);
+                VaadinServletContext context = new VaadinServletContext(servletContext);
 
                 // Try first if there is an AppShell for the project
-                Class<?> clazz = AppShellRegistry.getInstance(context)
-                        .getShell();
+                Class<?> clazz = AppShellRegistry.getInstance(context).getShell();
 
                 // Otherwise use the class reported by router
                 if (clazz == null) {
-                    clazz = ApplicationRouteRegistry.getInstance(context)
-                            .getPwaConfigurationClass();
+                    clazz = ApplicationRouteRegistry.getInstance(context).getPwaConfigurationClass();
                 }
 
                 // Initialize PwaRegistry with found PWA settings
@@ -298,11 +276,9 @@ public class PwaRegistry implements Serializable {
                 // will fall back to defaults, if no PWA annotation available
                 try {
                     attribute = new PwaRegistry(pwa, servletContext);
-                    servletContext.setAttribute(PwaRegistry.class.getName(),
-                            attribute);
+                    servletContext.setAttribute(PwaRegistry.class.getName(), attribute);
                 } catch (IOException ioe) {
-                    throw new UncheckedIOException(
-                            "Failed to initialize the PWA registry", ioe);
+                    throw new UncheckedIOException("Failed to initialize the PWA registry", ioe);
                 }
             }
         }
@@ -310,31 +286,23 @@ public class PwaRegistry implements Serializable {
         if (attribute instanceof PwaRegistry) {
             return (PwaRegistry) attribute;
         } else {
-            throw new IllegalStateException(
-                    "Unknown servlet context attribute value: " + attribute);
+            throw new IllegalStateException("Unknown servlet context attribute value: " + attribute);
         }
     }
 
-    private String initializeOfflinePage(PwaConfiguration config, URL resource)
-            throws IOException {
+    private String initializeOfflinePage(PwaConfiguration config, URL resource) throws IOException {
         // Use only icons which are cached with service worker
-        List<PwaIcon> iconList = getIcons().stream()
-                .filter(PwaIcon::shouldBeCached).collect(Collectors.toList());
+        List<PwaIcon> iconList = getIcons().stream().filter(PwaIcon::shouldBeCached).collect(Collectors.toList());
         // init header inject of icons
-        String iconHead = iconList.stream()
-                .map(icon -> icon.asElement().toString())
-                .collect(Collectors.joining("\n"));
+        String iconHead = iconList.stream().map(icon -> icon.asElement().toString()).collect(Collectors.joining("\n"));
         // init large image
-        PwaIcon largest = iconList.stream()
-                .min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth())
-                .orElse(null);
+        PwaIcon largest = iconList.stream().min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth()).orElse(null);
 
         URLConnection connection;
         if (resource != null) {
             connection = resource.openConnection();
         } else {
-            connection = BootstrapHandler.class
-                    .getResource("default-offline-page.html").openConnection();
+            connection = BootstrapHandler.class.getResource("default-offline-page.html").openConnection();
         }
         // Get offline page from servlet context
         // Fall back to local default file if unavailable
@@ -342,30 +310,25 @@ public class PwaRegistry implements Serializable {
         // Replace template variables with values
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
-                .replace("%%%LOGO_PATH%%%",
-                        largest != null ? largest.getHref() : "")
+                .replace("%%%LOGO_PATH%%%", largest != null ? largest.getHref() : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
     }
 
     private String getOfflinePageFromContext(URLConnection connection) {
         try (InputStream stream = connection.getInputStream();
-                BufferedReader bf = new BufferedReader(new InputStreamReader(
-                        stream, StandardCharsets.UTF_8))) {
+                BufferedReader bf = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             StringBuilder builder = new StringBuilder();
             bf.lines().forEach(builder::append);
             return builder.toString();
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    "Failed to retrieve offline page from the servlet context",
-                    e);
+            throw new UncheckedIOException("Failed to retrieve offline page from the servlet context", e);
         }
     }
 
     private BufferedImage getBaseImage(URL logo) throws IOException {
         URLConnection logoResource = logo != null ? logo.openConnection()
-                : BootstrapHandler.class.getResource("default-logo.png")
-                        .openConnection();
+                : BootstrapHandler.class.getResource("default-logo.png").openConnection();
         return ImageIO.read(logoResource.getInputStream());
     }
 
@@ -388,8 +351,7 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * sw-runtime.js (service worker JavaScript for precaching runtime generated
-     * resources) as a String.
+     * sw-runtime.js (service worker JavaScript for precaching runtime generated resources) as a String.
      *
      * @return contents of sw-runtime.js
      */
@@ -402,8 +364,7 @@ public class PwaRegistry implements Serializable {
     }
 
     private String manifestCache() {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                pwaConfiguration.getManifestPath(), manifestJson.hashCode());
+        return String.format(WORKBOX_CACHE_FORMAT, pwaConfiguration.getManifestPath(), manifestJson.hashCode());
     }
 
     /**
@@ -418,8 +379,7 @@ public class PwaRegistry implements Serializable {
     /**
      * List of {@link PwaIcon}:s that should be added to manifest.webmanifest.
      *
-     * @return List of {@link PwaIcon}:s that should be added to
-     *         manifest.webmanifest
+     * @return List of {@link PwaIcon}:s that should be added to manifest.webmanifest
      */
     public List<PwaIcon> getManifestIcons() {
         return getIcons(PwaIcon.Domain.MANIFEST);
@@ -435,8 +395,7 @@ public class PwaRegistry implements Serializable {
     }
 
     private List<PwaIcon> getIcons(PwaIcon.Domain domain) {
-        return icons.stream().filter(icon -> icon.getDomain().equals(domain))
-                .collect(Collectors.toList());
+        return icons.stream().filter(icon -> icon.getDomain().equals(domain)).collect(Collectors.toList());
     }
 
     public PwaConfiguration getPwaConfiguration() {
@@ -446,150 +405,118 @@ public class PwaRegistry implements Serializable {
     static List<PwaIcon> getIconTemplates(String baseName) {
         List<PwaIcon> icons = new ArrayList<>();
         // Basic manifest icons for android support
-        icons.add(
-                new PwaIcon(144, 144, baseName, PwaIcon.Domain.MANIFEST, true));
-        icons.add(
-                new PwaIcon(192, 192, baseName, PwaIcon.Domain.MANIFEST, true));
-        icons.add(
-                new PwaIcon(512, 512, baseName, PwaIcon.Domain.MANIFEST, true));
+        icons.add(new PwaIcon(144, 144, baseName, PwaIcon.Domain.MANIFEST, true));
+        icons.add(new PwaIcon(192, 192, baseName, PwaIcon.Domain.MANIFEST, true));
+        icons.add(new PwaIcon(512, 512, baseName, PwaIcon.Domain.MANIFEST, true));
 
         // Basic icons
-        icons.add(new PwaIcon(16, 16, baseName, PwaIcon.Domain.HEADER, true,
-                "shortcut icon", ""));
+        icons.add(new PwaIcon(16, 16, baseName, PwaIcon.Domain.HEADER, true, "shortcut icon", ""));
         icons.add(new PwaIcon(32, 32, baseName, PwaIcon.Domain.HEADER, true));
         icons.add(new PwaIcon(96, 96, baseName));
 
         // IOS basic icon
-        icons.add(new PwaIcon(180, 180, baseName, PwaIcon.Domain.HEADER, false,
-                "apple-touch-icon", ""));
+        icons.add(new PwaIcon(180, 180, baseName, PwaIcon.Domain.HEADER, false, "apple-touch-icon", ""));
 
         // IOS device specific splash screens
         // iPad Pro 12.9 Portrait:
-        icons.add(new PwaIcon(2048, 2732, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        1024, 1366, 2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(2048, 2732, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 1024, 1366, 2, ORIENTATION_PORTRAIT)));
         // iPad Pro 12.9 Landscape:
-        icons.add(new PwaIcon(2732, 2048, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        1024, 1366, 2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2732, 2048, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 1024, 1366, 2, ORIENTATION_LANDSCAPE)));
 
         // iPad Pro 11, 10.5 Portrait:
-        icons.add(new PwaIcon(1668, 2388, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        834, 1194, 2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1668, 2388, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 834, 1194, 2, ORIENTATION_PORTRAIT)));
         // iPad Pro 11, 10.5 Landscape:
-        icons.add(new PwaIcon(2388, 1668, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        834, 1194, 2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2388, 1668, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 834, 1194, 2, ORIENTATION_LANDSCAPE)));
 
         // iPad Air 10.5 Portrait:
-        icons.add(new PwaIcon(1668, 2224, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        834, 1112, 2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1668, 2224, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 834, 1112, 2, ORIENTATION_PORTRAIT)));
         // iPad Air 10.5 Landscape:
-        icons.add(new PwaIcon(2224, 1668, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        834, 1112, 2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2224, 1668, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 834, 1112, 2, ORIENTATION_LANDSCAPE)));
 
         // iPad 10.2 Portrait:
-        icons.add(new PwaIcon(1620, 2160, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        768, 1024, 2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1620, 2160, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 768, 1024, 2, ORIENTATION_PORTRAIT)));
         // iPad 10.2 Landscape:
-        icons.add(new PwaIcon(2160, 1620, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        768, 1024, 2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2160, 1620, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 768, 1024, 2, ORIENTATION_LANDSCAPE)));
 
         // iPad Pro 9.7, iPad Air 9.7, iPad 9.7, iPad mini 7.9 portrait
-        icons.add(new PwaIcon(1536, 2048, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        768, 1024, 2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1536, 2048, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 768, 1024, 2, ORIENTATION_PORTRAIT)));
         // iPad Pro 9.7, iPad Air 9.7, iPad 9.7, iPad mini 7.9 landscape
-        icons.add(new PwaIcon(2048, 1536, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        768, 1024, 2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2048, 1536, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 768, 1024, 2, ORIENTATION_LANDSCAPE)));
 
         // iPhone 13 Pro Max, iPhone 12 Pro Max portrait
-        icons.add(new PwaIcon(1284, 2778, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        428, 926, 3, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1284, 2778, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 428, 926, 3, ORIENTATION_PORTRAIT)));
         // iPhone 13 Pro Max, iPhone 12 Pro Max landscape
-        icons.add(new PwaIcon(2778, 1284, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        428, 926, 3, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2778, 1284, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 428, 926, 3, ORIENTATION_LANDSCAPE)));
 
         // iPhone 13 Pro, iPhone 13, iPhone 12 Pro, iPhone 12 portrait
-        icons.add(new PwaIcon(1170, 2532, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        390, 844, 3, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1170, 2532, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 390, 844, 3, ORIENTATION_PORTRAIT)));
         // iPhone 13 Pro, iPhone 13, iPhone 12 Pro, iPhone 12 landscape
-        icons.add(new PwaIcon(2532, 1170, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        390, 844, 3, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2532, 1170, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 390, 844, 3, ORIENTATION_LANDSCAPE)));
 
         // iPhone 13 Mini, iPhone 12 Mini, iPhone 11 Pro, iPhone XS, iPhone X
         // portrait
-        icons.add(new PwaIcon(1125, 2436, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        375, 812, 3, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1125, 2436, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 375, 812, 3, ORIENTATION_PORTRAIT)));
         // iPhone 13 Mini, iPhone 12 Mini, iPhone 11 Pro, iPhone XS, iPhone X
         // landscape
-        icons.add(new PwaIcon(2436, 1125, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        375, 812, 3, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2436, 1125, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 375, 812, 3, ORIENTATION_LANDSCAPE)));
 
         // iPhone 11 Pro Max, iPhone XS Max portrait
-        icons.add(new PwaIcon(1242, 2688, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        414, 896, 3, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1242, 2688, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 414, 896, 3, ORIENTATION_PORTRAIT)));
         // iPhone 11 Pro Max, iPhone XS Max landscape
-        icons.add(new PwaIcon(2688, 1242, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        414, 896, 3, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2688, 1242, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 414, 896, 3, ORIENTATION_LANDSCAPE)));
 
         // iPhone 11, iPhone XR portrait
-        icons.add(new PwaIcon(828, 1792, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 414, 896,
-                        2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(828, 1792, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 414, 896, 2, ORIENTATION_PORTRAIT)));
         // iPhone 11, iPhone XR landscape
-        icons.add(new PwaIcon(1792, 828, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 414, 896,
-                        2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(1792, 828, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 414, 896, 2, ORIENTATION_LANDSCAPE)));
 
         // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus portrait
-        icons.add(new PwaIcon(1242, 2208, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        414, 736, 3, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(1242, 2208, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 414, 736, 3, ORIENTATION_PORTRAIT)));
         // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus landscape
-        icons.add(new PwaIcon(2208, 1242, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
-                        414, 736, 3, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(2208, 1242, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 414, 736, 3, ORIENTATION_LANDSCAPE)));
 
         // iPhone 8, 7, 6s, 6, SE 4.7 portrait
-        icons.add(new PwaIcon(750, 1334, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 375, 667,
-                        2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(750, 1334, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 375, 667, 2, ORIENTATION_PORTRAIT)));
         // iPhone 8, 7, 6s, 6, SE 4.7 landscape
-        icons.add(new PwaIcon(1334, 750, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 375, 667,
-                        2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(1334, 750, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 375, 667, 2, ORIENTATION_LANDSCAPE)));
 
         // iPhone 5, SE 4, iPod touch 5th Gen and later portrait
-        icons.add(new PwaIcon(640, 1136, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 320, 568,
-                        2, ORIENTATION_PORTRAIT)));
+        icons.add(new PwaIcon(640, 1136, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 320, 568, 2, ORIENTATION_PORTRAIT)));
         // iPhone 5, SE 4, iPod touch 5th Gen and later landscape
-        icons.add(new PwaIcon(1136, 640, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 320, 568,
-                        2, ORIENTATION_LANDSCAPE)));
+        icons.add(new PwaIcon(1136, 640, baseName, PwaIcon.Domain.HEADER, false, APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 320, 568, 2, ORIENTATION_LANDSCAPE)));
 
         return icons;
     }
 
     private boolean shouldCacheRoot() {
         VaadinContext context = VaadinService.getCurrent().getContext();
-        ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(context);
+        ApplicationConfiguration configuration = ApplicationConfiguration.get(context);
         return configuration != null && !configuration.isProductionMode();
     }
 }

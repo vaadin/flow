@@ -49,8 +49,7 @@ public class Dependency implements Serializable {
          * @return true if there is a matching enum value
          */
         public static boolean contains(String value) {
-            return Stream.of(values())
-                    .anyMatch(enumValue -> enumValue.toString().equals(value));
+            return Stream.of(values()).anyMatch(enumValue -> enumValue.toString().equals(value));
         }
     }
 
@@ -59,11 +58,9 @@ public class Dependency implements Serializable {
     private final LoadMode loadMode;
 
     /**
-     * Creates a new dependency of the given type, to be loaded from the given
-     * URL.
+     * Creates a new dependency of the given type, to be loaded from the given URL.
      * <p>
-     * The URL is passed through the translation mechanism before loading, so
-     * custom protocols, specified at
+     * The URL is passed through the translation mechanism before loading, so custom protocols, specified at
      * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
      *
      * @param type
@@ -71,8 +68,7 @@ public class Dependency implements Serializable {
      * @param url
      *            the URL to load the dependency from, not {@code null}
      * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
+     *            determines dependency load mode, refer to {@link LoadMode} for details
      */
     public Dependency(Type type, String url, LoadMode loadMode) {
         if (url == null) {
@@ -85,8 +81,8 @@ public class Dependency implements Serializable {
     }
 
     /**
-     * Creates a new dependency of the given type, to be loaded using JS
-     * expression which is supposed to return a {@code Promise}.
+     * Creates a new dependency of the given type, to be loaded using JS expression which is supposed to return a
+     * {@code Promise}.
      * <p>
      * The created instance dependency mode is {@link LoadMode#LAZY}.
      *
@@ -123,8 +119,7 @@ public class Dependency implements Serializable {
     }
 
     /**
-     * Gets load mode that will be used for dependency loading. Refer to
-     * {@link LoadMode} for details.
+     * Gets load mode that will be used for dependency loading. Refer to {@link LoadMode} for details.
      *
      * @return the load mode that will be used during dependency loading
      */
@@ -159,14 +154,12 @@ public class Dependency implements Serializable {
             return false;
         }
         Dependency that = (Dependency) o;
-        return type == that.type && loadMode == that.loadMode
-                && Objects.equals(url, that.url);
+        return type == that.type && loadMode == that.loadMode && Objects.equals(url, that.url);
 
     }
 
     @Override
     public String toString() {
-        return "Dependency [type=" + type + ", url=" + url + ", loadMode="
-                + loadMode + "]";
+        return "Dependency [type=" + type + ", url=" + url + ", loadMode=" + loadMode + "]";
     }
 }

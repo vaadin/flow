@@ -42,8 +42,7 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Bean
     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
-        return new NavigationAccessControlConfigurer()
-                .withRoutePathAccessChecker();
+        return new NavigationAccessControlConfigurer().withRoutePathAccessChecker();
     }
 
     public String getLogoutSuccessUrl() {
@@ -88,32 +87,24 @@ public class SecurityConfig extends VaadinWebSecurity {
         } else {
             setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         }
-        http.logout(cfg -> cfg
-                .addLogoutHandler((request, response, authentication) -> {
-                    UI ui = UI.getCurrent();
-                    ui.accessSynchronously(() -> ui.getPage()
-                            .setLocation(UrlUtil.getServletPathRelative(
-                                    getLogoutSuccessUrl(), request)));
-                }));
+        http.logout(cfg -> cfg.addLogoutHandler((request, response, authentication) -> {
+            UI ui = UI.getCurrent();
+            ui.accessSynchronously(
+                    () -> ui.getPage().setLocation(UrlUtil.getServletPathRelative(getLogoutSuccessUrl(), request)));
+        }));
     }
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
         return new InMemoryUserDetailsManager() {
             @Override
-            public UserDetails loadUserByUsername(String username)
-                    throws UsernameNotFoundException {
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                 UserInfo userInfo = userInfoService.findByUsername(username);
                 if (userInfo == null) {
-                    throw new UsernameNotFoundException(
-                            "No user present with username: " + username);
+                    throw new UsernameNotFoundException("No user present with username: " + username);
                 } else {
-                    return new User(userInfo.getUsername(),
-                            userInfo.getEncodedPassword(),
-                            userInfo.getRoles().stream()
-                                    .map(role -> new SimpleGrantedAuthority(
-                                            "ROLE_" + role))
-                                    .collect(Collectors.toList()));
+                    return new User(userInfo.getUsername(), userInfo.getEncodedPassword(), userInfo.getRoles().stream()
+                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role)).collect(Collectors.toList()));
                 }
             }
         };

@@ -28,8 +28,7 @@ import com.vaadin.flow.internal.StateNode;
  */
 public class ElementClassList extends SerializableNodeList<String> {
 
-    private static class ClassListView extends NodeList.SetView<String>
-            implements ClassList {
+    private static class ClassListView extends NodeList.SetView<String> implements ClassList {
 
         private ClassListView(ElementClassList elementClassList) {
             super(elementClassList);
@@ -42,12 +41,10 @@ public class ElementClassList extends SerializableNodeList<String> {
             }
 
             if ("".equals(className)) {
-                throw new IllegalArgumentException(
-                        "Class name cannot be empty");
+                throw new IllegalArgumentException("Class name cannot be empty");
             }
             if (className.indexOf(' ') != -1) {
-                throw new IllegalArgumentException(
-                        "Class name cannot contain spaces");
+                throw new IllegalArgumentException("Class name cannot contain spaces");
             }
         }
     }

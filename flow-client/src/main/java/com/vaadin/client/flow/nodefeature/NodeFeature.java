@@ -23,8 +23,7 @@ import com.vaadin.client.flow.StateNode;
 import elemental.json.JsonValue;
 
 /**
- * Holder of the actual data in a state node. The state node data is isolated
- * into different features of related data.
+ * Holder of the actual data in a state node. The state node data is isolated into different features of related data.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -66,17 +65,15 @@ public abstract class NodeFeature {
     }
 
     /**
-     * Gets a JSON object representing the contents of this feature. Only
-     * intended for debugging purposes.
+     * Gets a JSON object representing the contents of this feature. Only intended for debugging purposes.
      *
      * @return a JSON representation
      */
     public abstract JsonValue getDebugJson();
 
     /**
-     * Convert the feature values into a {@link JsonValue} using provided
-     * {@code converter} for the values stored in the feature (i.e. primitive
-     * types, StateNodes).
+     * Convert the feature values into a {@link JsonValue} using provided {@code converter} for the values stored in the
+     * feature (i.e. primitive types, StateNodes).
      *
      * @param converter
      *            converter to convert values stored in the feature

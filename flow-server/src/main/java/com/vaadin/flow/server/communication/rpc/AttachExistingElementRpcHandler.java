@@ -42,8 +42,7 @@ import elemental.json.JsonObject;
  *
  */
 
-public class AttachExistingElementRpcHandler
-        extends AbstractRpcInvocationHandler {
+public class AttachExistingElementRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     public String getRpcType() {
@@ -51,24 +50,18 @@ public class AttachExistingElementRpcHandler
     }
 
     @Override
-    protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
+    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_TAG_NAME);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_INDEX);
 
-        int requestedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_REQUESTED_ID);
-        int assignedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
-        String tag = invocationJson
-                .getString(JsonConstants.RPC_ATTACH_TAG_NAME);
-        int index = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_INDEX);
+        int requestedId = (int) invocationJson.getNumber(JsonConstants.RPC_ATTACH_REQUESTED_ID);
+        int assignedId = (int) invocationJson.getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
+        String tag = invocationJson.getString(JsonConstants.RPC_ATTACH_TAG_NAME);
+        int index = (int) invocationJson.getNumber(JsonConstants.RPC_ATTACH_INDEX);
 
-        AttachExistingElementFeature feature = node
-                .getFeature(AttachExistingElementFeature.class);
+        AttachExistingElementFeature feature = node.getFeature(AttachExistingElementFeature.class);
 
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
@@ -78,22 +71,20 @@ public class AttachExistingElementRpcHandler
 
             ChildElementConsumer callback = feature.getCallback(requestedNode);
             assert callback != null;
-            callback.onError(feature.getParent(requestedNode), tag,
-                    feature.getPreviousSibling(requestedNode));
+            callback.onError(feature.getParent(requestedNode), tag, feature.getPreviousSibling(requestedNode));
 
             feature.unregister(requestedNode);
         } else {
             Element element = Element.get(tree.getNodeById(assignedId));
 
-            attachElement(feature, element, index,
-                    tree.getNodeById(requestedId), requestedId == assignedId);
+            attachElement(feature, element, index, tree.getNodeById(requestedId), requestedId == assignedId);
         }
 
         return Optional.empty();
     }
 
-    private void attachElement(AttachExistingElementFeature feature,
-            Element element, int index, StateNode node, boolean insertChild) {
+    private void attachElement(AttachExistingElementFeature feature, Element element, int index, StateNode node,
+            boolean insertChild) {
         ChildElementConsumer callback = feature.getCallback(node);
 
         if (callback != null) {

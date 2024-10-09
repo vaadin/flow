@@ -50,8 +50,7 @@ public abstract class AbstractDevModeTest {
 
     @Before
     public void setup() throws Exception {
-        Field firstMapping = VaadinServlet.class
-                .getDeclaredField("frontendMapping");
+        Field firstMapping = VaadinServlet.class.getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);
         firstMapping.set(null, "/fake-test-mapping");
         baseDir = temporaryFolder.getRoot().getPath();
@@ -61,11 +60,8 @@ public abstract class AbstractDevModeTest {
         appConfig = Mockito.spy(ApplicationConfiguration.class);
 
         servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext
-                .getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(appConfig);
-        Mockito.when(servletContext.getClassLoader())
-                .thenReturn(servletContext.getClass().getClassLoader());
+        Mockito.when(servletContext.getAttribute(ApplicationConfiguration.class.getName())).thenReturn(appConfig);
+        Mockito.when(servletContext.getClassLoader()).thenReturn(servletContext.getClass().getClassLoader());
         Mockito.when(servletContext.getContextPath()).thenReturn("");
 
         vaadinContext = new VaadinServletContext(servletContext);
@@ -73,31 +69,24 @@ public abstract class AbstractDevModeTest {
         mockApplicationConfiguration(appConfig, enablePnpm);
 
         lookup = Mockito.mock(Lookup.class);
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                .thenReturn(lookup);
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName())).thenReturn(lookup);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
+        ResourceProvider resourceProvider = Mockito.mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class)).thenReturn(resourceProvider);
         setupMockResourceProvider(resourceProvider);
         devModeHandlerManager = new DevModeHandlerManagerImpl();
-        Mockito.when(lookup.lookup(DevModeHandlerManager.class))
-                .thenReturn(devModeHandlerManager);
+        Mockito.when(lookup.lookup(DevModeHandlerManager.class)).thenReturn(devModeHandlerManager);
 
         configuration = new MockDeploymentConfiguration();
-        Mockito.when(lookup.lookup(DeploymentConfiguration.class))
-                .thenReturn(configuration);
-        Mockito.when(lookup.lookup(ApplicationConfiguration.class))
-                .thenReturn(appConfig);
+        Mockito.when(lookup.lookup(DeploymentConfiguration.class)).thenReturn(configuration);
+        Mockito.when(lookup.lookup(ApplicationConfiguration.class)).thenReturn(appConfig);
         Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(service -> new StaticFileServer(service));
 
         vaadinService = Mockito.mock(VaadinService.class);
 
         Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(vaadinService.getDeploymentConfiguration()).thenReturn(configuration);
 
     }
 
@@ -110,34 +99,26 @@ public abstract class AbstractDevModeTest {
 
     }
 
-    protected void setupMockResourceProvider(
-            ResourceProvider mockResourceProvider) throws IOException {
+    protected void setupMockResourceProvider(ResourceProvider mockResourceProvider) throws IOException {
 
     }
 
-    private void mockApplicationConfiguration(
-            ApplicationConfiguration appConfig, boolean enablePnpm) {
-        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+    private void mockApplicationConfiguration(ApplicationConfiguration appConfig, boolean enablePnpm) {
+        Mockito.when(appConfig.getStringProperty(Mockito.anyString(), Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
-                    .thenReturn(false);
+        try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(FrontendUtils.class)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any())).thenReturn(false);
             Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
         }
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
 
-        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
-                Mockito.anyBoolean()))
+        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(), Mockito.anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
 
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(baseDir);
+        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR, null)).thenReturn(baseDir);
         Mockito.when(appConfig.getBuildFolder()).thenReturn(Constants.TARGET);
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.enumeration(Collections.emptyList()));
+        Mockito.when(appConfig.getPropertyNames()).thenReturn(Collections.enumeration(Collections.emptyList()));
         Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
     }
 
@@ -158,13 +139,11 @@ public abstract class AbstractDevModeTest {
         ((AbstractDevServerRunner) (devModeHandler)).waitForDevServer();
     }
 
-    protected static boolean hasDevServerProcess(
-            DevModeHandler devModeHandler) {
+    protected static boolean hasDevServerProcess(DevModeHandler devModeHandler) {
         Assert.assertNotNull(devModeHandler);
         Field devServerProcessField;
         try {
-            devServerProcessField = AbstractDevServerRunner.class
-                    .getDeclaredField("devServerProcess");
+            devServerProcessField = AbstractDevServerRunner.class.getDeclaredField("devServerProcess");
             devServerProcessField.setAccessible(true);
             AtomicReference<Process> devServerProcess = (AtomicReference<Process>) devServerProcessField
                     .get(devModeHandler);
@@ -177,8 +156,7 @@ public abstract class AbstractDevModeTest {
 
     public void removeDevModeHandlerInstance() throws Exception {
         // Reset unique instance of DevModeHandler
-        Field devModeHandler = DevModeHandlerManagerImpl.class
-                .getDeclaredField("devModeHandler");
+        Field devModeHandler = DevModeHandlerManagerImpl.class.getDeclaredField("devModeHandler");
         devModeHandler.setAccessible(true);
         devModeHandler.set(devModeHandlerManager, null);
     }

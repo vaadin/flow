@@ -29,13 +29,10 @@ public class ChangeInjectedComponentTextIT extends ChromeBrowserTest {
     public void setText_injectedComponent_textReplacesContent() {
         open();
 
-        WebElement injected = $("update-injected-component-text").first()
-                .$(TestBenchElement.class).id("injected");
-        Assert.assertEquals(
-                "New text value doesn't replace the content of the element",
-                "new text", injected.getText());
-        Assert.assertEquals(
-                "The 'setText()' method should remove all children from the injected component",
-                0, injected.findElements(By.cssSelector("*")).size());
+        WebElement injected = $("update-injected-component-text").first().$(TestBenchElement.class).id("injected");
+        Assert.assertEquals("New text value doesn't replace the content of the element", "new text",
+                injected.getText());
+        Assert.assertEquals("The 'setText()' method should remove all children from the injected component", 0,
+                injected.findElements(By.cssSelector("*")).size());
     }
 }

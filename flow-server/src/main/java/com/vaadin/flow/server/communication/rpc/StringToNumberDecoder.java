@@ -27,12 +27,10 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * Decodes a {@link JsonValue} with {@link JsonType#STRING} type to
- * {@link Number} subclass type.
+ * Decodes a {@link JsonValue} with {@link JsonType#STRING} type to {@link Number} subclass type.
  * <p>
- * This decoder is applicable to any {@link JsonValue} which is
- * {@link JsonString} and any primitive type wrapper {@link Number} subclass
- * (like {@link Integer}, {@link Double}, {@link Long}, etc.).
+ * This decoder is applicable to any {@link JsonValue} which is {@link JsonString} and any primitive type wrapper
+ * {@link Number} subclass (like {@link Integer}, {@link Double}, {@link Long}, etc.).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -44,14 +42,12 @@ public class StringToNumberDecoder implements RpcDecoder {
 
     @Override
     public boolean isApplicable(JsonValue value, Class<?> type) {
-        return value.getType().equals(JsonType.STRING)
-                && Number.class.isAssignableFrom(type)
+        return value.getType().equals(JsonType.STRING) && Number.class.isAssignableFrom(type)
                 && type.getPackage().equals(Integer.class.getPackage());
     }
 
     @Override
-    public <T> T decode(JsonValue value, Class<T> type)
-            throws RpcDecodeException {
+    public <T> T decode(JsonValue value, Class<T> type) throws RpcDecodeException {
         String stringValue = value.asString();
         try {
             Number number = parseNumber(stringValue);
@@ -60,8 +56,7 @@ public class StringToNumberDecoder implements RpcDecoder {
             }
             Field requiredType = type.getField("TYPE");
             Class<?> primitiveRequiredType = (Class<?>) requiredType.get(null);
-            Method method = Number.class
-                    .getMethod(primitiveRequiredType + "Value");
+            Method method = Number.class.getMethod(primitiveRequiredType + "Value");
             T result = type.cast(method.invoke(number));
             if (number.equals(parseNumber(result.toString()))) {
                 // check whether the number is the same after the projection
@@ -69,13 +64,11 @@ public class StringToNumberDecoder implements RpcDecoder {
                 return result;
             } else {
                 throw new RpcDecodeException(
-                        String.format("Can't decode '%s' to type '%s'",
-                                stringValue, type.getName()));
+                        String.format("Can't decode '%s' to type '%s'", stringValue, type.getName()));
             }
         } catch (ParseException exception) {
             throw new RpcDecodeException(exception);
-        } catch (NoSuchFieldException | SecurityException
-                | IllegalAccessException | IllegalArgumentException
+        } catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException
                 | NoSuchMethodException | InvocationTargetException exception) {
             // can't happen
             throw new RuntimeException(exception);

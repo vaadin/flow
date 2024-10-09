@@ -32,20 +32,14 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         assertDefaultProdBundle(baseDir);
         assertProdBundlePackageNotCreated(baseDir);
 
-        Assert.assertFalse("No node_modules should be created",
-                new File(baseDir, "node_modules").exists());
+        Assert.assertFalse("No node_modules should be created", new File(baseDir, "node_modules").exists());
 
-        Assert.assertFalse("No package.json should be created",
-                new File(baseDir, "package.json").exists());
-        Assert.assertFalse("No vite generated should be created",
-                new File(baseDir, "vite.generated.ts").exists());
-        Assert.assertFalse("No vite config should be created",
-                new File(baseDir, "vite.config.ts").exists());
+        Assert.assertFalse("No package.json should be created", new File(baseDir, "package.json").exists());
+        Assert.assertFalse("No vite generated should be created", new File(baseDir, "vite.generated.ts").exists());
+        Assert.assertFalse("No vite config should be created", new File(baseDir, "vite.config.ts").exists());
 
-        Assert.assertFalse("No types should be created",
-                new File(baseDir, "types.d.ts").exists());
-        Assert.assertFalse("No tsconfig should be created",
-                new File(baseDir, "tsconfig.json").exists());
+        Assert.assertFalse("No types should be created", new File(baseDir, "types.d.ts").exists());
+        Assert.assertFalse("No tsconfig should be created", new File(baseDir, "tsconfig.json").exists());
     }
 
     @Test
@@ -53,23 +47,19 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/view/sw.js");
         String pageSource = driver.getPageSource();
         Assert.assertFalse("Service Worker is not served properly",
-                pageSource.contains("Error 404 Not Found")
-                        || pageSource.contains("Could not navigate to"));
+                pageSource.contains("Error 404 Not Found") || pageSource.contains("Could not navigate to"));
     }
 
     private void assertDefaultProdBundle(File baseDir) throws IOException {
-        File indexHtml = new File(baseDir,
-                "target/classes/META-INF/VAADIN/webapp/index.html");
+        File indexHtml = new File(baseDir, "target/classes/META-INF/VAADIN/webapp/index.html");
         Assert.assertTrue("Prod bundle should be copied", indexHtml.exists());
-        String indexHtmlContent = FileUtils.readFileToString(indexHtml,
-                StandardCharsets.UTF_8);
+        String indexHtmlContent = FileUtils.readFileToString(indexHtml, StandardCharsets.UTF_8);
         Assert.assertTrue("Expected default production bundle to be used",
                 indexHtmlContent.contains("default production bundle"));
     }
 
     private void assertProdBundlePackageNotCreated(File baseDir) {
         File bundlesFolder = new File(baseDir, "src/main/bundles");
-        Assert.assertFalse("src/main/bundles folder should not be created",
-                bundlesFolder.exists());
+        Assert.assertFalse("src/main/bundles folder should not be created", bundlesFolder.exists());
     }
 }

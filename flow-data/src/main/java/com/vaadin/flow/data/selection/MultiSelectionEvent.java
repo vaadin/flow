@@ -25,8 +25,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 
 /**
- * Fired when the selection changes in a listing component that supports
- * multiple item selection.
+ * Fired when the selection changes in a listing component that supports multiple item selection.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -36,8 +35,8 @@ import com.vaadin.flow.component.HasValue;
  * @param <T>
  *            the type of the selected item
  */
-public class MultiSelectionEvent<C extends Component, T> extends
-        ComponentValueChangeEvent<C, Set<T>> implements SelectionEvent<C, T> {
+public class MultiSelectionEvent<C extends Component, T> extends ComponentValueChangeEvent<C, Set<T>>
+        implements SelectionEvent<C, T> {
 
     /**
      * Creates a new multi selection change event in a component.
@@ -49,11 +48,9 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * @param oldSelection
      *            the item that was previously selected
      * @param userOriginated
-     *            {@code true} if this event originates from the client,
-     *            {@code false} otherwise.
+     *            {@code true} if this event originates from the client, {@code false} otherwise.
      */
-    public MultiSelectionEvent(C listing,
-            HasValue<ComponentValueChangeEvent<C, Set<T>>, Set<T>> source,
+    public MultiSelectionEvent(C listing, HasValue<ComponentValueChangeEvent<C, Set<T>>, Set<T>> source,
             Set<T> oldSelection, boolean userOriginated) {
         super(listing, source, oldSelection, userOriginated);
     }
@@ -71,8 +68,7 @@ public class MultiSelectionEvent<C extends Component, T> extends
     /**
      * Gets the current selection.
      *
-     * @return an unmodifiable set of items selected after the selection was
-     *         changed
+     * @return an unmodifiable set of items selected after the selection was changed
      */
     @Override
     public Set<T> getValue() {
@@ -82,8 +78,7 @@ public class MultiSelectionEvent<C extends Component, T> extends
     /**
      * Gets the old selection.
      *
-     * @return an unmodifiable set of items selected before the selection was
-     *         changed
+     * @return an unmodifiable set of items selected before the selection was changed
      */
     public Set<T> getOldSelection() {
         return Collections.unmodifiableSet(getOldValue());
@@ -92,9 +87,8 @@ public class MultiSelectionEvent<C extends Component, T> extends
     /**
      * Gets the items that were removed from selection.
      * <p>
-     * This is just a convenience method for checking what was previously
-     * selected in {@link #getOldSelection()} but not selected anymore in
-     * {@link #getValue()}.
+     * This is just a convenience method for checking what was previously selected in {@link #getOldSelection()} but not
+     * selected anymore in {@link #getValue()}.
      *
      * @return the items that were removed from selection
      */
@@ -107,8 +101,8 @@ public class MultiSelectionEvent<C extends Component, T> extends
     /**
      * Gets the items that were added to selection.
      * <p>
-     * This is just a convenience method for checking what is new selected in
-     * {@link #getValue()} and wasn't selected in {@link #getOldSelection()}.
+     * This is just a convenience method for checking what is new selected in {@link #getValue()} and wasn't selected in
+     * {@link #getOldSelection()}.
      *
      * @return the items that were removed from selection
      */

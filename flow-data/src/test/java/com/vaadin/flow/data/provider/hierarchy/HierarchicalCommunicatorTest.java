@@ -147,10 +147,8 @@ public class HierarchicalCommunicatorTest {
         ComponentMapping mapping = Mockito.mock(ComponentMapping.class);
         Mockito.when(stateNode.getFeatureIfInitialized(ComponentMapping.class))
                 .thenReturn(java.util.Optional.ofNullable(mapping));
-        Mockito.when(mapping.getComponent())
-                .thenReturn(java.util.Optional.of(new TestComponent()));
-        communicator = new HierarchicalDataCommunicator<>(
-                Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
+        Mockito.when(mapping.getComponent()).thenReturn(java.util.Optional.of(new TestComponent()));
+        communicator = new HierarchicalDataCommunicator<>(Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
                 json -> {
                 }, stateNode, () -> null);
         communicator.setDataProvider(dataProvider, null);
@@ -190,15 +188,12 @@ public class HierarchicalCommunicatorTest {
 
         int number = refreshAll ? 7 : 6;
 
-        ArgumentCaptor<SerializableConsumer> attachCaptor = ArgumentCaptor
-                .forClass(SerializableConsumer.class);
-        Mockito.verify(stateNode, Mockito.times(number))
-                .runWhenAttached(attachCaptor.capture());
+        ArgumentCaptor<SerializableConsumer> attachCaptor = ArgumentCaptor.forClass(SerializableConsumer.class);
+        Mockito.verify(stateNode, Mockito.times(number)).runWhenAttached(attachCaptor.capture());
 
         attachCaptor.getAllValues().forEach(consumer -> consumer.accept(ui));
 
-        Mockito.verify(stateTree, Mockito.times(number))
-                .beforeClientResponse(Mockito.any(), Mockito.any());
+        Mockito.verify(stateTree, Mockito.times(number)).beforeClientResponse(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -208,23 +203,19 @@ public class HierarchicalCommunicatorTest {
         communicator.expand(FOLDER);
         communicator.refresh(LEAF);
         // Replace dataprovider
-        communicator.setDataProvider(new TreeDataProvider<>(new TreeData<>()),
-                null);
+        communicator.setDataProvider(new TreeDataProvider<>(new TreeData<>()), null);
         dataProvider.refreshAll();
-        assertFalse("Stalled object in KeyMapper",
-                communicator.getKeyMapper().has(ROOT));
+        assertFalse("Stalled object in KeyMapper", communicator.getKeyMapper().has(ROOT));
         assertEquals(-1, communicator.getParentIndex(FOLDER).longValue());
     }
 
     /**
-     * Test for ensuring that when moving a root node to be a child node of
-     * another root node, the key is held in KeyMapper after two flush events.
+     * Test for ensuring that when moving a root node to be a child node of another root node, the key is held in
+     * KeyMapper after two flush events.
      *
-     * Related: <a href="https://github.com/vaadin/flow/issues/14351">Original
-     * issue</a> Related:
+     * Related: <a href="https://github.com/vaadin/flow/issues/14351">Original issue</a> Related:
      * <a href="https://github.com/vaadin/flow/pull/17774">Fix</a> Related:
-     * <a href="https://github.com/vaadin/flow-components/pull/5545">Integration
-     * Test</a>
+     * <a href="https://github.com/vaadin/flow-components/pull/5545">Integration Test</a>
      */
     @Test
     public void moveNodeFromRootToChildAndFlushTwice_keyShouldBeInKeyMapper() {
@@ -242,8 +233,7 @@ public class HierarchicalCommunicatorTest {
         communicator.confirmUpdate(1);
         invokeFlush();
 
-        assertTrue("SECONDROOT key is missing from KeyMapper",
-                communicator.getKeyMapper().has(secondRoot));
+        assertTrue("SECONDROOT key is missing from KeyMapper", communicator.getKeyMapper().has(secondRoot));
     }
 
     private void invokeFlush() {
@@ -264,8 +254,7 @@ public class HierarchicalCommunicatorTest {
         communicator.reset();
 
         Assert.assertEquals(1, enqueueFunctions.size());
-        Assert.assertEquals("$connector.ensureHierarchy",
-                enqueueFunctions.get(0));
+        Assert.assertEquals("$connector.ensureHierarchy", enqueueFunctions.get(0));
     }
 
     @Test
@@ -280,8 +269,7 @@ public class HierarchicalCommunicatorTest {
         // One expandItems and one ensureHierarchy for calling reset()
         Assert.assertEquals(3, enqueueFunctions.size());
         Assert.assertEquals("$connector.expandItems", enqueueFunctions.get(0));
-        Assert.assertEquals("$connector.ensureHierarchy",
-                enqueueFunctions.get(1));
+        Assert.assertEquals("$connector.ensureHierarchy", enqueueFunctions.get(1));
         Assert.assertEquals("$connector.expandItems", enqueueFunctions.get(2));
     }
 
@@ -296,12 +284,10 @@ public class HierarchicalCommunicatorTest {
         hierarchyTreeData.addItem("first-1", "second-1-1");
         hierarchyTreeData.addItem("first-2", "second-2-1");
 
-        TreeDataProvider<String> treeDataProvider = new TreeDataProvider<>(
-                hierarchyTreeData);
+        TreeDataProvider<String> treeDataProvider = new TreeDataProvider<>(hierarchyTreeData);
 
         HierarchicalDataCommunicator<String> dataCommunicator = new HierarchicalDataCommunicator<String>(
-                Mockito.mock(CompositeDataGenerator.class),
-                arrayUpdaterWithArguments, json -> {
+                Mockito.mock(CompositeDataGenerator.class), arrayUpdaterWithArguments, json -> {
                 }, stateNode, () -> null);
 
         dataCommunicator.setDataProvider(treeDataProvider, null);
@@ -311,10 +297,8 @@ public class HierarchicalCommunicatorTest {
 
         dataCommunicator.reset();
 
-        Assert.assertTrue(enqueueFunctionsWithParams
-                .containsKey("$connector.expandItems"));
-        JsonArray arguments = (JsonArray) enqueueFunctionsWithParams
-                .get("$connector.expandItems")[0];
+        Assert.assertTrue(enqueueFunctionsWithParams.containsKey("$connector.expandItems"));
+        JsonArray arguments = (JsonArray) enqueueFunctionsWithParams.get("$connector.expandItems")[0];
         Assert.assertNotNull(arguments);
         Assert.assertEquals(2, arguments.length());
 
@@ -327,10 +311,8 @@ public class HierarchicalCommunicatorTest {
         Assert.assertTrue(first1.hasKey("key"));
         Assert.assertTrue(root.hasKey("key"));
 
-        Assert.assertEquals(dataCommunicator.getKeyMapper().key("first-1"),
-                first1.getString("key"));
-        Assert.assertEquals(dataCommunicator.getKeyMapper().key("root"),
-                root.getString("key"));
+        Assert.assertEquals(dataCommunicator.getKeyMapper().key("first-1"), first1.getString("key"));
+        Assert.assertEquals(dataCommunicator.getKeyMapper().key("root"), root.getString("key"));
     }
 
     @Tag("test")

@@ -31,13 +31,11 @@ import java.util.Objects;
 public interface BackEndDataProvider<T, F> extends DataProvider<T, F> {
 
     /**
-     * Sets a list of sort orders to use as the default sorting for this data
-     * provider. This overrides the sorting set by any other method that
-     * manipulates the default sorting of this data provider.
+     * Sets a list of sort orders to use as the default sorting for this data provider. This overrides the sorting set
+     * by any other method that manipulates the default sorting of this data provider.
      * <p>
-     * The default sorting is used if the query defines no sorting. The default
-     * sorting is also used to determine the ordering of items that are
-     * considered equal by the sorting defined in the query.
+     * The default sorting is used if the query defines no sorting. The default sorting is also used to determine the
+     * ordering of items that are considered equal by the sorting defined in the query.
      *
      * @see #setSortOrder(QuerySortOrder)
      *
@@ -47,8 +45,8 @@ public interface BackEndDataProvider<T, F> extends DataProvider<T, F> {
     void setSortOrders(List<QuerySortOrder> sortOrders);
 
     /**
-     * Sets the sort order to use, given a {@link QuerySortOrderBuilder}.
-     * Shorthand for {@code setSortOrders(builder.build())}.
+     * Sets the sort order to use, given a {@link QuerySortOrderBuilder}. Shorthand for
+     * {@code setSortOrders(builder.build())}.
      *
      * @see QuerySortOrderBuilder
      *
@@ -63,19 +61,16 @@ public interface BackEndDataProvider<T, F> extends DataProvider<T, F> {
     }
 
     /**
-     * Sets a single sort order to use as the default sorting for this data
-     * provider. This overrides the sorting set by any other method that
-     * manipulates the default sorting of this data provider.
+     * Sets a single sort order to use as the default sorting for this data provider. This overrides the sorting set by
+     * any other method that manipulates the default sorting of this data provider.
      * <p>
-     * The default sorting is used if the query defines no sorting. The default
-     * sorting is also used to determine the ordering of items that are
-     * considered equal by the sorting defined in the query.
+     * The default sorting is used if the query defines no sorting. The default sorting is also used to determine the
+     * ordering of items that are considered equal by the sorting defined in the query.
      *
      * @see #setSortOrders(List)
      *
      * @param sortOrder
-     *            a sort order to set, or <code>null</code> to clear any
-     *            previously set sort orders
+     *            a sort order to set, or <code>null</code> to clear any previously set sort orders
      */
     default void setSortOrder(QuerySortOrder sortOrder) {
         if (sortOrder == null) {

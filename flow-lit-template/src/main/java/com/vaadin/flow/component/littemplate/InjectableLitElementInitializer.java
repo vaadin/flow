@@ -33,8 +33,7 @@ import com.vaadin.flow.dom.Element;
  * @since
  *
  */
-public class InjectableLitElementInitializer
-        extends AbstractInjectableElementInitializer {
+public class InjectableLitElementInitializer extends AbstractInjectableElementInitializer {
 
     private static final String DYNAMIC_ATTRIBUTE_PREFIX = "Template {} contains an attribute {} in element {} which";
     private final Class<? extends Component> templateClass;
@@ -47,8 +46,7 @@ public class InjectableLitElementInitializer
      * @param templateClass
      *            the class of the template component
      */
-    public InjectableLitElementInitializer(Element element,
-            Class<? extends Component> templateClass) {
+    public InjectableLitElementInitializer(Element element, Class<? extends Component> templateClass) {
         super(element);
         this.templateClass = templateClass;
     }
@@ -57,12 +55,10 @@ public class InjectableLitElementInitializer
     public void accept(Map<String, String> templateAttributes) {
         if (templateAttributes.containsKey("disabled")) {
             String errorMessage = String.format(
-                    "Lit template '%s' injected element '%s' with id '%s'"
-                            + " uses the disabled attribute.%n"
+                    "Lit template '%s' injected element '%s' with id '%s'" + " uses the disabled attribute.%n"
                             + "Mapped components should instead be disabled "
                             + "using the 'setEnabled(false)' method on the server side.",
-                    templateClass.getName(), getElement().getTag(),
-                    templateAttributes.get("id"));
+                    templateClass.getName(), getElement().getTag(), templateAttributes.get("id"));
             throw new IllegalAttributeException(errorMessage);
         }
         super.accept(templateAttributes);
@@ -73,27 +69,22 @@ public class InjectableLitElementInitializer
         if (name.startsWith("?")) {
             // this is a boolean attribute binding, ignore it since we don't
             // support bindings: the value is not an expression
-            getLogger().debug(
-                    "{} starts with '?' and ignored by initialization since this is an attribute binding",
-                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
-                    name, getElement().getTag());
+            getLogger().debug("{} starts with '?' and ignored by initialization since this is an attribute binding",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (name.startsWith(".")) {
             // this is a property binding, ignore it since we don't support
             // bindings: the value is not an expression
-            getLogger().debug(
-                    "{} starts with '.' and ignored by initialization since this is a property binding",
-                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
-                    name, getElement().getTag());
+            getLogger().debug("{} starts with '.' and ignored by initialization since this is a property binding",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (name.startsWith("@")) {
             // this is an event listener
             getLogger().debug(
                     "{} starts with '@' and ignored by initialization since this is an event listener declration",
-                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
-                    name, getElement().getTag());
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (value == null) {

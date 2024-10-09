@@ -42,31 +42,24 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-public class UpdateImportsWithByteCodeScannerTest
-        extends AbstractUpdateImportsTest {
+public class UpdateImportsWithByteCodeScannerTest extends AbstractUpdateImportsTest {
 
     private final static String CHUNK_PATTERN_STRING = "chunks\\/chunk-";
 
-    private final static Pattern CHUNK_PATTERN = Pattern
-            .compile(CHUNK_PATTERN_STRING);
+    private final static Pattern CHUNK_PATTERN = Pattern.compile(CHUNK_PATTERN_STRING);
 
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
-        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true);
+        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory().createScanner(false, finder, true);
     }
 
     @Test
     public void assertFullSortOrder() throws MalformedURLException {
         List<String> expectedJsModuleImports = new ArrayList<>();
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js';");
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else.js';");
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-something-else.js';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js';");
         expectedJsModuleImports.add("import 'jsmodule/h.js';");
         expectedJsModuleImports.add("import 'jsmodule/g.js';");
         expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
@@ -127,10 +120,8 @@ public class UpdateImportsWithByteCodeScannerTest
 
     @Test
     public void lazyRouteIsLazyLoaded() throws Exception {
-        Class<?>[] testClasses = { MainView.class, LazyAppConf.class,
-                NodeTestComponents.TranslatedImports.class,
-                NodeTestComponents.LocalP3Template.class, LazyRoute.class,
-                UI.class };
+        Class<?>[] testClasses = { MainView.class, LazyAppConf.class, NodeTestComponents.TranslatedImports.class,
+                NodeTestComponents.LocalP3Template.class, LazyRoute.class, UI.class };
 
         createExpectedLazyImports();
         ClassFinder classFinder = getClassFinder(testClasses);
@@ -139,12 +130,9 @@ public class UpdateImportsWithByteCodeScannerTest
 
         Map<File, List<String>> output = updater.getOutput();
 
-        File flowGeneratedFolder = FrontendUtils
-                .getFlowGeneratedFolder(frontendDirectory);
-        File flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendDirectory);
-        File flowGeneratedImportsDTs = new File(flowGeneratedFolder,
-                FrontendUtils.IMPORTS_D_TS_NAME);
+        File flowGeneratedFolder = FrontendUtils.getFlowGeneratedFolder(frontendDirectory);
+        File flowGeneratedImports = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
+        File flowGeneratedImportsDTs = new File(flowGeneratedFolder, FrontendUtils.IMPORTS_D_TS_NAME);
 
         Assert.assertTrue(output.containsKey(flowGeneratedImports));
         Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
@@ -153,22 +141,17 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertTrue(chunkFile.isPresent());
         Assert.assertTrue(output.containsKey(chunkFile.get()));
 
-        String mainImportContent = String.join("\n",
-                output.get(flowGeneratedImports));
-        String lazyChunkContent = String.join("\n",
-                output.get(chunkFile.get()));
+        String mainImportContent = String.join("\n", output.get(flowGeneratedImports));
+        String lazyChunkContent = String.join("\n", output.get(chunkFile.get()));
 
-        assertImports(mainImportContent, lazyChunkContent,
-                new String[] { "Frontend/local-p3-template.js", },
-                new String[] { "Frontend/lazy-component-javascript.js",
-                        "Frontend/lazy-component-jsmodule.js",
+        assertImports(mainImportContent, lazyChunkContent, new String[] { "Frontend/local-p3-template.js", },
+                new String[] { "Frontend/lazy-component-javascript.js", "Frontend/lazy-component-jsmodule.js",
                         "Frontend/lazy-component-cssimport.css" });
     }
 
     @Test
     public void lazyAndEagerRoutesProperlyHandled() throws Exception {
-        Class<?>[] testClasses = { LazyRoute.class, EagerRoute.class,
-                LazyEagerAppConf.class, UI.class };
+        Class<?>[] testClasses = { LazyRoute.class, EagerRoute.class, LazyEagerAppConf.class, UI.class };
 
         createExpectedLazyImports();
         ClassFinder classFinder = getClassFinder(testClasses);
@@ -177,12 +160,9 @@ public class UpdateImportsWithByteCodeScannerTest
 
         Map<File, List<String>> output = updater.getOutput();
 
-        File flowGeneratedFolder = FrontendUtils
-                .getFlowGeneratedFolder(frontendDirectory);
-        File flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendDirectory);
-        File flowGeneratedImportsDTs = new File(flowGeneratedFolder,
-                FrontendUtils.IMPORTS_D_TS_NAME);
+        File flowGeneratedFolder = FrontendUtils.getFlowGeneratedFolder(frontendDirectory);
+        File flowGeneratedImports = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
+        File flowGeneratedImportsDTs = new File(flowGeneratedFolder, FrontendUtils.IMPORTS_D_TS_NAME);
 
         Assert.assertTrue(output.containsKey(flowGeneratedImports));
         Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
@@ -191,106 +171,74 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertTrue(chunkFile.isPresent());
         Assert.assertTrue(output.containsKey(chunkFile.get()));
 
-        String mainImportContent = String.join("\n",
-                output.get(flowGeneratedImports));
-        String lazyChunkContent = String.join("\n",
-                output.get(chunkFile.get()));
+        String mainImportContent = String.join("\n", output.get(flowGeneratedImports));
+        String lazyChunkContent = String.join("\n", output.get(chunkFile.get()));
 
         assertImports(mainImportContent, lazyChunkContent,
-                new String[] { "Frontend/eager-component-cssimport.css",
-                        "Frontend/eager-component-javascript.js",
-                        "Frontend/eager-component-jsmodule-2.js",
-                        "Frontend/eager-component-jsmodule-1.js" },
-                new String[] { "Frontend/lazy-component-cssimport.css",
-                        "Frontend/lazy-component-javascript.js",
+                new String[] { "Frontend/eager-component-cssimport.css", "Frontend/eager-component-javascript.js",
+                        "Frontend/eager-component-jsmodule-2.js", "Frontend/eager-component-jsmodule-1.js" },
+                new String[] { "Frontend/lazy-component-cssimport.css", "Frontend/lazy-component-javascript.js",
                         "Frontend/lazy-component-jsmodule.js", });
     }
 
     private void createExpectedLazyImports() throws IOException {
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./lazy-component-javascript.js");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./lazy-component-jsmodule.js");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./lazy-component-cssimport.css");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./eager-component-javascript.js");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./eager-component-jsmodule-2.js");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./eager-component-jsmodule-1.js");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./eager-component-cssimport.css");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./lazy-component-javascript.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./lazy-component-jsmodule.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./lazy-component-cssimport.css");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./eager-component-javascript.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./eager-component-jsmodule-2.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./eager-component-jsmodule-1.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./eager-component-cssimport.css");
     }
 
     @Test
     public void lazyRouteTriggeredByOtherComponent() throws Exception {
         createExpectedLazyImports();
 
-        Class<?>[] testClasses = { LazyRouteWithOtherTrigger.class,
-                LazyAppConf.class, UI.class };
+        Class<?>[] testClasses = { LazyRouteWithOtherTrigger.class, LazyAppConf.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
-        File flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendDirectory);
-        String mainImportContent = String.join("\n",
-                output.get(flowGeneratedImports));
+        File flowGeneratedImports = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n", output.get(flowGeneratedImports));
 
         // Chunk named after route
-        Assert.assertEquals(1,
-                CHUNK_PATTERN.matcher(mainImportContent).results().count());
+        Assert.assertEquals(1, CHUNK_PATTERN.matcher(mainImportContent).results().count());
 
         // Trigger is only trigger and not route
-        String routeHash = StringUtil.getHash(
-                LazyRouteWithOtherTrigger.class.getName(),
-                StandardCharsets.UTF_8);
-        String triggerHash = StringUtil.getHash(TriggerClass1.class.getName(),
-                StandardCharsets.UTF_8);
-        Assert.assertTrue(
-                mainImportContent.contains("key === '" + triggerHash + "'"));
-        Assert.assertFalse(
-                mainImportContent.contains("key === '" + routeHash + "'"));
+        String routeHash = StringUtil.getHash(LazyRouteWithOtherTrigger.class.getName(), StandardCharsets.UTF_8);
+        String triggerHash = StringUtil.getHash(TriggerClass1.class.getName(), StandardCharsets.UTF_8);
+        Assert.assertTrue(mainImportContent.contains("key === '" + triggerHash + "'"));
+        Assert.assertFalse(mainImportContent.contains("key === '" + routeHash + "'"));
     }
 
     @Test
     public void lazyRouteTriggeredByOtherComponents() throws Exception {
         createExpectedLazyImports();
 
-        Class<?>[] testClasses = { LazyRouteWithOtherTriggers.class,
-                LazyAppConf.class, UI.class };
+        Class<?>[] testClasses = { LazyRouteWithOtherTriggers.class, LazyAppConf.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
-        File flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendDirectory);
-        String mainImportContent = String.join("\n",
-                output.get(flowGeneratedImports));
+        File flowGeneratedImports = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n", output.get(flowGeneratedImports));
 
-        String routeHash = StringUtil.getHash(
-                LazyRouteWithOtherTriggers.class.getName(),
-                StandardCharsets.UTF_8);
-        String trigger1Hash = StringUtil.getHash(TriggerClass1.class.getName(),
-                StandardCharsets.UTF_8);
-        String trigger2Hash = StringUtil.getHash(TriggerClass2.class.getName(),
-                StandardCharsets.UTF_8);
+        String routeHash = StringUtil.getHash(LazyRouteWithOtherTriggers.class.getName(), StandardCharsets.UTF_8);
+        String trigger1Hash = StringUtil.getHash(TriggerClass1.class.getName(), StandardCharsets.UTF_8);
+        String trigger2Hash = StringUtil.getHash(TriggerClass2.class.getName(), StandardCharsets.UTF_8);
         // Chunk named after route
-        Assert.assertEquals(1,
-                CHUNK_PATTERN.matcher(mainImportContent).results().count());
+        Assert.assertEquals(1, CHUNK_PATTERN.matcher(mainImportContent).results().count());
 
         // Trigger is only trigger and not route
-        Assert.assertTrue(
-                mainImportContent.contains("key === '" + trigger1Hash + "'"));
-        Assert.assertTrue(
-                mainImportContent.contains("key === '" + trigger2Hash + "'"));
-        Assert.assertFalse(
-                mainImportContent.contains("key === '" + routeHash + "'"));
+        Assert.assertTrue(mainImportContent.contains("key === '" + trigger1Hash + "'"));
+        Assert.assertTrue(mainImportContent.contains("key === '" + trigger2Hash + "'"));
+        Assert.assertFalse(mainImportContent.contains("key === '" + routeHash + "'"));
     }
 
     @Test
@@ -315,36 +263,27 @@ public class UpdateImportsWithByteCodeScannerTest
         assertOnce("injectGlobalCss($cssFromFile_0", chunkLines);
 
         // assert lines order is preserved
-        Assert.assertEquals(
-                "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n",
+        Assert.assertEquals("import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n",
                 chunkLines.get(0));
-        Assert.assertEquals(
-                "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';",
+        Assert.assertEquals("import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';",
                 chunkLines.get(1));
     }
 
-    private static Optional<File> findOptionalChunkFile(
-            Map<File, List<String>> output) {
-        return output.keySet().stream()
-                .filter(file -> file.getName().contains("chunk-")).findAny();
+    private static Optional<File> findOptionalChunkFile(Map<File, List<String>> output) {
+        return output.keySet().stream().filter(file -> file.getName().contains("chunk-")).findAny();
     }
 
-    private void assertImports(String mainImportContent,
-            String lazyImportContent, String[] mainImports,
+    private void assertImports(String mainImportContent, String lazyImportContent, String[] mainImports,
             String[] lazyImports) {
 
         for (String mainImport : mainImports) {
-            Assert.assertTrue("Main import should contain " + mainImport,
-                    mainImportContent.contains(mainImport));
-            Assert.assertFalse("Lazy import should not contain " + mainImport,
-                    lazyImportContent.contains(mainImport));
+            Assert.assertTrue("Main import should contain " + mainImport, mainImportContent.contains(mainImport));
+            Assert.assertFalse("Lazy import should not contain " + mainImport, lazyImportContent.contains(mainImport));
         }
 
         for (String lazyImport : lazyImports) {
-            Assert.assertFalse("Main import should not contain " + lazyImport,
-                    mainImportContent.contains(lazyImport));
-            Assert.assertTrue("Lazy import should contain " + lazyImport,
-                    lazyImportContent.contains(lazyImport));
+            Assert.assertFalse("Main import should not contain " + lazyImport, mainImportContent.contains(lazyImport));
+            Assert.assertTrue("Lazy import should contain " + lazyImport, lazyImportContent.contains(lazyImport));
         }
 
     }
@@ -375,8 +314,7 @@ public class UpdateImportsWithByteCodeScannerTest
     public void loginAndRootEagerByDefault() throws Exception {
         createExpectedLazyImports();
 
-        Class<?>[] testClasses = { RootView.class, LoginView.class,
-                OtherView.class, UI.class };
+        Class<?>[] testClasses = { RootView.class, LoginView.class, OtherView.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(getScanner(classFinder), options);
@@ -384,18 +322,14 @@ public class UpdateImportsWithByteCodeScannerTest
 
         Map<File, List<String>> output = updater.getOutput();
 
-        List<File> lazyChunks = output.keySet().stream()
-                .filter(file -> file.getName().contains("chunk-")).toList();
+        List<File> lazyChunks = output.keySet().stream().filter(file -> file.getName().contains("chunk-")).toList();
 
         Assert.assertEquals(1, lazyChunks.size());
 
-        File flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendDirectory);
-        String mainImportContent = String.join("\n",
-                output.get(flowGeneratedImports));
+        File flowGeneratedImports = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n", output.get(flowGeneratedImports));
 
-        Assert.assertEquals(1,
-                CHUNK_PATTERN.matcher(mainImportContent).results().count());
+        Assert.assertEquals(1, CHUNK_PATTERN.matcher(mainImportContent).results().count());
     }
 
     @Test
@@ -410,19 +344,15 @@ public class UpdateImportsWithByteCodeScannerTest
 
         Map<File, List<String>> output = updater.getOutput();
 
-        List<File> lazyChunks = output.keySet().stream()
-                .filter(file -> file.getName().contains("chunk-")).toList();
+        List<File> lazyChunks = output.keySet().stream().filter(file -> file.getName().contains("chunk-")).toList();
 
         // One chunk file is expected and two imports referring the same chunk
         Assert.assertEquals(1, lazyChunks.size());
 
-        File flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendDirectory);
-        String mainImportContent = String.join("\n",
-                output.get(flowGeneratedImports));
+        File flowGeneratedImports = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n", output.get(flowGeneratedImports));
 
-        Assert.assertEquals(2,
-                CHUNK_PATTERN.matcher(mainImportContent).results().count());
+        Assert.assertEquals(2, CHUNK_PATTERN.matcher(mainImportContent).results().count());
     }
 
 }

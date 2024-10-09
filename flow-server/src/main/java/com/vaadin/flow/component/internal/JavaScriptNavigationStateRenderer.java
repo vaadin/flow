@@ -40,8 +40,7 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     static final String NOT_SUPPORT_FORWARD_BEFORELEAVE = "BeforeLeaveEvent.forwardTo() is not supported. "
             + "You can use the combination between BeforeLeaveEvent.postpone() and "
-            + "UI.getPage().setLocation(\"{}\") "
-            + "in order to forward to other location";
+            + "UI.getPage().setLocation(\"{}\") " + "in order to forward to other location";
 
     static final String NOT_SUPPORT_REROUTE = "BeforeEvent.rerouteTo() with a client side route is not supported";
 
@@ -50,8 +49,7 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     private ContinueNavigationAction continueNavigationAction;
 
     /**
-     * Constructs a new NavigationStateRenderer that handles the given
-     * navigation state.
+     * Constructs a new NavigationStateRenderer that handles the given navigation state.
      *
      * @param navigationState
      *            the navigation state handled by this instance
@@ -72,19 +70,16 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     @Override
     public int handle(NavigationEvent event) {
 
-        continueNavigationAction = event.getUI().getInternals()
-                .getContinueNavigationAction();
+        continueNavigationAction = event.getUI().getInternals().getContinueNavigationAction();
 
         return super.handle(event);
     }
 
     @Override
-    protected Optional<Integer> handleTriggeredBeforeEvent(
-            NavigationEvent event, BeforeEvent beforeEvent) {
+    protected Optional<Integer> handleTriggeredBeforeEvent(NavigationEvent event, BeforeEvent beforeEvent) {
         if (beforeEvent.hasUnknownForward()) {
             if (beforeEvent instanceof BeforeLeaveEvent) {
-                getLogger().warn(NOT_SUPPORT_FORWARD_BEFORELEAVE,
-                        beforeEvent.getUnknownForward());
+                getLogger().warn(NOT_SUPPORT_FORWARD_BEFORELEAVE, beforeEvent.getUnknownForward());
 
             } else {
                 clientForwardRoute = beforeEvent.getUnknownForward();
@@ -101,8 +96,7 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     @Override
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        if (event.getUI().getInternals().getSession().getService()
-                .getDeploymentConfiguration().isReactEnabled()) {
+        if (event.getUI().getInternals().getSession().getService().getDeploymentConfiguration().isReactEnabled()) {
             return super.shouldPushHistoryState(event);
         }
         if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())
@@ -118,17 +112,14 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
         if (continueNavigationAction != null
                 // We're trying to navigate to a client view.
-                && UI.ClientViewPlaceholder.class.isAssignableFrom(
-                        getNavigationState().getNavigationTarget())) {
-            event.getUI().navigateToClient(
-                    event.getLocation().getPathWithQueryParameters());
+                && UI.ClientViewPlaceholder.class.isAssignableFrom(getNavigationState().getNavigationTarget())) {
+            event.getUI().navigateToClient(event.getLocation().getPathWithQueryParameters());
         }
 
     }
 
     private static Logger getLogger() {
-        return LoggerFactory
-                .getLogger(JavaScriptNavigationStateRenderer.class.getName());
+        return LoggerFactory.getLogger(JavaScriptNavigationStateRenderer.class.getName());
     }
 
 }

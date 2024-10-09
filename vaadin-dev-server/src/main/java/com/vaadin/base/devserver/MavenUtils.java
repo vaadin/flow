@@ -35,8 +35,7 @@ public class MavenUtils {
      *
      * @param projectFolder
      *            the project folder
-     * @return a parsed pom.xml if pom.xml exists or {@code null} if no pom.xml
-     *         was found or it could not be parsed
+     * @return a parsed pom.xml if pom.xml exists or {@code null} if no pom.xml was found or it could not be parsed
      */
     public static Document parsePomFileFromFolder(File projectFolder) {
         return parsePomFile(new File(projectFolder, "pom.xml"));
@@ -47,8 +46,8 @@ public class MavenUtils {
      *
      * @param pomFile
      *            the pom file
-     * @return a parsed pom.xml if the pom.xml file exists or {@code null} if no
-     *         pom.xml was found or it could not be parsed
+     * @return a parsed pom.xml if the pom.xml file exists or {@code null} if no pom.xml was found or it could not be
+     *         parsed
      */
     public static Document parsePomFile(File pomFile) {
         if (!pomFile.exists()) {
@@ -57,12 +56,8 @@ public class MavenUtils {
 
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setFeature(
-                    "http://xml.org/sax/features/external-general-entities",
-                    false);
-            dbf.setFeature(
-                    "http://xml.org/sax/features/external-parameter-entities",
-                    false);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             DocumentBuilder db = dbf.newDocumentBuilder();
             return db.parse(pomFile);
         } catch (Exception e) {
@@ -82,8 +77,7 @@ public class MavenUtils {
      * @return Text content of the first mach or null if not found.
      */
     static String getFirstElementTextByName(Node parent, String nodeName) {
-        return findChild(parent, nodeName).map(Node::getTextContent)
-                .orElse(null);
+        return findChild(parent, nodeName).map(Node::getTextContent).orElse(null);
     }
 
     /**
@@ -94,12 +88,9 @@ public class MavenUtils {
      * @return the groupId from the pom file
      */
     public static String getGroupId(Document pom) {
-        String groupId = getFirstElementTextByName(pom.getDocumentElement(),
-                "groupId");
+        String groupId = getFirstElementTextByName(pom.getDocumentElement(), "groupId");
         if (groupId == null) {
-            groupId = findParentTag(pom)
-                    .map(parentNode -> getFirstElementTextByName(parentNode,
-                            "groupId"))
+            groupId = findParentTag(pom).map(parentNode -> getFirstElementTextByName(parentNode, "groupId"))
                     .orElse(null);
         }
         return groupId;
@@ -117,19 +108,15 @@ public class MavenUtils {
      * @return the artifactId from the pom file
      */
     public static String getArtifactId(Document pom) {
-        return getFirstElementTextByName(pom.getDocumentElement(),
-                "artifactId");
+        return getFirstElementTextByName(pom.getDocumentElement(), "artifactId");
     }
 
     private static Optional<String> getParentArtifactId(Document pom) {
-        return findParentTag(pom)
-                .flatMap(parentNode -> findChild(parentNode, "artifactId"))
-                .map(Node::getTextContent);
+        return findParentTag(pom).flatMap(parentNode -> findChild(parentNode, "artifactId")).map(Node::getTextContent);
     }
 
     private static Optional<String> getParentRelativePath(Document pom) {
-        return findParentTag(pom)
-                .flatMap(parentNode -> findChild(parentNode, "relativePath"))
+        return findParentTag(pom).flatMap(parentNode -> findChild(parentNode, "relativePath"))
                 .map(Node::getTextContent);
     }
 
@@ -151,14 +138,12 @@ public class MavenUtils {
     }
 
     /**
-     * Gets the parent pom location for the given pom file, if the given pom
-     * file is part of a multi module project.
+     * Gets the parent pom location for the given pom file, if the given pom file is part of a multi module project.
      *
      * @param pomFile
      *            the pom file
-     * @return the location of the parent pom file or {@code null} if the given
-     *         pom file does not have a parent inside the same multi module
-     *         project
+     * @return the location of the parent pom file or {@code null} if the given pom file does not have a parent inside
+     *         the same multi module project
      */
     public static File getParentPomOfMultiModuleProject(File pomFile) {
         Document pom = parsePomFile(pomFile);
@@ -171,8 +156,7 @@ public class MavenUtils {
         }
 
         File pomFolder = pomFile.getParentFile();
-        File parentPomFile = getParentRelativePath(pom)
-                .map(relativePath -> new File(pomFolder, relativePath))
+        File parentPomFile = getParentRelativePath(pom).map(relativePath -> new File(pomFolder, relativePath))
                 .map(relativePath -> {
                     if (!relativePath.isFile()) {
                         // relative path can refer to a folder
@@ -199,24 +183,19 @@ public class MavenUtils {
     }
 
     /**
-     * Gets a list of the folders containing the sub modules for the given pom
-     * file.
+     * Gets a list of the folders containing the sub modules for the given pom file.
      *
      * @param pom
      *            the pom file containing sub modules
      * @return a list of folders for the sub modules
      */
     public static List<String> getModuleFolders(Document pom) {
-        return findChild(pom.getDocumentElement(), "modules").stream()
-                .flatMap(node -> findChildren(node, "module"))
-                .map(Node::getTextContent)
-                .map(possiblyFilename -> removeAfter(possiblyFilename, "/"))
-                .toList();
+        return findChild(pom.getDocumentElement(), "modules").stream().flatMap(node -> findChildren(node, "module"))
+                .map(Node::getTextContent).map(possiblyFilename -> removeAfter(possiblyFilename, "/")).toList();
     }
 
     /**
-     * Removes the part of the given string that comes after the (last) instance
-     * of the given delimiter.
+     * Removes the part of the given string that comes after the (last) instance of the given delimiter.
      *
      * Returns the original string if it does not contain the delimiter.
      *

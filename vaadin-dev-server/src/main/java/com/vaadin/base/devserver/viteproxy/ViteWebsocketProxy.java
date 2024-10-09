@@ -25,8 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Connects a brower-server websocket connection with a server-Vite websocket
- * connection.
+ * Connects a brower-server websocket connection with a server-Vite websocket connection.
  * <p>
  * Forwards all messages from one to the other.
  */
@@ -37,8 +36,7 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
     /**
      * Creates a new proxy for the given browser-server websocket connection.
      * <p>
-     * Opens a connection to the Vite server running on the given port and
-     * starts forwarding messages.
+     * Opens a connection to the Vite server running on the given port and starts forwarding messages.
      *
      * @param browserSession
      *            the websocket connection from the browser
@@ -47,32 +45,27 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
      * @param vitePath
      *            the path Vite is using
      */
-    public ViteWebsocketProxy(Session browserSession, Integer vitePort,
-            String vitePath) {
-        viteConnection = new ViteWebsocketConnection(vitePort, vitePath,
-                browserSession.getNegotiatedSubprotocol(), msg -> {
+    public ViteWebsocketProxy(Session browserSession, Integer vitePort, String vitePath) {
+        viteConnection = new ViteWebsocketConnection(vitePort, vitePath, browserSession.getNegotiatedSubprotocol(),
+                msg -> {
                     try {
                         browserSession.getBasicRemote().sendText(msg);
                         getLogger().debug("Message sent to browser: {}", msg);
                     } catch (IOException e) {
-                        getLogger().debug("Error sending message to browser",
-                                e);
+                        getLogger().debug("Error sending message to browser", e);
                     }
                 }, () -> {
                     try {
                         browserSession.close();
                     } catch (IOException e) {
-                        getLogger().debug("Error closing browser connection",
-                                e);
+                        getLogger().debug("Error closing browser connection", e);
                     }
                 }, err -> {
-                    getLogger().error("Error creating Vite proxy connection",
-                            err);
+                    getLogger().error("Error creating Vite proxy connection", err);
                     try {
                         browserSession.close();
                     } catch (IOException e1) {
-                        getLogger().debug("Error closing browser connection",
-                                e1);
+                        getLogger().debug("Error closing browser connection", e1);
                     }
                 });
     }

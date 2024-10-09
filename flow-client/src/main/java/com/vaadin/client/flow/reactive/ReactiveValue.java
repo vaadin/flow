@@ -18,26 +18,22 @@ package com.vaadin.client.flow.reactive;
 import elemental.events.EventRemover;
 
 /**
- * A reactive value fires reactive value change events when its value changes
- * and registers itself as dependent on the current computation when the value
- * is accessed.
+ * A reactive value fires reactive value change events when its value changes and registers itself as dependent on the
+ * current computation when the value is accessed.
  * <p>
- * A reactive value typically uses a {@link ReactiveEventRouter} for keeping
- * track of listeners, firing events and registering the value as dependent to
- * the current computation.
+ * A reactive value typically uses a {@link ReactiveEventRouter} for keeping track of listeners, firing events and
+ * registering the value as dependent to the current computation.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public interface ReactiveValue {
     /**
-     * Adds a listener that has a dependency to this value, and should be
-     * notified when this value changes.
+     * Adds a listener that has a dependency to this value, and should be notified when this value changes.
      *
      * @param reactiveValueChangeListener
      *            the listener to add
      * @return an event remover that can be used for removing the added listener
      */
-    EventRemover addReactiveValueChangeListener(
-            ReactiveValueChangeListener reactiveValueChangeListener);
+    EventRemover addReactiveValueChangeListener(ReactiveValueChangeListener reactiveValueChangeListener);
 }

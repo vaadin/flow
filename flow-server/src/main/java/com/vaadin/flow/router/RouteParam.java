@@ -18,8 +18,7 @@ package com.vaadin.flow.router;
 import com.vaadin.flow.internal.Pair;
 
 /**
- * Route parameter containing the name and the value used mainly when
- * constructing a {@link RouteParameters} instance.
+ * Route parameter containing the name and the value used mainly when constructing a {@link RouteParameters} instance.
  */
 public class RouteParam extends Pair<String, String> {
 

@@ -38,8 +38,8 @@ public class MapProperty implements ReactiveValue {
     private final NodeMap map;
 
     /**
-     * Indicates that the server update is in progress. While this is true we
-     * don't accept any changes via {@link #syncToServer(Object)} method.
+     * Indicates that the server update is in progress. While this is true we don't accept any changes via
+     * {@link #syncToServer(Object)} method.
      */
     private boolean isServerUpdate;
 
@@ -49,14 +49,12 @@ public class MapProperty implements ReactiveValue {
     private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
             this) {
         @Override
-        protected MapPropertyChangeListener wrap(
-                ReactiveValueChangeListener listener) {
+        protected MapPropertyChangeListener wrap(ReactiveValueChangeListener listener) {
             return listener::onValueChange;
         }
 
         @Override
-        protected void dispatchEvent(MapPropertyChangeListener listener,
-                MapPropertyChangeEvent event) {
+        protected void dispatchEvent(MapPropertyChangeListener listener, MapPropertyChangeEvent event) {
             listener.onPropertyChange(event);
         }
     };
@@ -86,8 +84,7 @@ public class MapProperty implements ReactiveValue {
      * @param map
      *            the map that the property belongs to
      * @param forceValueUpdate
-     *            whether value update for {@code name} property should be
-     *            applied regardless of previous value
+     *            whether value update for {@code name} property should be applied regardless of previous value
      */
     public MapProperty(String name, NodeMap map, boolean forceValueUpdate) {
         this.name = name;
@@ -124,14 +121,12 @@ public class MapProperty implements ReactiveValue {
     }
 
     /**
-     * Checks whether this property has a value. A property has a value if
-     * {@link #setValue(Object)} has been invoked after the property was created
-     * or {@link #removeValue()} was invoked.
+     * Checks whether this property has a value. A property has a value if {@link #setValue(Object)} has been invoked
+     * after the property was created or {@link #removeValue()} was invoked.
      *
      * @see #removeValue()
      *
-     * @return <code>true</code> if the property has a value, <code>false</code>
-     *         if the property has no value.
+     * @return <code>true</code> if the property has a value, <code>false</code> if the property has no value.
      */
     public boolean hasValue() {
         eventRouter.registerRead();
@@ -139,8 +134,7 @@ public class MapProperty implements ReactiveValue {
     }
 
     /**
-     * Sets the property value. Changing the value fires a
-     * {@link MapPropertyChangeEvent}.
+     * Sets the property value. Changing the value fires a {@link MapPropertyChangeEvent}.
      *
      * @see #addChangeListener(MapPropertyChangeListener)
      *
@@ -157,16 +151,13 @@ public class MapProperty implements ReactiveValue {
     }
 
     /**
-     * Removes the value of this property so that {@link #hasValue()} will
-     * return <code>false</code> and {@link #getValue()} will return
-     * <code>null</code> until the next time {@link #setValue(Object)} is run. A
-     * {@link MapPropertyChangeEvent} will be fired if this property has a
-     * value.
+     * Removes the value of this property so that {@link #hasValue()} will return <code>false</code> and
+     * {@link #getValue()} will return <code>null</code> until the next time {@link #setValue(Object)} is run. A
+     * {@link MapPropertyChangeEvent} will be fired if this property has a value.
      * <p>
-     * Once a property has been created, it can no longer be removed from its
-     * map. The same semantics as e.g. {@link Map#remove(Object)} is instead
-     * provided by marking the value of the property as removed to distinguish
-     * it from assigning <code>null</code> as the value.
+     * Once a property has been created, it can no longer be removed from its map. The same semantics as e.g.
+     * {@link Map#remove(Object)} is instead provided by marking the value of the property as removed to distinguish it
+     * from assigning <code>null</code> as the value.
      */
     public void removeValue() {
         if (hasValue) {
@@ -180,8 +171,7 @@ public class MapProperty implements ReactiveValue {
     }
 
     private void doSetValue(Object value) {
-        if (!forceValueUpdate && hasValue
-                && Objects.equals(value, this.value)) {
+        if (!forceValueUpdate && hasValue && Objects.equals(value, this.value)) {
             // Nothing to do
             return;
         }
@@ -194,13 +184,11 @@ public class MapProperty implements ReactiveValue {
         this.hasValue = hasValue;
         this.value = value;
 
-        eventRouter
-                .fireEvent(new MapPropertyChangeEvent(this, oldValue, value));
+        eventRouter.fireEvent(new MapPropertyChangeEvent(this, oldValue, value));
     }
 
     /**
-     * Adds a listener that gets notified when the value of this property
-     * changes.
+     * Adds a listener that gets notified when the value of this property changes.
      *
      * @param listener
      *            the property change listener to add
@@ -211,19 +199,17 @@ public class MapProperty implements ReactiveValue {
     }
 
     @Override
-    public EventRemover addReactiveValueChangeListener(
-            ReactiveValueChangeListener reactiveValueChangeListener) {
+    public EventRemover addReactiveValueChangeListener(ReactiveValueChangeListener reactiveValueChangeListener) {
         return eventRouter.addReactiveListener(reactiveValueChangeListener);
     }
 
     /**
-     * Returns the value, or the given defaultValue if the property does not
-     * have a value or the property value is null.
+     * Returns the value, or the given defaultValue if the property does not have a value or the property value is null.
      *
      * @param defaultValue
      *            the default value
-     * @return the value of the property or the default value if the property
-     *         does not have a value or the property value is null
+     * @return the value of the property or the default value if the property does not have a value or the property
+     *         value is null
      */
     public int getValueOrDefault(int defaultValue) {
         if (hasValue()) {
@@ -238,13 +224,12 @@ public class MapProperty implements ReactiveValue {
     }
 
     /**
-     * Returns the value, or the given defaultValue if the property does not
-     * have a value or the property value is null.
+     * Returns the value, or the given defaultValue if the property does not have a value or the property value is null.
      *
      * @param defaultValue
      *            the default value
-     * @return the value of the property or the default value if the property
-     *         does not have a value or the property value is null
+     * @return the value of the property or the default value if the property does not have a value or the property
+     *         value is null
      */
     public boolean getValueOrDefault(boolean defaultValue) {
         if (hasValue()) {
@@ -259,13 +244,12 @@ public class MapProperty implements ReactiveValue {
     }
 
     /**
-     * Returns the value, or the given defaultValue if the property does not
-     * have a value or the property value is null.
+     * Returns the value, or the given defaultValue if the property does not have a value or the property value is null.
      *
      * @param defaultValue
      *            the default value
-     * @return the value of the property or the default value if the property
-     *         does not have a value or the property value is null
+     * @return the value of the property or the default value if the property does not have a value or the property
+     *         value is null
      */
     public String getValueOrDefault(String defaultValue) {
         if (hasValue()) {
@@ -309,8 +293,7 @@ public class MapProperty implements ReactiveValue {
             // the same property from its observer).
             isServerUpdate = false;
         }
-        if (!(Objects.equals(newValue, currentValue) && hasValue())
-                && !isServerUpdate) {
+        if (!(Objects.equals(newValue, currentValue) && hasValue()) && !isServerUpdate) {
             StateNode node = getMap().getNode();
             StateTree tree = node.getTree();
             if (tree.isActive(node)) {
@@ -319,13 +302,11 @@ public class MapProperty implements ReactiveValue {
                 return () -> tree.sendNodePropertySyncToServer(this);
             } else {
                 /*
-                 * Fire an fake event to reset the property value back in the
-                 * DOM element: we don't know how exactly set this property but
-                 * it has to be set to the property value because of listener
-                 * added to the property during binding.
+                 * Fire an fake event to reset the property value back in the DOM element: we don't know how exactly set
+                 * this property but it has to be set to the property value because of listener added to the property
+                 * during binding.
                  */
-                eventRouter.fireEvent(new MapPropertyChangeEvent(this,
-                        currentValue, currentValue));
+                eventRouter.fireEvent(new MapPropertyChangeEvent(this, currentValue, currentValue));
                 // Flush is needed because we are out of normal lifecycle which
                 // call the flush() automatically.
                 Reactive.flush();

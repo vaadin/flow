@@ -30,8 +30,7 @@ public class RefreshCloseConnectionIT extends ChromeBrowserTest {
         waitUntil(driver -> getLastLog() != null);
 
         List<WebElement> logs = findElements(By.className("log"));
-        Set<String> set = logs.stream().map(element -> element.getText())
-                .collect(Collectors.toSet());
+        Set<String> set = logs.stream().map(element -> element.getText()).collect(Collectors.toSet());
 
         Assert.assertTrue(set.contains("Refresh"));
         Assert.assertTrue(set.contains("Push"));

@@ -28,14 +28,10 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
     public void serviceInit(ServiceInitEvent event) {
         event.addDependencyFilter((dependencies, context) -> {
             // used by DependencyFilterView
-            if (dependencies.stream().anyMatch(dependency -> dependency.getUrl()
-                    .endsWith("non-existing.css"))) {
+            if (dependencies.stream().anyMatch(dependency -> dependency.getUrl().endsWith("non-existing.css"))) {
                 List<Dependency> newList = new ArrayList<>();
-                newList.add(new Dependency(Dependency.Type.STYLESHEET,
-                        "/filtered.css", LoadMode.EAGER));
-                dependencies.stream()
-                        .filter(dependency -> !dependency.getUrl()
-                                .endsWith("non-existing.css"))
+                newList.add(new Dependency(Dependency.Type.STYLESHEET, "/filtered.css", LoadMode.EAGER));
+                dependencies.stream().filter(dependency -> !dependency.getUrl().endsWith("non-existing.css"))
                         .forEach(newList::add);
                 dependencies = newList;
             }

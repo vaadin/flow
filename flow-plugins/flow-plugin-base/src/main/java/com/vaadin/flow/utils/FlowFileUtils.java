@@ -36,22 +36,18 @@ public final class FlowFileUtils {
     }
 
     /**
-     * A {@link FileUtils#forceMkdir(File)} wrapper that handles
-     * {@link IOException}.
+     * A {@link FileUtils#forceMkdir(File)} wrapper that handles {@link IOException}.
      *
      * @param directory
      *            the directory to create, must not be {@code null}
      * @throws UncheckedIOException
-     *             if {@link FileUtils#forceMkdir(File)} throws
-     *             {@link IOException}
+     *             if {@link FileUtils#forceMkdir(File)} throws {@link IOException}
      */
     public static void forceMkdir(File directory) {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(directory));
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    String.format("Failed to create directory '%s'", directory),
-                    e);
+            throw new UncheckedIOException(String.format("Failed to create directory '%s'", directory), e);
         }
     }
 
@@ -68,9 +64,7 @@ public final class FlowFileUtils {
         try {
             return file.toURI().toURL();
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(
-                    String.format("Failed to convert file '%s' to URL", file),
-                    e);
+            throw new IllegalArgumentException(String.format("Failed to convert file '%s' to URL", file), e);
         }
     }
 }

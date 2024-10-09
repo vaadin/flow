@@ -61,8 +61,7 @@ class InvocationRequestBuilder {
         Objects.requireNonNull(version, "version is required");
         Objects.requireNonNull(goal, "goal is required");
         return new DefaultInvocationRequest()
-                .setGoals(Collections.singletonList(String.format("%s:%s:%s:%s",
-                        groupId, artifactId, version, goal)));
+                .setGoals(Collections.singletonList(String.format("%s:%s:%s:%s", groupId, artifactId, version, goal)));
     }
 
 }

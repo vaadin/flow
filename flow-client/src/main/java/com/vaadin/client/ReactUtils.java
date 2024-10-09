@@ -21,8 +21,7 @@ import java.util.function.Supplier;
 import elemental.dom.Element;
 
 /**
- * Utils class, intended to ease working with React component related code on
- * the client side.
+ * Utils class, intended to ease working with React component related code on the client side.
  *
  * @author Vaadin Ltd
  * @since 24.5.
@@ -30,8 +29,7 @@ import elemental.dom.Element;
 public final class ReactUtils {
 
     /**
-     * Add a callback to the react component that is called when the component
-     * initialization is ready for binding flow.
+     * Add a callback to the react component that is called when the component initialization is ready for binding flow.
      *
      * @param element
      *            react component element
@@ -40,8 +38,7 @@ public final class ReactUtils {
      * @param runnable
      *            callback function runnable
      */
-    public static native void addReadyCallback(Element element, String name,
-            Runnable runnable)
+    public static native void addReadyCallback(Element element, String name, Runnable runnable)
     /*-{
             if(element.addReadyCallback){
                 element.addReadyCallback(name,

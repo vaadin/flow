@@ -24,24 +24,19 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ServiceInitListenersView", layout = ViewTestLayout.class)
-public class ServiceInitListenersView extends Div
-        implements HasUrlParameter<Integer> {
+public class ServiceInitListenersView extends Div implements HasUrlParameter<Integer> {
     private static final String OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX = "Before init count: ";
     private final NativeLabel optionalParameterLabel;
 
     public ServiceInitListenersView() {
         optionalParameterLabel = new NativeLabel();
         add(optionalParameterLabel);
-        add(new NativeLabel(
-                "Init count: " + TestingServiceInitListener.getInitCount()));
-        add(new NativeLabel("Request count: "
-                + TestingServiceInitListener.getRequestCount()));
+        add(new NativeLabel("Init count: " + TestingServiceInitListener.getInitCount()));
+        add(new NativeLabel("Request count: " + TestingServiceInitListener.getRequestCount()));
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter Integer parameter) {
-        optionalParameterLabel
-                .setText(OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX + parameter);
+    public void setParameter(BeforeEvent event, @OptionalParameter Integer parameter) {
+        optionalParameterLabel.setText(OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX + parameter);
     }
 }

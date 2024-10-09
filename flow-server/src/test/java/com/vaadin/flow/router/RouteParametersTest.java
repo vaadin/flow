@@ -32,34 +32,23 @@ public class RouteParametersTest {
         RouteParameters parameters = getParameters();
 
         // String getter
-        Assert.assertEquals("Wrong value", "foo",
-                parameters.get("string").get());
-        Assert.assertEquals("Wrong value", "123",
-                parameters.get("integer").get());
-        Assert.assertEquals("Wrong value", "12345678900",
-                parameters.get("long").get());
-        Assert.assertEquals("Wrong value", "path/to/foo/bar",
-                parameters.get("varargs").get());
+        Assert.assertEquals("Wrong value", "foo", parameters.get("string").get());
+        Assert.assertEquals("Wrong value", "123", parameters.get("integer").get());
+        Assert.assertEquals("Wrong value", "12345678900", parameters.get("long").get());
+        Assert.assertEquals("Wrong value", "path/to/foo/bar", parameters.get("varargs").get());
 
         // Integer getter
-        Assert.assertEquals("Wrong value", Integer.valueOf(123),
-                parameters.getInteger("integer").get());
+        Assert.assertEquals("Wrong value", Integer.valueOf(123), parameters.getInteger("integer").get());
 
         // Long getter
-        Assert.assertEquals("Wrong value", Long.valueOf(123),
-                parameters.getLong("integer").get());
-        Assert.assertEquals("Wrong value", Long.valueOf(12345678900L),
-                parameters.getLong("long").get());
+        Assert.assertEquals("Wrong value", Long.valueOf(123), parameters.getLong("integer").get());
+        Assert.assertEquals("Wrong value", Long.valueOf(12345678900L), parameters.getLong("long").get());
 
         // Wildcard getter
-        Assert.assertEquals("Wrong value", Arrays.asList("foo"),
-                parameters.getWildcard("string"));
-        Assert.assertEquals("Wrong value", Arrays.asList("123"),
-                parameters.getWildcard("integer"));
-        Assert.assertEquals("Wrong value", Arrays.asList("12345678900"),
-                parameters.getWildcard("long"));
-        Assert.assertEquals("Wrong value",
-                Arrays.asList("path", "to", "foo", "bar"),
+        Assert.assertEquals("Wrong value", Arrays.asList("foo"), parameters.getWildcard("string"));
+        Assert.assertEquals("Wrong value", Arrays.asList("123"), parameters.getWildcard("integer"));
+        Assert.assertEquals("Wrong value", Arrays.asList("12345678900"), parameters.getWildcard("long"));
+        Assert.assertEquals("Wrong value", Arrays.asList("path", "to", "foo", "bar"),
                 parameters.getWildcard("varargs"));
     }
 
@@ -67,18 +56,14 @@ public class RouteParametersTest {
     public void getters_provide_empty_values() {
         RouteParameters parameters = getParameters();
 
-        Assert.assertFalse(
-                "Getting the String value of a non-existing parameter should return empty Optional",
+        Assert.assertFalse("Getting the String value of a non-existing parameter should return empty Optional",
                 parameters.get("foo").isPresent());
-        Assert.assertFalse(
-                "Getting the Integer value of a non-existing parameter should return empty Optional",
+        Assert.assertFalse("Getting the Integer value of a non-existing parameter should return empty Optional",
                 parameters.getInteger("foo").isPresent());
-        Assert.assertFalse(
-                "Getting the Long value of a non-existing parameter should return empty Optional",
+        Assert.assertFalse("Getting the Long value of a non-existing parameter should return empty Optional",
                 parameters.getLong("foo").isPresent());
 
-        Assert.assertTrue(
-                "Getting the Wildcard value of a non-existing parameter should return empty List",
+        Assert.assertTrue("Getting the Wildcard value of a non-existing parameter should return empty List",
                 parameters.getWildcard("foo").isEmpty());
     }
 
@@ -87,8 +72,7 @@ public class RouteParametersTest {
         RouteParameters parameters = getParameters();
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Couldn't parse 'string' parameter value 'foo' as integer");
+        exception.expectMessage("Couldn't parse 'string' parameter value 'foo' as integer");
 
         parameters.getInteger("string");
     }
@@ -98,8 +82,7 @@ public class RouteParametersTest {
         RouteParameters parameters = getParameters();
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Couldn't parse 'long' parameter value '12345678900' as integer");
+        exception.expectMessage("Couldn't parse 'long' parameter value '12345678900' as integer");
 
         parameters.getInteger("long");
     }
@@ -109,8 +92,7 @@ public class RouteParametersTest {
         RouteParameters parameters = getParameters();
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as integer");
+        exception.expectMessage("Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as integer");
 
         parameters.getInteger("varargs");
     }
@@ -120,8 +102,7 @@ public class RouteParametersTest {
         RouteParameters parameters = getParameters();
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as long");
+        exception.expectMessage("Couldn't parse 'varargs' parameter value 'path/to/foo/bar' as long");
 
         parameters.getLong("varargs");
     }
@@ -131,8 +112,7 @@ public class RouteParametersTest {
         RouteParameters parameters = getParameters();
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Couldn't parse 'string' parameter value 'foo' as long");
+        exception.expectMessage("Couldn't parse 'string' parameter value 'foo' as long");
 
         parameters.getLong("string");
     }
@@ -140,20 +120,16 @@ public class RouteParametersTest {
     @Test
     public void varargs_initializer_throws_exception() {
         try {
-            new RouteParameters(new RouteParam("int", "123"),
-                    new RouteParam("int", "123"));
+            new RouteParameters(new RouteParam("int", "123"), new RouteParam("int", "123"));
 
-            Assert.fail(
-                    "RouteParameters initializer should have failed with same parameter defined more than once.");
+            Assert.fail("RouteParameters initializer should have failed with same parameter defined more than once.");
         } catch (IllegalArgumentException e) {
         }
     }
 
     private RouteParameters getParameters() {
-        return new RouteParameters(new RouteParam("string", "foo"),
-                new RouteParam("integer", "123"),
-                new RouteParam("long", "12345678900"),
-                new RouteParam("varargs", "path/to/foo/bar"));
+        return new RouteParameters(new RouteParam("string", "foo"), new RouteParam("integer", "123"),
+                new RouteParam("long", "12345678900"), new RouteParam("varargs", "path/to/foo/bar"));
     }
 
 }

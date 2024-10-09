@@ -31,8 +31,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import elemental.events.EventRemover;
 
 public class MapPropertyTest {
-    private MapProperty property = new MapProperty("foo",
-            new NodeMap(0, new StateNode(0, new StateTree(null))));
+    private MapProperty property = new MapProperty("foo", new NodeMap(0, new StateNode(0, new StateTree(null))));
 
     private static class TestTree extends StateTree {
 
@@ -83,8 +82,7 @@ public class MapPropertyTest {
         Assert.assertEquals("foo", event.getNewValue());
 
         property.setValue("foo");
-        Assert.assertSame("No new event should have fired", event,
-                lastEvent.get());
+        Assert.assertSame("No new event should have fired", event, lastEvent.get());
 
         lastEvent.set(null);
         property.removeValue();
@@ -93,8 +91,7 @@ public class MapPropertyTest {
         Assert.assertNull(removeEvent.getNewValue());
 
         property.removeValue();
-        Assert.assertSame("No new event should have fired", removeEvent,
-                lastEvent.get());
+        Assert.assertSame("No new event should have fired", removeEvent, lastEvent.get());
 
         lastEvent.set(null);
         property.setValue(null);
@@ -105,14 +102,12 @@ public class MapPropertyTest {
 
         property.setValue("bar");
 
-        Assert.assertSame("No new event should have fired", addBackEvent,
-                lastEvent.get());
+        Assert.assertSame("No new event should have fired", addBackEvent, lastEvent.get());
     }
 
     @Test
     public void testReactive() {
-        CountingComputation computation = new CountingComputation(
-                () -> property.getValue());
+        CountingComputation computation = new CountingComputation(() -> property.getValue());
 
         Reactive.flush();
 
@@ -130,8 +125,7 @@ public class MapPropertyTest {
 
     @Test
     public void testHasValueReactive() {
-        CountingComputation computation = new CountingComputation(
-                () -> property.hasValue());
+        CountingComputation computation = new CountingComputation(() -> property.hasValue());
 
         Reactive.flush();
 
@@ -206,8 +200,7 @@ public class MapPropertyTest {
 
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.syncToServer("bar");
 
@@ -222,8 +215,7 @@ public class MapPropertyTest {
 
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         AtomicReference<MapPropertyChangeEvent> event = new AtomicReference<MapPropertyChangeEvent>();
         property.addChangeListener(event::set);
@@ -248,8 +240,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.setValue("bar");
 
@@ -263,8 +254,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.setValue("bar");
 
@@ -280,8 +270,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.setValue("bar");
 
@@ -297,8 +286,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.setValue("bar");
 
@@ -314,8 +302,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.setValue("bar");
 
@@ -333,8 +320,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(7, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.setValue("bar");
 
@@ -352,8 +338,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(11, tree);
 
-        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty("foo");
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("foo");
 
         property.syncToServer(null);
         Assert.assertEquals(property, tree.sentProperty);
@@ -364,8 +349,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(13, tree);
 
-        MapProperty property = new MapProperty("foo",
-                node.getMap(NodeFeatures.ELEMENT_PROPERTIES), true);
+        MapProperty property = new MapProperty("foo", node.getMap(NodeFeatures.ELEMENT_PROPERTIES), true);
 
         AtomicReference<MapPropertyChangeEvent> capture = new AtomicReference<>();
         property.addChangeListener(capture::set);
@@ -386,8 +370,7 @@ public class MapPropertyTest {
         TestTree tree = new TestTree();
         StateNode node = new StateNode(13, tree);
 
-        MapProperty property = new MapProperty("foo",
-                node.getMap(NodeFeatures.ELEMENT_PROPERTIES), false);
+        MapProperty property = new MapProperty("foo", node.getMap(NodeFeatures.ELEMENT_PROPERTIES), false);
 
         AtomicReference<MapPropertyChangeEvent> capture = new AtomicReference<>();
         property.addChangeListener(capture::set);

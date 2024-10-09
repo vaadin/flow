@@ -40,40 +40,23 @@ public class VaadinServletTest {
 
     @Test
     public void testGetLastPathParameter() {
-        Assert.assertEquals("",
-                VaadinServlet.getLastPathParameter("http://myhost.com"));
-        Assert.assertEquals(";a",
-                VaadinServlet.getLastPathParameter("http://myhost.com;a"));
-        Assert.assertEquals("",
-                VaadinServlet.getLastPathParameter("http://myhost.com/hello"));
-        Assert.assertEquals(";b=c", VaadinServlet
-                .getLastPathParameter("http://myhost.com/hello;b=c"));
-        Assert.assertEquals("",
-                VaadinServlet.getLastPathParameter("http://myhost.com/hello/"));
-        Assert.assertEquals("", VaadinServlet
-                .getLastPathParameter("http://myhost.com/hello;a/"));
-        Assert.assertEquals("", VaadinServlet
-                .getLastPathParameter("http://myhost.com/hello;a=1/"));
-        Assert.assertEquals(";b", VaadinServlet
-                .getLastPathParameter("http://myhost.com/hello/;b"));
-        Assert.assertEquals(";b=1", VaadinServlet
-                .getLastPathParameter("http://myhost.com/hello/;b=1"));
-        Assert.assertEquals(";b=1,c=2", VaadinServlet
-                .getLastPathParameter("http://myhost.com/hello/;b=1,c=2"));
-        Assert.assertEquals("", VaadinServlet
-                .getLastPathParameter("http://myhost.com/hello/;b=1,c=2/"));
-        Assert.assertEquals("", VaadinServlet
-                .getLastPathParameter("http://myhost.com/a;hello/;a/"));
-        Assert.assertEquals("", VaadinServlet
-                .getLastPathParameter("http://myhost.com/a;hello/;a=1/"));
-        Assert.assertEquals(";b", VaadinServlet
-                .getLastPathParameter("http://myhost.com/a;hello/;b"));
-        Assert.assertEquals(";b=1", VaadinServlet
-                .getLastPathParameter("http://myhost.com/a;hello/;b=1"));
-        Assert.assertEquals(";b=1,c=2", VaadinServlet
-                .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2"));
-        Assert.assertEquals("", VaadinServlet
-                .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com"));
+        Assert.assertEquals(";a", VaadinServlet.getLastPathParameter("http://myhost.com;a"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/hello"));
+        Assert.assertEquals(";b=c", VaadinServlet.getLastPathParameter("http://myhost.com/hello;b=c"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/hello/"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/hello;a/"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/hello;a=1/"));
+        Assert.assertEquals(";b", VaadinServlet.getLastPathParameter("http://myhost.com/hello/;b"));
+        Assert.assertEquals(";b=1", VaadinServlet.getLastPathParameter("http://myhost.com/hello/;b=1"));
+        Assert.assertEquals(";b=1,c=2", VaadinServlet.getLastPathParameter("http://myhost.com/hello/;b=1,c=2"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/hello/;b=1,c=2/"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/a;hello/;a/"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/a;hello/;a=1/"));
+        Assert.assertEquals(";b", VaadinServlet.getLastPathParameter("http://myhost.com/a;hello/;b"));
+        Assert.assertEquals(";b=1", VaadinServlet.getLastPathParameter("http://myhost.com/a;hello/;b=1"));
+        Assert.assertEquals(";b=1,c=2", VaadinServlet.getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2"));
+        Assert.assertEquals("", VaadinServlet.getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
     }
 
     @Test
@@ -99,8 +82,7 @@ public class VaadinServletTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void init_passDifferentConfigInstance_throws()
-            throws ServletException {
+    public void init_passDifferentConfigInstance_throws() throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
 
         ServletConfig config = mockConfig();
@@ -110,8 +92,7 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void init_noLookup_servletIsNotInitialized()
-            throws ServletException {
+    public void init_noLookup_servletIsNotInitialized() throws ServletException {
         AtomicBoolean called = new AtomicBoolean();
         VaadinServlet servlet = new VaadinServlet() {
 
@@ -128,20 +109,17 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void init_contextHasLookup_servletIsInitialized()
-            throws ServletException {
+    public void init_contextHasLookup_servletIsInitialized() throws ServletException {
         AtomicBoolean called = new AtomicBoolean();
         VaadinServlet servlet = new VaadinServlet() {
 
             @Override
-            protected VaadinServletService createServletService()
-                    throws ServletException, ServiceException {
+            protected VaadinServletService createServletService() throws ServletException, ServiceException {
                 return Mockito.mock(VaadinServletService.class);
             }
 
             @Override
-            protected StaticFileHandler createStaticFileHandler(
-                    VaadinService servletService) {
+            protected StaticFileHandler createStaticFileHandler(VaadinService servletService) {
                 return Mockito.mock(StaticFileHandler.class);
             }
 
@@ -153,16 +131,14 @@ public class VaadinServletTest {
 
         ServletConfig config = mockConfig();
         ServletContext servletContext = config.getServletContext();
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                .thenReturn(Mockito.mock(Lookup.class));
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName())).thenReturn(Mockito.mock(Lookup.class));
         servlet.init(config);
 
         Assert.assertTrue(called.get());
     }
 
     @Test
-    public void init_initServlet_CurrentInstanceClearAllIsCalled()
-            throws ServletException {
+    public void init_initServlet_CurrentInstanceClearAllIsCalled() throws ServletException {
         try {
             VaadinServlet servlet = new VaadinServlet() {
 
@@ -172,15 +148,13 @@ public class VaadinServletTest {
                 }
 
                 @Override
-                protected VaadinServletService createServletService()
-                        throws ServletException, ServiceException {
+                protected VaadinServletService createServletService() throws ServletException, ServiceException {
                     VaadinService.setCurrent(Mockito.mock(VaadinService.class));
                     return Mockito.mock(VaadinServletService.class);
                 }
 
                 @Override
-                protected StaticFileHandler createStaticFileHandler(
-                        VaadinService servletService) {
+                protected StaticFileHandler createStaticFileHandler(VaadinService servletService) {
                     return Mockito.mock(StaticFileHandler.class);
                 }
 
@@ -192,8 +166,7 @@ public class VaadinServletTest {
 
             ServletConfig config = mockConfig();
             ServletContext servletContext = config.getServletContext();
-            Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                    .thenReturn(Mockito.mock(Lookup.class));
+            Mockito.when(servletContext.getAttribute(Lookup.class.getName())).thenReturn(Mockito.mock(Lookup.class));
             servlet.init(config);
 
             Assert.assertNull(VaadinService.getCurrent());
@@ -205,8 +178,7 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void init_initOnlyConfig_CurrentInstanceClearAllIsCalled()
-            throws ServletException {
+    public void init_initOnlyConfig_CurrentInstanceClearAllIsCalled() throws ServletException {
         try {
             VaadinServlet servlet = new VaadinServlet() {
 
@@ -238,8 +210,7 @@ public class VaadinServletTest {
 
         ArgumentCaptor<ApplicationClassLoaderAccess> captor = ArgumentCaptor
                 .forClass(ApplicationClassLoaderAccess.class);
-        Mockito.verify(servletContext).setAttribute(
-                Mockito.eq(ApplicationClassLoaderAccess.class.getName()),
+        Mockito.verify(servletContext).setAttribute(Mockito.eq(ApplicationClassLoaderAccess.class.getName()),
                 captor.capture());
 
         ApplicationClassLoaderAccess access = captor.getValue();
@@ -254,18 +225,14 @@ public class VaadinServletTest {
         ServletContext servletContext = config.getServletContext();
         ClassLoader loader = Mockito.mock(ClassLoader.class);
 
-        VaadinContextInitializer initializer = Mockito
-                .mock(VaadinContextInitializer.class);
+        VaadinContextInitializer initializer = Mockito.mock(VaadinContextInitializer.class);
 
-        Mockito.when(servletContext
-                .getAttribute(VaadinContextInitializer.class.getName()))
-                .thenReturn(initializer);
+        Mockito.when(servletContext.getAttribute(VaadinContextInitializer.class.getName())).thenReturn(initializer);
 
         Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
         servlet.init(config);
 
-        Mockito.verify(initializer)
-                .initialize(Mockito.any(VaadinContext.class));
+        Mockito.verify(initializer).initialize(Mockito.any(VaadinContext.class));
     }
 
     @Test
@@ -287,8 +254,7 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void destroy_servletIsInitializedBeforeDestroy_servletConfigIsNullAfterDestroy()
-            throws ServletException {
+    public void destroy_servletIsInitializedBeforeDestroy_servletConfigIsNullAfterDestroy() throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
 
         ServletConfig config = mockConfig();
@@ -309,11 +275,9 @@ public class VaadinServletTest {
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
-        StaticFileHandlerFactory factory = Mockito
-                .mock(StaticFileHandlerFactory.class);
+        StaticFileHandlerFactory factory = Mockito.mock(StaticFileHandlerFactory.class);
 
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
-                .thenReturn(factory);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(factory);
 
         StaticFileHandler handler = Mockito.mock(StaticFileHandler.class);
         Mockito.when(factory.createHandler(service)).thenReturn(handler);
@@ -325,8 +289,7 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void destroy_servletConfigAvailableInServbiceDestroy()
-            throws ServletException {
+    public void destroy_servletConfigAvailableInServbiceDestroy() throws ServletException {
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
         VaadinServlet servlet = new VaadinServlet() {
             @Override
@@ -357,12 +320,9 @@ public class VaadinServletTest {
         return config;
     }
 
-    private HttpServletRequest createRequest(
-            MockServletServiceSessionSetup mocks, String path) {
-        HttpServletRequest httpServletRequest = Mockito
-                .mock(HttpServletRequest.class);
-        return new VaadinServletRequest(httpServletRequest,
-                mocks.getService()) {
+    private HttpServletRequest createRequest(MockServletServiceSessionSetup mocks, String path) {
+        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+        return new VaadinServletRequest(httpServletRequest, mocks.getService()) {
             @Override
             public String getPathInfo() {
                 return path;

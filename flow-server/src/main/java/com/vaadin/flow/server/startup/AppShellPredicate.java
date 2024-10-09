@@ -18,8 +18,7 @@ package com.vaadin.flow.server.startup;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 
 /**
- * Checks whether the provided class is an {@link AppShellConfigurator} eligible
- * for the web application.
+ * Checks whether the provided class is an {@link AppShellConfigurator} eligible for the web application.
  *
  * @author Vaadin Ltd
  * @since
@@ -29,8 +28,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 public interface AppShellPredicate {
 
     /**
-     * Checks whether the class is an {@link AppShellConfigurator} class inside
-     * the web application.
+     * Checks whether the class is an {@link AppShellConfigurator} class inside the web application.
      *
      * @param clz
      *            the class to check , not {@code null}

@@ -67,9 +67,8 @@ public final class DefaultFileDownloader implements FileDownloader {
     }
 
     @Override
-    public void download(URI downloadURI, File destination, String userName,
-            String password, ProgressListener progressListener)
-            throws DownloadException {
+    public void download(URI downloadURI, File destination, String userName, String password,
+            ProgressListener progressListener) throws DownloadException {
         this.userName = userName;
         this.password = password;
 
@@ -94,73 +93,58 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
     }
 
-    private void downloadFile(File destination, URI downloadUri,
-            ProgressListener progressListener)
+    private void downloadFile(File destination, URI downloadUri, ProgressListener progressListener)
             throws IOException, DownloadException {
 
-        HttpClient.Builder clientBuilder = HttpClient.newBuilder()
-                .version(Version.HTTP_1_1).followRedirects(Redirect.NORMAL);
+        HttpClient.Builder clientBuilder = HttpClient.newBuilder().version(Version.HTTP_1_1)
+                .followRedirects(Redirect.NORMAL);
 
-        ProxyConfig.Proxy proxy = proxyConfig
-                .getProxyForUrl(downloadUri.toString());
+        ProxyConfig.Proxy proxy = proxyConfig.getProxyForUrl(downloadUri.toString());
 
         if (proxy != null) {
             getLogger().debug("Downloading via proxy {}", proxy.toString());
-            clientBuilder = clientBuilder.proxy(ProxySelector
-                    .of(new InetSocketAddress(proxy.host, proxy.port)));
+            clientBuilder = clientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxy.host, proxy.port)));
             clientBuilder = clientBuilder.authenticator(new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     if (getRequestorType() == RequestorType.PROXY) {
-                        return new PasswordAuthentication(proxy.username,
-                                proxy.password.toCharArray());
+                        return new PasswordAuthentication(proxy.username, proxy.password.toCharArray());
                     }
-                    return new PasswordAuthentication(userName,
-                            password.toCharArray());
+                    return new PasswordAuthentication(userName, password.toCharArray());
                 }
             });
         } else {
             getLogger().debug("No proxy was configured, downloading directly");
-            if (userName != null && !userName.isEmpty() && password != null
-                    && !password.isEmpty()) {
+            if (userName != null && !userName.isEmpty() && password != null && !password.isEmpty()) {
                 getLogger().info("Using credentials ({})", userName);
-                clientBuilder = clientBuilder
-                        .authenticator(new Authenticator() {
-                            @Override
-                            protected PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(userName,
-                                        password.toCharArray());
-                            }
-                        });
+                clientBuilder = clientBuilder.authenticator(new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(userName, password.toCharArray());
+                    }
+                });
 
             }
         }
 
         HttpClient client = clientBuilder.build();
-        HttpRequest request = HttpRequest.newBuilder().uri(downloadUri).GET()
-                .build();
+        HttpRequest request = HttpRequest.newBuilder().uri(downloadUri).GET().build();
 
         try {
-            BodyHandler<InputStream> bodyHandler = HttpResponse.BodyHandlers
-                    .ofInputStream();
+            BodyHandler<InputStream> bodyHandler = HttpResponse.BodyHandlers.ofInputStream();
 
-            HttpResponse<InputStream> response = client.send(request,
-                    bodyHandler);
+            HttpResponse<InputStream> response = client.send(request, bodyHandler);
             if (response.statusCode() != 200) {
-                throw new DownloadException("Got error code "
-                        + response.statusCode() + " from the server.");
+                throw new DownloadException("Got error code " + response.statusCode() + " from the server.");
             }
-            long contentLength = response.headers()
-                    .firstValueAsLong("Content-Length").getAsLong();
+            long contentLength = response.headers().firstValueAsLong("Content-Length").getAsLong();
 
-            try (FileOutputStream out = FileUtils
-                    .openOutputStream(destination)) {
+            try (FileOutputStream out = FileUtils.openOutputStream(destination)) {
                 copy(response.body(), out, contentLength, progressListener);
             }
 
             if (destination.length() != contentLength) {
-                throw new DownloadException("Error downloading from "
-                        + downloadUri + ". Expected " + contentLength
+                throw new DownloadException("Error downloading from " + downloadUri + ". Expected " + contentLength
                         + " bytes but got " + destination.length());
             }
 
@@ -184,8 +168,8 @@ public final class DefaultFileDownloader implements FileDownloader {
      * @return the number of bytes copied
      * @throws IOException
      */
-    long copy(InputStream inputStream, OutputStream outputStream, long total,
-            ProgressListener progressListener) throws IOException {
+    long copy(InputStream inputStream, OutputStream outputStream, long total, ProgressListener progressListener)
+            throws IOException {
         Objects.requireNonNull(inputStream, "inputStream");
         Objects.requireNonNull(outputStream, "outputStream");
         byte[] buffer = IOUtils.byteArray(IOUtils.DEFAULT_BUFFER_SIZE);
@@ -197,18 +181,16 @@ public final class DefaultFileDownloader implements FileDownloader {
             outputStream.write(buffer, 0, n);
             count += n;
 
-            lastReportedProgress = reportProgress(progressListener, total,
-                    count, lastReportedProgress);
+            lastReportedProgress = reportProgress(progressListener, total, count, lastReportedProgress);
         }
         if (lastReportedProgress != 1.0 && lastReportedProgress != total) {
-            lastReportedProgress = reportProgress(progressListener, total,
-                    count, 0.0);
+            lastReportedProgress = reportProgress(progressListener, total, count, 0.0);
         }
         return count;
     }
 
-    private double reportProgress(ProgressListener progressListener, long total,
-            long count, double lastReportedProgress) {
+    private double reportProgress(ProgressListener progressListener, long total, long count,
+            double lastReportedProgress) {
         // Progress reporting
         if (progressListener == null) {
             return lastReportedProgress;

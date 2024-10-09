@@ -23,12 +23,11 @@ import com.vaadin.flow.shared.Registration;
 import elemental.json.JsonObject;
 
 /**
- * A {@link DataGenerator} that aggregates multiple DataGenerators and delegates
- * the data generation to them. It doesn't generate or destroy any data by its
- * own.
+ * A {@link DataGenerator} that aggregates multiple DataGenerators and delegates the data generation to them. It doesn't
+ * generate or destroy any data by its own.
  * <p>
- * It is used by components that need to add and remove DataGenerators
- * dynamically, or that support multiple layers of data generation.
+ * It is used by components that need to add and remove DataGenerators dynamically, or that support multiple layers of
+ * data generation.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -36,15 +35,13 @@ import elemental.json.JsonObject;
  * @param <T>
  *            the data type of the underlying DataGenerators
  */
-public class CompositeDataGenerator<T>
-        implements DataGenerator<T>, HasDataGenerators<T> {
+public class CompositeDataGenerator<T> implements DataGenerator<T>, HasDataGenerators<T> {
 
     final Set<DataGenerator<T>> dataGenerators = new LinkedHashSet<>();
 
     @Override
     public void generateData(T item, JsonObject jsonObject) {
-        dataGenerators
-                .forEach(generator -> generator.generateData(item, jsonObject));
+        dataGenerators.forEach(generator -> generator.generateData(item, jsonObject));
     }
 
     @Override

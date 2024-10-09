@@ -20,15 +20,13 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 
 @Theme(themeClass = MyTheme.class)
-public class ThemedComponentExporter
-        extends WebComponentExporter<ThemedComponent> {
+public class ThemedComponentExporter extends WebComponentExporter<ThemedComponent> {
     public ThemedComponentExporter() {
         super("themed-web-component");
     }
 
     @Override
-    public void configureInstance(WebComponent<ThemedComponent> webComponent,
-            ThemedComponent component) {
+    public void configureInstance(WebComponent<ThemedComponent> webComponent, ThemedComponent component) {
 
     }
 }

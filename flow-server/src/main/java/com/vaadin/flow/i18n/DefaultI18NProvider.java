@@ -27,8 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default i18n provider that will be initialized if custom {@link I18NProvider}
- * is not available.
+ * Default i18n provider that will be initialized if custom {@link I18NProvider} is not available.
  */
 public class DefaultI18NProvider implements I18NProvider {
 
@@ -38,33 +37,28 @@ public class DefaultI18NProvider implements I18NProvider {
     public static final String BUNDLE_FOLDER = "vaadin-i18n";
     public static final String BUNDLE_FILENAME = "translations";
     // Get bundles named `translations` from `vaadin-i18n` folder.
-    public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
-            + BUNDLE_FILENAME;
+    public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "." + BUNDLE_FILENAME;
 
     /**
-     * Construct {@link DefaultI18NProvider} for a list of locales that we have
-     * translations for.
+     * Construct {@link DefaultI18NProvider} for a list of locales that we have translations for.
      *
      * @param providedLocales
-     *            List of locales. The first locale should be the default
-     *            locale.
+     *            List of locales. The first locale should be the default locale.
      */
     public DefaultI18NProvider(List<Locale> providedLocales) {
         this(providedLocales, DefaultI18NProvider.class.getClassLoader());
     }
 
     /**
-     * Construct {@link DefaultI18NProvider} for a list of locales that we have
-     * translations for. Enables giving a specific classloader if needed.
+     * Construct {@link DefaultI18NProvider} for a list of locales that we have translations for. Enables giving a
+     * specific classloader if needed.
      *
      * @param providedLocales
-     *            List of locales. The first locale should be the default
-     *            locale.
+     *            List of locales. The first locale should be the default locale.
      * @param classLoader
      *            ClassLoader to use for loading translation bundles.
      */
-    public DefaultI18NProvider(List<Locale> providedLocales,
-            ClassLoader classLoader) {
+    public DefaultI18NProvider(List<Locale> providedLocales, ClassLoader classLoader) {
         this.providedLocales = Collections.unmodifiableList(providedLocales);
         this.classLoader = classLoader;
     }
@@ -103,8 +97,8 @@ public class DefaultI18NProvider implements I18NProvider {
         try {
             return getBundle(locale, null);
         } catch (final MissingResourceException e) {
-            getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX
-                    + " and locale " + locale.getDisplayName(), e);
+            getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX + " and locale " + locale.getDisplayName(),
+                    e);
         }
         return null;
     }
@@ -113,8 +107,7 @@ public class DefaultI18NProvider implements I18NProvider {
         if (control == null) {
             return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader);
         }
-        return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader,
-                control);
+        return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader, control);
     }
 
     static Logger getLogger() {

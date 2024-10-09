@@ -21,31 +21,26 @@ import java.util.stream.Stream;
 import com.vaadin.flow.dom.Element;
 
 /**
- * A component which the children components are ordered, so the index of each
- * child matters for the layout.
+ * A component which the children components are ordered, so the index of each child matters for the layout.
  *
  * @since 1.0
  */
 public interface HasOrderedComponents extends HasComponents {
 
     /**
-     * Replaces the component in the container with another one without changing
-     * position. This method replaces component with another one is such way
-     * that the new component overtakes the position of the old component. If
-     * the old component is not in the container, the new component is added to
-     * the container. If the both component are already in the container, their
-     * positions are swapped. Component attach and detach events should be taken
-     * care as with add and remove.
+     * Replaces the component in the container with another one without changing position. This method replaces
+     * component with another one is such way that the new component overtakes the position of the old component. If the
+     * old component is not in the container, the new component is added to the container. If the both component are
+     * already in the container, their positions are swapped. Component attach and detach events should be taken care as
+     * with add and remove.
      *
      * @param oldComponent
-     *            the old component that will be replaced. Can be
-     *            <code>null</code>, which will make the newComponent to be
-     *            added to the layout without replacing any other
+     *            the old component that will be replaced. Can be <code>null</code>, which will make the newComponent to
+     *            be added to the layout without replacing any other
      *
      * @param newComponent
-     *            the new component to be replaced. Can be <code>null</code>,
-     *            which will make the oldComponent to be removed from the layout
-     *            without adding any other
+     *            the new component to be replaced. Can be <code>null</code>, which will make the oldComponent to be
+     *            removed from the layout without adding any other
      */
     default void replace(Component oldComponent, Component newComponent) {
         if (oldComponent == null && newComponent == null) {
@@ -80,8 +75,7 @@ public interface HasOrderedComponents extends HasComponents {
      */
     default int indexOf(Component component) {
         if (component == null) {
-            throw new IllegalArgumentException(
-                    "The 'component' parameter cannot be null");
+            throw new IllegalArgumentException("The 'component' parameter cannot be null");
         }
         Iterator<Component> it = getChildren().sequential().iterator();
         int index = 0;
@@ -108,24 +102,21 @@ public interface HasOrderedComponents extends HasComponents {
      * Returns the component at the given position.
      *
      * @param index
-     *            the position of the component, must be greater than or equals
-     *            to 0 and less than the number of children components
+     *            the position of the component, must be greater than or equals to 0 and less than the number of
+     *            children components
      * @return The component at the given index
      * @throws IllegalArgumentException
-     *             if the index is less than 0 or greater than or equals to the
-     *             number of children components
+     *             if the index is less than 0 or greater than or equals to the number of children components
      * @see #getComponentCount()
      */
     default Component getComponentAt(int index) {
         if (index < 0) {
             throw new IllegalArgumentException(
-                    "The 'index' argument should be greater than or equal to 0. It was: "
-                            + index);
+                    "The 'index' argument should be greater than or equal to 0. It was: " + index);
         }
-        return getChildren().sequential().skip(index).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "The 'index' argument should not be greater than or equals to the number of children components. It was: "
-                                + index));
+        return getChildren().sequential().skip(index).findFirst().orElseThrow(() -> new IllegalArgumentException(
+                "The 'index' argument should not be greater than or equals to the number of children components. It was: "
+                        + index));
     }
 
     /**

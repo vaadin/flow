@@ -86,11 +86,9 @@ public class MapPutChange extends NodeFeatureChange {
 
         if (value instanceof StateNode) {
             StateNode node = (StateNode) value;
-            json.put(JsonConstants.CHANGE_PUT_NODE_VALUE,
-                    Json.create(node.getId()));
+            json.put(JsonConstants.CHANGE_PUT_NODE_VALUE, Json.create(node.getId()));
         } else {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
-                    JsonCodec.encodeWithConstantPool(value, constantPool));
+            json.put(JsonConstants.CHANGE_PUT_VALUE, JsonCodec.encodeWithConstantPool(value, constantPool));
         }
     }
 }

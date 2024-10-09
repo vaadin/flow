@@ -31,20 +31,16 @@ public class StringLengthValidator extends AbstractValidator<String> {
     private final RangeValidator<Integer> validator;
 
     /**
-     * Creates a new StringLengthValidator with a given error message and
-     * minimum and maximum length limits.
+     * Creates a new StringLengthValidator with a given error message and minimum and maximum length limits.
      *
      * @param errorMessage
      *            the error message to return if validation fails
      * @param minLength
-     *            the minimum permissible length of the string or null for no
-     *            limit.
+     *            the minimum permissible length of the string or null for no limit.
      * @param maxLength
-     *            the maximum permissible length of the string or null for no
-     *            limit.
+     *            the maximum permissible length of the string or null for no limit.
      */
-    public StringLengthValidator(String errorMessage, Integer minLength,
-            Integer maxLength) {
+    public StringLengthValidator(String errorMessage, Integer minLength, Integer maxLength) {
         super(errorMessage);
         validator = RangeValidator.of(errorMessage, minLength, maxLength);
     }
@@ -98,8 +94,7 @@ public class StringLengthValidator extends AbstractValidator<String> {
 
     @Override
     public String toString() {
-        return String.format("%s[%d, %d]", getClass().getSimpleName(),
-                getMinLength(), getMaxLength());
+        return String.format("%s[%d, %d]", getClass().getSimpleName(), getMinLength(), getMaxLength());
     }
 
 }

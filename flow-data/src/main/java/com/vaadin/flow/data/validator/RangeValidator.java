@@ -38,11 +38,9 @@ public class RangeValidator<T> extends AbstractValidator<T> {
     private final Comparator<? super T> comparator;
 
     /**
-     * Creates a new range validator of the given type. Passing null to either
-     * {@code minValue} or {@code maxValue} means there is no limit in that
-     * direction. Both limits may be null; this can be useful if the limits are
-     * resolved programmatically. The result of passing null to {@code apply}
-     * depends on the given comparator.
+     * Creates a new range validator of the given type. Passing null to either {@code minValue} or {@code maxValue}
+     * means there is no limit in that direction. Both limits may be null; this can be useful if the limits are resolved
+     * programmatically. The result of passing null to {@code apply} depends on the given comparator.
      *
      * @param errorMessage
      *            the error message to return if validation fails, not null
@@ -53,8 +51,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      * @param maxValue
      *            the greatest value of the accepted range or null for no limit
      */
-    public RangeValidator(String errorMessage, Comparator<? super T> comparator,
-            T minValue, T maxValue) {
+    public RangeValidator(String errorMessage, Comparator<? super T> comparator, T minValue, T maxValue) {
         super(errorMessage);
         Objects.requireNonNull(comparator, "comparator cannot be null");
 
@@ -66,14 +63,12 @@ public class RangeValidator<T> extends AbstractValidator<T> {
     }
 
     /**
-     * Returns a {@code RangeValidator} comparing values of a {@code Comparable}
-     * type using their <i>natural order</i>. Passing null to either
-     * {@code minValue} or {@code maxValue} means there is no limit in that
-     * direction. Both limits may be null; this can be useful if the limits are
-     * resolved programmatically.
+     * Returns a {@code RangeValidator} comparing values of a {@code Comparable} type using their <i>natural order</i>.
+     * Passing null to either {@code minValue} or {@code maxValue} means there is no limit in that direction. Both
+     * limits may be null; this can be useful if the limits are resolved programmatically.
      * <p>
-     * Null is considered to be less than any non-null value. This means null
-     * never passes validation if a minimum value is specified.
+     * Null is considered to be less than any non-null value. This means null never passes validation if a minimum value
+     * is specified.
      *
      * @param <C>
      *            the {@code Comparable} value type
@@ -85,17 +80,13 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      *            the greatest value of the accepted range or null for no limit
      * @return the new validator
      */
-    public static <C extends Comparable<? super C>> RangeValidator<C> of(
-            String errorMessage, C minValue, C maxValue) {
-        return new RangeValidator<>(errorMessage,
-                Comparator.nullsFirst(Comparator.naturalOrder()), minValue,
-                maxValue);
+    public static <C extends Comparable<? super C>> RangeValidator<C> of(String errorMessage, C minValue, C maxValue) {
+        return new RangeValidator<>(errorMessage, Comparator.nullsFirst(Comparator.naturalOrder()), minValue, maxValue);
     }
 
     /**
-     * Returns {@code Result.ok} if the value is within the specified bounds,
-     * {@code Result.error} otherwise. If null is passed to {@code apply}, the
-     * behavior depends on the used comparator.
+     * Returns {@code Result.ok} if the value is within the specified bounds, {@code Result.error} otherwise. If null is
+     * passed to {@code apply}, the behavior depends on the used comparator.
      */
     @Override
     public ValidationResult apply(T value, ValueContext context) {
@@ -115,8 +106,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      * Sets whether the minimum value is part of the accepted range.
      *
      * @param minValueIncluded
-     *            true if the minimum value should be part of the range, false
-     *            otherwise
+     *            true if the minimum value should be part of the range, false otherwise
      */
     public void setMinValueIncluded(boolean minValueIncluded) {
         this.minValueIncluded = minValueIncluded;
@@ -135,8 +125,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      * Sets whether the maximum value is part of the accepted range.
      *
      * @param maxValueIncluded
-     *            true if the maximum value should be part of the range, false
-     *            otherwise
+     *            true if the maximum value should be part of the range, false otherwise
      */
     public void setMaxValueIncluded(boolean maxValueIncluded) {
         this.maxValueIncluded = maxValueIncluded;
@@ -152,8 +141,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
     }
 
     /**
-     * Sets the minimum value of the range. Use
-     * {@link #setMinValueIncluded(boolean)} to control whether this value is
+     * Sets the minimum value of the range. Use {@link #setMinValueIncluded(boolean)} to control whether this value is
      * part of the range or not.
      *
      * @param minValue
@@ -173,8 +161,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
     }
 
     /**
-     * Sets the maximum value of the range. Use
-     * {@link #setMaxValueIncluded(boolean)} to control whether this value is
+     * Sets the maximum value of the range. Use {@link #setMaxValueIncluded(boolean)} to control whether this value is
      * part of the range or not.
      *
      * @param maxValue
@@ -192,8 +179,8 @@ public class RangeValidator<T> extends AbstractValidator<T> {
         char closeBracket = isMaxValueIncluded() ? ']' : ')';
         Object minValue = min != null ? min : "-∞";
         Object maxValue = max != null ? max : "∞";
-        return String.format("%s %c%s, %s%c", getClass().getSimpleName(),
-                openBracket, minValue, maxValue, closeBracket);
+        return String.format("%s %c%s, %s%c", getClass().getSimpleName(), openBracket, minValue, maxValue,
+                closeBracket);
     }
 
     /**

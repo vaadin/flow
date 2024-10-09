@@ -35,23 +35,21 @@ public class ServerSidePostponeView extends Div implements BeforeLeaveObserver {
         add(new Text("Server view postpone"));
         setId("serverPostponeView");
 
-        final NativeButton serverViewButton = new NativeButton(
-                "Other Server View", buttonClickEvent -> {
-                    final UI ui = buttonClickEvent.getSource().getUI().get();
+        final NativeButton serverViewButton = new NativeButton("Other Server View", buttonClickEvent -> {
+            final UI ui = buttonClickEvent.getSource().getUI().get();
 
-                    ui.navigate(ServerSideView.class);
-                });
+            ui.navigate(ServerSideView.class);
+        });
         serverViewButton.setId("goToServerView");
         add(serverViewButton);
 
         add(new RouterLink("RouterLink Server View", ServerSideView.class));
 
-        final NativeButton clientViewButton = new NativeButton("Client View",
-                buttonClickEvent -> {
-                    final UI ui = buttonClickEvent.getSource().getUI().get();
+        final NativeButton clientViewButton = new NativeButton("Client View", buttonClickEvent -> {
+            final UI ui = buttonClickEvent.getSource().getUI().get();
 
-                    ui.navigate("client-view");
-                });
+            ui.navigate("client-view");
+        });
         clientViewButton.setId("goToClientView");
         add(clientViewButton);
     }

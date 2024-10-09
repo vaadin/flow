@@ -12,8 +12,7 @@ public class SetInitialTextIT extends ChromeBrowserTest {
     public void setText_updateDomViaClientSide_updateElementViaServerSide_allElementsArePreserved() {
         open();
 
-        TestBenchElement template = $(TestBenchElement.class)
-                .id("set-initial-text");
+        TestBenchElement template = $(TestBenchElement.class).id("set-initial-text");
         // add a child via client side
         template.$(TestBenchElement.class).id("addClientSideChild").click();
 
@@ -24,10 +23,8 @@ public class SetInitialTextIT extends ChromeBrowserTest {
 
         TestBenchElement child = template.$(TestBenchElement.class).id("child");
 
-        Assert.assertTrue(child.$(TestBenchElement.class)
-                .attribute("id", "client-side").exists());
-        Assert.assertTrue(child.$(TestBenchElement.class)
-                .attribute("id", "new-child").exists());
+        Assert.assertTrue(child.$(TestBenchElement.class).attribute("id", "client-side").exists());
+        Assert.assertTrue(child.$(TestBenchElement.class).attribute("id", "new-child").exists());
     }
 
 }

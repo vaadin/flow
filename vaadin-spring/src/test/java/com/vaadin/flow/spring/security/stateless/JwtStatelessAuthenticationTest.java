@@ -80,10 +80,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @WebMvcTest
-@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class,
-        JwtStatelessAuthenticationTest.WorkaroundConfig.class,
-        JwtStatelessAuthenticationTest.SecurityConfig.class })
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class, SpringSecurityAutoConfiguration.class,
+        JwtStatelessAuthenticationTest.WorkaroundConfig.class, JwtStatelessAuthenticationTest.SecurityConfig.class })
 @TestPropertySource(properties = """
         spring.main.allow-bean-definition-overriding=true
         """)
@@ -100,15 +98,13 @@ class JwtStatelessAuthenticationTest {
 
     @BeforeEach
     void setup() {
-        mvc = MockMvcBuilders.webAppContextSetup(context).apply(
-                springSecurity(new FilterChainProxy(securityFilterChain)))
-                .build();
+        mvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity(new FilterChainProxy(securityFilterChain))).build();
     }
 
     @Test
     void publicResource_notAuthenticated_jwtCookieNotSet() throws Exception {
-        mvc.perform(get("/")).andExpect(status().isOk())
-                .andExpect(cookie().doesNotExist("jwt.headerAndPayload"))
+        mvc.perform(get("/")).andExpect(status().isOk()).andExpect(cookie().doesNotExist("jwt.headerAndPayload"))
                 .andExpect(cookie().doesNotExist("jwt.signature"));
     }
 
@@ -116,8 +112,7 @@ class JwtStatelessAuthenticationTest {
     @WithMockUser
     void publicResource_authenticated_jwtCookieSet() throws Exception {
         mvc.perform(get("/")).andExpect(status().isOk())
-                .andExpect(
-                        cookie().maxAge("jwt.headerAndPayload", greaterThan(0)))
+                .andExpect(cookie().maxAge("jwt.headerAndPayload", greaterThan(0)))
                 .andExpect(cookie().maxAge("jwt.signature", greaterThan(0)));
     }
 
@@ -130,70 +125,53 @@ class JwtStatelessAuthenticationTest {
     void authenticated_jwtCookieUpdatedAtEveryRequest() throws Exception {
         MvcResult result = doLogin();
 
-        Cookie jwtCookie = result.getResponse()
-                .getCookie("jwt.headerAndPayload");
+        Cookie jwtCookie = result.getResponse().getCookie("jwt.headerAndPayload");
         Cookie jwtSignature = result.getResponse().getCookie("jwt.signature");
 
         // Wait for a while, to be sure expire time is different
         Thread.sleep(1500);
-        result = this.mvc
-                .perform(get("/protected").with(csrfCookie()).cookie(jwtCookie,
-                        jwtSignature))
-                .andExpect(status().isOk())
-                .andExpect(authenticated().withUsername("user"))
-                .andExpect(cookie().exists("jwt.signature"))
-                .andExpect(cookie().exists("jwt.headerAndPayload")).andReturn();
+        result = this.mvc.perform(get("/protected").with(csrfCookie()).cookie(jwtCookie, jwtSignature))
+                .andExpect(status().isOk()).andExpect(authenticated().withUsername("user"))
+                .andExpect(cookie().exists("jwt.signature")).andExpect(cookie().exists("jwt.headerAndPayload"))
+                .andReturn();
 
-        Cookie jwtCookie2 = result.getResponse()
-                .getCookie("jwt.headerAndPayload");
+        Cookie jwtCookie2 = result.getResponse().getCookie("jwt.headerAndPayload");
         Assertions.assertNotEquals(jwtCookie.getValue(), jwtCookie2.getValue());
         Cookie jwtSignature2 = result.getResponse().getCookie("jwt.signature");
-        Assertions.assertNotEquals(jwtSignature.getValue(),
-                jwtSignature2.getValue());
+        Assertions.assertNotEquals(jwtSignature.getValue(), jwtSignature2.getValue());
     }
 
     @Test
     void logout_jwtCookieExpired() throws Exception {
         MvcResult loginResult = doLogin();
-        this.mvc.perform(post("/logout").with(csrfCookie())
-                .cookie(jwtCookiesFromResult(loginResult)))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("/"))
-                .andExpect(unauthenticated())
-                .andExpect(cookie().maxAge("jwt.signature", 0))
-                .andExpect(cookie().maxAge("jwt.headerAndPayload", 0));
+        this.mvc.perform(post("/logout").with(csrfCookie()).cookie(jwtCookiesFromResult(loginResult)))
+                .andExpect(status().isFound()).andExpect(redirectedUrl("/")).andExpect(unauthenticated())
+                .andExpect(cookie().maxAge("jwt.signature", 0)).andExpect(cookie().maxAge("jwt.headerAndPayload", 0));
     }
 
     private Cookie[] jwtCookiesFromResult(MvcResult result) {
-        Cookie jwtCookie = result.getResponse()
-                .getCookie("jwt.headerAndPayload");
+        Cookie jwtCookie = result.getResponse().getCookie("jwt.headerAndPayload");
         Cookie jwtSignature = result.getResponse().getCookie("jwt.signature");
         return new Cookie[] { jwtCookie, jwtSignature };
     }
 
     private MvcResult doLogin() throws Exception {
         return this.mvc
-                .perform(post("/login").param("username", "user")
-                        .param("password", "password").with(csrfCookie()))
+                .perform(post("/login").param("username", "user").param("password", "password").with(csrfCookie()))
                 .andExpect(status().isFound()).andExpect(redirectedUrl("/"))
                 .andExpect(authenticated().withUsername("user"))
                 .andExpect(cookie().maxAge("jwt.signature", greaterThan(0)))
-                .andExpect(
-                        cookie().maxAge("jwt.headerAndPayload", greaterThan(0)))
-                .andReturn();
+                .andExpect(cookie().maxAge("jwt.headerAndPayload", greaterThan(0))).andReturn();
     }
 
     private static RequestPostProcessor csrfCookie() {
         return request -> {
-            CsrfTokenRepository repository = WebTestUtils
-                    .getCsrfTokenRepository(request);
-            CsrfTokenRequestHandler handler = WebTestUtils
-                    .getCsrfTokenRequestHandler(request);
+            CsrfTokenRepository repository = WebTestUtils.getCsrfTokenRepository(request);
+            CsrfTokenRequestHandler handler = WebTestUtils.getCsrfTokenRequestHandler(request);
             MockHttpServletResponse response = new MockHttpServletResponse();
-            DeferredCsrfToken deferredCsrfToken = repository
-                    .loadDeferredToken(request, response);
+            DeferredCsrfToken deferredCsrfToken = repository.loadDeferredToken(request, response);
             handler.handle(request, response, deferredCsrfToken::get);
-            CsrfToken token = (CsrfToken) request
-                    .getAttribute(CsrfToken.class.getName());
+            CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
             token.getToken();
             Cookie csrfCookie = response.getCookie("XSRF-TOKEN");
             request.addHeader("X-XSRF-TOKEN", csrfCookie.getValue());
@@ -218,21 +196,18 @@ class JwtStatelessAuthenticationTest {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.authorizeHttpRequests(
-                    auth -> auth.requestMatchers(antMatchers("/")).permitAll());
+            http.authorizeHttpRequests(auth -> auth.requestMatchers(antMatchers("/")).permitAll());
             super.configure(http);
             setLoginView(http, "login");
             setStatelessAuthentication(http,
-                    new SecretKeySpec(Base64.getDecoder().decode(
-                            "YOc+XUfRA/cPGNTEsHfU897W0VYF1nrLNWrsGEI1rBw="),
+                    new SecretKeySpec(Base64.getDecoder().decode("YOc+XUfRA/cPGNTEsHfU897W0VYF1nrLNWrsGEI1rBw="),
                             JwsAlgorithms.HS256),
                     "someone", 2000);
         }
 
         @Bean
         UserDetailsService userDetailsService() {
-            UserDetails user = User.withDefaultPasswordEncoder()
-                    .username("user").password("password").roles("USER")
+            UserDetails user = User.withDefaultPasswordEncoder().username("user").password("password").roles("USER")
                     .build();
             return new InMemoryUserDetailsManager(user);
         }

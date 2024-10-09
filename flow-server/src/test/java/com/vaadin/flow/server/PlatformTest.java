@@ -55,8 +55,7 @@ public class PlatformTest {
         Platform.vaadinVersion = null;
     }
 
-    private void fakeVaadinHilla(String vaadinVersion, String hillaVersion)
-            throws IOException {
+    private void fakeVaadinHilla(String vaadinVersion, String hillaVersion) throws IOException {
         Platform.hillaVersion = null;
         Platform.vaadinVersion = null;
 
@@ -64,8 +63,7 @@ public class PlatformTest {
 
         if (hillaVersion != null) {
             final Path hillaJar = temporary.newFolder().toPath();
-            final Path pomProperties = hillaJar
-                    .resolve(Platform.HILLA_POM_PROPERTIES);
+            final Path pomProperties = hillaJar.resolve(Platform.HILLA_POM_PROPERTIES);
             Files.createDirectories(pomProperties.getParent());
             Files.writeString(pomProperties, "version=" + hillaVersion);
             classPath.add(hillaJar.toUri().toURL());
@@ -73,8 +71,7 @@ public class PlatformTest {
 
         if (vaadinVersion != null) {
             final Path vaadinJar = temporary.newFolder().toPath();
-            final Path pomProperties = vaadinJar.resolve(
-                    "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
+            final Path pomProperties = vaadinJar.resolve("META-INF/maven/com.vaadin/vaadin-core/pom.properties");
             Files.createDirectories(pomProperties.getParent());
             Files.writeString(pomProperties, "version=" + vaadinVersion);
             classPath.add(vaadinJar.toUri().toURL());
@@ -83,8 +80,7 @@ public class PlatformTest {
         if (classPath.isEmpty()) {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         } else {
-            final URLClassLoader classLoader = new URLClassLoader(
-                    classPath.toArray(new URL[0]), null);
+            final URLClassLoader classLoader = new URLClassLoader(classPath.toArray(new URL[0]), null);
             Thread.currentThread().setContextClassLoader(classLoader);
         }
     }
@@ -95,8 +91,7 @@ public class PlatformTest {
     }
 
     @Test
-    public void testGetVaadinVersionReturnsProperVersionWhenVaadinOnClasspath()
-            throws Exception {
+    public void testGetVaadinVersionReturnsProperVersionWhenVaadinOnClasspath() throws Exception {
         fakeVaadinHilla("24.1.0", null);
         assertEquals(Optional.of("24.1.0"), Platform.getVaadinVersion());
         assertEquals(Optional.empty(), Platform.getHillaVersion());
@@ -111,8 +106,7 @@ public class PlatformTest {
     }
 
     @Test
-    public void testGetHillaVersionReturnsProperVersionWhenHillaOnClasspath()
-            throws Exception {
+    public void testGetHillaVersionReturnsProperVersionWhenHillaOnClasspath() throws Exception {
         fakeVaadinHilla(null, "2.1.0");
         assertEquals(Optional.of("2.1.0"), Platform.getHillaVersion());
         assertEquals(Optional.empty(), Platform.getVaadinVersion());
@@ -122,8 +116,7 @@ public class PlatformTest {
     }
 
     @Test
-    public void testGetVaadinHillaVersionReturnsProperVersionWhenBothVaadinAndHillaOnClasspath()
-            throws Exception {
+    public void testGetVaadinHillaVersionReturnsProperVersionWhenBothVaadinAndHillaOnClasspath() throws Exception {
         fakeVaadinHilla("24.0.0", "2.1.0");
         assertEquals(Optional.of("2.1.0"), Platform.getHillaVersion());
         assertEquals(Optional.of("24.0.0"), Platform.getVaadinVersion());

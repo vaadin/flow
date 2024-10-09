@@ -27,11 +27,9 @@ import com.vaadin.testbench.parallel.Browser;
 /**
  * Allows to configure tests for local execution.
  * <p>
- * Similar to {@link RunLocally} but {@link LocalExecution} is enabled by
- * default for any test which extends {@link AbstractTestBenchTest} and can be
- * overridden by {@link AbstractTestBenchTest#USE_HUB_PROPERTY}. If this
- * property value is set to {@code true} then the test will be executed on the
- * tests Hub.
+ * Similar to {@link RunLocally} but {@link LocalExecution} is enabled by default for any test which extends
+ * {@link AbstractTestBenchTest} and can be overridden by {@link AbstractTestBenchTest#USE_HUB_PROPERTY}. If this
+ * property value is set to {@code true} then the test will be executed on the tests Hub.
  *
  * @see RunLocally
  * @author Vaadin Ltd
@@ -60,8 +58,7 @@ public @interface LocalExecution {
     /**
      * Checks whether the local execution configuration active.
      * <p>
-     * If configuration is not active then the test will be executed on the
-     * tests Hub.
+     * If configuration is not active then the test will be executed on the tests Hub.
      *
      * @return whether the local execution configuration is active
      */

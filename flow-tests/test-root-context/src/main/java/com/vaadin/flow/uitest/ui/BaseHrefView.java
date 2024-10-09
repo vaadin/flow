@@ -23,16 +23,14 @@ import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.BaseHrefView", layout = ViewTestLayout.class)
-public class BaseHrefView extends AbstractDivView
-        implements HasUrlParameter<String> {
+public class BaseHrefView extends AbstractDivView implements HasUrlParameter<String> {
 
     public BaseHrefView() {
         add(new Anchor("link", "My link"));
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @WildcardParameter String parameter) {
+    public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
         // Noop
     }
 }

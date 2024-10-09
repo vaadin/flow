@@ -20,8 +20,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouterLayout;
 
-public class NavigationExceptionLayout extends Div
-        implements RouterLayout, BeforeEnterObserver {
+public class NavigationExceptionLayout extends Div implements RouterLayout, BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {

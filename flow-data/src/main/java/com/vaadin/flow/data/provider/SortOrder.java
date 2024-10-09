@@ -21,8 +21,7 @@ import java.io.Serializable;
  * Sorting information for one field.
  *
  * @param <T>
- *            the type of the sorting information, usually a String (field id)
- *            or a {@link java.util.Comparator}.
+ *            the type of the sorting information, usually a String (field id) or a {@link java.util.Comparator}.
  * @since 1.0
  */
 public class SortOrder<T> implements Serializable {
@@ -34,8 +33,7 @@ public class SortOrder<T> implements Serializable {
      * Constructs a field sorting information.
      *
      * @param sorted
-     *            sorting information, usually field id or
-     *            {@link java.util.Comparator}
+     *            sorting information, usually field id or {@link java.util.Comparator}
      * @param direction
      *            sorting direction
      */

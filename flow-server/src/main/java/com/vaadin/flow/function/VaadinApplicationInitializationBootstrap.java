@@ -24,13 +24,11 @@ import com.vaadin.flow.server.VaadinContext;
 /**
  * Represents Vaadin web application initialization bootstrap.
  * <p>
- * This is internal mechanism for bootstrapping Vaadin web application
- * initialization. It's executed before servlet initialization once the
- * {@code Lookup} instance is created. The internal implementation setups the
- * {@link Lookup} instance in the {@link VaadinContext} so that it becomes
- * available via {@link VaadinContext#getAttribute(Class)} and bootstraps all
- * initializers (basically {@link ServletContainerInitializer} impls) that
- * depends on {@link Lookup} presence.
+ * This is internal mechanism for bootstrapping Vaadin web application initialization. It's executed before servlet
+ * initialization once the {@code Lookup} instance is created. The internal implementation setups the {@link Lookup}
+ * instance in the {@link VaadinContext} so that it becomes available via {@link VaadinContext#getAttribute(Class)} and
+ * bootstraps all initializers (basically {@link ServletContainerInitializer} impls) that depends on {@link Lookup}
+ * presence.
  *
  * @author Vaadin Ltd
  * @since

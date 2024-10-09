@@ -23,8 +23,7 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
-public class PropertyUpdateExporter
-        extends WebComponentExporter<PropertyUpdateComponent> {
+public class PropertyUpdateExporter extends WebComponentExporter<PropertyUpdateComponent> {
 
     private PropertyConfiguration<PropertyUpdateComponent, Integer> property;
     private PropertyConfiguration<PropertyUpdateComponent, JsonValue> jsonProperty;
@@ -37,8 +36,7 @@ public class PropertyUpdateExporter
     }
 
     @Override
-    public void configureInstance(
-            WebComponent<PropertyUpdateComponent> webComponent,
+    public void configureInstance(WebComponent<PropertyUpdateComponent> webComponent,
             PropertyUpdateComponent component) {
         component.addListener(number -> {
             webComponent.setProperty(property, number);

@@ -23,17 +23,14 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.component.HasValue;
 
 /**
- * Defines the custom property name to be bound to a {@link HasValue field
- * component} using {@link Binder}.
+ * Defines the custom property name to be bound to a {@link HasValue field component} using {@link Binder}.
  * <p>
- * The automatic data binding in Binder relies on a naming convention by
- * default: properties of an item are bound to similarly named field components
- * in given a editor object. If you want to map a property with a different name
- * (ID) to a {@link HasValue}, you can use this annotation for the member
- * fields, with the name (ID) of the desired property as the parameter.
+ * The automatic data binding in Binder relies on a naming convention by default: properties of an item are bound to
+ * similarly named field components in given a editor object. If you want to map a property with a different name (ID)
+ * to a {@link HasValue}, you can use this annotation for the member fields, with the name (ID) of the desired property
+ * as the parameter.
  * <p>
- * In following usage example, the text field would be bound to property "foo"
- * in the Entity class.
+ * In following usage example, the text field would be bound to property "foo" in the Entity class.
  *
  * <pre>
  * class Editor extends FormLayout {

@@ -33,8 +33,7 @@ public class ReflectToolsGetFieldValueByTypeTest {
             // Should get a String value. Without the third parameter (calling
             // ReflectTools.getJavaFieldValue(Object object, Field field)) would
             // get an Integer value
-            fieldValue = ReflectTools.getJavaFieldValue(myInstance, memberField,
-                    String.class);
+            fieldValue = ReflectTools.getJavaFieldValue(myInstance, memberField, String.class);
         } catch (Exception e) {
         }
         assertTrue(fieldValue instanceof String);
@@ -59,8 +58,7 @@ public class ReflectToolsGetFieldValueByTypeTest {
             memberField = myInstance.getClass().getField("field");
             // Should throw an IllegalArgument exception as the mySubClass class
             // doesn't have an Integer field.
-            ReflectTools.getJavaFieldValue(myInstance, memberField,
-                    Integer.class);
+            ReflectTools.getJavaFieldValue(myInstance, memberField, Integer.class);
             fail("Previous method call should have thrown an exception");
         } catch (Exception e) {
         }

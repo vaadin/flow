@@ -14,8 +14,7 @@ public class UserInfo {
 
     private List<String> roles;
 
-    public UserInfo(String username, String encodedPassword, String fullName,
-            String imageUrl, String... roles) {
+    public UserInfo(String username, String encodedPassword, String fullName, String imageUrl, String... roles) {
         this.username = username;
         this.encodedPassword = encodedPassword;
         this.fullName = fullName;

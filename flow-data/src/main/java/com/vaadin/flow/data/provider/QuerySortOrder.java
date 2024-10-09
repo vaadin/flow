@@ -36,8 +36,7 @@ public class QuerySortOrder extends SortOrder<String> {
     }
 
     /**
-     * Creates a new query sort builder with given sorting using ascending sort
-     * direction.
+     * Creates a new query sort builder with given sorting using ascending sort direction.
      *
      * @param by
      *            the string to sort by
@@ -49,8 +48,7 @@ public class QuerySortOrder extends SortOrder<String> {
     }
 
     /**
-     * Creates a new query sort builder with given sorting using descending sort
-     * direction.
+     * Creates a new query sort builder with given sorting using descending sort direction.
      *
      * @param by
      *            the string to sort by

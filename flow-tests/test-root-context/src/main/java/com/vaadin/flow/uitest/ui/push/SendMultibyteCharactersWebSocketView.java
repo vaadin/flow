@@ -20,7 +20,6 @@ import com.vaadin.flow.shared.ui.Transport;
 
 @CustomPush(transport = Transport.WEBSOCKET)
 @Route("com.vaadin.flow.uitest.ui.push.SendMultibyteCharactersWebSocketView")
-public class SendMultibyteCharactersWebSocketView
-        extends SendMultibyteCharactersView {
+public class SendMultibyteCharactersWebSocketView extends SendMultibyteCharactersView {
 
 }

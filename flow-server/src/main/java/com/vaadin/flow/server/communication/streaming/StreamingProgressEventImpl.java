@@ -22,8 +22,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingProgressEvent;
  *
  * @since 1.0
  */
-public final class StreamingProgressEventImpl extends AbstractStreamingEvent
-        implements StreamingProgressEvent {
+public final class StreamingProgressEventImpl extends AbstractStreamingEvent implements StreamingProgressEvent {
 
     /**
      * Streaming progress event constructor.
@@ -37,8 +36,8 @@ public final class StreamingProgressEventImpl extends AbstractStreamingEvent
      * @param bytesReceived
      *            current bytes received amount
      */
-    public StreamingProgressEventImpl(final String filename, final String type,
-            long contentLength, long bytesReceived) {
+    public StreamingProgressEventImpl(final String filename, final String type, long contentLength,
+            long bytesReceived) {
         super(filename, type, contentLength, bytesReceived);
     }
 

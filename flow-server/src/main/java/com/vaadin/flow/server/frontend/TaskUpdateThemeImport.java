@@ -33,8 +33,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_N
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 
 /**
- * Task generating the theme definition file 'theme.js' for importing
- * application theme into the generated frontend directory.
+ * Task generating the theme definition file 'theme.js' for importing application theme into the generated frontend
+ * directory.
  *
  * Default directory is ' ./src/main/frontend/generated'
  *
@@ -43,8 +43,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  *
  * @since
  */
-public class TaskUpdateThemeImport
-        extends AbstractFileGeneratorFallibleCommand {
+public class TaskUpdateThemeImport extends AbstractFileGeneratorFallibleCommand {
 
     public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
     public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
@@ -59,14 +58,11 @@ public class TaskUpdateThemeImport
     TaskUpdateThemeImport(ThemeDefinition theme, Options options) {
         this.theme = theme;
         this.options = options;
-        File frontendGeneratedFolder = new File(options.getFrontendDirectory(),
-                GENERATED);
-        generatedFolder = options.getNpmFolder().toPath()
-                .relativize(frontendGeneratedFolder.toPath()).toString()
+        File frontendGeneratedFolder = new File(options.getFrontendDirectory(), GENERATED);
+        generatedFolder = options.getNpmFolder().toPath().relativize(frontendGeneratedFolder.toPath()).toString()
                 .replaceAll("\\\\", "/");
         themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
-        themeImportFileDefinition = new File(frontendGeneratedFolder,
-                THEME_IMPORTS_D_TS_NAME);
+        themeImportFileDefinition = new File(frontendGeneratedFolder, THEME_IMPORTS_D_TS_NAME);
     }
 
     @Override
@@ -82,35 +78,30 @@ public class TaskUpdateThemeImport
         verifyThemeDirectoryExistence();
 
         if (!themeImportFile.getParentFile().mkdirs()) {
-            LoggerFactory.getLogger(getClass()).debug(
-                    "Didn't create folders as they probably already exist. "
+            LoggerFactory.getLogger(getClass())
+                    .debug("Didn't create folders as they probably already exist. "
                             + "If there is a problem check access rights for folder {}",
-                    themeImportFile.getParentFile().getAbsolutePath());
+                            themeImportFile.getParentFile().getAbsolutePath());
         }
 
         try {
-            writeIfChanged(themeImportFile, String.format(
-                    "import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
-                            + "export const applyTheme = _applyTheme;%n",
-                    theme.getName()));
+            writeIfChanged(themeImportFile,
+                    String.format("import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
+                            + "export const applyTheme = _applyTheme;%n", theme.getName()));
             writeIfChanged(themeImportFileDefinition, EXPORT_MODULES_DEF);
         } catch (IOException e) {
-            throw new ExecutionFailedException(
-                    "Unable to write theme import file", e);
+            throw new ExecutionFailedException("Unable to write theme import file", e);
         }
     }
 
-    private void verifyThemeDirectoryExistence()
-            throws ExecutionFailedException {
+    private void verifyThemeDirectoryExistence() throws ExecutionFailedException {
 
         String themeName = theme.getName();
         String themePath = String.join("/", APPLICATION_THEME_ROOT, themeName);
 
-        List<String> appThemePossiblePaths = getAppThemePossiblePaths(
-                themePath);
+        List<String> appThemePossiblePaths = getAppThemePossiblePaths(themePath);
         List<File> existingAppThemeDirectories = appThemePossiblePaths.stream()
-                .map(path -> new File(options.getNpmFolder(), path))
-                .filter(File::exists).collect(Collectors.toList());
+                .map(path -> new File(options.getNpmFolder(), path)).filter(File::exists).collect(Collectors.toList());
 
         if (existingAppThemeDirectories.isEmpty()) {
             String errorMessage = "Discovered @Theme annotation with theme "
@@ -118,20 +109,13 @@ public class TaskUpdateThemeImport
                     + "in the project or available as a jar dependency. "
                     + "Check if you forgot to create the folder under '%s' "
                     + "or have mistyped the theme or folder name for '%s'.";
-            throw new ExecutionFailedException(
-                    String.format(errorMessage, themeName,
-                            new File(options.getFrontendDirectory(),
-                                    APPLICATION_THEME_ROOT).getPath(),
-                            themeName));
+            throw new ExecutionFailedException(String.format(errorMessage, themeName,
+                    new File(options.getFrontendDirectory(), APPLICATION_THEME_ROOT).getPath(), themeName));
         }
         if (existingAppThemeDirectories.size() >= 2) {
 
-            boolean themeFoundInJar = existingAppThemeDirectories.stream()
-                    .map(File::getPath)
-                    .anyMatch(path -> path.contains(Paths
-                            .get(generatedFolder,
-                                    FrontendUtils.JAR_RESOURCES_FOLDER)
-                            .toString()));
+            boolean themeFoundInJar = existingAppThemeDirectories.stream().map(File::getPath).anyMatch(
+                    path -> path.contains(Paths.get(generatedFolder, FrontendUtils.JAR_RESOURCES_FOLDER).toString()));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
@@ -139,39 +123,31 @@ public class TaskUpdateThemeImport
                         + "Extending another theme is possible by adding "
                         + "{ \"parent\": \"your-parent-theme\" } entry to the "
                         + "'theme.json' file inside your theme folder.";
-                throw new ExecutionFailedException(
-                        String.format(errorMessage, themeName));
+                throw new ExecutionFailedException(String.format(errorMessage, themeName));
             } else {
                 String errorMessage = "Discovered Theme folder for theme '%s' "
                         + "in more than one place in the project. Please "
-                        + "make sure there is only one theme folder with name "
-                        + "'%s' exists in the your project. "
-                        + "The recommended place to put the theme folder "
-                        + "inside the project is '%s'";
-                throw new ExecutionFailedException(
-                        String.format(errorMessage, themeName, themeName,
-                                new File(options.getFrontendDirectory(),
-                                        APPLICATION_THEME_ROOT).getPath()));
+                        + "make sure there is only one theme folder with name " + "'%s' exists in the your project. "
+                        + "The recommended place to put the theme folder " + "inside the project is '%s'";
+                throw new ExecutionFailedException(String.format(errorMessage, themeName, themeName,
+                        new File(options.getFrontendDirectory(), APPLICATION_THEME_ROOT).getPath()));
             }
         }
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
-        String frontendTheme = String.join("/", options.getNpmFolder().toPath()
-                .relativize(options.getFrontendDirectory().toPath()).toString(),
+        String frontendTheme = String.join("/",
+                options.getNpmFolder().toPath().relativize(options.getFrontendDirectory().toPath()).toString(),
                 themePath).replaceAll("\\\\", "/");
 
-        String themePathInMetaInfResources = String.join("/",
-                APPLICATION_META_INF_RESOURCES, themePath);
+        String themePathInMetaInfResources = String.join("/", APPLICATION_META_INF_RESOURCES, themePath);
 
-        String themePathInStaticResources = String.join("/",
-                APPLICATION_STATIC_RESOURCES, themePath);
+        String themePathInStaticResources = String.join("/", APPLICATION_STATIC_RESOURCES, themePath);
 
         String themePathInClassPathResources = String.join("",
-                generatedFolder + "/" + FrontendUtils.JAR_RESOURCES_FOLDER, "/",
-                themePath);
+                generatedFolder + "/" + FrontendUtils.JAR_RESOURCES_FOLDER, "/", themePath);
 
-        return Arrays.asList(frontendTheme, themePathInMetaInfResources,
-                themePathInStaticResources, themePathInClassPathResources);
+        return Arrays.asList(frontendTheme, themePathInMetaInfResources, themePathInStaticResources,
+                themePathInClassPathResources);
     }
 }

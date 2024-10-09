@@ -13,8 +13,7 @@ import com.vaadin.flow.router.RouteAlias;
 @Route(value = "another", layout = MainView.class)
 @RouteAlias("hey/:name/welcome/:wild*")
 @PageTitle("Another Public View")
-public class AnotherPublicView extends FlexLayout
-        implements BeforeEnterObserver {
+public class AnotherPublicView extends FlexLayout implements BeforeEnterObserver {
 
     private final Span name;
     private final Span wild;

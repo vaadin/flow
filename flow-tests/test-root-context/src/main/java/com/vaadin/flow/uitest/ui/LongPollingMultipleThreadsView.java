@@ -41,8 +41,7 @@ import com.vaadin.flow.shared.ui.Transport;
 @Push(transport = Transport.LONG_POLLING)
 public class LongPollingMultipleThreadsView extends AbstractDivView {
 
-    private final ScheduledExecutorService executor = Executors
-            .newScheduledThreadPool(10);
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(10);
 
     private final List<Long> itemRegistry = new LinkedList<>();
 
@@ -52,8 +51,7 @@ public class LongPollingMultipleThreadsView extends AbstractDivView {
 
     public LongPollingMultipleThreadsView() {
         this.setId("push-update");
-        NativeButton startButton = createButton("start", "start-button",
-                event -> this.start());
+        NativeButton startButton = createButton("start", "start-button", event -> this.start());
         add(startButton, label);
     }
 

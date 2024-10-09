@@ -19,35 +19,28 @@ public class BackNavIT extends ChromeBrowserTest {
         getDriver().get(getTestURL(getRootURL(), BACK_NAV_FIRST_VIEW, null));
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_FIRST_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
         $(NativeButtonElement.class).first().click();
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_SECOND_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_SECOND_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_SECOND_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_SECOND_VIEW);
         }
 
         // Navigate back; ensure we get the first URL again
         getDriver().navigate().back();
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_FIRST_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
-        Assert.assertTrue("Expected button is not available.",
-                $(NativeButtonElement.class).first().isDisplayed());
+        Assert.assertTrue("Expected button is not available.", $(NativeButtonElement.class).first().isDisplayed());
     }
 
     @Test
@@ -55,41 +48,33 @@ public class BackNavIT extends ChromeBrowserTest {
         getDriver().get(getTestURL(getRootURL(), BACK_NAV_FIRST_VIEW, null));
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_FIRST_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
         $(NativeButtonElement.class).first().click();
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_SECOND_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_SECOND_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_SECOND_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_SECOND_VIEW);
         }
         // Refresh page
         getDriver().navigate().refresh();
 
-        waitUntil(driver -> $(SpanElement.class).id(BackNavSecondView.CALLS)
-                .isDisplayed());
+        waitUntil(driver -> $(SpanElement.class).id(BackNavSecondView.CALLS).isDisplayed());
 
         // Navigate back; ensure we get the first URL again
         getDriver().navigate().back();
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_FIRST_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
-        Assert.assertTrue("Expected button is not available.",
-                $(NativeButtonElement.class).first().isDisplayed());
+        Assert.assertTrue("Expected button is not available.", $(NativeButtonElement.class).first().isDisplayed());
     }
 
     @Test
@@ -97,25 +82,20 @@ public class BackNavIT extends ChromeBrowserTest {
         getDriver().get(getTestURL(getRootURL(), BACK_NAV_FIRST_VIEW, null));
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_FIRST_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
         $(NativeButtonElement.class).first().click();
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(BACK_NAV_SECOND_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(BACK_NAV_SECOND_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_SECOND_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + BACK_NAV_SECOND_VIEW);
         }
 
-        Assert.assertEquals("Second view: 1",
-                $(SpanElement.class).id(BackNavSecondView.CALLS).getText());
+        Assert.assertEquals("Second view: 1", $(SpanElement.class).id(BackNavSecondView.CALLS).getText());
     }
 
 }

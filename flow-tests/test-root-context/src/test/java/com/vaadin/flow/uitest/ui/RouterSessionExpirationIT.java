@@ -100,7 +100,6 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     private void assertTextAvailableInView(String linkText) {
-        Assert.assertNotNull(
-                findElement(By.xpath("//strong[text()='" + linkText + "']")));
+        Assert.assertNotNull(findElement(By.xpath("//strong[text()='" + linkText + "']")));
     }
 }

@@ -45,10 +45,8 @@ public class LitTemplateInitializer {
     /**
      * Creates a new initializer instance.
      * <p>
-     * The call is delegated to the
-     * {@link #LitTemplateInitializer(LitTemplate, LitTemplateParser, VaadinService)}
-     * with parser created via {@link LitTemplateParserFactory} retrieved from
-     * {@link Instantiator}.
+     * The call is delegated to the {@link #LitTemplateInitializer(LitTemplate, LitTemplateParser, VaadinService)} with
+     * parser created via {@link LitTemplateParserFactory} retrieved from {@link Instantiator}.
      *
      * @param template
      *            a template to initialize
@@ -74,26 +72,22 @@ public class LitTemplateInitializer {
      * @param service
      *            the related service
      */
-    LitTemplateInitializer(LitTemplate template, LitTemplateParser parser,
-            VaadinService service) {
+    LitTemplateInitializer(LitTemplate template, LitTemplateParser parser, VaadinService service) {
         this.template = template;
 
-        boolean productionMode = service.getDeploymentConfiguration()
-                .isProductionMode();
+        boolean productionMode = service.getDeploymentConfiguration().isProductionMode();
 
         templateClass = template.getClass();
 
         ParserData data = null;
         if (productionMode) {
-            ReflectionCache<LitTemplate, ParserData> cache = CACHE
-                    .computeIfAbsent(parser, analyzer -> new ReflectionCache<>(
-                            clazz -> new LitTemplateDataAnalyzer(clazz,
-                                    analyzer, service).parseTemplate()));
+            ReflectionCache<LitTemplate, ParserData> cache = CACHE.computeIfAbsent(parser,
+                    analyzer -> new ReflectionCache<>(
+                            clazz -> new LitTemplateDataAnalyzer(clazz, analyzer, service).parseTemplate()));
             data = cache.get(templateClass);
         }
         if (data == null) {
-            data = new LitTemplateDataAnalyzer(templateClass, parser, service)
-                    .parseTemplate();
+            data = new LitTemplateDataAnalyzer(templateClass, parser, service).parseTemplate();
         }
         parserData = data;
     }
@@ -104,12 +98,9 @@ public class LitTemplateInitializer {
     public void initChildElements() {
         IdMapper idMapper = new IdMapper(template);
 
-        parserData.forEachInjectedField(
-                (field, id, tag) -> idMapper.mapComponentOrElement(field, id,
-                        tag,
-                        element -> new InjectableLitElementInitializer(element,
-                                templateClass)
-                                .accept(parserData.getAttributes(id))));
+        parserData.forEachInjectedField((field, id, tag) -> idMapper.mapComponentOrElement(field, id, tag,
+                element -> new InjectableLitElementInitializer(element, templateClass)
+                        .accept(parserData.getAttributes(id))));
     }
 
 }

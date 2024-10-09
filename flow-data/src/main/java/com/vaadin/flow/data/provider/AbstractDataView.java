@@ -27,8 +27,7 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Abstract data view implementation which handles parts that apply for any type
- * of data.
+ * Abstract data view implementation which handles parts that apply for any type of data.
  *
  * @param <T>
  *            data type
@@ -42,35 +41,28 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     protected Component component;
 
     /**
-     * Creates a new instance of {@link AbstractDataView} subclass and verifies
-     * the passed data provider is compatible with this data view
-     * implementation.
+     * Creates a new instance of {@link AbstractDataView} subclass and verifies the passed data provider is compatible
+     * with this data view implementation.
      *
      * @param dataProviderSupplier
      *            supplier from which the DataProvider can be gotten
      * @param component
      *            the component that the dataView is bound to
      */
-    public AbstractDataView(
-            SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
+    public AbstractDataView(SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
             Component component) {
-        Objects.requireNonNull(dataProviderSupplier,
-                "DataProvider supplier cannot be null");
+        Objects.requireNonNull(dataProviderSupplier, "DataProvider supplier cannot be null");
         this.dataProviderSupplier = dataProviderSupplier;
         this.component = component;
         final Class<?> dataProviderType = dataProviderSupplier.get().getClass();
         /*
-         * Skip verification if the verified data provider has not been
-         * initialized yet.
+         * Skip verification if the verified data provider has not been initialized yet.
          *
-         * This mainly refers to the following cases: 1. Component uses data
-         * communicator which initialises data provider lazily and meanwhile has
-         * a default empty one. Good example is a ComboBox. 2. Developer wants
-         * to set the ItemCountChangeListener before the data provider has been
-         * set.
+         * This mainly refers to the following cases: 1. Component uses data communicator which initialises data
+         * provider lazily and meanwhile has a default empty one. Good example is a ComboBox. 2. Developer wants to set
+         * the ItemCountChangeListener before the data provider has been set.
          *
-         * NOTE: In-memory data view API is supported without explicitly setting
-         * the data provider.
+         * NOTE: In-memory data view API is supported without explicitly setting the data provider.
          */
         if (isDataProviderInitialized(dataProviderType)) {
             verifyDataProviderType(dataProviderSupplier.get());
@@ -78,12 +70,9 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public Registration addItemCountChangeListener(
-            ComponentEventListener<ItemCountChangeEvent<?>> listener) {
-        Objects.requireNonNull(listener,
-                "ItemCountChangeListener cannot be null");
-        return ComponentUtil.addListener(component, ItemCountChangeEvent.class,
-                (ComponentEventListener) listener);
+    public Registration addItemCountChangeListener(ComponentEventListener<ItemCountChangeEvent<?>> listener) {
+        Objects.requireNonNull(listener, "ItemCountChangeListener cannot be null");
+        return ComponentUtil.addListener(component, ItemCountChangeEvent.class, (ComponentEventListener) listener);
     }
 
     /**
@@ -94,8 +83,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     protected abstract Class<?> getSupportedDataProviderType();
 
     /**
-     * Verifies an obtained {@link DataProvider} type is appropriate for current
-     * Data View type.
+     * Verifies an obtained {@link DataProvider} type is appropriate for current Data View type.
      *
      * @param dataProviderType
      *            data provider type to be verified
@@ -108,35 +96,28 @@ public abstract class AbstractDataView<T> implements DataView<T> {
             final String message = String.format(
                     "%s only supports '%s' or it's subclasses, but was given a '%s'."
                             + "%nUse either 'getLazyDataView()', 'getListDataView()'"
-                            + " or 'getGenericDataView()' according to the "
-                            + "used data type.",
-                    this.getClass().getSimpleName(),
-                    supportedDataProviderType.getSimpleName(),
+                            + " or 'getGenericDataView()' according to the " + "used data type.",
+                    this.getClass().getSimpleName(), supportedDataProviderType.getSimpleName(),
                     dataProviderType.getSuperclass().getSimpleName());
             throw new IllegalStateException(message);
         }
     }
 
     /**
-     * Verifies an obtained {@link DataProvider} type is appropriate for current
-     * Data View type. If the data provider is a wrapper, then the wrapped data
-     * provider is verified too.
+     * Verifies an obtained {@link DataProvider} type is appropriate for current Data View type. If the data provider is
+     * a wrapper, then the wrapped data provider is verified too.
      *
      * @param dataProvider
      *            data provider to be verified
      * @throws IllegalStateException
      *             if data provider type is incompatible with data view type
      */
-    protected final void verifyDataProviderType(
-            DataProvider<T, ?> dataProvider) {
+    protected final void verifyDataProviderType(DataProvider<T, ?> dataProvider) {
         try {
             verifyDataProviderType(dataProvider.getClass());
         } catch (IllegalStateException e) {
-            if (DataProviderWrapper.class
-                    .isAssignableFrom(dataProvider.getClass())) {
-                verifyDataProviderType(
-                        ((DataProviderWrapper<T, ?, ?>) dataProvider)
-                                .getWrappedDataProvider());
+            if (DataProviderWrapper.class.isAssignableFrom(dataProvider.getClass())) {
+                verifyDataProviderType(((DataProviderWrapper<T, ?, ?>) dataProvider).getWrappedDataProvider());
             } else {
                 throw e;
             }
@@ -166,20 +147,16 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public void setIdentifierProvider(
-            IdentifierProvider<T> identifierProvider) {
-        Objects.requireNonNull(identifierProvider,
-                "Item identity provider cannot be null");
-        ComponentUtil.setData(component, IdentifierProvider.class,
-                identifierProvider);
-        ComponentUtil.fireEvent(component, new IdentifierProviderChangeEvent<>(
-                component, identifierProvider));
+    public void setIdentifierProvider(IdentifierProvider<T> identifierProvider) {
+        Objects.requireNonNull(identifierProvider, "Item identity provider cannot be null");
+        ComponentUtil.setData(component, IdentifierProvider.class, identifierProvider);
+        ComponentUtil.fireEvent(component, new IdentifierProviderChangeEvent<>(component, identifierProvider));
     }
 
     @SuppressWarnings("unchecked")
     protected IdentifierProvider<T> getIdentifierProvider() {
-        IdentifierProvider<T> identifierProviderObject = (IdentifierProvider<T>) ComponentUtil
-                .getData(component, IdentifierProvider.class);
+        IdentifierProvider<T> identifierProviderObject = (IdentifierProvider<T>) ComponentUtil.getData(component,
+                IdentifierProvider.class);
 
         if (identifierProviderObject == null) {
             DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
@@ -194,12 +171,10 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     /**
-     * Add an identifier provider change listener that is fired when a custom
-     * identifier provider is set with
+     * Add an identifier provider change listener that is fired when a custom identifier provider is set with
      * {@link #setIdentifierProvider(IdentifierProvider)}.
      * <p>
-     * Can be used by components to get notified that a new identifier provider
-     * has been set through the data view.
+     * Can be used by components to get notified that a new identifier provider has been set through the data view.
      *
      * @param listener
      *            identifier provider change listener to register
@@ -208,19 +183,15 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Registration addIdentifierProviderChangeListener(
             ComponentEventListener<IdentifierProviderChangeEvent<T, ?>> listener) {
-        Objects.requireNonNull(listener,
-                "IdentifierProviderChangeListener cannot be null");
-        return ComponentUtil.addListener(component,
-                IdentifierProviderChangeEvent.class,
+        Objects.requireNonNull(listener, "IdentifierProviderChangeListener cannot be null");
+        return ComponentUtil.addListener(component, IdentifierProviderChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 
     protected boolean equals(T item, T compareTo) {
         return Objects.equals(
-                Objects.requireNonNull(getIdentifierProvider().apply(item),
-                        NULL_IDENTIFIER_ERROR_MESSAGE),
-                Objects.requireNonNull(getIdentifierProvider().apply(compareTo),
-                        NULL_IDENTIFIER_ERROR_MESSAGE));
+                Objects.requireNonNull(getIdentifierProvider().apply(item), NULL_IDENTIFIER_ERROR_MESSAGE),
+                Objects.requireNonNull(getIdentifierProvider().apply(compareTo), NULL_IDENTIFIER_ERROR_MESSAGE));
     }
 
     /**
@@ -246,7 +217,6 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     private boolean isDataProviderInitialized(Class<?> dataProviderType) {
-        return !DataCommunicator.EmptyDataProvider.class
-                .isAssignableFrom(dataProviderType);
+        return !DataCommunicator.EmptyDataProvider.class.isAssignableFrom(dataProviderType);
     }
 }

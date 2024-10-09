@@ -21,9 +21,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Wrapper class for modifying, chaining and replacing filters and sorting in a
- * query. Used to create a suitable {@link Query} for the underlying data
- * provider with correct filters and sorting.
+ * Wrapper class for modifying, chaining and replacing filters and sorting in a query. Used to create a suitable
+ * {@link Query} for the underlying data provider with correct filters and sorting.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -35,8 +34,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <M>
  *            underlying data provider filter type
  */
-public abstract class DataProviderWrapper<T, F, M>
-        implements DataProvider<T, F> {
+public abstract class DataProviderWrapper<T, F, M> implements DataProvider<T, F> {
 
     /**
      * The actual data provider behind this wrapper.
@@ -50,8 +48,7 @@ public abstract class DataProviderWrapper<T, F, M>
      *            the wrapped data provider, not <code>null</code>
      */
     protected DataProviderWrapper(DataProvider<T, M> dataProvider) {
-        this.dataProvider = Objects.requireNonNull(dataProvider,
-                "The wrapped data provider cannot be null.");
+        this.dataProvider = Objects.requireNonNull(dataProvider, "The wrapped data provider cannot be null.");
     }
 
     /**
@@ -84,21 +81,20 @@ public abstract class DataProviderWrapper<T, F, M>
     }
 
     @Override
-    public Registration addDataProviderListener(
-            DataProviderListener<T> listener) {
+    public Registration addDataProviderListener(DataProviderListener<T> listener) {
         return dataProvider.addDataProviderListener(listener);
     }
 
     @Override
     public int size(Query<T, F> t) {
-        return dataProvider.size(new Query<>(t.getOffset(), t.getLimit(),
-                t.getSortOrders(), t.getInMemorySorting(), getFilter(t)));
+        return dataProvider.size(
+                new Query<>(t.getOffset(), t.getLimit(), t.getSortOrders(), t.getInMemorySorting(), getFilter(t)));
     }
 
     @Override
     public Stream<T> fetch(Query<T, F> t) {
-        return dataProvider.fetch(new Query<>(t.getOffset(), t.getLimit(),
-                t.getSortOrders(), t.getInMemorySorting(), getFilter(t)));
+        return dataProvider.fetch(
+                new Query<>(t.getOffset(), t.getLimit(), t.getSortOrders(), t.getInMemorySorting(), getFilter(t)));
     }
 
     /**

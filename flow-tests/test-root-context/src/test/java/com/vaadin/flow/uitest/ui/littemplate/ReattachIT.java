@@ -34,8 +34,7 @@ public class ReattachIT extends ChromeBrowserTest {
         // attach template
         button.click();
 
-        TestBenchElement template = $(TestBenchElement.class)
-                .id("form-template");
+        TestBenchElement template = $(TestBenchElement.class).id("form-template");
         TestBenchElement div = template.$(TestBenchElement.class).id("div");
 
         Assert.assertEquals("foo", div.getText());

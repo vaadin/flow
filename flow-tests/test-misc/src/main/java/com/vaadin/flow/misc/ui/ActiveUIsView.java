@@ -29,42 +29,36 @@ public class ActiveUIsView extends Div {
     public ActiveUIsView() {
         Div uis = new Div();
         uis.setId("uis");
-        NativeButton listUIsButton = new NativeButton("List active UIs",
-                event -> {
-                    UI current = UI.getCurrent();
-                    listUIs(current, uis);
-                });
+        NativeButton listUIsButton = new NativeButton("List active UIs", event -> {
+            UI current = UI.getCurrent();
+            listUIs(current, uis);
+        });
         listUIsButton.setId("list-uis");
 
         Div gcCollectedUIs = new Div();
         gcCollectedUIs.setId("gcuis");
-        NativeButton listGCCollectedUIsButton = new NativeButton(
-                "List GC collected UIs", event -> {
-                    listGCCollectedUIs(gcCollectedUIs);
-                });
+        NativeButton listGCCollectedUIsButton = new NativeButton("List GC collected UIs", event -> {
+            listGCCollectedUIs(gcCollectedUIs);
+        });
         listGCCollectedUIsButton.setId("list-gc-collected-uis");
-        NativeButton gcHintButton = new NativeButton("Run GC",
-                event -> System.gc());
+        NativeButton gcHintButton = new NativeButton("Run GC", event -> System.gc());
         gcHintButton.setId("gc-hint");
 
-        add(listUIsButton, new H1("Active UIs (excluding current)"), uis,
-                listGCCollectedUIsButton, gcHintButton,
+        add(listUIsButton, new H1("Active UIs (excluding current)"), uis, listGCCollectedUIsButton, gcHintButton,
                 new H1("GC collected UIs"), gcCollectedUIs);
     }
 
     private void listGCCollectedUIs(Div gcCollectedUIs) {
         gcCollectedUIs.removeAll();
         UI ui = UI.getCurrent();
-        ComponentUtil.getData(ui, UITrackerListener.UITracker.class)
-                .getCollectedUIs(ui.getSession()).forEach(uiId -> gcCollectedUIs
-                        .add(new Div("GC Collected UI: " + uiId)));
+        ComponentUtil.getData(ui, UITrackerListener.UITracker.class).getCollectedUIs(ui.getSession())
+                .forEach(uiId -> gcCollectedUIs.add(new Div("GC Collected UI: " + uiId)));
     }
 
     private void listUIs(UI currentUI, Div uis) {
         uis.removeAll();
         currentUI.getSession().getUIs().stream().filter(ui -> ui != currentUI)
-                .map(ui -> new Div("UI: " + ui.getUIId() + ", Path: "
-                        + ui.getActiveViewLocation().getPath()))
+                .map(ui -> new Div("UI: " + ui.getUIId() + ", Path: " + ui.getActiveViewLocation().getPath()))
                 .forEach(uis::add);
     }
 

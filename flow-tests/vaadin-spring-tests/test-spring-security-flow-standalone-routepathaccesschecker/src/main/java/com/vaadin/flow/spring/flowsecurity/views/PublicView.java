@@ -38,36 +38,33 @@ public class PublicView extends FlexLayout {
         Image image = new Image("public/images/bank.jpg", "Bank");
         image.getStyle().set("max-width", "100%").set("min-height", "0");
         add(image);
-        add(new Paragraph(
-                "We are very great and have great amounts of money."));
+        add(new Paragraph("We are very great and have great amounts of money."));
 
-        Button backgroundNavigation = new Button(
-                "Navigate to admin view in 1 second", e -> {
-                    UI ui = e.getSource().getUI().get();
-                    new Thread(() -> {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e1) {
-                        }
-                        ui.access(() -> {
-                            ui.navigate(AdminView.class);
-                        });
-
-                    }).start();
+        Button backgroundNavigation = new Button("Navigate to admin view in 1 second", e -> {
+            UI ui = e.getSource().getUI().get();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                }
+                ui.access(() -> {
+                    ui.navigate(AdminView.class);
                 });
+
+            }).start();
+        });
         backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);
 
         Anchor linkToAdmin = new Anchor("/admin", "Anchor to admin");
         linkToAdmin.setId(ANCHOR_NAVIGATION_ID);
-        Anchor linkToAdminAlias = new Anchor("/alias-for-admin",
-                "Anchor to admin alias");
+        Anchor linkToAdminAlias = new Anchor("/alias-for-admin", "Anchor to admin alias");
         linkToAdminAlias.setId(ANCHOR_ALIAS_NAVIGATION_ID);
 
-        RouterLink forwardToAdmin = new RouterLink("Forward to admin",
-                PassThroughView.class, new RouteParameters("type", "forward"));
+        RouterLink forwardToAdmin = new RouterLink("Forward to admin", PassThroughView.class,
+                new RouteParameters("type", "forward"));
         forwardToAdmin.setId(FORWARD_NAVIGATION_ID);
-        RouterLink rerouteToAdmin = new RouterLink("Forward to admin",
-                PassThroughView.class, new RouteParameters("type", "reroute"));
+        RouterLink rerouteToAdmin = new RouterLink("Forward to admin", PassThroughView.class,
+                new RouteParameters("type", "reroute"));
         rerouteToAdmin.setId(REROUTE_NAVIGATION_ID);
 
         HorizontalLayout additionalNavigation = new HorizontalLayout();

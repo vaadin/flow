@@ -29,10 +29,8 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.SpringVaadinSession;
 
 /**
- * Implementation of Spring's
- * {@link org.springframework.beans.factory.config.Scope} that binds the beans
- * to the current {@link UI}. Registered by default as the scope "
- * {@value #VAADIN_UI_SCOPE_NAME}".
+ * Implementation of Spring's {@link org.springframework.beans.factory.config.Scope} that binds the beans to the current
+ * {@link UI}. Registered by default as the scope " {@value #VAADIN_UI_SCOPE_NAME}".
  *
  * @see com.vaadin.flow.spring.annotation.UIScope
  *
@@ -43,8 +41,7 @@ public class VaadinUIScope extends AbstractScope {
 
     public static final String VAADIN_UI_SCOPE_NAME = "vaadin-ui";
 
-    private static class UIStoreWrapper
-            implements ComponentEventListener<DetachEvent> {
+    private static class UIStoreWrapper implements ComponentEventListener<DetachEvent> {
 
         private final VaadinSession session;
 
@@ -58,11 +55,9 @@ public class VaadinUIScope extends AbstractScope {
             this.session = session;
             if (session instanceof SpringVaadinSession) {
                 sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
+                ((SpringVaadinSession) session).addDestroyListener(event -> destroy());
             } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
+                sessionDestroyListenerRegistration = session.getService().addSessionDestroyListener(event -> destroy());
             }
         }
 
@@ -105,8 +100,7 @@ public class VaadinUIScope extends AbstractScope {
     }
 
     @Override
-    public void postProcessBeanFactory(
-            ConfigurableListableBeanFactory beanFactory) {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
         beanFactory.registerScope(VAADIN_UI_SCOPE_NAME, this);
         ObjectFactory<UI> factory = this::getUI;
         beanFactory.registerResolvableDependency(UI.class, factory);
@@ -114,8 +108,7 @@ public class VaadinUIScope extends AbstractScope {
 
     @Override
     public String getConversationId() {
-        return getVaadinSession().getSession().getId() + "-UI:"
-                + getUI().getUIId();
+        return getVaadinSession().getSession().getId() + "-UI:" + getUI().getUIId();
     }
 
     @Override
@@ -137,8 +130,7 @@ public class VaadinUIScope extends AbstractScope {
     private UI getUI() {
         UI ui = UI.getCurrent();
         if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The UI scope is not active");
+            throw new IllegalStateException("There is no UI available. The UI scope is not active");
         }
         return ui;
     }

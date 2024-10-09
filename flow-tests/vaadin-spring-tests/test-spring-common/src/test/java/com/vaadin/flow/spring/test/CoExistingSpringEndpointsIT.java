@@ -37,13 +37,12 @@ public class CoExistingSpringEndpointsIT extends AbstractSpringTest {
 
         getDriver().get(getContextRootURL() + '/' + nonExistingRoutePath);
 
-        Assert.assertTrue(getDriver().getPageSource().contains(String
-                .format("Could not navigate to '%s'", nonExistingRoutePath)));
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains(String.format("Could not navigate to '%s'", nonExistingRoutePath)));
 
         getDriver().get(getContextRootURL() + "/oauth2/authorize");
         // This only asserts that Flow routes do not overwrite other spring
         // paths
-        Assert.assertTrue(
-                getDriver().getPageSource().contains("type=Bad Request"));
+        Assert.assertTrue(getDriver().getPageSource().contains("type=Bad Request"));
     }
 }

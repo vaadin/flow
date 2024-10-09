@@ -34,8 +34,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import elemental.json.Json;
 
 /**
- * Excludes dependencies listed in an "exclusions" array of
- * vaadin-*versions.json file from a package.json.
+ * Excludes dependencies listed in an "exclusions" array of vaadin-*versions.json file from a package.json.
  */
 public class ExclusionFilter implements Serializable {
 
@@ -57,8 +56,7 @@ public class ExclusionFilter implements Serializable {
     }
 
     /**
-     * Exclude dependencies from the given map based on the
-     * vaadin-*versions.json files.
+     * Exclude dependencies from the given map based on the vaadin-*versions.json files.
      *
      * @param dependencies
      *            the dependencies to filter
@@ -66,24 +64,19 @@ public class ExclusionFilter implements Serializable {
      * @throws IOException
      *             if an I/O error occurs
      */
-    public Map<String, String> exclude(Map<String, String> dependencies)
-            throws IOException {
+    public Map<String, String> exclude(Map<String, String> dependencies) throws IOException {
         var exclusions = getExclusions();
-        return dependencies.entrySet().stream()
-                .filter(entry -> !exclusions.contains(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        Map.Entry::getValue));
+        return dependencies.entrySet().stream().filter(entry -> !exclusions.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private List<String> getExclusions() throws IOException {
         List<String> exclusions = new ArrayList<>();
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+        URL coreVersionsResource = finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
         if (coreVersionsResource != null) {
             exclusions.addAll(getExclusions(coreVersionsResource));
         }
-        URL vaadinVersionsResource = finder
-                .getResource(Constants.VAADIN_VERSIONS_JSON);
+        URL vaadinVersionsResource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
         if (vaadinVersionsResource != null) {
             exclusions.addAll(getExclusions(vaadinVersionsResource));
         }
@@ -93,9 +86,7 @@ public class ExclusionFilter implements Serializable {
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    reactEnabled);
+                    Json.parse(IOUtils.toString(content, StandardCharsets.UTF_8)), reactEnabled);
             return convert.getExclusions();
         }
     }

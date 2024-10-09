@@ -22,8 +22,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 
 /**
- * Observes the poll configuration stored in the given node and configures
- * polling accordingly.
+ * Observes the poll configuration stored in the given node and configures polling accordingly.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -35,8 +34,7 @@ public class PollConfigurator {
     }
 
     /**
-     * Observes the given node for poll configuration changes and configures the
-     * given poller accordingly.
+     * Observes the given node for poll configuration changes and configures the given poller accordingly.
      *
      * @param node
      *            the node containing the poll configuration
@@ -45,8 +43,7 @@ public class PollConfigurator {
      */
     public static void observe(StateNode node, Poller poller) {
         NodeMap configurationMap = node.getMap(NodeFeatures.POLL_CONFIGURATION);
-        MapProperty pollIntervalProperty = configurationMap
-                .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
+        MapProperty pollIntervalProperty = configurationMap.getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
         pollIntervalProperty.addChangeListener(e -> {
             int interval = (int) (double) e.getNewValue();
             poller.setInterval(interval);

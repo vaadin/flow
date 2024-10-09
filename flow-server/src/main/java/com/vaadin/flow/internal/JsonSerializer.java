@@ -41,8 +41,7 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * General-purpose serializer of Java objects to {@link JsonValue} and
- * deserializer of JsonValue to Java objects.
+ * General-purpose serializer of Java objects to {@link JsonValue} and deserializer of JsonValue to Java objects.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -55,8 +54,8 @@ public final class JsonSerializer {
     }
 
     /**
-     * Converts a Java bean, {@link JsonSerializable} instance, String, wrapper
-     * of primitive type or enum to a {@link JsonValue}.
+     * Converts a Java bean, {@link JsonSerializable} instance, String, wrapper of primitive type or enum to a
+     * {@link JsonValue}.
      * <p>
      * When a bean is used, a {@link JsonObject} is returned.
      *
@@ -89,8 +88,7 @@ public final class JsonSerializer {
 
             if (type.isRecord()) {
                 for (RecordComponent rc : type.getRecordComponents()) {
-                    json.put(rc.getName(),
-                            toJson(rc.getAccessor().invoke(bean)));
+                    json.put(rc.getName(), toJson(rc.getAccessor().invoke(bean)));
                 }
             } else {
                 BeanInfo info = Introspector.getBeanInfo(type);
@@ -108,21 +106,17 @@ public final class JsonSerializer {
             return json;
         } catch (Exception e) {
             throw new IllegalArgumentException(
-                    "Could not serialize object of type " + bean.getClass()
-                            + " to JsonValue",
-                    e);
+                    "Could not serialize object of type " + bean.getClass() + " to JsonValue", e);
         }
     }
 
     /**
-     * Converts a collection of object into a {@link JsonArray}, converting each
-     * item of the collection individually.
+     * Converts a collection of object into a {@link JsonArray}, converting each item of the collection individually.
      *
      * @param beans
      *            the collection of objects to be converted
-     * @return the json representation of the objects in the collectios. An
-     *         empty array is returned if the input collections is
-     *         <code>null</code>
+     * @return the json representation of the objects in the collectios. An empty array is returned if the input
+     *         collections is <code>null</code>
      */
     public static JsonArray toJson(Collection<?> beans) {
         JsonArray array = Json.createArray();
@@ -130,8 +124,7 @@ public final class JsonSerializer {
             return array;
         }
 
-        beans.stream().map(JsonSerializer::toJson)
-                .forEachOrdered(json -> array.set(array.length(), json));
+        beans.stream().map(JsonSerializer::toJson).forEachOrdered(json -> array.set(array.length(), json));
         return array;
     }
 
@@ -167,9 +160,8 @@ public final class JsonSerializer {
     }
 
     /**
-     * Converts a JsonValue to the corresponding Java object. The Java object
-     * can be a Java bean, {@link JsonSerializable} instance, String, wrapper of
-     * primitive types or an enum.
+     * Converts a JsonValue to the corresponding Java object. The Java object can be a Java bean,
+     * {@link JsonSerializable} instance, String, wrapper of primitive types or an enum.
      *
      * @param type
      *            the type of the Java object convert the json to
@@ -178,16 +170,14 @@ public final class JsonSerializer {
      * @param <T>
      *            the resulting object type
      *
-     * @return the deserialized object, or <code>null</code> if the input json
-     *         is <code>null</code>
+     * @return the deserialized object, or <code>null</code> if the input json is <code>null</code>
      */
     public static <T> T toObject(Class<T> type, JsonValue json) {
         return toObject(type, null, json);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T toObject(Class<T> type, Type genericType,
-            JsonValue json) {
+    private static <T> T toObject(Class<T> type, Type genericType, JsonValue json) {
         if (json == null || json instanceof JsonNull) {
             return null;
         }
@@ -209,17 +199,13 @@ public final class JsonSerializer {
         try {
             instance = type.newInstance();
         } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Could not create an instance of type " + type
-                            + ". Make sure it contains a default public constructor and the class is accessible.",
-                    e);
+            throw new IllegalArgumentException("Could not create an instance of type " + type
+                    + ". Make sure it contains a default public constructor and the class is accessible.", e);
         }
 
         try {
-            if (instance instanceof JsonSerializable
-                    && json instanceof JsonObject) {
-                return type.cast(JsonSerializable.class.cast(instance)
-                        .readJson((JsonObject) json));
+            if (instance instanceof JsonSerializable && json instanceof JsonObject) {
+                return type.cast(JsonSerializable.class.cast(instance).readJson((JsonObject) json));
             }
 
             JsonObject jsonObject = (JsonObject) json;
@@ -243,20 +229,15 @@ public final class JsonSerializer {
                 Method method = writers.get(key);
                 if (method != null) {
                     Class<?> parameterType = method.getParameterTypes()[0];
-                    Type genericParameterType = method
-                            .getGenericParameterTypes()[0];
-                    Object value = toObject(parameterType, genericParameterType,
-                            jsonValue);
+                    Type genericParameterType = method.getGenericParameterTypes()[0];
+                    Object value = toObject(parameterType, genericParameterType, jsonValue);
                     method.invoke(instance, value);
                 }
             }
 
             return instance;
         } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Could not deserialize object of type " + type
-                            + " from JsonValue",
-                    e);
+            throw new IllegalArgumentException("Could not deserialize object of type " + type + " from JsonValue", e);
         }
     }
 
@@ -268,48 +249,37 @@ public final class JsonSerializer {
 
             for (int i = 0; i < components.length; i++) {
                 componentTypes[i] = components[i].getType();
-                values[i] = toObject(componentTypes[i],
-                        ((JsonObject) json).get(components[i].getName()));
+                values[i] = toObject(componentTypes[i], ((JsonObject) json).get(components[i].getName()));
             }
 
-            return type.getDeclaredConstructor(componentTypes)
-                    .newInstance(values);
+            return type.getDeclaredConstructor(componentTypes).newInstance(values);
         } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Could not deserialize record of type " + type
-                            + " from JsonValue",
-                    e);
+            throw new IllegalArgumentException("Could not deserialize record of type " + type + " from JsonValue", e);
         }
     }
 
-    private static <T> T toCollection(Class<T> type, Type genericType,
-            JsonValue json) {
+    private static <T> T toCollection(Class<T> type, Type genericType, JsonValue json) {
         if (json.getType() != JsonType.ARRAY) {
             return null;
         }
         if (!(genericType instanceof ParameterizedType)) {
             throw new IllegalArgumentException(
-                    "Cloud not infer the generic parameterized type of the collection of class: "
-                            + type.getName()
-                            + ". The type is no subclass of ParameterizedType: "
-                            + genericType);
+                    "Cloud not infer the generic parameterized type of the collection of class: " + type.getName()
+                            + ". The type is no subclass of ParameterizedType: " + genericType);
         }
         JsonArray array = (JsonArray) json;
         Collection<?> collection = tryToCreateCollection(type, array.length());
         if (array.length() > 0) {
             ParameterizedType parameterizedType = (ParameterizedType) genericType;
-            Class<?> parameterizedClass = (Class<?>) parameterizedType
-                    .getActualTypeArguments()[0];
-            collection.addAll(
-                    (List) toObjects(parameterizedClass, (JsonArray) json));
+            Class<?> parameterizedClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+            collection.addAll((List) toObjects(parameterizedClass, (JsonArray) json));
         }
         return (T) collection;
     }
 
     /**
-     * Converts a JsonArray into a collection of Java objects. The Java objects
-     * can be Java beans, {@link JsonSerializable} instances, Strings, wrappers
-     * of primitive types or enums.
+     * Converts a JsonArray into a collection of Java objects. The Java objects can be Java beans,
+     * {@link JsonSerializable} instances, Strings, wrappers of primitive types or enums.
      *
      * @param type
      *            the type of the elements in the array
@@ -318,8 +288,7 @@ public final class JsonSerializer {
      * @param <T>
      *            the resulting objects types
      *
-     * @return a modifiable list of converted objects. Returns an empty list if
-     *         the input array is <code>null</code>
+     * @return a modifiable list of converted objects. Returns an empty list if the input array is <code>null</code>
      */
     public static <T> List<T> toObjects(Class<T> type, JsonArray json) {
         if (json == null) {
@@ -332,42 +301,33 @@ public final class JsonSerializer {
         return list;
     }
 
-    private static Optional<?> tryToConvertFromSimpleType(Class<?> type,
-            JsonValue json) {
+    private static Optional<?> tryToConvertFromSimpleType(Class<?> type, JsonValue json) {
         if (type.isAssignableFrom(String.class)) {
             return Optional.of(json.asString());
         }
-        if (type.isAssignableFrom(int.class)
-                || type.isAssignableFrom(Integer.class)) {
+        if (type.isAssignableFrom(int.class) || type.isAssignableFrom(Integer.class)) {
             return Optional.of((int) json.asNumber());
         }
-        if (type.isAssignableFrom(double.class)
-                || type.isAssignableFrom(Double.class)) {
+        if (type.isAssignableFrom(double.class) || type.isAssignableFrom(Double.class)) {
             return Optional.of(json.asNumber());
         }
-        if (type.isAssignableFrom(long.class)
-                || type.isAssignableFrom(Long.class)) {
+        if (type.isAssignableFrom(long.class) || type.isAssignableFrom(Long.class)) {
             return Optional.of((long) json.asNumber());
         }
-        if (type.isAssignableFrom(short.class)
-                || type.isAssignableFrom(Short.class)) {
+        if (type.isAssignableFrom(short.class) || type.isAssignableFrom(Short.class)) {
             return Optional.of((short) json.asNumber());
         }
-        if (type.isAssignableFrom(byte.class)
-                || type.isAssignableFrom(Byte.class)) {
+        if (type.isAssignableFrom(byte.class) || type.isAssignableFrom(Byte.class)) {
             return Optional.of((byte) json.asNumber());
         }
-        if (type.isAssignableFrom(char.class)
-                || type.isAssignableFrom(Character.class)) {
+        if (type.isAssignableFrom(char.class) || type.isAssignableFrom(Character.class)) {
             return Optional.of(json.asString().charAt(0));
         }
-        if (type.isAssignableFrom(Boolean.class)
-                || type.isAssignableFrom(boolean.class)) {
+        if (type.isAssignableFrom(Boolean.class) || type.isAssignableFrom(boolean.class)) {
             return Optional.of(json.asBoolean());
         }
         if (type.isEnum()) {
-            return Optional.of(Enum.valueOf((Class<? extends Enum>) type,
-                    json.asString()));
+            return Optional.of(Enum.valueOf((Class<? extends Enum>) type, json.asString()));
         }
         if (JsonValue.class.isAssignableFrom(type)) {
             return Optional.of(json);
@@ -376,8 +336,7 @@ public final class JsonSerializer {
 
     }
 
-    private static Collection<?> tryToCreateCollection(Class<?> collectionType,
-            int initialCapacity) {
+    private static Collection<?> tryToCreateCollection(Class<?> collectionType, int initialCapacity) {
         if (collectionType.isInterface()) {
             if (List.class.isAssignableFrom(collectionType)) {
                 return new ArrayList<>(initialCapacity);
@@ -385,17 +344,14 @@ public final class JsonSerializer {
             if (Set.class.isAssignableFrom(collectionType)) {
                 return new LinkedHashSet<>(initialCapacity);
             }
-            throw new IllegalArgumentException(
-                    "Collection type not supported: '"
-                            + collectionType.getName()
-                            + "'. Use Lists, Sets or concrete classes that implement java.util.Collection.");
+            throw new IllegalArgumentException("Collection type not supported: '" + collectionType.getName()
+                    + "'. Use Lists, Sets or concrete classes that implement java.util.Collection.");
         }
         try {
             return (Collection<?>) collectionType.newInstance();
         } catch (Exception e) {
             throw new IllegalArgumentException(
-                    "Could not create an instance of the collection of type "
-                            + collectionType
+                    "Could not create an instance of the collection of type " + collectionType
                             + ". Make sure it contains a default public constructor and the class is accessible.",
                     e);
         }

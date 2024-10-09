@@ -91,16 +91,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     /**
-     * Callback interface for an event expression parsed using new Function() in
-     * JavaScript.
+     * Callback interface for an event expression parsed using new Function() in JavaScript.
      */
     @FunctionalInterface
     @JsFunction
     @SuppressWarnings("unusable-by-js")
     private interface EventExpression {
         /**
-         * Callback interface for an event expression parsed using new
-         * Function() in JavaScript.
+         * Callback interface for an event expression parsed using new Function() in JavaScript.
          *
          * @param event
          *            Event to expand
@@ -114,18 +112,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private static JsMap<String, EventExpression> expressionCache;
 
     /**
-     * This is used as a weak set. Only keys are important so that they are
-     * weakly referenced
+     * This is used as a weak set. Only keys are important so that they are weakly referenced
      */
     private static JsWeakMap<StateNode, Boolean> boundNodes;
 
     /**
-     * Just a context class whose instance is passed as a parameter between the
-     * operations of various kind to be able to access the data like listeners,
-     * node and element which they operate on.
+     * Just a context class whose instance is passed as a parameter between the operations of various kind to be able to
+     * access the data like listeners, node and element which they operate on.
      * <p>
-     * It's used to avoid having methods with a long numbers of parameters and
-     * because the strategy instance is stateless.
+     * It's used to avoid having methods with a long numbers of parameters and because the strategy instance is
+     * stateless.
      */
     private static class BindingContext {
 
@@ -133,13 +129,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         private final StateNode node;
         private final BinderContext binderContext;
 
-        private final JsMap<String, Computation> listenerBindings = JsCollections
-                .map();
-        private final JsMap<String, EventRemover> listenerRemovers = JsCollections
-                .map();
+        private final JsMap<String, Computation> listenerBindings = JsCollections.map();
+        private final JsMap<String, EventRemover> listenerRemovers = JsCollections.map();
 
-        private BindingContext(StateNode node, Node htmlNode,
-                BinderContext binderContext) {
+        private BindingContext(StateNode node, Node htmlNode, BinderContext binderContext) {
             this.node = node;
             this.htmlNode = htmlNode;
             this.binderContext = binderContext;
@@ -180,18 +173,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
             return true;
         }
-        return node.getTree() != null
-                && node.equals(node.getTree().getRootNode());
+        return node.getTree() != null && node.equals(node.getTree().getRootNode());
     }
 
     @Override
-    public void bind(StateNode stateNode, Element htmlNode,
-            BinderContext nodeFactory) {
+    public void bind(StateNode stateNode, Element htmlNode, BinderContext nodeFactory) {
         boolean isVisible = isVisible(stateNode);
 
-        assert hasSameTag(stateNode, htmlNode) : "Element tag name is '"
-                + htmlNode.getTagName() + "', but the required tag name is "
-                + getTag(stateNode);
+        assert hasSameTag(stateNode, htmlNode) : "Element tag name is '" + htmlNode.getTagName()
+                + "', but the required tag name is " + getTag(stateNode);
 
         if (boundNodes == null) {
             boundNodes = JsCollections.weakMap();
@@ -202,11 +192,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
         boundNodes.set(stateNode, true);
 
-        BindingContext context = new BindingContext(stateNode, htmlNode,
-                nodeFactory);
+        BindingContext context = new BindingContext(stateNode, htmlNode, nodeFactory);
 
-        JsArray<JsMap<String, Computation>> computationsCollection = JsCollections
-                .array();
+        JsArray<JsMap<String, Computation>> computationsCollection = JsCollections.array();
 
         JsArray<EventRemover> listeners = JsCollections.array();
 
@@ -226,25 +214,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Styling might be looked at by observers, but will typically not
             // trigger any observers synchronously
             listeners.push(bindClassList(htmlNode, stateNode));
-            listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
-                    property -> updateStyleProperty(property, htmlNode),
-                    createComputations(computationsCollection), stateNode));
+            listeners.push(
+                    bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES, property -> updateStyleProperty(property, htmlNode),
+                            createComputations(computationsCollection), stateNode));
 
             // The things that might actually be observed
-            listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
-                    property -> updateAttribute(property, htmlNode),
+            listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES, property -> updateAttribute(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
-            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                    property -> updateProperty(property, htmlNode),
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES, property -> updateProperty(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
             bindPolymerModelProperties(stateNode, htmlNode);
 
             // Prepare teardown
-            listeners.push(stateNode.addUnregisterListener(
-                    e -> remove(listeners, context, computationsCollection)));
+            listeners.push(stateNode.addUnregisterListener(e -> remove(listeners, context, computationsCollection)));
         }
-        listeners.push(bindVisibility(listeners, context,
-                computationsCollection, nodeFactory));
+        listeners.push(bindVisibility(listeners, context, computationsCollection, nodeFactory));
 
         scheduleInitialExecution(stateNode);
     }
@@ -253,23 +237,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         InitialPropertyUpdate update = new InitialPropertyUpdate(stateNode);
         stateNode.setNodeData(update);
         /*
-         * Update command will be executed after all initial Reactive stuff.
-         * E.g. initial JS (if any) will be executed BEFORE initial update
-         * command execution
+         * Update command will be executed after all initial Reactive stuff. E.g. initial JS (if any) will be executed
+         * BEFORE initial update command execution
          */
-        Reactive.addPostFlushListener(
-                () -> Scheduler.get().scheduleDeferred(() -> {
-                    InitialPropertyUpdate propertyUpdate = stateNode
-                            .getNodeData(InitialPropertyUpdate.class);
-                    // cleared if handlePropertiesChanged has already happened
-                    if (propertyUpdate != null) {
-                        propertyUpdate.execute();
-                    }
-                }));
+        Reactive.addPostFlushListener(() -> Scheduler.get().scheduleDeferred(() -> {
+            InitialPropertyUpdate propertyUpdate = stateNode.getNodeData(InitialPropertyUpdate.class);
+            // cleared if handlePropertiesChanged has already happened
+            if (propertyUpdate != null) {
+                propertyUpdate.execute();
+            }
+        }));
     }
 
-    private native void bindPolymerModelProperties(StateNode node,
-            Element element)
+    private native void bindPolymerModelProperties(StateNode node, Element element)
     /*-{
       if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
           this.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
@@ -408,8 +388,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     }-*/;
 
-    private static void handleListItemPropertyChange(double nodeId,
-            Element host, String property, Object value, StateTree tree) {
+    private static void handleListItemPropertyChange(double nodeId, Element host, String property, Object value,
+            StateTree tree) {
         // Warning : it's important that <code>tree</code> is passed as an
         // argument instead of StateNode or Element ! We have replaced a method
         // in the prototype which means that it may not use the context from the
@@ -421,13 +401,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        assert checkParent(node, host)
-                : "Host element is not a parent of the node whose property has changed. "
-                        + "This is an implementation error. "
-                        + "Most likely it means that there are several StateTrees on the same page "
-                        + "(might be possible with portlets) and the target StateTree should not be passed "
-                        + "into the method as an argument but somehow detected from the host element. "
-                        + "Another option is that host element is calculated incorrectly.";
+        assert checkParent(node, host) : "Host element is not a parent of the node whose property has changed. "
+                + "This is an implementation error. "
+                + "Most likely it means that there are several StateTrees on the same page "
+                + "(might be possible with portlets) and the target StateTree should not be passed "
+                + "into the method as an argument but somehow detected from the host element. "
+                + "Another option is that host element is calculated incorrectly.";
 
         // TODO: this code doesn't care about "security feature" which prevents
         // sending
@@ -466,21 +445,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void handlePropertiesChanged(
-            JavaScriptObject changedPropertyPathsToValues, StateNode node) {
+    private void handlePropertiesChanged(JavaScriptObject changedPropertyPathsToValues, StateNode node) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
 
         Runnable runnable = () -> {
             for (String propertyName : keys) {
                 handlePropertyChange(propertyName,
-                        () -> WidgetUtil.getJsProperty(
-                                changedPropertyPathsToValues, propertyName),
-                        node);
+                        () -> WidgetUtil.getJsProperty(changedPropertyPathsToValues, propertyName), node);
             }
         };
 
-        InitialPropertyUpdate initialUpdate = node
-                .getNodeData(InitialPropertyUpdate.class);
+        InitialPropertyUpdate initialUpdate = node.getNodeData(InitialPropertyUpdate.class);
         if (initialUpdate == null) {
             runnable.run();
         } else {
@@ -488,12 +463,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void handlePropertyChange(String fullPropertyName,
-            Supplier<Object> valueProvider, StateNode node) {
-        UpdatableModelProperties updatableProperties = node
-                .getNodeData(UpdatableModelProperties.class);
-        if (updatableProperties == null
-                || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
+    private void handlePropertyChange(String fullPropertyName, Supplier<Object> valueProvider, StateNode node) {
+        UpdatableModelProperties updatableProperties = node.getNodeData(UpdatableModelProperties.class);
+        if (updatableProperties == null || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
             // don't do anything if the property/sub-property is not in the
             // collection of updatable properties
             return;
@@ -507,12 +479,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         int i = 0;
         int size = subProperties.length;
         for (String subProperty : subProperties) {
-            NodeMap elementProperties = model
-                    .getMap(NodeFeatures.ELEMENT_PROPERTIES);
-            if (!elementProperties.hasPropertyValue(subProperty)
-                    && i < size - 1) {
-                Console.debug("Ignoring property change for property '"
-                        + fullPropertyName
+            NodeMap elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+            if (!elementProperties.hasPropertyValue(subProperty) && i < size - 1) {
+                Console.debug("Ignoring property change for property '" + fullPropertyName
                         + "' which isn't defined from server");
                 return;
             }
@@ -527,8 +496,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Don't send to the server updates for list nodes
             StateNode nodeValue = (StateNode) mapProperty.getValue();
             JsonObject obj = WidgetUtil.crazyJsCast(valueProvider.get());
-            if (!obj.hasKey("nodeId")
-                    || nodeValue.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+            if (!obj.hasKey("nodeId") || nodeValue.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 return;
             }
         }
@@ -536,20 +504,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
-        assert context.htmlNode instanceof Element
-                : "Cannot bind shadow root to a Node";
+        assert context.htmlNode instanceof Element : "Cannot bind shadow root to a Node";
         NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
 
         attachShadow(context);
 
-        return map.addPropertyAddListener(event -> Reactive
-                .addFlushListener(() -> attachShadow(context)));
+        return map.addPropertyAddListener(event -> Reactive.addFlushListener(() -> attachShadow(context)));
     }
 
     private void attachShadow(BindingContext context) {
         NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
+        StateNode shadowRootNode = (StateNode) map.getProperty(NodeProperties.SHADOW_ROOT).getValue();
         if (shadowRootNode != null) {
             NativeFunction function = NativeFunction.create("element",
                     "if ( element.shadowRoot ) { return element.shadowRoot; } "
@@ -560,15 +525,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 shadowRootNode.setDomNode(shadowRoot);
             }
 
-            BindingContext newContext = new BindingContext(shadowRootNode,
-                    shadowRoot, context.binderContext);
+            BindingContext newContext = new BindingContext(shadowRootNode, shadowRoot, context.binderContext);
             bindChildren(newContext);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private JsMap<String, Computation> createComputations(
-            JsArray<JsMap<String, Computation>> computationsCollection) {
+    private JsMap<String, Computation> createComputations(JsArray<JsMap<String, Computation>> computationsCollection) {
         JsMap<String, Computation> computations = JsCollections.map();
         computationsCollection.push(computations);
         return computations;
@@ -579,46 +542,34 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return nsTag == null || element.getTagName().equalsIgnoreCase(nsTag);
     }
 
-    private EventRemover bindMap(int featureId, PropertyUser user,
-            JsMap<String, Computation> bindings, StateNode node) {
+    private EventRemover bindMap(int featureId, PropertyUser user, JsMap<String, Computation> bindings,
+            StateNode node) {
         NodeMap map = node.getMap(featureId);
-        map.forEachProperty((property,
-                name) -> bindProperty(user, property, bindings).recompute());
+        map.forEachProperty((property, name) -> bindProperty(user, property, bindings).recompute());
 
-        return map.addPropertyAddListener(
-                e -> bindProperty(user, e.getProperty(), bindings));
+        return map.addPropertyAddListener(e -> bindProperty(user, e.getProperty(), bindings));
     }
 
-    private EventRemover bindVisibility(JsArray<EventRemover> listeners,
-            BindingContext context,
-            JsArray<JsMap<String, Computation>> computationsCollection,
-            BinderContext nodeFactory) {
+    private EventRemover bindVisibility(JsArray<EventRemover> listeners, BindingContext context,
+            JsArray<JsMap<String, Computation>> computationsCollection, BinderContext nodeFactory) {
         assert context.htmlNode instanceof Element
-                : "The HTML node for the StateNode with id="
-                        + context.node.getId() + " is not an Element";
+                : "The HTML node for the StateNode with id=" + context.node.getId() + " is not an Element";
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
-        visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-                .setValue(isVisible(context.node));
-        updateVisibility(listeners, context, computationsCollection,
-                nodeFactory);
-        return context.node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.VISIBLE)
-                .addChangeListener(event -> updateVisibility(listeners, context,
-                        computationsCollection, nodeFactory));
+        visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(isVisible(context.node));
+        updateVisibility(listeners, context, computationsCollection, nodeFactory);
+        return context.node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBLE)
+                .addChangeListener(event -> updateVisibility(listeners, context, computationsCollection, nodeFactory));
     }
 
     private boolean isVisible(StateNode node) {
         return node.getTree().isVisible(node);
     }
 
-    private void updateVisibility(JsArray<EventRemover> listeners,
-            BindingContext context,
-            JsArray<JsMap<String, Computation>> computationsCollection,
-            BinderContext nodeFactory) {
+    private void updateVisibility(JsArray<EventRemover> listeners, BindingContext context,
+            JsArray<JsMap<String, Computation>> computationsCollection, BinderContext nodeFactory) {
         assert context.htmlNode instanceof Element
-                : "The HTML node for the StateNode with id="
-                        + context.node.getId() + " is not an Element";
+                : "The HTML node for the StateNode with id=" + context.node.getId() + " is not an Element";
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
         Element element = (Element) context.htmlNode;
@@ -631,8 +582,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 doBind(context.node, nodeFactory);
             });
         } else if (isVisible(context.node)) {
-            visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-                    .setValue(true);
+            visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
             restoreInitialHiddenAttribute(element, visibilityData);
         } else {
             setElementInvisible(element, visibilityData);
@@ -641,47 +591,36 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void setElementInvisible(Element element, NodeMap visibilityData) {
         storeInitialHiddenAttribute(element, visibilityData);
-        updateAttributeValue(
-                visibilityData.getNode().getTree().getRegistry()
-                        .getApplicationConfiguration(),
-                element, HIDDEN_ATTRIBUTE, Boolean.TRUE);
+        updateAttributeValue(visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration(), element,
+                HIDDEN_ATTRIBUTE, Boolean.TRUE);
         if (PolymerUtils.isInShadowRoot(element)) {
             element.getStyle().setDisplay("none");
         }
     }
 
-    private void restoreInitialHiddenAttribute(Element element,
-            NodeMap visibilityData) {
+    private void restoreInitialHiddenAttribute(Element element, NodeMap visibilityData) {
         storeInitialHiddenAttribute(element, visibilityData);
-        MapProperty initialVisibility = visibilityData
-                .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+        MapProperty initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
         if (initialVisibility.hasValue()) {
-            updateAttributeValue(
-                    visibilityData.getNode().getTree().getRegistry()
-                            .getApplicationConfiguration(),
+            updateAttributeValue(visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration(),
                     element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
         }
 
-        MapProperty initialDisplay = visibilityData
-                .getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+        MapProperty initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
         if (initialDisplay.hasValue()) {
             final String initialValue = initialDisplay.getValue().toString();
             element.getStyle().setDisplay(initialValue);
         }
     }
 
-    private void storeInitialHiddenAttribute(Element element,
-            NodeMap visibilityData) {
-        MapProperty initialVisibility = visibilityData
-                .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+    private void storeInitialHiddenAttribute(Element element, NodeMap visibilityData) {
+        MapProperty initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
         if (!initialVisibility.hasValue()) {
             initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
         }
 
-        MapProperty initialDisplay = visibilityData
-                .getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
-        if (PolymerUtils.isInShadowRoot(element) && !initialDisplay.hasValue()
-                && element.getStyle() != null) {
+        MapProperty initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+        if (PolymerUtils.isInShadowRoot(element) && !initialDisplay.hasValue() && element.getStyle() != null) {
             initialDisplay.setValue(element.getStyle().getDisplay());
         }
     }
@@ -698,34 +637,28 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /**
      * Checks whether the {@code node} needs re-bind.
      * <p>
-     * The node needs re-bind if it was initially invisible. As a consequence
-     * such node has not be bound. It has been bound in respect to visibility
-     * feature only (partially bound). Such node needs re-bind once it becomes
-     * visible.
+     * The node needs re-bind if it was initially invisible. As a consequence such node has not be bound. It has been
+     * bound in respect to visibility feature only (partially bound). Such node needs re-bind once it becomes visible.
      *
      * @param node
      *            the node to check
-     * @return {@code true} if the node is not entirely bound and needs re-bind
-     *         later on
+     * @return {@code true} if the node is not entirely bound and needs re-bind later on
      */
     public static boolean needsRebind(StateNode node) {
         /*
-         * Absence of value or "true" means that the node doesn't need re-bind.
-         * So only "false" means "needs re-bind".
+         * Absence of value or "true" means that the node doesn't need re-bind. So only "false" means "needs re-bind".
          */
         return Boolean.FALSE.equals(node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-                .getValue());
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).getValue());
     }
 
-    private static Computation bindProperty(PropertyUser user,
-            MapProperty property, JsMap<String, Computation> bindings) {
+    private static Computation bindProperty(PropertyUser user, MapProperty property,
+            JsMap<String, Computation> bindings) {
         String name = property.getName();
 
         assert !bindings.has(name) : "There's already a binding for " + name;
 
-        Computation computation = Reactive
-                .runWhenDependenciesChange(() -> user.use(property));
+        Computation computation = Reactive.runWhenDependenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
 
@@ -740,11 +673,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
-            if (WidgetUtil.isUndefined(domValue)
-                    || !WidgetUtil.equals(domValue, treeValue)) {
+            if (WidgetUtil.isUndefined(domValue) || !WidgetUtil.equals(domValue, treeValue)) {
                 Reactive.runWithComputation(null,
-                        () -> WidgetUtil.setJsProperty(element, name,
-                                PolymerUtils.createModelTree(treeValue)));
+                        () -> WidgetUtil.setJsProperty(element, name, PolymerUtils.createModelTree(treeValue)));
             }
         } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
             WidgetUtil.deleteJsProperty(element, name);
@@ -762,15 +693,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             String value = (String) mapProperty.getValue();
             boolean styleIsSet = false;
             if (value.contains("!important")) {
-                Element temp = Browser.getDocument()
-                        .createElement(element.getTagName());
+                Element temp = Browser.getDocument().createElement(element.getTagName());
                 CSSStyleDeclaration tmpStyle = temp.getStyle();
                 tmpStyle.setCssText(name + ": " + value + ";");
                 String priority = "important";
-                if (priority
-                        .equals(temp.getStyle().getPropertyPriority(name))) {
-                    styleElement.setProperty(name,
-                            temp.getStyle().getPropertyValue(name), priority);
+                if (priority.equals(temp.getStyle().getPropertyPriority(name))) {
+                    styleElement.setProperty(name, temp.getStyle().getPropertyValue(name), priority);
                     styleIsSet = true;
                 }
             }
@@ -784,9 +712,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void updateAttribute(MapProperty mapProperty, Element element) {
         String name = mapProperty.getName();
-        updateAttributeValue(
-                mapProperty.getMap().getNode().getTree().getRegistry()
-                        .getApplicationConfiguration(),
+        updateAttributeValue(mapProperty.getMap().getNode().getTree().getRegistry().getApplicationConfiguration(),
                 element, name, mapProperty.getValue());
     }
 
@@ -799,8 +725,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
-            ExistingElementMap existingElementMap = childNode.getTree()
-                    .getRegistry().getExistingElementMap();
+            ExistingElementMap existingElementMap = childNode.getTree().getRegistry().getExistingElementMap();
             Node child = existingElementMap.getElement(childNode.getId());
             if (child != null) {
                 existingElementMap.remove(childNode.getId());
@@ -814,9 +739,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         return children.addSpliceListener(e -> {
             /*
-             * Handle lazily so we can create the children we need to insert.
-             * The change that gives a child node an element tag name might not
-             * yet have been applied at this point.
+             * Handle lazily so we can create the children we need to insert. The change that gives a child node an
+             * element tag name might not yet have been applied at this point.
              */
             Reactive.addFlushListener(() -> handleChildrenSplice(e, context));
         });
@@ -831,24 +755,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         return children.addSpliceListener(e -> {
             /*
-             * Handle lazily so we can create the children we need to insert.
-             * The change that gives a child node an element tag name might not
-             * yet have been applied at this point.
+             * Handle lazily so we can create the children we need to insert. The change that gives a child node an
+             * element tag name might not yet have been applied at this point.
              */
             Reactive.addFlushListener(() -> {
                 JsArray<?> add = e.getAdd();
                 if (!add.isEmpty()) {
                     for (int i = 0; i < add.length(); i++) {
-                        appendVirtualChild(context, (StateNode) add.get(i),
-                                true);
+                        appendVirtualChild(context, (StateNode) add.get(i), true);
                     }
                 }
             });
         });
     }
 
-    private void appendVirtualChild(BindingContext context, StateNode node,
-            boolean reactivePhase) {
+    private void appendVirtualChild(BindingContext context, StateNode node, boolean reactivePhase) {
         JsonObject object = getPayload(node);
         String type = object.getString(NodeProperties.TYPE);
 
@@ -861,8 +782,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
             if (LitUtils.isLitElement(context.htmlNode)) {
-                LitUtils.whenRendered((Element) context.htmlNode,
-                        () -> handleInjectId(context, node, object, false));
+                LitUtils.whenRendered((Element) context.htmlNode, () -> handleInjectId(context, node, object, false));
                 return;
             } else if (!PolymerUtils.isReady(context.htmlNode)) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
@@ -874,8 +794,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> handleTemplateInTemplate(context, node, object,
-                                false));
+                        () -> handleTemplateInTemplate(context, node, object, false));
                 return;
             }
             handleTemplateInTemplate(context, node, object, reactivePhase);
@@ -883,35 +802,30 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             String name = object.getString(NodeProperties.PAYLOAD);
             String address = "name='" + name + "'";
 
-            Supplier<Element> elementLookup = () -> ElementUtil
-                    .getElementByName(context.htmlNode, name);
+            Supplier<Element> elementLookup = () -> ElementUtil.getElementByName(context.htmlNode, name);
 
             if (!ReactUtils.isInitialized(elementLookup)) {
-                ReactUtils.addReadyCallback((Element) context.htmlNode, name,
-                        () -> {
-                            doAppendVirtualChild(context, node, false,
-                                    elementLookup, name, address);
-                        });
+                ReactUtils.addReadyCallback((Element) context.htmlNode, name, () -> {
+                    doAppendVirtualChild(context, node, false, elementLookup, name, address);
+                });
                 return;
             }
-            doAppendVirtualChild(context, node, reactivePhase, elementLookup,
-                    name, address);
+            doAppendVirtualChild(context, node, reactivePhase, elementLookup, name, address);
         } else {
             assert false : "Unexpected payload type " + type;
         }
     }
 
-    private void doAppendVirtualChild(BindingContext context, StateNode node,
-            boolean reactivePhase, Supplier<Element> elementLookup, String id,
-            String address) {
+    private void doAppendVirtualChild(BindingContext context, StateNode node, boolean reactivePhase,
+            Supplier<Element> elementLookup, String id, String address) {
         if (!verifyAttachRequest(context.node, node, id, address)) {
             return;
         }
         Element element = elementLookup.get();
         if (verifyAttachedElement(element, node, id, address, context)) {
             if (!reactivePhase) {
-                InitialPropertiesHandler initialPropertiesHandler = node
-                        .getTree().getRegistry().getInitialPropertiesHandler();
+                InitialPropertiesHandler initialPropertiesHandler = node.getTree().getRegistry()
+                        .getInitialPropertiesHandler();
 
                 initialPropertiesHandler.nodeRegistered(node);
                 initialPropertiesHandler.flushPropertyUpdates();
@@ -929,50 +843,44 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     }
 
-    private void handleTemplateInTemplate(BindingContext context,
-            StateNode node, JsonObject object, boolean reactivePhase) {
+    private void handleTemplateInTemplate(BindingContext context, StateNode node, JsonObject object,
+            boolean reactivePhase) {
         JsonArray path = object.getArray(NodeProperties.PAYLOAD);
         String address = "path='" + path.toString() + "'";
 
-        Supplier<Element> elementLookup = () -> PolymerUtils.getCustomElement(
-                PolymerUtils.getDomRoot(context.htmlNode), path);
+        Supplier<Element> elementLookup = () -> PolymerUtils.getCustomElement(PolymerUtils.getDomRoot(context.htmlNode),
+                path);
 
-        doAppendVirtualChild(context, node, reactivePhase, elementLookup, null,
-                address);
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, null, address);
 
     }
 
-    private void handleInjectId(BindingContext context, StateNode node,
-            JsonObject object, boolean reactivePhase) {
+    private void handleInjectId(BindingContext context, StateNode node, JsonObject object, boolean reactivePhase) {
         String id = object.getString(NodeProperties.PAYLOAD);
         String address = "id='" + id + "'";
-        Supplier<Element> elementLookup = () -> ElementUtil
-                .getElementById(context.htmlNode, id);
+        Supplier<Element> elementLookup = () -> ElementUtil.getElementById(context.htmlNode, id);
 
-        doAppendVirtualChild(context, node, reactivePhase, elementLookup, id,
-                address);
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, id, address);
     }
 
-    private boolean verifyAttachedElement(Element element, StateNode attachNode,
-            String id, String address, BindingContext context) {
+    private boolean verifyAttachedElement(Element element, StateNode attachNode, String id, String address,
+            BindingContext context) {
         StateNode node = context.node;
         String tag = getTag(attachNode);
 
         boolean failure = false;
         if (element == null) {
             failure = true;
-            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
-                    + " is not found. The requested tag name is '" + tag + "'");
+            Console.warn(
+                    ELEMENT_ATTACH_ERROR_PREFIX + address + " is not found. The requested tag name is '" + tag + "'");
         } else if (!ElementUtil.hasTag(element, tag)) {
             failure = true;
-            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
-                    + " has the wrong tag name '" + element.getTagName()
+            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address + " has the wrong tag name '" + element.getTagName()
                     + "', the requested tag name is '" + tag + "'");
         }
 
         if (failure) {
-            node.getTree().sendExistingElementWithIdAttachToServer(node,
-                    attachNode.getId(), -1, id);
+            node.getTree().sendExistingElementWithIdAttachToServer(node, attachNode.getId(), -1, id);
             return false;
         }
 
@@ -980,8 +888,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return true;
         }
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
+        StateNode shadowRootNode = (StateNode) map.getProperty(NodeProperties.SHADOW_ROOT).getValue();
         if (shadowRootNode == null) {
             return true;
         }
@@ -1001,38 +908,31 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (existingId != null) {
             Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
-                    + " has been already attached previously via the node id='"
-                    + existingId + "'");
-            node.getTree().sendExistingElementWithIdAttachToServer(node,
-                    attachNode.getId(), existingId, id);
+                    + " has been already attached previously via the node id='" + existingId + "'");
+            node.getTree().sendExistingElementWithIdAttachToServer(node, attachNode.getId(), existingId, id);
             return false;
         }
         return true;
     }
 
-    private boolean verifyAttachRequest(StateNode parent, StateNode node,
-            String id, String address) {
+    private boolean verifyAttachRequest(StateNode parent, StateNode node, String id, String address) {
         /*
-         * This should not happen at all because server side may not send
-         * several attach requests for the same client-side element. But that's
-         * the situation when the code is written. So this is a kind of
-         * assertion for the future code which verifies the correctness of
-         * assumptions made on the client side about server-side code impl.
+         * This should not happen at all because server side may not send several attach requests for the same
+         * client-side element. But that's the situation when the code is written. So this is a kind of assertion for
+         * the future code which verifies the correctness of assumptions made on the client side about server-side code
+         * impl.
          */
-        NodeList virtualChildren = parent
-                .getList(NodeFeatures.VIRTUAL_CHILDREN);
+        NodeList virtualChildren = parent.getList(NodeFeatures.VIRTUAL_CHILDREN);
         for (int i = 0; i < virtualChildren.length(); i++) {
             StateNode child = (StateNode) virtualChildren.get(i);
             if (child == node) {
                 continue;
             }
             if (getPayload(node).toJson().equals(getPayload(child).toJson())) {
-                Console.warn("There is already a request to attach "
-                        + "element addressed by the " + address
+                Console.warn("There is already a request to attach " + "element addressed by the " + address
                         + ". The existing request's node id='" + child.getId()
                         + "'. Cannot attach the same element twice.");
-                node.getTree().sendExistingElementWithIdAttachToServer(parent,
-                        node.getId(), child.getId(), id);
+                node.getTree().sendExistingElementWithIdAttachToServer(parent, node.getId(), child.getId(), id);
                 return false;
             }
         }
@@ -1044,20 +944,18 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return (JsonObject) map.getProperty(NodeProperties.PAYLOAD).getValue();
     }
 
-    private Computation invokeWhenNodeIsConstructed(Command command,
-            StateNode node) {
+    private Computation invokeWhenNodeIsConstructed(Command command, StateNode node) {
         Computation computation = Reactive.runWhenDependenciesChange(command);
         node.addUnregisterListener(event -> computation.stop());
         return computation;
     }
 
-    private void handleChildrenSplice(ListSpliceEvent event,
-            BindingContext context) {
+    private void handleChildrenSplice(ListSpliceEvent event, BindingContext context) {
         Node htmlNode = context.htmlNode;
         if (event.isClear()) {
             /*
-             * When a full clear event is fired, all nodes must be removed,
-             * including the nodes the server doesn't know about.
+             * When a full clear event is fired, all nodes must be removed, including the nodes the server doesn't know
+             * about.
              */
             removeAllChildren(htmlNode);
         } else {
@@ -1072,11 +970,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     DomApi.wrap(htmlNode).removeChild(child);
                 }
                 /*
-                 * If the client-side element is not inside the parent the
-                 * server thought it should be (because of client-side-only DOM
-                 * changes), nothing is done at this point. If the server
-                 * appends the element to a new parent, that will override the
-                 * client DOM in the code below.
+                 * If the client-side element is not inside the parent the server thought it should be (because of
+                 * client-side-only DOM changes), nothing is done at this point. If the server appends the element to a
+                 * new parent, that will override the client DOM in the code below.
                  */
             }
         }
@@ -1094,22 +990,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void addChildren(int index, BindingContext context,
-            JsArray<?> add) {
-        NodeList nodeChildren = context.node
-                .getList(NodeFeatures.ELEMENT_CHILDREN);
+    private void addChildren(int index, BindingContext context, JsArray<?> add) {
+        NodeList nodeChildren = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
 
         Node beforeRef;
         if (index == 0) {
             // Insert at the first position after the client-side-only nodes
-            beforeRef = getFirstNodeMappedAsStateNode(nodeChildren,
-                    context.htmlNode);
+            beforeRef = getFirstNodeMappedAsStateNode(nodeChildren, context.htmlNode);
         } else if (index <= nodeChildren.length() && index > 0) {
             StateNode previousSibling = getPreviousSibling(index, context);
             // Insert before the next sibling of the current node
-            beforeRef = previousSibling == null ? null
-                    : DomApi.wrap(previousSibling.getDomNode())
-                            .getNextSibling();
+            beforeRef = previousSibling == null ? null : DomApi.wrap(previousSibling.getDomNode()).getNextSibling();
         } else {
             // Insert at the end
             beforeRef = null;
@@ -1119,8 +1010,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Object newChildObject = add.get(i);
             StateNode newChild = (StateNode) newChildObject;
 
-            ExistingElementMap existingElementMap = newChild.getTree()
-                    .getRegistry().getExistingElementMap();
+            ExistingElementMap existingElementMap = newChild.getTree().getRegistry().getExistingElementMap();
             Node childNode = existingElementMap.getElement(newChild.getId());
             if (childNode != null) {
                 existingElementMap.remove(newChild.getId());
@@ -1129,16 +1019,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             } else {
                 childNode = context.binderContext.createAndBind(newChild);
 
-                DomApi.wrap(context.htmlNode).insertBefore(childNode,
-                        beforeRef);
+                DomApi.wrap(context.htmlNode).insertBefore(childNode, beforeRef);
             }
 
             beforeRef = DomApi.wrap(childNode).getNextSibling();
         }
     }
 
-    private static Node getFirstNodeMappedAsStateNode(
-            NodeList mappedNodeChildren, Node htmlNode) {
+    private static Node getFirstNodeMappedAsStateNode(NodeList mappedNodeChildren, Node htmlNode) {
 
         JsArray<Node> clientList = DomApi.wrap(htmlNode).getChildNodes();
         for (int i = 0; i < clientList.length(); i++) {
@@ -1154,8 +1042,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private StateNode getPreviousSibling(int index, BindingContext context) {
-        NodeList nodeChildren = context.node
-                .getList(NodeFeatures.ELEMENT_CHILDREN);
+        NodeList nodeChildren = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
 
         int count = 0;
         StateNode node = null;
@@ -1177,11 +1064,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      */
     private void remove(JsArray<EventRemover> listeners, BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection) {
-        ForEachCallback<String, Computation> computationStopper = (computation,
-                name) -> computation.stop();
+        ForEachCallback<String, Computation> computationStopper = (computation, name) -> computation.stop();
 
-        computationsCollection
-                .forEach(collection -> collection.forEach(computationStopper));
+        computationsCollection.forEach(collection -> collection.forEach(computationStopper));
         context.listenerBindings.forEach(computationStopper);
 
         context.listenerRemovers.forEach((remover, name) -> remover.remove());
@@ -1194,20 +1079,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private EventRemover bindDomEventListeners(BindingContext context) {
         NodeMap elementListeners = getDomEventListenerMap(context.node);
         elementListeners.forEachProperty((property, name) -> {
-            Computation computation = bindEventHandlerProperty(property,
-                    context);
+            Computation computation = bindEventHandlerProperty(property, context);
 
             // Run eagerly to add initial listeners before element is attached
             computation.recompute();
         });
 
-        return elementListeners.addPropertyAddListener(
-                event -> bindEventHandlerProperty(event.getProperty(),
-                        context));
+        return elementListeners.addPropertyAddListener(event -> bindEventHandlerProperty(event.getProperty(), context));
     }
 
-    private Computation bindEventHandlerProperty(
-            MapProperty eventHandlerProperty, BindingContext context) {
+    private Computation bindEventHandlerProperty(MapProperty eventHandlerProperty, BindingContext context) {
         String name = eventHandlerProperty.getName();
         assert !context.listenerBindings.has(name);
 
@@ -1240,8 +1121,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void addEventHandler(String eventType, BindingContext context) {
         assert !context.listenerRemovers.has(eventType);
 
-        EventRemover remover = context.htmlNode.addEventListener(eventType,
-                event -> handleDomEvent(event, context), false);
+        EventRemover remover = context.htmlNode.addEventListener(eventType, event -> handleDomEvent(event, context),
+                false);
 
         context.listenerRemovers.set(eventType, remover);
     }
@@ -1255,17 +1136,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Node element = context.htmlNode;
         StateNode node = context.node;
-        assert element instanceof Element
-                : "Cannot handle DOM event for a Node";
+        assert element instanceof Element : "Cannot handle DOM event for a Node";
 
         String type = event.getType();
 
         NodeMap listenerMap = getDomEventListenerMap(node);
 
-        ConstantPool constantPool = node.getTree().getRegistry()
-                .getConstantPool();
-        String expressionConstantKey = (String) listenerMap.getProperty(type)
-                .getValue();
+        ConstantPool constantPool = node.getTree().getRegistry().getConstantPool();
+        String expressionConstantKey = (String) listenerMap.getProperty(type).getValue();
         assert expressionConstantKey != null;
 
         assert constantPool.has(expressionConstantKey);
@@ -1282,52 +1160,38 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             eventData = Json.createObject();
         }
         for (String expressionString : expressions) {
-            if (expressionString
-                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
-                String property = expressionString.substring(
-                        JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
+            if (expressionString.startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
+                String property = expressionString.substring(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
                 synchronizeProperties.add(property);
-            } else if (expressionString
-                    .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
+            } else if (expressionString.equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
                 // map event.target to the closest state node
-                int targetNodeId = getClosestStateNodeIdToEventTarget(node,
-                        event.getTarget());
-                eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
-                        targetNodeId);
-            } else if (expressionString
-                    .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
+                int targetNodeId = getClosestStateNodeIdToEventTarget(node, event.getTarget());
+                eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA, targetNodeId);
+            } else if (expressionString.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
                 // map element returned by JS to the closest state node
-                String jsEvaluation = expressionString.substring(
-                        JsonConstants.MAP_STATE_NODE_EVENT_DATA.length());
-                EventExpression expression = getOrCreateExpression(
-                        jsEvaluation);
-                JsonValue expressionValue = expression.evaluate(event,
-                        (Element) element);
+                String jsEvaluation = expressionString.substring(JsonConstants.MAP_STATE_NODE_EVENT_DATA.length());
+                EventExpression expression = getOrCreateExpression(jsEvaluation);
+                JsonValue expressionValue = expression.evaluate(event, (Element) element);
                 // find the closest state node matching the expression value
-                int targetNodeId = getClosestStateNodeIdToDomNode(
-                        node.getTree(), expressionValue, jsEvaluation);
+                int targetNodeId = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
                 eventData.put(expressionString, targetNodeId);
             } else {
-                EventExpression expression = getOrCreateExpression(
-                        expressionString);
+                EventExpression expression = getOrCreateExpression(expressionString);
 
-                JsonValue expressionValue = expression.evaluate(event,
-                        (Element) element);
+                JsonValue expressionValue = expression.evaluate(event, (Element) element);
 
                 eventData.put(expressionString, expressionValue);
             }
         }
 
         JsMap<String, Runnable> commands = JsCollections.map();
-        synchronizeProperties.forEach(name -> commands.set(name,
-                getSyncPropertyCommand(name, context)));
+        synchronizeProperties.forEach(name -> commands.set(name, getSyncPropertyCommand(name, context)));
 
         Consumer<String> sendCommand = debouncePhase -> {
             sendEventToServer(node, type, eventData, debouncePhase);
         };
 
-        boolean sendNow = resolveFilters(element, type, expressionSettings,
-                eventData, sendCommand, commands);
+        boolean sendNow = resolveFilters(element, type, expressionSettings, eventData, sendCommand, commands);
 
         if (sendNow) {
             // Send if there were not filters or at least one matched
@@ -1338,8 +1202,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (flushPendingChanges) {
                 // Flush all debounced events so that they don't happen
                 // in wrong order in the server-side
-                commandAlreadyExecuted = Debouncer.flushAll()
-                        .contains(sendCommand);
+                commandAlreadyExecuted = Debouncer.flushAll().contains(sendCommand);
             }
 
             if (!commandAlreadyExecuted) {
@@ -1349,15 +1212,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private Runnable getSyncPropertyCommand(String propertyName,
-            BindingContext context) {
-        return context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty(propertyName).getSyncToServerCommand(WidgetUtil
-                        .getJsProperty(context.htmlNode, propertyName));
+    private Runnable getSyncPropertyCommand(String propertyName, BindingContext context) {
+        return context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(propertyName)
+                .getSyncToServerCommand(WidgetUtil.getJsProperty(context.htmlNode, propertyName));
     }
 
-    private static void sendEventToServer(StateNode node, String type,
-            JsonObject eventData, String debouncePhase) {
+    private static void sendEventToServer(StateNode node, String type, JsonObject eventData, String debouncePhase) {
         if (debouncePhase == null) {
             if (eventData != null) {
                 eventData.remove(JsonConstants.EVENT_DATA_PHASE);
@@ -1372,9 +1232,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         node.getTree().sendEventToServer(node, type, eventData);
     }
 
-    private static boolean resolveFilters(Node element, String eventType,
-            JsonObject expressionSettings, JsonObject eventData,
-            Consumer<String> sendCommand, JsMap<String, Runnable> commands) {
+    private static boolean resolveFilters(Node element, String eventType, JsonObject expressionSettings,
+            JsonObject eventData, Consumer<String> sendCommand, JsMap<String, Runnable> commands) {
 
         boolean noFilters = true;
         boolean atLeastOneFilterMatched = false;
@@ -1389,14 +1248,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
             noFilters = false;
 
-            boolean filterMatched = eventData != null
-                    && eventData.getBoolean(expression);
+            boolean filterMatched = eventData != null && eventData.getBoolean(expression);
             if (hasDebounce && filterMatched) {
                 String debouncerId = "on-" + eventType + ":" + expression;
 
                 // Count as a match only if at least one debounce is eager
-                filterMatched = resolveDebounces(element, debouncerId,
-                        (JsonArray) settings, sendCommand, commands);
+                filterMatched = resolveDebounces(element, debouncerId, (JsonArray) settings, sendCommand, commands);
             }
 
             atLeastOneFilterMatched |= filterMatched;
@@ -1405,9 +1262,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return noFilters || atLeastOneFilterMatched;
     }
 
-    private static boolean resolveDebounces(Node element, String debouncerId,
-            JsonArray debounceList, Consumer<String> sendCommand,
-            JsMap<String, Runnable> commands) {
+    private static boolean resolveDebounces(Node element, String debouncerId, JsonArray debounceList,
+            Consumer<String> sendCommand, JsMap<String, Runnable> commands) {
         boolean atLeastOneEager = false;
 
         for (int i = 0; i < debounceList.length(); i++) {
@@ -1426,8 +1282,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 phases.add(debounceSettings.getString(j));
             }
 
-            boolean eager = Debouncer.getOrCreate(element, debouncerId, timeout)
-                    .trigger(phases, sendCommand, commands);
+            boolean eager = Debouncer.getOrCreate(element, debouncerId, timeout).trigger(phases, sendCommand, commands);
 
             atLeastOneEager |= eager;
         }
@@ -1439,8 +1294,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         NodeList classNodeList = node.getList(NodeFeatures.CLASS_LIST);
 
         for (int i = 0; i < classNodeList.length(); i++) {
-            DomApi.wrap(element).getClassList()
-                    .add((String) classNodeList.get(i));
+            DomApi.wrap(element).getClassList().add((String) classNodeList.get(i));
         }
 
         return classNodeList.addSpliceListener(e -> {
@@ -1459,21 +1313,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
-        return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                () -> WidgetUtil.crazyJsoCast(context.htmlNode), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS, false);
+        return ServerEventHandlerBinder.bindServerEventHandlerNames(() -> WidgetUtil.crazyJsoCast(context.htmlNode),
+                context.node, NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS, false);
     }
 
     private EventRemover bindClientCallableMethods(BindingContext context) {
-        assert context.htmlNode instanceof Element
-                : "Cannot bind client delegate methods to a Node";
-        return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                (Element) context.htmlNode, context.node);
+        assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
+        return ServerEventHandlerBinder.bindServerEventHandlerNames((Element) context.htmlNode, context.node);
     }
 
-    private static void updateAttributeValue(
-            ApplicationConfiguration configuration, Element element,
-            String attribute, Object value) {
+    private static void updateAttributeValue(ApplicationConfiguration configuration, Element element, String attribute,
+            Object value) {
         if (value == null || value instanceof String) {
             WidgetUtil.updateAttribute(element, attribute, (String) value);
         } else {
@@ -1481,36 +1331,30 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (JsonType.OBJECT.equals(jsonValue.getType())) {
                 JsonObject object = (JsonObject) jsonValue;
                 assert object.hasKey(NodeProperties.URI_ATTRIBUTE)
-                        : "Implementation error: JsonObject is recieved as an attribute value for '"
-                                + attribute + "' but it has no "
-                                + NodeProperties.URI_ATTRIBUTE + " key";
+                        : "Implementation error: JsonObject is recieved as an attribute value for '" + attribute
+                                + "' but it has no " + NodeProperties.URI_ATTRIBUTE + " key";
                 String uri = object.getString(NodeProperties.URI_ATTRIBUTE);
-                if (configuration.isWebComponentMode()
-                        && !WidgetUtil.isAbsoluteUrl(uri)) {
+                if (configuration.isWebComponentMode() && !WidgetUtil.isAbsoluteUrl(uri)) {
                     String baseUri = configuration.getServiceUrl();
                     baseUri = baseUri.endsWith("/") ? baseUri : baseUri + "/";
-                    WidgetUtil.updateAttribute(element, attribute,
-                            baseUri + uri);
+                    WidgetUtil.updateAttribute(element, attribute, baseUri + uri);
                 } else {
                     WidgetUtil.updateAttribute(element, attribute, uri);
                 }
             } else {
-                WidgetUtil.updateAttribute(element, attribute,
-                        value.toString());
+                WidgetUtil.updateAttribute(element, attribute, value.toString());
             }
         }
     }
 
-    private static EventExpression getOrCreateExpression(
-            String expressionString) {
+    private static EventExpression getOrCreateExpression(String expressionString) {
         if (expressionCache == null) {
             expressionCache = JsCollections.map();
         }
         EventExpression expression = expressionCache.get(expressionString);
 
         if (expression == null) {
-            expression = NativeFunction.create("event", "element",
-                    "return (" + expressionString + ")");
+            expression = NativeFunction.create("event", "element", "return (" + expressionString + ")");
             expressionCache.set(expressionString, expression);
         }
 
@@ -1518,8 +1362,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     // This method could be moved somewhere to be reusable
-    private int getClosestStateNodeIdToEventTarget(StateNode topNode,
-            EventTarget target) {
+    private int getClosestStateNodeIdToEventTarget(StateNode topNode, EventTarget target) {
         if (target == null) {
             return -1;
         }
@@ -1536,8 +1379,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 }
                 // NOTE: for now not looking at virtual children on purpose.
                 // If needed (?), those can be included here to the search stack
-                stateNode.getList(NodeFeatures.ELEMENT_CHILDREN)
-                        .forEach(child -> stack.push((StateNode) child));
+                stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).forEach(child -> stack.push((StateNode) child));
             }
             // no direct match, all child element state nodes collected.
             // bottom-up search elements until matching state node found
@@ -1545,16 +1387,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return getStateNodeForElement(stack, targetNode);
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found
-            Console.debug(
-                    "An error occurred when Flow tried to find a state node matching the element "
-                            + target + ", which was the event.target. Error: "
-                            + e.getMessage());
+            Console.debug("An error occurred when Flow tried to find a state node matching the element " + target
+                    + ", which was the event.target. Error: " + e.getMessage());
         }
         return -1; // no match / error;
     }
 
-    private static int getStateNodeForElement(JsArray<StateNode> searchStack,
-            DomNode targetNode) {
+    private static int getStateNodeForElement(JsArray<StateNode> searchStack, DomNode targetNode) {
         while (targetNode != null) {
             for (int i = searchStack.length() - 1; i > -1; i--) {
                 final StateNode stateNode = searchStack.get(i);
@@ -1567,17 +1406,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return -1;
     }
 
-    private int getClosestStateNodeIdToDomNode(StateTree stateTree,
-            Object domNodeReference, String eventDataExpression) {
+    private int getClosestStateNodeIdToDomNode(StateTree stateTree, Object domNodeReference,
+            String eventDataExpression) {
         if (domNodeReference == null) {
             return -1;
         }
         try {
-            DomNode targetNode = DomApi
-                    .wrap(WidgetUtil.crazyJsCast(domNodeReference));
+            DomNode targetNode = DomApi.wrap(WidgetUtil.crazyJsCast(domNodeReference));
             while (targetNode != null) {
-                StateNode stateNodeForDomNode = stateTree
-                        .getStateNodeForDomNode(targetNode);
+                StateNode stateNodeForDomNode = stateTree.getStateNodeForDomNode(targetNode);
                 if (stateNodeForDomNode != null) {
                     return stateNodeForDomNode.getId();
                 }
@@ -1585,12 +1422,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found
-            Console.debug(
-                    "An error occurred when Flow tried to find a state node matching the element "
-                            + domNodeReference
-                            + ", returned by an event data expression "
-                            + eventDataExpression + ". Error: "
-                            + e.getMessage());
+            Console.debug("An error occurred when Flow tried to find a state node matching the element "
+                    + domNodeReference + ", returned by an event data expression " + eventDataExpression + ". Error: "
+                    + e.getMessage());
         }
         return -1; // no match / error;
     }

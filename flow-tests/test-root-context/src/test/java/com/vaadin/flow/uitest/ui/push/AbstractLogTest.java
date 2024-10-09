@@ -21,8 +21,7 @@ public abstract class AbstractLogTest extends ChromeBrowserTest {
         return logs.get(logs.size() - 1);
     }
 
-    public static ExpectedCondition<Boolean> textToBePresentInElement(
-            Supplier<WebElement> supplier, String text) {
+    public static ExpectedCondition<Boolean> textToBePresentInElement(Supplier<WebElement> supplier, String text) {
 
         return new ExpectedCondition<Boolean>() {
             @Override
@@ -41,8 +40,7 @@ public abstract class AbstractLogTest extends ChromeBrowserTest {
 
             @Override
             public String toString() {
-                return String.format("text ('%s') to be present in element %s",
-                        text, supplier.get());
+                return String.format("text ('%s') to be present in element %s", text, supplier.get());
             }
         };
     }

@@ -52,8 +52,7 @@ public class NodeFeatureRegistry {
         private final int id;
         private final int priority;
 
-        private <T extends NodeFeature> NodeFeatureData(
-                SerializableFunction<StateNode, T> factory, int id) {
+        private <T extends NodeFeature> NodeFeatureData(SerializableFunction<StateNode, T> factory, int id) {
             this.factory = factory;
             this.id = id;
             priority = nextNodePriority++;
@@ -62,77 +61,52 @@ public class NodeFeatureRegistry {
 
     static {
         /* Primary features */
-        registerFeature(ElementData.class, ElementData::new,
-                NodeFeatures.ELEMENT_DATA);
-        registerFeature(TextNodeMap.class, TextNodeMap::new,
-                NodeFeatures.TEXT_NODE);
-        registerFeature(ModelList.class, ModelList::new,
-                NodeFeatures.TEMPLATE_MODELLIST);
-        registerFeature(BasicTypeValue.class, BasicTypeValue::new,
-                NodeFeatures.BASIC_TYPE_VALUE);
+        registerFeature(ElementData.class, ElementData::new, NodeFeatures.ELEMENT_DATA);
+        registerFeature(TextNodeMap.class, TextNodeMap::new, NodeFeatures.TEXT_NODE);
+        registerFeature(ModelList.class, ModelList::new, NodeFeatures.TEMPLATE_MODELLIST);
+        registerFeature(BasicTypeValue.class, BasicTypeValue::new, NodeFeatures.BASIC_TYPE_VALUE);
 
         /* Common element features */
-        registerFeature(ElementChildrenList.class, ElementChildrenList::new,
-                NodeFeatures.ELEMENT_CHILDREN);
-        registerFeature(ElementPropertyMap.class, ElementPropertyMap::new,
-                NodeFeatures.ELEMENT_PROPERTIES);
+        registerFeature(ElementChildrenList.class, ElementChildrenList::new, NodeFeatures.ELEMENT_CHILDREN);
+        registerFeature(ElementPropertyMap.class, ElementPropertyMap::new, NodeFeatures.ELEMENT_PROPERTIES);
 
         /* Component mapped features */
-        registerFeature(ComponentMapping.class, ComponentMapping::new,
-                NodeFeatures.COMPONENT_MAPPING);
-        registerFeature(ClientCallableHandlers.class,
-                ClientCallableHandlers::new,
+        registerFeature(ComponentMapping.class, ComponentMapping::new, NodeFeatures.COMPONENT_MAPPING);
+        registerFeature(ClientCallableHandlers.class, ClientCallableHandlers::new,
                 NodeFeatures.CLIENT_DELEGATE_HANDLERS);
 
         /* Supplementary element stuff */
-        registerFeature(ElementClassList.class, ElementClassList::new,
-                NodeFeatures.CLASS_LIST);
-        registerFeature(ElementAttributeMap.class, ElementAttributeMap::new,
-                NodeFeatures.ELEMENT_ATTRIBUTES);
-        registerFeature(ElementListenerMap.class, ElementListenerMap::new,
-                NodeFeatures.ELEMENT_LISTENERS);
-        registerFeature(VirtualChildrenList.class, VirtualChildrenList::new,
-                NodeFeatures.VIRTUAL_CHILDREN);
+        registerFeature(ElementClassList.class, ElementClassList::new, NodeFeatures.CLASS_LIST);
+        registerFeature(ElementAttributeMap.class, ElementAttributeMap::new, NodeFeatures.ELEMENT_ATTRIBUTES);
+        registerFeature(ElementListenerMap.class, ElementListenerMap::new, NodeFeatures.ELEMENT_LISTENERS);
+        registerFeature(VirtualChildrenList.class, VirtualChildrenList::new, NodeFeatures.VIRTUAL_CHILDREN);
 
         /* Supplementary generic stuff */
-        registerFeature(ReturnChannelMap.class, ReturnChannelMap::new,
-                NodeFeatures.RETURN_CHANNEL_MAP);
+        registerFeature(ReturnChannelMap.class, ReturnChannelMap::new, NodeFeatures.RETURN_CHANNEL_MAP);
 
         /* PolymerTemplate stuff */
-        registerFeature(PolymerEventListenerMap.class,
-                PolymerEventListenerMap::new,
+        registerFeature(PolymerEventListenerMap.class, PolymerEventListenerMap::new,
                 NodeFeatures.POLYMER_EVENT_LISTENERS);
-        registerFeature(PolymerServerEventHandlers.class,
-                PolymerServerEventHandlers::new,
+        registerFeature(PolymerServerEventHandlers.class, PolymerServerEventHandlers::new,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
 
         /* Rarely used element stuff */
-        registerFeature(ElementStylePropertyMap.class,
-                ElementStylePropertyMap::new,
+        registerFeature(ElementStylePropertyMap.class, ElementStylePropertyMap::new,
                 NodeFeatures.ELEMENT_STYLE_PROPERTIES);
-        registerFeature(ShadowRootData.class, ShadowRootData::new,
-                NodeFeatures.SHADOW_ROOT_DATA);
-        registerFeature(ShadowRootHost.class, ShadowRootHost::new,
-                NodeFeatures.SHADOW_ROOT_HOST);
-        registerFeature(AttachExistingElementFeature.class,
-                AttachExistingElementFeature::new,
+        registerFeature(ShadowRootData.class, ShadowRootData::new, NodeFeatures.SHADOW_ROOT_DATA);
+        registerFeature(ShadowRootHost.class, ShadowRootHost::new, NodeFeatures.SHADOW_ROOT_HOST);
+        registerFeature(AttachExistingElementFeature.class, AttachExistingElementFeature::new,
                 NodeFeatures.ATTACH_EXISTING_ELEMENT);
-        registerFeature(InertData.class, InertData::new,
-                NodeFeatures.INERT_DATA);
+        registerFeature(InertData.class, InertData::new, NodeFeatures.INERT_DATA);
 
         /* Only used for the root node */
-        registerFeature(PushConfigurationMap.class, PushConfigurationMap::new,
-                NodeFeatures.UI_PUSHCONFIGURATION);
-        registerFeature(PushConfigurationParametersMap.class,
-                PushConfigurationParametersMap::new,
+        registerFeature(PushConfigurationMap.class, PushConfigurationMap::new, NodeFeatures.UI_PUSHCONFIGURATION);
+        registerFeature(PushConfigurationParametersMap.class, PushConfigurationParametersMap::new,
                 NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
-        registerFeature(LoadingIndicatorConfigurationMap.class,
-                LoadingIndicatorConfigurationMap::new,
+        registerFeature(LoadingIndicatorConfigurationMap.class, LoadingIndicatorConfigurationMap::new,
                 NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
-        registerFeature(PollConfigurationMap.class, PollConfigurationMap::new,
-                NodeFeatures.POLL_CONFIGURATION);
-        registerFeature(ReconnectDialogConfigurationMap.class,
-                ReconnectDialogConfigurationMap::new,
+        registerFeature(PollConfigurationMap.class, PollConfigurationMap::new, NodeFeatures.POLL_CONFIGURATION);
+        registerFeature(ReconnectDialogConfigurationMap.class, ReconnectDialogConfigurationMap::new,
                 NodeFeatures.RECONNECT_DIALOG_CONFIGURATION);
     }
 
@@ -156,8 +130,7 @@ public class NodeFeatureRegistry {
      *            the node for which the feature should be created
      * @return a newly created feature
      */
-    public static NodeFeature create(
-            Class<? extends NodeFeature> nodeFeatureType, StateNode node) {
+    public static NodeFeature create(Class<? extends NodeFeature> nodeFeatureType, StateNode node) {
         assert node != null;
 
         return getData(nodeFeatureType).factory.apply(node);
@@ -177,21 +150,18 @@ public class NodeFeatureRegistry {
     /**
      * Gets all registered feature types.
      *
-     * @return an unmodifiable collection of feature types, not
-     *         <code>null</code>
+     * @return an unmodifiable collection of feature types, not <code>null</code>
      */
     public static Collection<Class<? extends NodeFeature>> getFeatures() {
         return Collections.unmodifiableCollection(nodeFeatures.keySet());
     }
 
-    private static NodeFeatureData getData(
-            Class<? extends NodeFeature> nodeFeature) {
+    private static NodeFeatureData getData(Class<? extends NodeFeature> nodeFeature) {
         assert nodeFeature != null;
 
         NodeFeatureData data = nodeFeatures.get(nodeFeature);
 
-        assert data != null : "Feature " + nodeFeature.getName()
-                + " has not been registered in NodeFeatureRegistry";
+        assert data != null : "Feature " + nodeFeature.getName() + " has not been registered in NodeFeatureRegistry";
 
         return data;
     }

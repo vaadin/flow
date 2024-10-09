@@ -20,8 +20,7 @@ import java.util.Optional;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Base class for a {@link Component} that represents a single built-in HTML
- * element.
+ * Base class for a {@link Component} that represents a single built-in HTML element.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -31,8 +30,7 @@ public class HtmlComponent extends Component implements HasSize, HasStyle {
             .optionalAttributeWithDefault("title", "");
 
     /**
-     * Creates a component with the element type based on the {@link Tag}
-     * annotation of the sub class.
+     * Creates a component with the element type based on the {@link Tag} annotation of the sub class.
      */
     protected HtmlComponent() {
         // Creates element based on @Tag
@@ -43,21 +41,18 @@ public class HtmlComponent extends Component implements HasSize, HasStyle {
      * Creates a component with a new element with the given tag name.
      *
      * @param tagName
-     *            the tag name of the element to use for this component, not
-     *            <code>null</code>
+     *            the tag name of the element to use for this component, not <code>null</code>
      */
     public HtmlComponent(String tagName) {
         super(new Element(tagName));
     }
 
     /**
-     * Sets the title of this component. Browsers typically use the title to
-     * show a tooltip when hovering an element or any descendant without a title
-     * value of its own.
+     * Sets the title of this component. Browsers typically use the title to show a tooltip when hovering an element or
+     * any descendant without a title value of its own.
      *
      * @param title
-     *            the title value to set, or <code>""</code> to remove any
-     *            previously set title
+     *            the title value to set, or <code>""</code> to remove any previously set title
      */
     public void setTitle(String title) {
         set(titleDescriptor, title);

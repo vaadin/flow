@@ -33,8 +33,7 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
         open();
 
         WebElement initial = findElement(By.id("property-value"));
-        Assert.assertEquals("Property value:foo, model value: foo",
-                initial.getText());
+        Assert.assertEquals("Property value:foo, model value: foo", initial.getText());
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         TestBenchElement input = template.$(TestBenchElement.class).id("input");
@@ -42,12 +41,9 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
         input.sendKeys("x" + Keys.TAB);
 
         // property update event comes immediately
-        List<WebElement> propertyUpdates = findElements(
-                By.id("property-update-event"));
-        WebElement propertyUpdate = propertyUpdates
-                .get(propertyUpdates.size() - 1);
-        Assert.assertEquals("Property value:x, model value: x",
-                propertyUpdate.getText());
+        List<WebElement> propertyUpdates = findElements(By.id("property-update-event"));
+        WebElement propertyUpdate = propertyUpdates.get(propertyUpdates.size() - 1);
+        Assert.assertEquals("Property value:x, model value: x", propertyUpdate.getText());
 
         // now move focus out of the input and check that value change event is
         // fired
@@ -55,7 +51,6 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
 
         List<WebElement> valueUpdates = findElements(By.id("value-update"));
         WebElement valueUpdate = valueUpdates.get(valueUpdates.size() - 1);
-        Assert.assertEquals("Property value:x, model value: x",
-                valueUpdate.getText());
+        Assert.assertEquals("Property value:x, model value: x", valueUpdate.getText());
     }
 }

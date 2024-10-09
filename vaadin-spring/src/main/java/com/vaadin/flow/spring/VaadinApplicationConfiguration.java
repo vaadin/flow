@@ -33,8 +33,8 @@ import com.vaadin.flow.spring.i18n.DefaultI18NProviderFactory;
 /**
  * Vaadin Application Spring configuration.
  * <p>
- * Registers a default {@link ApplicationConfigurationFactory} for Vaadin web
- * application if there is no developer provided factory available.
+ * Registers a default {@link ApplicationConfigurationFactory} for Vaadin web application if there is no developer
+ * provided factory available.
  *
  * @author Vaadin Ltd
  * @since
@@ -44,8 +44,7 @@ import com.vaadin.flow.spring.i18n.DefaultI18NProviderFactory;
 public class VaadinApplicationConfiguration {
 
     /**
-     * Creates a default {@link ApplicationConfigurationFactory} bean in case
-     * there is no developer provided bean.
+     * Creates a default {@link ApplicationConfigurationFactory} bean in case there is no developer provided bean.
      *
      * @return the default application configuration factory
      */
@@ -56,8 +55,7 @@ public class VaadinApplicationConfiguration {
     }
 
     /**
-     * Creates an application context initializer for lookup initializer
-     * {@link SpringLookupInitializer}.
+     * Creates an application context initializer for lookup initializer {@link SpringLookupInitializer}.
      *
      * @return an application context initializer
      */
@@ -67,24 +65,21 @@ public class VaadinApplicationConfiguration {
     }
 
     /**
-     * Creates default {@link I18NProvider}. This is created only if there's no
-     * {@link I18NProvider} bean declared.
+     * Creates default {@link I18NProvider}. This is created only if there's no {@link I18NProvider} bean declared.
      *
      * @return default I18N provider
      */
     @Bean
     @ConditionalOnMissingBean(value = I18NProvider.class)
     @Conditional(DefaultI18NProviderFactory.class)
-    public DefaultI18NProvider vaadinI18nProvider(
-            @Value("${vaadin.i18n.location-pattern:"
-                    + DefaultI18NProviderFactory.DEFAULT_LOCATION_PATTERN
-                    + "}") String locationPattern) {
+    public DefaultI18NProvider vaadinI18nProvider(@Value("${vaadin.i18n.location-pattern:"
+            + DefaultI18NProviderFactory.DEFAULT_LOCATION_PATTERN + "}") String locationPattern) {
         return DefaultI18NProviderFactory.create(locationPattern);
     }
 
     /**
-     * Creates default {@link MenuAccessControl}. This is created only if
-     * there's no {@link MenuAccessControl} bean declared.
+     * Creates default {@link MenuAccessControl}. This is created only if there's no {@link MenuAccessControl} bean
+     * declared.
      *
      * @return default menu access control
      */

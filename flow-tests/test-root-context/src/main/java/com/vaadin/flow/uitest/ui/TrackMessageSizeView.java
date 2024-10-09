@@ -45,48 +45,35 @@ public class TrackMessageSizeView extends Div {
             + "    var request = {trackMessageLength: true, messageDelimiter: '|'};\n"
             + "    _request = {trackMessageLength: true, messageDelimiter: '|'};\n"
             + "    _handleProtocol = function(a,message) {return message;};"
-            + "    var response = {partialMessage: ''};\n"
-            + "    var messages = [];\n"
+            + "    var response = {partialMessage: ''};\n" + "    var messages = [];\n"
             + "    for (var i = 0; i < data.length; i++) {\n"
             + "        if (!_trackMessageSize(data[i], request, response))\n"
-            + "            messages = messages.concat(response.messages);\n"
-            + "    }\n"
+            + "            messages = messages.concat(response.messages);\n" + "    }\n"
             + "    if (JSON.stringify(expected) != JSON.stringify(messages)) {\n"
             + "        if (console && typeof console.error == 'function') console.error('Expected', expected, 'but got', messages, 'for', data);\n"
-            + "        $0.innerHTML = 'Test failed, see javascript console for details.';\n"
-            + "    }" + "}\n";
+            + "        $0.innerHTML = 'Test failed, see javascript console for details.';\n" + "    }" + "}\n";
 
     public TrackMessageSizeView() {
 
-        logElement = ElementFactory.createDiv().setAttribute("id",
-                LOG_ELEMENT_ID);
+        logElement = ElementFactory.createDiv().setAttribute("id", LOG_ELEMENT_ID);
         getElement().appendChild(logElement);
 
         String methodImplementation = findMethodImplementation();
 
-        logElement.getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJs(
-                        methodImplementation + testMethod + buildTestCase(),
-                        logElement));
+        logElement.getNode().runWhenAttached(
+                ui -> ui.getPage().executeJs(methodImplementation + testMethod + buildTestCase(), logElement));
 
     }
 
     private String buildTestCase() {
         // Could maybe express the cases in java and generate JS?
-        return "testSequence(['a', 'b'], ['1|a1|b', '']);\n"
-                + "testSequence(['a', 'b'], ['1|a1|', 'b']);\n"
-                + "testSequence(['a', 'b'], ['1|a1', '|b']);\n"
-                + "testSequence(['a', 'b'], ['1|a', '1|b']);\n"
-                + "testSequence(['a', 'b'], ['1|a', '', '1|b']);\n"
-                + "testSequence(['a|', '|b'], ['2|a|2||b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|', '', '1|b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|', '1|b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|1', '|b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|1|', 'b']);\n"
-                + "testSequence([' ', 'b'], ['1| 1|b']);\n"
-                + "testSequence([' ', 'b'], ['1| ','1|b']);\n"
-                + "testSequence([' ', 'b'], ['1|',' 1|b']);\n"
-                + "if($0.innerHTML === '') { \n"
+        return "testSequence(['a', 'b'], ['1|a1|b', '']);\n" + "testSequence(['a', 'b'], ['1|a1|', 'b']);\n"
+                + "testSequence(['a', 'b'], ['1|a1', '|b']);\n" + "testSequence(['a', 'b'], ['1|a', '1|b']);\n"
+                + "testSequence(['a', 'b'], ['1|a', '', '1|b']);\n" + "testSequence(['a|', '|b'], ['2|a|2||b']);\n"
+                + "testSequence(['a|', 'b'], ['2|a|', '', '1|b']);\n" + "testSequence(['a|', 'b'], ['2|a|', '1|b']);\n"
+                + "testSequence(['a|', 'b'], ['2|a|1', '|b']);\n" + "testSequence(['a|', 'b'], ['2|a|1|', 'b']);\n"
+                + "testSequence([' ', 'b'], ['1| 1|b']);\n" + "testSequence([' ', 'b'], ['1| ','1|b']);\n"
+                + "testSequence([' ', 'b'], ['1|',' 1|b']);\n" + "if($0.innerHTML === '') { \n"
                 + "    $0.innerHTML = 'All tests run'; " + "}\n";
     }
 
@@ -95,11 +82,10 @@ public class TrackMessageSizeView extends Div {
 
         VaadinRequest request = VaadinRequest.getCurrent();
 
-        HttpServletRequest httpServletRequest = ((VaadinServletRequest) request)
-                .getHttpServletRequest();
+        HttpServletRequest httpServletRequest = ((VaadinServletRequest) request).getHttpServletRequest();
 
-        String jsPath = httpServletRequest.getRequestURL().toString()
-                .replace(httpServletRequest.getRequestURI(), filename);
+        String jsPath = httpServletRequest.getRequestURL().toString().replace(httpServletRequest.getRequestURI(),
+                filename);
 
         String content = getFileContent(jsPath);
 
@@ -136,9 +122,7 @@ public class TrackMessageSizeView extends Div {
             throw new RuntimeException(e);
         }
         try {
-            return url != null
-                    ? IOUtils.toString(url, StandardCharsets.UTF_8.name())
-                    : null;
+            return url != null ? IOUtils.toString(url, StandardCharsets.UTF_8.name()) : null;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

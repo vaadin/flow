@@ -25,8 +25,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Generic {@link HasValue} to use any type of component with Vaadin data
- * binding.
+ * Generic {@link HasValue} to use any type of component with Vaadin data binding.
  * <p>
  * Example:
  *
@@ -40,8 +39,7 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  * @since 1.0
  */
-public class ReadOnlyHasValue<V>
-        implements HasValue<ValueChangeEvent<V>, V>, Serializable {
+public class ReadOnlyHasValue<V> implements HasValue<ValueChangeEvent<V>, V>, Serializable {
     private V value;
     private final SerializableConsumer<V> valueProcessor;
     private final V emptyValue;
@@ -51,13 +49,11 @@ public class ReadOnlyHasValue<V>
      * Creates new {@code ReadOnlyHasValue}
      *
      * @param valueProcessor
-     *            the value valueProcessor, e.g. a setter for displaying the
-     *            value in a component
+     *            the value valueProcessor, e.g. a setter for displaying the value in a component
      * @param emptyValue
      *            the value to be used as empty, {@code null} by default
      */
-    public ReadOnlyHasValue(SerializableConsumer<V> valueProcessor,
-            V emptyValue) {
+    public ReadOnlyHasValue(SerializableConsumer<V> valueProcessor, V emptyValue) {
         this.valueProcessor = valueProcessor;
         this.emptyValue = emptyValue;
     }
@@ -66,8 +62,7 @@ public class ReadOnlyHasValue<V>
      * Creates new {@code ReadOnlyHasValue} with {@code null} as an empty value.
      *
      * @param valueProcessor
-     *            the value valueProcessor, e.g. a setter for displaying the
-     *            value in a component
+     *            the value valueProcessor, e.g. a setter for displaying the value in a component
      */
     public ReadOnlyHasValue(SerializableConsumer<V> valueProcessor) {
         this(valueProcessor, null);
@@ -81,8 +76,7 @@ public class ReadOnlyHasValue<V>
 
         if (listenerList != null && !Objects.equals(oldValue, value)) {
             for (ValueChangeListener<? super ValueChangeEvent<V>> valueChangeListener : listenerList) {
-                valueChangeListener.valueChanged(
-                        new ReadOnlyValueChangeEvent<>(this, value, oldValue));
+                valueChangeListener.valueChanged(new ReadOnlyValueChangeEvent<>(this, value, oldValue));
             }
         }
     }
@@ -93,8 +87,7 @@ public class ReadOnlyHasValue<V>
     }
 
     @Override
-    public Registration addValueChangeListener(
-            ValueChangeListener<? super ValueChangeEvent<V>> listener) {
+    public Registration addValueChangeListener(ValueChangeListener<? super ValueChangeEvent<V>> listener) {
         Objects.requireNonNull(listener, "Listener must not be null.");
         if (listenerList == null) {
             listenerList = new LinkedHashSet<>();
@@ -131,15 +124,13 @@ public class ReadOnlyHasValue<V>
         return emptyValue;
     }
 
-    private static class ReadOnlyValueChangeEvent<V>
-            implements ValueChangeEvent<V> {
+    private static class ReadOnlyValueChangeEvent<V> implements ValueChangeEvent<V> {
 
         private HasValue<?, V> hasValue;
         private V value;
         private V oldValue;
 
-        public ReadOnlyValueChangeEvent(HasValue<?, V> hasValue, V value,
-                V oldValue) {
+        public ReadOnlyValueChangeEvent(HasValue<?, V> hasValue, V value, V oldValue) {
             this.hasValue = hasValue;
             this.value = value;
             this.oldValue = oldValue;

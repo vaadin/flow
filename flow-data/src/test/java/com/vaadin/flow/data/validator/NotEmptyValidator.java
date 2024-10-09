@@ -24,20 +24,17 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 
 /**
- * Simple validator to check against {@code null} value and empty {@link String}
- * value.
+ * Simple validator to check against {@code null} value and empty {@link String} value.
  * <p>
- * This validator works similar to {@link NotNullValidator} but in addition it
- * also check whether the value is not an empty String.
+ * This validator works similar to {@link NotNullValidator} but in addition it also check whether the value is not an
+ * empty String.
  * <p>
- * This validator can be suitable for fields that have been marked as required
- * with {@link HasValue#setRequiredIndicatorVisible(boolean)}.
+ * This validator can be suitable for fields that have been marked as required with
+ * {@link HasValue#setRequiredIndicatorVisible(boolean)}.
  * <p>
- * Note that
- * {@link BindingBuilder#asRequired(com.vaadin.flow.data.ErrorMessageProvider)}
- * does almost the same thing, but verifies against the value NOT being equal to
- * what {@link HasValue#getEmptyValue()} returns and sets the required indicator
- * visible with {@link HasValue#setRequiredIndicatorVisible(boolean)}.
+ * Note that {@link BindingBuilder#asRequired(com.vaadin.flow.data.ErrorMessageProvider)} does almost the same thing,
+ * but verifies against the value NOT being equal to what {@link HasValue#getEmptyValue()} returns and sets the required
+ * indicator visible with {@link HasValue#setRequiredIndicatorVisible(boolean)}.
  *
  * @see HasValue#setRequiredIndicatorVisible(boolean)
  * @see BindingBuilder#asRequired(com.vaadin.flow.data.ErrorMessageProvider)

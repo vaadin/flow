@@ -26,8 +26,8 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
- * A node feature that carries a single value. Represented as a map containing
- * the key returned by {@link #getKey()} on the client.
+ * A node feature that carries a single value. Represented as a map containing the key returned by {@link #getKey()} on
+ * the client.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -58,12 +58,10 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
     }
 
     /**
-     * Gets the key that should be used when the value of this feature is sent
-     * to the client.
+     * Gets the key that should be used when the value of this feature is sent to the client.
      * <p>
-     * The key is fetched on demand from the sub class instead of e.g. requiring
-     * it as a constructor parameter to avoid storing an additional member field
-     * in each instance.
+     * The key is fetched on demand from the sub class instead of e.g. requiring it as a constructor parameter to avoid
+     * storing an additional member field in each instance.
      *
      * @return the key value, not <code>null</code>
      */
@@ -88,8 +86,7 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
 
         // Store current value as the change tracker if not value is already
         // stored
-        getNode().getChangeTracker(this,
-                () -> this.value != null ? this.value : NULL_MARKER);
+        getNode().getChangeTracker(this, () -> this.value != null ? this.value : NULL_MARKER);
     }
 
     /**
@@ -103,8 +100,7 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        Serializable originalValue = getNode().getChangeTracker(this,
-                () -> null);
+        Serializable originalValue = getNode().getChangeTracker(this, () -> null);
         assert originalValue != null;
         if (originalValue == NULL_MARKER) {
             originalValue = null;

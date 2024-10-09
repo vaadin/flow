@@ -28,14 +28,12 @@ import com.vaadin.flow.theme.AbstractTheme;
  * @author Vaadin Ltd
  * @since
  */
-abstract class AbstractDependenciesScanner
-        implements FrontendDependenciesScanner {
+abstract class AbstractDependenciesScanner implements FrontendDependenciesScanner {
 
     public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
     protected static final String ERROR_INVALID_LOAD_DEPENDENCIES_ANNOTATION = "There can only be one @"
-            + LoadDependenciesOnStartup.class.getSimpleName()
-            + " annotation and it must be set on the "
+            + LoadDependenciesOnStartup.class.getSimpleName() + " annotation and it must be set on the "
             + AppShellConfigurator.class.getSimpleName() + " implementor.";
     protected static final String ERROR_INVALID_PWA_ANNOTATION = "There can only be one @PWA annotation and it must be set on the "
             + AppShellConfigurator.class.getSimpleName() + " implementor.";
@@ -43,8 +41,7 @@ abstract class AbstractDependenciesScanner
     private final ClassFinder finder;
     private final FeatureFlags featureFlags;
 
-    protected AbstractDependenciesScanner(ClassFinder finder,
-            FeatureFlags featureFlags) {
+    protected AbstractDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
         this.finder = finder;
         this.featureFlags = featureFlags;
     }
@@ -55,8 +52,7 @@ abstract class AbstractDependenciesScanner
 
     protected final boolean isExperimental(String className) {
         return featureFlags != null && featureFlags.getFeatures().stream()
-                .anyMatch(f -> !f.isEnabled()
-                        && className.equals(f.getComponentClassName()));
+                .anyMatch(f -> !f.isEnabled() && className.equals(f.getComponentClassName()));
     }
 
     protected Class<? extends AbstractTheme> getLumoTheme() {

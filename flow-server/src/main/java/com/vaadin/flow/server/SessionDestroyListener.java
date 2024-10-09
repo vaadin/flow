@@ -19,8 +19,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 
 /**
- * A listener that gets notified when a Vaadin service session is no longer
- * used.
+ * A listener that gets notified when a Vaadin service session is no longer used.
  *
  * @see VaadinService#addSessionDestroyListener(SessionDestroyListener)
  *

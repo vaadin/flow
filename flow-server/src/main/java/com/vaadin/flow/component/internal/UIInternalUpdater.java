@@ -24,8 +24,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 
 /**
- * The implementation of this interface is responsible for updating the UI with
- * given content.
+ * The implementation of this interface is responsible for updating the UI with given content.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -82,8 +81,7 @@ public interface UIInternalUpdater extends Serializable {
      *            the new UI where children of the old UI will be landed
      */
     default void moveToNewUI(UI oldUI, UI newUI) {
-        final List<Element> uiChildren = oldUI.getElement().getChildren()
-                .collect(Collectors.toList());
+        final List<Element> uiChildren = oldUI.getElement().getChildren().collect(Collectors.toList());
         uiChildren.forEach(element -> {
             element.removeFromTree(false);
             newUI.getElement().appendChild(element);

@@ -33,11 +33,9 @@ import com.vaadin.flow.server.VaadinSession;
 public class CustomStreamResourceRegistryServlet extends VaadinServlet {
 
     @Override
-    protected VaadinServletService createServletService(
-            DeploymentConfiguration deploymentConfiguration)
+    protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration)
             throws ServiceException {
-        VaadinServletService service = new VaadinServletService(this,
-                deploymentConfiguration) {
+        VaadinServletService service = new VaadinServletService(this, deploymentConfiguration) {
 
             @Override
             protected VaadinSession createVaadinSession(VaadinRequest request) {
@@ -46,23 +44,15 @@ public class CustomStreamResourceRegistryServlet extends VaadinServlet {
                     protected StreamResourceRegistry createStreamResourceRegistry() {
                         return new StreamResourceRegistry(this) {
                             @Override
-                            public URI getTargetURI(
-                                    AbstractStreamResource resource) {
+                            public URI getTargetURI(AbstractStreamResource resource) {
                                 URI targetURI = super.getTargetURI(resource);
-                                if (resource.getName()
-                                        .contains("absoluteURL")) {
-                                    String baseURL = getCurrentServletRequest()
-                                            .getRequestURL().toString()
-                                            .replaceFirst(
-                                                    "(/vaadin-stream-resources)/.*",
-                                                    "$1-absolute/");
-                                    if (resource.getName()
-                                            .contains("schemaless")) {
-                                        baseURL = baseURL.replaceFirst(
-                                                "^https?://", "//");
+                                if (resource.getName().contains("absoluteURL")) {
+                                    String baseURL = getCurrentServletRequest().getRequestURL().toString()
+                                            .replaceFirst("(/vaadin-stream-resources)/.*", "$1-absolute/");
+                                    if (resource.getName().contains("schemaless")) {
+                                        baseURL = baseURL.replaceFirst("^https?://", "//");
                                     }
-                                    return URI.create(baseURL)
-                                            .resolve(targetURI);
+                                    return URI.create(baseURL).resolve(targetURI);
                                 }
                                 return targetURI;
                             }

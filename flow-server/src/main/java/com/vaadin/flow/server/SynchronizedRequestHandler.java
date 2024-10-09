@@ -18,10 +18,9 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 
 /**
- * RequestHandler which takes care of locking and unlocking of the VaadinSession
- * automatically. The session is locked before
- * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
- * is called and unlocked after it has completed.
+ * RequestHandler which takes care of locking and unlocking of the VaadinSession automatically. The session is locked
+ * before {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)} is called and unlocked after
+ * it has completed.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -29,8 +28,8 @@ import java.io.IOException;
 public abstract class SynchronizedRequestHandler implements RequestHandler {
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         if (!canHandleRequest(request)) {
             return false;
         }
@@ -44,10 +43,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
     }
 
     /**
-     * Identical to
-     * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
-     * except the {@link VaadinSession} is locked before this is called and
-     * unlocked after this has completed.
+     * Identical to {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)} except the
+     * {@link VaadinSession} is locked before this is called and unlocked after this has completed.
      *
      * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      * @param session
@@ -56,30 +53,24 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The request to handle
      * @param response
      *            The response object to which a response can be written.
-     * @return true if a response has been written and no further request
-     *         handlers should be called, otherwise false
+     * @return true if a response has been written and no further request handlers should be called, otherwise false
      *
      * @throws IOException
      *             If an IO error occurred
      */
-    public abstract boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException;
+    public abstract boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException;
 
     /**
-     * Check whether a request may be handled by this handler. This can be used
-     * as an optimization to avoid locking the session just to investigate some
-     * method property. The default implementation just returns
-     * <code>true</code> which means that all requests will be handled by
-     * calling
-     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
-     * with the session locked.
+     * Check whether a request may be handled by this handler. This can be used as an optimization to avoid locking the
+     * session just to investigate some method property. The default implementation just returns <code>true</code> which
+     * means that all requests will be handled by calling
+     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)} with the session locked.
      *
      * @param request
      *            the request to handle
-     * @return <code>true</code> if the request handling should continue once
-     *         the session has been locked; <code>false</code> if there's no
-     *         need to lock the session since the request would still not be
-     *         handled.
+     * @return <code>true</code> if the request handling should continue once the session has been locked;
+     *         <code>false</code> if there's no need to lock the session since the request would still not be handled.
      */
     protected boolean canHandleRequest(VaadinRequest request) {
         return true;

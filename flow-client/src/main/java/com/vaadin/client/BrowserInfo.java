@@ -21,8 +21,7 @@ import com.vaadin.flow.shared.BrowserDetails;
 /**
  * Provides a way to query information about web browser.
  *
- * Browser details are detected only once and those are stored in this singleton
- * class.
+ * Browser details are detected only once and those are stored in this singleton class.
  *
  * @since 1.0
  */
@@ -131,8 +130,7 @@ public class BrowserInfo {
     }
 
     /**
-     * Checks if the browser is Safari or runs on IOS (covering also Chrome on
-     * iOS).
+     * Checks if the browser is Safari or runs on IOS (covering also Chrome on iOS).
      *
      * @return true if the browser is Safari or running on IOS, false otherwise
      */
@@ -168,8 +166,8 @@ public class BrowserInfo {
     }
 
     /**
-     * Returns the Gecko version if the browser is Gecko based. The Gecko
-     * version for Firefox 2 is 1.8 and 1.9 for Firefox 3.
+     * Returns the Gecko version if the browser is Gecko based. The Gecko version for Firefox 2 is 1.8 and 1.9 for
+     * Firefox 3.
      *
      * @return The Gecko version or -1 if the browser is not Gecko based
      */
@@ -182,8 +180,8 @@ public class BrowserInfo {
     }
 
     /**
-     * Returns the WebKit version if the browser is WebKit based. The WebKit
-     * version returned is the major version e.g., 523.
+     * Returns the WebKit version if the browser is WebKit based. The WebKit version returned is the major version e.g.,
+     * 523.
      *
      * @return The WebKit version or -1 if the browser is not WebKit based
      */
@@ -234,15 +232,12 @@ public class BrowserInfo {
     }
 
     /**
-     * Tests if this is an Android devices with a broken scrollTop
-     * implementation.
+     * Tests if this is an Android devices with a broken scrollTop implementation.
      *
-     * @return true if scrollTop cannot be trusted on this device, false
-     *         otherwise
+     * @return true if scrollTop cannot be trusted on this device, false otherwise
      */
     public boolean isAndroidWithBrokenScrollTop() {
-        return isAndroid() && (getOperatingSystemMajorVersion() == 3
-                || getOperatingSystemMajorVersion() == 4);
+        return isAndroid() && (getOperatingSystemMajorVersion() == 3 || getOperatingSystemMajorVersion() == 4);
     }
 
     private int getOperatingSystemMajorVersion() {
@@ -250,11 +245,9 @@ public class BrowserInfo {
     }
 
     /**
-     * Returns the browser major version e.g., 3 for Firefox 3.5, 4 for Chrome
-     * 4, 8 for Internet Explorer 8.
+     * Returns the browser major version e.g., 3 for Firefox 3.5, 4 for Chrome 4, 8 for Internet Explorer 8.
      * <p>
-     * Note that Internet Explorer 8 and newer will return the document mode so
-     * IE8 rendering as IE7 will return 7.
+     * Note that Internet Explorer 8 and newer will return the document mode so IE8 rendering as IE7 will return 7.
      * </p>
      *
      * @return The major version of the browser.

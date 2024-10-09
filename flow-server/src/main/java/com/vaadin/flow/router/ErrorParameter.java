@@ -18,8 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Navigation error parameter class containing thrown exception and possibly a
- * custom message.
+ * Navigation error parameter class containing thrown exception and possibly a custom message.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -54,15 +53,13 @@ public class ErrorParameter<T extends Exception> implements Serializable {
      * @param customMessage
      *            custom message to go with exception
      */
-    public ErrorParameter(Class<T> parameterType, Exception caughtException,
-            String customMessage) {
+    public ErrorParameter(Class<T> parameterType, Exception caughtException, String customMessage) {
         this.caughtException = caughtException;
         this.customMessage = customMessage;
         this.exception = findCauseByType(parameterType, caughtException);
     }
 
-    private static <T extends Exception> T findCauseByType(Class<T> type,
-            Exception exception) {
+    private static <T extends Exception> T findCauseByType(Class<T> type, Exception exception) {
         if (type.isInstance(exception)) {
             return type.cast(exception);
         } else {
@@ -76,10 +73,9 @@ public class ErrorParameter<T extends Exception> implements Serializable {
     }
 
     /**
-     * Get the error parameter exception. This will be the same as
-     * {@link #getCaughtException()} if that exception is of the type of this
-     * error parameter. Otherwise, it will be the first
-     * {@link Exception#getCause()} which is of the right type.
+     * Get the error parameter exception. This will be the same as {@link #getCaughtException()} if that exception is of
+     * the type of this error parameter. Otherwise, it will be the first {@link Exception#getCause()} which is of the
+     * right type.
      *
      * @see #getCaughtException()
      *
@@ -90,9 +86,8 @@ public class ErrorParameter<T extends Exception> implements Serializable {
     }
 
     /**
-     * Gets the originally caught exception. This exception might not match the
-     * type of this error parameter if it has been created based on an exception
-     * that is the cause of the caught exception.
+     * Gets the originally caught exception. This exception might not match the type of this error parameter if it has
+     * been created based on an exception that is the cause of the caught exception.
      *
      * @see #getException()
      *

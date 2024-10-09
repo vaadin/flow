@@ -37,8 +37,7 @@ public class VaadinSpringDataHelpersTest {
 
     @Test
     public void toSpringDataSort_generatesAscendingAndDescendingSpringSort() {
-        List<QuerySortOrder> querySortOrders = QuerySortOrder.asc("name")
-                .thenDesc("age").build();
+        List<QuerySortOrder> querySortOrders = QuerySortOrder.asc("name").thenDesc("age").build();
         Query<?, ?> query = new Query<>(0, 1, querySortOrders, null, null);
 
         Sort sort = VaadinSpringDataHelpers.toSpringDataSort(query);
@@ -57,12 +56,10 @@ public class VaadinSpringDataHelpersTest {
 
     @Test
     public void toSpringPageRequest_generatesSpringPageRequestWithPagingAndSort() {
-        List<QuerySortOrder> querySortOrders = QuerySortOrder.asc("name")
-                .build();
+        List<QuerySortOrder> querySortOrders = QuerySortOrder.asc("name").build();
         Query<?, ?> query = new Query<>(100, 50, querySortOrders, null, null);
 
-        PageRequest pageRequest = VaadinSpringDataHelpers
-                .toSpringPageRequest(query);
+        PageRequest pageRequest = VaadinSpringDataHelpers.toSpringPageRequest(query);
 
         Assert.assertNotNull(pageRequest);
         Assert.assertEquals(50, pageRequest.getPageSize());
@@ -75,35 +72,29 @@ public class VaadinSpringDataHelpersTest {
 
     @Test
     public void fromPagingRepository_fetchesItemsFromPagingRepoAccordingToVaadinQuery() {
-        PagingAndSortingRepository repo = Mockito
-                .mock(PagingAndSortingRepository.class);
+        PagingAndSortingRepository repo = Mockito.mock(PagingAndSortingRepository.class);
 
         Mockito.doAnswer(mock -> {
             PageRequest pageRequest = mock.getArgument(0);
             int from = pageRequest.getPageNumber() * pageRequest.getPageSize();
 
-            Sort.Order order = pageRequest.getSort()
-                    .getOrderFor("someSortField");
+            Sort.Order order = pageRequest.getSort().getOrderFor("someSortField");
             Stream<Integer> itemsStream = IntStream.range(0, 500).boxed();
 
             if (order.isDescending()) {
                 itemsStream = itemsStream.sorted(Collections.reverseOrder());
             }
             // given string items 'Item XYZ' ordered according to a given query
-            List<String> items = itemsStream.skip(from)
-                    .limit(pageRequest.getPageSize()).map(i -> "Item " + i)
+            List<String> items = itemsStream.skip(from).limit(pageRequest.getPageSize()).map(i -> "Item " + i)
                     .collect(Collectors.toList());
             return new PageImpl<>(items);
         }).when(repo).findAll(Mockito.any(PageRequest.class));
 
-        CallbackDataProvider.FetchCallback<String, Void> callback = VaadinSpringDataHelpers
-                .fromPagingRepository(repo);
+        CallbackDataProvider.FetchCallback<String, Void> callback = VaadinSpringDataHelpers.fromPagingRepository(repo);
 
         // when items with indexes 100..149 and descending order are fetched
-        Query<String, Void> query = new Query<>(100, 50,
-                QuerySortOrder.desc("someSortField").build(), null, null);
-        List<String> result = callback.fetch(query)
-                .collect(Collectors.toList());
+        Query<String, Void> query = new Query<>(100, 50, QuerySortOrder.desc("someSortField").build(), null, null);
+        List<String> result = callback.fetch(query).collect(Collectors.toList());
 
         // then the result should contain items 'Item 399'...'Item 350'.
         Assert.assertEquals(50, result.size());

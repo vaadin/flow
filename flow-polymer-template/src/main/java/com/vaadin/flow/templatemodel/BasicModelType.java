@@ -13,27 +13,22 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A model type representing an immutable leaf value, e.g. strings, numbers or
- * booleans.
+ * A model type representing an immutable leaf value, e.g. strings, numbers or booleans.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated Template model and model types are not supported for lit
- *             template, but you can use {@code @Id} mapping and the component
- *             API or the element API with property synchronization instead.
- *             Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Template model and model types are not supported for lit template, but you can use {@code @Id} mapping
+ *             and the component API or the element API with property synchronization instead. Polymer template support
+ *             is deprecated - we recommend you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 public class BasicModelType extends AbstractBasicModelType {
 
-    static final Map<Class<?>, BasicModelType> TYPES = loadBasicTypes(
-            BasicModelType::new);
+    static final Map<Class<?>, BasicModelType> TYPES = loadBasicTypes(BasicModelType::new);
 
     private BasicModelType(Class<?> type) {
         super(type);
@@ -44,8 +39,7 @@ public class BasicModelType extends AbstractBasicModelType {
      *
      * @param type
      *            the Java class to find a basic model type for
-     * @return the basic model type, or an empty optional if the provided type
-     *         is not a basic type
+     * @return the basic model type, or an empty optional if the provided type is not a basic type
      */
     public static Optional<ModelType> get(Class<?> type) {
         return Optional.ofNullable(TYPES.get(type));
@@ -57,8 +51,7 @@ public class BasicModelType extends AbstractBasicModelType {
     }
 
     @Override
-    public Serializable applicationToModel(Object applicationValue,
-            PropertyFilter filter) {
+    public Serializable applicationToModel(Object applicationValue, PropertyFilter filter) {
         return (Serializable) applicationValue;
     }
 

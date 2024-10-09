@@ -127,12 +127,10 @@ public class ComponentMetaDataTest {
     public void synchronizedProperties_hasOverriddenMethod() {
         ComponentMetaData data = new ComponentMetaData(SubClass.class);
 
-        Collection<SynchronizedPropertyInfo> props = data
-                .getSynchronizedProperties();
+        Collection<SynchronizedPropertyInfo> props = data.getSynchronizedProperties();
         Assert.assertEquals(2, props.size());
 
-        List<SynchronizedPropertyInfo> bazProps = props.stream()
-                .filter(prop -> prop.getProperty().equals("baz"))
+        List<SynchronizedPropertyInfo> bazProps = props.stream().filter(prop -> prop.getProperty().equals("baz"))
                 .collect(Collectors.toList());
         Assert.assertEquals(1, bazProps.size());
         SynchronizedPropertyInfo info = bazProps.get(0);
@@ -141,17 +139,14 @@ public class ComponentMetaDataTest {
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("bar", events.get(0));
 
-        Assert.assertTrue(props.stream()
-                .anyMatch(prop -> prop.getProperty().equals("bar")));
+        Assert.assertTrue(props.stream().anyMatch(prop -> prop.getProperty().equals("bar")));
     }
 
     @Test
     public void synchronizedProperties_overridesMethodAndProperty() {
-        ComponentMetaData data = new ComponentMetaData(
-                ChangeSyncProperty.class);
+        ComponentMetaData data = new ComponentMetaData(ChangeSyncProperty.class);
 
-        Collection<SynchronizedPropertyInfo> props = data
-                .getSynchronizedProperties();
+        Collection<SynchronizedPropertyInfo> props = data.getSynchronizedProperties();
         Assert.assertEquals(1, props.size());
 
         SynchronizedPropertyInfo info = props.iterator().next();
@@ -166,12 +161,10 @@ public class ComponentMetaDataTest {
         assertFooProperty(clazz, DisabledUpdateMode.ONLY_WHEN_ENABLED);
     }
 
-    private void assertFooProperty(Class<? extends Component> clazz,
-            DisabledUpdateMode mode) {
+    private void assertFooProperty(Class<? extends Component> clazz, DisabledUpdateMode mode) {
         ComponentMetaData data = new ComponentMetaData(clazz);
 
-        Collection<SynchronizedPropertyInfo> props = data
-                .getSynchronizedProperties();
+        Collection<SynchronizedPropertyInfo> props = data.getSynchronizedProperties();
         Assert.assertEquals(1, props.size());
 
         SynchronizedPropertyInfo info = props.iterator().next();

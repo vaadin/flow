@@ -22,13 +22,10 @@ import java.util.TimeZone;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Provides extended information about the web browser, such as screen
- * resolution and time zone.
+ * Provides extended information about the web browser, such as screen resolution and time zone.
  * <p>
- * Please note that all information is fetched only once, and <em>not updated
- * automatically</em>. To retrieve updated values, you can execute JS with
- * {@link Page#executeJs(String, Serializable...)} and get the current value
- * back.
+ * Please note that all information is fetched only once, and <em>not updated automatically</em>. To retrieve updated
+ * values, you can execute JS with {@link Page#executeJs(String, Serializable...)} and get the current value back.
  *
  * @author Vaadin Ltd
  * @since 2.0
@@ -52,8 +49,7 @@ public class ExtendedClientDetails implements Serializable {
     private String navigatorPlatform;
 
     /**
-     * For internal use only. Updates all properties in the class according to
-     * the given information.
+     * For internal use only. Updates all properties in the class according to the given information.
      *
      * @param screenWidth
      *            Screen width
@@ -82,20 +78,16 @@ public class ExtendedClientDetails implements Serializable {
      * @param touchDevice
      *            whether browser responds to touch events
      * @param devicePixelRatio
-     *            the ratio of the display's resolution in physical pixels to
-     *            the resolution in CSS pixels
+     *            the ratio of the display's resolution in physical pixels to the resolution in CSS pixels
      * @param windowName
      *            a unique browser window name which persists on reload
      * @param navigatorPlatform
      *            navigation platform received from the browser
      */
-    ExtendedClientDetails(String screenWidth, String screenHeight,
-            String windowInnerWidth, String windowInnerHeight,
-            String bodyClientWidth, String bodyClientHeight, String tzOffset,
-            String rawTzOffset, String dstShift, String dstInEffect,
-            String tzId, String curDate, String touchDevice,
-            String devicePixelRatio, String windowName,
-            String navigatorPlatform) {
+    ExtendedClientDetails(String screenWidth, String screenHeight, String windowInnerWidth, String windowInnerHeight,
+            String bodyClientWidth, String bodyClientHeight, String tzOffset, String rawTzOffset, String dstShift,
+            String dstInEffect, String tzId, String curDate, String touchDevice, String devicePixelRatio,
+            String windowName, String navigatorPlatform) {
         if (screenWidth != null) {
             try {
                 this.screenWidth = Integer.parseInt(screenWidth);
@@ -174,8 +166,8 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Gets the width of the screen in pixels. This is the full screen
-     * resolution and not the width available for the application.
+     * Gets the width of the screen in pixels. This is the full screen resolution and not the width available for the
+     * application.
      *
      * @return the width of the screen in pixels.
      */
@@ -184,8 +176,8 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Gets the height of the screen in pixels. This is the full screen
-     * resolution and not the height available for the application.
+     * Gets the height of the screen in pixels. This is the full screen resolution and not the height available for the
+     * application.
      *
      * @return the height of the screen in pixels.
      */
@@ -194,8 +186,8 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Gets the inner height of the browser window {@code window.innerHeight} in
-     * pixels. This includes the scrollbar, if it is visible.
+     * Gets the inner height of the browser window {@code window.innerHeight} in pixels. This includes the scrollbar, if
+     * it is visible.
      *
      * @return the browser window inner height in pixels
      */
@@ -204,8 +196,8 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Gets the inner width of the browser window {@code window.innerWidth} in
-     * pixels. This includes the scrollbar, if it is visible.
+     * Gets the inner width of the browser window {@code window.innerWidth} in pixels. This includes the scrollbar, if
+     * it is visible.
      *
      * @return the browser window inner width in pixels
      */
@@ -232,10 +224,8 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Returns the browser-reported TimeZone offset in milliseconds from GMT.
-     * This includes possible daylight saving adjustments, to figure out which
-     * TimeZone the user actually might be in, see
-     * {@link #getRawTimezoneOffset()}.
+     * Returns the browser-reported TimeZone offset in milliseconds from GMT. This includes possible daylight saving
+     * adjustments, to figure out which TimeZone the user actually might be in, see {@link #getRawTimezoneOffset()}.
      *
      * @see ExtendedClientDetails#getRawTimezoneOffset()
      * @return timezone offset in milliseconds, 0 if not available
@@ -245,8 +235,7 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Returns the TimeZone Id (like "Europe/Helsinki") provided by the browser
-     * (if the browser supports this feature).
+     * Returns the TimeZone Id (like "Europe/Helsinki") provided by the browser (if the browser supports this feature).
      *
      * @return the TimeZone Id if provided by the browser, null otherwise.
      * @see <a href=
@@ -257,18 +246,15 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Returns the browser-reported TimeZone offset in milliseconds from GMT
-     * ignoring possible daylight saving adjustments that may be in effect in
-     * the browser.
+     * Returns the browser-reported TimeZone offset in milliseconds from GMT ignoring possible daylight saving
+     * adjustments that may be in effect in the browser.
      * <p>
-     * You can use this to figure out which TimeZones the user could actually be
-     * in by calling {@link TimeZone#getAvailableIDs(int)}.
+     * You can use this to figure out which TimeZones the user could actually be in by calling
+     * {@link TimeZone#getAvailableIDs(int)}.
      * </p>
      * <p>
-     * If {@link #getRawTimezoneOffset()} and {@link #getTimezoneOffset()}
-     * returns the same value, the browser is either in a zone that does not
-     * currently have daylight saving time, or in a zone that never has daylight
-     * saving time.
+     * If {@link #getRawTimezoneOffset()} and {@link #getTimezoneOffset()} returns the same value, the browser is either
+     * in a zone that does not currently have daylight saving time, or in a zone that never has daylight saving time.
      * </p>
      *
      * @return timezone offset in milliseconds excluding DST, 0 if not available
@@ -278,35 +264,29 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Returns the offset in milliseconds between the browser's GMT TimeZone and
-     * DST.
+     * Returns the offset in milliseconds between the browser's GMT TimeZone and DST.
      *
-     * @return the number of milliseconds that the TimeZone shifts when DST is
-     *         in effect
+     * @return the number of milliseconds that the TimeZone shifts when DST is in effect
      */
     public int getDSTSavings() {
         return dstSavings;
     }
 
     /**
-     * Returns whether daylight saving time (DST) is currently in effect in the
-     * region of the browser or not.
+     * Returns whether daylight saving time (DST) is currently in effect in the region of the browser or not.
      *
-     * @return true if the browser resides at a location that currently is in
-     *         DST
+     * @return true if the browser resides at a location that currently is in DST
      */
     public boolean isDSTInEffect() {
         return dstInEffect;
     }
 
     /**
-     * Returns the current date and time of the browser. This will not be
-     * entirely accurate due to varying network latencies, but should provide a
-     * close-enough value for most cases. Also note that the returned Date
-     * object uses servers default time zone, not the clients.
+     * Returns the current date and time of the browser. This will not be entirely accurate due to varying network
+     * latencies, but should provide a close-enough value for most cases. Also note that the returned Date object uses
+     * servers default time zone, not the clients.
      * <p>
-     * To get the actual date and time shown in the end users computer, you can
-     * do something like:
+     * To get the actual date and time shown in the end users computer, you can do something like:
      *
      * <pre>
      * WebBrowser browser = ...;
@@ -328,25 +308,20 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Checks if the browser supports touch events.
      *
-     * @return true if the browser is detected to support touch events, false
-     *         otherwise
+     * @return true if the browser is detected to support touch events, false otherwise
      */
     public boolean isTouchDevice() {
         return touchDevice;
     }
 
     /**
-     * Gets the device pixel ratio, {@code window.devicePixelRatio}. See more
-     * from <a href=
-     * "https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN
-     * web docs</a>.
+     * Gets the device pixel ratio, {@code window.devicePixelRatio}. See more from
+     * <a href= "https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN web docs</a>.
      * <p>
-     * A value of -1 indicates that the value was not reported by the browser
-     * correctly.
+     * A value of -1 indicates that the value was not reported by the browser correctly.
      *
-     * @return double-precision floating-point value indicating the ratio of the
-     *         display's resolution in physical pixels to the resolution in CSS
-     *         pixels
+     * @return double-precision floating-point value indicating the ratio of the display's resolution in physical pixels
+     *         to the resolution in CSS pixels
      */
     public double getDevicePixelRatio() {
         return devicePixelRatio;
@@ -355,8 +330,7 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Returns a unique browser window identifier. For internal use only.
      *
-     * @return An id which persists if the UI is reloaded in the same browser
-     *         window/tab.
+     * @return An id which persists if the UI is reloaded in the same browser window/tab.
      */
     public String getWindowName() {
         return windowName;
@@ -365,24 +339,21 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Check if the browser is run on IPad.
      *
-     * @return true if run on IPad false if the user is not using IPad or if no
-     *         information from the browser is present
+     * @return true if run on IPad false if the user is not using IPad or if no information from the browser is present
      */
     public boolean isIPad() {
-        return navigatorPlatform != null && (navigatorPlatform
-                .startsWith("iPad")
-                || (navigatorPlatform.equals("MacIntel") && isTouchDevice()));
+        return navigatorPlatform != null
+                && (navigatorPlatform.startsWith("iPad") || (navigatorPlatform.equals("MacIntel") && isTouchDevice()));
     }
 
     /**
      * Check if the browser is run on IOS.
      *
-     * @return {@code true} if run on IOS , {@code false} if the user is not
-     *         using IOS or if no information from the browser is present
+     * @return {@code true} if run on IOS , {@code false} if the user is not using IOS or if no information from the
+     *         browser is present
      */
     public boolean isIOS() {
         return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
-                || (navigatorPlatform != null
-                        && navigatorPlatform.startsWith("iPod"));
+                || (navigatorPlatform != null && navigatorPlatform.startsWith("iPod"));
     }
 }

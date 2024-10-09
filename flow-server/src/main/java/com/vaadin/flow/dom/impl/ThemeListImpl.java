@@ -28,9 +28,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
 
 /**
- * Default implementation for the {@link ThemeList} that stores the theme names
- * of the corresponding element. Makes sure that each change to the collection
- * is reflected in the corresponding element attribute name,
+ * Default implementation for the {@link ThemeList} that stores the theme names of the corresponding element. Makes sure
+ * that each change to the collection is reflected in the corresponding element attribute name,
  * {@link ThemeListImpl#THEME_ATTRIBUTE_NAME}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -74,10 +73,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
     public ThemeListImpl(Element element) {
         this.element = element;
         themes = Optional.ofNullable(element.getAttribute(THEME_ATTRIBUTE_NAME))
-                .map(value -> value.split(THEME_NAMES_DELIMITER))
-                .map(Stream::of)
-                .map(stream -> stream.filter(themeName -> !themeName.isEmpty())
-                        .collect(Collectors.toSet()))
+                .map(value -> value.split(THEME_NAMES_DELIMITER)).map(Stream::of)
+                .map(stream -> stream.filter(themeName -> !themeName.isEmpty()).collect(Collectors.toSet()))
                 .orElseGet(HashSet::new);
     }
 
@@ -141,8 +138,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
         if (themes.isEmpty()) {
             element.removeAttribute(THEME_ATTRIBUTE_NAME);
         } else {
-            element.setAttribute(THEME_ATTRIBUTE_NAME, themes.stream()
-                    .collect(Collectors.joining(THEME_NAMES_DELIMITER)));
+            element.setAttribute(THEME_ATTRIBUTE_NAME,
+                    themes.stream().collect(Collectors.joining(THEME_NAMES_DELIMITER)));
         }
     }
 

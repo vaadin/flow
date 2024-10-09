@@ -64,11 +64,9 @@ import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSucc
  * The following shared objects are populated:
  *
  * <ul>
- * <li>{@link SecurityContextRepository} is populated with a
- * {@link JwtSecurityContextRepository}</li>
- * <li>{@link CsrfConfigurer#csrfTokenRepository(CsrfTokenRepository)} is used
- * to set {@link LazyCsrfTokenRepository} that delegates to
- * {@link CookieCsrfTokenRepository}</li>
+ * <li>{@link SecurityContextRepository} is populated with a {@link JwtSecurityContextRepository}</li>
+ * <li>{@link CsrfConfigurer#csrfTokenRepository(CsrfTokenRepository)} is used to set {@link LazyCsrfTokenRepository}
+ * that delegates to {@link CookieCsrfTokenRepository}</li>
  * </ul>
  *
  * <h2>Shared Objects Used</h2>
@@ -77,20 +75,18 @@ import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSucc
  *
  * <ul>
  * <li>{@link VaadinDefaultRequestCache} - if present, this uses
- * {@link VaadinDefaultRequestCache#setDelegateRequestCache(RequestCache)} to
- * delegate saving requests to {@link CookieRequestCache}</li>
- * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler} - if present,
- * this uses
- * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler#setCsrfTokenRepository(CsrfTokenRepository)}
- * to allow the success handler to set the new csrf cookie</li>
+ * {@link VaadinDefaultRequestCache#setDelegateRequestCache(RequestCache)} to delegate saving requests to
+ * {@link CookieRequestCache}</li>
+ * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler} - if present, this uses
+ * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler#setCsrfTokenRepository(CsrfTokenRepository)} to allow the
+ * success handler to set the new csrf cookie</li>
  * </ul>
  *
  * @param <H>
  *            the concrete {@link HttpSecurityBuilder} subclass
  */
 public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
-        extends
-        AbstractHttpConfigurer<VaadinStatelessSecurityConfigurer<H>, H> {
+        extends AbstractHttpConfigurer<VaadinStatelessSecurityConfigurer<H>, H> {
     private long expiresIn = 1800L;
 
     private String issuer;
@@ -98,51 +94,42 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
     private SecretKeyConfigurer secretKeyConfigurer;
 
     /**
-     * Sets {@link JwtSecurityContextRepository} as a shared object to be used
-     * by multiple {@code SecurityConfigurer}.
+     * Sets {@link JwtSecurityContextRepository} as a shared object to be used by multiple {@code SecurityConfigurer}.
      *
      * @param http
      *            the http security builder to store the shared object.
-     * @deprecated to be removed. There is no direct replacement for this
-     *             method. Shared object setup must be done along with other
-     *             required configurations by calling
-     *             {@link #apply(HttpSecurity, Customizer)}.
+     * @deprecated to be removed. There is no direct replacement for this method. Shared object setup must be done along
+     *             with other required configurations by calling {@link #apply(HttpSecurity, Customizer)}.
      * @see #apply(HttpSecurity, Customizer)
      */
     @Deprecated(since = "24.4", forRemoval = true)
     public void setSharedObjects(HttpSecurity http) {
         JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
                 new SerializedJwtSplitCookieRepository());
-        http.setSharedObject(SecurityContextRepository.class,
-                jwtSecurityContextRepository);
+        http.setSharedObject(SecurityContextRepository.class, jwtSecurityContextRepository);
     }
 
     /**
-     * Applies configuration required to enable stateless security for a Vaadin
-     * application.
+     * Applies configuration required to enable stateless security for a Vaadin application.
      * <p>
      * </p>
-     * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer},
-     * or {@link Customizer#withDefaults()} to accept the default values.
+     * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer}, or {@link Customizer#withDefaults()} to
+     * accept the default values.
      *
      * @param http
      *            the http security builder
      * @param customizer
-     *            the {@link Customizer} to provide more options for the
-     *            {@link VaadinStatelessSecurityConfigurer}
+     *            the {@link Customizer} to provide more options for the {@link VaadinStatelessSecurityConfigurer}
      */
-    public static void apply(HttpSecurity http,
-            Customizer<VaadinStatelessSecurityConfigurer<HttpSecurity>> customizer)
+    public static void apply(HttpSecurity http, Customizer<VaadinStatelessSecurityConfigurer<HttpSecurity>> customizer)
             throws Exception {
 
         JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
                 new SerializedJwtSplitCookieRepository());
-        http.setSharedObject(JwtSecurityContextRepository.class,
-                jwtSecurityContextRepository);
+        http.setSharedObject(JwtSecurityContextRepository.class, jwtSecurityContextRepository);
         http.securityContext(cfg -> {
             DelegatingSecurityContextRepository repository = new DelegatingSecurityContextRepository(
-                    jwtSecurityContextRepository,
-                    new RequestAttributeSecurityContextRepository());
+                    jwtSecurityContextRepository, new RequestAttributeSecurityContextRepository());
             cfg.securityContextRepository(repository);
         });
 
@@ -159,8 +146,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
             // Use cookie for storing CSRF token, as it does not require a
             // session (double-submit cookie pattern)
-            CsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository
-                    .withHttpOnlyFalse();
+            CsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 
             // This XorCsrfTokenRequestAttributeHandler pattern is copied from
             // https://docs.spring.io/spring-security/reference/5.8/migration/servlet/exploits.html#_i_am_using_angularjs_or_another_javascript_framework
@@ -169,8 +155,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             csrf.csrfTokenRepository(csrfTokenRepository);
             csrf.csrfTokenRequestHandler(requestHandler);
 
-            http.getSharedObject(
-                    VaadinSavedRequestAwareAuthenticationSuccessHandler.class)
+            http.getSharedObject(VaadinSavedRequestAwareAuthenticationSuccessHandler.class)
                     .setCsrfTokenRepository(csrfTokenRepository);
         }
     }
@@ -181,28 +166,22 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
         JwtSecurityContextRepository jwtSecurityContextRepository = http
                 .getSharedObject(JwtSecurityContextRepository.class);
         if (jwtSecurityContextRepository != null) {
-            jwtSecurityContextRepository
-                    .setJwsAlgorithm(secretKeyConfigurer.getAlgorithm());
-            jwtSecurityContextRepository
-                    .setJwkSource(secretKeyConfigurer.getJWKSource());
+            jwtSecurityContextRepository.setJwsAlgorithm(secretKeyConfigurer.getAlgorithm());
+            jwtSecurityContextRepository.setJwkSource(secretKeyConfigurer.getJWKSource());
             jwtSecurityContextRepository.setIssuer(issuer);
             jwtSecurityContextRepository.setExpiresIn(expiresIn);
 
-            AuthenticationTrustResolver trustResolver = http
-                    .getSharedObject(AuthenticationTrustResolver.class);
+            AuthenticationTrustResolver trustResolver = http.getSharedObject(AuthenticationTrustResolver.class);
             if (trustResolver == null) {
                 trustResolver = new AuthenticationTrustResolverImpl();
             }
             jwtSecurityContextRepository.setTrustResolver(trustResolver);
-            http.addFilterBefore(
-                    new UpdateJwtCookiesFilter(jwtSecurityContextRepository),
-                    HeaderWriterFilter.class);
+            http.addFilterBefore(new UpdateJwtCookiesFilter(jwtSecurityContextRepository), HeaderWriterFilter.class);
         }
 
         RequestCache requestCache = http.getSharedObject(RequestCache.class);
         if (requestCache instanceof VaadinDefaultRequestCache) {
-            ((VaadinDefaultRequestCache) requestCache)
-                    .setDelegateRequestCache(new CookieRequestCache());
+            ((VaadinDefaultRequestCache) requestCache).setDelegateRequestCache(new CookieRequestCache());
         }
 
     }
@@ -212,8 +191,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      *
      * @param expiresIn
      *            the lifetime in seconds
-     * @return the {@link VaadinStatelessSecurityConfigurer} for further
-     *         customization
+     * @return the {@link VaadinStatelessSecurityConfigurer} for further customization
      */
     public VaadinStatelessSecurityConfigurer<H> expiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
@@ -225,8 +203,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      *
      * @param issuer
      *            string identifier or URL of the issuer
-     * @return the {@link VaadinStatelessSecurityConfigurer} for further
-     *         customization
+     * @return the {@link VaadinStatelessSecurityConfigurer} for further customization
      */
     public VaadinStatelessSecurityConfigurer<H> issuer(String issuer) {
         this.issuer = issuer;
@@ -249,13 +226,10 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * Specifies using a secret key for signing and verification.
      *
      * @param customizer
-     *            the {@link Customizer} to provide configuration for the
-     *            {@link SecretKeyConfigurer}
-     * @return the {@link VaadinStatelessSecurityConfigurer} for further
-     *         customization
+     *            the {@link Customizer} to provide configuration for the {@link SecretKeyConfigurer}
+     * @return the {@link VaadinStatelessSecurityConfigurer} for further customization
      */
-    public VaadinStatelessSecurityConfigurer<H> withSecretKey(
-            Customizer<SecretKeyConfigurer> customizer) {
+    public VaadinStatelessSecurityConfigurer<H> withSecretKey(Customizer<SecretKeyConfigurer> customizer) {
         if (this.secretKeyConfigurer == null) {
             this.secretKeyConfigurer = new SecretKeyConfigurer();
         }
@@ -264,8 +238,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
     }
 
     /**
-     * Enables configuring the secret key and the algorithm for the JWT signing
-     * and verification when using {@link VaadinStatelessSecurityConfigurer}.
+     * Enables configuring the secret key and the algorithm for the JWT signing and verification when using
+     * {@link VaadinStatelessSecurityConfigurer}.
      */
     public class SecretKeyConfigurer {
         private SecretKey secretKey;
@@ -303,19 +277,17 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
         }
 
         /**
-         * Return to the {@link VaadinStatelessSecurityConfigurer} when done
-         * using the {@link SecretKeyConfigurer} for method chaining.
+         * Return to the {@link VaadinStatelessSecurityConfigurer} when done using the {@link SecretKeyConfigurer} for
+         * method chaining.
          *
-         * @return the {@link VaadinStatelessSecurityConfigurer} for further
-         *         customization
+         * @return the {@link VaadinStatelessSecurityConfigurer} for further customization
          */
         public VaadinStatelessSecurityConfigurer<H> and() {
             return VaadinStatelessSecurityConfigurer.this;
         }
 
         JWKSource<SecurityContext> getJWKSource() {
-            OctetSequenceKey key = new OctetSequenceKey.Builder(secretKey)
-                    .algorithm(getAlgorithm()).build();
+            OctetSequenceKey key = new OctetSequenceKey.Builder(secretKey).algorithm(getAlgorithm()).build();
             JWKSet jwkSet = new JWKSet(key);
             return (jwkSelector, context) -> jwkSelector.select(jwkSet);
         }
@@ -327,22 +299,19 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
     // Inspired by Spring HeaderWriterFilter. Updates JWT cookies at every
     // request, just before HTTP response is commit.
-    private static final class UpdateJwtCookiesFilter
-            extends OncePerRequestFilter {
+    private static final class UpdateJwtCookiesFilter extends OncePerRequestFilter {
 
         private final JwtSecurityContextRepository jwtSecurityContextRepository;
 
-        private UpdateJwtCookiesFilter(
-                JwtSecurityContextRepository jwtSecurityContextRepository) {
+        private UpdateJwtCookiesFilter(JwtSecurityContextRepository jwtSecurityContextRepository) {
             this.jwtSecurityContextRepository = jwtSecurityContextRepository;
         }
 
         @Override
-        protected void doFilterInternal(HttpServletRequest request,
-                HttpServletResponse response, FilterChain filterChain)
-                throws ServletException, IOException {
-            UpdateJWTCookieOnCommitResponseWrapper responseWrapper = new UpdateJWTCookieOnCommitResponseWrapper(
-                    request, response, jwtSecurityContextRepository);
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                FilterChain filterChain) throws ServletException, IOException {
+            UpdateJWTCookieOnCommitResponseWrapper responseWrapper = new UpdateJWTCookieOnCommitResponseWrapper(request,
+                    response, jwtSecurityContextRepository);
             try {
                 filterChain.doFilter(request, responseWrapper);
             } finally {
@@ -352,15 +321,13 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
         }
     }
 
-    private static final class UpdateJWTCookieOnCommitResponseWrapper
-            extends OnCommittedResponseWrapper {
+    private static final class UpdateJWTCookieOnCommitResponseWrapper extends OnCommittedResponseWrapper {
 
         private final JwtSecurityContextRepository jwtSecurityContextRepository;
 
         private final HttpServletRequest request;
 
-        UpdateJWTCookieOnCommitResponseWrapper(HttpServletRequest request,
-                HttpServletResponse response,
+        UpdateJWTCookieOnCommitResponseWrapper(HttpServletRequest request, HttpServletResponse response,
                 JwtSecurityContextRepository jwtSecurityContextRepository) {
             super(response);
             this.request = request;
@@ -379,10 +346,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             }
             org.springframework.security.core.context.SecurityContext context = SecurityContextHolder
                     .getContextHolderStrategy().getContext();
-            if (context != null && !SerializedJwtSplitCookieRepository
-                    .containsCookie(this)) {
-                jwtSecurityContextRepository.saveContext(context, request,
-                        this);
+            if (context != null && !SerializedJwtSplitCookieRepository.containsCookie(this)) {
+                jwtSecurityContextRepository.saveContext(context, request, this);
             }
         }
     }

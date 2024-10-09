@@ -1,7 +1,6 @@
 package com.vaadin.flow.uitest.ui.littemplate;
 
-public class SimpleLitTemplateNoShadowRootIT
-        extends SimpleLitTemplateShadowRootIT {
+public class SimpleLitTemplateNoShadowRootIT extends SimpleLitTemplateShadowRootIT {
 
     protected String getTemplateTag() {
         return "simple-lit-template-no-shadow-root";

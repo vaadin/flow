@@ -47,46 +47,37 @@ public interface AbstractTheme extends Serializable {
     String getThemeUrl();
 
     /**
-     * Return a list of contents to inline to the bootstrap header. The contents
-     * will be handled as no-wrap as is and will be inserted to the initial page
-     * head tag.
+     * Return a list of contents to inline to the bootstrap header. The contents will be handled as no-wrap as is and
+     * will be inserted to the initial page head tag.
      * <p>
      * This will usually be the any {@code <custom-style>} declarations, see
-     * <a href=
-     * "https://www.polymer-project.org/2.0/docs/api/elements/Polymer.CustomStyle">CustomStyle</a>
+     * <a href= "https://www.polymer-project.org/2.0/docs/api/elements/Polymer.CustomStyle">CustomStyle</a>
      * <p>
-     * For importing theme files, use
-     * {@link com.vaadin.flow.component.dependency.JsModule} on the
-     * corresponding theme subclass.
+     * For importing theme files, use {@link com.vaadin.flow.component.dependency.JsModule} on the corresponding theme
+     * subclass.
      *
-     * @return list of string content to inline or empty list if nothing to
-     *         inline
+     * @return list of string content to inline or empty list if nothing to inline
      */
     default List<String> getHeaderInlineContents() {
         return Collections.emptyList();
     }
 
     /**
-     * Gets the attributes that should be set on the {@code <html>} element when
-     * the Theme variant is applied.
+     * Gets the attributes that should be set on the {@code <html>} element when the Theme variant is applied.
      *
      * @param variant
-     *            the variant defined in the {@link Theme} annotation, not
-     *            <code>null</code>
-     * @return a Map with the attributes (keys and values) that should be set in
-     *         the body, or an empty Map if nothing should be set for the given
-     *         variant.
+     *            the variant defined in the {@link Theme} annotation, not <code>null</code>
+     * @return a Map with the attributes (keys and values) that should be set in the body, or an empty Map if nothing
+     *         should be set for the given variant.
      */
     default Map<String, String> getHtmlAttributes(String variant) {
         return Collections.emptyMap();
     }
 
     /**
-     * Translates the given {@code url} using the result of the
-     * {@link #getThemeUrl()} theme method.
+     * Translates the given {@code url} using the result of the {@link #getThemeUrl()} theme method.
      * <p>
-     * If translation is possible then translated URL is returned. Otherwise the
-     * {@code url} is returned.
+     * If translation is possible then translated URL is returned. Otherwise the {@code url} is returned.
      *
      * @param url
      *            the URL to translate using the theme

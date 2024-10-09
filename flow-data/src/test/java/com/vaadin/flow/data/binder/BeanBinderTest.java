@@ -45,8 +45,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-public class BeanBinderTest
-        extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
+public class BeanBinderTest extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
 
     private enum TestEnum {
     }
@@ -208,8 +207,7 @@ public class BeanBinderTest
     public void bindInstanceFields_parameters_type_erased() {
         Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
         TestClass testClass = new TestClass();
-        otherBinder.forField(testClass.number)
-                .withConverter(new StringToIntegerConverter("")).bind("number");
+        otherBinder.forField(testClass.number).withConverter(new StringToIntegerConverter("")).bind("number");
 
         // Should correctly bind the enum field without throwing
         otherBinder.bindInstanceFields(testClass);
@@ -221,8 +219,7 @@ public class BeanBinderTest
         Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
         TestClass testClass = new TestClass();
 
-        otherBinder.forMemberField(testClass.number)
-                .withConverter(new StringToIntegerConverter(""));
+        otherBinder.forMemberField(testClass.number).withConverter(new StringToIntegerConverter(""));
         otherBinder.bindInstanceFields(testClass);
 
         TestBean bean = new TestBean();
@@ -237,8 +234,7 @@ public class BeanBinderTest
         Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
         TestClass testClass = new TestClass();
 
-        otherBinder.forField(testClass.number)
-                .withConverter(new StringToIntegerConverter(""));
+        otherBinder.forField(testClass.number).withConverter(new StringToIntegerConverter(""));
 
         // bindInstanceFields does not throw exceptions for incomplete bindings
         // because bindings they can be completed after the call.
@@ -261,9 +257,7 @@ public class BeanBinderTest
     public void bindInstanceFields_does_not_throw_if_fields_are_bound_manually() {
         PersonForm form = new PersonForm();
         Binder<Person> binder = new Binder<>(Person.class);
-        binder.forMemberField(form.mydate)
-                .withConverter(str -> LocalDate.now(), date -> "Hello")
-                .bind("mydate");
+        binder.forMemberField(form.mydate).withConverter(str -> LocalDate.now(), date -> "Hello").bind("mydate");
         binder.bindInstanceFields(form);
 
     }
@@ -272,8 +266,7 @@ public class BeanBinderTest
     public void bindInstanceFields_does_not_throw_if_there_are_incomplete_bindings() {
         PersonForm form = new PersonForm();
         Binder<Person> binder = new Binder<>(Person.class);
-        binder.forMemberField(form.mydate).withConverter(str -> LocalDate.now(),
-                date -> "Hello");
+        binder.forMemberField(form.mydate).withConverter(str -> LocalDate.now(), date -> "Hello");
         binder.bindInstanceFields(form);
     }
 
@@ -282,8 +275,7 @@ public class BeanBinderTest
         Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
         TestClass testClass = new TestClass();
 
-        otherBinder.forMemberField(testClass.number)
-                .withConverter(new StringToIntegerConverter(""));
+        otherBinder.forMemberField(testClass.number).withConverter(new StringToIntegerConverter(""));
 
         // Should throw an IllegalStateException since the forMemberField
         // binding has not been completed
@@ -354,21 +346,17 @@ public class BeanBinderTest
         binder.bind(nameField, "readOnlyProperty");
 
         binder.setReadOnly(true);
-        assertTrue("Name field should be ignored and be readonly",
-                nameField.isReadOnly());
+        assertTrue("Name field should be ignored and be readonly", nameField.isReadOnly());
 
         binder.setReadOnly(false);
-        assertTrue("Name field should be ignored and be readonly",
-                nameField.isReadOnly());
+        assertTrue("Name field should be ignored and be readonly", nameField.isReadOnly());
 
         nameField.setReadOnly(false);
         binder.setReadOnly(true);
-        assertFalse("Name field should be ignored and not be readonly",
-                nameField.isReadOnly());
+        assertFalse("Name field should be ignored and not be readonly", nameField.isReadOnly());
 
         binder.setReadOnly(false);
-        assertFalse("Name field should be ignored and not be readonly",
-                nameField.isReadOnly());
+        assertFalse("Name field should be ignored and not be readonly", nameField.isReadOnly());
     }
 
     @Test
@@ -393,8 +381,8 @@ public class BeanBinderTest
 
     @Test
     public void explicitValidatorAdded_setInvalidFieldValue_explicitValidatorRunFirst() {
-        binder.forField(nameField).withValidator(name -> name.startsWith("J"),
-                "name must start with J").bind("firstname");
+        binder.forField(nameField).withValidator(name -> name.startsWith("J"), "name must start with J")
+                .bind("firstname");
 
         nameField.setValue("A");
 
@@ -403,8 +391,8 @@ public class BeanBinderTest
 
     @Test
     public void explicitValidatorAdded_setInvalidFieldValue_beanValidatorRun() {
-        binder.forField(nameField).withValidator(name -> name.startsWith("J"),
-                "name must start with J").bind("firstname");
+        binder.forField(nameField).withValidator(name -> name.startsWith("J"), "name must start with J")
+                .bind("firstname");
 
         nameField.setValue("J");
 
@@ -424,8 +412,7 @@ public class BeanBinderTest
     }
 
     @Test(expected = ClassCastException.class)
-    public void fieldWithIncompatibleTypeBound_saveBean_throws()
-            throws Throwable {
+    public void fieldWithIncompatibleTypeBound_saveBean_throws() throws Throwable {
         try {
             binder.bind(ageField, "age");
             binder.writeBean(item);
@@ -436,8 +423,7 @@ public class BeanBinderTest
 
     @Test
     public void fieldWithConverterBound_bindBean_fieldValueUpdated() {
-        binder.forField(ageField)
-                .withConverter(Integer::valueOf, String::valueOf).bind("age");
+        binder.forField(ageField).withConverter(Integer::valueOf, String::valueOf).bind("age");
         binder.setBean(item);
 
         assertEquals("32", ageField.getValue());
@@ -445,8 +431,7 @@ public class BeanBinderTest
 
     @Test(expected = ClassCastException.class)
     public void fieldWithInvalidConverterBound_bindBean_fieldValueUpdated() {
-        binder.forField(ageField).withConverter(Float::valueOf, String::valueOf)
-                .bind("age");
+        binder.forField(ageField).withConverter(Float::valueOf, String::valueOf).bind("age");
         binder.setBean(item);
 
         assertEquals("32", ageField.getValue());
@@ -454,8 +439,7 @@ public class BeanBinderTest
 
     @Test
     public void beanBinderWithBoxedType() {
-        binder.forField(ageField)
-                .withConverter(Integer::valueOf, String::valueOf).bind("age");
+        binder.forField(ageField).withConverter(Integer::valueOf, String::valueOf).bind("age");
         binder.setBean(item);
 
         ageField.setValue(String.valueOf(20));
@@ -464,8 +448,7 @@ public class BeanBinderTest
 
     @Test
     public void firstName_isNotNullConstraint_nullableFieldIsRequired() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
 
         TestTextField field = new TestTextField() {
@@ -477,32 +460,28 @@ public class BeanBinderTest
         binder.bind(field, "firstname");
         binder.setBean(bean);
 
-        Assert.assertTrue(
-                "@NotNull field with default value null should be required",
+        Assert.assertTrue("@NotNull field with default value null should be required",
                 field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 
     @Test
     public void firstName_isNotNullConstraint_textFieldIsNotRequired() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
 
         TestTextField field = new TestTextField();
         binder.bind(field, "firstname");
         binder.setBean(bean);
 
-        Assert.assertFalse(
-                "@NotNull field with default value \"\" should not be required",
+        Assert.assertFalse("@NotNull field with default value \"\" should not be required",
                 field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 
     @Test
     public void age_minSizeConstraint_fieldIsRequired() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
 
         TestTextField field = new TestTextField();
@@ -515,8 +494,7 @@ public class BeanBinderTest
 
     @Test
     public void lastName_minSizeConstraint_fieldIsRequired() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
 
         TestTextField field = new TestTextField();
@@ -529,8 +507,7 @@ public class BeanBinderTest
 
     @Test
     public void subfield_name_fieldIsRequired() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
         bean.setSubfield(new RequiredConstraints.SubConstraint());
 
@@ -544,8 +521,7 @@ public class BeanBinderTest
 
     @Test
     public void subsubfield_name_fieldIsRequired() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
         RequiredConstraints.SubConstraint subfield = new RequiredConstraints.SubConstraint();
         subfield.setSubsub(new SubSubConstraint());
@@ -561,8 +537,7 @@ public class BeanBinderTest
 
     @Test
     public void subfield_name_valueCanBeValidated() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         TestTextField field = new TestTextField();
 
         binder.bind(field, "subfield.name");
@@ -576,8 +551,7 @@ public class BeanBinderTest
 
     @Test
     public void subSubfield_name_valueCanBeValidated() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(RequiredConstraints.class);
         TestTextField field = new TestTextField();
 
         binder.bind(field, "subfield.subsub.value");
@@ -594,8 +568,7 @@ public class BeanBinderTest
 
     private void assertInvalid(TestTextField field, String message) {
         BinderValidationStatus<?> status = binder.validate();
-        List<BindingValidationStatus<?>> errors = status
-                .getFieldValidationErrors();
+        List<BindingValidationStatus<?>> errors = status.getFieldValidationErrors();
         assertEquals(1, errors.size());
         assertSame(field, errors.get(0).getField());
         assertEquals(message, errors.get(0).getMessage().get());

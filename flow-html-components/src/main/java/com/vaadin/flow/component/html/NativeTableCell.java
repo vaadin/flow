@@ -26,8 +26,7 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TD)
-public class NativeTableCell extends HtmlContainer
-        implements ClickNotifier<NativeTableCell> {
+public class NativeTableCell extends HtmlContainer implements ClickNotifier<NativeTableCell> {
 
     final String ATTRIBUTE_COLSPAN = "colspan";
     final String ATTRIBUTE_ROWSPAN = "rowspan";
@@ -64,13 +63,11 @@ public class NativeTableCell extends HtmlContainer
      * Set the colspan of this cell.
      *
      * @param colspan
-     *            a non-negative integer value that indicates how many columns
-     *            the data cell spans or extends.
+     *            a non-negative integer value that indicates how many columns the data cell spans or extends.
      */
     public void setColspan(int colspan) {
         if (colspan < 0) {
-            throw new IllegalArgumentException(
-                    "colspan must be a non-negative integer value");
+            throw new IllegalArgumentException("colspan must be a non-negative integer value");
         }
         getElement().setAttribute(ATTRIBUTE_COLSPAN, String.valueOf(colspan));
     }
@@ -99,16 +96,13 @@ public class NativeTableCell extends HtmlContainer
      * Sets the rowspan for this cell.
      *
      * @param rowspan
-     *            a non-negative integer value that indicates for how many rows
-     *            the data cell spans or extends. If its value is set to 0, it
-     *            extends until the end of the table grouping section
-     *            ({@code <thead>}, {@code <tbody>}, {@code <tfoot>}, even if
-     *            implicitly defined), that the cell belongs to.
+     *            a non-negative integer value that indicates for how many rows the data cell spans or extends. If its
+     *            value is set to 0, it extends until the end of the table grouping section ({@code <thead>},
+     *            {@code <tbody>}, {@code <tfoot>}, even if implicitly defined), that the cell belongs to.
      */
     public void setRowspan(int rowspan) {
         if (rowspan < 0) {
-            throw new IllegalArgumentException(
-                    "rowspan must be a non-negative integer value");
+            throw new IllegalArgumentException("rowspan must be a non-negative integer value");
         }
         getElement().setAttribute(ATTRIBUTE_ROWSPAN, String.valueOf(rowspan));
     }

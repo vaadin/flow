@@ -31,8 +31,7 @@ public class MainPreDestroyView extends Div {
 
     public MainPreDestroyView() {
         setId("main");
-        RouterLink link = new RouterLink("navigate to not preserved view",
-                PreDestroyView.class);
+        RouterLink link = new RouterLink("navigate to not preserved view", PreDestroyView.class);
         add(link);
         link.setId("navigate-out");
     }

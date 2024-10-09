@@ -38,9 +38,8 @@ import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 
 /**
- * Default instantiator that is used if no other instantiator has been
- * registered. This implementation uses vanilla Java mechanisms such as
- * {@link Class#newInstance()} and {@link ServiceLoader}.
+ * Default instantiator that is used if no other instantiator has been registered. This implementation uses vanilla Java
+ * mechanisms such as {@link Class#newInstance()} and {@link ServiceLoader}.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -84,27 +83,23 @@ public class DefaultInstantiator implements Instantiator {
      *            the classloader to use for finding the listeners
      * @return a stream of service init listeners
      */
-    public static Stream<VaadinServiceInitListener> getServiceLoaderListeners(
-            ClassLoader classloader) {
-        ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
-                .load(VaadinServiceInitListener.class, classloader);
+    public static Stream<VaadinServiceInitListener> getServiceLoaderListeners(ClassLoader classloader) {
+        ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader.load(VaadinServiceInitListener.class,
+                classloader);
         return StreamSupport.stream(loader.spliterator(), false);
     }
 
     @Override
     public I18NProvider getI18NProvider() {
-        return getAtomicReferenceInstance(i18nProvider,
-                this::getI18NProviderInstance);
+        return getAtomicReferenceInstance(i18nProvider, this::getI18NProviderInstance);
     }
 
     @Override
     public MenuAccessControl getMenuAccessControl() {
-        return getAtomicReferenceInstance(menuAccessControl,
-                this::getMenuAccessControlInstance);
+        return getAtomicReferenceInstance(menuAccessControl, this::getMenuAccessControlInstance);
     }
 
-    private <T> T getAtomicReferenceInstance(AtomicReference<T> reference,
-            SerializableSupplier<T> instance) {
+    private <T> T getAtomicReferenceInstance(AtomicReference<T> reference, SerializableSupplier<T> instance) {
         if (reference.get() == null) {
             reference.compareAndSet(null, instance.get());
         }
@@ -116,14 +111,11 @@ public class DefaultInstantiator implements Instantiator {
         if (property == null) {
             // If no i18n provider provided check if the default location has
             // translation files (lang coded or just the default)
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales(getClassLoader());
-            if (!defaultTranslationLocales.isEmpty()
-                    || I18NUtil.containsDefaultTranslation(getClassLoader())) {
+            List<Locale> defaultTranslationLocales = I18NUtil.getDefaultTranslationLocales(getClassLoader());
+            if (!defaultTranslationLocales.isEmpty() || I18NUtil.containsDefaultTranslation(getClassLoader())) {
                 // Some lang files were found in default location initialize
                 // default I18N provider.
-                return new DefaultI18NProvider(defaultTranslationLocales,
-                        getClassLoader());
+                return new DefaultI18NProvider(defaultTranslationLocales, getClassLoader());
             }
             return null;
         }
@@ -133,13 +125,11 @@ public class DefaultInstantiator implements Instantiator {
             Class<?> providerClass = getClassLoader().loadClass(property);
             if (I18NProvider.class.isAssignableFrom(providerClass)) {
 
-                return ReflectTools.createInstance(
-                        (Class<? extends I18NProvider>) providerClass);
+                return ReflectTools.createInstance((Class<? extends I18NProvider>) providerClass);
             }
         } catch (ClassNotFoundException e) {
             throw new InvalidI18NConfigurationException(
-                    "Failed to load given provider class '" + property
-                            + "' as it was not found by the class loader.",
+                    "Failed to load given provider class '" + property + "' as it was not found by the class loader.",
                     e);
         }
         return null;
@@ -156,18 +146,15 @@ public class DefaultInstantiator implements Instantiator {
             Class<?> providerClass = getClassLoader().loadClass(property);
             if (MenuAccessControl.class.isAssignableFrom(providerClass)) {
 
-                return ReflectTools.createInstance(
-                        (Class<? extends MenuAccessControl>) providerClass);
+                return ReflectTools.createInstance((Class<? extends MenuAccessControl>) providerClass);
             } else {
                 throw new InvalidMenuAccessControlException(String.format(
                         "Menu access control implementation class property '%s' is set to '%s' but it's not %s implementation",
-                        InitParameters.MENU_ACCESS_CONTROL, property,
-                        MenuAccessControl.class.getSimpleName()));
+                        InitParameters.MENU_ACCESS_CONTROL, property, MenuAccessControl.class.getSimpleName()));
             }
         } catch (ClassNotFoundException e) {
             throw new InvalidMenuAccessControlException(
-                    "Failed to load given provider class '" + property
-                            + "' as it was not found by the class loader.",
+                    "Failed to load given provider class '" + property + "' as it was not found by the class loader.",
                     e);
         }
     }
@@ -180,14 +167,12 @@ public class DefaultInstantiator implements Instantiator {
     }
 
     /**
-     * Get property value from the session configurator or try to load it from
-     * application.properties property file.
+     * Get property value from the session configurator or try to load it from application.properties property file.
      *
      * @return parameter value or null if not found
      */
     protected String getInitProperty(String propertyName) {
-        DeploymentConfiguration deploymentConfiguration = service
-                .getDeploymentConfiguration();
+        DeploymentConfiguration deploymentConfiguration = service.getDeploymentConfiguration();
         if (deploymentConfiguration == null) {
             return null;
         }

@@ -63,8 +63,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     @Override
     protected Stream<String> getExcludedPatterns() {
-        return Stream.concat(Stream.of(
-                "com\\.vaadin\\.flow\\.spring\\.ForwardingRequestWrapper",
+        return Stream.concat(Stream.of("com\\.vaadin\\.flow\\.spring\\.ForwardingRequestWrapper",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Pnpm",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Frontend",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Devmode",
@@ -128,8 +127,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
     }
 
     @Test
-    public void storeSerializableObject_objectIsRestoredAfterDeserialization()
-            throws Throwable {
+    public void storeSerializableObject_objectIsRestoredAfterDeserialization() throws Throwable {
         TestBeanStore store = createStore();
 
         store.get("foo", () -> "bar");
@@ -141,8 +139,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
     }
 
     @Test
-    public void storeSerializableCallback_callbackIsRestoredAfterDeserialization()
-            throws Throwable {
+    public void storeSerializableCallback_callbackIsRestoredAfterDeserialization() throws Throwable {
         TestBeanStore store = createStore();
 
         Callback callback = new Callback();
@@ -160,23 +157,18 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     private TestBeanStore createStore() {
         final Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
+        ApplicationConfiguration appConfig = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
         VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(
-                context.getAttribute(Mockito.any(Class.class), Mockito.any()))
+        Mockito.when(context.getAttribute(Mockito.any(Class.class), Mockito.any()))
                 .then(i -> i.getArgument(1, Supplier.class).get());
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        Mockito.when(context.getAttribute(Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
                 .thenReturn(appConfig);
         Mockito.when(appConfig.getContext()).thenReturn(context);
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         VaadinService service = new VaadinServletService(new VaadinServlet(),
-                new DefaultDeploymentConfiguration(appConfig, getClass(),
-                        initParameters)) {
+                new DefaultDeploymentConfiguration(appConfig, getClass(), initParameters)) {
             @Override
             public VaadinContext getContext() {
                 return context;

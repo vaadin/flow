@@ -28,8 +28,7 @@ import com.vaadin.flow.router.Route;
  * @since 1.0.
  */
 @Route("com.vaadin.flow.uitest.ui.RequestParametersHistoryView")
-public class RequestParametersHistoryView extends AbstractDivView
-        implements AfterNavigationObserver {
+public class RequestParametersHistoryView extends AbstractDivView implements AfterNavigationObserver {
 
     static final String REQUEST_PARAM_NAME = "testRequestParam";
     static final String NO_INPUT_TEXT = "No input";
@@ -39,8 +38,7 @@ public class RequestParametersHistoryView extends AbstractDivView
     private final NativeLabel requestParamLabel;
 
     public RequestParametersHistoryView() {
-        NativeButton backwardButton = createButton("Go back", BACK_BUTTON_ID,
-                event -> getPage().getHistory().back());
+        NativeButton backwardButton = createButton("Go back", BACK_BUTTON_ID, event -> getPage().getHistory().back());
         requestParamLabel = new NativeLabel(NO_INPUT_TEXT);
         requestParamLabel.setId(REQUEST_PARAM_ID);
         add(requestParamLabel, backwardButton);
@@ -48,8 +46,7 @@ public class RequestParametersHistoryView extends AbstractDivView
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        List<String> params = event.getLocation().getQueryParameters()
-                .getParameters().get(REQUEST_PARAM_NAME);
+        List<String> params = event.getLocation().getQueryParameters().getParameters().get(REQUEST_PARAM_NAME);
         if (params == null || params.isEmpty()) {
             requestParamLabel.setText(NO_INPUT_TEXT);
         } else {

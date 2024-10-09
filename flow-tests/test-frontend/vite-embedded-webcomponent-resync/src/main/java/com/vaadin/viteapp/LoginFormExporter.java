@@ -11,7 +11,6 @@ public class LoginFormExporter extends WebComponentExporter<LoginForm> {
     }
 
     @Override
-    protected void configureInstance(WebComponent<LoginForm> webComponent,
-            LoginForm form) {
+    protected void configureInstance(WebComponent<LoginForm> webComponent, LoginForm form) {
     }
 }

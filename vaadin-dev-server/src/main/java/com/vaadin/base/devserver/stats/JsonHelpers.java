@@ -42,22 +42,18 @@ class JsonHelpers {
      * @param idField
      *            Name of the ID field in ObjectNode to match with ID.
      * @param createNew
-     *            true if a new {@link ObjectNode} should be created if not
-     *            found.
-     * @return Json {@link ObjectNode} if found or null. Always returns a node
-     *         if <code>createNew</code> is <code>true</code> and
-     *         <code>arrayNode</code> is not null.
+     *            true if a new {@link ObjectNode} should be created if not found.
+     * @return Json {@link ObjectNode} if found or null. Always returns a node if <code>createNew</code> is
+     *         <code>true</code> and <code>arrayNode</code> is not null.
      * @see StatisticsConstants#FIELD_PROJECT_ID
      */
-    static ObjectNode getOrCreate(String id, JsonNode arrayNode, String idField,
-            boolean createNew) {
+    static ObjectNode getOrCreate(String id, JsonNode arrayNode, String idField, boolean createNew) {
         if (arrayNode == null || !arrayNode.isArray()) {
             return null;
         }
 
         for (final JsonNode p : arrayNode) {
-            if (p != null && p.has(idField)
-                    && id.equals(p.get(idField).asText())) {
+            if (p != null && p.has(idField) && id.equals(p.get(idField).asText())) {
                 return (ObjectNode) p;
             }
         }

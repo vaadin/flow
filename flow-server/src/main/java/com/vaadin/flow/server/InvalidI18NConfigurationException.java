@@ -16,37 +16,32 @@
 package com.vaadin.flow.server;
 
 /**
- * Exception indicating that the application's I18N localization has been
- * configured incorrectly.
+ * Exception indicating that the application's I18N localization has been configured incorrectly.
  *
  * @since 1.0
  */
 public class InvalidI18NConfigurationException extends RuntimeException {
 
     /**
-     * Constructs a new invalid I18N localization configuration runtime
-     * exception with the specified detail message.
+     * Constructs a new invalid I18N localization configuration runtime exception with the specified detail message.
      *
      * @param message
-     *            the detail message. The detail message is saved for later
-     *            retrieval by the {@link #getMessage()} method.
+     *            the detail message. The detail message is saved for later retrieval by the {@link #getMessage()}
+     *            method.
      */
     public InvalidI18NConfigurationException(String message) {
         super(message);
     }
 
     /**
-     * Constructs a new invalid I18N localization configuration runtime
-     * exception with the specified detail message.
+     * Constructs a new invalid I18N localization configuration runtime exception with the specified detail message.
      *
      * @param message
-     *            the detail message. The detail message is saved for later
-     *            retrieval by the {@link #getMessage()} method.
+     *            the detail message. The detail message is saved for later retrieval by the {@link #getMessage()}
+     *            method.
      * @param cause
-     *            the cause (which is saved for later retrieval by the
-     *            {@link #getCause()} method). (A <code>null</code> value is
-     *            permitted, and indicates that the cause is nonexistent or
-     *            unknown.)
+     *            the cause (which is saved for later retrieval by the {@link #getCause()} method). (A <code>null</code>
+     *            value is permitted, and indicates that the cause is nonexistent or unknown.)
      */
     public InvalidI18NConfigurationException(String message, Throwable cause) {
         super(message, cause);

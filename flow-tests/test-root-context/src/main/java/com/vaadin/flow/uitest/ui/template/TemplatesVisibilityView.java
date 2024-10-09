@@ -33,32 +33,26 @@ public class TemplatesVisibilityView extends AbstractDivView {
 
         add(grandParent);
 
-        add(createButton("Change grand parent visibility",
-                "grand-parent-visibility",
+        add(createButton("Change grand parent visibility", "grand-parent-visibility",
                 event -> grandParent.setVisible(!grandParent.isVisible())));
 
-        StateNode subTemplateChild = grandParent.getElement().getNode()
-                .getFeature(VirtualChildrenList.class).iterator().next();
+        StateNode subTemplateChild = grandParent.getElement().getNode().getFeature(VirtualChildrenList.class).iterator()
+                .next();
 
-        JsSubTemplate subTemplate = (JsSubTemplate) Element
-                .get(subTemplateChild).getComponent().get();
+        JsSubTemplate subTemplate = (JsSubTemplate) Element.get(subTemplateChild).getComponent().get();
 
-        add(createButton("Change sub template visibility",
-                "sub-template-visibility",
+        add(createButton("Change sub template visibility", "sub-template-visibility",
                 event -> subTemplate.setVisible(!subTemplate.isVisible())));
 
-        StateNode grandChildNode = subTemplate.getElement().getNode()
-                .getFeature(VirtualChildrenList.class).iterator().next();
+        StateNode grandChildNode = subTemplate.getElement().getNode().getFeature(VirtualChildrenList.class).iterator()
+                .next();
 
-        JsInjectedGrandChild grandChild = (JsInjectedGrandChild) Element
-                .get(grandChildNode).getComponent().get();
+        JsInjectedGrandChild grandChild = (JsInjectedGrandChild) Element.get(grandChildNode).getComponent().get();
 
-        add(createButton("Change grand child visibility",
-                "grand-child-visibility",
+        add(createButton("Change grand child visibility", "grand-child-visibility",
                 event -> grandChild.setVisible(!grandChild.isVisible())));
 
-        add(createButton("Update sub template property via client side",
-                "client-side-update-property",
+        add(createButton("Update sub template property via client side", "client-side-update-property",
                 event -> grandParent.updateChildViaClientSide()));
     }
 

@@ -24,20 +24,16 @@ public class PublicApiAnalyzer {
     }
 
     public static Stream<Method> findNewPublicMethods(Class<?> type) {
-        return Stream.of(type.getMethods())
-                .filter(method -> method.getDeclaringClass() == type)
+        return Stream.of(type.getMethods()).filter(method -> method.getDeclaringClass() == type)
                 .filter(method -> !isOverrideMethod(method));
     }
 
     private static boolean isOverrideMethod(Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
-        return Stream
-                .concat(Stream.of(declaringClass.getSuperclass()),
-                        Stream.of(declaringClass.getInterfaces()))
+        return Stream.concat(Stream.of(declaringClass.getSuperclass()), Stream.of(declaringClass.getInterfaces()))
                 .anyMatch(superType -> {
                     try {
-                        superType.getMethod(method.getName(),
-                                method.getParameterTypes());
+                        superType.getMethod(method.getName(), method.getParameterTypes());
                         return true;
                     } catch (NoSuchMethodException ignore) {
                         return false;

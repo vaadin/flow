@@ -35,23 +35,20 @@ public interface NodeVisitor {
      */
     enum ElementType {
         /**
-         * The type of the regular element: the element which has been created
-         * via Element API and attached in a regular way.
+         * The type of the regular element: the element which has been created via Element API and attached in a regular
+         * way.
          */
         REGULAR,
         /**
-         * The type of the virtual element: the element which has been created
-         * via Element API and attached using
+         * The type of the virtual element: the element which has been created via Element API and attached using
          * {@link Element#appendVirtualChild(Element...)}.
          */
         VIRTUAL,
         /**
-         * The type of the virtual element: the element which is created
-         * automatically by the engine for the existing client side element and
-         * attached to it.
+         * The type of the virtual element: the element which is created automatically by the engine for the existing
+         * client side element and attached to it.
          * <p>
-         * It happens for injected elements via {@code @Id} and for the
-         * sub-templates (templates in templates).
+         * It happens for injected elements via {@code @Id} and for the sub-templates (templates in templates).
          */
         VIRTUAL_ATTACHED;
     }
@@ -63,8 +60,7 @@ public interface NodeVisitor {
      *            the element type
      * @param element
      *            the element to visit
-     * @return <code>true</code> to visit descendants, <code>false</code> to
-     *         stop traversal
+     * @return <code>true</code> to visit descendants, <code>false</code> to stop traversal
      */
     boolean visit(ElementType type, Element element);
 
@@ -73,8 +69,7 @@ public interface NodeVisitor {
      *
      * @param root
      *            the shadow root to visit
-     * @return <code>true</code> to visit descendants, <code>false</code> to
-     *         stop traversal
+     * @return <code>true</code> to visit descendants, <code>false</code> to stop traversal
      */
     boolean visit(ShadowRoot root);
 

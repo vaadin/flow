@@ -30,11 +30,9 @@ import com.vaadin.flow.server.VaadinServletService;
 public class CustomServlet extends VaadinServlet {
 
     @Override
-    protected VaadinServletService createServletService(
-            DeploymentConfiguration deploymentConfiguration)
+    protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration)
             throws ServiceException {
-        CustomServletService service = new CustomServletService(this,
-                deploymentConfiguration);
+        CustomServletService service = new CustomServletService(this, deploymentConfiguration);
         service.init();
         return service;
     }

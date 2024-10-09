@@ -24,12 +24,10 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts between <code>LocalDateTime</code> and
- * <code>Instant</code>.
+ * A converter that converts between <code>LocalDateTime</code> and <code>Instant</code>.
  *
  */
-public class LocalDateTimeToInstantConverter
-        implements Converter<LocalDateTime, Instant> {
+public class LocalDateTimeToInstantConverter implements Converter<LocalDateTime, Instant> {
     private ZoneId zoneId;
 
     /**
@@ -39,13 +37,11 @@ public class LocalDateTimeToInstantConverter
      *            the time zone to use, not <code>null</code>
      */
     public LocalDateTimeToInstantConverter(ZoneId zoneId) {
-        this.zoneId = Objects.requireNonNull(zoneId,
-                "Zone identifier cannot be null");
+        this.zoneId = Objects.requireNonNull(zoneId, "Zone identifier cannot be null");
     }
 
     @Override
-    public Result<Instant> convertToModel(LocalDateTime localDateTime,
-            ValueContext context) {
+    public Result<Instant> convertToModel(LocalDateTime localDateTime, ValueContext context) {
         if (localDateTime == null) {
             return Result.ok(null);
         }
@@ -54,8 +50,7 @@ public class LocalDateTimeToInstantConverter
     }
 
     @Override
-    public LocalDateTime convertToPresentation(Instant instant,
-            ValueContext context) {
+    public LocalDateTime convertToPresentation(Instant instant, ValueContext context) {
         if (instant == null) {
             return null;
         }

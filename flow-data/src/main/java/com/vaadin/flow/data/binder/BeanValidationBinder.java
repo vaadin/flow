@@ -25,9 +25,8 @@ import com.vaadin.flow.data.validator.BeanValidator;
 import com.vaadin.flow.internal.BeanUtil;
 
 /**
- * Binder that uses reflection based on the provided bean type to resolve bean
- * properties. The Binder automatically adds BeanValidator which validates beans
- * using JSR-303 specification. It assumes that JSR-303 bean validation
+ * Binder that uses reflection based on the provided bean type to resolve bean properties. The Binder automatically adds
+ * BeanValidator which validates beans using JSR-303 specification. It assumes that JSR-303 bean validation
  * implementation is present on the classpath.
  *
  * @author Vaadin Ltd
@@ -46,13 +45,10 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
     private RequiredFieldConfigurator requiredConfigurator = RequiredFieldConfigurator.DEFAULT;
 
     /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties. It assumes that JSR-303 bean validation
-     * implementation is present on the classpath. If there is no such
-     * implementation available then {@link Binder} class should be used instead
-     * (this constructor will throw an exception). Otherwise
-     * {@link BeanValidator} is added to each binding that is defined using a
-     * property name.
+     * Creates a new binder that uses reflection based on the provided bean type to resolve bean properties. It assumes
+     * that JSR-303 bean validation implementation is present on the classpath. If there is no such implementation
+     * available then {@link Binder} class should be used instead (this constructor will throw an exception). Otherwise
+     * {@link BeanValidator} is added to each binding that is defined using a property name.
      *
      * @param beanType
      *            the bean type to use, not <code>null</code>
@@ -62,48 +58,39 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
     }
 
     /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties. It assumes that JSR-303 bean validation
-     * implementation is present on the classpath. If there is no such
-     * implementation available then {@link Binder} class should be used instead
-     * (this constructor will throw an exception). Otherwise
-     * {@link BeanValidator} is added to each binding that is defined using a
-     * property name.
+     * Creates a new binder that uses reflection based on the provided bean type to resolve bean properties. It assumes
+     * that JSR-303 bean validation implementation is present on the classpath. If there is no such implementation
+     * available then {@link Binder} class should be used instead (this constructor will throw an exception). Otherwise
+     * {@link BeanValidator} is added to each binding that is defined using a property name.
      *
      * @param beanType
      *            the bean type to use, not {@code null}
      * @param scanNestedDefinitions
      *            if {@code true}, scan for nested property definitions as well
      */
-    public BeanValidationBinder(Class<BEAN> beanType,
-            boolean scanNestedDefinitions) {
+    public BeanValidationBinder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
         super(beanType, scanNestedDefinitions);
         if (!BeanUtil.checkBeanValidationAvailable()) {
-            throw new IllegalStateException(BeanValidationBinder.class
-                    .getSimpleName()
-                    + " cannot be used because a JSR-303 Bean Validation "
-                    + "implementation not found on the classpath or could not be initialized. Use "
-                    + Binder.class.getSimpleName() + " instead");
+            throw new IllegalStateException(
+                    BeanValidationBinder.class.getSimpleName() + " cannot be used because a JSR-303 Bean Validation "
+                            + "implementation not found on the classpath or could not be initialized. Use "
+                            + Binder.class.getSimpleName() + " instead");
         }
         this.beanType = beanType;
     }
 
     /**
      * Sets a logic which allows to configure require indicator via
-     * {@link HasValue#setRequiredIndicatorVisible(boolean)} based on property
-     * descriptor.
+     * {@link HasValue#setRequiredIndicatorVisible(boolean)} based on property descriptor.
      * <p>
-     * Required indicator configuration will not be used at all if
-     * {@code configurator} is null.
+     * Required indicator configuration will not be used at all if {@code configurator} is null.
      * <p>
-     * By default the {@link RequiredFieldConfigurator#DEFAULT} configurator is
-     * used.
+     * By default the {@link RequiredFieldConfigurator#DEFAULT} configurator is used.
      *
      * @param configurator
      *            required indicator configurator, may be {@code null}
      */
-    public void setRequiredConfigurator(
-            RequiredFieldConfigurator configurator) {
+    public void setRequiredConfigurator(RequiredFieldConfigurator configurator) {
         requiredConfigurator = configurator;
     }
 
@@ -119,12 +106,10 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
     }
 
     @Override
-    protected BindingBuilder<BEAN, ?> configureBinding(
-            BindingBuilder<BEAN, ?> binding,
+    protected BindingBuilder<BEAN, ?> configureBinding(BindingBuilder<BEAN, ?> binding,
             PropertyDefinition<BEAN, ?> definition) {
         Class<?> actualBeanType = findBeanType(beanType, definition);
-        BeanValidator validator = new BeanValidator(actualBeanType,
-                definition.getTopLevelName());
+        BeanValidator validator = new BeanValidator(actualBeanType, definition.getTopLevelName());
         if (requiredConfigurator != null) {
             configureRequired(binding, definition, validator);
         }
@@ -132,8 +117,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
     }
 
     /**
-     * Finds the bean type containing the property the given definition refers
-     * to.
+     * Finds the bean type containing the property the given definition refers to.
      *
      * @param beanType
      *            the root beanType
@@ -142,32 +126,26 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @return the bean type containing the given property
      */
     @SuppressWarnings({ "rawtypes" })
-    private Class<?> findBeanType(Class<BEAN> beanType,
-            PropertyDefinition<BEAN, ?> definition) {
+    private Class<?> findBeanType(Class<BEAN> beanType, PropertyDefinition<BEAN, ?> definition) {
         if (definition instanceof NestedBeanPropertyDefinition) {
-            return ((NestedBeanPropertyDefinition) definition).getParent()
-                    .getType();
+            return ((NestedBeanPropertyDefinition) definition).getParent().getType();
         } else {
             // Non nested properties must be defined in the main type
             return beanType;
         }
     }
 
-    private void configureRequired(BindingBuilder<BEAN, ?> binding,
-            PropertyDefinition<BEAN, ?> definition, BeanValidator validator) {
+    private void configureRequired(BindingBuilder<BEAN, ?> binding, PropertyDefinition<BEAN, ?> definition,
+            BeanValidator validator) {
         assert requiredConfigurator != null;
         Class<?> propertyHolderType = definition.getPropertyHolderType();
-        BeanDescriptor descriptor = validator.getJavaxBeanValidator()
-                .getConstraintsForClass(propertyHolderType);
-        PropertyDescriptor propertyDescriptor = descriptor
-                .getConstraintsForProperty(definition.getTopLevelName());
+        BeanDescriptor descriptor = validator.getJavaxBeanValidator().getConstraintsForClass(propertyHolderType);
+        PropertyDescriptor propertyDescriptor = descriptor.getConstraintsForProperty(definition.getTopLevelName());
         if (propertyDescriptor == null) {
             return;
         }
-        if (propertyDescriptor.getConstraintDescriptors().stream()
-                .map(ConstraintDescriptor::getAnnotation)
-                .anyMatch(constraint -> requiredConfigurator.test(constraint,
-                        binding))) {
+        if (propertyDescriptor.getConstraintDescriptors().stream().map(ConstraintDescriptor::getAnnotation)
+                .anyMatch(constraint -> requiredConfigurator.test(constraint, binding))) {
             binding.getField().setRequiredIndicatorVisible(true);
         }
     }

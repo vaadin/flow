@@ -30,17 +30,14 @@ import com.vaadin.flow.internal.StringUtil;
  * @since 2.0
  *
  * @see NpmTemplateParser
- * @deprecated Use {@code BundleLitParser} to parse Lit template since polymer
- *             template is deprecated, we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Use {@code BundleLitParser} to parse Lit template since polymer template is deprecated, we recommend you
+ *             to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 public final class BundleParser {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(BundleParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BundleParser.class);
 
     /**
      * Polymer template pattern matches the template getter
@@ -61,18 +58,17 @@ public final class BundleParser {
      * <p>
      * <code>get[\s]*template\(\)[\s]*\{</code> finds the template getter method
      * <p>
-     * <code>[\s]*return[\s]*html([\`|\'|\"])</code> finds the return statement
-     * and captures the used string character
+     * <code>[\s]*return[\s]*html([\`|\'|\"])</code> finds the return statement and captures the used string character
      * <p>
      * </p>
-     * <code>([\s\S]*)\1;[\s]*\}</code> captures all text until we encounter the
-     * end character with <code>;}</code> e.g. <code>';}</code>
+     * <code>([\s\S]*)\1;[\s]*\}</code> captures all text until we encounter the end character with <code>;}</code> e.g.
+     * <code>';}</code>
      */
     private static final Pattern POLYMER_TEMPLATE_PATTERN = Pattern.compile(
             "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
 
-    private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
-            "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
+    private static final Pattern NO_TEMPLATE_PATTERN = Pattern
+            .compile("innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
 
     private static final String TEMPLATE_TAG_NAME = "template";
 
@@ -99,57 +95,43 @@ public final class BundleParser {
         // template contents.
         if (templateMatcher.find() && templateMatcher.groupCount() == 2) {
             String group = templateMatcher.group(2);
-            LOGGER.trace("Found regular Polymer 3 template content was {}",
-                    group);
+            LOGGER.trace("Found regular Polymer 3 template content was {}", group);
 
             templateDocument = Jsoup.parse(group);
-            LOGGER.trace("The parsed template document was {}",
-                    templateDocument);
+            LOGGER.trace("The parsed template document was {}", templateDocument);
         } else {
-            Element template = tryParsePolymer2(templateDocument,
-                    noTemplateMatcher);
+            Element template = tryParsePolymer2(templateDocument, noTemplateMatcher);
             if (template != null) {
                 return template;
             }
         }
         if (templateDocument == null) {
-            LOGGER.warn("No polymer template data found in {} sources.",
-                    fileName);
+            LOGGER.warn("No polymer template data found in {} sources.", fileName);
 
             templateDocument = new Document("");
-            templateDocument
-                    .appendChild(templateDocument.createElement("body"));
+            templateDocument.appendChild(templateDocument.createElement("body"));
         }
 
         Element template = templateDocument.createElement(TEMPLATE_TAG_NAME);
         Element body = templateDocument.body();
-        templateDocument.body().children().stream()
-                .filter(node -> !node.equals(body))
-                .forEach(template::appendChild);
+        templateDocument.body().children().stream().filter(node -> !node.equals(body)).forEach(template::appendChild);
 
         return template;
     }
 
-    private static Element tryParsePolymer2(Document templateDocument,
-            Matcher noTemplateMatcher) {
-        while (noTemplateMatcher.find()
-                && noTemplateMatcher.groupCount() == 2) {
+    private static Element tryParsePolymer2(Document templateDocument, Matcher noTemplateMatcher) {
+        while (noTemplateMatcher.find() && noTemplateMatcher.groupCount() == 2) {
             String group = noTemplateMatcher.group(2);
-            LOGGER.trace(
-                    "Found Polymer 2 style insertion as a Polymer 3 template content {}",
-                    group);
+            LOGGER.trace("Found Polymer 2 style insertion as a Polymer 3 template content {}", group);
 
             templateDocument = Jsoup.parse(group);
-            LOGGER.trace("The parsed template document was {}",
-                    templateDocument);
-            Optional<Element> domModule = JsoupUtils
-                    .getDomModule(templateDocument, null);
+            LOGGER.trace("The parsed template document was {}", templateDocument);
+            Optional<Element> domModule = JsoupUtils.getDomModule(templateDocument, null);
             if (!domModule.isPresent()) {
                 continue;
             }
             JsoupUtils.removeCommentsRecursively(domModule.get());
-            Elements templates = domModule.get()
-                    .getElementsByTag(TEMPLATE_TAG_NAME);
+            Elements templates = domModule.get().getElementsByTag(TEMPLATE_TAG_NAME);
             if (templates.isEmpty()) {
                 continue;
             }

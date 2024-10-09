@@ -31,8 +31,7 @@ public class AppViewIT extends ChromeBrowserTest {
 
     // https://github.com/vaadin/flow/issues/9005
     @Test
-    public void should_load_image_from_custom_mvc_resource_handler()
-            throws Exception {
+    public void should_load_image_from_custom_mvc_resource_handler() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(getRootURL() + "/foo" + "/img/yes.png");
         CloseableHttpResponse response = httpclient.execute(httpGet);

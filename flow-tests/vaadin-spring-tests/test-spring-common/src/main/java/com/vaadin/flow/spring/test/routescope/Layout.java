@@ -25,12 +25,10 @@ public class Layout extends Div implements RouterLayout {
     public Layout() {
         add(createRouterLink("div", DivInLayout.class, "div-link"));
         add(createRouterLink("button", ButtonInLayout.class, "button-link"));
-        add(createRouterLink("invalid", InvalidRouteScopeUsage.class,
-                "invalid-route-link"));
+        add(createRouterLink("invalid", InvalidRouteScopeUsage.class, "invalid-route-link"));
     }
 
-    private RouterLink createRouterLink(String text,
-            Class<? extends Component> clazz, String id) {
+    private RouterLink createRouterLink(String text, Class<? extends Component> clazz, String id) {
         RouterLink link = new RouterLink(text, clazz);
         link.getStyle().set("display", "block");
         link.setId(id);

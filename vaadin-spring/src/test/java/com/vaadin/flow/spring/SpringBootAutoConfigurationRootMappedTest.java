@@ -24,13 +24,10 @@ public class SpringBootAutoConfigurationRootMappedTest {
 
     @Test
     public void urlMappingPassedToAtmosphere() {
-        Assert.assertTrue(RootMappedCondition
-                .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
-        Assert.assertEquals(
-                Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING),
+        Assert.assertTrue(RootMappedCondition.isRootMapping(RootMappedCondition.getUrlMapping(environment)));
+        Assert.assertEquals(Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING),
                 servletRegistrationBean.getUrlMappings());
         Assert.assertEquals("/" + Constants.PUSH_MAPPING,
-                servletRegistrationBean.getInitParameters()
-                        .get(ApplicationConfig.JSR356_MAPPING_PATH));
+                servletRegistrationBean.getInitParameters().get(ApplicationConfig.JSR356_MAPPING_PATH));
     }
 }

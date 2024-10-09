@@ -25,16 +25,14 @@ import com.vaadin.flow.shared.util.SharedUtil;
  */
 public class StyleUtil {
 
-    private static String[] vendorPrefixes = new String[] { "webkit", "moz",
-            "ms", "o" };
+    private static String[] vendorPrefixes = new String[] { "webkit", "moz", "ms", "o" };
 
     private StyleUtil() {
         // Only static helpers
     }
 
     /**
-     * Converts the given attribute style (dash-separated) into a property style
-     * (camelCase).
+     * Converts the given attribute style (dash-separated) into a property style (camelCase).
      *
      * @param attributeStyle
      *            the attribute style
@@ -53,16 +51,14 @@ public class StyleUtil {
     }
 
     /**
-     * Converts the given property style (camelCase) into a attribute style
-     * (dash-separated).
+     * Converts the given property style (camelCase) into a attribute style (dash-separated).
      *
      * @param propertyStyle
      *            the property style
      * @return the attribute style
      */
     public static String stylePropertyToAttribute(String propertyStyle) {
-        String attributeStyle = SharedUtil
-                .camelCaseToDashSeparated(propertyStyle);
+        String attributeStyle = SharedUtil.camelCaseToDashSeparated(propertyStyle);
         int dashIndex = attributeStyle.indexOf("-");
         if (dashIndex != -1) {
             // webkit-border-after -> -webkit-border-after

@@ -11,8 +11,7 @@ public class LoginView extends LoginOverlay {
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setHeader(new LoginI18n.Header());
         i18n.getHeader().setTitle("Spring Security - Flow Test Application");
-        i18n.getHeader().setDescription(
-                "Login using john/john (user) or emma/emma (admin)");
+        i18n.getHeader().setDescription("Login using john/john (user) or emma/emma (admin)");
         i18n.setAdditionalInformation(null);
         setI18n(i18n);
         setForgotPasswordButtonVisible(false);

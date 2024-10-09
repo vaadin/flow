@@ -61,18 +61,13 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
 
         waitForElementPresent(By.id("vaadin-logo"));
 
-        String staticResourceUrl = $(DivElement.class).id("vaadin-logo")
-                .getCssValue("background-image");
-        Assert.assertTrue(
-                "Should render the background image of element with static resource image",
+        String staticResourceUrl = $(DivElement.class).id("vaadin-logo").getCssValue("background-image");
+        Assert.assertTrue("Should render the background image of element with static resource image",
                 staticResourceUrl.contains("/images/vaadin-logo.png"));
 
-        String themeResourceUrl = $(DivElement.class).id("hilla-logo")
-                .getCssValue("background-image");
-        Assert.assertTrue(
-                "Should render the background image of element with theme resource image",
-                themeResourceUrl.contains(
-                        "VAADIN/themes/specific-theme/images/hilla-logo.png"));
+        String themeResourceUrl = $(DivElement.class).id("hilla-logo").getCssValue("background-image");
+        Assert.assertTrue("Should render the background image of element with theme resource image",
+                themeResourceUrl.contains("VAADIN/themes/specific-theme/images/hilla-logo.png"));
 
         // no 404 errors
         checkLogsForErrors();
@@ -83,8 +78,7 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
             try {
                 final WebElement p = findElement(By.tagName("p"));
                 final WebElement span = findElement(By.tagName("span"));
-                return RED_COLOR.equals(p.getCssValue("color"))
-                        && GREEN_COLOR.equals(span.getCssValue("color"));
+                return RED_COLOR.equals(p.getCssValue("color")) && GREEN_COLOR.equals(span.getCssValue("color"));
             } catch (StaleElementReferenceException e) {
                 return false;
             }

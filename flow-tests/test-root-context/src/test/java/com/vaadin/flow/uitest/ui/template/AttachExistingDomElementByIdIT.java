@@ -32,8 +32,7 @@ public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
         assertTemplate("template", "bar", "Foo");
     }
 
-    protected void assertTemplate(String id, String initialLabelText,
-            String placeholder) {
+    protected void assertTemplate(String id, String initialLabelText, String placeholder) {
         WebElement input = getInput(id);
 
         Assert.assertEquals(initialLabelText, getLabel(id).getText());
@@ -46,19 +45,16 @@ public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
         Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
 
         // Reset values to defaults
-        $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button")
-                .click();
+        $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button").click();
 
         Assert.assertEquals("default", getLabel(id).getText());
     }
 
     private WebElement getInput(String id) {
-        return $(TestBenchElement.class).id(id).$(TestBenchElement.class)
-                .id("input");
+        return $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("input");
     }
 
     private WebElement getLabel(String id) {
-        return $(TestBenchElement.class).id(id).$(TestBenchElement.class)
-                .id("label");
+        return $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("label");
     }
 }

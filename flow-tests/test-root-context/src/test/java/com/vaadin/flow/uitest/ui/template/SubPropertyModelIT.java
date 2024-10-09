@@ -33,13 +33,11 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
         open();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        Assert.assertEquals("message",
-                template.$(TestBenchElement.class).id("msg").getText());
+        Assert.assertEquals("message", template.$(TestBenchElement.class).id("msg").getText());
 
         template.$(TestBenchElement.class).id("button").click();
 
-        Assert.assertEquals("Updated",
-                template.$(TestBenchElement.class).id("msg").getText());
+        Assert.assertEquals("Updated", template.$(TestBenchElement.class).id("msg").getText());
 
         template.$(TestBenchElement.class).id("sync").click();
 
@@ -51,18 +49,14 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
         input.sendKeys("foo");
 
         List<WebElement> valueUpdate = findElements(By.id("value-update"));
-        Optional<WebElement> result = valueUpdate.stream()
-                .filter(element -> element.getText().equals("foo")).findAny();
+        Optional<WebElement> result = valueUpdate.stream().filter(element -> element.getText().equals("foo")).findAny();
         Assert.assertTrue("Unable to find updated input value element. "
-                + "Looks like input hasn't sent an event for subproperty",
-                result.isPresent());
+                + "Looks like input hasn't sent an event for subproperty", result.isPresent());
 
         // click message
         template.$(TestBenchElement.class).id("msg").click();
 
-        Assert.assertEquals(
-                "Clicking status message did not get the same modelData as in the message box.",
-                template.$(TestBenchElement.class).id("msg").getText(),
-                findElement(By.id("statusClick")).getText());
+        Assert.assertEquals("Clicking status message did not get the same modelData as in the message box.",
+                template.$(TestBenchElement.class).id("msg").getText(), findElement(By.id("statusClick")).getText());
     }
 }

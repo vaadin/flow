@@ -48,9 +48,8 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      * @param source
      *            the component that fired the event
      * @param fromClient
-     *            <code>true</code> if the event was originally fired on the
-     *            client, <code>false</code> if the event originates from
-     *            server-side logic
+     *            <code>true</code> if the event was originally fired on the client, <code>false</code> if the event
+     *            originates from server-side logic
      * @param key
      *            the string value representing the key
      * @param code
@@ -58,28 +57,20 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      * @param location
      *            the integer value representing the location of the key
      * @param ctrlKey
-     *            <code>true</code> if the control key was down when the event
-     *            was fired, <code>false</code> otherwise
+     *            <code>true</code> if the control key was down when the event was fired, <code>false</code> otherwise
      * @param shiftKey
-     *            <code>true</code> if the shift key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the shift key was down when the event was fired, <code>false</code> otherwise
      * @param altKey
-     *            <code>true</code> if the alt key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the alt key was down when the event was fired, <code>false</code> otherwise
      * @param metaKey
-     *            <code>true</code> if the meta key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the meta key was down when the event was fired, <code>false</code> otherwise
      * @param repeat
-     *            <code>true</code> if the key has been pressed in a sustained
-     *            manner
+     *            <code>true</code> if the key has been pressed in a sustained manner
      * @param composing
-     *            <code>true</code> if the key event occurred as part of a
-     *            composition session
+     *            <code>true</code> if the key event occurred as part of a composition session
      */
-    public KeyboardEvent(Component source, boolean fromClient, String key,
-            String code, int location, boolean ctrlKey, boolean shiftKey,
-            boolean altKey, boolean metaKey, boolean repeat,
-            boolean composing) {
+    public KeyboardEvent(Component source, boolean fromClient, String key, String code, int location, boolean ctrlKey,
+            boolean shiftKey, boolean altKey, boolean metaKey, boolean repeat, boolean composing) {
         super(source, fromClient);
         this.key = Key.of(key);
         // code might not be present for all keys for all browsers
@@ -112,8 +103,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            the key for this event
      */
     public KeyboardEvent(Component source, String key) {
-        this(source, false, key, null, 0, false, false, false, false, false,
-                false);
+        this(source, false, key, null, 0, false, false, false, false, false, false);
     }
 
     /**
@@ -127,8 +117,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            the code for this event
      */
     public KeyboardEvent(Component source, String key, String code) {
-        this(source, false, key, code, 0, false, false, false, false, false,
-                false);
+        this(source, false, key, code, 0, false, false, false, false, false, false);
     }
 
     /**
@@ -141,8 +130,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
     }
 
     /**
-     * Gets the code of the event. If the event did not contain a valid code, an
-     * empty Optional will be given.
+     * Gets the code of the event. If the event did not contain a valid code, an empty Optional will be given.
      *
      * @return the optional code of the event as a {@link Key}
      */
@@ -162,8 +150,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
     /**
      * Checks whether the key has been pressed in a sustained manner.
      *
-     * @return <code>true</code> if the key has been pressed in a sustained
-     *         manner
+     * @return <code>true</code> if the key has been pressed in a sustained manner
      */
     public boolean isRepeat() {
         return repeat;
@@ -172,8 +159,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
     /**
      * Checks whether the key event occurred as part of a composition session.
      *
-     * @return <code>true</code> if the key event occurred as part of a
-     *         composition session
+     * @return <code>true</code> if the key event occurred as part of a composition session
      */
     public boolean isComposing() {
         return composing;

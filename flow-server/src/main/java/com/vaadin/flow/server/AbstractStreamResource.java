@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
- * Abstract stream resource class. Extending class may be used for data transfer
- * in either to the client (dynamic data) or from the client (file upload).
+ * Abstract stream resource class. Extending class may be used for data transfer in either to the client (dynamic data)
+ * or from the client (file upload).
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -32,9 +32,8 @@ public abstract class AbstractStreamResource implements Serializable {
     private final String id = UUID.randomUUID().toString();
 
     /**
-     * Gets the length of cache expiration time. This gives the possibility to
-     * cache the resource. "Cache-Control" HTTP header will be set based on this
-     * value.
+     * Gets the length of cache expiration time. This gives the possibility to cache the resource. "Cache-Control" HTTP
+     * header will be set based on this value.
      * <p>
      * Default value is {@code 0}. So caching is disabled.
      *
@@ -45,8 +44,7 @@ public abstract class AbstractStreamResource implements Serializable {
     }
 
     /**
-     * Set cache time in millis. Zero or negative value disables the caching of
-     * this stream.
+     * Set cache time in millis. Zero or negative value disables the caching of this stream.
      *
      * @param cacheTime
      *            cache time
@@ -69,9 +67,8 @@ public abstract class AbstractStreamResource implements Serializable {
     /**
      * Get the resource name.
      * <p>
-     * The value will be used in URI (generated when resource is registered) in
-     * a way that the {@code name} is the last segment of the path. So this is a
-     * synthetic name.
+     * The value will be used in URI (generated when resource is registered) in a way that the {@code name} is the last
+     * segment of the path. So this is a synthetic name.
      *
      * @return resource name
      */

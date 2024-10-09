@@ -24,13 +24,11 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Wraps a JSON value that should be stored in the {@link ConstantPool} shared
- * between the client and the server. A constant pool key stored as a value in a
- * state node will be encoded as a string containing the id that the client can
- * use for fetching the actual JSON value from the client-side constant pool.
- * This is a way of deduplicating JSON values that are expected to be sent to
- * the same client multiple times, since all references to the same JSON
- * structure will be encoded as the same id.
+ * Wraps a JSON value that should be stored in the {@link ConstantPool} shared between the client and the server. A
+ * constant pool key stored as a value in a state node will be encoded as a string containing the id that the client can
+ * use for fetching the actual JSON value from the client-side constant pool. This is a way of deduplicating JSON values
+ * that are expected to be sent to the same client multiple times, since all references to the same JSON structure will
+ * be encoded as the same id.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -43,9 +41,8 @@ public class ConstantPoolKey implements Serializable {
     private String id;
 
     /**
-     * Creates a new constant pool key for the given JSON value. The value
-     * should not be modified after this instance has been created since it
-     * might cause the constant pool value to be inconsistent.
+     * Creates a new constant pool key for the given JSON value. The value should not be modified after this instance
+     * has been created since it might cause the constant pool value to be inconsistent.
      *
      * @param json
      *            the JSON constant, not <code>null</code>
@@ -68,21 +65,19 @@ public class ConstantPoolKey implements Serializable {
     }
 
     /**
-     * Exports this key into a JSON object to send to the client. This method
-     * should be called only by the {@link ConstantPool} instance that manages
-     * this value. It may be called multiple times.
+     * Exports this key into a JSON object to send to the client. This method should be called only by the
+     * {@link ConstantPool} instance that manages this value. It may be called multiple times.
      *
      * @param clientConstantPoolUpdate
-     *            the constant pool update that is to be sent to the client, not
-     *            <code>null</code>
+     *            the constant pool update that is to be sent to the client, not <code>null</code>
      */
     public void export(JsonObject clientConstantPoolUpdate) {
         clientConstantPoolUpdate.put(getId(), json);
     }
 
     /**
-     * Calculates the key of a JSON value by Base 64 encoding the first 64 bits
-     * of the SHA-256 digest of the JSON's string representation.
+     * Calculates the key of a JSON value by Base 64 encoding the first 64 bits of the SHA-256 digest of the JSON's
+     * string representation.
      *
      * @param json
      *            the JSON to get a hash of, not <code>null</code>
@@ -92,8 +87,8 @@ public class ConstantPoolKey implements Serializable {
         byte[] digest = MessageDigestUtil.sha256(json.toJson());
 
         /*
-         * Only use first 64 bits to keep id string short (1 in 100 000 000
-         * collision risk with 500 000 items). 64 bits base64 -> 11 ASCII chars
+         * Only use first 64 bits to keep id string short (1 in 100 000 000 collision risk with 500 000 items). 64 bits
+         * base64 -> 11 ASCII chars
          */
         ByteBuffer truncatedDigest = ByteBuffer.wrap(digest, 0, 8);
 

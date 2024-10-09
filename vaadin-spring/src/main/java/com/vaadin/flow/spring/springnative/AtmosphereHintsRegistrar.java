@@ -39,15 +39,13 @@ import org.springframework.core.io.ClassPathResource;
 /**
  * Registers runtime hints for Spring 3 native support for Atmosphere.
  * <p>
- * These should go into Atmosphere, see
- * https://github.com/Atmosphere/atmosphere/issues/2483
+ * These should go into Atmosphere, see https://github.com/Atmosphere/atmosphere/issues/2483
  */
 class AtmosphereHintsRegistrar implements RuntimeHintsRegistrar {
 
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
-        hints.resources().registerResource(new ClassPathResource(
-                "org/atmosphere/util/version.properties"));
+        hints.resources().registerResource(new ClassPathResource("org/atmosphere/util/version.properties"));
         var reflectionHints = hints.reflection();
 
         for (Class<?> c : getAtmosphereClasses()) {
@@ -56,25 +54,16 @@ class AtmosphereHintsRegistrar implements RuntimeHintsRegistrar {
     }
 
     private Collection<? extends Class<?>> getAtmosphereClasses() {
-        var all = new HashSet<>(Set.of(AsyncSupportListenerAdapter.class,
-                AtmosphereFramework.class, DefaultAnnotationProcessor.class,
-                DefaultAtmosphereResourceFactory.class,
-                SimpleHttpProtocol.class,
-                AtmosphereResourceLifecycleInterceptor.class,
-                TrackMessageSizeInterceptor.class,
-                SuspendTrackerInterceptor.class,
-                DefaultBroadcasterFactory.class, SimpleBroadcaster.class,
-                DefaultBroadcaster.class, UUIDBroadcasterCache.class,
-                VoidAnnotationProcessor.class,
-                DefaultAtmosphereResourceSessionFactory.class,
-                JSR356AsyncSupport.class, DefaultMetaBroadcaster.class,
-                AtmosphereHandlerService.class, AbstractBroadcasterProxy.class,
-                AsyncSupportListener.class, AtmosphereFrameworkListener.class,
-                ExcludeSessionBroadcaster.class,
-                AtmosphereResourceEventListener.class,
-                AtmosphereInterceptor.class, BroadcastFilter.class,
-                AtmosphereResource.class, AtmosphereResourceImpl.class,
-                ManagedServiceInterceptor.class));
+        var all = new HashSet<>(Set.of(AsyncSupportListenerAdapter.class, AtmosphereFramework.class,
+                DefaultAnnotationProcessor.class, DefaultAtmosphereResourceFactory.class, SimpleHttpProtocol.class,
+                AtmosphereResourceLifecycleInterceptor.class, TrackMessageSizeInterceptor.class,
+                SuspendTrackerInterceptor.class, DefaultBroadcasterFactory.class, SimpleBroadcaster.class,
+                DefaultBroadcaster.class, UUIDBroadcasterCache.class, VoidAnnotationProcessor.class,
+                DefaultAtmosphereResourceSessionFactory.class, JSR356AsyncSupport.class, DefaultMetaBroadcaster.class,
+                AtmosphereHandlerService.class, AbstractBroadcasterProxy.class, AsyncSupportListener.class,
+                AtmosphereFrameworkListener.class, ExcludeSessionBroadcaster.class,
+                AtmosphereResourceEventListener.class, AtmosphereInterceptor.class, BroadcastFilter.class,
+                AtmosphereResource.class, AtmosphereResourceImpl.class, ManagedServiceInterceptor.class));
         all.addAll(AtmosphereFramework.DEFAULT_ATMOSPHERE_INTERCEPTORS);
         return all;
     }

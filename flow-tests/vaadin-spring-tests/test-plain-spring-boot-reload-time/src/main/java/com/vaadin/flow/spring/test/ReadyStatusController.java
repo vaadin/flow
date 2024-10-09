@@ -36,8 +36,7 @@ public class ReadyStatusController {
     @GetMapping("/isready")
     public String isReady() {
         if (ready) {
-            System.out.println("ReadyStatusController.isReady() returns "
-                    + String.valueOf(ready));
+            System.out.println("ReadyStatusController.isReady() returns " + String.valueOf(ready));
         }
         return String.valueOf(ready);
     }

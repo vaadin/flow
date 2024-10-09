@@ -18,8 +18,7 @@ public class LazyIT extends ChromeBrowserTest {
         Assert.assertEquals("", component.getText());
 
         String lazyView = getTestURL(getRootURL(),
-                "/view/com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.LazyView",
-                null);
+                "/view/com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.LazyView", null);
 
         getDriver().get(lazyView);
         // The component should now be loaded

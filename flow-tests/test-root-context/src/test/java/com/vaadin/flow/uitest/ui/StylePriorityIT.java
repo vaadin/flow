@@ -29,7 +29,6 @@ public class StylePriorityIT extends ChromeBrowserTest {
         open();
         WebElement div = findElement(By.id("priority-style"));
 
-        Assert.assertEquals("display: block !important;",
-                div.getAttribute("style"));
+        Assert.assertEquals("display: block !important;", div.getAttribute("style"));
     }
 }

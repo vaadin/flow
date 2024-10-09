@@ -16,8 +16,7 @@ import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 
 /**
- * A list implementation which uses a {@link ModelList} in a {@link StateNode}
- * as the data source.
+ * A list implementation which uses a {@link ModelList} in a {@link StateNode} as the data source.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -26,16 +25,12 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
  * @param <T>
  *            the type of items in the list
  *
- * @deprecated This functionality is internal and bound to template model which
- *             is not supported for lit template. Polymer template support is
- *             deprecated - we recommend you to use {@code LitTemplate} instead.
- *             Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated This functionality is internal and bound to template model which is not supported for lit template.
+ *             Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
-public class TemplateModelListProxy<T> extends AbstractList<T>
-        implements Serializable {
+public class TemplateModelListProxy<T> extends AbstractList<T> implements Serializable {
     private final StateNode stateNode;
     private final ComplexModelType<T> itemType;
 
@@ -47,8 +42,7 @@ public class TemplateModelListProxy<T> extends AbstractList<T>
      * @param itemType
      *            the type of items in the list
      */
-    public TemplateModelListProxy(StateNode stateNode,
-            ComplexModelType<T> itemType) {
+    public TemplateModelListProxy(StateNode stateNode, ComplexModelType<T> itemType) {
         this.stateNode = stateNode;
         this.itemType = itemType;
     }
@@ -58,17 +52,15 @@ public class TemplateModelListProxy<T> extends AbstractList<T>
     public T get(int index) {
         StateNode modelNode = getModelList().get(index);
         if (itemType instanceof ListModelType<?>) {
-            ComplexModelType<?> listItemType = ((ListModelType<?>) itemType)
-                    .getItemType();
+            ComplexModelType<?> listItemType = ((ListModelType<?>) itemType).getItemType();
             return (T) new TemplateModelListProxy<>(modelNode, listItemType);
         } else if (itemType instanceof BeanModelType<?>) {
-            return TemplateModelProxyHandler.createModelProxy(modelNode,
-                    (BeanModelType<T>) itemType);
+            return TemplateModelProxyHandler.createModelProxy(modelNode, (BeanModelType<T>) itemType);
         } else if (itemType instanceof BasicComplexModelType<?>) {
             return (T) modelNode.getFeature(BasicTypeValue.class).getValue();
         }
-        throw new IllegalStateException("Item type has unexpected type "
-                + itemType + ". Don't know how to create a proxy for it");
+        throw new IllegalStateException(
+                "Item type has unexpected type " + itemType + ". Don't know how to create a proxy for it");
     }
 
     @Override
@@ -81,12 +73,10 @@ public class TemplateModelListProxy<T> extends AbstractList<T>
     @Override
     public void add(int index, T object) {
         if (object == null) {
-            throw new IllegalArgumentException(
-                    "Null values cannot be added to a list in the model");
+            throw new IllegalArgumentException("Null values cannot be added to a list in the model");
         }
 
-        StateNode nodeToAdd = itemType.applicationToModel(object,
-                PropertyFilter.ACCEPT_ALL);
+        StateNode nodeToAdd = itemType.applicationToModel(object, PropertyFilter.ACCEPT_ALL);
 
         getModelList().add(index, nodeToAdd);
     }
@@ -102,8 +92,7 @@ public class TemplateModelListProxy<T> extends AbstractList<T>
             return -1;
         }
         if (!TemplateModelProxyHandler.isProxy(object)) {
-            throw new IllegalArgumentException(
-                    "Only proxy objects can be used together with proxy lists");
+            throw new IllegalArgumentException("Only proxy objects can be used together with proxy lists");
         }
 
         StateNode node = TemplateModelProxyHandler.getStateNodeForProxy(object);

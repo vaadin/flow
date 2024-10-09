@@ -60,15 +60,13 @@ public class BasicPollView extends ClientServerCounter {
         startPolling.setId(START_POLLING_BUTTON);
 
         spacer();
-        getElement()
-                .appendChild(new Div(startPolling, stopPolling).getElement());
+        getElement().appendChild(new Div(startPolling, stopPolling).getElement());
 
         updatePollIntervalText();
     }
 
     private void updatePollIntervalText() {
-        pollInterval.setText(
-                "Poll interval: " + getUI().get().getPollInterval() + "ms");
+        pollInterval.setText("Poll interval: " + getUI().get().getPollInterval() + "ms");
     }
 
 }

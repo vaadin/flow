@@ -48,8 +48,7 @@ public class ShadowRoot extends Node<ShadowRoot> {
         if (isShadowRoot(node)) {
             return new ShadowRoot(node);
         } else {
-            throw new IllegalArgumentException(
-                    "Node is not valid as an element");
+            throw new IllegalArgumentException("Node is not valid as an element");
         }
     }
 

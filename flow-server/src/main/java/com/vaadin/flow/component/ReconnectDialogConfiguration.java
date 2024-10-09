@@ -28,19 +28,16 @@ import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
  */
 public interface ReconnectDialogConfiguration extends Serializable {
     /**
-     * Gets the text to show in the reconnect dialog when trying to re-establish
-     * the server connection.
+     * Gets the text to show in the reconnect dialog when trying to re-establish the server connection.
      * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_DEFAULT}
+     * The default is {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_DEFAULT}
      *
      * @return the text to show in the reconnect dialog
      */
     String getDialogText();
 
     /**
-     * Sets the text to show in the reconnect dialog when trying to re-establish
-     * the server connection.
+     * Sets the text to show in the reconnect dialog when trying to re-establish the server connection.
      *
      * @param dialogText
      *            the text to show in the reconnect dialog
@@ -48,19 +45,18 @@ public interface ReconnectDialogConfiguration extends Serializable {
     void setDialogText(String dialogText);
 
     /**
-     * Gets the text to show in the reconnect dialog after giving up trying to
-     * reconnect ({@link #getReconnectAttempts()} reached).
+     * Gets the text to show in the reconnect dialog after giving up trying to reconnect
+     * ({@link #getReconnectAttempts()} reached).
      * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_GAVE_UP_DEFAULT}
+     * The default is {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_GAVE_UP_DEFAULT}
      *
      * @return the text to show in the reconnect dialog after giving up
      */
     String getDialogTextGaveUp();
 
     /**
-     * Sets the text to show in the reconnect dialog after giving up trying to
-     * reconnect ({@link #getReconnectAttempts()} reached).
+     * Sets the text to show in the reconnect dialog after giving up trying to reconnect
+     * ({@link #getReconnectAttempts()} reached).
      *
      * @param dialogTextGaveUp
      *            the text to show in the reconnect dialog after giving up
@@ -68,19 +64,16 @@ public interface ReconnectDialogConfiguration extends Serializable {
     void setDialogTextGaveUp(String dialogTextGaveUp);
 
     /**
-     * Gets the number of times to try to reconnect to the server before giving
-     * up.
+     * Gets the number of times to try to reconnect to the server before giving up.
      * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#RECONNECT_ATTEMPTS_DEFAULT}
+     * The default is {@value ReconnectDialogConfigurationMap#RECONNECT_ATTEMPTS_DEFAULT}
      *
      * @return the number of times to try to reconnect
      */
     int getReconnectAttempts();
 
     /**
-     * Sets the number of times to try to reconnect to the server before giving
-     * up.
+     * Sets the number of times to try to reconnect to the server before giving up.
      *
      * @param reconnectAttempts
      *            the number of times to try to reconnect
@@ -90,8 +83,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Gets the interval (in milliseconds) between reconnect attempts.
      * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#RECONNECT_INTERVAL_DEFAULT}
+     * The default is {@value ReconnectDialogConfigurationMap#RECONNECT_INTERVAL_DEFAULT}
      *
      * @return the interval (in ms) between reconnect attempts
      */

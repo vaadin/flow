@@ -56,26 +56,21 @@ public class IdMapper implements Serializable {
     /**
      * Maps an element or component to the given field.
      * <p>
-     * If an element with the given id exists in the template element tree, that
-     * element is used.
+     * If an element with the given id exists in the template element tree, that element is used.
      * <p>
-     * If no element exists (the typical case), a virtual element is created and
-     * later on, when the template has been rendered in the client, is connected
-     * to the rendered element with the given id.
+     * If no element exists (the typical case), a virtual element is created and later on, when the template has been
+     * rendered in the client, is connected to the rendered element with the given id.
      *
      * @param field
      *            the field to assign the element/component to
      * @param id
      *            the id of the element to map
      * @param tag
-     *            the tag of the injected element or <code>null</code> if not
-     *            known
+     *            the tag of the injected element or <code>null</code> if not known
      * @param beforeInject
-     *            a callback invoked before assigning the element/component to
-     *            the field
+     *            a callback invoked before assigning the element/component to the field
      */
-    public void mapComponentOrElement(Field field, String id, String tag,
-            Consumer<Element> beforeInject) {
+    public void mapComponentOrElement(Field field, String id, String tag, Consumer<Element> beforeInject) {
         injectClientSideElement(tag, id, field, beforeInject);
     }
 
@@ -83,19 +78,14 @@ public class IdMapper implements Serializable {
         return template.getClass();
     }
 
-    private void injectClientSideElement(String tagName, String id, Field field,
-            Consumer<Element> beforeInject) {
+    private void injectClientSideElement(String tagName, String id, Field field, Consumer<Element> beforeInject) {
         Class<?> fieldType = field.getType();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
-        if (tag != null && tagName != null
-                && !tagName.equalsIgnoreCase(tag.value())) {
-            String msg = String.format(
-                    "Class '%s' has field '%s' whose type '%s' is annotated with "
-                            + "tag '%s' but the element defined in the HTML "
-                            + "template with id '%s' has tag name '%s'",
-                    getContainerClass().getName(), field.getName(),
-                    fieldType.getName(), tag.value(), id, tagName);
+        if (tag != null && tagName != null && !tagName.equalsIgnoreCase(tag.value())) {
+            String msg = String.format("Class '%s' has field '%s' whose type '%s' is annotated with "
+                    + "tag '%s' but the element defined in the HTML " + "template with id '%s' has tag name '%s'",
+                    getContainerClass().getName(), field.getName(), fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
         }
         if (tag != null) {
@@ -116,8 +106,7 @@ public class IdMapper implements Serializable {
      * @return the shadow root for the template
      */
     public ShadowRoot getOrCreateShadowRoot() {
-        return getElement().getShadowRoot()
-                .orElseGet(() -> getElement().attachShadow());
+        return getElement().getShadowRoot().orElseGet(() -> getElement().attachShadow());
     }
 
     private Element getElement() {
@@ -125,8 +114,8 @@ public class IdMapper implements Serializable {
     }
 
     /**
-     * Attaches a child element with the given {@code tagName} and {@code id} to
-     * an existing dom element on the client side with matching data.
+     * Attaches a child element with the given {@code tagName} and {@code id} to an existing dom element on the client
+     * side with matching data.
      *
      * @param tagName
      *            tag name of element, not {@code null}
@@ -135,21 +124,17 @@ public class IdMapper implements Serializable {
      * @param field
      *            field to attach {@code Element} or {@code Component} to
      * @param beforeInject
-     *            a callback invoked before assigning the element/component to
-     *            the field
+     *            a callback invoked before assigning the element/component to the field
      */
-    private void attachExistingElementById(String tagName, String id,
-            Field field, Consumer<Element> beforeInject) {
+    private void attachExistingElementById(String tagName, String id, Field field, Consumer<Element> beforeInject) {
         if (tagName == null) {
-            throw new IllegalArgumentException(
-                    "Tag name parameter cannot be null");
+            throw new IllegalArgumentException("Tag name parameter cannot be null");
         }
 
         Element element = registeredElementIdToInjected.get(id);
         if (element == null) {
             element = new Element(tagName);
-            VirtualChildrenList list = getElement().getNode()
-                    .getFeature(VirtualChildrenList.class);
+            VirtualChildrenList list = getElement().getNode().getFeature(VirtualChildrenList.class);
             list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
             registeredElementIdToInjected.put(id, element);
         }
@@ -157,8 +142,7 @@ public class IdMapper implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    private void injectTemplateElement(Element element, Field field,
-            Consumer<Element> beforeInject) {
+    private void injectTemplateElement(Element element, Field field, Consumer<Element> beforeInject) {
         Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {
             beforeInject.accept(element);
@@ -178,21 +162,17 @@ public class IdMapper implements Serializable {
             ReflectTools.setJavaFieldValue(template, field, element);
         } else {
             String msg = String.format(
-                    "The field '%s' in '%s' has an @'%s' "
-                            + "annotation but the field type '%s' "
+                    "The field '%s' in '%s' has an @'%s' " + "annotation but the field type '%s' "
                             + "does not extend neither '%s' nor '%s'",
-                    field.getName(), getContainerClass().getName(),
-                    Id.class.getSimpleName(), fieldType.getName(),
-                    Component.class.getSimpleName(),
-                    Element.class.getSimpleName());
+                    field.getName(), getContainerClass().getName(), Id.class.getSimpleName(), fieldType.getName(),
+                    Component.class.getSimpleName(), Element.class.getSimpleName());
 
             throw new IllegalArgumentException(msg);
         }
     }
 
     /**
-     * Resets the mapper to its original state, clearing any registered
-     * mappings.
+     * Resets the mapper to its original state, clearing any registered mappings.
      */
     public void reset() {
         registeredElementIdToInjected.clear();
@@ -203,8 +183,7 @@ public class IdMapper implements Serializable {
      *
      * @param id
      *            the id to check
-     * @return <code>true</code> if the element has been mapped,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the element has been mapped, <code>false</code> otherwise
      */
     public boolean isMapped(String id) {
         return registeredElementIdToInjected.containsKey(id);

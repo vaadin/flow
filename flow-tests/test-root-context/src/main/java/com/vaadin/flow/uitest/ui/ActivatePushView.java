@@ -25,7 +25,6 @@ public class ActivatePushView extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        attachEvent.getUI().getPushConfiguration()
-                .setPushMode(PushMode.AUTOMATIC);
+        attachEvent.getUI().getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
     }
 }

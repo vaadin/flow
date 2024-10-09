@@ -20,17 +20,14 @@ import java.net.URI;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 
 /**
- * Any attached component implementing this interface will receive an event
- * before leaving the current navigation state.
+ * Any attached component implementing this interface will receive an event before leaving the current navigation state.
  * <p>
- * During this event phase there is the possibility to reroute to another
- * navigation target or to postpone the navigation (to for instance get user
- * input).
+ * During this event phase there is the possibility to reroute to another navigation target or to postpone the
+ * navigation (to for instance get user input).
  * <p>
- * If a route target is left for reasons not under the control of the navigator
- * (for instance using
- * {@link com.vaadin.flow.component.page.Page#setLocation(URI)}, typing a URL
- * into the address bar, or closing the browser), listeners are not called.
+ * If a route target is left for reasons not under the control of the navigator (for instance using
+ * {@link com.vaadin.flow.component.page.Page#setLocation(URI)}, typing a URL into the address bar, or closing the
+ * browser), listeners are not called.
  *
  * @author Vaadin Ltd
  * @since 1.0

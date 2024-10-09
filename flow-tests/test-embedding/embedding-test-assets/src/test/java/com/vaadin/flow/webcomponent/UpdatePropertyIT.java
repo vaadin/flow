@@ -37,10 +37,8 @@ public class UpdatePropertyIT extends ChromeBrowserTest implements HasById {
 
         TestBenchElement button = byId("counter").$("button").first();
 
-        Assert.assertEquals("Count (id:count) should start from 0", 0,
-                getInt("count"));
-        Assert.assertEquals("Count (id:json) should start from 0", 0,
-                getInt("json"));
+        Assert.assertEquals("Count (id:count) should start from 0", 0, getInt("count"));
+        Assert.assertEquals("Count (id:json) should start from 0", 0, getInt("json"));
 
         button.click();
 

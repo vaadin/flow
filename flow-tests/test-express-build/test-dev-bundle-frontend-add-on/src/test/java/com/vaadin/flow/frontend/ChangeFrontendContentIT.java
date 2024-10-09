@@ -44,37 +44,28 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void litTemplateWebComponentAdded_newBundleCreated_hashCalculated()
-            throws IOException {
-        TestBenchElement paragraph = $("lit-view").waitForFirst().$("p")
-                .waitForFirst();
-        Assert.assertEquals("Greetings from test web component: Hello John Doe",
-                paragraph.getText());
+    public void litTemplateWebComponentAdded_newBundleCreated_hashCalculated() throws IOException {
+        TestBenchElement paragraph = $("lit-view").waitForFirst().$("p").waitForFirst();
+        Assert.assertEquals("Greetings from test web component: Hello John Doe", paragraph.getText());
 
         File baseDir = new File(System.getProperty("user.dir", "."));
 
         // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
-                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION)
-                        .exists());
+                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION).exists());
 
         // should add a hash for lit-view
-        File statsJson = new File(baseDir, "target/"
-                + Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
+        File statsJson = new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
         Assert.assertTrue("Stats.json should exist", statsJson.exists());
 
-        String content = FileUtils.readFileToString(statsJson,
-                StandardCharsets.UTF_8);
+        String content = FileUtils.readFileToString(statsJson, StandardCharsets.UTF_8);
         JsonObject jsonContent = Json.parse(content);
 
         JsonObject frontendHashes = jsonContent.getObject("frontendHashes");
 
-        Assert.assertNotNull("Frontend hashes are expected in the stats.json",
-                frontendHashes);
-        Assert.assertTrue("Lit template content hash is expected",
-                frontendHashes.hasKey("views/lit-view.ts"));
-        Assert.assertTrue("Imported TS file content hash is expected",
-                frontendHashes.hasKey("views/another.ts"));
+        Assert.assertNotNull("Frontend hashes are expected in the stats.json", frontendHashes);
+        Assert.assertTrue("Lit template content hash is expected", frontendHashes.hasKey("views/lit-view.ts"));
+        Assert.assertTrue("Imported TS file content hash is expected", frontendHashes.hasKey("views/another.ts"));
         Assert.assertEquals("Unexpected Lit template content hash",
                 "c1ce265100215245a5264dd124c4d890a7f66acbb5ceddf79dcdec2d914e6c30",
                 frontendHashes.getString("views/lit-view.ts"));

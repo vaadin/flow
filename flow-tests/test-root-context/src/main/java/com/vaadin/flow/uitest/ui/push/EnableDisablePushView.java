@@ -34,8 +34,7 @@ public class EnableDisablePushView extends AbstractTestViewWithLog {
                         log("Counter = " + c++);
                         if (c == 3) {
                             log("Disabling polling, enabling push");
-                            ui.getPushConfiguration()
-                                    .setPushMode(PushMode.AUTOMATIC);
+                            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
                             ui.setPollInterval(-1);
                             log("Polling disabled, push enabled");
                         }
@@ -82,19 +81,17 @@ public class EnableDisablePushView extends AbstractTestViewWithLog {
             log("Poll enabled");
         }));
 
-        add(createButton("Disable push, re-enable from background thread",
-                "thread-re-enable-push", () -> {
-                    log("Disabling push, enabling polling");
-                    ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
-                    ui.setPollInterval(1000);
-                    timer.schedule(new CounterTask(), new Date());
-                    log("Push disabled, polling enabled");
-                }));
+        add(createButton("Disable push, re-enable from background thread", "thread-re-enable-push", () -> {
+            log("Disabling push, enabling polling");
+            ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+            ui.setPollInterval(1000);
+            timer.schedule(new CounterTask(), new Date());
+            log("Push disabled, polling enabled");
+        }));
 
     }
 
-    private NativeButton createButton(String caption, String id,
-            Runnable action) {
+    private NativeButton createButton(String caption, String id, Runnable action) {
         NativeButton button = new NativeButton(caption);
         button.setId(id);
         button.addClickListener(event -> action.run());

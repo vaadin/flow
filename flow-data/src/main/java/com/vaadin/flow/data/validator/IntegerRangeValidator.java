@@ -29,9 +29,8 @@ public class IntegerRangeValidator extends RangeValidator<Integer> {
     /**
      * Creates a validator for checking that an Integer is within a given range.
      *
-     * By default the range is inclusive i.e. both minValue and maxValue are
-     * valid values. Use {@link #setMinValueIncluded(boolean)} or
-     * {@link #setMaxValueIncluded(boolean)} to change it.
+     * By default the range is inclusive i.e. both minValue and maxValue are valid values. Use
+     * {@link #setMinValueIncluded(boolean)} or {@link #setMaxValueIncluded(boolean)} to change it.
      *
      *
      * @param errorMessage
@@ -41,8 +40,7 @@ public class IntegerRangeValidator extends RangeValidator<Integer> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public IntegerRangeValidator(String errorMessage, Integer minValue,
-            Integer maxValue) {
+    public IntegerRangeValidator(String errorMessage, Integer minValue, Integer maxValue) {
         super(errorMessage, Comparator.naturalOrder(), minValue, maxValue);
     }
 

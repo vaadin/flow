@@ -36,18 +36,16 @@ import com.vaadin.flow.server.Constants;
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
  * <p>
- * Extend this class in your Spring MVC application and provide your
- * configuration classes via the {@link #getConfigurationClasses()} method.
+ * Extend this class in your Spring MVC application and provide your configuration classes via the
+ * {@link #getConfigurationClasses()} method.
  *
  * @author Vaadin Ltd
  *
  */
-public abstract class VaadinMVCWebAppInitializer
-        implements WebApplicationInitializer {
+public abstract class VaadinMVCWebAppInitializer implements WebApplicationInitializer {
 
     @Override
-    public void onStartup(ServletContext servletContext)
-            throws ServletException {
+    public void onStartup(ServletContext servletContext) throws ServletException {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
         context.setServletContext(servletContext);
         registerConfiguration(context);
@@ -60,13 +58,11 @@ public abstract class VaadinMVCWebAppInitializer
         }
 
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-        Dynamic registration = servletContext.addServlet(
-                ClassUtils.getShortNameAsProperty(SpringServlet.class),
+        Dynamic registration = servletContext.addServlet(ClassUtils.getShortNameAsProperty(SpringServlet.class),
                 new SpringServlet(context, rootMapping));
         Map<String, String> initParameters = new HashMap<>();
         if (rootMapping) {
-            Dynamic dispatcherRegistration = servletContext
-                    .addServlet("dispatcher", new DispatcherServlet(context));
+            Dynamic dispatcherRegistration = servletContext.addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
         }
@@ -80,8 +76,7 @@ public abstract class VaadinMVCWebAppInitializer
         registration.setInitParameters(initParameters);
 
         registration.setAsyncSupported(
-                Boolean.TRUE.toString().equals(env.getProperty(
-                        "vaadin.asyncSupported", Boolean.TRUE.toString())));
+                Boolean.TRUE.toString().equals(env.getProperty("vaadin.asyncSupported", Boolean.TRUE.toString())));
     }
 
     static String makeContextRelative(String url) {
@@ -97,25 +92,20 @@ public abstract class VaadinMVCWebAppInitializer
     /**
      * Registers application configuration classes.
      * <p>
-     * Uses developer defined configuration classes via the
-     * {@link #getConfigurationClasses()} method. Also register Vaadin
-     * configuration from the add-on.
+     * Uses developer defined configuration classes via the {@link #getConfigurationClasses()} method. Also register
+     * Vaadin configuration from the add-on.
      * <p>
-     * Override this method if you want to register configuration classes in a
-     * totally different way or just provide implementation for
-     * {@link #getConfigurationClasses()} method.
+     * Override this method if you want to register configuration classes in a totally different way or just provide
+     * implementation for {@link #getConfigurationClasses()} method.
      *
      * @see #getConfigurationClasses()
      *
      * @param context
      *            web application context, not {@code null}
      */
-    protected void registerConfiguration(
-            AnnotationConfigWebApplicationContext context) {
-        Stream<Class<? extends Object>> configs = Stream.concat(
-                Stream.of(VaadinScopesConfig.class,
-                        VaadinServletConfiguration.class,
-                        VaadinApplicationConfiguration.class),
+    protected void registerConfiguration(AnnotationConfigWebApplicationContext context) {
+        Stream<Class<? extends Object>> configs = Stream.concat(Stream.of(VaadinScopesConfig.class,
+                VaadinServletConfiguration.class, VaadinApplicationConfiguration.class),
                 getConfigurationClasses().stream());
         context.register(configs.toArray(Class<?>[]::new));
     }

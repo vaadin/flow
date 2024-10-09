@@ -50,27 +50,22 @@ public class PostponeProceedView extends Div implements BeforeLeaveObserver {
     }
 
     public PostponeProceedView() {
-        RouterLink link = new RouterLink("Navigate to another view",
-                ProceedResultView.class);
+        RouterLink link = new RouterLink("Navigate to another view", ProceedResultView.class);
         link.setId("link");
         add(link, new Paragraph());
 
-        RouterLink delayedProceedLink = new RouterLink(
-                "Navigate to another view with delayed proceed",
+        RouterLink delayedProceedLink = new RouterLink("Navigate to another view with delayed proceed",
                 DelayedProceedTargetView.class);
         delayedProceedLink.setId("delayedProceedLink");
 
-        NativeButton postponedNavigateButton = new NativeButton(
-                "Postponed navigate", event -> UI.getCurrent()
-                        .navigate(DelayedProceedTargetView.class));
+        NativeButton postponedNavigateButton = new NativeButton("Postponed navigate",
+                event -> UI.getCurrent().navigate(DelayedProceedTargetView.class));
         postponedNavigateButton.setId("postponedNavigateButton");
 
-        NativeButton proceedButton = new NativeButton("proceed",
-                event -> continueNavigationAction.proceed());
+        NativeButton proceedButton = new NativeButton("proceed", event -> continueNavigationAction.proceed());
         proceedButton.setId("proceedButton");
 
-        add(delayedProceedLink, new Paragraph(), postponedNavigateButton,
-                new Paragraph(), proceedButton);
+        add(delayedProceedLink, new Paragraph(), postponedNavigateButton, new Paragraph(), proceedButton);
     }
 
     @Override
@@ -78,8 +73,7 @@ public class PostponeProceedView extends Div implements BeforeLeaveObserver {
         if (event.getNavigationTarget() == ProceedResultView.class) {
             continueNavigationAction = event.postpone();
             continueNavigationAction.proceed();
-        } else if (event
-                .getNavigationTarget() == DelayedProceedTargetView.class) {
+        } else if (event.getNavigationTarget() == DelayedProceedTargetView.class) {
             continueNavigationAction = event.postpone();
         }
     }

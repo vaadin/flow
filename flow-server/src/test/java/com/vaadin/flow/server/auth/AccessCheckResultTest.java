@@ -24,8 +24,7 @@ public class AccessCheckResultTest {
     @Test
     public void create_getsResultInstance() {
         for (AccessCheckDecision decision : AccessCheckDecision.values()) {
-            AccessCheckResult result = AccessCheckResult.create(decision,
-                    decision.name());
+            AccessCheckResult result = AccessCheckResult.create(decision, decision.name());
             Assert.assertEquals(decision, result.decision());
             Assert.assertEquals(decision.name(), result.reason());
         }
@@ -33,8 +32,7 @@ public class AccessCheckResultTest {
 
     @Test
     public void create_nullReason_throws() {
-        Assert.assertThrows(IllegalArgumentException.class,
-                () -> AccessCheckResult.create(null, "Something"));
+        Assert.assertThrows(IllegalArgumentException.class, () -> AccessCheckResult.create(null, "Something"));
     }
 
     @Test
@@ -46,20 +44,17 @@ public class AccessCheckResultTest {
     @Test
     public void create_rejectWithoutReason_throws() {
         Assert.assertThrows(IllegalArgumentException.class,
-                () -> AccessCheckResult.create(AccessCheckDecision.REJECT,
-                        null));
+                () -> AccessCheckResult.create(AccessCheckDecision.REJECT, null));
     }
 
     @Test
     public void deny_noReason_throws() {
-        Assert.assertThrows(IllegalArgumentException.class,
-                () -> AccessCheckResult.deny(null));
+        Assert.assertThrows(IllegalArgumentException.class, () -> AccessCheckResult.deny(null));
     }
 
     @Test
     public void reject_noReason_throws() {
-        Assert.assertThrows(IllegalArgumentException.class,
-                () -> AccessCheckResult.reject(null));
+        Assert.assertThrows(IllegalArgumentException.class, () -> AccessCheckResult.reject(null));
     }
 
 }

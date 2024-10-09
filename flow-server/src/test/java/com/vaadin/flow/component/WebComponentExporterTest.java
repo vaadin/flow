@@ -85,8 +85,7 @@ public class WebComponentExporterTest {
 
         exporter.addProperty("int", 2);
 
-        Assert.assertEquals("Configuration should have one property", 1,
-                config.getPropertyDataSet().size());
+        Assert.assertEquals("Configuration should have one property", 1, config.getPropertyDataSet().size());
 
         assertProperty(config, "int", 2);
     }
@@ -113,16 +112,14 @@ public class WebComponentExporterTest {
     public void configuration_deliverPropertyUpdate() {
         exporter.addProperty("int", 0).onChange(MyComponent::update);
 
-        WebComponentBinding<MyComponent> binding = config
-                .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class), Json.createObject());
+        WebComponentBinding<MyComponent> binding = config.createWebComponentBinding(new MockInstantiator(),
+                mock(Element.class), Json.createObject());
 
         Assert.assertNotNull(binding);
 
         binding.updateProperty("int", 1);
 
-        Assert.assertEquals("Component should have been updated", 1,
-                binding.getComponent().getValue());
+        Assert.assertEquals("Component should have been updated", 1, binding.getComponent().getValue());
     }
 
     @Test
@@ -139,8 +136,8 @@ public class WebComponentExporterTest {
 
     @Test
     public void configuration_getComponentClass() {
-        Assert.assertEquals("Component class should be MyComponent.class",
-                MyComponent.class, config.getComponentClass());
+        Assert.assertEquals("Component class should be MyComponent.class", MyComponent.class,
+                config.getComponentClass());
     }
 
     @Test
@@ -148,9 +145,7 @@ public class WebComponentExporterTest {
     public void configuration_createWebComponentBinding() {
         exporter = new MyComponentExporter() {
             @Override
-            public void configureInstance(
-                    WebComponent<MyComponent> webComponent,
-                    MyComponent component) {
+            public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
                 component.flop();
             }
         };
@@ -159,17 +154,13 @@ public class WebComponentExporterTest {
         config = (WebComponentConfiguration<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(exporter);
 
-        WebComponentBinding<MyComponent> binding = config
-                .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class), Json.createObject());
+        WebComponentBinding<MyComponent> binding = config.createWebComponentBinding(new MockInstantiator(),
+                mock(Element.class), Json.createObject());
 
         Assert.assertNotNull("Binding should not be null", binding);
-        Assert.assertNotNull("Binding's component should not be null",
-                binding.getComponent());
-        Assert.assertTrue("configureInstance() should have set 'flip' to true",
-                binding.getComponent().getFlip());
-        Assert.assertEquals("value should be set to 1 by default", 1,
-                binding.getComponent().value);
+        Assert.assertNotNull("Binding's component should not be null", binding.getComponent());
+        Assert.assertTrue("configureInstance() should have set 'flip' to true", binding.getComponent().getFlip());
+        Assert.assertEquals("value should be set to 1 by default", 1, binding.getComponent().value);
     }
 
     @Test
@@ -181,25 +172,20 @@ public class WebComponentExporterTest {
                 .create(exporter);
 
         // attribute: value=2
-        WebComponentBinding<MyComponent> binding = config
-                .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class), Json.parse("{\"value\":2}"));
+        WebComponentBinding<MyComponent> binding = config.createWebComponentBinding(new MockInstantiator(),
+                mock(Element.class), Json.parse("{\"value\":2}"));
 
-        Assert.assertEquals("attribute should have set default value to two", 2,
-                binding.getComponent().value);
+        Assert.assertEquals("attribute should have set default value to two", 2, binding.getComponent().value);
     }
 
     @Test
     public void configuration_bindProxy_withoutInstanceConfigurator() {
-        WebComponentBinding<MyComponent> binding = config
-                .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class), Json.createObject());
+        WebComponentBinding<MyComponent> binding = config.createWebComponentBinding(new MockInstantiator(),
+                mock(Element.class), Json.createObject());
 
         Assert.assertNotNull("Binding should not be null", binding);
-        Assert.assertNotNull("Binding's component should not be null",
-                binding.getComponent());
-        Assert.assertFalse("'flip' should have been false",
-                binding.getComponent().getFlip());
+        Assert.assertNotNull("Binding's component should not be null", binding.getComponent());
+        Assert.assertFalse("'flip' should have been false", binding.getComponent().getFlip());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -209,8 +195,7 @@ public class WebComponentExporterTest {
         WebComponentConfiguration<SharedTagComponent> sharedConfig = (WebComponentConfiguration<SharedTagComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(sharedTagExporter);
 
-        sharedConfig.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class), Json.createObject());
+        sharedConfig.createWebComponentBinding(new MockInstantiator(), mock(Element.class), Json.createObject());
     }
 
     @Test
@@ -237,8 +222,7 @@ public class WebComponentExporterTest {
         WebComponentConfiguration<?> config = new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(exporter);
 
-        config.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class), Json.createObject());
+        config.createWebComponentBinding(new MockInstantiator(), mock(Element.class), Json.createObject());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -296,29 +280,25 @@ public class WebComponentExporterTest {
         }
     }
 
-    public static class MyComponentExporter
-            extends WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
             super(TAG);
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
         }
     }
 
-    public static class AddPropertyInsideConfigureInstance
-            extends WebComponentExporter<MyComponent> {
+    public static class AddPropertyInsideConfigureInstance extends WebComponentExporter<MyComponent> {
 
         public AddPropertyInsideConfigureInstance() {
             super("foo");
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
             addProperty("bar", 1);
         }
     }
@@ -327,17 +307,14 @@ public class WebComponentExporterTest {
     public static class SharedTagComponent extends Component {
     }
 
-    private static class SharedTagExporter
-            extends WebComponentExporter<SharedTagComponent> {
+    private static class SharedTagExporter extends WebComponentExporter<SharedTagComponent> {
 
         public SharedTagExporter() {
             super("shared-tag");
         }
 
         @Override
-        public void configureInstance(
-                WebComponent<SharedTagComponent> webComponent,
-                SharedTagComponent component) {
+        public void configureInstance(WebComponent<SharedTagComponent> webComponent, SharedTagComponent component) {
 
         }
     }
@@ -348,19 +325,15 @@ public class WebComponentExporterTest {
         }
 
         @Override
-        public void configureInstance(WebComponent webComponent,
-                Component component) {
+        public void configureInstance(WebComponent webComponent, Component component) {
         }
     }
 
-    private static void assertProperty(WebComponentConfiguration<?> config,
-            String property, Object value) {
-        PropertyData<?> data = config.getPropertyDataSet().stream()
-                .filter(d -> d.getName().equals(property)).findFirst()
-                .orElse(null);
+    private static void assertProperty(WebComponentConfiguration<?> config, String property, Object value) {
+        PropertyData<?> data = config.getPropertyDataSet().stream().filter(d -> d.getName().equals(property))
+                .findFirst().orElse(null);
 
-        Assert.assertNotNull("Property " + property + " should not be null",
-                data);
+        Assert.assertNotNull("Property " + property + " should not be null", data);
         Assert.assertEquals(value, data.getDefaultValue());
     }
 }

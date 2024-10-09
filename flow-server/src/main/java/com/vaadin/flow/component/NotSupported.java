@@ -20,13 +20,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Methods annotated with {@link NotSupported} are mapped to the original
- * webcomponent implementation, but not supported at Java level.
+ * Methods annotated with {@link NotSupported} are mapped to the original webcomponent implementation, but not supported
+ * at Java level.
  * <p>
  * Calling methods annotated this way results in no-ops.
  * <p>
- * Subclasses can override the not supported methods and add meaningful
- * implementation to them.
+ * Subclasses can override the not supported methods and add meaningful implementation to them.
  *
  * @since 1.0
  */

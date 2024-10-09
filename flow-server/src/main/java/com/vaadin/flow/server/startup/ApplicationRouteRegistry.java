@@ -42,13 +42,11 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
- * Registry for holding navigation target components found on servlet
- * initialization.
+ * Registry for holding navigation target components found on servlet initialization.
  *
  * @since 1.3
  */
-public class ApplicationRouteRegistry extends AbstractRouteRegistry
-        implements ErrorRouteRegistry {
+public class ApplicationRouteRegistry extends AbstractRouteRegistry implements ErrorRouteRegistry {
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
 
@@ -61,15 +59,13 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
      */
     protected ApplicationRouteRegistry(VaadinContext context) {
         this.context = context;
-        ServiceLoader.load(NavigationTargetFilter.class)
-                .forEach(routeFilters::add);
+        ServiceLoader.load(NavigationTargetFilter.class).forEach(routeFilters::add);
     }
 
     /**
      * RouteRegistry wrapper class for storing the ApplicationRouteRegistry.
      */
-    protected static class ApplicationRouteRegistryWrapper
-            implements Serializable {
+    protected static class ApplicationRouteRegistryWrapper implements Serializable {
         private final ApplicationRouteRegistry registry;
 
         /**
@@ -78,8 +74,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
          * @param registry
          *            application route registry to wrap
          */
-        public ApplicationRouteRegistryWrapper(
-                ApplicationRouteRegistry registry) {
+        public ApplicationRouteRegistryWrapper(ApplicationRouteRegistry registry) {
             this.registry = registry;
         }
 
@@ -94,13 +89,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
     }
 
     /**
-     * Gets the route registry for the given Vaadin context. If the Vaadin
-     * context has no route registry, a new instance is created and assigned to
-     * the context.
+     * Gets the route registry for the given Vaadin context. If the Vaadin context has no route registry, a new instance
+     * is created and assigned to the context.
      *
      * @param context
-     *            the vaadin context for which to get a route registry, not
-     *            <code>null</code>
+     *            the vaadin context for which to get a route registry, not <code>null</code>
      * @return a registry instance for the given context, not <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
@@ -108,12 +101,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
         ApplicationRouteRegistryWrapper attribute;
         synchronized (context) {
-            attribute = context
-                    .getAttribute(ApplicationRouteRegistryWrapper.class);
+            attribute = context.getAttribute(ApplicationRouteRegistryWrapper.class);
 
             if (attribute == null) {
-                attribute = new ApplicationRouteRegistryWrapper(
-                        createRegistry(context));
+                attribute = new ApplicationRouteRegistryWrapper(createRegistry(context));
                 context.setAttribute(attribute);
             }
         }
@@ -122,11 +113,9 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
     }
 
     @Override
-    public void setRoute(String path,
-            Class<? extends Component> navigationTarget,
+    public void setRoute(String path, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
-        if (routeFilters.stream().allMatch(
-                filter -> filter.testNavigationTarget(navigationTarget))) {
+        if (routeFilters.stream().allMatch(filter -> filter.testNavigationTarget(navigationTarget))) {
             super.setRoute(path, navigationTarget, parentChain);
         } else {
             LoggerFactory.getLogger(ApplicationRouteRegistry.class).info(
@@ -138,15 +127,13 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
     /**
      * Set error handler navigation targets.
      * <p>
-     * This can also be used to add error navigation targets that override
-     * existing targets. Note! The overriding targets need to be extending the
-     * existing target or they will throw.
+     * This can also be used to add error navigation targets that override existing targets. Note! The overriding
+     * targets need to be extending the existing target or they will throw.
      *
      * @param errorNavigationTargets
      *            error handler navigation targets
      */
-    public void setErrorNavigationTargets(
-            Set<Class<? extends Component>> errorNavigationTargets) {
+    public void setErrorNavigationTargets(Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
 
         exceptionTargetsMap.putAll(getConfiguration().getExceptionHandlers());
@@ -159,13 +146,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
     }
 
     private boolean allErrorFiltersMatch(Class<? extends Component> target) {
-        return routeFilters.stream()
-                .allMatch(filter -> filter.testErrorNavigationTarget(target));
+        return routeFilters.stream().allMatch(filter -> filter.testErrorNavigationTarget(target));
     }
 
     @Override
-    public Optional<ErrorTargetEntry> getErrorNavigationTarget(
-            Exception exception) {
+    public Optional<ErrorTargetEntry> getErrorNavigationTarget(Exception exception) {
         if (getConfiguration().getExceptionHandlers().isEmpty()) {
             initErrorTargets(new HashMap<>());
         }
@@ -197,13 +182,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
     /**
      * Sets pwa configuration class.
      *
-     * Should be set along with setRoutes, for scanning of proper pwa
-     * configuration class is done along route scanning. See
-     * {@link AbstractRouteRegistryInitializer}.
+     * Should be set along with setRoutes, for scanning of proper pwa configuration class is done along route scanning.
+     * See {@link AbstractRouteRegistryInitializer}.
      *
      * @param pwaClass
-     *            a class that has PWA -annotation, that's to be used in service
-     *            initialization.
+     *            a class that has PWA -annotation, that's to be used in service initialization.
      */
     public void setPwaConfigurationClass(Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
@@ -220,12 +203,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
      * Handles an attempt to initialize already initialized route registry.
      */
     protected void handleInitializedRegistry() {
-        throw new IllegalStateException(
-                "Route registry has been already initialized");
+        throw new IllegalStateException("Route registry has been already initialized");
     }
 
-    private void initErrorTargets(
-            Map<Class<? extends Exception>, Class<? extends Component>> map) {
+    private void initErrorTargets(Map<Class<? extends Exception>, Class<? extends Component>> map) {
         if (!map.containsKey(NotFoundException.class)) {
             map.put(NotFoundException.class, RouteNotFoundError.class);
         }
@@ -238,8 +219,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
         configure(configuration -> map.forEach(configuration::setErrorRoute));
     }
 
-    private static ApplicationRouteRegistry createRegistry(
-            VaadinContext context) {
+    private static ApplicationRouteRegistry createRegistry(VaadinContext context) {
         return new ApplicationRouteRegistry(context);
     }
 }

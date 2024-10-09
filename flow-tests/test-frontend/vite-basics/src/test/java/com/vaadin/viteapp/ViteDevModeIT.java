@@ -12,7 +12,6 @@ abstract public class ViteDevModeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL());
         waitForDevServer();
         getCommandExecutor().waitForVaadin();
-        waitUntil(ExpectedConditions
-                .presenceOfElementLocated(By.id("loadAndShowJson")), 300);
+        waitUntil(ExpectedConditions.presenceOfElementLocated(By.id("loadAndShowJson")), 300);
     }
 }

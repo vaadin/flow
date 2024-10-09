@@ -28,13 +28,10 @@ public class FlowInReactComponentIT extends ChromeBrowserTest {
 
         waitForDevServer();
 
-        Assert.assertTrue("No react component displayed",
-                $("react-layout").first().isDisplayed());
+        Assert.assertTrue("No react component displayed", $("react-layout").first().isDisplayed());
 
-        List<WebElement> list = $("react-layout").first()
-                .findElements(By.xpath("./child::*"));
-        Assert.assertEquals("React component child count wrong", list.size(),
-                6);
+        List<WebElement> list = $("react-layout").first().findElements(By.xpath("./child::*"));
+        Assert.assertEquals("React component child count wrong", list.size(), 6);
 
         Assert.assertEquals("span", list.get(0).getTagName());
         Assert.assertEquals("flow-content-container", list.get(1).getTagName());
@@ -43,31 +40,23 @@ public class FlowInReactComponentIT extends ChromeBrowserTest {
         Assert.assertEquals("div", list.get(4).getTagName());
         Assert.assertEquals("flow-content-container", list.get(5).getTagName());
 
-        TestBenchElement content = $("react-layout").first()
-                .findElement(By.name(MAIN_CONTENT));
-        TestBenchElement secondary = $("react-layout").first()
-                .findElement(By.name(SECONDARY_CONTENT));
+        TestBenchElement content = $("react-layout").first().findElement(By.name(MAIN_CONTENT));
+        TestBenchElement secondary = $("react-layout").first().findElement(By.name(SECONDARY_CONTENT));
 
         list = content.findElements(By.xpath("./child::*"));
-        Assert.assertEquals("Flow content container count wrong", list.size(),
-                3);
+        Assert.assertEquals("Flow content container count wrong", list.size(), 3);
 
         $(NativeButtonElement.class).id(ADD_MAIN).click();
         Assert.assertEquals(1, content.$(DivElement.class).all().size());
 
         list = $("react-layout").first().findElements(By.xpath("./child::*"));
-        Assert.assertEquals(
-                "Adding flow component should not add to main react component",
-                list.size(), 6);
+        Assert.assertEquals("Adding flow component should not add to main react component", list.size(), 6);
 
         list = secondary.findElements(By.xpath("./child::*"));
-        Assert.assertEquals(
-                "Adding flow component should not add to secondary flow content",
-                list.size(), 3);
+        Assert.assertEquals("Adding flow component should not add to secondary flow content", list.size(), 3);
 
         list = content.findElements(By.xpath("./child::*"));
-        Assert.assertEquals("Flow content container count wrong", list.size(),
-                4);
+        Assert.assertEquals("Flow content container count wrong", list.size(), 4);
 
         $(NativeButtonElement.class).id(ADD_MAIN).click();
         Assert.assertEquals(2, content.$(DivElement.class).all().size());
@@ -85,13 +74,10 @@ public class FlowInReactComponentIT extends ChromeBrowserTest {
         Assert.assertEquals(1, secondary.$(DivElement.class).all().size());
 
         list = content.findElements(By.xpath("./child::*"));
-        Assert.assertEquals("Flow content container count wrong", list.size(),
-                3);
+        Assert.assertEquals("Flow content container count wrong", list.size(), 3);
 
         list = $("react-layout").first().findElements(By.xpath("./child::*"));
-        Assert.assertEquals(
-                "Adding flow component should not add to main react component",
-                list.size(), 6);
+        Assert.assertEquals("Adding flow component should not add to main react component", list.size(), 6);
 
         $(NativeButtonElement.class).id(REMOVE_SECONDARY).click();
         Assert.assertEquals(0, secondary.$(DivElement.class).all().size());

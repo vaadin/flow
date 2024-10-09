@@ -30,8 +30,7 @@ public class StreamResourceView extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         StreamResource resource = new StreamResource("filename",
-                () -> new ByteArrayInputStream(
-                        "Hello world".getBytes(StandardCharsets.UTF_8)));
+                () -> new ByteArrayInputStream("Hello world".getBytes(StandardCharsets.UTF_8)));
         Anchor download = new Anchor("", "Download file");
         download.setHref(resource);
         download.setId("download");

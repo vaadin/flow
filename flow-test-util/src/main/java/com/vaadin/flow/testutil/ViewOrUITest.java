@@ -27,9 +27,8 @@ import com.vaadin.flow.component.UI;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Base class for TestBench tests which use a UI/View matched to the test name
- * according to the convention (remove {@code IT}, add {@code View} or
- * {@code UI}).
+ * Base class for TestBench tests which use a UI/View matched to the test name according to the convention (remove
+ * {@code IT}, add {@code View} or {@code UI}).
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,25 +40,21 @@ public class ViewOrUITest extends AbstractTestBenchTest {
         Class<? extends Component> viewClass = getViewClass();
         try {
             if (viewClass != null) {
-                return "/view/"
-                        + URLEncoder.encode(viewClass.getName(), UTF_8.name());
+                return "/view/" + URLEncoder.encode(viewClass.getName(), UTF_8.name());
             }
 
             Class<? extends UI> uiClass = getUIClass();
             if (uiClass != null) {
-                return "/run/"
-                        + URLEncoder.encode(uiClass.getName(), UTF_8.name());
+                return "/run/" + URLEncoder.encode(uiClass.getName(), UTF_8.name());
             }
 
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
 
-        throw new RuntimeException(
-                "Could not find a View or UI class for the test. Ensure "
-                        + getClass().getName().replaceFirst("IT$", "")
-                        + "View/UI exists "
-                        + " or override either getTestPath() or getViewClass()/getUIClass() in your test");
+        throw new RuntimeException("Could not find a View or UI class for the test. Ensure "
+                + getClass().getName().replaceFirst("IT$", "") + "View/UI exists "
+                + " or override either getTestPath() or getViewClass()/getUIClass() in your test");
 
     }
 
@@ -68,8 +63,7 @@ public class ViewOrUITest extends AbstractTestBenchTest {
      * <p>
      * Uses name matching and replaces "IT" with "View"
      *
-     * @return the View class the current test is connected to or null if no
-     *         View class was found
+     * @return the View class the current test is connected to or null if no View class was found
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends Component> getViewClass() {
@@ -82,13 +76,11 @@ public class ViewOrUITest extends AbstractTestBenchTest {
      * <p>
      * Uses name matching and replaces "IT" with "UI"
      *
-     * @return the UI class the current test is connected to or null if no UI
-     *         class was found
+     * @return the UI class the current test is connected to or null if no UI class was found
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends UI> getUIClass() {
-        return (Class<? extends UI>) findClass(UI.class,
-                getClass().getName().replaceFirst("IT$", "UI"));
+        return (Class<? extends UI>) findClass(UI.class, getClass().getName().replaceFirst("IT$", "UI"));
     }
 
     private Class<?> findClass(Class<?> typeToFind, String classNameToFind) {
@@ -100,8 +92,7 @@ public class ViewOrUITest extends AbstractTestBenchTest {
             }
         } catch (Exception e) {
             // Here only to please Sonar...
-            getLogger().debug("{} for {} not found", typeToFind.getSimpleName(),
-                    getClass().getName());
+            getLogger().debug("{} for {} not found", typeToFind.getSimpleName(), getClass().getName());
         }
         return null;
     }

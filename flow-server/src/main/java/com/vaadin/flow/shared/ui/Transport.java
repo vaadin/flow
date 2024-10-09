@@ -53,14 +53,11 @@ public enum Transport {
     }
 
     /**
-     * Returns a Transport by its identifier. Returns null if no value is found
-     * for the given identifier.
+     * Returns a Transport by its identifier. Returns null if no value is found for the given identifier.
      *
      * @param identifier
-     *            the transport identifier, as returned by
-     *            {@link #getIdentifier()}
-     * @return the transport identified by the identifier or {@code null} if no
-     *         matching transport was found
+     *            the transport identifier, as returned by {@link #getIdentifier()}
+     * @return the transport identified by the identifier or {@code null} if no matching transport was found
      */
     public static Transport getByIdentifier(String identifier) {
         for (Transport t : values()) {

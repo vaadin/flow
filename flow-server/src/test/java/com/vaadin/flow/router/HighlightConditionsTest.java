@@ -23,8 +23,7 @@ public class HighlightConditionsTest {
 
     @Test
     public void locationPrefix_defaultRoute_emptyLocationMatches() {
-        HighlightCondition<RouterLink> condition = HighlightConditions
-                .locationPrefix();
+        HighlightCondition<RouterLink> condition = HighlightConditions.locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);
         AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
 
@@ -36,8 +35,7 @@ public class HighlightConditionsTest {
 
     @Test
     public void locationPrefix_defaultRoute_nonEmptyLocationDoesNotMatch() {
-        HighlightCondition<RouterLink> condition = HighlightConditions
-                .locationPrefix();
+        HighlightCondition<RouterLink> condition = HighlightConditions.locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);
         AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
 
@@ -49,8 +47,7 @@ public class HighlightConditionsTest {
 
     @Test
     public void locationPrefix_notDefaultRoute_prefixMatches() {
-        HighlightCondition<RouterLink> condition = HighlightConditions
-                .locationPrefix();
+        HighlightCondition<RouterLink> condition = HighlightConditions.locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);
         AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
 
@@ -62,8 +59,7 @@ public class HighlightConditionsTest {
 
     @Test
     public void locationPrefix_notDefaultRoute_nonPrefixDoesNotMatch() {
-        HighlightCondition<RouterLink> condition = HighlightConditions
-                .locationPrefix();
+        HighlightCondition<RouterLink> condition = HighlightConditions.locationPrefix();
         RouterLink link = Mockito.mock(RouterLink.class);
         AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
 

@@ -30,8 +30,8 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
 /**
  * Configuration object for controlling the {@link FrontendTools} features.
  * <p>
- * This can be modified, but the choices will be locked in {@link FrontendTools}
- * when it is initialized. Until then any settings can be changed.
+ * This can be modified, but the choices will be locked in {@link FrontendTools} when it is initialized. Until then any
+ * settings can be changed.
  */
 public class FrontendToolsSettings implements Serializable {
 
@@ -39,8 +39,7 @@ public class FrontendToolsSettings implements Serializable {
     private SerializableSupplier<String> alternativeDirGetter;
 
     private String nodeVersion = DEFAULT_NODE_VERSION;
-    private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
+    private URI nodeDownloadRoot = URI.create(Platform.guess().getNodeDownloadRoot());
 
     private boolean ignoreVersionChecks;
     private boolean forceAlternativeNode = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE;
@@ -50,26 +49,21 @@ public class FrontendToolsSettings implements Serializable {
     /**
      * Create a tools configuration object.
      * <p>
-     * The {@code baseDir} is used as a base directory to locate the tools and
-     * {@code alternativeDirGetter} is the directory to install tools if they
-     * are not found.
+     * The {@code baseDir} is used as a base directory to locate the tools and {@code alternativeDirGetter} is the
+     * directory to install tools if they are not found.
      * <p>
-     * Note that if {@code alternativeDir} is {@code null} tools won't be
-     * installed.
+     * Note that if {@code alternativeDir} is {@code null} tools won't be installed.
      *
      * @param baseDir
      *            the base directory to locate the tools, not {@code null}
      * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
+     *            the getter for a directory where tools will be installed if they are not found globally or in the
+     *            {@code baseDir}, may be {@code null}
      */
-    public FrontendToolsSettings(String baseDir,
-            SerializableSupplier<String> alternativeDirGetter) {
+    public FrontendToolsSettings(String baseDir, SerializableSupplier<String> alternativeDirGetter) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
-        ignoreVersionChecks = "true".equalsIgnoreCase(
-                System.getProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS));
+        ignoreVersionChecks = "true".equalsIgnoreCase(System.getProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS));
     }
 
     /**
@@ -86,12 +80,10 @@ public class FrontendToolsSettings implements Serializable {
      * Set the installation directory if no tools are found.
      *
      * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
+     *            the getter for a directory where tools will be installed if they are not found globally or in the
+     *            {@code baseDir}, may be {@code null}
      */
-    public void setAlternativeDirGetter(
-            SerializableSupplier<String> alternativeDirGetter) {
+    public void setAlternativeDirGetter(SerializableSupplier<String> alternativeDirGetter) {
         this.alternativeDirGetter = alternativeDirGetter;
     }
 
@@ -99,8 +91,7 @@ public class FrontendToolsSettings implements Serializable {
      * Set the root URI for downloading node.
      *
      * @param nodeDownloadRoot
-     *            node download root uri, default is
-     *            {@value NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}
+     *            node download root uri, default is {@value NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}
      */
     public void setNodeDownloadRoot(URI nodeDownloadRoot) {
         this.nodeDownloadRoot = nodeDownloadRoot;
@@ -110,8 +101,7 @@ public class FrontendToolsSettings implements Serializable {
      * Set the node version to install when installation is required.
      *
      * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
-     *            automatically, default is
+     *            The node.js version to be used when node.js is installed automatically, default is
      *            {@value FrontendTools#DEFAULT_NODE_VERSION}
      */
     public void setNodeVersion(String nodeVersion) {
@@ -122,8 +112,7 @@ public class FrontendToolsSettings implements Serializable {
      * Set if node and npm versions should be checked or not.
      *
      * @param ignoreVersionChecks
-     *            set if versions should be validated, default is system
-     *            property for
+     *            set if versions should be validated, default is system property for
      *            {@value FrontendUtils#PARAM_IGNORE_VERSION_CHECKS}
      */
     public void setIgnoreVersionChecks(boolean ignoreVersionChecks) {
@@ -131,15 +120,13 @@ public class FrontendToolsSettings implements Serializable {
     }
 
     /**
-     * Set if the alternative folder should always be used even if a global
-     * installation exists.
+     * Set if the alternative folder should always be used even if a global installation exists.
      * <p>
-     * This will force the installation if a version doesn't exist in the folder
-     * defined in {@link #alternativeDirGetter}.
+     * This will force the installation if a version doesn't exist in the folder defined in
+     * {@link #alternativeDirGetter}.
      *
      * @param forceAlternativeNode
-     *            if {@code true} force usage of node executable from
-     *            alternative directory
+     *            if {@code true} force usage of node executable from alternative directory
      */
     public void setForceAlternativeNode(boolean forceAlternativeNode) {
         this.forceAlternativeNode = forceAlternativeNode;
@@ -149,20 +136,18 @@ public class FrontendToolsSettings implements Serializable {
      * Force usage of global pnpm.
      *
      * @param useGlobalPnpm
-     *            use globally installed pnpm instead of the default version
-     *            {@value FrontendTools#DEFAULT_PNPM_VERSION}
+     *            use globally installed pnpm instead of the default version {@value FrontendTools#DEFAULT_PNPM_VERSION}
      */
     public void setUseGlobalPnpm(boolean useGlobalPnpm) {
         this.useGlobalPnpm = useGlobalPnpm;
     }
 
     /**
-     * When set to true the alternative version is updated to the latest default
-     * node version as defined for the framework.
+     * When set to true the alternative version is updated to the latest default node version as defined for the
+     * framework.
      *
      * @param autoUpdate
-     *            update node in {@link #alternativeDirGetter} if version older
-     *            than the current default
+     *            update node in {@link #alternativeDirGetter} if version older than the current default
      *            {@value FrontendTools#DEFAULT_NODE_VERSION}
      */
     public void setAutoUpdate(boolean autoUpdate) {

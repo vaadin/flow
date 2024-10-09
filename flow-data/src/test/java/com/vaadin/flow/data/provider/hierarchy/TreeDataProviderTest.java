@@ -34,8 +34,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.StrBean;
 import com.vaadin.flow.function.SerializablePredicate;
 
-public class TreeDataProviderTest
-        extends DataProviderTestBase<TreeDataProvider<StrBean>> {
+public class TreeDataProviderTest extends DataProviderTestBase<TreeDataProvider<StrBean>> {
 
     private TreeData<StrBean> data;
     private List<StrBean> flattenedData;
@@ -194,10 +193,8 @@ public class TreeDataProviderTest
             }
             return Arrays.asList(item + "/a", item + "/b", item + "/c");
         });
-        assertEquals(stringData.getChildren("a"),
-                Arrays.asList("a/a", "a/b", "a/c"));
-        assertEquals(stringData.getChildren("b"),
-                Arrays.asList("b/a", "b/b", "b/c"));
+        assertEquals(stringData.getChildren("a"), Arrays.asList("a/a", "a/b", "a/c"));
+        assertEquals(stringData.getChildren("b"), Arrays.asList("b/a", "b/b", "b/c"));
         assertEquals(stringData.getChildren("c"), Arrays.asList());
         assertEquals(stringData.getChildren("a/b"), Arrays.asList());
     }
@@ -212,20 +209,16 @@ public class TreeDataProviderTest
             }
             return Stream.of(item + "/a", item + "/b", item + "/c");
         });
-        assertEquals(stringData.getChildren("a"),
-                Arrays.asList("a/a", "a/b", "a/c"));
-        assertEquals(stringData.getChildren("b"),
-                Arrays.asList("b/a", "b/b", "b/c"));
+        assertEquals(stringData.getChildren("a"), Arrays.asList("a/a", "a/b", "a/c"));
+        assertEquals(stringData.getChildren("b"), Arrays.asList("b/a", "b/b", "b/c"));
         assertEquals(stringData.getChildren("c"), Arrays.asList());
         assertEquals(stringData.getChildren("a/b"), Arrays.asList());
     }
 
     @Test
     public void filter_is_applied_to_children_provider_filter() {
-        final SerializablePredicate<String> dataProviderFilter = item -> item
-                .contains("Sub");
-        final HierarchicalQuery<String, SerializablePredicate<String>> query = new HierarchicalQuery<>(
-                null, null);
+        final SerializablePredicate<String> dataProviderFilter = item -> item.contains("Sub");
+        final HierarchicalQuery<String, SerializablePredicate<String>> query = new HierarchicalQuery<>(null, null);
         filter_is_applied_to_children(dataProviderFilter, query);
     }
 
@@ -239,23 +232,20 @@ public class TreeDataProviderTest
 
     @Test
     public void filter_is_applied_to_children_both_filters() {
-        final SerializablePredicate<String> dataProviderFilter = item -> item
-                .contains("Sub");
+        final SerializablePredicate<String> dataProviderFilter = item -> item.contains("Sub");
         final HierarchicalQuery<String, SerializablePredicate<String>> query = new HierarchicalQuery<>(
                 dataProviderFilter, null);
         filter_is_applied_to_children(dataProviderFilter, query);
     }
 
-    private void filter_is_applied_to_children(
-            final SerializablePredicate<String> dataProviderFilter,
+    private void filter_is_applied_to_children(final SerializablePredicate<String> dataProviderFilter,
             final HierarchicalQuery<String, SerializablePredicate<String>> query) {
         final TreeData<String> stringData = new TreeData<>();
         final String root = "Main";
         final List<String> children = Arrays.asList("Sub1", "Sub2");
         stringData.addRootItems(root);
         stringData.addItems(root, children);
-        final TreeDataProvider<String> provider = new TreeDataProvider<>(
-                stringData);
+        final TreeDataProvider<String> provider = new TreeDataProvider<>(stringData);
         provider.setFilter(dataProviderFilter);
         assertEquals(1, provider.getChildCount(query));
         assertTrue(provider.fetchChildren(query).allMatch(root::equals));
@@ -263,22 +253,17 @@ public class TreeDataProviderTest
 
     @Test
     public void setFilter() {
-        getDataProvider().setFilter(item -> item.getValue().equals("Xyz")
-                || item.getValue().equals("Baz"));
+        getDataProvider().setFilter(item -> item.getValue().equals("Xyz") || item.getValue().equals("Baz"));
 
         assertEquals(10, sizeWithUnfilteredQuery());
 
-        getDataProvider().setFilter(item -> !item.getValue().equals("Foo")
-                && !item.getValue().equals("Xyz"));
+        getDataProvider().setFilter(item -> !item.getValue().equals("Foo") && !item.getValue().equals("Xyz"));
 
-        assertEquals(
-                "Previous filter should be replaced when setting a new one", 14,
-                sizeWithUnfilteredQuery());
+        assertEquals("Previous filter should be replaced when setting a new one", 14, sizeWithUnfilteredQuery());
 
         getDataProvider().setFilter(null);
 
-        assertEquals("Setting filter to null should remove all filters", 20,
-                sizeWithUnfilteredQuery());
+        assertEquals("Setting filter to null should remove all filters", 20, sizeWithUnfilteredQuery());
     }
 
     @Test
@@ -291,19 +276,14 @@ public class TreeDataProviderTest
     @Override
     public void filteringListDataProvider_convertFilter() {
         HierarchicalDataProvider<StrBean, String> strFilterDataProvider = getDataProvider()
-                .withConvertedFilter(
-                        text -> strBean -> strBean.getValue().contains(text));
+                .withConvertedFilter(text -> strBean -> strBean.getValue().contains(text));
         assertEquals("Only one item should match 'Xyz'", 1,
-                strFilterDataProvider
-                        .size(new HierarchicalQuery<>("Xyz", null)));
-        assertEquals("No item should match 'Zyx'", 0, strFilterDataProvider
-                .size(new HierarchicalQuery<>("Zyx", null)));
+                strFilterDataProvider.size(new HierarchicalQuery<>("Xyz", null)));
+        assertEquals("No item should match 'Zyx'", 0, strFilterDataProvider.size(new HierarchicalQuery<>("Zyx", null)));
         assertEquals("Unexpected number of matches for 'Foo'", 4,
-                strFilterDataProvider
-                        .size(new HierarchicalQuery<>("Foo", null)));
+                strFilterDataProvider.size(new HierarchicalQuery<>("Foo", null)));
         assertEquals("No items should've been filtered out", rootData.size(),
-                strFilterDataProvider
-                        .size(new HierarchicalQuery<>(null, null)));
+                strFilterDataProvider.size(new HierarchicalQuery<>(null, null)));
     }
 
     @Override
@@ -311,46 +291,35 @@ public class TreeDataProviderTest
         HierarchicalConfigurableFilterDataProvider<StrBean, Void, SerializablePredicate<StrBean>> configurableFilterDataProvider = getDataProvider()
                 .withConfigurableFilter();
 
-        configurableFilterDataProvider
-                .setFilter(bean -> bean.getValue().contains("Xyz"));
+        configurableFilterDataProvider.setFilter(bean -> bean.getValue().contains("Xyz"));
 
         assertEquals("Only one item should match 'Xyz'", 1,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+                configurableFilterDataProvider.size(new HierarchicalQuery<StrBean, Void>(null, null)));
 
-        configurableFilterDataProvider
-                .setFilter(bean -> bean.getValue().contains("Zyx"));
+        configurableFilterDataProvider.setFilter(bean -> bean.getValue().contains("Zyx"));
 
         assertEquals("No item should match 'Zyx'", 0,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+                configurableFilterDataProvider.size(new HierarchicalQuery<StrBean, Void>(null, null)));
 
-        configurableFilterDataProvider
-                .setFilter(bean -> bean.getValue().contains("Foo"));
+        configurableFilterDataProvider.setFilter(bean -> bean.getValue().contains("Foo"));
 
         assertEquals("Unexpected number of matches for 'Foo'", 4,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+                configurableFilterDataProvider.size(new HierarchicalQuery<StrBean, Void>(null, null)));
 
-        configurableFilterDataProvider
-                .setFilter(bean -> bean.getValue() == null);
+        configurableFilterDataProvider.setFilter(bean -> bean.getValue() == null);
 
         assertEquals("No items should've been filtered out", 0,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+                configurableFilterDataProvider.size(new HierarchicalQuery<StrBean, Void>(null, null)));
     }
 
     @Override
     public void filteringListDataProvider_defaultFilterType() {
         assertEquals("Only one item should match 'Xyz'", 1,
-                getDataProvider().size(new HierarchicalQuery<>(
-                        strBean -> strBean.getValue().contains("Xyz"), null)));
+                getDataProvider().size(new HierarchicalQuery<>(strBean -> strBean.getValue().contains("Xyz"), null)));
         assertEquals("No item should match 'Zyx'", 0,
-                dataProvider.size(new HierarchicalQuery<>(
-                        strBean -> strBean.getValue().contains("Zyx"), null)));
+                dataProvider.size(new HierarchicalQuery<>(strBean -> strBean.getValue().contains("Zyx"), null)));
         assertEquals("Unexpected number of matches for 'Foo'", 4,
-                getDataProvider()
-                        .size(new HierarchicalQuery<>(fooFilter, null)));
+                getDataProvider().size(new HierarchicalQuery<>(fooFilter, null)));
     }
 
     @Override
@@ -359,24 +328,17 @@ public class TreeDataProviderTest
                 .thenComparing(Comparator.comparing(StrBean::getId).reversed());
         setSortOrder(QuerySortOrder.asc("value").thenDesc("id").build(), comp);
 
-        List<StrBean> list = getDataProvider()
-                .fetch(createQuery(QuerySortOrder.asc("randomNumber").build(),
-                        Comparator.comparing(StrBean::getRandomNumber), null,
-                        null))
-                .collect(Collectors.toList());
+        List<StrBean> list = getDataProvider().fetch(createQuery(QuerySortOrder.asc("randomNumber").build(),
+                Comparator.comparing(StrBean::getRandomNumber), null, null)).collect(Collectors.toList());
 
         assertEquals("Sorted data and original data sizes don't match",
-                getDataProvider().fetch(new HierarchicalQuery<>(null, null))
-                        .count(),
-                list.size());
+                getDataProvider().fetch(new HierarchicalQuery<>(null, null)).count(), list.size());
 
         for (int i = 1; i < list.size(); ++i) {
             StrBean prev = list.get(i - 1);
             StrBean cur = list.get(i);
             // Test specific sort
-            assertTrue(
-                    "Failure: " + prev.getRandomNumber() + " > "
-                            + cur.getRandomNumber(),
+            assertTrue("Failure: " + prev.getRandomNumber() + " > " + cur.getRandomNumber(),
                     prev.getRandomNumber() <= cur.getRandomNumber());
 
             if (prev.getRandomNumber() == cur.getRandomNumber()) {
@@ -391,15 +353,11 @@ public class TreeDataProviderTest
 
     @Override
     public void testDefaultSortWithFunction() {
-        setSortOrder(QuerySortOrder.asc("value").build(),
-                Comparator.comparing(StrBean::getValue));
+        setSortOrder(QuerySortOrder.asc("value").build(), Comparator.comparing(StrBean::getValue));
 
-        List<StrBean> list = getDataProvider()
-                .fetch(new HierarchicalQuery<>(null, null))
-                .collect(Collectors.toList());
+        List<StrBean> list = getDataProvider().fetch(new HierarchicalQuery<>(null, null)).collect(Collectors.toList());
 
-        assertEquals("Sorted data and original data sizes don't match",
-                rootData.size(), list.size());
+        assertEquals("Sorted data and original data sizes don't match", rootData.size(), list.size());
 
         for (int i = 1; i < list.size(); ++i) {
             StrBean prev = list.get(i - 1);
@@ -417,25 +375,21 @@ public class TreeDataProviderTest
 
     @Override
     public void testSortByComparatorListsDiffer() {
-        Comparator<StrBean> comp = Comparator.comparing(StrBean::getValue)
-                .thenComparing(StrBean::getRandomNumber)
+        Comparator<StrBean> comp = Comparator.comparing(StrBean::getValue).thenComparing(StrBean::getRandomNumber)
                 .thenComparing(StrBean::getId);
 
-        List<StrBean> list = getDataProvider().fetch(
-                createQuery(QuerySortOrder.asc("value").thenAsc("randomNumber")
-                        .thenAsc("id").build(), comp, null, null))
+        List<StrBean> list = getDataProvider()
+                .fetch(createQuery(QuerySortOrder.asc("value").thenAsc("randomNumber").thenAsc("id").build(), comp,
+                        null, null))
                 .collect(Collectors.toList());
 
-        assertNotEquals("First value should not match", rootData.get(0),
-                list.get(0));
+        assertNotEquals("First value should not match", rootData.get(0), list.get(0));
 
-        assertEquals("Sorted data and original data sizes don't match",
-                rootData.size(), list.size());
+        assertEquals("Sorted data and original data sizes don't match", rootData.size(), list.size());
 
         rootData.sort(comp);
         for (int i = 0; i < rootData.size(); ++i) {
-            assertEquals("Sorting result differed", rootData.get(i),
-                    list.get(i));
+            assertEquals("Sorting result differed", rootData.get(i), list.get(i));
         }
     }
 
@@ -445,8 +399,7 @@ public class TreeDataProviderTest
     }
 
     @Override
-    protected void setSortOrder(List<QuerySortOrder> sortOrder,
-            Comparator<StrBean> comp) {
+    protected void setSortOrder(List<QuerySortOrder> sortOrder, Comparator<StrBean> comp) {
         getDataProvider().setSortComparator(comp::compare);
     }
 
@@ -457,35 +410,28 @@ public class TreeDataProviderTest
 
     private void assertHierarchyCorrect() {
         assertEquals(flattenedData, getFlattenedData(new ArrayList<>(), null));
-        assertEquals(flattenedData,
-                getFlattenedDataFromProvider(new ArrayList<>(), null));
+        assertEquals(flattenedData, getFlattenedDataFromProvider(new ArrayList<>(), null));
     }
 
-    private List<StrBean> getFlattenedData(List<StrBean> flattened,
-            StrBean item) {
+    private List<StrBean> getFlattenedData(List<StrBean> flattened, StrBean item) {
         if (item != null) {
             flattened.add(item);
         }
-        data.getChildren(item)
-                .forEach(child -> getFlattenedData(flattened, child));
+        data.getChildren(item).forEach(child -> getFlattenedData(flattened, child));
         return flattened;
     }
 
-    private List<StrBean> getFlattenedDataFromProvider(List<StrBean> flattened,
-            StrBean item) {
+    private List<StrBean> getFlattenedDataFromProvider(List<StrBean> flattened, StrBean item) {
         if (item != null) {
             flattened.add(item);
         }
         getDataProvider().fetchChildren(new HierarchicalQuery<>(null, item))
-                .forEach(child -> getFlattenedDataFromProvider(flattened,
-                        child));
+                .forEach(child -> getFlattenedDataFromProvider(flattened, child));
         return flattened;
     }
 
-    private HierarchicalQuery<StrBean, SerializablePredicate<StrBean>> createQuery(
-            List<QuerySortOrder> sortOrder, Comparator<StrBean> comp,
-            SerializablePredicate<StrBean> filter, StrBean parent) {
-        return new HierarchicalQuery<>(0, Integer.MAX_VALUE, sortOrder, comp,
-                filter, parent);
+    private HierarchicalQuery<StrBean, SerializablePredicate<StrBean>> createQuery(List<QuerySortOrder> sortOrder,
+            Comparator<StrBean> comp, SerializablePredicate<StrBean> filter, StrBean parent) {
+        return new HierarchicalQuery<>(0, Integer.MAX_VALUE, sortOrder, comp, filter, parent);
     }
 }

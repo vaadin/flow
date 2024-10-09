@@ -22,8 +22,7 @@ import elemental.json.JsonValue;
 /**
  * Decodes the standard basic types from their JSON representation.
  * <p>
- * Delegates to the standard JSON deserializer method
- * {@link JsonCodec#decodeAs(JsonValue, Class)}.
+ * Delegates to the standard JSON deserializer method {@link JsonCodec#decodeAs(JsonValue, Class)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -41,8 +40,7 @@ public class DefaultRpcDecoder implements RpcDecoder {
     }
 
     @Override
-    public <T> T decode(JsonValue value, Class<T> type)
-            throws RpcDecodeException {
+    public <T> T decode(JsonValue value, Class<T> type) throws RpcDecodeException {
         return JsonCodec.decodeAs(value, type);
     }
 

@@ -19,8 +19,7 @@ package com.vaadin.flow.server;
 import java.util.EventObject;
 
 /**
- * Event fired to {@link ServiceDestroyListener} when a {@link VaadinService} is
- * being destroyed.
+ * Event fired to {@link ServiceDestroyListener} when a {@link VaadinService} is being destroyed.
  *
  * @author Vaadin Ltd
  * @since 1.0

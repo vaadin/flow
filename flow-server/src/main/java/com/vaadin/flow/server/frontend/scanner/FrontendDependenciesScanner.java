@@ -46,76 +46,62 @@ public interface FrontendDependenciesScanner extends Serializable {
     class FrontendDependenciesScannerFactory {
 
         /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
+         * Produces scanner implementation based on {@code allDependenciesScan} value.
          * <p>
          *
          * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
+         *            if {@code true} then full classpath scanning strategy is used, otherwise byte scanning strategy is
+         *            produced
          * @param finder
          *            a class finder
          * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
+         *            checks {@code WebComponentExporter} classes for dependencies if {@code true}, doesn't check
+         *            otherwise
          * @return a scanner implementation strategy
          */
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
+        public FrontendDependenciesScanner createScanner(boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, null);
+            return createScanner(allDependenciesScan, finder, generateEmbeddableWebComponents, null);
         }
 
         /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
+         * Produces scanner implementation based on {@code allDependenciesScan} value.
          * <p>
          *
          * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
+         *            if {@code true} then full classpath scanning strategy is used, otherwise byte scanning strategy is
+         *            produced
          * @param finder
          *            a class finder
          * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
+         *            checks {@code WebComponentExporter} classes for dependencies if {@code true}, doesn't check
+         *            otherwise
          * @param featureFlags
          *            available feature flags and their status
          * @return a scanner implementation strategy
          *
          */
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents,
-                FeatureFlags featureFlags) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, featureFlags, true);
+        public FrontendDependenciesScanner createScanner(boolean allDependenciesScan, ClassFinder finder,
+                boolean generateEmbeddableWebComponents, FeatureFlags featureFlags) {
+            return createScanner(allDependenciesScan, finder, generateEmbeddableWebComponents, featureFlags, true);
         }
 
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents,
-                FeatureFlags featureFlags, boolean reactEnabled) {
+        public FrontendDependenciesScanner createScanner(boolean allDependenciesScan, ClassFinder finder,
+                boolean generateEmbeddableWebComponents, FeatureFlags featureFlags, boolean reactEnabled) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
-                return new FullDependenciesScanner(finder, featureFlags,
-                        reactEnabled);
+                return new FullDependenciesScanner(finder, featureFlags, reactEnabled);
             } else {
-                return new FrontendDependencies(finder,
-                        generateEmbeddableWebComponents, featureFlags,
-                        reactEnabled);
+                return new FrontendDependencies(finder, generateEmbeddableWebComponents, featureFlags, reactEnabled);
             }
         }
 
         public FrontendDependenciesScanner createScanner(Options options) {
-            boolean reactEnabled = options.isReactEnabled() && FrontendUtils
-                    .isReactRouterRequired(options.getFrontendDirectory());
-            return createScanner(!options.isUseByteCodeScanner(),
-                    options.getClassFinder(),
-                    options.isGenerateEmbeddableWebComponents(),
-                    options.getFeatureFlags(), reactEnabled);
+            boolean reactEnabled = options.isReactEnabled()
+                    && FrontendUtils.isReactRouterRequired(options.getFrontendDirectory());
+            return createScanner(!options.isUseByteCodeScanner(), options.getClassFinder(),
+                    options.isGenerateEmbeddableWebComponents(), options.getFeatureFlags(), reactEnabled);
         }
     }
 
@@ -134,16 +120,16 @@ public interface FrontendDependenciesScanner extends Serializable {
     Map<String, String> getDevPackages();
 
     /**
-     * Get all ES6 modules needed for run the application. Modules that are
-     * theme dependencies are guaranteed to precede other modules in the result.
+     * Get all ES6 modules needed for run the application. Modules that are theme dependencies are guaranteed to precede
+     * other modules in the result.
      *
      * @return the JS modules
      */
     Map<ChunkInfo, List<String>> getModules();
 
     /**
-     * Get all ES6 modules needed only in development mode. Modules that are
-     * theme dependencies are guaranteed to precede other modules in the result.
+     * Get all ES6 modules needed only in development mode. Modules that are theme dependencies are guaranteed to
+     * precede other modules in the result.
      *
      * @return the JS modules
      */

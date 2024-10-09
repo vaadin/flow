@@ -60,8 +60,7 @@ public class ParserData {
      *            the consumer to call for each mapped field
      */
     public void forEachInjectedField(InjectableFieldConsumer consumer) {
-        idByField.forEach(
-                (field, id) -> consumer.apply(field, id, tagById.get(id)));
+        idByField.forEach((field, id) -> consumer.apply(field, id, tagById.get(id)));
     }
 
     /**

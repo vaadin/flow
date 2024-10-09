@@ -18,8 +18,7 @@ package com.vaadin.flow.spring.test.blocked.startup;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
-public class BlockedCustomVaadinServiceInitListener
-        implements VaadinServiceInitListener {
+public class BlockedCustomVaadinServiceInitListener implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {

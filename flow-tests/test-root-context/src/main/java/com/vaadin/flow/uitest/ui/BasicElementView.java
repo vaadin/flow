@@ -38,8 +38,7 @@ public class BasicElementView extends AbstractDivView {
 
         Element button = ElementFactory.createButton("Click me");
 
-        Element input = ElementFactory.createInput().setAttribute("placeholder",
-                "Synchronized on change event");
+        Element input = ElementFactory.createInput().setAttribute("placeholder", "Synchronized on change event");
         input.addPropertyChangeListener("value", "change", event -> {
         });
 
@@ -48,17 +47,13 @@ public class BasicElementView extends AbstractDivView {
             String buttonText = eventData.getString("element.textContent");
             int clientX = (int) eventData.getNumber("event.clientX");
             int clientY = (int) eventData.getNumber("event.clientY");
-            Element greeting = ElementFactory.createDiv(
-                    "Thank you for clicking \"" + buttonText + "\" at ("
-                            + clientX + "," + clientY + ")! The field value is "
-                            + input.getProperty("value"));
+            Element greeting = ElementFactory.createDiv("Thank you for clicking \"" + buttonText + "\" at (" + clientX
+                    + "," + clientY + ")! The field value is " + input.getProperty("value"));
             greeting.setAttribute("class", "thankYou");
-            greeting.addEventListener("click",
-                    e2 -> greeting.removeFromParent());
+            greeting.addEventListener("click", e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
-        }).addEventData("element.textContent").addEventData("event.clientX")
-                .addEventData("event.clientY");
+        }).addEventData("element.textContent").addEventData("event.clientX").addEventData("event.clientY");
 
         Element helloWorldElement = ElementFactory.createDiv("Hello world");
 
@@ -66,32 +61,28 @@ public class BasicElementView extends AbstractDivView {
 
         helloWorldElement.setProperty("id", "hello-world");
         spanClasses.add("hello");
-        helloWorldEventRemover = helloWorldElement.addEventListener("click",
-                e -> {
-                    if (helloWorldElement.getText().equals("Hello world")) {
-                        helloWorldElement.setText("Stop touching me!");
-                    } else {
-                        // We never get to this code as long as the event
-                        // removal actually works
-                        helloWorldElement.setText(helloWorldElement.getText()
-                                + " This might be your last warning!");
-                    }
-                    spanClasses.clear();
-                    helloWorldEventRemover.remove();
-                });
+        helloWorldEventRemover = helloWorldElement.addEventListener("click", e -> {
+            if (helloWorldElement.getText().equals("Hello world")) {
+                helloWorldElement.setText("Stop touching me!");
+            } else {
+                // We never get to this code as long as the event
+                // removal actually works
+                helloWorldElement.setText(helloWorldElement.getText() + " This might be your last warning!");
+            }
+            spanClasses.clear();
+            helloWorldEventRemover.remove();
+        });
         Style s = helloWorldElement.getStyle();
         s.setColor("red");
         s.setFontWeight(Style.FontWeight.BOLD);
 
         Element elementContainer = ElementFactory.createDiv();
 
-        Element toRemove = ElementFactory.createDiv("To Remove")
-                .setAttribute("id", "to-remove");
+        Element toRemove = ElementFactory.createDiv("To Remove").setAttribute("id", "to-remove");
         elementContainer.appendChild(toRemove);
 
         elementContainer.setAttribute("id", "addremovecontainer");
-        Element addRemoveButton = ElementFactory
-                .createButton("Add and remove element");
+        Element addRemoveButton = ElementFactory.createButton("Add and remove element");
         addRemoveButton.setAttribute("id", "addremovebutton");
 
         addRemoveButton.addEventListener("click", e -> {
@@ -118,8 +109,7 @@ public class BasicElementView extends AbstractDivView {
             elementContainer.removeChild(div2);
         });
 
-        mainElement.appendChild(helloWorldElement, button, input,
-                addRemoveButton, elementContainer);
+        mainElement.appendChild(helloWorldElement, button, input, addRemoveButton, elementContainer);
 
     }
 

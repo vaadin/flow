@@ -29,8 +29,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.NAV)
-public class Nav extends HtmlContainer
-        implements ClickNotifier<Nav>, HasOrderedComponents, HasAriaLabel {
+public class Nav extends HtmlContainer implements ClickNotifier<Nav>, HasOrderedComponents, HasAriaLabel {
 
     /**
      * Creates a new empty nav.

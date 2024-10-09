@@ -48,44 +48,31 @@ public class PwaTestIT extends ChromeDeviceTest {
     public void testPwaResources() throws IOException {
         open();
 
-        checkLogsForErrors(
-                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
         WebElement head = findElement(By.tagName("head"));
 
         // test mobile capable
-        Assert.assertEquals(1, head
-                .findElements(By.name("apple-mobile-web-app-capable")).size());
+        Assert.assertEquals(1, head.findElements(By.name("apple-mobile-web-app-capable")).size());
 
         // test theme color
-        Assert.assertEquals(1,
-                head.findElements(
-                        By.xpath("//meta[@name='theme-color'][@content='"
-                                + AppShell.THEME_COLOR + "']"))
-                        .size());
+        Assert.assertEquals(1, head
+                .findElements(By.xpath("//meta[@name='theme-color'][@content='" + AppShell.THEME_COLOR + "']")).size());
 
         // test theme color for apple mobile
-        Assert.assertEquals(1, head
-                .findElements(By.xpath(
-                        "//meta[@name='apple-mobile-web-app-status-bar-style']"
-                                + "[@content='" + AppShell.THEME_COLOR + "']"))
+        Assert.assertEquals(1, head.findElements(By.xpath(
+                "//meta[@name='apple-mobile-web-app-status-bar-style']" + "[@content='" + AppShell.THEME_COLOR + "']"))
                 .size());
         // icons test
-        checkIcons(head.findElements(By.xpath("//link[@rel='shortcut icon']")),
-                1);
+        checkIcons(head.findElements(By.xpath("//link[@rel='shortcut icon']")), 1);
 
-        checkIcons(head.findElements(
-                By.xpath("//link[@rel='icon'][@sizes][@href]")), 2);
+        checkIcons(head.findElements(By.xpath("//link[@rel='icon'][@sizes][@href]")), 2);
 
-        checkIcons(head.findElements(
-                By.xpath("//link[@rel='apple-touch-icon'][@sizes][@href]")), 1);
+        checkIcons(head.findElements(By.xpath("//link[@rel='apple-touch-icon'][@sizes][@href]")), 1);
 
-        checkIcons(head.findElements(By.xpath(
-                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")),
-                26);
+        checkIcons(head.findElements(By.xpath("//link[@rel='apple-touch-startup-image'][@sizes][@href]")), 26);
 
         // test web manifest
-        List<WebElement> elements = head
-                .findElements(By.xpath("//link[@rel='manifest'][@href]"));
+        List<WebElement> elements = head.findElements(By.xpath("//link[@rel='manifest'][@href]"));
         Assert.assertEquals(1, elements.size());
         String href = elements.get(0).getAttribute("href");
         assertExists(href);
@@ -95,29 +82,22 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
         JsonObject manifest = readJsonFromUrl(href);
         Assert.assertEquals(AppShell.PWA_NAME, manifest.getString("name"));
-        Assert.assertEquals(AppShell.PWA_SHORT_NAME,
-                manifest.getString("short_name"));
-        Assert.assertEquals(AppShell.BG_COLOR,
-                manifest.getString("background_color"));
-        Assert.assertEquals(AppShell.THEME_COLOR,
-                manifest.getString("theme_color"));
+        Assert.assertEquals(AppShell.PWA_SHORT_NAME, manifest.getString("short_name"));
+        Assert.assertEquals(AppShell.BG_COLOR, manifest.getString("background_color"));
+        Assert.assertEquals(AppShell.THEME_COLOR, manifest.getString("theme_color"));
 
         // test service worker initialization
         elements = head.findElements(By.tagName("script")).stream()
-                .filter(webElement -> getInnerHtml(webElement)
-                        .startsWith("if ('serviceWorker' in navigator)"))
+                .filter(webElement -> getInnerHtml(webElement).startsWith("if ('serviceWorker' in navigator)"))
                 .collect(Collectors.toList());
         Assert.assertEquals(1, elements.size());
 
         String serviceWorkerInit = getInnerHtml(elements.get(0));
-        Pattern pattern = Pattern
-                .compile("navigator.serviceWorker.register\\('([^']+)'\\)");
+        Pattern pattern = Pattern.compile("navigator.serviceWorker.register\\('([^']+)'\\)");
         Matcher matcher = pattern.matcher(serviceWorkerInit);
-        Assert.assertTrue("Service worker initialization missing",
-                matcher.find());
+        Assert.assertTrue("Service worker initialization missing", matcher.find());
 
-        String serviceWorkerUrl = matcher.group(1).startsWith("http")
-                ? matcher.group(1)
+        String serviceWorkerUrl = matcher.group(1).startsWith("http") ? matcher.group(1)
                 : getRootURL() + "/" + matcher.group(1);
 
         assertExists(serviceWorkerUrl);
@@ -126,29 +106,23 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         // For Vite search for the precache file as it is loaded at runtime
         // and not compiled into sw.js during build
-        Assert.assertTrue(
-                "Expected sw-runtime-resources-precache.js to be imported, but was not",
-                serviceWorkerJS.contains(
-                        "importScripts(\"sw-runtime-resources-precache.js\");"));
+        Assert.assertTrue("Expected sw-runtime-resources-precache.js to be imported, but was not",
+                serviceWorkerJS.contains("importScripts(\"sw-runtime-resources-precache.js\");"));
 
         serviceWorkerUrl = getRootURL() + "/sw-runtime-resources-precache.js";
         serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
         System.out.println(serviceWorkerJS);
 
         // parse the precache resources (the app bundles) from service worker JS
-        pattern = Pattern.compile(
-                "\\{ url: '([^']+)', revision: ('[^']+'|null) }",
-                Pattern.MULTILINE);
+        pattern = Pattern.compile("\\{ url: '([^']+)', revision: ('[^']+'|null) }", Pattern.MULTILINE);
         matcher = pattern.matcher(serviceWorkerJS);
         ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
             precacheUrls.add(matcher.group(2));
         }
-        Assert.assertFalse("Expected at least one precache URL",
-                precacheUrls.isEmpty());
+        Assert.assertFalse("Expected at least one precache URL", precacheUrls.isEmpty());
         // Vite does not precache appshell if there's an offline path configured
-        Assert.assertFalse("Expected appshell not to be precached",
-                precacheUrls.contains("."));
+        Assert.assertFalse("Expected appshell not to be precached", precacheUrls.contains("."));
         checkResources(precacheUrls.toArray(new String[] {}));
         checkResources("yes.png", "offline.html");
     }
@@ -160,8 +134,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         try {
             // Ensure we are offline
-            Assert.assertEquals("navigator.onLine should be false", false,
-                    executeScript("return navigator.onLine"));
+            Assert.assertEquals("navigator.onLine should be false", false, executeScript("return navigator.onLine"));
 
             // Check the that one icon, a file served from '/public' and
             // offline.html can be loaded from cache. In principle we should
@@ -179,20 +152,17 @@ public class PwaTestIT extends ChromeDeviceTest {
         waitForServiceWorkerReady();
 
         // Confirm that app shell is loaded
-        Assert.assertNotNull("Should have outlet when loaded online",
-                findElement(By.id("outlet")));
+        Assert.assertNotNull("Should have outlet when loaded online", findElement(By.id("outlet")));
 
         // Set offline network conditions in ChromeDriver
         getDevTools().setOfflineEnabled(true);
 
         try {
-            Assert.assertEquals("navigator.onLine should be false", false,
-                    executeScript("return navigator.onLine"));
+            Assert.assertEquals("navigator.onLine should be false", false, executeScript("return navigator.onLine"));
 
             // Reload the page in offline mode
             executeScript("window.location.reload();");
-            waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                    .executeScript("return document.readyState")
+            waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                     .equals("complete"));
 
             // Assert page title
@@ -200,10 +170,8 @@ public class PwaTestIT extends ChromeDeviceTest {
             WebElement head = findElement(By.tagName("head"));
             waitForElementPresent(By.tagName("title"));
             WebElement title = head.findElement(By.tagName("title"));
-            Assert.assertEquals(AppShell.PWA_NAME,
-                    executeScript("return arguments[0].textContent", title));
-            Assert.assertEquals(AppShell.PWA_NAME,
-                    executeScript("return document.title;"));
+            Assert.assertEquals(AppShell.PWA_NAME, executeScript("return arguments[0].textContent", title));
+            Assert.assertEquals(AppShell.PWA_NAME, executeScript("return document.title;"));
 
             // Assert default offline.html page contents
             WebElement body = findElement(By.tagName("body"));
@@ -211,11 +179,9 @@ public class PwaTestIT extends ChromeDeviceTest {
                     body.findElements(By.id("outlet")).isEmpty());
 
             WebElement offline = body.findElement(By.id("offline"));
-            Assert.assertEquals(AppShell.PWA_NAME,
-                    offline.findElement(By.tagName("h1")).getText());
+            Assert.assertEquals(AppShell.PWA_NAME, offline.findElement(By.tagName("h1")).getText());
             WebElement message = offline.findElement(By.className("message"));
-            Assert.assertTrue("Should have “offline” in message",
-                    message.getText().toLowerCase().contains("offline"));
+            Assert.assertTrue("Should have “offline” in message", message.getText().toLowerCase().contains("offline"));
         } finally {
             // Reset network conditions back
             getDevTools().setOfflineEnabled(false);
@@ -223,8 +189,7 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void compareUncompressedAndCompressedServiceWorkerJS()
-            throws IOException {
+    public void compareUncompressedAndCompressedServiceWorkerJS() throws IOException {
         open();
         waitForServiceWorkerReady();
 
@@ -233,8 +198,7 @@ public class PwaTestIT extends ChromeDeviceTest {
 
         byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
         byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.br");
-        byte[] decompressed = readAllBytes(
-                new BrotliInputStream(new ByteArrayInputStream(compressed)));
+        byte[] decompressed = readAllBytes(new BrotliInputStream(new ByteArrayInputStream(compressed)));
         Assert.assertArrayEquals(uncompressed, decompressed);
     }
 
@@ -261,36 +225,28 @@ public class PwaTestIT extends ChromeDeviceTest {
         // If the mimetype can be guessed from the file name, check consistency
         // with the actual served file
         String expectedMimeType = URLConnection.guessContentTypeFromName(url);
-        String script = "const mimeType = arguments[0];"
-                + "const resolve = arguments[2];" //
+        String script = "const mimeType = arguments[0];" + "const resolve = arguments[2];" //
                 + "fetch(arguments[1], {method: 'GET'})" //
                 + ".then(response => resolve({status: response.status," //
                 + "      redirected: response.redirected," //
                 + "      mimeType: response.headers.get('Content-Type')}))" //
                 + ".catch(err => resolve());";
-        Map data = (Map) ((JavascriptExecutor) getDriver())
-                .executeAsyncScript(script, expectedMimeType, url);
+        Map data = (Map) ((JavascriptExecutor) getDriver()).executeAsyncScript(script, expectedMimeType, url);
 
         if (expectedMimeType != null) {
-            String mimeType = ((String) data.get("mimeType"))
-                    .replaceAll(";[ ]?charset=utf-8", "");
+            String mimeType = ((String) data.get("mimeType")).replaceAll(";[ ]?charset=utf-8", "");
             // Jetty is using text/javascript starting from 11.0.14, Vite uses
             // application/javascript when in dev mode
-            mimeType = mimeType.replace("application/javascript",
-                    "text/javascript");
-            Assert.assertEquals(url + " has an unexpected mime type",
-                    expectedMimeType, mimeType);
+            mimeType = mimeType.replace("application/javascript", "text/javascript");
+            Assert.assertEquals(url + " has an unexpected mime type", expectedMimeType, mimeType);
         }
-        Assert.assertEquals(url + " has an unexpected redirect", false,
-                data.get("redirected"));
-        Assert.assertEquals(url + " has an unexpected response code", 200L,
-                data.get("status"));
+        Assert.assertEquals(url + " has an unexpected redirect", false, data.get("redirected"));
+        Assert.assertEquals(url + " has an unexpected response code", 200L, data.get("status"));
 
     }
 
     private static String readStringFromUrl(String url) throws IOException {
-        return new String(readAllBytes(new URL(url).openStream()),
-                StandardCharsets.UTF_8);
+        return new String(readAllBytes(new URL(url).openStream()), StandardCharsets.UTF_8);
     }
 
     private static JsonObject readJsonFromUrl(String url) throws IOException {
@@ -303,8 +259,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
-    private static byte[] readAllBytes(InputStream inputStream)
-            throws IOException {
+    private static byte[] readAllBytes(InputStream inputStream) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int count;
         byte[] data = new byte[1024];
@@ -316,14 +271,12 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private boolean isProductionMode() throws IOException {
-        JsonObject stats = readJsonFromUrl(
-                getRootURL() + "?v-r=init&location=");
+        JsonObject stats = readJsonFromUrl(getRootURL() + "?v-r=init&location=");
         return stats.getObject("appConfig").getBoolean("productionMode");
     }
 
     private String getInnerHtml(WebElement element) {
-        Object result = getCommandExecutor()
-                .executeScript("return arguments[0].innerHTML;", element);
+        Object result = getCommandExecutor().executeScript("return arguments[0].innerHTML;", element);
         return result == null ? "" : result.toString();
     }
 }

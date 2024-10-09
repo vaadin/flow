@@ -18,9 +18,8 @@ package com.vaadin.flow.function;
 /**
  * A callback interface for providing values from a given source.
  * <p>
- * For example this interface can be implemented to simply extract a value with
- * a getter, or to create a composite value based on the fields of the source
- * object.
+ * For example this interface can be implemented to simply extract a value with a getter, or to create a composite value
+ * based on the fields of the source object.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -31,8 +30,7 @@ package com.vaadin.flow.function;
  *            the type of the provided value
  */
 @FunctionalInterface
-public interface ValueProvider<SOURCE, TARGET>
-        extends SerializableFunction<SOURCE, TARGET> {
+public interface ValueProvider<SOURCE, TARGET> extends SerializableFunction<SOURCE, TARGET> {
 
     /**
      * Returns a value provider that always returns its input argument.

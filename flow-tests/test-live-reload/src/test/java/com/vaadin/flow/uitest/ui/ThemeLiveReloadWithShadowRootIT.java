@@ -50,8 +50,7 @@ public class ThemeLiveReloadWithShadowRootIT extends AbstractLiveReloadIT {
         Assert.assertEquals(ORIGINAL_COLOR, inside.getCssValue("color"));
 
         File f = new File(stylesCssLocation);
-        String stylesCss = FileUtils.readFileToString(f,
-                StandardCharsets.UTF_8);
+        String stylesCss = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
         stylesCss = stylesCss.replace(ORIGINAL_COLOR, NEW_COLOR);
         FileUtils.writeStringToFile(f, stylesCss, StandardCharsets.UTF_8);
 
@@ -76,8 +75,7 @@ public class ThemeLiveReloadWithShadowRootIT extends AbstractLiveReloadIT {
     @After
     public void resetCss() throws IOException {
         if (stylesCssLocation != null) {
-            File originalStylesCss = new File(stylesCssLocation
-                    .replace("styles.css", "styles.css.original"));
+            File originalStylesCss = new File(stylesCssLocation.replace("styles.css", "styles.css.original"));
             File stylesCss = new File(stylesCssLocation);
             FileUtils.copyFile(originalStylesCss, stylesCss);
         }

@@ -29,8 +29,8 @@ public class BasicPushView extends ClientServerCounter {
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
         /*
-         * Read push settings from the UI instead of the the navigation target /
-         * router layout to preserve the structure of these legacy testing UIs
+         * Read push settings from the UI instead of the the navigation target / router layout to preserve the structure
+         * of these legacy testing UIs
          */
         CustomPush push = getClass().getAnnotation(CustomPush.class);
 

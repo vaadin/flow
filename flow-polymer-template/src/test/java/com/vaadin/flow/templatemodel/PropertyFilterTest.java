@@ -23,14 +23,11 @@ public class PropertyFilterTest {
 
     @Test
     public void filterWithAdditionalLevel() {
-        PropertyFilter outerFilter = new PropertyFilter(
-                name -> !"middle.inner.foo".equals(name));
+        PropertyFilter outerFilter = new PropertyFilter(name -> !"middle.inner.foo".equals(name));
 
-        PropertyFilter middleFilter = new PropertyFilter(outerFilter, "middle",
-                name -> !"inner.bar".equals(name));
+        PropertyFilter middleFilter = new PropertyFilter(outerFilter, "middle", name -> !"inner.bar".equals(name));
 
-        PropertyFilter innerFilter = new PropertyFilter(middleFilter, "inner",
-                name -> !"baz".equals(name));
+        PropertyFilter innerFilter = new PropertyFilter(middleFilter, "inner", name -> !"baz".equals(name));
 
         // Rejected by outer filter
         Assert.assertFalse(innerFilter.test("foo"));

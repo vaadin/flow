@@ -34,41 +34,33 @@ public class DebugWindowErrorHandlingView extends Div {
     static final String CAUSE_ERRORS_ID = "causeErrors";
 
     public DebugWindowErrorHandlingView() {
-        NativeButton execJsException = new NativeButton("Exception from execJS",
-                e -> {
-                    getUI().get().getPage().executeJs("null.foo");
-                });
+        NativeButton execJsException = new NativeButton("Exception from execJS", e -> {
+            getUI().get().getPage().executeJs("null.foo");
+        });
         execJsException.setId(EXEC_JS_EXCEPTION_ID);
 
-        NativeButton clientSideException = new NativeButton(
-                "Exception from client side", e -> {
-                    getUI().get().getPage()
-                            .executeJs("setTimeout(() => {null.foo;}, 1);");
-                });
+        NativeButton clientSideException = new NativeButton("Exception from client side", e -> {
+            getUI().get().getPage().executeJs("setTimeout(() => {null.foo;}, 1);");
+        });
         clientSideException.setId(CLIENT_SIDE_EXCEPTION_ID);
 
-        NativeButton clientSideErrorLog = new NativeButton(
-                "Client side console.error", e -> {
-                    getUI().get().getPage().executeJs(
-                            "setTimeout(() => {console.error('Client side error');}, 1);");
-                });
+        NativeButton clientSideErrorLog = new NativeButton("Client side console.error", e -> {
+            getUI().get().getPage().executeJs("setTimeout(() => {console.error('Client side error');}, 1);");
+        });
         clientSideErrorLog.setId(CLIENT_SIDE_ERROR_ID);
 
-        NativeButton clientSidePromiseRejection = new NativeButton(
-                "Client side promise rejection", e -> {
-                    getUI().get().getPage().executeJs(
-                            "import('./this-file-does-not-exist.js')");
-                });
+        NativeButton clientSidePromiseRejection = new NativeButton("Client side promise rejection", e -> {
+            getUI().get().getPage().executeJs("import('./this-file-does-not-exist.js')");
+        });
         clientSidePromiseRejection.setId(CLIENT_SIDE_PROMISE_REJECTION_ID);
 
         /*
-         * Used for manually testing that the name of an offending external
-         * function is actually reported in the browser.
+         * Used for manually testing that the name of an offending external function is actually reported in the
+         * browser.
          */
-        NativeButton causeExternalException = new NativeButton(
-                "Cause external client side exception", e -> {
-                    getUI().get().getPage().executeJs("externalErrorTrigger()");
-                });
+        NativeButton causeExternalException = new NativeButton("Cause external client side exception", e -> {
+            getUI().get().getPage().executeJs("externalErrorTrigger()");
+        });
 
         Input numberOfErrors = new Input();
         numberOfErrors.setPlaceholder("Number of errors");
@@ -79,8 +71,7 @@ public class DebugWindowErrorHandlingView extends Div {
                     Integer.parseInt(numberOfErrors.getValue()));
         });
         causeErrors.setId(CAUSE_ERRORS_ID);
-        add(execJsException, clientSideException, clientSideErrorLog,
-                clientSidePromiseRejection, causeExternalException,
-                numberOfErrors, causeErrors);
+        add(execJsException, clientSideException, clientSideErrorLog, clientSidePromiseRejection,
+                causeExternalException, numberOfErrors, causeErrors);
     }
 }

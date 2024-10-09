@@ -34,8 +34,7 @@ public class PushWithPreserveOnRefreshIT extends ChromeBrowserTest {
     public void ensurePushWorksAfterRefresh() {
         open();
 
-        WebElement loadingIndicator = findElement(
-                By.className("v-loading-indicator"));
+        WebElement loadingIndicator = findElement(By.className("v-loading-indicator"));
 
         waitUntil(driver -> !loadingIndicator.isDisplayed());
 

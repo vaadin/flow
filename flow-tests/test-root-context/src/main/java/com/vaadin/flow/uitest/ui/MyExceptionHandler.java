@@ -27,8 +27,7 @@ import com.vaadin.flow.uitest.MyException;
  *
  * @since 1.0
  */
-public class MyExceptionHandler extends Div
-        implements HasErrorParameter<MyException> {
+public class MyExceptionHandler extends Div implements HasErrorParameter<MyException> {
 
     public MyExceptionHandler() {
         NativeLabel label = new NativeLabel("My exception handler.");
@@ -37,8 +36,7 @@ public class MyExceptionHandler extends Div
     }
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<MyException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<MyException> parameter) {
         return 404;
     }
 }

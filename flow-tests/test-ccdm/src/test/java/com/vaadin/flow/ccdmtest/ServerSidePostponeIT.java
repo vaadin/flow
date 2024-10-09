@@ -32,14 +32,11 @@ public class ServerSidePostponeIT extends CCDMTest {
     public void should_preserveUrlAndView_when_navigateToServerViewAndPostpone() {
         openVaadinRouter();
 
-        assertPostponeNavigationFromButton("serverview", "serverView",
-                "Server view", "goToServerView");
+        assertPostponeNavigationFromButton("serverview", "serverView", "Server view", "goToServerView");
 
-        assertPostponeNavigationFromRouterLink("serverview", "serverView",
-                "Server view", "RouterLink Server View");
+        assertPostponeNavigationFromRouterLink("serverview", "serverView", "Server view", "RouterLink Server View");
 
-        assertPostponeNavigationFromHref("serverview", "serverView",
-                "Server view");
+        assertPostponeNavigationFromHref("serverview", "serverView", "Server view");
     }
 
     @Test
@@ -48,8 +45,8 @@ public class ServerSidePostponeIT extends CCDMTest {
 
         // Sequentially try to leave current page to different urls until only
         // the last one proceeds.
-        assertPostponeNavigation("serverview", "serverView", "Server view",
-                () -> findElement(By.id("goToServerView")), // server button
+        assertPostponeNavigation("serverview", "serverView", "Server view", () -> findElement(By.id("goToServerView")), // server
+                                                                                                                        // button
                 () -> findAnchor("client-view"), // client link
                 () -> findAnchor("serverpostponeview"), // same server page link
                 () -> findAnchor("serverview"), // server link
@@ -62,43 +59,33 @@ public class ServerSidePostponeIT extends CCDMTest {
     public void should_preserveUrlAndView_when_navigateToClientViewAndPostpone() {
         openVaadinRouter();
 
-        assertPostponeNavigationFromButton("client-view", "clientView",
-                "Client view", "goToClientView");
+        assertPostponeNavigationFromButton("client-view", "clientView", "Client view", "goToClientView");
 
-        assertPostponeNavigationFromHref("client-view", "clientView",
-                "Client view");
+        assertPostponeNavigationFromHref("client-view", "clientView", "Client view");
     }
 
-    private void assertPostponeNavigationFromButton(String destinationViewRoute,
-            String destinationViewDiv, String destinationViewText,
-            String goToDestinationButtonId) {
-        assertPostponeNavigation(destinationViewRoute, destinationViewDiv,
-                destinationViewText,
+    private void assertPostponeNavigationFromButton(String destinationViewRoute, String destinationViewDiv,
+            String destinationViewText, String goToDestinationButtonId) {
+        assertPostponeNavigation(destinationViewRoute, destinationViewDiv, destinationViewText,
                 () -> findElement(By.id(goToDestinationButtonId)));
     }
 
-    private void assertPostponeNavigationFromRouterLink(
-            String destinationViewRoute, String destinationViewDiv,
+    private void assertPostponeNavigationFromRouterLink(String destinationViewRoute, String destinationViewDiv,
             String destinationViewText, String goToDestinationRouterLinkText) {
-        assertPostponeNavigation(destinationViewRoute, destinationViewDiv,
-                destinationViewText, () -> {
-                    final WebElement routerLinkElement = findElement(
-                            By.linkText(goToDestinationRouterLinkText));
-                    return routerLinkElement.getAttribute("router-link") != null
-                            ? routerLinkElement
-                            : null;
-                });
+        assertPostponeNavigation(destinationViewRoute, destinationViewDiv, destinationViewText, () -> {
+            final WebElement routerLinkElement = findElement(By.linkText(goToDestinationRouterLinkText));
+            return routerLinkElement.getAttribute("router-link") != null ? routerLinkElement : null;
+        });
     }
 
-    private void assertPostponeNavigationFromHref(String goToDestinationHref,
-            String destinationViewDiv, String destinationViewText) {
-        assertPostponeNavigation(goToDestinationHref, destinationViewDiv,
-                destinationViewText, () -> findAnchor(goToDestinationHref));
+    private void assertPostponeNavigationFromHref(String goToDestinationHref, String destinationViewDiv,
+            String destinationViewText) {
+        assertPostponeNavigation(goToDestinationHref, destinationViewDiv, destinationViewText,
+                () -> findAnchor(goToDestinationHref));
     }
 
-    private void assertPostponeNavigation(String destinationViewRoute,
-            String destinationViewDiv, String destinationViewText,
-            Supplier<WebElement>... destinationElements) {
+    private void assertPostponeNavigation(String destinationViewRoute, String destinationViewDiv,
+            String destinationViewText, Supplier<WebElement>... destinationElements) {
 
         findAnchor(SERVER_POSTPONE_VIEW_ROUTE).click();
         waitForElementPresent(By.id("serverPostponeView"));
@@ -113,8 +100,7 @@ public class ServerSidePostponeIT extends CCDMTest {
 
         findElement(PROCEED_BUTTON).click();
 
-        assertView(destinationViewDiv, destinationViewText,
-                destinationViewRoute);
+        assertView(destinationViewDiv, destinationViewText, destinationViewRoute);
     }
 
 }

@@ -33,8 +33,7 @@ import com.vaadin.flow.server.StreamResource;
  * @since 1.0
  */
 @Tag(Tag.IMG)
-public class Image extends HtmlContainer
-        implements ClickNotifier<Image>, HasAriaLabel {
+public class Image extends HtmlContainer implements ClickNotifier<Image>, HasAriaLabel {
 
     private static final String ALT_ATTRIBUTE = "alt";
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
@@ -50,8 +49,8 @@ public class Image extends HtmlContainer
     /**
      * Creates an image with the given URL and an alternative text.
      * <p>
-     * The alternative text given to constructor is always set even if it is the
-     * default empty string which is not retained with {@link #setAlt(String)}.
+     * The alternative text given to constructor is always set even if it is the default empty string which is not
+     * retained with {@link #setAlt(String)}.
      *
      * @param src
      *            the image URL
@@ -69,8 +68,8 @@ public class Image extends HtmlContainer
     /**
      * Creates an image with the given stream resource and an alternative text.
      * <p>
-     * The alternative text given to constructor is always set even if it is the
-     * default empty string which is not retained with {@link #setAlt(String)}.
+     * The alternative text given to constructor is always set even if it is the default empty string which is not
+     * retained with {@link #setAlt(String)}.
      *
      * @param src
      *            the resource value, not null
@@ -132,8 +131,7 @@ public class Image extends HtmlContainer
     /**
      * Gets the alternate text for the image.
      *
-     * @return an optional alternate text, or an empty optional if no alternate
-     *         text has been set
+     * @return an optional alternate text, or an empty optional if no alternate text has been set
      */
     public Optional<String> getAlt() {
         return Optional.ofNullable(getElement().getAttribute(ALT_ATTRIBUTE));

@@ -39,8 +39,7 @@ import org.slf4j.LoggerFactory;
 import elemental.json.JsonValue;
 
 /**
- * The router takes care of serving content when the user navigates within a
- * site or an application.
+ * The router takes care of serving content when the user navigates within a site or an application.
  *
  * @author Vaadin Ltd
  * @see Route
@@ -53,8 +52,7 @@ public class Router implements Serializable {
     private final RouteRegistry registry;
 
     /**
-     * Constructs a new router with the given route registry and a
-     * {@link DefaultRouteResolver}.
+     * Constructs a new router with the given route registry and a {@link DefaultRouteResolver}.
      *
      * @param registry
      *            the route registry to use, not <code>null</code>
@@ -66,9 +64,8 @@ public class Router implements Serializable {
     }
 
     /**
-     * Enables navigation for a new UI instance. This initializes the UI content
-     * based on the location used for loading the UI and sets up the UI to be
-     * updated when the user navigates to some other location.
+     * Enables navigation for a new UI instance. This initializes the UI content based on the location used for loading
+     * the UI and sets up the UI to be updated when the user navigates to some other location.
      *
      * @param ui
      *            the UI that navigation should be set up for
@@ -76,8 +73,8 @@ public class Router implements Serializable {
      *            the location object of the route
      */
     public void initializeUI(UI ui, Location location) {
-        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
-                e.getLocation(), e.getTrigger(), e.getState().orElse(null)));
+        ui.getPage().getHistory().setHistoryStateChangeHandler(
+                e -> navigate(ui, e.getLocation(), e.getTrigger(), e.getState().orElse(null)));
 
         int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
 
@@ -88,8 +85,7 @@ public class Router implements Serializable {
     }
 
     /**
-     * Resolve the navigation target for given path and parameter map using the
-     * router routeResolver.
+     * Resolve the navigation target for given path and parameter map using the router routeResolver.
      *
      * @param pathInfo
      *            the path relative to the application
@@ -97,30 +93,24 @@ public class Router implements Serializable {
      *            A mapping of parameter names to arrays of parameter values
      * @return NavigationTarget for the given path and parameter map if found
      */
-    public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
-            Map<String, String[]> parameterMap) {
-        Location location = new Location(pathInfo,
-                QueryParameters.full(parameterMap));
+    public Optional<NavigationState> resolveNavigationTarget(String pathInfo, Map<String, String[]> parameterMap) {
+        Location location = new Location(pathInfo, QueryParameters.full(parameterMap));
         return resolveNavigationTarget(location);
     }
 
     /**
-     * Resolve the navigation target for given {@link Location} using the router
-     * routeResolver.
+     * Resolve the navigation target for given {@link Location} using the router routeResolver.
      *
      * @param location
      *            the location object of the route
      * @return NavigationTarget for the given location if found
      */
-    public Optional<NavigationState> resolveNavigationTarget(
-            Location location) {
+    public Optional<NavigationState> resolveNavigationTarget(Location location) {
         NavigationState resolve = null;
         try {
-            resolve = getRouteResolver()
-                    .resolve(new ResolveRequest(this, location));
+            resolve = getRouteResolver().resolve(new ResolveRequest(this, location));
         } catch (NotFoundException nfe) {
-            LoggerFactory.getLogger(Router.class.getName()).warn(
-                    "Failed to resolve navigation target for path: {}",
+            LoggerFactory.getLogger(Router.class.getName()).warn("Failed to resolve navigation target for path: {}",
                     location.getPath(), nfe);
         }
         return Optional.ofNullable(resolve);
@@ -129,17 +119,14 @@ public class Router implements Serializable {
     /**
      * Resolve a navigation target with an empty {@link NotFoundException}.
      *
-     * @return an instance of {@link NavigationState} for NotFoundException or
-     *         empty if there is none in the application.
+     * @return an instance of {@link NavigationState} for NotFoundException or empty if there is none in the
+     *         application.
      */
     public Optional<NavigationState> resolveRouteNotFoundNavigationTarget() {
-        Optional<ErrorTargetEntry> errorTargetEntry = getErrorNavigationTarget(
-                new NotFoundException());
+        Optional<ErrorTargetEntry> errorTargetEntry = getErrorNavigationTarget(new NotFoundException());
         NavigationState result = null;
         if (errorTargetEntry.isPresent()) {
-            result = new NavigationStateBuilder(this)
-                    .withTarget(errorTargetEntry.get().getNavigationTarget())
-                    .build();
+            result = new NavigationStateBuilder(this).withTarget(errorTargetEntry.get().getNavigationTarget()).build();
         }
         return Optional.ofNullable(result);
     }
@@ -147,18 +134,16 @@ public class Router implements Serializable {
     /**
      * Navigates the given UI to the given location.
      * <p>
-     * This method just shows the given {@code location} on the page and doesn't
-     * update the browser location (and page history). Use the
-     * {@link UI#navigate(String, QueryParameters)} method if you want to update
-     * the browser location as well.
+     * This method just shows the given {@code location} on the page and doesn't update the browser location (and page
+     * history). Use the {@link UI#navigate(String, QueryParameters)} method if you want to update the browser location
+     * as well.
      *
      * @param ui
      *            the UI to update, not <code>null</code>
      * @param location
      *            the location to navigate to, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this navigation, not
-     *            <code>null</code>
+     *            the type of user action that triggered this navigation, not <code>null</code>
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
@@ -170,8 +155,7 @@ public class Router implements Serializable {
     /**
      * Navigates the given UI to the given location. For internal use only.
      * <p>
-     * This method pushes to the browser history if the <code>trigger</code> is
-     * {@link NavigationTrigger#ROUTER_LINK} or
+     * This method pushes to the browser history if the <code>trigger</code> is {@link NavigationTrigger#ROUTER_LINK} or
      * {@link NavigationTrigger#UI_NAVIGATE}.
      *
      * @param ui
@@ -179,25 +163,22 @@ public class Router implements Serializable {
      * @param location
      *            the location to navigate to, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this navigation, not
-     *            <code>null</code>
+     *            the type of user action that triggered this navigation, not <code>null</code>
      * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
+     *            includes navigation state info including for example the scroll position and the complete href of the
+     *            RouterLink
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
      */
-    public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            JsonValue state) {
+    public int navigate(UI ui, Location location, NavigationTrigger trigger, JsonValue state) {
         return navigate(ui, location, trigger, state, false, false);
     }
 
     /**
      * Navigates the given UI to the given location. For internal use only.
      * <p>
-     * This method pushes to the browser history if the <code>trigger</code> is
-     * {@link NavigationTrigger#ROUTER_LINK} or
+     * This method pushes to the browser history if the <code>trigger</code> is {@link NavigationTrigger#ROUTER_LINK} or
      * {@link NavigationTrigger#UI_NAVIGATE}.
      *
      * @param ui
@@ -205,25 +186,21 @@ public class Router implements Serializable {
      * @param location
      *            the location to navigate to, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this navigation, not
-     *            <code>null</code>
+     *            the type of user action that triggered this navigation, not <code>null</code>
      * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
+     *            includes navigation state info including for example the scroll position and the complete href of the
+     *            RouterLink
      * @param forceInstantiation
-     *            if set to {@code true}, the navigation target will always be
-     *            instantiated
+     *            if set to {@code true}, the navigation target will always be instantiated
      * @param recreateLayoutChain
-     *            if set to {@code true}, the complete layout chain up to the
-     *            navigation target will be re-instantiated. Requires
-     *            {@code forceInstantiation} to be true to have an effect.
+     *            if set to {@code true}, the complete layout chain up to the navigation target will be re-instantiated.
+     *            Requires {@code forceInstantiation} to be true to have an effect.
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
      */
-    public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            JsonValue state, boolean forceInstantiation,
-            boolean recreateLayoutChain) {
+    public int navigate(UI ui, Location location, NavigationTrigger trigger, JsonValue state,
+            boolean forceInstantiation, boolean recreateLayoutChain) {
         assert ui != null;
         assert location != null;
         assert trigger != null;
@@ -231,11 +208,9 @@ public class Router implements Serializable {
 
         if (handleNavigationForLocation(ui, location)) {
             try {
-                return handleNavigation(ui, location, trigger, state,
-                        forceInstantiation, recreateLayoutChain);
+                return handleNavigation(ui, location, trigger, state, forceInstantiation, recreateLayoutChain);
             } catch (Exception exception) {
-                return handleExceptionNavigation(ui, location, exception,
-                        trigger, state);
+                return handleExceptionNavigation(ui, location, exception, trigger, state);
             } finally {
                 ui.getInternals().clearLastHandledNavigation();
             }
@@ -246,21 +221,17 @@ public class Router implements Serializable {
     private boolean handleNavigationForLocation(UI ui, Location location) {
         if (ui.getInternals().hasLastHandledLocation()) {
             return !location.getPathWithQueryParameters()
-                    .equals(ui.getInternals().getLastHandledLocation()
-                            .getPathWithQueryParameters());
+                    .equals(ui.getInternals().getLastHandledLocation().getPathWithQueryParameters());
         }
         return true;
     }
 
-    private int handleNavigation(UI ui, Location location,
-            NavigationTrigger trigger, JsonValue state,
+    private int handleNavigation(UI ui, Location location, NavigationTrigger trigger, JsonValue state,
             boolean forceInstantiation, boolean recreateLayoutChain) {
-        NavigationState newState = getRouteResolver()
-                .resolve(new ResolveRequest(this, location));
+        NavigationState newState = getRouteResolver().resolve(new ResolveRequest(this, location));
         if (newState != null) {
-            NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, trigger, state, false, forceInstantiation,
-                    recreateLayoutChain);
+            NavigationEvent navigationEvent = new NavigationEvent(this, location, ui, trigger, state, false,
+                    forceInstantiation, recreateLayoutChain);
 
             NavigationHandler handler = new NavigationStateRenderer(newState);
             return handler.handle(navigationEvent);
@@ -269,38 +240,31 @@ public class Router implements Serializable {
             NavigationState slashToggledState = getRouteResolver()
                     .resolve(new ResolveRequest(this, slashToggledLocation));
             if (slashToggledState != null) {
-                NavigationEvent navigationEvent = new NavigationEvent(this,
-                        slashToggledLocation, ui, trigger, state, false,
-                        forceInstantiation, recreateLayoutChain);
+                NavigationEvent navigationEvent = new NavigationEvent(this, slashToggledLocation, ui, trigger, state,
+                        false, forceInstantiation, recreateLayoutChain);
 
-                NavigationHandler handler = new InternalRedirectHandler(
-                        slashToggledLocation);
+                NavigationHandler handler = new InternalRedirectHandler(slashToggledLocation);
                 return handler.handle(navigationEvent);
             }
         }
 
-        throw new NotFoundException(
-                "Couldn't find route for '" + location.getPath() + "'");
+        throw new NotFoundException("Couldn't find route for '" + location.getPath() + "'");
     }
 
-    private int handleExceptionNavigation(UI ui, Location location,
-            Exception exception, NavigationTrigger trigger, JsonValue state) {
-        Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
-                exception);
+    private int handleExceptionNavigation(UI ui, Location location, Exception exception, NavigationTrigger trigger,
+            JsonValue state) {
+        Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(exception);
 
         if (maybeLookupResult.isPresent()) {
             ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
-            ErrorParameter<?> errorParameter = new ErrorParameter<>(
-                    lookupResult.getHandledExceptionType(), exception,
+            ErrorParameter<?> errorParameter = new ErrorParameter<>(lookupResult.getHandledExceptionType(), exception,
                     exception.getMessage());
             ErrorStateRenderer handler = new ErrorStateRenderer(
-                    new NavigationStateBuilder(this)
-                            .withTarget(lookupResult.getNavigationTarget())
-                            .build());
+                    new NavigationStateBuilder(this).withTarget(lookupResult.getNavigationTarget()).build());
 
-            ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
-                    this, location, ui, trigger, errorParameter, state);
+            ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(this, location, ui, trigger, errorParameter,
+                    state);
 
             return handler.handle(navigationEvent);
         } else {
@@ -316,8 +280,7 @@ public class Router implements Serializable {
         // If we have a session then return the session registry
         // else return router registry
         if (VaadinSession.getCurrent() != null) {
-            return SessionRouteRegistry
-                    .getSessionRegistry(VaadinSession.getCurrent());
+            return SessionRouteRegistry.getSessionRegistry(VaadinSession.getCurrent());
         }
         return registry;
     }
@@ -329,11 +292,9 @@ public class Router implements Serializable {
      *            exception to search error view for
      * @return optional error target entry corresponding to the given exception
      */
-    public Optional<ErrorTargetEntry> getErrorNavigationTarget(
-            Exception exception) {
+    public Optional<ErrorTargetEntry> getErrorNavigationTarget(Exception exception) {
         if (registry instanceof ErrorRouteRegistry) {
-            return ((ErrorRouteRegistry) registry)
-                    .getErrorNavigationTarget(exception);
+            return ((ErrorRouteRegistry) registry).getErrorNavigationTarget(exception);
         }
         return Optional.empty();
     }

@@ -26,8 +26,8 @@ import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * A common interface for fetching hierarchical data from a data source, such as
- * an in-memory collection or a backend database.
+ * A common interface for fetching hierarchical data from a data source, such as an in-memory collection or a backend
+ * database.
  *
  * @author Vaadin Ltd
  *
@@ -40,13 +40,11 @@ import com.vaadin.flow.function.SerializableFunction;
 public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
 
     /**
-     * Get the number of immediate child data items for the parent item returned
-     * by a given query.
+     * Get the number of immediate child data items for the parent item returned by a given query.
      *
      * @param query
      *            given query to request the count for
-     * @return the count of child data items for the data item
-     *         {@link HierarchicalQuery#getParent()}
+     * @return the count of child data items for the data item {@link HierarchicalQuery#getParent()}
      *
      * @throws IllegalArgumentException
      *             if the query is not of type HierarchicalQuery
@@ -56,13 +54,11 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
         if (query instanceof HierarchicalQuery<?, ?>) {
             return getChildCount((HierarchicalQuery<T, F>) query);
         }
-        throw new IllegalArgumentException(
-                "Hierarchical data provider doesn't support non-hierarchical queries");
+        throw new IllegalArgumentException("Hierarchical data provider doesn't support non-hierarchical queries");
     }
 
     /**
-     * Fetches data from this HierarchicalDataProvider using given
-     * {@code query}. Only the immediate children of
+     * Fetches data from this HierarchicalDataProvider using given {@code query}. Only the immediate children of
      * {@link HierarchicalQuery#getParent()} will be returned.
      *
      * @param query
@@ -77,24 +73,20 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
         if (query instanceof HierarchicalQuery<?, ?>) {
             return fetchChildren((HierarchicalQuery<T, F>) query);
         }
-        throw new IllegalArgumentException(
-                "Hierarchical data provider doesn't support non-hierarchical queries");
+        throw new IllegalArgumentException("Hierarchical data provider doesn't support non-hierarchical queries");
     }
 
     /**
-     * Get the number of immediate child data items for the parent item returned
-     * by a given query.
+     * Get the number of immediate child data items for the parent item returned by a given query.
      *
      * @param query
      *            given query to request the count for
-     * @return the count of child data items for the data item
-     *         {@link HierarchicalQuery#getParent()}
+     * @return the count of child data items for the data item {@link HierarchicalQuery#getParent()}
      */
     public int getChildCount(HierarchicalQuery<T, F> query);
 
     /**
-     * Fetches data from this HierarchicalDataProvider using given
-     * {@code query}. Only the immediate children of
+     * Fetches data from this HierarchicalDataProvider using given {@code query}. Only the immediate children of
      * {@link HierarchicalQuery#getParent()} will be returned.
      *
      * @param query
@@ -116,20 +108,17 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     @Override
     default <Q, C> HierarchicalConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
             SerializableBiFunction<Q, C, F> filterCombiner) {
-        return new HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>(
-                this) {
+        return new HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>(this) {
             @Override
             protected F combineFilters(Q queryFilter, C configuredFilter) {
-                return FilterUtils.combineFilters(filterCombiner, queryFilter,
-                        configuredFilter);
+                return FilterUtils.combineFilters(filterCombiner, queryFilter, configuredFilter);
             }
         };
     }
 
     @Override
     @SuppressWarnings("serial")
-    default <C> HierarchicalDataProvider<T, C> withConvertedFilter(
-            SerializableFunction<C, F> filterConverter) {
+    default <C> HierarchicalDataProvider<T, C> withConvertedFilter(SerializableFunction<C, F> filterConverter) {
         return new HierarchicalFilterDataProviderWrapper<T, C, F>(this) {
             @Override
             protected F getFilter(Query<T, C> query) {

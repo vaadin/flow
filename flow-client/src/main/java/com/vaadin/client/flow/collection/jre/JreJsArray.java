@@ -94,8 +94,7 @@ public class JreJsArray<T> extends JsArray<T> {
     }
 
     /**
-     * JRE implementation of the final {@link #spliceArray(int, int, JsArray)}
-     * method.
+     * JRE implementation of the final {@link #spliceArray(int, int, JsArray)} method.
      *
      * @param index
      *            the index at which to do the operation
@@ -105,19 +104,16 @@ public class JreJsArray<T> extends JsArray<T> {
      *            new items to add
      * @return an array of removed items
      */
-    public JsArray<T> doSpliceArray(int index, int remove,
-            JsArray<? extends T> add) {
+    public JsArray<T> doSpliceArray(int index, int remove, JsArray<? extends T> add) {
         return doSplice(index, remove, ((JreJsArray<? extends T>) add).values);
     }
 
     @Override
-    public JsArray<T> splice(int index, int remove,
-            @SuppressWarnings("unchecked") T... add) {
+    public JsArray<T> splice(int index, int remove, @SuppressWarnings("unchecked") T... add) {
         return doSplice(index, remove, Arrays.asList(add));
     }
 
-    private JreJsArray<T> doSplice(int index, int remove,
-            List<? extends T> add) {
+    private JreJsArray<T> doSplice(int index, int remove, List<? extends T> add) {
         JreJsArray<T> removed;
         if (remove > 0) {
             List<T> removeRange = values.subList(index, index + remove);
@@ -141,8 +137,7 @@ public class JreJsArray<T> extends JsArray<T> {
     }
 
     /**
-     * Gets the values of this array as a list. This method is only exposed to
-     * simplify testing.
+     * Gets the values of this array as a list. This method is only exposed to simplify testing.
      *
      * @param array
      *            the js array to get the values from

@@ -21,20 +21,19 @@ public class ManualLongPollingPushView extends AbstractTestViewWithLog {
         UI ui = attachEvent.getUI();
         ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
         ui.getPushConfiguration().setTransport(Transport.LONG_POLLING);
-        NativeButton manualPush = new NativeButton("Manual push after 1s",
-                event -> {
-                    executor.submit(() -> {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        ui.access(() -> {
-                            log("Logged after 1s, followed by manual push");
-                            ui.push();
-                        });
-                    });
+        NativeButton manualPush = new NativeButton("Manual push after 1s", event -> {
+            executor.submit(() -> {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                ui.access(() -> {
+                    log("Logged after 1s, followed by manual push");
+                    ui.push();
                 });
+            });
+        });
         manualPush.setId("manaul-push");
         add(manualPush);
 

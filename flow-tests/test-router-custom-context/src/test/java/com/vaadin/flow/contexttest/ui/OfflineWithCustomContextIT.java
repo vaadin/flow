@@ -32,20 +32,17 @@ public class OfflineWithCustomContextIT extends ChromeDeviceTest {
         waitForServiceWorkerReady();
 
         // Confirm that app shell is loaded
-        Assert.assertNotNull("Should have outlet when loaded online",
-                findElement(By.id("outlet")));
+        Assert.assertNotNull("Should have outlet when loaded online", findElement(By.id("outlet")));
 
         // Set offline network conditions in ChromeDriver
         getDevTools().setOfflineEnabled(true);
 
         try {
-            Assert.assertEquals("navigator.onLine should be false", false,
-                    executeScript("return navigator.onLine"));
+            Assert.assertEquals("navigator.onLine should be false", false, executeScript("return navigator.onLine"));
 
             // Reload the page in offline mode
             executeScript("window.location.reload();");
-            waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                    .executeScript("return document.readyState")
+            waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                     .equals("complete"));
 
             // Assert custom offline.html page contents
@@ -54,10 +51,8 @@ public class OfflineWithCustomContextIT extends ChromeDeviceTest {
                     body.findElements(By.id("outlet")).isEmpty());
 
             WebElement offline = body.findElement(By.id("offline"));
-            Assert.assertTrue(
-                    "Should have the content defined in offline.html file",
-                    offline.findElement(By.tagName("h1")).getText()
-                            .contains("PWA With custom offline page"));
+            Assert.assertTrue("Should have the content defined in offline.html file",
+                    offline.findElement(By.tagName("h1")).getText().contains("PWA With custom offline page"));
         } finally {
             // Reset network conditions back
             getDevTools().setOfflineEnabled(false);

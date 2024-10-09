@@ -32,8 +32,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
-    private final ElementData elementData = new StateNode(
-            Collections.singletonList(ElementData.class))
+    private final ElementData elementData = new StateNode(Collections.singletonList(ElementData.class))
             .getFeature(ElementData.class);
 
     @Test
@@ -47,8 +46,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
 
     @Test
     public void setGetPayload() {
-        Assert.assertNull("Tag should initially be null",
-                elementData.getPayload());
+        Assert.assertNull("Tag should initially be null", elementData.getPayload());
 
         JsonObject object = Json.createObject();
         elementData.setPayload(object);
@@ -113,10 +111,8 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     }
 
     private MapPutChange getChange(List<NodeChange> changes, String key) {
-        Optional<MapPutChange> keyFound = changes.stream()
-                .filter(MapPutChange.class::isInstance)
-                .map(MapPutChange.class::cast)
-                .filter(chang -> chang.getKey().equals(key)).findFirst();
+        Optional<MapPutChange> keyFound = changes.stream().filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast).filter(chang -> chang.getKey().equals(key)).findFirst();
         Assert.assertTrue("No " + key + " change found", keyFound.isPresent());
         return keyFound.get();
     }

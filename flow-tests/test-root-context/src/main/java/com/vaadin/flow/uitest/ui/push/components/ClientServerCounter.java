@@ -33,10 +33,8 @@ public class ClientServerCounter extends Div {
         spacer();
 
         // Client counter
-        getElement().appendChild(ElementFactory
-                .createDiv("Client counter (click 'increment' to update):"));
-        Element lbl = ElementFactory.createDiv(clientCounter + "")
-                .setAttribute("id", CLIENT_COUNTER_ID);
+        getElement().appendChild(ElementFactory.createDiv("Client counter (click 'increment' to update):"));
+        Element lbl = ElementFactory.createDiv(clientCounter + "").setAttribute("id", CLIENT_COUNTER_ID);
         getElement().appendChild(lbl);
 
         NativeButton button = new NativeButton("Increment", e -> {
@@ -51,10 +49,8 @@ public class ClientServerCounter extends Div {
         /*
          * Server counter
          */
-        getElement().appendChild(ElementFactory.createDiv(
-                "Server counter (updates each second by server thread):"));
-        serverCounterElement = ElementFactory.createDiv().setAttribute("id",
-                SERVER_COUNTER_ID);
+        getElement().appendChild(ElementFactory.createDiv("Server counter (updates each second by server thread):"));
+        serverCounterElement = ElementFactory.createDiv().setAttribute("id", SERVER_COUNTER_ID);
         serverCounterElement.setText(serverCounter + "");
         getElement().appendChild(serverCounterElement);
 
@@ -78,8 +74,7 @@ public class ClientServerCounter extends Div {
         startTimer.setId(START_TIMER_ID);
         getElement().appendChild(startTimer.getElement());
 
-        Element stopTimer = ElementFactory.createButton("Stop timer")
-                .setAttribute("id", STOP_TIMER_ID);
+        Element stopTimer = ElementFactory.createButton("Stop timer").setAttribute("id", STOP_TIMER_ID);
         stopTimer.setText("Stop timer");
         stopTimer.addEventListener("click", e -> {
             if (task != null) {

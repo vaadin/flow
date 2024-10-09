@@ -18,11 +18,9 @@ package com.vaadin.flow.router;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 
 /**
- * Any attached component implementing this interface will receive an event
- * before a new navigation state is entered.
+ * Any attached component implementing this interface will receive an event before a new navigation state is entered.
  * <p>
- * During this event phase there is the possibility to reroute to another
- * navigation target.
+ * During this event phase there is the possibility to reroute to another navigation target.
  *
  * @author Vaadin Ltd
  * @since 1.0

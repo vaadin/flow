@@ -44,8 +44,7 @@ public class WebStorageIT extends ChromeBrowserTest {
         remove.click();
         detect.click();
 
-        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
-                WebStorageView.VALUE_NOT_SET));
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), WebStorageView.VALUE_NOT_SET));
     }
 
     @Test
@@ -68,8 +67,7 @@ public class WebStorageIT extends ChromeBrowserTest {
         clear.click();
         detect.click();
 
-        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
-                WebStorageView.VALUE_NOT_SET));
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), WebStorageView.VALUE_NOT_SET));
     }
 
     @Test
@@ -92,8 +90,7 @@ public class WebStorageIT extends ChromeBrowserTest {
         remove.click();
         detect.click();
 
-        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
-                WebStorageView.VALUE_NOT_SET));
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), WebStorageView.VALUE_NOT_SET));
     }
 
     @Test
@@ -116,7 +113,6 @@ public class WebStorageIT extends ChromeBrowserTest {
         clear.click();
         detect.click();
 
-        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
-                WebStorageView.VALUE_NOT_SET));
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), WebStorageView.VALUE_NOT_SET));
     }
 }

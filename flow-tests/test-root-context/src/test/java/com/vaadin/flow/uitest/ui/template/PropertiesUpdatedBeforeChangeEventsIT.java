@@ -32,12 +32,10 @@ public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
 
     private void assertTextsCorrect(String expected) {
         Assert.assertEquals(expected, secondPropDiv.getText());
-        Assert.assertEquals(secondPropDiv.getText(),
-                serverSetTextDiv.getText());
+        Assert.assertEquals(secondPropDiv.getText(), serverSetTextDiv.getText());
     }
 
     private WebElement getElementById(String id) {
-        return $("properties-updated-before-change-events").first()
-                .$(TestBenchElement.class).id(id);
+        return $("properties-updated-before-change-events").first().$(TestBenchElement.class).id(id);
     }
 }

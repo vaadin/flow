@@ -32,12 +32,10 @@ public class ClassFinderTest {
             this.realClassLoader = realClassLoader;
         }
 
-        protected Class<?> findClass(String name)
-                throws ClassNotFoundException {
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
             try {
                 byte[] bytes = IOUtils
-                        .toByteArray(realClassLoader.getResourceAsStream(
-                                name.replace(".", "/") + ".class"));
+                        .toByteArray(realClassLoader.getResourceAsStream(name.replace(".", "/") + ".class"));
                 return defineClass(name, bytes, 0, bytes.length);
             } catch (IOException e) {
                 throw new ClassNotFoundException("Failed", e);
@@ -53,38 +51,33 @@ public class ClassFinderTest {
     public void should_Fail_when_DifferentClasLoader() throws Exception {
         ClassLoader loader = new ClassLoader() {
             @Override
-            public Class<?> loadClass(String name)
-                    throws ClassNotFoundException {
+            public Class<?> loadClass(String name) throws ClassNotFoundException {
                 throw new ClassNotFoundException();
             }
         };
 
         exception.expect(ClassNotFoundException.class);
-        DefaultClassFinder finder = new DefaultClassFinder(loader,
-                Component1.class);
+        DefaultClassFinder finder = new DefaultClassFinder(loader, Component1.class);
         finder.loadClass(Component1.class.getName());
     }
 
     @Test
     public void should_LoadClasses() throws Exception {
-        DefaultClassFinder finder = new DefaultClassFinder(
-                new HashSet<>(Arrays.asList(Component1.class)));
+        DefaultClassFinder finder = new DefaultClassFinder(new HashSet<>(Arrays.asList(Component1.class)));
         Assert.assertNotNull(finder.loadClass(Component1.class.getName()));
     }
 
     @Test
     public void should_LoadClasses_when_NoClassListProvided() throws Exception {
-        DefaultClassFinder finder = new DefaultClassFinder(
-                Collections.emptySet());
+        DefaultClassFinder finder = new DefaultClassFinder(Collections.emptySet());
         Assert.assertNotNull(finder.loadClass(Component1.class.getName()));
     }
 
     @Test
     public void getSubTypesOf_returnsPlainSubtypes() {
-        DefaultClassFinder finder = new DefaultClassFinder(new HashSet<>(
-                Arrays.asList(Double.class, Integer.class, String.class)));
-        Set<Class<? extends Number>> subTypes = finder
-                .getSubTypesOf(Number.class);
+        DefaultClassFinder finder = new DefaultClassFinder(
+                new HashSet<>(Arrays.asList(Double.class, Integer.class, String.class)));
+        Set<Class<? extends Number>> subTypes = finder.getSubTypesOf(Number.class);
         Assert.assertEquals(2, subTypes.size());
         Assert.assertTrue(subTypes.contains(Double.class));
         Assert.assertTrue(subTypes.contains(Integer.class));
@@ -92,8 +85,8 @@ public class ClassFinderTest {
 
     @Test
     public void getSubTypesOf_returnsGenericSubtypes() {
-        DefaultClassFinder finder = new DefaultClassFinder(new HashSet<>(
-                Arrays.asList(ArrayList.class, TestList.class, String.class)));
+        DefaultClassFinder finder = new DefaultClassFinder(
+                new HashSet<>(Arrays.asList(ArrayList.class, TestList.class, String.class)));
         Set<Class<? extends List>> subTypes = finder.getSubTypesOf(List.class);
         Assert.assertEquals(2, subTypes.size());
         Assert.assertTrue(subTypes.contains(ArrayList.class));
@@ -106,8 +99,7 @@ public class ClassFinderTest {
         testClasses.add(NodeTestComponents.ExtraImport.class);
         testClasses.add(NodeTestComponents.VaadinBowerComponent.class);
         testClasses.add(NodeTestComponents.TranslatedImports.class);
-        Set<Class<?>> allClasses = new DefaultClassFinder(testClasses)
-                .getSubTypesOf(Object.class);
+        Set<Class<?>> allClasses = new DefaultClassFinder(testClasses).getSubTypesOf(Object.class);
         LinkedHashSet<Class<?>> expected = new LinkedHashSet<>();
         expected.add(NodeTestComponents.ExtraImport.class);
         expected.add(NodeTestComponents.TranslatedImports.class);
@@ -121,15 +113,12 @@ public class ClassFinderTest {
 
     @Test
     public void defaultsToContextClassLoader() throws Exception {
-        ClassLoader contextClassLoader = Thread.currentThread()
-                .getContextClassLoader();
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
         ClassLoader loader1 = new FakeClassLoader(contextClassLoader);
         ClassLoader loader2 = new FakeClassLoader(contextClassLoader);
-        Class<?> cls1 = loader1.loadClass(
-                "com.vaadin.flow.server.frontend.scanner.ClassFinderTest$TestClass1");
-        Class<?> cls2 = loader2.loadClass(
-                "com.vaadin.flow.server.frontend.scanner.ClassFinderTest$TestClass1");
+        Class<?> cls1 = loader1.loadClass("com.vaadin.flow.server.frontend.scanner.ClassFinderTest$TestClass1");
+        Class<?> cls2 = loader2.loadClass("com.vaadin.flow.server.frontend.scanner.ClassFinderTest$TestClass1");
 
         Assert.assertEquals(loader1, cls1.getClassLoader());
         Assert.assertEquals(loader2, cls2.getClassLoader());

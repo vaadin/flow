@@ -7,11 +7,9 @@ import com.vaadin.flow.function.SerializableFunction;
 public abstract class AbstractTestHasValueAndValidation<C extends AbstractSinglePropertyField<C, T>, T>
         extends AbstractSinglePropertyField<C, T> implements HasValidation {
 
-    public AbstractTestHasValueAndValidation(T defaultValue,
-            SerializableFunction<String, T> propertyToValue,
+    public AbstractTestHasValueAndValidation(T defaultValue, SerializableFunction<String, T> propertyToValue,
             SerializableFunction<T, String> valueToProperty) {
-        super("value", defaultValue, String.class, propertyToValue,
-                valueToProperty);
+        super("value", defaultValue, String.class, propertyToValue, valueToProperty);
     }
 
     private String errorMessage = "";

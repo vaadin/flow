@@ -20,14 +20,13 @@ import com.vaadin.flow.dom.Element;
 /**
  * A component which encapsulates the given text in a text node.
  * <p>
- * Text node doesn't support setting any attribute or property so you may not
- * use Element API (and {@link Text} doesn't provide any such contract) for
- * setting attribute/property. It implies that you may not style this component
- * as well. Any attempt to set attribute/property value throws an exception. The
- * only available API for a {@link Text} component is set a text.
+ * Text node doesn't support setting any attribute or property so you may not use Element API (and {@link Text} doesn't
+ * provide any such contract) for setting attribute/property. It implies that you may not style this component as well.
+ * Any attempt to set attribute/property value throws an exception. The only available API for a {@link Text} component
+ * is set a text.
  * <p>
- * If you need a text component which can be styled then check {@code Span}
- * class (from {@code flow-html-components}) module.
+ * If you need a text component which can be styled then check {@code Span} class (from {@code flow-html-components})
+ * module.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -38,8 +37,7 @@ public class Text extends Component implements HasText {
      * Creates an instance using the given text.
      *
      * @param text
-     *            the text to show, <code>null</code> is interpreted as an empty
-     *            string
+     *            the text to show, <code>null</code> is interpreted as an empty string
      */
     public Text(String text) {
         super(Element.createText(text));
@@ -49,8 +47,7 @@ public class Text extends Component implements HasText {
      * Sets the text of the component.
      *
      * @param text
-     *            the text of the component, <code>null</code> is interpreted as
-     *            an empty string
+     *            the text of the component, <code>null</code> is interpreted as an empty string
      */
     @Override
     public void setText(String text) {
@@ -72,8 +69,7 @@ public class Text extends Component implements HasText {
 
     @Override
     protected <T> void set(PropertyDescriptor<T, ?> descriptor, T value) {
-        throw new UnsupportedOperationException("Cannot set '"
-                + descriptor.getPropertyName() + "' property to the "
+        throw new UnsupportedOperationException("Cannot set '" + descriptor.getPropertyName() + "' property to the "
                 + getClass().getSimpleName() + " component because it doesn't "
                 + "represent an HTML Element but a text Node on the client side.");
     }
@@ -99,10 +95,9 @@ public class Text extends Component implements HasText {
      */
     @Override
     public void setVisible(boolean visible) {
-        throw new UnsupportedOperationException("Cannot change "
-                + getClass().getSimpleName()
-                + " component visibility because it doesn't "
-                + "represent an HTML Element but a text Node on the client side.");
+        throw new UnsupportedOperationException(
+                "Cannot change " + getClass().getSimpleName() + " component visibility because it doesn't "
+                        + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
@@ -114,9 +109,8 @@ public class Text extends Component implements HasText {
      */
     @Override
     public void addClassName(String className) {
-        throw new UnsupportedOperationException("Cannot add a class to the "
-                + getClass().getSimpleName() + " component because it doesn't "
-                + "represent an HTML Element but a text Node on the client side.");
+        throw new UnsupportedOperationException("Cannot add a class to the " + getClass().getSimpleName()
+                + " component because it doesn't " + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
@@ -128,10 +122,8 @@ public class Text extends Component implements HasText {
      */
     @Override
     public boolean removeClassName(String className) {
-        throw new UnsupportedOperationException(
-                "Cannot remove a class from the " + getClass().getSimpleName()
-                        + " component because it doesn't "
-                        + "represent an HTML Element but a text Node on the client side.");
+        throw new UnsupportedOperationException("Cannot remove a class from the " + getClass().getSimpleName()
+                + " component because it doesn't " + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
@@ -143,10 +135,9 @@ public class Text extends Component implements HasText {
      */
     @Override
     public void setClassName(String className) {
-        throw new UnsupportedOperationException("Cannot set the "
-                + getClass().getSimpleName()
-                + " component class because it doesn't "
-                + "represent an HTML Element but a text Node on the client side.");
+        throw new UnsupportedOperationException(
+                "Cannot set the " + getClass().getSimpleName() + " component class because it doesn't "
+                        + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
@@ -158,10 +149,9 @@ public class Text extends Component implements HasText {
      */
     @Override
     public void setClassName(String className, boolean set) {
-        throw new UnsupportedOperationException("Cannot set the "
-                + getClass().getSimpleName()
-                + " component class because it doesn't "
-                + "represent an HTML Element but a text Node on the client side.");
+        throw new UnsupportedOperationException(
+                "Cannot set the " + getClass().getSimpleName() + " component class because it doesn't "
+                        + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
@@ -173,9 +163,8 @@ public class Text extends Component implements HasText {
      */
     @Override
     public void addClassNames(String... classNames) {
-        throw new UnsupportedOperationException("Cannot add classes to the "
-                + getClass().getSimpleName() + " component because it doesn't "
-                + "represent an HTML Element but a text Node on the client side.");
+        throw new UnsupportedOperationException("Cannot add classes to the " + getClass().getSimpleName()
+                + " component because it doesn't " + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
@@ -187,9 +176,7 @@ public class Text extends Component implements HasText {
      */
     @Override
     public void removeClassNames(String... classNames) {
-        throw new UnsupportedOperationException(
-                "Cannot remove classes from the " + getClass().getSimpleName()
-                        + " component because it doesn't "
-                        + "represent an HTML Element but a text Node on the client side.");
+        throw new UnsupportedOperationException("Cannot remove classes from the " + getClass().getSimpleName()
+                + " component because it doesn't " + "represent an HTML Element but a text Node on the client side.");
     }
 }

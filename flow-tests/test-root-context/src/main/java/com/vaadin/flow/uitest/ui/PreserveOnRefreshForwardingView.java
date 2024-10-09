@@ -21,8 +21,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.uitest.ui.PreserveOnRefreshForwardingView")
-public class PreserveOnRefreshForwardingView extends Div
-        implements BeforeEnterObserver {
+public class PreserveOnRefreshForwardingView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {

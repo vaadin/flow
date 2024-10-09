@@ -20,37 +20,32 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Indicates a class that is responsible for taking a decisions about granting
- * access to a target view, based on the result provided by
- * {@link NavigationAccessChecker}s.
+ * Indicates a class that is responsible for taking a decisions about granting access to a target view, based on the
+ * result provided by {@link NavigationAccessChecker}s.
  * <p>
- * The component is used by {@link NavigationAccessControl} to compute the final
- * decision, based on the results of all registered
- * {@link NavigationAccessChecker}s.
+ * The component is used by {@link NavigationAccessControl} to compute the final decision, based on the results of all
+ * registered {@link NavigationAccessChecker}s.
  */
 @FunctionalInterface
 public interface AccessCheckDecisionResolver extends Serializable {
 
     /**
-     * Determines if access is granted for a specific navigation context, based
-     * on the decisions provided by {@link NavigationAccessChecker}s.
+     * Determines if access is granted for a specific navigation context, based on the decisions provided by
+     * {@link NavigationAccessChecker}s.
      * <p>
      * </p>
-     * The decision resolver should grant access or deny it by returning an
-     * appropriate {@link AccessCheckResult} object.
+     * The decision resolver should grant access or deny it by returning an appropriate {@link AccessCheckResult}
+     * object.
      * <p>
      * </p>
-     * The expected result of the method should be
-     * {@link AccessCheckDecision#ALLOW} or {@link AccessCheckDecision#DENY}, or
-     * {@link AccessCheckDecision#REJECT}.
+     * The expected result of the method should be {@link AccessCheckDecision#ALLOW} or
+     * {@link AccessCheckDecision#DENY}, or {@link AccessCheckDecision#REJECT}.
      * <p>
      * </p>
-     * A {@link AccessCheckDecision#NEUTRAL} result does not make because it
-     * does not provide meaningful information to
-     * {@link NavigationAccessControl} to complete the access check process. For
-     * this reason, a neutral result will produce the same effect as
-     * {@link AccessCheckDecision#REJECT}, preventing the navigation and failing
-     * with an exception in development mode.
+     * A {@link AccessCheckDecision#NEUTRAL} result does not make because it does not provide meaningful information to
+     * {@link NavigationAccessControl} to complete the access check process. For this reason, a neutral result will
+     * produce the same effect as {@link AccessCheckDecision#REJECT}, preventing the navigation and failing with an
+     * exception in development mode.
      *
      * <pre>{@code
      * AccessCheckResult resolve(List<Result> results,
@@ -76,19 +71,15 @@ public interface AccessCheckDecisionResolver extends Serializable {
      * }
      * }</pre>
      *
-     * Result object can also be created using {@link NavigationContext} helpers
-     * {@link NavigationContext#allow()},
-     * {@link NavigationContext#deny(String)},
-     * {@link NavigationContext#reject(String)} and
+     * Result object can also be created using {@link NavigationContext} helpers {@link NavigationContext#allow()},
+     * {@link NavigationContext#deny(String)}, {@link NavigationContext#reject(String)} and
      * {@link NavigationContext#neutral()}.
      *
      * @param results
      *            the decisions from access checkers.
      * @param context
      *            the current navigation context
-     * @return a result indicating weather the access to target view should be
-     *         granted or not, never {@literal null}.
+     * @return a result indicating weather the access to target view should be granted or not, never {@literal null}.
      */
-    AccessCheckResult resolve(List<AccessCheckResult> results,
-            NavigationContext context);
+    AccessCheckResult resolve(List<AccessCheckResult> results, NavigationContext context);
 }

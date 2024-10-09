@@ -68,8 +68,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         try {
             writeIfChanged(generatedFile, getFileContent());
         } catch (IOException exception) {
-            String errorMessage = String.format("Error writing '%s'",
-                    generatedFile);
+            String errorMessage = String.format("Error writing '%s'", generatedFile);
             throw new ExecutionFailedException(errorMessage, exception);
         }
     }
@@ -77,21 +76,15 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     @Override
     protected File getGeneratedFile() {
         if (options.isReactEnabled()) {
-            return new File(
-                    new File(frontendDirectory, FrontendUtils.GENERATED),
-                    INDEX_TSX);
+            return new File(new File(frontendDirectory, FrontendUtils.GENERATED), INDEX_TSX);
         }
-        return new File(new File(frontendDirectory, FrontendUtils.GENERATED),
-                INDEX_TS);
+        return new File(new File(frontendDirectory, FrontendUtils.GENERATED), INDEX_TS);
     }
 
     @Override
     protected boolean shouldGenerate() {
-        return Arrays.asList(INDEX_TSX, INDEX_TS, INDEX_JS).stream()
-                .map(type -> new File(frontendDirectory, type))
-                .filter(File::exists)
-                .peek(this::compareActualIndexWithIndexTemplate).findAny()
-                .isEmpty();
+        return Arrays.asList(INDEX_TSX, INDEX_TS, INDEX_JS).stream().map(type -> new File(frontendDirectory, type))
+                .filter(File::exists).peek(this::compareActualIndexWithIndexTemplate).findAny().isEmpty();
     }
 
     @Override
@@ -101,20 +94,13 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         if (options.isReactEnabled()) {
             indexFile = "index-react.tsx";
         }
-        try (InputStream indexTsStream = getClass()
-                .getResourceAsStream(indexFile)) {
+        try (InputStream indexTsStream = getClass().getResourceAsStream(indexFile)) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
             if (options.isReactEnabled()) {
-                File routesTsx = new File(frontendDirectory,
-                        FrontendUtils.ROUTES_TSX);
-                indexTemplate = indexTemplate.replace(
-                        ROUTES_JS_IMPORT_PATH_TOKEN,
-                        (routesTsx.exists())
-                                ? FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                        + FrontendUtils.ROUTES_JS
-                                : FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                        + FrontendUtils.GENERATED
-                                        + FrontendUtils.ROUTES_JS);
+                File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
+                indexTemplate = indexTemplate.replace(ROUTES_JS_IMPORT_PATH_TOKEN, (routesTsx.exists())
+                        ? FrontendUtils.FRONTEND_FOLDER_ALIAS + FrontendUtils.ROUTES_JS
+                        : FrontendUtils.FRONTEND_FOLDER_ALIAS + FrontendUtils.GENERATED + FrontendUtils.ROUTES_JS);
             }
         }
         return indexTemplate;
@@ -125,8 +111,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Ensure that the given relative path is valid as an import path. NOTE:
-     * expose only for testing purpose.
+     * Ensure that the given relative path is valid as an import path. NOTE: expose only for testing purpose.
      *
      * @param relativePath
      *            given relative path
@@ -149,8 +134,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
             log().warn("Failed to read file content", e);
         }
         if (indexContent != null && !indexContent.equals(indexTemplate)) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
-                    Version.getFullVersion());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
         }
     }
 

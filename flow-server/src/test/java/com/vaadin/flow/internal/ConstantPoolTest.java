@@ -51,8 +51,7 @@ public class ConstantPoolTest {
         String constantId = constantPool.getConstantId(reference);
         constantPool.dumpConstants();
 
-        String otherId = constantPool
-                .getConstantId(new ConstantPoolKey(Json.createObject()));
+        String otherId = constantPool.getConstantId(new ConstantPoolKey(Json.createObject()));
 
         Assert.assertEquals(constantId, otherId);
         Assert.assertFalse(constantPool.hasNewConstants());
@@ -65,8 +64,7 @@ public class ConstantPoolTest {
         String constantId = constantPool.getConstantId(reference);
         constantPool.dumpConstants();
 
-        String otherId = constantPool
-                .getConstantId(new ConstantPoolKey(Json.createArray()));
+        String otherId = constantPool.getConstantId(new ConstantPoolKey(Json.createArray()));
 
         Assert.assertNotEquals(constantId, otherId);
         Assert.assertTrue(constantPool.hasNewConstants());
@@ -74,8 +72,7 @@ public class ConstantPoolTest {
 
     @Test
     public void constantPoolKey_exportedDirectly_idCreated() {
-        final ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                Json.createObject());
+        final ConstantPoolKey constantPoolKey = new ConstantPoolKey(Json.createObject());
         final JsonObject message = Json.createObject();
         constantPoolKey.export(message);
         Assert.assertTrue(message.hasKey(constantPoolKey.getId()));

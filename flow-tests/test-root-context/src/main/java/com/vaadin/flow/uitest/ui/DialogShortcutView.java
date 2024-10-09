@@ -63,54 +63,46 @@ public class DialogShortcutView extends Div {
         eventLog = new Div(new Text("Click events and their sources:"));
         eventLog.setId(EVENT_LOG_ID);
 
-        final NativeButton allowBrowserDefaultButton = new NativeButton(
-                "Allow Browser Default", event -> {
-                    allowBrowserDefault = true;
-                    event.getSource().setEnabled(false);
-                });
+        final NativeButton allowBrowserDefaultButton = new NativeButton("Allow Browser Default", event -> {
+            allowBrowserDefault = true;
+            event.getSource().setEnabled(false);
+        });
         allowBrowserDefaultButton.setId(ALLOW_BROWSER_DEFAULT_BUTTON);
-        final NativeButton testButton = createButton(
-                "UI level button with shortcut", this::logClickEvent);
+        final NativeButton testButton = createButton("UI level button with shortcut", this::logClickEvent);
         testButton.setId(UI_BUTTON);
         testButton.addClickShortcut(SHORTCUT_KEY);
 
-        add(new Div(new Text("Shortcut key: " + KEY_STRING)),
-                createOpenDialogButton(OPEN_BUTTON), testButton,
+        add(new Div(new Text("Shortcut key: " + KEY_STRING)), createOpenDialogButton(OPEN_BUTTON), testButton,
                 allowBrowserDefaultButton, eventLog);
         setId("main-div");
 
-        final NativeButton reusableDialogButton = new NativeButton(
-                "Open reusable dialog", event -> {
-                    if (reusedDialog == null) {
-                        reusedDialog = new Dialog(REUSABLE_DIALOG_ID);
-                    }
-                    open(reusedDialog);
-                    eventLog.add(new Div(new Text("Opened reusable dialog DC"
-                            + dialogCounter + "-EC" + eventCounter)));
-                });
+        final NativeButton reusableDialogButton = new NativeButton("Open reusable dialog", event -> {
+            if (reusedDialog == null) {
+                reusedDialog = new Dialog(REUSABLE_DIALOG_ID);
+            }
+            open(reusedDialog);
+            eventLog.add(new Div(new Text("Opened reusable dialog DC" + dialogCounter + "-EC" + eventCounter)));
+        });
         reusableDialogButton.setId(REUSABLE_DIALOG_BUTTON);
         add(reusableDialogButton);
     }
 
     private void logClickEvent(EventObject event) {
-        eventLog.addComponentAsFirst(new Div(new Text(
-                (eventCounter++) + "-" + ((Component) event.getSource()).getId()
-                        .orElse("NO-SOURCE-ID"))));
+        eventLog.addComponentAsFirst(new Div(
+                new Text((eventCounter++) + "-" + ((Component) event.getSource()).getId().orElse("NO-SOURCE-ID"))));
     }
 
     private Component createOpenDialogButton(String id) {
         final NativeButton button = createButton("Open dialog", event -> {
             final Dialog dialog = new Dialog(dialogCounter.incrementAndGet());
             open(dialog);
-            eventLog.add(new Div(new Text("Opened dialog DC" + dialogCounter
-                    + "-EC" + eventCounter)));
+            eventLog.add(new Div(new Text("Opened dialog DC" + dialogCounter + "-EC" + eventCounter)));
         });
         button.setId(id);
         return button;
     }
 
-    private NativeButton createButton(String caption,
-            ComponentEventListener<ClickEvent<NativeButton>> listener) {
+    private NativeButton createButton(String caption, ComponentEventListener<ClickEvent<NativeButton>> listener) {
         final NativeButton button = new NativeButton();
         button.setText(caption);
         button.addClickListener(listener);
@@ -126,57 +118,42 @@ public class DialogShortcutView extends Div {
 
         public Dialog(int index) {
             this.index = index;
-            final NativeButton testButton = createButton(
-                    "Test button with shortcut",
+            final NativeButton testButton = createButton("Test button with shortcut",
                     DialogShortcutView.this::logClickEvent);
             testButton.setId(DIALOG_BUTTON + index);
             final NativeButton uiScopeClickShortcutButton = new NativeButton(
-                    "Add button click shortcut with listenOn(UI) (default)",
-                    event -> {
+                    "Add button click shortcut with listenOn(UI) (default)", event -> {
                         testButton.addClickShortcut(SHORTCUT_KEY);
                         event.getSource().setEnabled(false);
                     });
             uiScopeClickShortcutButton.setId(LISTEN_CLICK_ON_UI_BUTTON + index);
             final NativeButton dialogScopeClickShortcutButton = new NativeButton(
-                    "Add button click shortcut with listenOn(Dialog)",
-                    event -> {
-                        testButton.addClickShortcut(SHORTCUT_KEY)
-                                .listenOn(Dialog.this);
+                    "Add button click shortcut with listenOn(Dialog)", event -> {
+                        testButton.addClickShortcut(SHORTCUT_KEY).listenOn(Dialog.this);
                         event.getSource().setEnabled(false);
                     });
-            dialogScopeClickShortcutButton
-                    .setId(LISTEN_CLICK_ON_DIALOG_BUTTON + index);
-            final NativeButton uiScopeShortcutButton = new NativeButton(
-                    "Add shortcut with listenOn(UI) (default)", event -> {
-                        Shortcuts
-                                .addShortcutListener(Dialog.this,
-                                        DialogShortcutView.this::logClickEvent,
-                                        SHORTCUT_KEY)
+            dialogScopeClickShortcutButton.setId(LISTEN_CLICK_ON_DIALOG_BUTTON + index);
+            final NativeButton uiScopeShortcutButton = new NativeButton("Add shortcut with listenOn(UI) (default)",
+                    event -> {
+                        Shortcuts.addShortcutListener(Dialog.this, DialogShortcutView.this::logClickEvent, SHORTCUT_KEY)
                                 .setBrowserDefaultAllowed(allowBrowserDefault);
                         event.getSource().setEnabled(false);
                     });
             uiScopeShortcutButton.setId(LISTEN_ON_UI_BUTTON + index);
-            final NativeButton dialogScopeShortcutButton = new NativeButton(
-                    "Add shortcut with listenOn(Dialog)", event -> {
-                        Shortcuts
-                                .addShortcutListener(Dialog.this,
-                                        DialogShortcutView.this::logClickEvent,
-                                        SHORTCUT_KEY)
-                                .listenOn(Dialog.this)
-                                .setBrowserDefaultAllowed(allowBrowserDefault);
+            final NativeButton dialogScopeShortcutButton = new NativeButton("Add shortcut with listenOn(Dialog)",
+                    event -> {
+                        Shortcuts.addShortcutListener(Dialog.this, DialogShortcutView.this::logClickEvent, SHORTCUT_KEY)
+                                .listenOn(Dialog.this).setBrowserDefaultAllowed(allowBrowserDefault);
                         event.getSource().setEnabled(false);
                     });
             dialogScopeShortcutButton.setId(LISTEN_ON_DIALOG_BUTTON + index);
 
-            final Component closeButton = createButton("Close",
-                    event -> close(this));
+            final Component closeButton = createButton("Close", event -> close(this));
             closeButton.setId(DIALOG_CLOSE_BUTTON + index);
-            content = new Div(new Input(), new Div(), closeButton, new Div(),
-                    uiScopeShortcutButton, dialogScopeShortcutButton, new Div(),
-                    uiScopeClickShortcutButton, dialogScopeClickShortcutButton,
+            content = new Div(new Input(), new Div(), closeButton, new Div(), uiScopeShortcutButton,
+                    dialogScopeShortcutButton, new Div(), uiScopeClickShortcutButton, dialogScopeClickShortcutButton,
                     new Div(), testButton);
-            content.getStyle().set("border", "1px solid black").set("margin",
-                    "10px");
+            content.getStyle().set("border", "1px solid black").set("margin", "10px");
             content.setId(CONTENT_ID + index);
             add(content);
 

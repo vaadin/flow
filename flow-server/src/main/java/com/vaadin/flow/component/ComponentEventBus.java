@@ -43,13 +43,10 @@ import elemental.json.JsonValue;
 /**
  * An event bus for {@link Component}s.
  * <p>
- * Handles adding and removing event listeners, and firing events of type
- * {@link ComponentEvent}.
+ * Handles adding and removing event listeners, and firing events of type {@link ComponentEvent}.
  * <p>
- * Events can either be fired manually through
- * {@link #fireEvent(ComponentEvent)} or automatically based on a DOM event (see
- * {@link DomEvent}). Automatically fired events must have a suitable
- * constructor, as defined in {@link DomEvent}.
+ * Events can either be fired manually through {@link #fireEvent(ComponentEvent)} or automatically based on a DOM event
+ * (see {@link DomEvent}). Automatically fired events must have a suitable constructor, as defined in {@link DomEvent}.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -57,11 +54,10 @@ import elemental.json.JsonValue;
 public class ComponentEventBus implements Serializable {
 
     /**
-     * Pairs a component-level listener for its DOM listener registration, if
-     * the event-type is annotated with {@link DomEvent}.
+     * Pairs a component-level listener for its DOM listener registration, if the event-type is annotated with
+     * {@link DomEvent}.
      */
-    private static class ListenerWrapper<T extends ComponentEvent<?>>
-            implements Serializable {
+    private static class ListenerWrapper<T extends ComponentEvent<?>> implements Serializable {
 
         private ComponentEventListener<T> listener;
         private DomListenerRegistration domRegistration;
@@ -73,8 +69,7 @@ public class ComponentEventBus implements Serializable {
     }
 
     // Package private to enable testing only
-    HashMap<Class<? extends ComponentEvent<?>>, ArrayList<ListenerWrapper<?>>> componentEventData = new HashMap<>(
-            2);
+    HashMap<Class<? extends ComponentEvent<?>>, ArrayList<ListenerWrapper<?>>> componentEventData = new HashMap<>(2);
 
     private Component component;
 
@@ -82,8 +77,7 @@ public class ComponentEventBus implements Serializable {
      * Creates an event bus for the given component.
      *
      * @param component
-     *            the component which will be used as a source for all fired
-     *            events
+     *            the component which will be used as a source for all fired events
      */
     public ComponentEventBus(Component component) {
         this.component = component;
@@ -100,51 +94,42 @@ public class ComponentEventBus implements Serializable {
      *            the listener to call when the event occurs
      * @return an object which can be used to remove the event listener
      */
-    public <T extends ComponentEvent<?>> Registration addListener(
-            Class<T> eventType, ComponentEventListener<T> listener) {
+    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
+            ComponentEventListener<T> listener) {
         return addListenerInternal(eventType, listener, null);
     }
 
     /**
-     * Adds a listener for the given event type, and customizes the
-     * corresponding DOM event listener with the given consumer. This allows
-     * overriding eg. the debounce settings defined in the {@link DomEvent}
-     * annotation.
+     * Adds a listener for the given event type, and customizes the corresponding DOM event listener with the given
+     * consumer. This allows overriding eg. the debounce settings defined in the {@link DomEvent} annotation.
      * <p>
-     * Note that customizing the DOM event listener works only for event types
-     * which are annotated with {@link DomEvent}. Use
-     * {@link #addListener(Class, ComponentEventListener)} for other listeners,
-     * or if you don't need to customize the DOM listener.
+     * Note that customizing the DOM event listener works only for event types which are annotated with
+     * {@link DomEvent}. Use {@link #addListener(Class, ComponentEventListener)} for other listeners, or if you don't
+     * need to customize the DOM listener.
      *
      * @param <T>
      *            the event type
      * @param eventType
-     *            the event type for which to call the listener, must be
-     *            annotated with {@link DomEvent}
+     *            the event type for which to call the listener, must be annotated with {@link DomEvent}
      * @param listener
      *            the listener to call when the event occurs
      * @param domListenerConsumer
-     *            a consumer to customize the behavior of the DOM event
-     *            listener, not {@code null}
+     *            a consumer to customize the behavior of the DOM event listener, not {@code null}
      * @return an object which can be used to remove the event listener
      * @throws IllegalArgumentException
      *             if the event type is not annotated with {@link DomEvent}
      */
-    public <T extends ComponentEvent<?>> Registration addListener(
-            Class<T> eventType, ComponentEventListener<T> listener,
-            Consumer<DomListenerRegistration> domListenerConsumer) {
-        Objects.requireNonNull(domListenerConsumer,
-                "DOM listener consumer cannot be null");
+    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
+            ComponentEventListener<T> listener, Consumer<DomListenerRegistration> domListenerConsumer) {
+        Objects.requireNonNull(domListenerConsumer, "DOM listener consumer cannot be null");
         return addListenerInternal(eventType, listener, domListenerConsumer);
     }
 
-    private <T extends ComponentEvent<?>> Registration addListenerInternal(
-            Class<T> eventType, ComponentEventListener<T> listener,
-            Consumer<DomListenerRegistration> domListenerConsumer) {
+    private <T extends ComponentEvent<?>> Registration addListenerInternal(Class<T> eventType,
+            ComponentEventListener<T> listener, Consumer<DomListenerRegistration> domListenerConsumer) {
 
         if (listener == null) {
-            throw new IllegalArgumentException(
-                    "component event listener cannot be null");
+            throw new IllegalArgumentException("component event listener cannot be null");
         }
 
         ListenerWrapper<T> wrapper = new ListenerWrapper<>(listener);
@@ -155,26 +140,22 @@ public class ComponentEventBus implements Serializable {
             if (!isDomEvent) {
                 throw new IllegalArgumentException(String.format(
                         "DomListenerConsumer can be used only for DOM events. The given event type %s is not annotated with %s.",
-                        eventType.getSimpleName(),
-                        DomEvent.class.getSimpleName()));
+                        eventType.getSimpleName(), DomEvent.class.getSimpleName()));
             }
             domListenerConsumer.accept(wrapper.domRegistration);
         }
 
-        componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>(1))
-                .add(wrapper);
+        componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>(1)).add(wrapper);
 
         return Registration.once(() -> removeListener(eventType, wrapper));
     }
 
     /**
-     * Checks if there is at least one listener registered for the given event
-     * type.
+     * Checks if there is at least one listener registered for the given event type.
      *
      * @param eventType
      *            the component event type
-     * @return <code>true</code> if at least one listener is registered,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if at least one listener is registered, <code>false</code> otherwise
      */
     @SuppressWarnings("rawtypes")
     public boolean hasListener(Class<? extends ComponentEvent> eventType) {
@@ -189,22 +170,17 @@ public class ComponentEventBus implements Serializable {
      *
      * @param eventType
      *            the component event type
-     * @return A collection with all registered listeners for a given event
-     *         type. Empty if no listeners are found.
+     * @return A collection with all registered listeners for a given event type. Empty if no listeners are found.
      */
-    public Collection<?> getListeners(
-            Class<? extends ComponentEvent> eventType) {
+    public Collection<?> getListeners(Class<? extends ComponentEvent> eventType) {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type cannot be null");
         }
 
         List<Object> listeners = new ArrayList<>();
-        componentEventData.entrySet().stream()
-                .filter(entry -> eventType.isAssignableFrom(entry.getKey()))
+        componentEventData.entrySet().stream().filter(entry -> eventType.isAssignableFrom(entry.getKey()))
                 .map(Map.Entry::getValue)
-                .forEach(wrappers -> wrappers.stream()
-                        .map(wrapper -> wrapper.listener)
-                        .forEach(listeners::add));
+                .forEach(wrappers -> wrappers.stream().map(wrapper -> wrapper.listener).forEach(listeners::add));
 
         return listeners;
     }
@@ -223,15 +199,13 @@ public class ComponentEventBus implements Serializable {
         }
 
         // Copy the list to avoid ConcurrentModificationException
-        for (ListenerWrapper wrapper : new ArrayList<>(
-                componentEventData.get(event.getClass()))) {
+        for (ListenerWrapper wrapper : new ArrayList<>(componentEventData.get(event.getClass()))) {
             fireEventForListener(event, wrapper);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends ComponentEvent<?>> void fireEventForListener(T event,
-            ListenerWrapper<T> wrapper) {
+    private <T extends ComponentEvent<?>> void fireEventForListener(T event, ListenerWrapper<T> wrapper) {
         Class<T> eventType = (Class<T>) event.getClass();
         event.setUnregisterListenerCommand(() -> {
             removeListener(eventType, wrapper);
@@ -241,21 +215,18 @@ public class ComponentEventBus implements Serializable {
     }
 
     /**
-     * Adds a DOM listener for the given component event if it is mapped to a
-     * DOM event.
+     * Adds a DOM listener for the given component event if it is mapped to a DOM event.
      *
      * @param eventType
      *            the type of event
      * @param wrapper
      *            the listener that is being registered
-     * @return {@code true} if a DOM-trigger was added (the event is annotated
-     *         with {@link DomEvent}), {@code false} otherwise.
+     * @return {@code true} if a DOM-trigger was added (the event is annotated with {@link DomEvent}), {@code false}
+     *         otherwise.
      */
-    private <T extends ComponentEvent<?>> boolean addDomTriggerIfNeeded(
-            Class<T> eventType, ListenerWrapper<T> wrapper) {
-        return AnnotationReader
-                .getAnnotationFor(eventType,
-                        com.vaadin.flow.component.DomEvent.class)
+    private <T extends ComponentEvent<?>> boolean addDomTriggerIfNeeded(Class<T> eventType,
+            ListenerWrapper<T> wrapper) {
+        return AnnotationReader.getAnnotationFor(eventType, com.vaadin.flow.component.DomEvent.class)
                 .map(annotation -> {
                     addDomTrigger(eventType, annotation, wrapper);
                     return true;
@@ -263,8 +234,7 @@ public class ComponentEventBus implements Serializable {
     }
 
     /**
-     * Adds a DOM listener of the given type for the given component event and
-     * annotation.
+     * Adds a DOM listener of the given type for the given component event and annotation.
      *
      * @param eventType
      *            the component event type
@@ -274,8 +244,7 @@ public class ComponentEventBus implements Serializable {
      *            the listener that is being registered
      */
     private <T extends ComponentEvent<?>> void addDomTrigger(Class<T> eventType,
-            com.vaadin.flow.component.DomEvent annotation,
-            ListenerWrapper<T> wrapper) {
+            com.vaadin.flow.component.DomEvent annotation, ListenerWrapper<T> wrapper) {
         assert eventType != null;
         assert annotation != null;
 
@@ -286,27 +255,23 @@ public class ComponentEventBus implements Serializable {
         int debounceTimeout = debounce.timeout();
 
         if (domEventType == null || domEventType.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The DOM event type cannot be null or empty");
+            throw new IllegalArgumentException("The DOM event type cannot be null or empty");
         }
 
         Element element = component.getElement();
 
         // Register DOM event handler
-        DomListenerRegistration registration = element.addEventListener(
-                domEventType,
+        DomListenerRegistration registration = element.addEventListener(domEventType,
                 event -> handleDomEvent(eventType, event, wrapper));
 
         wrapper.domRegistration = registration;
 
         registration.setDisabledUpdateMode(mode);
 
-        LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
-                .getEventDataExpressions(eventType);
+        LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil.getEventDataExpressions(eventType);
 
         eventDataExpressions.forEach((expression, type) -> {
-            if (Component.class.isAssignableFrom(type)
-                    || type == Element.class) {
+            if (Component.class.isAssignableFrom(type) || type == Element.class) {
                 registration.addEventDataElement(expression);
             } else {
                 registration.addEventData(expression);
@@ -320,8 +285,7 @@ public class ComponentEventBus implements Serializable {
         if (debounceTimeout != 0) {
             DebouncePhase[] phases = debounce.phases();
             if (phases.length == 0) {
-                throw new IllegalStateException(
-                        "There must be at least one debounce phase");
+                throw new IllegalStateException("There must be at least one debounce phase");
             }
 
             DebouncePhase[] rest = new DebouncePhase[phases.length - 1];
@@ -339,28 +303,22 @@ public class ComponentEventBus implements Serializable {
     }
 
     /**
-     * Creates a list of data objects which can be passed to the constructor
-     * returned by {@link ComponentEventBusUtil#getEventConstructor(Class)} as
-     * parameters 3+.
+     * Creates a list of data objects which can be passed to the constructor returned by
+     * {@link ComponentEventBusUtil#getEventConstructor(Class)} as parameters 3+.
      *
      * @param domEvent
      *            the DOM event containing the data
      * @param eventType
      *            the component event type
-     * @return a list of event data objects in the same order as defined in the
-     *         component event constructor
+     * @return a list of event data objects in the same order as defined in the component event constructor
      */
-    private List<Object> createEventDataObjects(DomEvent domEvent,
-            Class<? extends ComponentEvent<?>> eventType) {
+    private List<Object> createEventDataObjects(DomEvent domEvent, Class<? extends ComponentEvent<?>> eventType) {
         List<Object> eventDataObjects = new ArrayList<>();
 
-        LinkedHashMap<String, Class<?>> expressions = ComponentEventBusUtil
-                .getEventDataExpressions(eventType);
+        LinkedHashMap<String, Class<?>> expressions = ComponentEventBusUtil.getEventDataExpressions(eventType);
         expressions.forEach((expression, type) -> {
-            if (Component.class.isAssignableFrom(type)
-                    || type == Element.class) {
-                eventDataObjects.add(parseStateNodeIdToComponentReference(
-                        domEvent, type, expression));
+            if (Component.class.isAssignableFrom(type) || type == Element.class) {
+                eventDataObjects.add(parseStateNodeIdToComponentReference(domEvent, type, expression));
             } else {
                 JsonValue jsonValue = domEvent.getEventData().get(expression);
                 if (jsonValue == null) {
@@ -373,60 +331,40 @@ public class ComponentEventBus implements Serializable {
         return eventDataObjects;
     }
 
-    private Object parseStateNodeIdToComponentReference(DomEvent event,
-            Class<?> expectedEventDataType, String eventDataExpression) {
-        assert Component.class.isAssignableFrom(expectedEventDataType)
-                || Element.class == expectedEventDataType;
+    private Object parseStateNodeIdToComponentReference(DomEvent event, Class<?> expectedEventDataType,
+            String eventDataExpression) {
+        assert Component.class.isAssignableFrom(expectedEventDataType) || Element.class == expectedEventDataType;
 
-        final Element mappedElement = event
-                .getEventDataElement(eventDataExpression).orElse(null);
+        final Element mappedElement = event.getEventDataElement(eventDataExpression).orElse(null);
 
         if (expectedEventDataType == Element.class || mappedElement == null) {
             return mappedElement;
         } else {
-            final Optional<Component> componentMaybe = mappedElement
-                    .getComponent();
+            final Optional<Component> componentMaybe = mappedElement.getComponent();
             if (componentMaybe.isPresent()) {
                 final Component mappedComponent = componentMaybe.get();
-                if (expectedEventDataType
-                        .isAssignableFrom(mappedComponent.getClass())) {
+                if (expectedEventDataType.isAssignableFrom(mappedComponent.getClass())) {
                     return mappedComponent;
                 } else {
-                    throw new IllegalStateException(String.format(
-                            "Error when trying to map event data for event '%s' "
-                                    + "in component %s from browser: the event data expression '%s'"
-                                    + " was mapped to an element with tag '%s' and "
-                                    + "node-id '%s', but it is mapped to a "
-                                    + "component of type '%s' instead of the "
-                                    + "expected type of %s.%n"
-                                    + "Either the event data expression returns the"
-                                    + " wrong element, or the type for the "
-                                    + "'@EventType(\"%s\")' should be changed from "
-                                    + "%s to %s",
-                            event.getType(),
-                            component.getClass().getSimpleName(),
-                            eventDataExpression, mappedElement.getTag(),
-                            mappedElement.getNode().getId(),
-                            mappedComponent.getClass().getSimpleName(),
-                            expectedEventDataType.getSimpleName(),
-                            eventDataExpression,
-                            mappedComponent.getClass().getSimpleName(),
-                            expectedEventDataType.getSimpleName()));
+                    throw new IllegalStateException(String.format("Error when trying to map event data for event '%s' "
+                            + "in component %s from browser: the event data expression '%s'"
+                            + " was mapped to an element with tag '%s' and " + "node-id '%s', but it is mapped to a "
+                            + "component of type '%s' instead of the " + "expected type of %s.%n"
+                            + "Either the event data expression returns the" + " wrong element, or the type for the "
+                            + "'@EventType(\"%s\")' should be changed from " + "%s to %s", event.getType(),
+                            component.getClass().getSimpleName(), eventDataExpression, mappedElement.getTag(),
+                            mappedElement.getNode().getId(), mappedComponent.getClass().getSimpleName(),
+                            expectedEventDataType.getSimpleName(), eventDataExpression,
+                            mappedComponent.getClass().getSimpleName(), expectedEventDataType.getSimpleName()));
                 }
             } else {
-                throw new IllegalStateException(String.format(
-                        "Error when trying to map event data for event '%s' "
-                                + "in component %s from browser: the event data expression '%s'"
-                                + " was mapped to an element with tag '%s' and "
-                                + "node-id '%s', but it doesn't have a "
-                                + "component instance mapped to it.%n"
-                                + "Either the event data expression returns the"
-                                + " wrong element, or the type for the "
-                                + "'@EventType(\"%s\")' should be changed from "
-                                + "%s to Element",
-                        event.getType(), component.getClass().getSimpleName(),
-                        eventDataExpression, mappedElement.getTag(),
-                        mappedElement.getNode().getId(), eventDataExpression,
+                throw new IllegalStateException(String.format("Error when trying to map event data for event '%s' "
+                        + "in component %s from browser: the event data expression '%s'"
+                        + " was mapped to an element with tag '%s' and " + "node-id '%s', but it doesn't have a "
+                        + "component instance mapped to it.%n" + "Either the event data expression returns the"
+                        + " wrong element, or the type for the " + "'@EventType(\"%s\")' should be changed from "
+                        + "%s to Element", event.getType(), component.getClass().getSimpleName(), eventDataExpression,
+                        mappedElement.getTag(), mappedElement.getNode().getId(), eventDataExpression,
                         expectedEventDataType));
             }
         }
@@ -435,30 +373,25 @@ public class ComponentEventBus implements Serializable {
     /**
      * Removes the given listener for the given event type.
      * <p>
-     * Called through the {@link Registration} returned by
-     * {@link #addListener(Class, ComponentEventListener)}.
+     * Called through the {@link Registration} returned by {@link #addListener(Class, ComponentEventListener)}.
      *
      * @param eventType
      *            the component event type
      * @param wrapper
      *            the listener to remove
      */
-    private <T extends ComponentEvent<?>> void removeListener(
-            Class<T> eventType, ListenerWrapper<T> wrapper) {
+    private <T extends ComponentEvent<?>> void removeListener(Class<T> eventType, ListenerWrapper<T> wrapper) {
         assert eventType != null;
         assert wrapper != null;
         assert wrapper.listener != null;
 
-        ArrayList<ListenerWrapper<?>> eventData = componentEventData
-                .get(eventType);
+        ArrayList<ListenerWrapper<?>> eventData = componentEventData.get(eventType);
         if (eventData == null) {
-            throw new IllegalArgumentException(
-                    "No listener of the given type is registered");
+            throw new IllegalArgumentException("No listener of the given type is registered");
         }
 
         if (!eventData.remove(wrapper)) {
-            throw new IllegalArgumentException(
-                    "The given listener is not registered");
+            throw new IllegalArgumentException("The given listener is not registered");
         }
 
         if (wrapper.domRegistration != null) {
@@ -471,19 +404,17 @@ public class ComponentEventBus implements Serializable {
     }
 
     /**
-     * Handles a DOM event of the given type by firing a corresponding component
-     * event.
+     * Handles a DOM event of the given type by firing a corresponding component event.
      *
      * @param eventType
      *            the component event type which should be fired
      * @param domEvent
      *            the DOM event
      * @param wrapper
-     *            the component event listener to call when the DOM event is
-     *            fired
+     *            the component event listener to call when the DOM event is fired
      */
-    private <T extends ComponentEvent<?>> void handleDomEvent(
-            Class<T> eventType, DomEvent domEvent, ListenerWrapper<T> wrapper) {
+    private <T extends ComponentEvent<?>> void handleDomEvent(Class<T> eventType, DomEvent domEvent,
+            ListenerWrapper<T> wrapper) {
         T event = createEventForDomEvent(eventType, domEvent, component);
         fireEventForListener(event, wrapper);
     }
@@ -499,22 +430,19 @@ public class ComponentEventBus implements Serializable {
      *            The component which is the source of the event
      * @return an event object of type <code>eventType</code>
      */
-    private <T extends ComponentEvent<?>> T createEventForDomEvent(
-            Class<T> eventType, DomEvent domEvent, Component source) {
+    private <T extends ComponentEvent<?>> T createEventForDomEvent(Class<T> eventType, DomEvent domEvent,
+            Component source) {
         try {
-            Constructor<T> c = ComponentEventBusUtil
-                    .getEventConstructor(eventType);
+            Constructor<T> c = ComponentEventBusUtil.getEventConstructor(eventType);
             // Make sure that the source component type is ok
             if (!c.getParameterTypes()[0].isAssignableFrom(source.getClass())) {
                 Class<?> definedSourceType = c.getParameterTypes()[0];
                 throw new IllegalArgumentException(String.format(
                         "The event type %s define the source type to be %s, which is not compatible with the used source of type %s",
-                        eventType.getName(), definedSourceType.getName(),
-                        source.getClass().getName()));
+                        eventType.getName(), definedSourceType.getName(), source.getClass().getName()));
             }
 
-            List<Object> eventData = createEventDataObjects(domEvent,
-                    eventType);
+            List<Object> eventData = createEventDataObjects(domEvent, eventType);
             Object[] params = new Object[eventData.size() + 2];
             params[0] = source;
             params[1] = Boolean.TRUE; // From client
@@ -522,13 +450,9 @@ public class ComponentEventBus implements Serializable {
                 params[i + 2] = eventData.get(i);
             }
             return c.newInstance(params);
-        } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
                 | SecurityException e) {
-            throw new IllegalArgumentException(
-                    "Unable to create an event object of type "
-                            + eventType.getName(),
-                    e);
+            throw new IllegalArgumentException("Unable to create an event object of type " + eventType.getName(), e);
         }
     }
 }

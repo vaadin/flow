@@ -27,8 +27,7 @@ import com.vaadin.flow.function.ValueProvider;
  * The {@link Binder} status is changed whenever any of the following happens:
  * <ul>
  * <li>if any of its bound fields or selects have been changed
- * <li>{@link Binder#writeBean(Object)} or
- * {@link Binder#writeBeanIfValid(Object)} is called
+ * <li>{@link Binder#writeBean(Object)} or {@link Binder#writeBeanIfValid(Object)} is called
  * <li>{@link Binder#readBean(Object)} is called
  * <li>{@link Binder#setBean(Object)} is called
  * <li>{@link Binder#removeBean()} is called
@@ -48,9 +47,8 @@ public class StatusChangeEvent extends EventObject {
     private final boolean hasValidationErrors;
 
     /**
-     * Create a new status change event for given {@code binder}, storing
-     * information of whether the change that triggered this event caused
-     * validation errors.
+     * Create a new status change event for given {@code binder}, storing information of whether the change that
+     * triggered this event caused validation errors.
      *
      * @param binder
      *            the event source binder
@@ -65,8 +63,7 @@ public class StatusChangeEvent extends EventObject {
     /**
      * Gets the associated validation status.
      *
-     * @return {@code true} if the change that triggered this event caused
-     *         validation errors, {@code false} otherwise
+     * @return {@code true} if the change that triggered this event caused validation errors, {@code false} otherwise
      */
     public boolean hasValidationErrors() {
         return hasValidationErrors;

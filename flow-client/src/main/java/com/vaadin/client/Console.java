@@ -22,8 +22,8 @@ import com.google.gwt.core.client.JavaScriptException;
 import elemental.client.Browser;
 
 /**
- * Helper class for using window.console. Does not log anything except
- * JavaScript exception traces to console if production mode is enabled.
+ * Helper class for using window.console. Does not log anything except JavaScript exception traces to console if
+ * production mode is enabled.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,8 +41,7 @@ public final class Console {
     }
 
     /**
-     * Changes logger behavior, making it skip all browser logging for
-     * production mode.
+     * Changes logger behavior, making it skip all browser logging for production mode.
      *
      * @param isProductionMode
      *            if an application is in the production mode or not
@@ -52,11 +51,9 @@ public final class Console {
     }
 
     /**
-     * If not in production mode, logs the given message to the browser console
-     * using the debug log level.
+     * If not in production mode, logs the given message to the browser console using the debug log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard output
-     * disregarding of the production mode settings.
+     * If used directly in a JVM, writes the message to standard output disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
@@ -72,11 +69,9 @@ public final class Console {
     }
 
     /**
-     * If not in production mode, logs the given message to the browser console
-     * using the info log level.
+     * If not in production mode, logs the given message to the browser console using the info log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard output
-     * disregarding of the production mode settings.
+     * If used directly in a JVM, writes the message to standard output disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
@@ -92,11 +87,9 @@ public final class Console {
     }
 
     /**
-     * If not in production mode, logs the given message to the browser console
-     * using the warning log level.
+     * If not in production mode, logs the given message to the browser console using the warning log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard error
-     * disregarding of the production mode settings.
+     * If used directly in a JVM, writes the message to standard error disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
@@ -112,11 +105,9 @@ public final class Console {
     }
 
     /**
-     * If not in production mode, logs the given message to the browser console
-     * using the error log level.
+     * If not in production mode, logs the given message to the browser console using the error log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard error
-     * disregarding of the production mode settings.
+     * If used directly in a JVM, writes the message to standard error disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
@@ -132,9 +123,8 @@ public final class Console {
     }
 
     /**
-     * Logs the stacktrace of an exception to the browser console. Logging is
-     * done asynchronously since that approach allows reporting it with highest
-     * possible fidelity.
+     * Logs the stacktrace of an exception to the browser console. Logging is done asynchronously since that approach
+     * allows reporting it with highest possible fidelity.
      *
      * @param exception
      *            the exception for which
@@ -151,10 +141,8 @@ public final class Console {
         // Defer without $entry to bypass some of GWT's exception handling
         deferWithoutEntry(() -> {
             // Bypass regular exception reporting
-            UncaughtExceptionHandler originalHandler = GWT
-                    .getUncaughtExceptionHandler();
-            GWT.setUncaughtExceptionHandler(
-                    ignore -> GWT.setUncaughtExceptionHandler(originalHandler));
+            UncaughtExceptionHandler originalHandler = GWT.getUncaughtExceptionHandler();
+            GWT.setUncaughtExceptionHandler(ignore -> GWT.setUncaughtExceptionHandler(originalHandler));
 
             // Throw in the appropriate way
             if (exception instanceof JavaScriptException) {

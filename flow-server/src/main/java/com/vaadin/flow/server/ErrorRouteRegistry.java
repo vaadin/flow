@@ -22,16 +22,14 @@ import java.util.Optional;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 
 /**
- * Interface class for RouteRegistries that can be used to request for error
- * navigation views for Exceptions.
+ * Interface class for RouteRegistries that can be used to request for error navigation views for Exceptions.
  *
  * @since
  */
 public interface ErrorRouteRegistry extends Serializable {
     /**
-     * Get a registered navigation target for given exception. First we will
-     * search for a matching cause for in the exception chain and if no match
-     * found search by extended type.
+     * Get a registered navigation target for given exception. First we will search for a matching cause for in the
+     * exception chain and if no match found search by extended type.
      *
      * @param exception
      *            exception to search error view for

@@ -26,20 +26,16 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.component.UI;
 
 /**
- * Defines the route alias for components that function as navigation targets in
- * routing.
+ * Defines the route alias for components that function as navigation targets in routing.
  * <p>
- * The route alias allows declaring several route paths in addition to the path
- * declared by the {@link Route} annotation. The component has to have at least
- * one {@literal @Route} annotation which is considered as a primary route and
- * its route path will be used if {@link RouteConfiguration#getUrl(Class)} is
- * called. Thus {@code @RouteAlias} route path is used only to resolve the
- * component during navigation.
+ * The route alias allows declaring several route paths in addition to the path declared by the {@link Route}
+ * annotation. The component has to have at least one {@literal @Route} annotation which is considered as a primary
+ * route and its route path will be used if {@link RouteConfiguration#getUrl(Class)} is called. Thus {@code @RouteAlias}
+ * route path is used only to resolve the component during navigation.
  * <p>
- * The route template of the navigation target is composed of the values of all
- * {@link RoutePrefix} annotated on the {@link #layout()} and
- * {@link ParentLayout} class values, starting from the root parent and joined
- * together using slash delimiter to form a path form string.
+ * The route template of the navigation target is composed of the values of all {@link RoutePrefix} annotated on the
+ * {@link #layout()} and {@link ParentLayout} class values, starting from the root parent and joined together using
+ * slash delimiter to form a path form string.
  * <p>
  * This annotation can be used multiple times on the same class.
  *
@@ -60,8 +56,8 @@ public @interface RouteAlias {
      * Gets the route alias path value of the annotated class.
      *
      * <p>
-     * This value accepts also parameter template segments which can be defined
-     * using following format: <code>:parameterName[?|*][(regex)]</code>.
+     * This value accepts also parameter template segments which can be defined using following format:
+     * <code>:parameterName[?|*][(regex)]</code>.
      *
      * @return the path value of this route
      */
@@ -70,15 +66,12 @@ public @interface RouteAlias {
     /**
      * Sets the parent component for the route target component.
      * <p>
-     * When navigating between components that use the same layout, the same
-     * component instance is reused. Default layout target is the {@link UI},
-     * but the layout should not be a custom {@code UI} as {@code UI} is a
-     * special class used to know where the route stack ends and no parent
-     * layouts should be involved.
+     * When navigating between components that use the same layout, the same component instance is reused. Default
+     * layout target is the {@link UI}, but the layout should not be a custom {@code UI} as {@code UI} is a special
+     * class used to know where the route stack ends and no parent layouts should be involved.
      *
      * <p>
-     * All layout stacks will be appended to the {@code UI} as it represents the
-     * Body element.
+     * All layout stacks will be appended to the {@code UI} as it represents the Body element.
      *
      * @return the layout component class used by the route target component.
      * @see RouterLayout
@@ -86,25 +79,22 @@ public @interface RouteAlias {
     Class<? extends RouterLayout> layout() default UI.class;
 
     /**
-     * Have the route chain break on defined class and not take into notice any
-     * more parent layout route prefixes.
+     * Have the route chain break on defined class and not take into notice any more parent layout route prefixes.
      *
      * @return route up to here should be absolute
      */
     boolean absolute() default false;
 
     /**
-     * Marks if Route should apply a {@link Layout} matching route value when no
-     * {@link #layout()} defined. If set to false no layout will be searched
-     * for.
+     * Marks if Route should apply a {@link Layout} matching route value when no {@link #layout()} defined. If set to
+     * false no layout will be searched for.
      *
      * @return {@code false} skips automatic layout
      */
     boolean autoLayout() default true;
 
     /**
-     * Internal annotation to enable use of multiple {@link RouteAlias}
-     * annotations.
+     * Internal annotation to enable use of multiple {@link RouteAlias} annotations.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
@@ -113,8 +103,7 @@ public @interface RouteAlias {
     public @interface Container {
 
         /**
-         * Internally used to enable use of multiple {@link RouteAlias}
-         * annotations.
+         * Internally used to enable use of multiple {@link RouteAlias} annotations.
          *
          * @return an array of the RouteAlias annotations
          */

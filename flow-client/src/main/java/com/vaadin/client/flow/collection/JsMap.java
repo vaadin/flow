@@ -22,8 +22,8 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * Native JS Map interface with an alternative implementation for JRE usage. Use
- * {@link JsCollections#map()} to create an appropriate instance.
+ * Native JS Map interface with an alternative implementation for JRE usage. Use {@link JsCollections#map()} to create
+ * an appropriate instance.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -76,14 +76,12 @@ public class JsMap<K, V> {
     public native JsMap<K, V> set(K key, V value);
 
     /**
-     * Gets the value mapped for the given key. Returns <code>null</code> if
-     * there is no mapping or if the key is explicitly mapped to
-     * <code>null</code>.
+     * Gets the value mapped for the given key. Returns <code>null</code> if there is no mapping or if the key is
+     * explicitly mapped to <code>null</code>.
      *
      * @param key
      *            the key to get a value for
-     * @return the value corresponding to the given key; or <code>null</code>
-     *         there is no mapping.
+     * @return the value corresponding to the given key; or <code>null</code> there is no mapping.
      */
     public native V get(K key);
 
@@ -92,8 +90,7 @@ public class JsMap<K, V> {
      *
      * @param key
      *            the key to check
-     * @return {@code true} if there is a mapping for the key; {@code false} if
-     *         there is no mapping
+     * @return {@code true} if there is a mapping for the key; {@code false} if there is no mapping
      */
     public native boolean has(K key);
 
@@ -102,9 +99,8 @@ public class JsMap<K, V> {
      *
      * @param key
      *            the key for which to remove the mapping
-     * @return {@code true} if the map contained a mapping for the given key
-     *         prior to calling this method; {@code false} if no mapping was
-     *         present
+     * @return {@code true} if the map contained a mapping for the given key prior to calling this method; {@code false}
+     *         if no mapping was present
      */
     public native boolean delete(K key);
 

@@ -25,17 +25,14 @@ import com.vaadin.flow.function.SerializableFunction;
  *
  * Produces a {@link PushConnection} for the provided {@link UI}.
  *
- * Factory instances are by default discovered and instantiated using
- * {@link ServiceLoader}. This means that all implementations must have a
- * zero-argument constructor and the fully qualified name of the implementation
- * class must be listed on a separate line in a
- * META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory
- * file present in the jar file containing the implementation class.
+ * Factory instances are by default discovered and instantiated using {@link ServiceLoader}. This means that all
+ * implementations must have a zero-argument constructor and the fully qualified name of the implementation class must
+ * be listed on a separate line in a META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory file
+ * present in the jar file containing the implementation class.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
-public interface PushConnectionFactory
-        extends SerializableFunction<UI, PushConnection> {
+public interface PushConnectionFactory extends SerializableFunction<UI, PushConnection> {
 }

@@ -34,16 +34,15 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Abstract element state provider for text nodes. Operations that are not
- * applicable for text nodes throw {@link UnsupportedOperationException}.
+ * Abstract element state provider for text nodes. Operations that are not applicable for text nodes throw
+ * {@link UnsupportedOperationException}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class AbstractTextElementStateProvider
-        implements ElementStateProvider {
+public abstract class AbstractTextElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean isTextNode(StateNode node) {
@@ -111,8 +110,7 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public DomListenerRegistration addEventListener(StateNode node,
-            String eventType, DomEventListener listener) {
+    public DomListenerRegistration addEventListener(StateNode node, String eventType, DomEventListener listener) {
         throw new UnsupportedOperationException();
     }
 
@@ -122,8 +120,7 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void setProperty(StateNode node, String name, Serializable value,
-            boolean emitChange) {
+    public void setProperty(StateNode node, String name, Serializable value, boolean emitChange) {
         throw new UnsupportedOperationException();
     }
 
@@ -153,14 +150,12 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void setAttribute(StateNode node, String attribute,
-            AbstractStreamResource resource) {
+    public void setAttribute(StateNode node, String attribute, AbstractStreamResource resource) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Registration addPropertyChangeListener(StateNode node, String name,
-            PropertyChangeListener listener) {
+    public Registration addPropertyChangeListener(StateNode node, String name, PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }
 
@@ -175,14 +170,13 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void attachExistingElement(StateNode node, String tagName,
-            Element previousSibling, ChildElementConsumer callback) {
+    public void attachExistingElement(StateNode node, String tagName, Element previousSibling,
+            ChildElementConsumer callback) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void appendVirtualChild(StateNode node, Element child, String type,
-            String payload) {
+    public void appendVirtualChild(StateNode node, Element child, String type, String payload) {
         throw new UnsupportedOperationException();
     }
 

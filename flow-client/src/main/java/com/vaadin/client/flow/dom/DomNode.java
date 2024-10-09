@@ -23,14 +23,11 @@ import com.vaadin.client.flow.collection.JsArray;
 import elemental.dom.Node;
 
 /**
- * Node that has all methods from
- * <a href="https://developer.mozilla.org/en-US/docs/Web/API/Node">Node API</a>
- * that have been overridden in
- * <a href="https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer
- * DOM module</a>.
+ * Node that has all methods from <a href="https://developer.mozilla.org/en-US/docs/Web/API/Node">Node API</a> that have
+ * been overridden in <a href="https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer DOM module</a>.
  * <p>
- * No instances of this class should be created directly, but instead
- * {@link DomApi#wrap(elemental.dom.Node)} should be used
+ * No instances of this class should be created directly, but instead {@link DomApi#wrap(elemental.dom.Node)} should be
+ * used
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,12 +38,11 @@ public interface DomNode {
     /**
      * Returns the <code>childNodes</code> property.
      * <p>
-     * NOTE: returns an array since that is what the Polymer.dom API does, and
-     * luckily native NodeList items can be accessed array like with
-     * <code>list[index].</code>
+     * NOTE: returns an array since that is what the Polymer.dom API does, and luckily native NodeList items can be
+     * accessed array like with <code>list[index].</code>
      * <p>
-     * This means that only {@link JsArray#get(int)} and
-     * {@link JsArray#length()} methods can be used from the returned "array".
+     * This means that only {@link JsArray#get(int)} and {@link JsArray#length()} methods can be used from the returned
+     * "array".
      *
      * @return the child nodes
      */
@@ -111,8 +107,7 @@ public interface DomNode {
     void appendChild(Node node);
 
     /**
-     * Inserts the first Node given in a parameter immediately before the
-     * second, child of this element, Node.
+     * Inserts the first Node given in a parameter immediately before the second, child of this element, Node.
      *
      * @param newChild
      *            the node to be inserted
@@ -122,8 +117,7 @@ public interface DomNode {
     void insertBefore(Node newChild, Node refChild);
 
     /**
-     * Removes a child node from the current node, which much be a child of the
-     * current node.
+     * Removes a child node from the current node, which much be a child of the current node.
      *
      * @param childNode
      *            the child node to remove
@@ -131,25 +125,21 @@ public interface DomNode {
     void removeChild(Node childNode);
 
     /**
-     * Replaces one child Node of the current one with the second one given in
-     * parameter.
+     * Replaces one child Node of the current one with the second one given in parameter.
      *
      * @param newChild
-     *            the new node to replace the oldChild. If it already exists in
-     *            the DOM, it is first removed.
+     *            the new node to replace the oldChild. If it already exists in the DOM, it is first removed.
      * @param oldChild
      *            is the existing child to be replaced.
      */
     void replaceChild(Node newChild, Node oldChild);
 
     /**
-     * Clone a Node, and optionally, all of its contents. By default, it clones
-     * the content of the node.
+     * Clone a Node, and optionally, all of its contents. By default, it clones the content of the node.
      *
      * @param deep
-     *            <code>true</code> if the children of the node should also be
-     *            cloned, or <code>false</code> to clone only the specified
-     *            node.
+     *            <code>true</code> if the children of the node should also be cloned, or <code>false</code> to clone
+     *            only the specified node.
      * @return a clone of this node
      */
     Node cloneNode(boolean deep);
@@ -157,16 +147,14 @@ public interface DomNode {
     /**
      * Gets the parent node of this node.
      *
-     * @return the parent node, not <code>null</code> if this node has no
-     *         parent.
+     * @return the parent node, not <code>null</code> if this node has no parent.
      */
     @JsProperty
     Node getParentNode();
 
     /**
-     * The isSameNode() method for Node objects is a legacy alias the for the
-     * === strict equality operator. That is, it tests whether two nodes are the
-     * same (in other words, whether they reference the same object).
+     * The isSameNode() method for Node objects is a legacy alias the for the === strict equality operator. That is, it
+     * tests whether two nodes are the same (in other words, whether they reference the same object).
      *
      * @param node
      *            the node to test

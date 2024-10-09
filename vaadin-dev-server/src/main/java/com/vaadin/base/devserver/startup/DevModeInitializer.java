@@ -104,8 +104,7 @@ public class DevModeInitializer implements Serializable {
         }
 
         @Override
-        public Set<Class<?>> getAnnotatedClasses(
-                Class<? extends Annotation> annotation) {
+        public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
             ensureImplementation(annotation);
             return super.getAnnotatedClasses(annotation);
         }
@@ -118,69 +117,56 @@ public class DevModeInitializer implements Serializable {
 
         private void ensureImplementation(Class<?> clazz) {
             if (!APPLICABLE_CLASS_NAMES.contains(clazz.getName())) {
-                throw new IllegalArgumentException("Unexpected class name "
-                        + clazz + ". Implementation error: the class finder "
-                        + "instance is not aware of this class. "
-                        + "Fix @HandlesTypes annotation value for "
-                        + DevModeStartupListener.class.getName());
+                throw new IllegalArgumentException("Unexpected class name " + clazz
+                        + ". Implementation error: the class finder " + "instance is not aware of this class. "
+                        + "Fix @HandlesTypes annotation value for " + DevModeStartupListener.class.getName());
             }
         }
 
         private static Set<String> calculateApplicableClassNames() {
-            HandlesTypes handlesTypes = DevModeStartupListener.class
-                    .getAnnotation(HandlesTypes.class);
-            return Stream.of(handlesTypes.value()).map(Class::getName)
-                    .collect(Collectors.toSet());
+            HandlesTypes handlesTypes = DevModeStartupListener.class.getAnnotation(HandlesTypes.class);
+            return Stream.of(handlesTypes.value()).map(Class::getName).collect(Collectors.toSet());
         }
     }
 
-    private static final Pattern JAR_FILE_REGEX = Pattern
-            .compile(".*file:(.+\\.jar).*");
+    private static final Pattern JAR_FILE_REGEX = Pattern.compile(".*file:(.+\\.jar).*");
 
     // Path of jar files in a URL with zip protocol doesn't start with
     // "zip:"
     // nor "file:". It contains only the path of the file.
     // Weblogic uses zip protocol.
-    private static final Pattern ZIP_PROTOCOL_JAR_FILE_REGEX = Pattern
-            .compile("(.+\\.jar).*");
+    private static final Pattern ZIP_PROTOCOL_JAR_FILE_REGEX = Pattern.compile("(.+\\.jar).*");
 
-    private static final Pattern VFS_FILE_REGEX = Pattern
-            .compile("(vfs:/.+\\.jar).*");
+    private static final Pattern VFS_FILE_REGEX = Pattern.compile("(vfs:/.+\\.jar).*");
 
-    private static final Pattern VFS_DIRECTORY_REGEX = Pattern
-            .compile("vfs:/.+");
+    private static final Pattern VFS_DIRECTORY_REGEX = Pattern.compile("vfs:/.+");
 
     // allow trailing slash
-    private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
-            "^(?:file:0)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "/?$");
+    private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern
+            .compile("^(?:file:0)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "/?$");
 
     // allow trailing slash
     private static final Pattern DIR_REGEX_RESOURCES_JAR_DEFAULT = Pattern
-            .compile("^(?:file:0)?(.+)" + Constants.RESOURCES_THEME_JAR_DEFAULT
-                    + "/?$");
+            .compile("^(?:file:0)?(.+)" + Constants.RESOURCES_THEME_JAR_DEFAULT + "/?$");
 
     // allow trailing slash
     private static final Pattern DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT = Pattern
-            .compile("^(?:file:)?(.+)"
-                    + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
-                    + "/?$");
+            .compile("^(?:file:)?(.+)" + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/?$");
 
     /**
-     * Initialize the devmode server if not in production mode or compatibility
-     * mode.
+     * Initialize the devmode server if not in production mode or compatibility mode.
      *
      * @param classes
      *            classes to check for npm- and js modules
      * @param context
      *            VaadinContext we are running in
-     * @return the initialized dev mode handler or {@code null} if none was
-     *         created
+     * @return the initialized dev mode handler or {@code null} if none was created
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
      */
-    public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
-            VaadinContext context) throws VaadinInitializerException {
+    public static DevModeHandler initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
+            throws VaadinInitializerException {
 
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.isProductionMode()) {
@@ -200,24 +186,19 @@ public class DevModeInitializer implements Serializable {
         // Initialize the usage statistics if enabled
         if (config.isUsageStatisticsEnabled()) {
             StatisticsStorage storage = new StatisticsStorage();
-            DevModeUsageStatistics.init(baseDir, storage,
-                    new StatisticsSender(storage));
+            DevModeUsageStatistics.init(baseDir, storage, new StatisticsSender(storage));
         }
 
         File frontendFolder = config.getFrontendFolder();
 
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
-        Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
-                ClassFinder.class);
+        Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes), ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Options options = new Options(lookup, baseDir)
-                .withFrontendDirectory(frontendFolder)
-                .withFrontendGeneratedFolder(
-                        new File(frontendFolder + GENERATED))
+        Options options = new Options(lookup, baseDir).withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(new File(frontendFolder + GENERATED))
                 .withBuildDirectory(config.getBuildFolder());
 
-        log().info("Starting dev-mode updaters in {} folder.",
-                options.getNpmFolder());
+        log().info("Starting dev-mode updaters in {} folder.", options.getNpmFolder());
 
         // Regenerate Vite configuration, as it may be necessary to
         // update it
@@ -225,11 +206,8 @@ public class DevModeInitializer implements Serializable {
         // config,
         // see https://github.com/vaadin/flow/issues/9082
         File target = new File(baseDir, config.getBuildFolder());
-        options.withBuildResultFolders(
-                Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
-                        .toFile(),
-                Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
-                        .toFile());
+        options.withBuildResultFolders(Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES).toFile(),
+                Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES).toFile());
 
         // If we are missing either the base or generated package json
         // files generate those
@@ -240,56 +218,38 @@ public class DevModeInitializer implements Serializable {
         Set<File> frontendLocations = getFrontendLocationsFromClassloader(
                 DevModeStartupListener.class.getClassLoader());
 
-        boolean useByteCodeScanner = config.getBooleanProperty(
-                SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                Boolean.parseBoolean(System.getProperty(
-                        SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                        Boolean.FALSE.toString())));
+        boolean useByteCodeScanner = config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, Boolean
+                .parseBoolean(System.getProperty(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, Boolean.FALSE.toString())));
 
         boolean enablePnpm = config.isPnpmEnabled();
         boolean enableBun = config.isBunEnabled();
 
         boolean useGlobalPnpm = config.isGlobalPnpm();
 
-        boolean useHomeNodeExec = config.getBooleanProperty(
-                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
+        boolean useHomeNodeExec = config.getBooleanProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
         String[] additionalPostinstallPackages = config
-                .getStringProperty(
-                        InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
-                .split(",");
+                .getStringProperty(InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "").split(",");
 
-        String frontendGeneratedFolderName = config.getStringProperty(
-                PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
+        String frontendGeneratedFolderName = config.getStringProperty(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 Paths.get(frontendFolder.getPath(), GENERATED).toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
-        File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
-                FrontendUtils.JAR_RESOURCES_FOLDER);
+        File jarFrontendResourcesFolder = new File(frontendGeneratedFolder, FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
         Mode mode = config.getMode();
         boolean reactEnable = config.getBooleanProperty(REACT_ENABLE,
-                FrontendUtils
-                        .isReactRouterRequired(options.getFrontendDirectory()));
-        options.enablePackagesUpdate(true)
-                .useByteCodeScanner(useByteCodeScanner)
+                FrontendUtils.isReactRouterRequired(options.getFrontendDirectory()));
+        options.enablePackagesUpdate(true).useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
-                .withJarFrontendResourcesFolder(jarFrontendResourcesFolder)
-                .copyResources(frontendLocations)
-                .copyLocalResources(new File(baseDir,
-                        Constants.LOCAL_FRONTEND_RESOURCES_PATH))
-                .enableImportsUpdate(true)
-                .withRunNpmInstall(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
-                .populateTokenFileData(tokenFileData)
-                .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
-                .withEnableBun(enableBun).useGlobalPnpm(useGlobalPnpm)
-                .withHomeNodeExecRequired(useHomeNodeExec)
+                .withJarFrontendResourcesFolder(jarFrontendResourcesFolder).copyResources(frontendLocations)
+                .copyLocalResources(new File(baseDir, Constants.LOCAL_FRONTEND_RESOURCES_PATH))
+                .enableImportsUpdate(true).withRunNpmInstall(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
+                .populateTokenFileData(tokenFileData).withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
+                .withEnableBun(enableBun).useGlobalPnpm(useGlobalPnpm).withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
-                .withPostinstallPackages(
-                        Arrays.asList(additionalPostinstallPackages))
-                .withFrontendHotdeploy(
-                        mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
-                .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
-                .withReact(reactEnable);
+                .withPostinstallPackages(Arrays.asList(additionalPostinstallPackages))
+                .withFrontendHotdeploy(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
+                .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE).withReact(reactEnable);
 
         NodeTasks tasks = new NodeTasks(options);
 
@@ -310,21 +270,16 @@ public class DevModeInitializer implements Serializable {
             }
         };
 
-        CompletableFuture<Void> nodeTasksFuture = CompletableFuture
-                .runAsync(runnable);
+        CompletableFuture<Void> nodeTasksFuture = CompletableFuture.runAsync(runnable);
 
-        Lookup devServerLookup = Lookup.compose(lookup,
-                Lookup.of(config, ApplicationConfiguration.class));
-        int port = Integer
-                .parseInt(config.getStringProperty("devServerPort", "0"));
+        Lookup devServerLookup = Lookup.compose(lookup, Lookup.of(config, ApplicationConfiguration.class));
+        int port = Integer.parseInt(config.getStringProperty("devServerPort", "0"));
         if (mode == Mode.DEVELOPMENT_BUNDLE) {
             // Shows a "build in progress" page during dev bundle creation
             return new DevBundleBuildingHandler(nodeTasksFuture);
         } else {
-            ViteHandler handler = new ViteHandler(devServerLookup, port,
-                    options.getNpmFolder(), nodeTasksFuture);
-            VaadinServlet.whenFrontendMappingAvailable(
-                    () -> ViteWebsocketEndpoint.init(context, handler));
+            ViteHandler handler = new ViteHandler(devServerLookup, port, options.getNpmFolder(), nodeTasksFuture);
+            VaadinServlet.whenFrontendMappingAvailable(() -> ViteWebsocketEndpoint.init(context, handler));
             return handler;
         }
     }
@@ -334,36 +289,28 @@ public class DevModeInitializer implements Serializable {
     }
 
     /*
-     * This method returns all folders of jar files having files in the
-     * META-INF/resources/frontend and META-INF/resources/themes folder. We
-     * don't use URLClassLoader because will fail in Java 9+
+     * This method returns all folders of jar files having files in the META-INF/resources/frontend and
+     * META-INF/resources/themes folder. We don't use URLClassLoader because will fail in Java 9+
      */
-    static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader) throws VaadinInitializerException {
+    static Set<File> getFrontendLocationsFromClassloader(ClassLoader classLoader) throws VaadinInitializerException {
         Set<File> frontendFiles = new HashSet<>();
-        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-                Constants.RESOURCES_FRONTEND_DEFAULT));
-        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
-        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-                Constants.RESOURCES_THEME_JAR_DEFAULT));
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader, Constants.RESOURCES_FRONTEND_DEFAULT));
+        frontendFiles.addAll(
+                getFrontendLocationsFromClassloader(classLoader, Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader, Constants.RESOURCES_THEME_JAR_DEFAULT));
         return frontendFiles;
     }
 
-    private static void runNodeTasks(VaadinContext vaadinContext,
-            JsonObject tokenFileData, NodeTasks tasks) {
+    private static void runNodeTasks(VaadinContext vaadinContext, JsonObject tokenFileData, NodeTasks tasks) {
         try {
             tasks.execute();
         } catch (ExecutionFailedException exception) {
-            log().debug(
-                    "Could not initialize dev mode handler. One of the node tasks failed",
-                    exception);
+            log().debug("Could not initialize dev mode handler. One of the node tasks failed", exception);
             throw new CompletionException(exception);
         }
     }
 
-    private static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader, String resourcesFolder)
+    private static Set<File> getFrontendLocationsFromClassloader(ClassLoader classLoader, String resourcesFolder)
             throws VaadinInitializerException {
         Set<File> frontendFiles = new HashSet<>();
         try {
@@ -376,45 +323,34 @@ public class DevModeInitializer implements Serializable {
                 URL url = en.nextElement();
                 String urlString = url.toString();
 
-                String path = URLDecoder.decode(url.getPath(),
-                        StandardCharsets.UTF_8.name());
+                String path = URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8.name());
                 Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
-                Matcher zipProtocolJarMatcher = ZIP_PROTOCOL_JAR_FILE_REGEX
-                        .matcher(path);
+                Matcher zipProtocolJarMatcher = ZIP_PROTOCOL_JAR_FILE_REGEX.matcher(path);
                 Matcher dirMatcher = DIR_REGEX_FRONTEND_DEFAULT.matcher(path);
-                Matcher dirResourcesMatcher = DIR_REGEX_RESOURCES_JAR_DEFAULT
-                        .matcher(path);
-                Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
-                        .matcher(path);
+                Matcher dirResourcesMatcher = DIR_REGEX_RESOURCES_JAR_DEFAULT.matcher(path);
+                Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT.matcher(path);
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
                 Matcher dirVfsMatcher = VFS_DIRECTORY_REGEX.matcher(urlString);
                 if (jarVfsMatcher.find()) {
                     String vfsJar = jarVfsMatcher.group(1);
                     if (vfsJars.add(vfsJar)) { // NOSONAR
-                        frontendFiles.add(
-                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                        frontendFiles.add(getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
                     }
                 } else if (dirVfsMatcher.find()) {
-                    URL vfsDirUrl = new URL(urlString.substring(0,
-                            urlString.lastIndexOf(resourcesFolder)));
-                    frontendFiles
-                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
+                    URL vfsDirUrl = new URL(urlString.substring(0, urlString.lastIndexOf(resourcesFolder)));
+                    frontendFiles.add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                 } else if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
-                } else if ("zip".equalsIgnoreCase(url.getProtocol())
-                        && zipProtocolJarMatcher.find()) {
+                } else if ("zip".equalsIgnoreCase(url.getProtocol()) && zipProtocolJarMatcher.find()) {
                     frontendFiles.add(new File(zipProtocolJarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
                     frontendFiles.add(new File(dirMatcher.group(1)));
                 } else if (dirResourcesMatcher.find()) {
                     frontendFiles.add(new File(dirResourcesMatcher.group(1)));
                 } else if (dirCompatibilityMatcher.find()) {
-                    frontendFiles
-                            .add(new File(dirCompatibilityMatcher.group(1)));
+                    frontendFiles.add(new File(dirCompatibilityMatcher.group(1)));
                 } else {
-                    log().warn(
-                            "Resource {} not visited because does not meet supported formats.",
-                            url.getPath());
+                    log().warn("Resource {} not visited because does not meet supported formats.", url.getPath());
                 }
             }
         } catch (IOException e) {
@@ -424,18 +360,15 @@ public class DevModeInitializer implements Serializable {
         return frontendFiles;
     }
 
-    private static File getPhysicalFileOfJBossVfsDirectory(URL url)
-            throws IOException, VaadinInitializerException {
+    private static File getPhysicalFileOfJBossVfsDirectory(URL url) throws IOException, VaadinInitializerException {
         try {
             Object virtualFile = url.openConnection().getContent();
             Class virtualFileClass = virtualFile.getClass();
 
             // Reflection as we cannot afford a dependency to
             // WildFly or JBoss
-            Method getChildrenRecursivelyMethod = virtualFileClass
-                    .getMethod("getChildrenRecursively");
-            Method getPhysicalFileMethod = virtualFileClass
-                    .getMethod("getPhysicalFile");
+            Method getChildrenRecursivelyMethod = virtualFileClass.getMethod("getChildrenRecursively");
+            Method getPhysicalFileMethod = virtualFileClass.getMethod("getPhysicalFile");
 
             // By calling getPhysicalFile, we make sure that the
             // corresponding
@@ -444,33 +377,26 @@ public class DevModeInitializer implements Serializable {
             // are created. Later, these physical files are scanned
             // to collect
             // their resources.
-            List virtualFiles = (List) getChildrenRecursivelyMethod
-                    .invoke(virtualFile);
-            File rootDirectory = (File) getPhysicalFileMethod
-                    .invoke(virtualFile);
+            List virtualFiles = (List) getChildrenRecursivelyMethod.invoke(virtualFile);
+            File rootDirectory = (File) getPhysicalFileMethod.invoke(virtualFile);
             for (Object child : virtualFiles) {
                 // side effect: create real-world files
                 getPhysicalFileMethod.invoke(child);
             }
             return rootDirectory;
-        } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException exc) {
-            throw new VaadinInitializerException(
-                    "Failed to invoke JBoss VFS API.", exc);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exc) {
+            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 
-    private static File getPhysicalFileOfJBossVfsJar(URL url)
-            throws IOException, VaadinInitializerException {
+    private static File getPhysicalFileOfJBossVfsJar(URL url) throws IOException, VaadinInitializerException {
         try {
             Object jarVirtualFile = url.openConnection().getContent();
 
             // Creating a temporary jar file out of the vfs files
             String vfsJarPath = url.toString();
             String fileNamePrefix = vfsJarPath.substring(
-                    vfsJarPath.lastIndexOf(
-                            vfsJarPath.contains("\\") ? '\\' : '/') + 1,
-                    vfsJarPath.lastIndexOf(".jar"));
+                    vfsJarPath.lastIndexOf(vfsJarPath.contains("\\") ? '\\' : '/') + 1, vfsJarPath.lastIndexOf(".jar"));
             Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
 
             generateJarFromJBossVfsFolder(jarVirtualFile, tempJar);
@@ -478,39 +404,30 @@ public class DevModeInitializer implements Serializable {
             File tempJarFile = tempJar.toFile();
             tempJarFile.deleteOnExit();
             return tempJarFile;
-        } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException exc) {
-            throw new VaadinInitializerException(
-                    "Failed to invoke JBoss VFS API.", exc);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exc) {
+            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 
-    private static void generateJarFromJBossVfsFolder(Object jarVirtualFile,
-            Path tempJar) throws IOException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
+    private static void generateJarFromJBossVfsFolder(Object jarVirtualFile, Path tempJar)
+            throws IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         // We should use reflection to use JBoss VFS API as we cannot
         // afford a
         // dependency to WildFly or JBoss
         Class virtualFileClass = jarVirtualFile.getClass();
-        Method getChildrenRecursivelyMethod = virtualFileClass
-                .getMethod("getChildrenRecursively");
+        Method getChildrenRecursivelyMethod = virtualFileClass.getMethod("getChildrenRecursively");
         Method openStreamMethod = virtualFileClass.getMethod("openStream");
         Method isFileMethod = virtualFileClass.getMethod("isFile");
-        Method getPathNameRelativeToMethod = virtualFileClass
-                .getMethod("getPathNameRelativeTo", virtualFileClass);
+        Method getPathNameRelativeToMethod = virtualFileClass.getMethod("getPathNameRelativeTo", virtualFileClass);
 
-        List jarVirtualChildren = (List) getChildrenRecursivelyMethod
-                .invoke(jarVirtualFile);
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempJar))) {
+        List jarVirtualChildren = (List) getChildrenRecursivelyMethod.invoke(jarVirtualFile);
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempJar))) {
             for (Object child : jarVirtualChildren) {
                 if (!(Boolean) isFileMethod.invoke(child))
                     continue;
 
-                String relativePath = (String) getPathNameRelativeToMethod
-                        .invoke(child, jarVirtualFile);
-                InputStream inputStream = (InputStream) openStreamMethod
-                        .invoke(child);
+                String relativePath = (String) getPathNameRelativeToMethod.invoke(child, jarVirtualFile);
+                InputStream inputStream = (InputStream) openStreamMethod.invoke(child);
                 ZipEntry zipEntry = new ZipEntry(relativePath);
                 zipOutputStream.putNextEntry(zipEntry);
                 IOUtils.copy(inputStream, zipOutputStream);

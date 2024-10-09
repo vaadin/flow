@@ -52,8 +52,7 @@ public class PageTest {
     public void testJavasScriptExecutionCancel() {
         Assert.assertEquals(0, countPendingInvocations());
 
-        PendingJavaScriptResult executeJavaScript = page
-                .executeJs("window.alert('$0');", "foobar");
+        PendingJavaScriptResult executeJavaScript = page.executeJs("window.alert('$0');", "foobar");
 
         Assert.assertEquals(1, countPendingInvocations());
 
@@ -66,13 +65,11 @@ public class PageTest {
     public void testJavaScriptExecutionTooLateCancel() {
         Assert.assertEquals(0, countPendingInvocations());
 
-        PendingJavaScriptResult executeJavaScript = page
-                .executeJs("window.alert('$0');", "foobar");
+        PendingJavaScriptResult executeJavaScript = page.executeJs("window.alert('$0');", "foobar");
 
         Assert.assertEquals(1, countPendingInvocations());
 
-        Assert.assertEquals(1,
-                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+        Assert.assertEquals(1, ui.getInternals().dumpPendingJavaScriptInvocations().size());
 
         Assert.assertEquals(0, countPendingInvocations());
 

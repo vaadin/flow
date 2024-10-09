@@ -35,8 +35,7 @@ import com.vaadin.flow.spring.annotation.EnableVaadin;
  * @author Vaadin Ltd
  *
  */
-public class VaadinScanPackagesRegistrar
-        implements ImportBeanDefinitionRegistrar {
+public class VaadinScanPackagesRegistrar implements ImportBeanDefinitionRegistrar {
 
     static class VaadinScanPackages {
 
@@ -44,8 +43,7 @@ public class VaadinScanPackagesRegistrar
 
         private VaadinScanPackages(String[] scanPackages) {
             assert scanPackages != null;
-            this.scanPackages = Collections
-                    .unmodifiableList(Arrays.asList(scanPackages));
+            this.scanPackages = Collections.unmodifiableList(Arrays.asList(scanPackages));
         }
 
         List<String> getScanPackages() {
@@ -55,39 +53,30 @@ public class VaadinScanPackagesRegistrar
     }
 
     @Override
-    public void registerBeanDefinitions(AnnotationMetadata annotationMetadata,
-            BeanDefinitionRegistry registry) {
-        String[] packages = getPackages(annotationMetadata, EnableVaadin.class,
-                "value");
+    public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
+        String[] packages = getPackages(annotationMetadata, EnableVaadin.class, "value");
         if (packages.length > 0) {
             GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
             beanDefinition.setBeanClass(VaadinScanPackages.class);
-            beanDefinition.getConstructorArgumentValues()
-                    .addIndexedArgumentValue(0, packages);
+            beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, packages);
             beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            registry.registerBeanDefinition(VaadinScanPackages.class.getName(),
-                    beanDefinition);
+            registry.registerBeanDefinition(VaadinScanPackages.class.getName(), beanDefinition);
         }
     }
 
-    private <T> T getPackages(Class<T> clazz,
-            AnnotationMetadata annotationMetadata,
+    private <T> T getPackages(Class<T> clazz, AnnotationMetadata annotationMetadata,
             Class<? extends Annotation> annotation, String getterName) {
         String annotationName = annotation.getName();
         if (annotationMetadata.hasAnnotation(annotationName)) {
-            Map<String, Object> annotationAttributes = annotationMetadata
-                    .getAnnotationAttributes(annotationName);
-            return annotationAttributes != null
-                    ? clazz.cast(annotationAttributes.get(getterName))
-                    : null;
+            Map<String, Object> annotationAttributes = annotationMetadata.getAnnotationAttributes(annotationName);
+            return annotationAttributes != null ? clazz.cast(annotationAttributes.get(getterName)) : null;
         }
         return null;
     }
 
-    private String[] getPackages(AnnotationMetadata annotationMetadata,
-            Class<? extends Annotation> annotation, String getterName) {
-        String[] packages = getPackages(String[].class, annotationMetadata,
-                annotation, getterName);
+    private String[] getPackages(AnnotationMetadata annotationMetadata, Class<? extends Annotation> annotation,
+            String getterName) {
+        String[] packages = getPackages(String[].class, annotationMetadata, annotation, getterName);
         if (packages == null) {
             return new String[0];
         }

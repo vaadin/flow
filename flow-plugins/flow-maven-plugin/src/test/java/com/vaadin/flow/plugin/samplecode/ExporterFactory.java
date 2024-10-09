@@ -29,8 +29,7 @@ public class ExporterFactory implements WebComponentExporterFactory<Component> {
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
         }
 
     }

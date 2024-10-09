@@ -32,9 +32,8 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * Abstract list data view implementation which provides common methods for
- * fetching, filtering and sorting in-memory data to all {@link ListDataView}
- * subclasses.
+ * Abstract list data view implementation which provides common methods for fetching, filtering and sorting in-memory
+ * data to all {@link ListDataView} subclasses.
  *
  * @param <T>
  *            data type
@@ -49,25 +48,22 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     private final SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback;
 
     /**
-     * Creates a new instance of {@link AbstractListDataView} subclass and
-     * verifies the passed data provider is compatible with this data view
-     * implementation.
+     * Creates a new instance of {@link AbstractListDataView} subclass and verifies the passed data provider is
+     * compatible with this data view implementation.
      *
      * @param dataProviderSupplier
      *            supplier from which the DataProvider can be gotten
      * @param component
      *            the component that the dataView is bound to
      * @param filterOrSortingChangedCallback
-     *            callback, which is being invoked when the component filtering
-     *            or sorting changes, not <code>null</code>
+     *            callback, which is being invoked when the component filtering or sorting changes, not
+     *            <code>null</code>
      */
-    public AbstractListDataView(
-            SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
+    public AbstractListDataView(SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
             Component component,
             SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback) {
         super(dataProviderSupplier, component);
-        Objects.requireNonNull(filterOrSortingChangedCallback,
-                "Filter or Sorting Change Callback cannot be empty");
+        Objects.requireNonNull(filterOrSortingChangedCallback, "Filter or Sorting Change Callback cannot be empty");
         this.filterOrSortingChangedCallback = filterOrSortingChangedCallback;
     }
 
@@ -110,8 +106,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addFilter(SerializablePredicate<T> filter) {
         Objects.requireNonNull(filter, "Filter to add cannot be null");
-        Optional<SerializablePredicate<T>> originalFilter = DataViewUtils
-                .getComponentFilter(component);
+        Optional<SerializablePredicate<T>> originalFilter = DataViewUtils.getComponentFilter(component);
         SerializablePredicate<T> newFilter = originalFilter.isPresent()
                 ? item -> originalFilter.get().test(item) && filter.test(item)
                 : filter;
@@ -128,30 +123,23 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
         DataViewUtils.setComponentFilter(component, filter);
         fireFilteringOrSortingChangeEvent(filter,
-                (SerializableComparator<T>) DataViewUtils
-                        .getComponentSortComparator(component).orElse(null));
+                (SerializableComparator<T>) DataViewUtils.getComponentSortComparator(component).orElse(null));
         return this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractListDataView<T> setSortComparator(
-            SerializableComparator<T> sortComparator) {
+    public AbstractListDataView<T> setSortComparator(SerializableComparator<T> sortComparator) {
         DataViewUtils.setComponentSortComparator(component, sortComparator);
         fireFilteringOrSortingChangeEvent(
-                (SerializablePredicate<T>) DataViewUtils
-                        .getComponentFilter(component).orElse(null),
-                sortComparator);
+                (SerializablePredicate<T>) DataViewUtils.getComponentFilter(component).orElse(null), sortComparator);
         return this;
     }
 
     @Override
-    public AbstractListDataView<T> addSortComparator(
-            SerializableComparator<T> sortComparator) {
-        Objects.requireNonNull(sortComparator,
-                "Comparator to add cannot be null");
-        Optional<SerializableComparator<T>> originalComparator = DataViewUtils
-                .getComponentSortComparator(component);
+    public AbstractListDataView<T> addSortComparator(SerializableComparator<T> sortComparator) {
+        Objects.requireNonNull(sortComparator, "Comparator to add cannot be null");
+        Optional<SerializableComparator<T>> originalComparator = DataViewUtils.getComponentSortComparator(component);
 
         if (originalComparator.isPresent()) {
             return setSortComparator((a, b) -> {
@@ -172,18 +160,18 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public <V1 extends Comparable<? super V1>> AbstractListDataView<T> setSortOrder(
-            ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
-        SerializableComparator<T> sortComparator = InMemoryDataProviderHelpers
-                .propertyComparator(valueProvider, sortDirection);
+    public <V1 extends Comparable<? super V1>> AbstractListDataView<T> setSortOrder(ValueProvider<T, V1> valueProvider,
+            SortDirection sortDirection) {
+        SerializableComparator<T> sortComparator = InMemoryDataProviderHelpers.propertyComparator(valueProvider,
+                sortDirection);
         return setSortComparator(sortComparator);
     }
 
     @Override
-    public <V1 extends Comparable<? super V1>> AbstractListDataView<T> addSortOrder(
-            ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
-        SerializableComparator<T> sortComparator = InMemoryDataProviderHelpers
-                .propertyComparator(valueProvider, sortDirection);
+    public <V1 extends Comparable<? super V1>> AbstractListDataView<T> addSortOrder(ValueProvider<T, V1> valueProvider,
+            SortDirection sortDirection) {
+        SerializableComparator<T> sortComparator = InMemoryDataProviderHelpers.propertyComparator(valueProvider,
+                sortDirection);
         return addSortComparator(sortComparator);
     }
 
@@ -234,33 +222,26 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addItemAfter(T item, T after) {
-        addItemOnTarget(item, after,
-                "Item to insert after is not available in the data",
-                index -> index + 1);
+        addItemOnTarget(item, after, "Item to insert after is not available in the data", index -> index + 1);
         return this;
     }
 
     @Override
     public AbstractListDataView<T> addItemBefore(T item, T before) {
-        addItemOnTarget(item, before,
-                "Item to insert before is not available in the data",
-                index -> index);
+        addItemOnTarget(item, before, "Item to insert before is not available in the data", index -> index);
         return this;
     }
 
     @Override
     public AbstractListDataView<T> addItemsAfter(Collection<T> items, T after) {
-        addItemCollectionOnTarget(items, after,
-                "Item to insert after is not available in the data",
+        addItemCollectionOnTarget(items, after, "Item to insert after is not available in the data",
                 (index, containsTarget) -> containsTarget ? index : index + 1);
         return this;
     }
 
     @Override
-    public AbstractListDataView<T> addItemsBefore(Collection<T> items,
-            T before) {
-        addItemCollectionOnTarget(items, before,
-                "Item to insert before is not available in the data",
+    public AbstractListDataView<T> addItemsBefore(Collection<T> items, T before) {
+        addItemCollectionOnTarget(items, before, "Item to insert before is not available in the data",
                 (index, containsTarget) -> index);
         return this;
     }
@@ -294,13 +275,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     protected void validateItemIndex(int itemIndex) {
         final int dataSize = getItemCount();
         if (dataSize == 0) {
-            throw new IndexOutOfBoundsException(String
-                    .format("Requested index %d on empty data.", itemIndex));
+            throw new IndexOutOfBoundsException(String.format("Requested index %d on empty data.", itemIndex));
         }
         if (itemIndex < 0 || itemIndex >= dataSize) {
-            throw new IndexOutOfBoundsException(String.format(
-                    "Given index %d is outside of the accepted range '0 - %d'",
-                    itemIndex, dataSize - 1));
+            throw new IndexOutOfBoundsException(
+                    String.format("Given index %d is outside of the accepted range '0 - %d'", itemIndex, dataSize - 1));
         }
     }
 
@@ -308,16 +287,14 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         dataProvider.getItems().removeIf(nextItem -> equals(item, nextItem));
     }
 
-    private void addItemOnTarget(T item, T target,
-            String targetItemNotFoundErrorMessage,
+    private void addItemOnTarget(T item, T target, String targetItemNotFoundErrorMessage,
             SerializableFunction<Integer, Integer> insertItemsIndexProvider) {
         final ListDataProvider<T> dataProvider = getDataProvider();
         final Collection<T> backendItems = dataProvider.getItems();
 
         if (!(backendItems instanceof List)) {
             throw new IllegalArgumentException(
-                    String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                            backendItems.getClass().getSimpleName()));
+                    String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN, backendItems.getClass().getSimpleName()));
         }
 
         if (equals(item, target)) {
@@ -330,18 +307,15 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
         final List<T> itemList = (List<T>) backendItems;
         /*
-         * If the item is already present in the data provider, then it firstly
-         * removed from a data provider and secondly re-added into the proper
-         * position towards to target item.
+         * If the item is already present in the data provider, then it firstly removed from a data provider and
+         * secondly re-added into the proper position towards to target item.
          */
         removeItemIfPresent(item, dataProvider);
-        itemList.add(insertItemsIndexProvider
-                .apply(getItemIndex(target, itemList.stream())), item);
+        itemList.add(insertItemsIndexProvider.apply(getItemIndex(target, itemList.stream())), item);
         dataProvider.refreshAll();
     }
 
-    private void addItemCollectionOnTarget(Collection<T> items, T target,
-            String targetItemNotFoundErrorMessage,
+    private void addItemCollectionOnTarget(Collection<T> items, T target, String targetItemNotFoundErrorMessage,
             SerializableBiFunction<Integer, Boolean, Integer> insertItemsIndexProvider) {
         Objects.requireNonNull(items, NULL_COLLECTION_ERROR_MESSAGE);
         if (items.isEmpty()) {
@@ -352,8 +326,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         final Collection<T> backendItems = dataProvider.getItems();
         if (!(backendItems instanceof List)) {
             throw new IllegalArgumentException(
-                    String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                            backendItems.getClass().getSimpleName()));
+                    String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN, backendItems.getClass().getSimpleName()));
         }
 
         if (!contains(target)) {
@@ -362,20 +335,17 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
         final List<T> itemList = (List<T>) backendItems;
         /*
-         * There could be a case when the items collection to be added does
-         * already contain the target item. Assume a drag-and-drop case when the
-         * user multi-selects a bunch of items from one component and move them
-         * to another. Then, he could drag the item (among other items in the
-         * bunch) which is equivalent of target item and if we do not consider
-         * such a case, then the target item would be deleted and we never know
-         * the position to drop the items to.
+         * There could be a case when the items collection to be added does already contain the target item. Assume a
+         * drag-and-drop case when the user multi-selects a bunch of items from one component and move them to another.
+         * Then, he could drag the item (among other items in the bunch) which is equivalent of target item and if we do
+         * not consider such a case, then the target item would be deleted and we never know the position to drop the
+         * items to.
          */
         final AtomicBoolean containsTargetItem = new AtomicBoolean(false);
         items.forEach(item -> {
             /*
-             * Check if an input items collection contains the target item. All
-             * non-target items are deleted from backend if present, so as to be
-             * placed to proper position with a proper order later on.
+             * Check if an input items collection contains the target item. All non-target items are deleted from
+             * backend if present, so as to be placed to proper position with a proper order later on.
              */
             if (equals(target, item)) {
                 containsTargetItem.set(true);
@@ -386,22 +356,20 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         int targetItemIndex = getItemIndex(target, itemList.stream());
 
         /*
-         * If the target item is in a collection then remove it from backend and
-         * store its index so as to add an items at a desired position further.
+         * If the target item is in a collection then remove it from backend and store its index so as to add an items
+         * at a desired position further.
          */
         if (containsTargetItem.get()) {
             itemList.remove(targetItemIndex);
         }
 
-        final int indexToInsertItems = insertItemsIndexProvider
-                .apply(targetItemIndex, containsTargetItem.get());
+        final int indexToInsertItems = insertItemsIndexProvider.apply(targetItemIndex, containsTargetItem.get());
 
         itemList.addAll(indexToInsertItems, items);
         dataProvider.refreshAll();
     }
 
-    private void fireFilteringOrSortingChangeEvent(
-            SerializablePredicate<T> filter,
+    private void fireFilteringOrSortingChangeEvent(SerializablePredicate<T> filter,
             SerializableComparator<T> sortComparator) {
         filterOrSortingChangedCallback.accept(filter, sortComparator);
     }

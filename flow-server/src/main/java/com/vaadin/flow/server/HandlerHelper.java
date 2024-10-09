@@ -37,8 +37,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
- * Contains helper methods for {@link VaadinServlet} and generally for handling
- * {@link VaadinRequest VaadinRequests}.
+ * Contains helper methods for {@link VaadinServlet} and generally for handling {@link VaadinRequest VaadinRequests}.
  *
  * @since 1.0
  */
@@ -50,13 +49,12 @@ public class HandlerHelper implements Serializable {
     static final SystemMessages DEFAULT_SYSTEM_MESSAGES = new SystemMessages();
 
     /**
-     * The pattern of error message shown when the URL path contains unsafe
-     * double encoding.
+     * The pattern of error message shown when the URL path contains unsafe double encoding.
      */
     static final String UNSAFE_PATH_ERROR_MESSAGE_PATTERN = "Blocked attempt to access file: {}";
 
-    private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
-            .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PARENT_DIRECTORY_REGEX = Pattern.compile("(/|\\\\)\\.\\.(/|\\\\)?",
+            Pattern.CASE_INSENSITIVE);
 
     /**
      * Framework internal enum for tracking the type of a request.
@@ -76,8 +74,7 @@ public class HandlerHelper implements Serializable {
         /**
          * WebComponent resynchronization requests.
          */
-        WEBCOMPONENT_RESYNC(
-                ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC),
+        WEBCOMPONENT_RESYNC(ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC),
 
         /**
          * Heartbeat requests.
@@ -131,8 +128,7 @@ public class HandlerHelper implements Serializable {
         // These are always in the root of the app, not inside any url mapping
         List<String> rootResources = new ArrayList<>();
         rootResources.add("/favicon.ico");
-        publicResourcesRoot = rootResources
-                .toArray(new String[rootResources.size()]);
+        publicResourcesRoot = rootResources.toArray(new String[rootResources.size()]);
     }
 
     private HandlerHelper() {
@@ -146,62 +142,47 @@ public class HandlerHelper implements Serializable {
      *            the request to check
      * @param requestType
      *            the type to check for
-     * @return <code>true</code> if the request is of the given type,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the request is of the given type, <code>false</code> otherwise
      */
-    public static boolean isRequestType(VaadinRequest request,
-            RequestType requestType) {
-        return requestType.getIdentifier().equals(request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    public static boolean isRequestType(VaadinRequest request, RequestType requestType) {
+        return requestType.getIdentifier().equals(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
     /**
      * Checks whether the request is an internal request.
      *
-     * The requests listed in {@link RequestType} are considered internal as
-     * they are needed for applications to work.
+     * The requests listed in {@link RequestType} are considered internal as they are needed for applications to work.
      * <p>
-     * Requests for routes, static resources requests and similar are not
-     * considered internal requests.
+     * Requests for routes, static resources requests and similar are not considered internal requests.
      *
      * @param servletMappingPath
-     *            the path the Vaadin servlet is mapped to, with or without and
-     *            ending "/*"
+     *            the path the Vaadin servlet is mapped to, with or without and ending "/*"
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is Vaadin internal, {@code false}
-     *         otherwise
+     * @return {@code true} if the request is Vaadin internal, {@code false} otherwise
      */
-    public static boolean isFrameworkInternalRequest(String servletMappingPath,
-            HttpServletRequest request) {
-        return isFrameworkInternalRequest(servletMappingPath,
-                getRequestPathInsideContext(request), request.getParameter(
-                        ApplicationConstants.REQUEST_TYPE_PARAMETER));
+    public static boolean isFrameworkInternalRequest(String servletMappingPath, HttpServletRequest request) {
+        return isFrameworkInternalRequest(servletMappingPath, getRequestPathInsideContext(request),
+                request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
-    private static boolean isFrameworkInternalRequest(String servletMappingPath,
-            String requestedPath, String requestTypeParameter) {
+    private static boolean isFrameworkInternalRequest(String servletMappingPath, String requestedPath,
+            String requestTypeParameter) {
         /*
-         * According to the spec, pathInfo should be null but not all servers
-         * implement it like that...
+         * According to the spec, pathInfo should be null but not all servers implement it like that...
          *
-         * Additionally the spring servlet is mapped as /vaadinServlet right now
-         * it seems but requests are sent to /vaadinServlet/, causing a "/" path
-         * info
+         * Additionally the spring servlet is mapped as /vaadinServlet right now it seems but requests are sent to
+         * /vaadinServlet/, causing a "/" path info
          */
 
         // This is only an internal request if it is for the Vaadin servlet
-        Optional<String> requestedPathWithoutServletMapping = getPathIfInsideServlet(
-                servletMappingPath, requestedPath);
+        Optional<String> requestedPathWithoutServletMapping = getPathIfInsideServlet(servletMappingPath, requestedPath);
         if (!requestedPathWithoutServletMapping.isPresent()) {
             return false;
-        } else if (isInternalRequestInsideServlet(
-                requestedPathWithoutServletMapping.get(),
-                requestTypeParameter)) {
+        } else if (isInternalRequestInsideServlet(requestedPathWithoutServletMapping.get(), requestTypeParameter)) {
             return true;
         } else if (RequestType.PUSH.getIdentifier().equals(requestTypeParameter)
-                && "VAADIN/push"
-                        .equals(requestedPathWithoutServletMapping.get())) {
+                && "VAADIN/push".equals(requestedPathWithoutServletMapping.get())) {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;
@@ -212,25 +193,20 @@ public class HandlerHelper implements Serializable {
         return false;
     }
 
-    private static boolean isUploadRequest(
-            String requestedPathWithoutServletMapping) {
+    private static boolean isUploadRequest(String requestedPathWithoutServletMapping) {
         // First key is uiId
         // Second key is security key
         return requestedPathWithoutServletMapping
-                .matches(StreamRequestHandler.DYN_RES_PREFIX
-                        + "(\\d+)/([0-9a-z-]*)/upload");
+                .matches(StreamRequestHandler.DYN_RES_PREFIX + "(\\d+)/([0-9a-z-]*)/upload");
     }
 
-    private static boolean isHillaPush(
-            String requestedPathWithoutServletMapping) {
+    private static boolean isHillaPush(String requestedPathWithoutServletMapping) {
         return "HILLA/push".equals(requestedPathWithoutServletMapping);
     }
 
-    static boolean isInternalRequestInsideServlet(
-            String requestedPathWithoutServletMapping,
+    static boolean isInternalRequestInsideServlet(String requestedPathWithoutServletMapping,
             String requestTypeParameter) {
-        if (requestedPathWithoutServletMapping == null
-                || requestedPathWithoutServletMapping.isEmpty()
+        if (requestedPathWithoutServletMapping == null || requestedPathWithoutServletMapping.isEmpty()
                 || "/".equals(requestedPathWithoutServletMapping)) {
             return requestTypeParameter != null;
         }
@@ -238,63 +214,52 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * Returns the rest of the path after the servlet mapping part, if the
-     * requested path targets a path inside the servlet.
+     * Returns the rest of the path after the servlet mapping part, if the requested path targets a path inside the
+     * servlet.
      *
      * @param servletMappingPath
      *            the servlet mapping from the servlet configuration
      * @param requestedPath
      *            the request path relative to the context root
-     * @return an optional containing the path relative to the servlet if the
-     *         request is inside the servlet mapping, an empty optional
-     *         otherwise
+     * @return an optional containing the path relative to the servlet if the request is inside the servlet mapping, an
+     *         empty optional otherwise
      */
-    public static Optional<String> getPathIfInsideServlet(
-            String servletMappingPath, String requestedPath) {
-        Objects.requireNonNull(servletMappingPath,
-                "servletMappingPath cannot be null");
+    public static Optional<String> getPathIfInsideServlet(String servletMappingPath, String requestedPath) {
+        Objects.requireNonNull(servletMappingPath, "servletMappingPath cannot be null");
         Objects.requireNonNull(requestedPath, "requestedPath cannot be null");
 
         /*
          * The Servlet 4 spec says
          *
-         * A string beginning with a ‘/’ character and ending with a ‘/*’ suffix
-         * is used for path mapping.
+         * A string beginning with a ‘/’ character and ending with a ‘/*’ suffix is used for path mapping.
          *
-         * A string beginning with a ‘*.’ prefix is used as an extension
-         * mapping.
+         * A string beginning with a ‘*.’ prefix is used as an extension mapping.
          *
-         * The empty string ("") is a special URL pattern that exactly maps to
-         * the application's context root, i.e., requests of the form
-         * http://host:port/<contextroot>/. In this case the path info is ’/’
-         * and the servlet path and context path is empty string (““).
+         * The empty string ("") is a special URL pattern that exactly maps to the application's context root, i.e.,
+         * requests of the form http://host:port/<contextroot>/. In this case the path info is ’/’ and the servlet path
+         * and context path is empty string (““).
          *
-         * A string containing only the ’/’ character indicates the "default"
-         * servlet of the application. In this case the servlet path is the
-         * request URI minus the context path and the path info is null.
+         * A string containing only the ’/’ character indicates the "default" servlet of the application. In this case
+         * the servlet path is the request URI minus the context path and the path info is null.
          *
          * All other strings are used for exact matches only
          */
 
         if ("/*".equals(servletMappingPath) || "/".equals(servletMappingPath)) {
             /*
-             * A string containing only the ’/’ character indicates the
-             * "default" servlet
+             * A string containing only the ’/’ character indicates the "default" servlet
              *
              * A /* mapping covers everything
              */
             return Optional.of(requestedPath);
         }
 
-        if (servletMappingPath.startsWith("/")
-                && servletMappingPath.endsWith("/*")) {
+        if (servletMappingPath.startsWith("/") && servletMappingPath.endsWith("/*")) {
             /*
-             * A string beginning with a ‘/’ character and ending with a ‘/*’
-             * suffix is used for path mapping.
+             * A string beginning with a ‘/’ character and ending with a ‘/*’ suffix is used for path mapping.
              */
 
-            String directory = servletMappingPath.substring(1,
-                    servletMappingPath.length() - 2);
+            String directory = servletMappingPath.substring(1, servletMappingPath.length() - 2);
             String directoryWithSlash = directory + "/";
 
             // Requested path should not contain the initial slash,
@@ -307,8 +272,7 @@ public class HandlerHelper implements Serializable {
 
             }
             if (relativeRequestedPath.startsWith(directoryWithSlash)) {
-                return Optional.of(relativeRequestedPath
-                        .substring(directoryWithSlash.length()));
+                return Optional.of(relativeRequestedPath.substring(directoryWithSlash.length()));
             }
             return Optional.empty();
         }
@@ -324,8 +288,7 @@ public class HandlerHelper implements Serializable {
         }
 
         if (requestedPath.equals(servletMappingWithoutSlash)) {
-            return Optional.of(requestedPath
-                    .substring(servletMappingWithoutSlash.length()));
+            return Optional.of(requestedPath.substring(servletMappingWithoutSlash.length()));
         }
 
         return Optional.empty();
@@ -336,11 +299,9 @@ public class HandlerHelper implements Serializable {
      *
      * @param request
      *            the servlet request
-     * @return the path inside the context root, not including the slash after
-     *         the context root path
+     * @return the path inside the context root, not including the slash after the context root path
      */
-    public static String getRequestPathInsideContext(
-            HttpServletRequest request) {
+    public static String getRequestPathInsideContext(HttpServletRequest request) {
         String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
         String url = "";
@@ -359,8 +320,8 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * Helper to find the most most suitable Locale. These potential sources are
-     * checked in order until a Locale is found:
+     * Helper to find the most most suitable Locale. These potential sources are checked in order until a Locale is
+     * found:
      * <ol>
      * <li>The passed component (or UI) if not null</li>
      * <li>{@link UI#getCurrent()} if defined</li>
@@ -372,15 +333,12 @@ public class HandlerHelper implements Serializable {
      * </ol>
      *
      * @param session
-     *            the session that is searched for locale or <code>null</code>
-     *            if not available
+     *            the session that is searched for locale or <code>null</code> if not available
      * @param request
-     *            the request that is searched for locale or <code>null</code>
-     *            if not available
+     *            the request that is searched for locale or <code>null</code> if not available
      * @return the found locale
      */
-    public static Locale findLocale(VaadinSession session,
-            VaadinRequest request) {
+    public static Locale findLocale(VaadinSession session, VaadinRequest request) {
 
         if (session == null) {
             session = VaadinSession.getCurrent();
@@ -413,8 +371,7 @@ public class HandlerHelper implements Serializable {
      * @param longHeaderSetter
      *            setter for long value headers
      */
-    public static void setResponseNoCacheHeaders(
-            BiConsumer<String, String> headerSetter,
+    public static void setResponseNoCacheHeaders(BiConsumer<String, String> headerSetter,
             BiConsumer<String, Long> longHeaderSetter) {
         headerSetter.accept("Cache-Control", "no-cache, no-store");
         headerSetter.accept("Pragma", "no-cache");
@@ -422,8 +379,8 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * Gets a relative path that cancels the provided path. This essentially
-     * adds one .. for each part of the path to cancel.
+     * Gets a relative path that cancels the provided path. This essentially adds one .. for each part of the path to
+     * cancel.
      *
      * @param pathToCancel
      *            the path that should be canceled
@@ -441,14 +398,12 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * Checks if the given URL path contains the directory change instruction
-     * (dot-dot), taking into account possible double encoding in hexadecimal
-     * format, which can be injected maliciously.
+     * Checks if the given URL path contains the directory change instruction (dot-dot), taking into account possible
+     * double encoding in hexadecimal format, which can be injected maliciously.
      *
      * @param path
      *            the URL path to be verified.
-     * @return {@code true}, if the given path has a directory change
-     *         instruction, {@code false} otherwise.
+     * @return {@code true}, if the given path has a directory change instruction, {@code false} otherwise.
      */
     public static boolean isPathUnsafe(String path) {
         // Check that the path does not have '/../', '\..\', %5C..%5C,
@@ -456,8 +411,7 @@ public class HandlerHelper implements Serializable {
         try {
             path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("An error occurred during decoding URL.",
-                    e);
+            throw new RuntimeException("An error occurred during decoding URL.", e);
         } catch (IllegalArgumentException ex) {
             // Ignore: the path is not URLEncoded, check it as is
         }
@@ -465,9 +419,8 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * URLs matching these patterns should be publicly available for
-     * applications to work. Can be used for defining a bypass for rules in e.g.
-     * Spring Security.
+     * URLs matching these patterns should be publicly available for applications to work. Can be used for defining a
+     * bypass for rules in e.g. Spring Security.
      * <p>
      * These paths are relative to a potential Vaadin mapping
      */
@@ -476,12 +429,10 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
-     * URLs matching these patterns should be publicly available for
-     * applications to work. Can be used for defining a bypass for rules in e.g.
-     * Spring Security.
+     * URLs matching these patterns should be publicly available for applications to work. Can be used for defining a
+     * bypass for rules in e.g. Spring Security.
      * <p>
-     * These URLs are always relative to the root path and independent of any
-     * Vaadin mapping
+     * These URLs are always relative to the root path and independent of any Vaadin mapping
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
@@ -495,14 +446,12 @@ public class HandlerHelper implements Serializable {
      * @return list of paths of icon variants.
      */
     public static List<String> getIconVariants(String iconPath) {
-        return PwaRegistry.getIconTemplates(iconPath).stream()
-                .map(PwaIcon::getRelHref).collect(Collectors.toList());
+        return PwaRegistry.getIconTemplates(iconPath).stream().map(PwaIcon::getRelHref).collect(Collectors.toList());
     }
 
     /**
-     * URLs matching these patterns should be publicly available for
-     * applications to work but might require a security context, i.e.
-     * authentication information.
+     * URLs matching these patterns should be publicly available for applications to work but might require a security
+     * context, i.e. authentication information.
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //

@@ -25,8 +25,7 @@ public class PrefixTreeTest {
 
     @Test
     public void hasPrefix_containsPrefix_returnsTrue() {
-        PrefixTree prefixTree = new PrefixTree(
-                Arrays.asList("com/sun", "antlr", "ch/quos/logback"));
+        PrefixTree prefixTree = new PrefixTree(Arrays.asList("com/sun", "antlr", "ch/quos/logback"));
         Assert.assertTrue(prefixTree.hasPrefix("antlr"));
         Assert.assertTrue(prefixTree.hasPrefix("com/sun/test"));
         Assert.assertTrue(prefixTree.hasPrefix("com/sun"));
@@ -34,8 +33,7 @@ public class PrefixTreeTest {
 
     @Test
     public void hasPrefix_doesNotContainPrefix_returnsFalse() {
-        PrefixTree prefixTree = new PrefixTree(
-                Arrays.asList("com/sun", "antlr", "ch/quos/logback"));
+        PrefixTree prefixTree = new PrefixTree(Arrays.asList("com/sun", "antlr", "ch/quos/logback"));
         Assert.assertFalse(prefixTree.hasPrefix(""));
         Assert.assertFalse(prefixTree.hasPrefix("a"));
         Assert.assertFalse(prefixTree.hasPrefix("test"));

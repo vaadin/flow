@@ -37,8 +37,7 @@ public class ButtonInLayout extends Div {
 
     private final Div buttonScopedBeanCount;
 
-    public ButtonInLayout(
-            @Autowired @RouteScopeOwner(Layout.class) MyService service,
+    public ButtonInLayout(@Autowired @RouteScopeOwner(Layout.class) MyService service,
             @Autowired ApplicationContext context) {
         this.context = context;
         // the text should be preserved inside route scope
@@ -65,15 +64,13 @@ public class ButtonInLayout extends Div {
 
     @Override
     public void add(Component... components) {
-        Stream.of(components).forEach(
-                comp -> comp.getElement().getStyle().set("display", "block"));
+        Stream.of(components).forEach(comp -> comp.getElement().getStyle().set("display", "block"));
         super.add(components);
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        buttonScopedBeanCount.setText(String.valueOf(
-                context.getBeansOfType(ButtonScopedBean.class).size()));
+        buttonScopedBeanCount.setText(String.valueOf(context.getBeansOfType(ButtonScopedBean.class).size()));
     }
 
 }

@@ -25,8 +25,7 @@ package com.vaadin.flow.server;
 public interface StaticFileHandlerFactory {
 
     /**
-     * Creates a new instance of {@link StaticFileHandler} for the given
-     * {@code service}.
+     * Creates a new instance of {@link StaticFileHandler} for the given {@code service}.
      *
      * @param service
      *            a {@link VaadinServletService} instance

@@ -25,20 +25,16 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Handles a request by passing it to each registered {@link RequestHandler} in
- * the session in turn until one produces a response. This method is used for
- * requests that have not been handled by any specific functionality in the
- * servlet.
+ * Handles a request by passing it to each registered {@link RequestHandler} in the session in turn until one produces a
+ * response. This method is used for requests that have not been handled by any specific functionality in the servlet.
  * <p>
- * The request handlers are invoked in the reverse order in which they were
- * added to the session until a response has been produced. This means that the
- * most recently added handler is used first and the first request handler that
- * was added to the session is invoked towards the end unless any previous
- * handler has already produced a response.
+ * The request handlers are invoked in the reverse order in which they were added to the session until a response has
+ * been produced. This means that the most recently added handler is used first and the first request handler that was
+ * added to the session is invoked towards the end unless any previous handler has already produced a response.
  * </p>
  * <p>
- * The session is not locked during execution of the request handlers. The
- * request handler can itself decide if it needs to lock the session or not.
+ * The session is not locked during execution of the request handlers. The request handler can itself decide if it needs
+ * to lock the session or not.
  * </p>
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -50,8 +46,8 @@ import com.vaadin.flow.server.VaadinSession;
 public class SessionRequestHandler implements RequestHandler {
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         // Use a copy to avoid ConcurrentModificationException
         session.lock();
         List<RequestHandler> requestHandlers;

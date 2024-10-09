@@ -22,18 +22,15 @@ import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
 /**
- * A TestBench element representing an <code>&lt;input type='text'&gt;</code>
- * element.
+ * A TestBench element representing an <code>&lt;input type='text'&gt;</code> element.
  *
  * @since 1.0
  */
 @Element("input")
-public class InputTextElement extends TestBenchElement
-        implements HasPlaceholder {
+public class InputTextElement extends TestBenchElement implements HasPlaceholder {
 
     /**
-     * Sets the value of the text input to the given value, clearing out any old
-     * value of the input.
+     * Sets the value of the text input to the given value, clearing out any old value of the input.
      *
      * @param value
      *            the value to set

@@ -36,30 +36,24 @@ import jakarta.servlet.ServletContext;
 /**
  * Utilities for launching a browser when running in development mode.
  */
-public class DevModeBrowserLauncher
-        implements SpringApplicationRunListener, Serializable {
+public class DevModeBrowserLauncher implements SpringApplicationRunListener, Serializable {
 
-    public DevModeBrowserLauncher(SpringApplication application,
-            String[] arguments) {
+    public DevModeBrowserLauncher(SpringApplication application, String[] arguments) {
     }
 
     @Override
-    public void ready(ConfigurableApplicationContext context,
-            Duration timeTaken) {
+    public void ready(ConfigurableApplicationContext context, Duration timeTaken) {
         try {
-            VaadinConfigurationProperties properties = context
-                    .getBean(VaadinConfigurationProperties.class);
+            VaadinConfigurationProperties properties = context.getBean(VaadinConfigurationProperties.class);
 
-            maybeLaunchBrowserInDevelopmentMode(context,
-                    properties.isLaunchBrowser());
+            maybeLaunchBrowserInDevelopmentMode(context, properties.isLaunchBrowser());
         } catch (Exception e) {
             getLogger().debug("Failed to launch browser", e);
         }
     }
 
     /**
-     * Launch the default browser and open the given application base URL if
-     * running in development mode.
+     * Launch the default browser and open the given application base URL if running in development mode.
      *
      * Does nothing if the application is running in production mode.
      *
@@ -68,12 +62,10 @@ public class DevModeBrowserLauncher
      * @param launch
      *            true to launch the browser, false to only report the url
      */
-    private void maybeLaunchBrowserInDevelopmentMode(
-            ApplicationContext appContext, boolean launch) {
+    private void maybeLaunchBrowserInDevelopmentMode(ApplicationContext appContext, boolean launch) {
         if (!(appContext instanceof GenericWebApplicationContext)) {
-            getLogger().warn(
-                    "Unable to determine production mode for an Spring Boot application context of type "
-                            + appContext.getClass().getName());
+            getLogger().warn("Unable to determine production mode for an Spring Boot application context of type "
+                    + appContext.getClass().getName());
             return;
         }
         GenericWebApplicationContext webAppContext = (GenericWebApplicationContext) appContext;
@@ -81,8 +73,7 @@ public class DevModeBrowserLauncher
         ServletContext servletContext = webAppContext.getServletContext();
         VaadinContext vaadinContext = new VaadinServletContext(servletContext);
         Lookup lookup = vaadinContext.getAttribute(Lookup.class);
-        DevModeHandlerManager devModeHandlerManager = lookup
-                .lookup(DevModeHandlerManager.class);
+        DevModeHandlerManager devModeHandlerManager = lookup.lookup(DevModeHandlerManager.class);
         if (devModeHandlerManager != null) {
             String url = getUrl(webAppContext);
             devModeHandlerManager.setApplicationUrl(url);
@@ -97,8 +88,7 @@ public class DevModeBrowserLauncher
         if (port == null) {
             port = "8080";
         }
-        String sslEnabled = app.getEnvironment()
-                .getProperty("server.ssl.enabled");
+        String sslEnabled = app.getEnvironment().getProperty("server.ssl.enabled");
         String proto;
         if (sslEnabled != null && sslEnabled.equals("true")) {
             proto = "https";
@@ -108,8 +98,7 @@ public class DevModeBrowserLauncher
         String host = proto + "://localhost:" + port;
 
         String path = "/";
-        String vaadinServletMapping = RootMappedCondition
-                .getUrlMapping(app.getEnvironment());
+        String vaadinServletMapping = RootMappedCondition.getUrlMapping(app.getEnvironment());
 
         ServletContext servletContext = app.getServletContext();
         if (servletContext != null) {
@@ -124,8 +113,7 @@ public class DevModeBrowserLauncher
                 vaadinServletMapping = vaadinServletMapping.substring(1);
             }
             if (vaadinServletMapping.endsWith("*")) {
-                vaadinServletMapping = vaadinServletMapping.substring(0,
-                        vaadinServletMapping.length() - 1);
+                vaadinServletMapping = vaadinServletMapping.substring(0, vaadinServletMapping.length() - 1);
 
             }
             path += vaadinServletMapping;

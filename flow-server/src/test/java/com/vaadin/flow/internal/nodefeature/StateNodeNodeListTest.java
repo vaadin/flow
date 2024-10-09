@@ -30,8 +30,7 @@ import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
-public class StateNodeNodeListTest
-        extends AbstractNodeFeatureTest<ElementChildrenList> {
+public class StateNodeNodeListTest extends AbstractNodeFeatureTest<ElementChildrenList> {
     private NodeList<StateNode> nodeList = createFeature();
 
     @Test
@@ -46,11 +45,9 @@ public class StateNodeNodeListTest
 
         List<NodeChange> firstAddChanges = collectChanges(nodeList);
         Assert.assertEquals(1, firstAddChanges.size());
-        ListAddChange<?> firstAddChange = (ListAddChange<?>) firstAddChanges
-                .get(0);
+        ListAddChange<?> firstAddChange = (ListAddChange<?>) firstAddChanges.get(0);
         Assert.assertEquals(0, firstAddChange.getIndex());
-        Assert.assertEquals(Arrays.asList(value1),
-                firstAddChange.getNewItems());
+        Assert.assertEquals(Arrays.asList(value1), firstAddChange.getNewItems());
 
         nodeList.add(0, value2);
         Assert.assertEquals(2, nodeList.size());
@@ -59,11 +56,9 @@ public class StateNodeNodeListTest
 
         List<NodeChange> secondAddChanges = collectChanges(nodeList);
         Assert.assertEquals(1, secondAddChanges.size());
-        ListAddChange<?> secondAddChange = (ListAddChange<?>) secondAddChanges
-                .get(0);
+        ListAddChange<?> secondAddChange = (ListAddChange<?>) secondAddChanges.get(0);
         Assert.assertEquals(0, secondAddChange.getIndex());
-        Assert.assertEquals(Arrays.asList(value2),
-                secondAddChange.getNewItems());
+        Assert.assertEquals(Arrays.asList(value2), secondAddChange.getNewItems());
 
         StateNode removedItem = nodeList.remove(0);
 
@@ -73,8 +68,7 @@ public class StateNodeNodeListTest
 
         List<NodeChange> removeChanges = collectChanges(nodeList);
         Assert.assertEquals(1, removeChanges.size());
-        ListRemoveChange<?> removeChange = (ListRemoveChange<?>) removeChanges
-                .get(0);
+        ListRemoveChange<?> removeChange = (ListRemoveChange<?>) removeChanges.get(0);
         Assert.assertEquals(0, removeChange.getIndex());
     }
 
@@ -95,8 +89,7 @@ public class StateNodeNodeListTest
         Assert.assertEquals(1, changes.size());
         ListAddChange<?> change = (ListAddChange<?>) changes.get(0);
         Assert.assertEquals(0, change.getIndex());
-        Assert.assertEquals(Arrays.asList(value1, value2),
-                change.getNewItems());
+        Assert.assertEquals(Arrays.asList(value1, value2), change.getNewItems());
     }
 
     @Test
@@ -146,12 +139,10 @@ public class StateNodeNodeListTest
 
     @Test
     public void testSerializable() {
-        StateNode one = StateNodeTest.createTestNode("one",
-                ElementClassList.class);
+        StateNode one = StateNodeTest.createTestNode("one", ElementClassList.class);
         one.getFeature(ElementClassList.class).add("foo");
         one.getFeature(ElementClassList.class).add("bar");
-        StateNode two = StateNodeTest.createTestNode("two",
-                ElementClassList.class);
+        StateNode two = StateNodeTest.createTestNode("two", ElementClassList.class);
         two.getFeature(ElementClassList.class).add("baz");
         nodeList.add(one);
         nodeList.add(two);
@@ -162,8 +153,7 @@ public class StateNodeNodeListTest
             values.add(nodeList.get(i));
         }
 
-        NodeList<StateNode> copy = SerializationUtils
-                .deserialize(SerializationUtils.serialize(nodeList));
+        NodeList<StateNode> copy = SerializationUtils.deserialize(SerializationUtils.serialize(nodeList));
 
         Assert.assertNotSame(nodeList, copy);
 

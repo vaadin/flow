@@ -62,12 +62,10 @@ public class WebComponentGenerator {
     }
 
     private static String getStringResource(String name) {
-        try (InputStream resourceStream = WebComponentGenerator.class
-                .getResourceAsStream(name)) {
+        try (InputStream resourceStream = WebComponentGenerator.class.getResourceAsStream(name)) {
             return IOUtils.toString(resourceStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalArgumentException(
-                    "Couldn't load string resource '" + name + "'!", e);
+            throw new IllegalArgumentException("Couldn't load string resource '" + name + "'!", e);
         }
     }
 
@@ -85,13 +83,11 @@ public class WebComponentGenerator {
      * @param frontendURI
      *            the frontend resources URI, not {@code null}
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not
-     *            defined
+     *            the theme defined using {@link Theme} or {@code null} if not defined
      * @return generated web component html/JS to be served to the client
      */
-    public static String generateModule(
-            WebComponentExporterFactory<? extends Component> factory,
-            String frontendURI, String themeName) {
+    public static String generateModule(WebComponentExporterFactory<? extends Component> factory, String frontendURI,
+            String themeName) {
         Objects.requireNonNull(factory);
         Objects.requireNonNull(frontendURI);
 
@@ -109,107 +105,87 @@ public class WebComponentGenerator {
      * @param frontendURI
      *            the frontend resources URI, not {@code null}
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not
-     *            defined
+     *            the theme defined using {@link Theme} or {@code null} if not defined
      * @return generated web component html/JS to be served to the client
      */
-    public static String generateModule(
-            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+    public static String generateModule(WebComponentConfiguration<? extends Component> webComponentConfiguration,
             String frontendURI, String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
-        return generateModule(webComponentConfiguration, frontendURI, true,
-                themeName);
+        return generateModule(webComponentConfiguration, frontendURI, true, themeName);
     }
 
-    private static String generateModule(
-            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+    private static String generateModule(WebComponentConfiguration<? extends Component> webComponentConfiguration,
             String frontendURI, boolean generateUiImport, String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
-        Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
-                .getPropertyDataSet();
+        Set<PropertyData<?>> propertyDataSet = webComponentConfiguration.getPropertyDataSet();
 
-        Map<String, String> replacements = getReplacementsMap(
-                webComponentConfiguration.getTag(), propertyDataSet,
+        Map<String, String> replacements = getReplacementsMap(webComponentConfiguration.getTag(), propertyDataSet,
                 frontendURI, generateUiImport, themeName);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-            template = template.replace("_" + replacement.getKey() + "_",
-                    replacement.getValue());
+            template = template.replace("_" + replacement.getKey() + "_", replacement.getValue());
         }
         return template;
     }
 
-    static Map<String, String> getReplacementsMap(String tag,
-            Set<PropertyData<? extends Serializable>> propertyDataSet,
+    static Map<String, String> getReplacementsMap(String tag, Set<PropertyData<? extends Serializable>> propertyDataSet,
             String frontendURI, boolean generateUiImport, String themeName) {
         Map<String, String> replacements = new HashMap<>();
 
         if (themeName != null && !themeName.isEmpty()) {
-            replacements.put("ThemeImport",
-                    "import {applyTheme} from 'Frontend/generated/theme.js';\n\n");
+            replacements.put("ThemeImport", "import {applyTheme} from 'Frontend/generated/theme.js';\n\n");
             replacements.put("ApplyTheme", "applyTheme(shadow);\n    ");
         } else {
             replacements.put("ThemeImport", "");
             replacements.put("ApplyTheme", "");
         }
         replacements.put("TagDash", tag);
-        replacements.put("TagCamel", SharedUtil
-                .capitalize(SharedUtil.dashSeparatedToCamelCase(tag)));
+        replacements.put("TagCamel", SharedUtil.capitalize(SharedUtil.dashSeparatedToCamelCase(tag)));
 
-        replacements.put("AttributeChange", getAttributeChange(
-                getStringResource(CODE_ATTRIBUTE_CHANGE), propertyDataSet));
-        replacements.put("PropertyMethods", getPropertyMethods(
-                getStringResource(CODE_PROPERTY_METHODS), propertyDataSet));
-        replacements.put("PropertyDefaults", getPropertyDefaults(
-                getStringResource(CODE_PROPERTY_DEFAULT), propertyDataSet));
-        replacements.put("PropertyValues", getPropertyValues(
-                getStringResource(CODE_PROPERTY_VALUES), propertyDataSet));
+        replacements.put("AttributeChange",
+                getAttributeChange(getStringResource(CODE_ATTRIBUTE_CHANGE), propertyDataSet));
+        replacements.put("PropertyMethods",
+                getPropertyMethods(getStringResource(CODE_PROPERTY_METHODS), propertyDataSet));
+        replacements.put("PropertyDefaults",
+                getPropertyDefaults(getStringResource(CODE_PROPERTY_DEFAULT), propertyDataSet));
+        replacements.put("PropertyValues", getPropertyValues(getStringResource(CODE_PROPERTY_VALUES), propertyDataSet));
 
         replacements.put("frontend_resources", frontendURI);
 
-        replacements.put("ui_import",
-                generateUiImport
-                        ? "<link rel='import' href='web-component-ui.html'>"
-                        : "");
+        replacements.put("ui_import", generateUiImport ? "<link rel='import' href='web-component-ui.html'>" : "");
 
         return replacements;
     }
 
-    private static String getPropertyMethods(String codePropertyMethods,
-            Set<PropertyData<?>> properties) {
+    private static String getPropertyMethods(String codePropertyMethods, Set<PropertyData<?>> properties) {
         StringBuilder setters = new StringBuilder();
         for (PropertyData<?> property : properties) {
-            setters.append(
-                    createPropertySetterGetter(codePropertyMethods, property));
+            setters.append(createPropertySetterGetter(codePropertyMethods, property));
         }
         return setters.toString();
     }
 
-    private static String getPropertyDefaults(String codePropertyDefault,
-            Set<PropertyData<?>> properties) {
+    private static String getPropertyDefaults(String codePropertyDefault, Set<PropertyData<?>> properties) {
         StringBuilder setters = new StringBuilder();
         for (PropertyData<?> property : properties) {
-            setters.append(
-                    createPropertyDefault(codePropertyDefault, property));
+            setters.append(createPropertyDefault(codePropertyDefault, property));
         }
         return setters.toString();
     }
 
-    private static String getPropertyValues(String codePropertyValues,
-            Set<PropertyData<?>> properties) {
+    private static String getPropertyValues(String codePropertyValues, Set<PropertyData<?>> properties) {
         if (properties.isEmpty()) {
             return "{}";
         }
         StringBuilder sync = new StringBuilder();
         sync.append("{");
         for (PropertyData<?> property : properties) {
-            sync.append(codePropertyValues.replace(TOKEN_PROPERTY_NAME,
-                    property.getName()));
+            sync.append(codePropertyValues.replace(TOKEN_PROPERTY_NAME, property.getName()));
             sync.append(",");
         }
         sync.delete(sync.length() - 1, sync.length());
@@ -217,26 +193,22 @@ public class WebComponentGenerator {
         return sync.toString();
     }
 
-    private static String getAttributeChange(String codeAttributeChange,
-            Set<PropertyData<?>> properties) {
+    private static String getAttributeChange(String codeAttributeChange, Set<PropertyData<?>> properties) {
         StringBuilder sync = new StringBuilder();
         for (PropertyData<?> property : properties) {
-            sync.append(codeAttributeChange
-                    .replace(TOKEN_ATTRIBUTE_NAME, getAttributeName(property))
-                    .replace(TOKEN_PROPERTY_NAME, property.getName())
-                    .replace(TOKEN_JS_TYPE, getJSTypeName(property)));
+            sync.append(codeAttributeChange.replace(TOKEN_ATTRIBUTE_NAME, getAttributeName(property))
+                    .replace(TOKEN_PROPERTY_NAME, property.getName()).replace(TOKEN_JS_TYPE, getJSTypeName(property)));
         }
         return sync.toString();
     }
 
-    private static String createPropertyDefault(String code,
-            PropertyData<?> property) {
+    private static String createPropertyDefault(String code, PropertyData<?> property) {
         // Note about the JS code:
         // If a property has been set before the element is upgraded, it needs
         // to be deleted so the getter/setters are used
 
-        return code.replace(TOKEN_PROPERTY_NAME, property.getName())
-                .replace(TOKEN_DEFAULT_VALUE, getDefaultJsValue(property));
+        return code.replace(TOKEN_PROPERTY_NAME, property.getName()).replace(TOKEN_DEFAULT_VALUE,
+                getDefaultJsValue(property));
     }
 
     private static String getDefaultJsValue(PropertyData<?> property) {
@@ -250,16 +222,13 @@ public class WebComponentGenerator {
         } else if (property.getType() == Integer.class) {
             value = String.valueOf((property.getDefaultValue()));
         } else if (property.getType() == String.class) {
-            value = "'" + ((String) property.getDefaultValue()).replaceAll("'",
-                    "\\'") + "'";
+            value = "'" + ((String) property.getDefaultValue()).replaceAll("'", "\\'") + "'";
         } else if (JsonValue.class.isAssignableFrom(property.getType())) {
             value = ((JsonValue) property.getDefaultValue()).toJson();
         } else {
-            throw new UnsupportedPropertyTypeException(String.format(
-                    "%s is not a currently supported type for a Property."
-                            + " Please use %s instead.",
-                    property.getType().getSimpleName(),
-                    JsonValue.class.getSimpleName()));
+            throw new UnsupportedPropertyTypeException(
+                    String.format("%s is not a currently supported type for a Property." + " Please use %s instead.",
+                            property.getType().getSimpleName(), JsonValue.class.getSimpleName()));
         }
         if (value == null) {
             value = "null";
@@ -268,17 +237,14 @@ public class WebComponentGenerator {
         return value;
     }
 
-    private static String createPropertySetterGetter(String codePropertyMethods,
-            PropertyData<?> property) {
-        return codePropertyMethods
-                .replace(TOKEN_PROPERTY_NAME, property.getName())
-                .replace(TOKEN_CHANGE_EVENT_NAME,
-                        getAttributeName(property) + "-changed");
+    private static String createPropertySetterGetter(String codePropertyMethods, PropertyData<?> property) {
+        return codePropertyMethods.replace(TOKEN_PROPERTY_NAME, property.getName()).replace(TOKEN_CHANGE_EVENT_NAME,
+                getAttributeName(property) + "-changed");
     }
 
     /**
-     * Gets {@link com.vaadin.flow.server.webcomponent.PropertyData} name used
-     * when setting its value through an attribute.
+     * Gets {@link com.vaadin.flow.server.webcomponent.PropertyData} name used when setting its value through an
+     * attribute.
      *
      * @return the attribute name used for setting the value
      */
@@ -287,17 +253,15 @@ public class WebComponentGenerator {
     }
 
     /**
-     * Gets JavaScript type name for
-     * {@link com.vaadin.flow.server.webcomponent.PropertyData} for usage in
-     * generated JavaScript code.
+     * Gets JavaScript type name for {@link com.vaadin.flow.server.webcomponent.PropertyData} for usage in generated
+     * JavaScript code.
      *
      * @return the type for JS
      */
     private static String getJSTypeName(PropertyData<?> propertyData) {
         if (propertyData.getType() == Boolean.class) {
             return "Boolean";
-        } else if (propertyData.getType() == Double.class
-                || propertyData.getType() == Integer.class) {
+        } else if (propertyData.getType() == Double.class || propertyData.getType() == Integer.class) {
             return "Number";
         } else if (propertyData.getType() == String.class) {
             return "String";
@@ -306,8 +270,7 @@ public class WebComponentGenerator {
         } else if (JsonValue.class.isAssignableFrom(propertyData.getType())) {
             return "Object";
         } else {
-            throw new IllegalStateException(
-                    "Unsupported type: " + propertyData.getType());
+            throw new IllegalStateException("Unsupported type: " + propertyData.getType());
         }
     }
 

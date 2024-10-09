@@ -20,11 +20,9 @@ import java.util.Optional;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Mixin interface for field components that have helper text as property and
- * slots for inserting components.
+ * Mixin interface for field components that have helper text as property and slots for inserting components.
  * <p>
- * Root element should be a web component that uses slot for example in the
- * following way:
+ * Root element should be a web component that uses slot for example in the following way:
  *
  * <pre>{@code
  *     <field-with-helper>
@@ -52,17 +50,14 @@ public interface HasHelper extends HasElement {
 
     /**
      * <p>
-     * String used for the helper text. It shows a text adjacent to the field
-     * that can be used, e.g., to inform to the users which values it expects.
-     * Example: a text "The password must contain numbers" for the
-     * PasswordField.
+     * String used for the helper text. It shows a text adjacent to the field that can be used, e.g., to inform to the
+     * users which values it expects. Example: a text "The password must contain numbers" for the PasswordField.
      * </p>
      *
      * <p>
-     * In case both {@link #setHelperText(String)} and
-     * {@link #setHelperComponent(Component)} are used, only the element defined
-     * by {@link #setHelperComponent(Component)} will be visible, regardless of
-     * the order on which they are defined.
+     * In case both {@link #setHelperText(String)} and {@link #setHelperComponent(Component)} are used, only the element
+     * defined by {@link #setHelperComponent(Component)} will be visible, regardless of the order on which they are
+     * defined.
      * </p>
      *
      * @param helperText
@@ -73,22 +68,18 @@ public interface HasHelper extends HasElement {
     }
 
     /**
-     * Adds the given component into helper slot of component, replacing any
-     * existing helper component. It adds the component adjacent to the field
-     * that can be used, e.g., to inform to the users which values it expects.
-     * Example: a component that shows the password strength for the
-     * PasswordField.
+     * Adds the given component into helper slot of component, replacing any existing helper component. It adds the
+     * component adjacent to the field that can be used, e.g., to inform to the users which values it expects. Example:
+     * a component that shows the password strength for the PasswordField.
      *
      * @param component
-     *            the component to set, can be {@code null} to remove existing
-     *            helper component
+     *            the component to set, can be {@code null} to remove existing helper component
      *
      * @see #setHelperText(String)
      */
     default void setHelperComponent(Component component) {
-        getElement().getChildren()
-                .filter(child -> "helper".equals(child.getAttribute("slot")))
-                .findAny().ifPresent(getElement()::removeChild);
+        getElement().getChildren().filter(child -> "helper".equals(child.getAttribute("slot"))).findAny()
+                .ifPresent(getElement()::removeChild);
 
         if (component != null) {
             component.getElement().setAttribute("slot", "helper");
@@ -99,14 +90,12 @@ public interface HasHelper extends HasElement {
     /**
      * Gets the component in the helper slot of this field.
      *
-     * @return the helper component of this field, or {@code null} if no helper
-     *         component has been set
+     * @return the helper component of this field, or {@code null} if no helper component has been set
      * @see #setHelperComponent(Component)
      */
     default Component getHelperComponent() {
         Optional<Component> component = getElement().getChildren()
-                .filter(child -> "helper".equals(child.getAttribute("slot")))
-                .map(Element::getComponent).findFirst()
+                .filter(child -> "helper".equals(child.getAttribute("slot"))).map(Element::getComponent).findFirst()
                 .orElse(Optional.empty());
 
         return component.orElse(null);

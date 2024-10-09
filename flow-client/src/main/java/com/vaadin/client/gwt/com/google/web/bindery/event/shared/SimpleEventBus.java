@@ -27,8 +27,7 @@ import com.vaadin.client.flow.collection.JsMap;
 /**
  * Basic implementation of {@link EventBus}.
  *
- * Copied from the GWT project to use JsArray and JsMap instead of ArrayList and
- * HashMap
+ * Copied from the GWT project to use JsArray and JsMap instead of ArrayList and HashMap
  *
  * @since 1.0
  */
@@ -48,8 +47,7 @@ public class SimpleEventBus extends EventBus {
     /**
      * Map of event type to map of event source to list of their handlers.
      */
-    private final JsMap<Event.Type<?>, JsMap<Object, JsArray<?>>> map = JsCollections
-            .map();
+    private final JsMap<Event.Type<?>, JsMap<Object, JsArray<?>>> map = JsCollections.map();
 
     /**
      * Create an instance of the event bus.
@@ -64,11 +62,9 @@ public class SimpleEventBus extends EventBus {
     }
 
     @Override
-    public <H> HandlerRegistration addHandlerToSource(final Event.Type<H> type,
-            final Object source, final H handler) {
+    public <H> HandlerRegistration addHandlerToSource(final Event.Type<H> type, final Object source, final H handler) {
         if (source == null) {
-            throw new NullPointerException(
-                    "Cannot add a handler with a null source");
+            throw new NullPointerException("Cannot add a handler with a null source");
         }
 
         return doAdd(type, source, handler);
@@ -88,8 +84,7 @@ public class SimpleEventBus extends EventBus {
     }
 
     /**
-     * Not documented in GWT, required by legacy features in GWT's old
-     * HandlerManager.
+     * Not documented in GWT, required by legacy features in GWT's old HandlerManager.
      *
      * @param type
      *            the type
@@ -111,8 +106,7 @@ public class SimpleEventBus extends EventBus {
     }
 
     /**
-     * Not documented in GWT, required by legacy features in GWT's old
-     * HandlerManager.
+     * Not documented in GWT, required by legacy features in GWT's old HandlerManager.
      *
      * @param type
      *            the type
@@ -126,17 +120,15 @@ public class SimpleEventBus extends EventBus {
      */
     @Deprecated
     protected <H> H getHandler(Event.Type<H> type, int index) {
-        assert index < getHandlerCount(type) : "handlers for " + type.getClass()
-                + " have size: " + getHandlerCount(type)
-                + " so do not have a handler at index: " + index;
+        assert index < getHandlerCount(type) : "handlers for " + type.getClass() + " have size: "
+                + getHandlerCount(type) + " so do not have a handler at index: " + index;
 
         JsArray<H> l = getHandlerList(type, null);
         return l.get(index);
     }
 
     /**
-     * Not documented in GWT, required by legacy features in GWT's old
-     * HandlerManager.
+     * Not documented in GWT, required by legacy features in GWT's old HandlerManager.
      *
      * @param eventKey
      *            the event type
@@ -150,8 +142,7 @@ public class SimpleEventBus extends EventBus {
     }
 
     /**
-     * Not documented in GWT, required by legacy features in GWT's old
-     * HandlerManager.
+     * Not documented in GWT, required by legacy features in GWT's old HandlerManager.
      *
      * @param eventKey
      *            the event type
@@ -170,11 +161,9 @@ public class SimpleEventBus extends EventBus {
         deferredDeltas.push(command);
     }
 
-    private <H> HandlerRegistration doAdd(final Event.Type<H> type,
-            final Object source, final H handler) {
+    private <H> HandlerRegistration doAdd(final Event.Type<H> type, final Object source, final H handler) {
         if (type == null) {
-            throw new NullPointerException(
-                    "Cannot add a handler with a null type");
+            throw new NullPointerException("Cannot add a handler with a null type");
         }
         if (handler == null) {
             throw new NullPointerException("Cannot add a null handler");
@@ -206,8 +195,7 @@ public class SimpleEventBus extends EventBus {
                 setSourceOfEvent(event, source);
             }
 
-            JsArray<H> handlers = getDispatchList(event.getAssociatedType(),
-                    source);
+            JsArray<H> handlers = getDispatchList(event.getAssociatedType(), source);
             JsArray<Throwable> causes = null;
 
             for (int i = 0; i < handlers.length(); i++) {
@@ -244,18 +232,15 @@ public class SimpleEventBus extends EventBus {
         }
     }
 
-    private <H> void enqueueAdd(final Event.Type<H> type, final Object source,
-            final H handler) {
+    private <H> void enqueueAdd(final Event.Type<H> type, final Object source, final H handler) {
         defer(() -> doAddNow(type, source, handler));
     }
 
-    private <H> void enqueueRemove(final Event.Type<H> type,
-            final Object source, final H handler) {
+    private <H> void enqueueRemove(final Event.Type<H> type, final Object source, final H handler) {
         defer(() -> doRemoveNow(type, source, handler));
     }
 
-    private <H> JsArray<H> ensureHandlerList(Event.Type<H> type,
-            Object source) {
+    private <H> JsArray<H> ensureHandlerList(Event.Type<H> type, Object source) {
         JsMap<Object, JsArray<?>> sourceMap = map.get(type);
         if (sourceMap == null) {
             sourceMap = JsCollections.map();

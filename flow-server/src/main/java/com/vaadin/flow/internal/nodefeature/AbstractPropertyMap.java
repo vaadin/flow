@@ -23,8 +23,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 
 /**
- * Abstract class to be used as a parent for node maps which supports setting
- * properties in a map.
+ * Abstract class to be used as a parent for node maps which supports setting properties in a map.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -49,13 +48,11 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @param name
      *            the property name
      * @param value
-     *            the value, must be a string, a boolean, a double or
-     *            <code>null</code>
+     *            the value, must be a string, a boolean, a double or <code>null</code>
      * @param emitChange
      *            true to create a change event for the client side
      */
-    public void setProperty(String name, Serializable value,
-            boolean emitChange) {
+    public void setProperty(String name, Serializable value, boolean emitChange) {
         assert name != null;
         assert isValidValueType(value);
 
@@ -67,8 +64,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *
      * @param name
      *            the name of the property
-     * @return <code>true</code> if there is a property with the given name;
-     *         <code>false</code> if there is no property
+     * @return <code>true</code> if there is a property with the given name; <code>false</code> if there is no property
      */
     public boolean hasProperty(String name) {
         return contains(name);
@@ -97,8 +93,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *
      * @param name
      *            the name of the property
-     * @return the property value; <code>null</code> if there is no property or
-     *         if the value is explicitly set to null
+     * @return the property value; <code>null</code> if there is no property or if the value is explicitly set to null
      */
     public Serializable getProperty(String name) {
         return get(name);
@@ -118,16 +113,14 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *
      * @param value
      *            the value to check, may be null
-     * @return <code>true</code> if the type is supported, <code>false</code>
-     *         otherwise
+     * @return <code>true</code> if the type is supported, <code>false</code> otherwise
      */
     public static boolean isValidValueType(Serializable value) {
         if (value == null) {
             return true;
         }
         Class<?> type = ReflectTools.convertPrimitiveType(value.getClass());
-        return JsonCodec.canEncodeWithoutTypeInfo(type)
-                || StateNode.class.isAssignableFrom(type);
+        return JsonCodec.canEncodeWithoutTypeInfo(type) || StateNode.class.isAssignableFrom(type);
     }
 
 }

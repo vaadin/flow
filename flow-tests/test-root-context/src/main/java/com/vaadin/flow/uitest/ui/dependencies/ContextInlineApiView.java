@@ -26,9 +26,7 @@ public class ContextInlineApiView extends Div {
 
     public ContextInlineApiView() {
         setId("template");
-        UI.getCurrent().getPage().addJavaScript("/components/context-inline.js",
-                LoadMode.INLINE);
-        UI.getCurrent().getPage().addStyleSheet(
-                "/components/context-inline.css", LoadMode.INLINE);
+        UI.getCurrent().getPage().addJavaScript("/components/context-inline.js", LoadMode.INLINE);
+        UI.getCurrent().getPage().addStyleSheet("/components/context-inline.css", LoadMode.INLINE);
     }
 }

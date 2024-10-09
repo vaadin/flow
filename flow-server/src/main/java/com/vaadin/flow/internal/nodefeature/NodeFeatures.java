@@ -18,8 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 
 /**
- * Registry of node feature id numbers and map keys shared between server and
- * client.
+ * Registry of node feature id numbers and map keys shared between server and client.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

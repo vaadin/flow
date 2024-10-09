@@ -28,9 +28,8 @@ import java.util.UUID;
  * Leading and trailing white spaces are ignored when converting from a String.
  * </p>
  * <p>
- * The String representation uses the canonical format of 32-characters with a
- * hyphen to separate each of five groups of hexadecimal digits as defined in:
- * RFC 4122: A Universally Unique IDentifier (UUID) URN Namespace
+ * The String representation uses the canonical format of 32-characters with a hyphen to separate each of five groups of
+ * hexadecimal digits as defined in: RFC 4122: A Universally Unique IDentifier (UUID) URN Namespace
  * http://www.ietf.org/rfc/rfc4122.txt
  * </p>
  *
@@ -51,8 +50,8 @@ public class StringToUuidConverter implements Converter<String, UUID> {
     }
 
     /**
-     * Constructs a new converter instance with the given error message
-     * provider. Empty strings are converted to <code>null</code>.
+     * Constructs a new converter instance with the given error message provider. Empty strings are converted to
+     * <code>null</code>.
      *
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails

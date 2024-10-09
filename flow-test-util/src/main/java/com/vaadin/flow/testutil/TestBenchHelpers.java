@@ -47,15 +47,13 @@ import com.vaadin.testbench.parallel.ParallelTest;
 public class TestBenchHelpers extends ParallelTest {
 
     /**
-     * When an error occurs during establishing a WebSocket connection, a severe
-     * error is added to the console by the browser. We can't prevent it, so we
-     * have to ignore it for now until we figure out a way to supress it.
+     * When an error occurs during establishing a WebSocket connection, a severe error is added to the console by the
+     * browser. We can't prevent it, so we have to ignore it for now until we figure out a way to supress it.
      */
     private static final String WEB_SOCKET_CONNECTION_ERROR_PREFIX = "WebSocket connection to ";
 
     /**
-     * Waits up to 10s for the given condition to become false. Use e.g. as
-     * {@link #waitUntilNot(ExpectedCondition)}.
+     * Waits up to 10s for the given condition to become false. Use e.g. as {@link #waitUntilNot(ExpectedCondition)}.
      *
      * @param condition
      *            the condition to wait for to become false
@@ -67,8 +65,7 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Returns true if an element can be found from the driver with given
-     * selector.
+     * Returns true if an element can be found from the driver with given selector.
      *
      * @param by
      *            the selector used to find element
@@ -90,8 +87,7 @@ public class TestBenchHelpers extends ParallelTest {
      * @param target
      */
     public void dragAndDrop(WebElement source, WebElement target) {
-        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
-                source, target, "DND");
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT, source, target, "DND");
     }
 
     /**
@@ -100,25 +96,22 @@ public class TestBenchHelpers extends ParallelTest {
      * @param source
      */
     public void drag(WebElement source) {
-        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
-                source, null, "DRAG");
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT, source, null, "DRAG");
     }
 
     /**
-     * Simulate a drag of {@code source} element and over the {@code target}
-     * element.
+     * Simulate a drag of {@code source} element and over the {@code target} element.
      *
      * @param source
      * @param target
      */
     public void dragElementOver(WebElement source, WebElement target) {
-        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
-                source, target, "DRAG_OVER");
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT, source, target, "DRAG_OVER");
     }
 
     /**
-     * Waits the given number of seconds for the given condition to become
-     * false. Use e.g. as {@link #waitUntilNot(ExpectedCondition)}.
+     * Waits the given number of seconds for the given condition to become false. Use e.g. as
+     * {@link #waitUntilNot(ExpectedCondition)}.
      *
      * @param condition
      *            the condition to wait for to become false
@@ -127,8 +120,7 @@ public class TestBenchHelpers extends ParallelTest {
      * @param <T>
      *            the return type of the expected condition
      */
-    protected <T> void waitUntilNot(ExpectedCondition<T> condition,
-            long timeoutInSeconds) {
+    protected <T> void waitUntilNot(ExpectedCondition<T> condition, long timeoutInSeconds) {
         waitUntil(ExpectedConditions.not(condition), timeoutInSeconds);
     }
 
@@ -147,8 +139,7 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Checks if the given element has the given class name.
      *
-     * Matches only full class names, i.e. has ("foo") does not match
-     * class="foobar"
+     * Matches only full class names, i.e. has ("foo") does not match class="foobar"
      *
      * @param element
      *            the element to test
@@ -174,17 +165,14 @@ public class TestBenchHelpers extends ParallelTest {
      * @param actualElement
      *            the actual element
      */
-    protected static void assertEquals(WebElement expectedElement,
-            WebElement actualElement) {
+    protected static void assertEquals(WebElement expectedElement, WebElement actualElement) {
         WebElement unwrappedExpected = expectedElement;
         WebElement unwrappedActual = actualElement;
         while (unwrappedExpected instanceof WrapsElement) {
-            unwrappedExpected = ((WrapsElement) unwrappedExpected)
-                    .getWrappedElement();
+            unwrappedExpected = ((WrapsElement) unwrappedExpected).getWrappedElement();
         }
         while (unwrappedActual instanceof WrapsElement) {
-            unwrappedActual = ((WrapsElement) unwrappedActual)
-                    .getWrappedElement();
+            unwrappedActual = ((WrapsElement) unwrappedActual).getWrappedElement();
         }
         Assert.assertEquals(unwrappedExpected, unwrappedActual);
     }
@@ -192,22 +180,18 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Executes the given JavaScript.
      * <p>
-     * To send arguments to the script, you can use the <code>arguments</code>
-     * variable. <br>
-     * For example:
-     * <code>executeScript("window.alert(arguments[0]);", "Alert message!");</code>.
+     * To send arguments to the script, you can use the <code>arguments</code> variable. <br>
+     * For example: <code>executeScript("window.alert(arguments[0]);", "Alert message!");</code>.
      * <p>
-     * To be able to use the return value of the JavaScript, you must explicitly
-     * declare a <code>return</code> statement. <br>
+     * To be able to use the return value of the JavaScript, you must explicitly declare a <code>return</code>
+     * statement. <br>
      * For example: <code>executeScript("return window.name;");</code>.
      *
      * @param script
      *            the script to execute
      * @param args
      *            optional arguments for the script
-     * @return whatever
-     *         {@link JavascriptExecutor#executeScript(String, Object...)}
-     *         returns
+     * @return whatever {@link JavascriptExecutor#executeScript(String, Object...)} returns
      */
     @Override
     protected Object executeScript(String script, Object... args) {
@@ -215,9 +199,8 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Scrolls the page by given amount of x and y deltas. Actual scroll values
-     * can be different if any delta is bigger then the corresponding document
-     * dimension.
+     * Scrolls the page by given amount of x and y deltas. Actual scroll values can be different if any delta is bigger
+     * then the corresponding document dimension.
      *
      * @param deltaX
      *            the offset in pixels to scroll horizontally
@@ -231,17 +214,14 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Scrolls the page to the element given using javascript.
      *
-     * Standard Selenium api does not work for current newest Chrome and
-     * ChromeDriver.
+     * Standard Selenium api does not work for current newest Chrome and ChromeDriver.
      *
      * @param element
      *            the element to scroll to, not {@code null}
      */
     protected void scrollToElement(WebElement element) {
-        Objects.requireNonNull(element,
-                "The element to scroll to should not be null");
-        getCommandExecutor().executeScript("arguments[0].scrollIntoView(true);",
-                element);
+        Objects.requireNonNull(element, "The element to scroll to should not be null");
+        getCommandExecutor().executeScript("arguments[0].scrollIntoView(true);", element);
     }
 
     /**
@@ -274,22 +254,20 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Clicks on the element, using JS. This method is more convenient then
-     * Selenium {@code findElement(By.id(urlId)).click()}, because Selenium
-     * method changes scroll position, which is not always needed.
+     * Clicks on the element, using JS. This method is more convenient then Selenium
+     * {@code findElement(By.id(urlId)).click()}, because Selenium method changes scroll position, which is not always
+     * needed.
      *
      * @param elementId
      *            id of the
      */
     protected void clickElementWithJs(String elementId) {
-        executeScript(String.format("document.getElementById('%s').click();",
-                elementId));
+        executeScript(String.format("document.getElementById('%s').click();", elementId));
     }
 
     /**
-     * Clicks on the element, using JS. This method is more convenient then
-     * Selenium {@code element.click()}, because Selenium method changes scroll
-     * position, which is not always needed.
+     * Clicks on the element, using JS. This method is more convenient then Selenium {@code element.click()}, because
+     * Selenium method changes scroll position, which is not always needed.
      *
      * @param element
      *            the element to be clicked on
@@ -299,8 +277,7 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Gets the log entries from the browser that have the given logging level
-     * or higher.
+     * Gets the log entries from the browser that have the given logging level or higher.
      *
      * @param level
      *            the minimum severity of logs included
@@ -311,17 +288,13 @@ public class TestBenchHelpers extends ParallelTest {
         getCommandExecutor().waitForVaadin();
 
         return driver.manage().logs().get(LogType.BROWSER).getAll().stream()
-                .filter(logEntry -> logEntry.getLevel().intValue() >= level
-                        .intValue())
+                .filter(logEntry -> logEntry.getLevel().intValue() >= level.intValue())
                 // we always have this error
-                .filter(logEntry -> !logEntry.getMessage()
-                        .contains("favicon.ico"))
-                .collect(Collectors.toList());
+                .filter(logEntry -> !logEntry.getMessage().contains("favicon.ico")).collect(Collectors.toList());
     }
 
     /**
-     * Checks browser's log entries, throws an error for any client-side error
-     * and logs any client-side warnings.
+     * Checks browser's log entries, throws an error for any client-side error and logs any client-side warnings.
      *
      * @param acceptableMessagePredicate
      *            allows to ignore log entries whose message is accaptable
@@ -329,32 +302,24 @@ public class TestBenchHelpers extends ParallelTest {
      * @throws AssertionError
      *             if an error is found in the browser logs
      */
-    protected void checkLogsForErrors(
-            Predicate<String> acceptableMessagePredicate) {
+    protected void checkLogsForErrors(Predicate<String> acceptableMessagePredicate) {
         getLogEntries(Level.WARNING).forEach(logEntry -> {
-            if (logEntry.getMessage().contains(
-                    "Lit is in dev mode. Not recommended for production")) {
+            if (logEntry.getMessage().contains("Lit is in dev mode. Not recommended for production")) {
                 return;
             }
-            if ((Objects.equals(logEntry.getLevel(), Level.SEVERE)
-                    || logEntry.getMessage().contains(" 404 "))
-                    && !logEntry.getMessage()
-                            .contains(WEB_SOCKET_CONNECTION_ERROR_PREFIX)
-                    && !acceptableMessagePredicate
-                            .test(logEntry.getMessage())) {
-                throw new AssertionError(String
-                        .format("Error message in browser log: %s", logEntry));
+            if ((Objects.equals(logEntry.getLevel(), Level.SEVERE) || logEntry.getMessage().contains(" 404 "))
+                    && !logEntry.getMessage().contains(WEB_SOCKET_CONNECTION_ERROR_PREFIX)
+                    && !acceptableMessagePredicate.test(logEntry.getMessage())) {
+                throw new AssertionError(String.format("Error message in browser log: %s", logEntry));
             } else {
-                LoggerFactory.getLogger(TestBenchHelpers.class.getName()).warn(
-                        "This message in browser log console may be a potential error: '{}'",
-                        logEntry);
+                LoggerFactory.getLogger(TestBenchHelpers.class.getName())
+                        .warn("This message in browser log console may be a potential error: '{}'", logEntry);
             }
         });
     }
 
     /**
-     * Checks browser's log entries, throws an error for any client-side error
-     * and logs any client-side warnings.
+     * Checks browser's log entries, throws an error for any client-side error and logs any client-side warnings.
      *
      * @throws AssertionError
      *             if an error is found in the browser logs
@@ -364,8 +329,7 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * If dev server start in progress wait until it's started. Otherwise return
-     * immidiately.
+     * If dev server start in progress wait until it's started. Otherwise return immidiately.
      */
     protected void waitForDevServer() {
         Object result;
@@ -377,23 +341,18 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Calls the {@code blur()} function on the current active element of the
-     * page, if any.
+     * Calls the {@code blur()} function on the current active element of the page, if any.
      */
     public void blur() {
-        executeScript(
-                "!!document.activeElement ? document.activeElement.blur() : 0");
+        executeScript("!!document.activeElement ? document.activeElement.blur() : 0");
     }
 
     private static class LazyDndSimulationLoad {
-        private static final String DND_SCRIPT = loadDndScript(
-                "/dnd-simulation.js");
+        private static final String DND_SCRIPT = loadDndScript("/dnd-simulation.js");
 
         private static String loadDndScript(String scriptLocation) {
-            InputStream stream = TestBenchHelpers.class
-                    .getResourceAsStream(scriptLocation);
-            return IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
-                    .collect(Collectors.joining("\n"));
+            InputStream stream = TestBenchHelpers.class.getResourceAsStream(scriptLocation);
+            return IOUtils.readLines(stream, StandardCharsets.UTF_8).stream().collect(Collectors.joining("\n"));
         }
     }
 }

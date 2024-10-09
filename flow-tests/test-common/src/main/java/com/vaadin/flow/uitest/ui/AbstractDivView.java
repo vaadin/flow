@@ -24,8 +24,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 
-public abstract class AbstractDivView extends Div
-        implements BeforeEnterObserver {
+public abstract class AbstractDivView extends Div implements BeforeEnterObserver {
 
     public AbstractDivView() {
     }

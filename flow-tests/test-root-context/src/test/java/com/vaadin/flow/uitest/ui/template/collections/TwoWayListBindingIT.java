@@ -34,8 +34,8 @@ public class TwoWayListBindingIT extends ChromeBrowserTest {
 
         findElement(By.id("enable")).click();
 
-        List<WebElement> fields = $("two-way-list-binding").first()
-                .$(DivElement.class).first().findElements(By.id("input"));
+        List<WebElement> fields = $("two-way-list-binding").first().$(DivElement.class).first()
+                .findElements(By.id("input"));
 
         // self check
         Assert.assertEquals(2, fields.size());

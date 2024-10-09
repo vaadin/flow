@@ -36,8 +36,7 @@ import com.vaadin.flow.tests.data.bean.Person;
  * @since 1.0
  *
  */
-public class BinderValueChangeTest
-        extends BinderTestBase<Binder<Person>, Person> {
+public class BinderValueChangeTest extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
@@ -47,8 +46,7 @@ public class BinderValueChangeTest
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
-            protected void handleError(HasValue<?, ?> field,
-                    ValidationResult result) {
+            protected void handleError(HasValue<?, ?> field, ValidationResult result) {
                 componentErrors.put(field, result.getErrorMessage());
             }
 
@@ -99,11 +97,8 @@ public class BinderValueChangeTest
 
     @Test
     public void setValue_unbound_singleEventOnSetValue() {
-        binder.forField(nameField).bind(Person::getFirstName,
-                Person::setFirstName);
-        binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        binder.forField(nameField).bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField).withConverter(new StringToIntegerConverter("")).bind(Person::getAge, Person::setAge);
 
         binder.addValueChangeListener(this::statusChanged);
 
@@ -114,11 +109,8 @@ public class BinderValueChangeTest
 
     @Test
     public void setValue_bound_singleEventOnSetValue() {
-        binder.forField(nameField).bind(Person::getFirstName,
-                Person::setFirstName);
-        binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        binder.forField(nameField).bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField).withConverter(new StringToIntegerConverter("")).bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addValueChangeListener(this::statusChanged);
@@ -133,15 +125,12 @@ public class BinderValueChangeTest
         TestTextField field = new TestTextField();
 
         binder.forField(field).bind(Person::getFirstName, Person::setFirstName);
-        binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        binder.forField(ageField).withConverter(new StringToIntegerConverter("")).bind(Person::getAge, Person::setAge);
 
         binder.addValueChangeListener(this::statusChanged);
 
         Assert.assertNull(event.get());
-        field.getElement().getNode().getFeature(ElementPropertyMap.class)
-                .setProperty("value", "foo", false);
+        field.getElement().getNode().getFeature(ElementPropertyMap.class).setProperty("value", "foo", false);
         verifyEvent(field, true);
     }
 
@@ -149,11 +138,8 @@ public class BinderValueChangeTest
     public void addListenerFirst_bound_singleEventOnSetValue() {
         binder.addValueChangeListener(this::statusChanged);
 
-        binder.forField(nameField).bind(Person::getFirstName,
-                Person::setFirstName);
-        binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        binder.forField(nameField).bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField).withConverter(new StringToIntegerConverter("")).bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         Assert.assertNull(event.get());

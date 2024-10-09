@@ -21,8 +21,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-public class DebounceSynchronizePropertyIT
-        extends AbstractDebounceSynchronizeIT {
+public class DebounceSynchronizePropertyIT extends AbstractDebounceSynchronizeIT {
     private WebElement input;
 
     @Before

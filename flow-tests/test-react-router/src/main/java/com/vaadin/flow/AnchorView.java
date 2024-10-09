@@ -25,8 +25,7 @@ import com.vaadin.flow.router.Route;
 public class AnchorView extends Div {
 
     public AnchorView() {
-        Anchor navigation = new Anchor("com.vaadin.flow.NavigationView",
-                "Navigation");
+        Anchor navigation = new Anchor("com.vaadin.flow.NavigationView", "Navigation");
         navigation.setId(NavigationView.ANCHOR_ID);
         add(new Span("AnchorView"), new Div(), navigation);
     }

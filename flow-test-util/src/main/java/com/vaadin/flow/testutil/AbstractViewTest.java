@@ -22,9 +22,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 /**
- * A base class for testing a view using TestBench. It opens the view and wait
- * for its root element to be present. It also checks errors in browser log at
- * both before and after phases of each test.
+ * A base class for testing a view using TestBench. It opens the view and wait for its root element to be present. It
+ * also checks errors in browser log at both before and after phases of each test.
  *
  * @since 2.0
  */

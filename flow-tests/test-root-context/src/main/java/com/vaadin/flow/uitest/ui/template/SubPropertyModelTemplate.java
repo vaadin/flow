@@ -27,8 +27,7 @@ import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate.SubPropertyMo
 
 @Tag("sub-property-model")
 @JsModule("./SubPropertyModel.js")
-public class SubPropertyModelTemplate
-        extends PolymerTemplate<SubPropertyModel> {
+public class SubPropertyModelTemplate extends PolymerTemplate<SubPropertyModel> {
 
     public interface Status {
         void setMessage(String message);

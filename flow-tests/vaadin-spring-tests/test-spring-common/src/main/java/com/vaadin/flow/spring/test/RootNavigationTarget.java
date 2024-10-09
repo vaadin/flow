@@ -26,8 +26,7 @@ import com.vaadin.flow.router.RouterLink;
 @Route("")
 public class RootNavigationTarget extends Div {
 
-    public RootNavigationTarget(@Autowired DataBean dataBean,
-            @Autowired FooNavigationTarget section) {
+    public RootNavigationTarget(@Autowired DataBean dataBean, @Autowired FooNavigationTarget section) {
         setId("main");
         NativeLabel label = new NativeLabel(dataBean.getMessage());
         label.setId("message");
@@ -41,8 +40,7 @@ public class RootNavigationTarget extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        NativeLabel label = new NativeLabel(
-                String.valueOf(getUI().get().getUIId()));
+        NativeLabel label = new NativeLabel(String.valueOf(getUI().get().getUIId()));
         label.setId("ui-id");
         add(label);
 

@@ -28,8 +28,7 @@ import com.vaadin.flow.shared.JsonConstants;
 import elemental.json.JsonObject;
 
 public class MapRemoveChangeTest {
-    private NodeMap feature = AbstractNodeFeatureTest
-            .createFeature(ElementPropertyMap.class);
+    private NodeMap feature = AbstractNodeFeatureTest.createFeature(ElementPropertyMap.class);
 
     @Test
     public void testJson() {
@@ -37,14 +36,11 @@ public class MapRemoveChangeTest {
 
         JsonObject json = change.toJson(null);
 
-        Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber(JsonConstants.CHANGE_NODE));
+        Assert.assertEquals(change.getNode().getId(), (int) json.getNumber(JsonConstants.CHANGE_NODE));
         Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
                 (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
-        Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
-                json.getString(JsonConstants.CHANGE_TYPE));
-        Assert.assertEquals("some",
-                json.getString(JsonConstants.CHANGE_MAP_KEY));
+        Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE, json.getString(JsonConstants.CHANGE_TYPE));
+        Assert.assertEquals("some", json.getString(JsonConstants.CHANGE_MAP_KEY));
     }
 
 }

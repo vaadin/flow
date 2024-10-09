@@ -28,11 +28,9 @@ import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 /**
  * Tracks active server UIDL requests.
  * <p>
- * Ensures that there is only one outgoing server request active at a given
- * time.
+ * Ensures that there is only one outgoing server request active at a given time.
  * <p>
- * Fires events when a requests starts, response handling starts and when
- * response handling ends.
+ * Fires events when a requests starts, response handling starts and when response handling ends.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -56,15 +54,14 @@ public class RequestResponseTracker {
     /**
      * Marks that a new request has started.
      * <p>
-     * Should not be called when a request is in progress, i.e.
-     * {@link #startRequest()} has been called but not {@link #endRequest()}.
+     * Should not be called when a request is in progress, i.e. {@link #startRequest()} has been called but not
+     * {@link #endRequest()}.
      * <p>
      * Fires a {@link RequestStartingEvent}.
      */
     public void startRequest() {
         if (hasActiveRequest) {
-            throw new IllegalStateException(
-                    "Trying to start a new request while another is active");
+            throw new IllegalStateException("Trying to start a new request while another is active");
         }
         hasActiveRequest = true;
         fireEvent(new RequestStartingEvent());
@@ -92,8 +89,8 @@ public class RequestResponseTracker {
     /**
      * Marks that the current request has ended.
      * <p>
-     * Should not be called unless a request is in progress, i.e.
-     * {@link #startRequest()} has been called but not {@link #endRequest()}.
+     * Should not be called unless a request is in progress, i.e. {@link #startRequest()} has been called but not
+     * {@link #endRequest()}.
      * <p>
      * Will trigger sending of any pending invocations to the server.
      * <p>
@@ -101,18 +98,15 @@ public class RequestResponseTracker {
      */
     public void endRequest() {
         if (!hasActiveRequest) {
-            throw new IllegalStateException(
-                    "endRequest called when no request is active");
+            throw new IllegalStateException("endRequest called when no request is active");
         }
         // After sendInvocationsToServer() there may be a new active
         // request, so we must set hasActiveRequest to false before, not after,
         // the call.
         hasActiveRequest = false;
 
-        if ((registry.getUILifecycle().isRunning()
-                && registry.getServerRpcQueue().isFlushPending())
-                || registry.getMessageSender()
-                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER) {
+        if ((registry.getUILifecycle().isRunning() && registry.getServerRpcQueue().isFlushPending())
+                || registry.getMessageSender().getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER) {
             // Send the pending RPCs immediately.
             // This might be an unnecessary optimization as ServerRpcQueue has a
             // finally scheduled command which trigger the send if we do not do
@@ -124,8 +118,7 @@ public class RequestResponseTracker {
         // shortly thereafter
         Scheduler.get().scheduleDeferred(() -> {
             boolean terminated = registry.getUILifecycle().isTerminated();
-            boolean requestNowOrSoon = hasActiveRequest()
-                    || registry.getServerRpcQueue().isFlushPending();
+            boolean requestNowOrSoon = hasActiveRequest() || registry.getServerRpcQueue().isFlushPending();
 
             if (terminated || !requestNowOrSoon) {
                 ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
@@ -142,8 +135,7 @@ public class RequestResponseTracker {
      *            the handler to add
      * @return a registration object which can be used to remove the handler
      */
-    public HandlerRegistration addRequestStartingHandler(
-            RequestStartingEvent.Handler handler) {
+    public HandlerRegistration addRequestStartingHandler(RequestStartingEvent.Handler handler) {
         return eventBus.addHandler(RequestStartingEvent.getType(), handler);
     }
 
@@ -154,10 +146,8 @@ public class RequestResponseTracker {
      *            the handler to add
      * @return a registration object which can be used to remove the handler
      */
-    public HandlerRegistration addResponseHandlingStartedHandler(
-            ResponseHandlingStartedEvent.Handler handler) {
-        return eventBus.addHandler(ResponseHandlingStartedEvent.getType(),
-                handler);
+    public HandlerRegistration addResponseHandlingStartedHandler(ResponseHandlingStartedEvent.Handler handler) {
+        return eventBus.addHandler(ResponseHandlingStartedEvent.getType(), handler);
     }
 
     /**
@@ -167,10 +157,8 @@ public class RequestResponseTracker {
      *            the handler to add
      * @return a registration object which can be used to remove the handler
      */
-    public HandlerRegistration addResponseHandlingEndedHandler(
-            ResponseHandlingEndedEvent.Handler handler) {
-        return eventBus.addHandler(ResponseHandlingEndedEvent.getType(),
-                handler);
+    public HandlerRegistration addResponseHandlingEndedHandler(ResponseHandlingEndedEvent.Handler handler) {
+        return eventBus.addHandler(ResponseHandlingEndedEvent.getType(), handler);
     }
 
 }

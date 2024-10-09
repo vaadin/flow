@@ -44,11 +44,9 @@ public class ReusingThemeIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        statsJson = new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION
-                + "/config/stats.json");
+        statsJson = new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
         themeAssetsInBundle = new File(baseDir,
-                "target/" + Constants.DEV_BUNDLE_LOCATION
-                        + "/assets/themes/reusable-theme");
+                "target/" + Constants.DEV_BUNDLE_LOCATION + "/assets/themes/reusable-theme");
     }
 
     @Test
@@ -70,8 +68,7 @@ public class ReusingThemeIT extends ChromeBrowserTest {
             WebElement image = findElement(By.tagName("img"));
             if (image != null) {
                 String id = image.getAttribute("id");
-                Assert.assertEquals("Fortawesome asset not found, but expected",
-                        "snowflake", id);
+                Assert.assertEquals("Fortawesome asset not found, but expected", "snowflake", id);
                 return true;
             }
             return false;
@@ -79,30 +76,25 @@ public class ReusingThemeIT extends ChromeBrowserTest {
     }
 
     private void verifyExternalAssetInBundle() {
-        File lineAwesome = new File(themeAssetsInBundle,
-                "fortawesome/icons/snowflake.svg");
-        Assert.assertTrue("External asset file is not found in the bundle",
-                lineAwesome.exists());
+        File lineAwesome = new File(themeAssetsInBundle, "fortawesome/icons/snowflake.svg");
+        Assert.assertTrue("External asset file is not found in the bundle", lineAwesome.exists());
     }
 
     private void verifyThemeJsonHash() {
         try {
-            String themeJsonContent = FileUtils.readFileToString(statsJson,
-                    StandardCharsets.UTF_8);
+            String themeJsonContent = FileUtils.readFileToString(statsJson, StandardCharsets.UTF_8);
             JsonObject json = Json.parse(themeJsonContent);
             Assert.assertTrue(json.hasKey("themeJsonContents"));
-            Assert.assertTrue(json.getObject("themeJsonContents")
-                    .hasKey("reusable-theme"));
-            Assert.assertFalse(json.getObject("themeJsonContents")
-                    .getString("reusable-theme").isBlank());
+            Assert.assertTrue(json.getObject("themeJsonContents").hasKey("reusable-theme"));
+            Assert.assertFalse(json.getObject("themeJsonContents").getString("reusable-theme").isBlank());
 
             Assert.assertTrue(json.hasKey("frontendHashes"));
             JsonObject frontendHashes = json.getObject("frontendHashes");
 
-            Assert.assertTrue(frontendHashes.hasKey(
-                    "generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css"));
-            Assert.assertFalse(frontendHashes.getString(
-                    "generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css")
+            Assert.assertTrue(frontendHashes
+                    .hasKey("generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css"));
+            Assert.assertFalse(frontendHashes
+                    .getString("generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css")
                     .isBlank());
 
         } catch (IOException e) {

@@ -34,11 +34,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 
 /**
- * Holds role prefix accessible outside an active request. Role prefix should
- * match with {@link SecurityContextHolderAwareRequestWrapper} in Spring
- * Security context aware environments to allow utilities like
- * {@link com.vaadin.flow.spring.AuthenticationUtil} to check roles in the same
- * way with same role prefix.
+ * Holds role prefix accessible outside an active request. Role prefix should match with
+ * {@link SecurityContextHolderAwareRequestWrapper} in Spring Security context aware environments to allow utilities
+ * like {@link com.vaadin.flow.spring.AuthenticationUtil} to check roles in the same way with same role prefix.
  */
 public class VaadinRolePrefixHolder implements Serializable {
 
@@ -76,49 +74,39 @@ public class VaadinRolePrefixHolder implements Serializable {
     }
 
     /**
-     * Reset role prefix from the given request. Works only with a
-     * {@link VaadinServletRequest} and a chain of
-     * {@link ServletRequestWrapper}s to find
-     * {@link SecurityContextHolderAwareRequestWrapper} with the role prefix.
+     * Reset role prefix from the given request. Works only with a {@link VaadinServletRequest} and a chain of
+     * {@link ServletRequestWrapper}s to find {@link SecurityContextHolderAwareRequestWrapper} with the role prefix.
      * Method doesn't do anything if role prefix is not found.
      *
      * @param request
      *            Vaadin request used to find active role prefix.
      */
     public void resetRolePrefix(VaadinRequest request) {
-        SecurityContextHolderAwareRequestWrapper requestWrapper = findSecurityContextHolderAwareRequestWrapper(
-                request);
+        SecurityContextHolderAwareRequestWrapper requestWrapper = findSecurityContextHolderAwareRequestWrapper(request);
         resetRolePrefix(requestWrapper);
     }
 
     /**
-     * Reset role prefix from the given {@link DefaultSecurityFilterChain}.
-     * Method doesn't do anything if role prefix is not found.
+     * Reset role prefix from the given {@link DefaultSecurityFilterChain}. Method doesn't do anything if role prefix is
+     * not found.
      *
      * @param defaultSecurityFilterChain
      *            Default security filter chain used to find active role prefix.
      * @throws NullPointerException
      *             If <code>defaultSecurityFilterChain</code> is null.
      */
-    public void resetRolePrefix(
-            DefaultSecurityFilterChain defaultSecurityFilterChain) {
+    public void resetRolePrefix(DefaultSecurityFilterChain defaultSecurityFilterChain) {
         defaultSecurityFilterChain.getFilters().stream()
-                .filter(filter -> SecurityContextHolderAwareRequestFilter.class
-                        .isAssignableFrom(filter.getClass()))
-                .map(SecurityContextHolderAwareRequestFilter.class::cast)
-                .findFirst().ifPresent(this::resetRolePrefix);
+                .filter(filter -> SecurityContextHolderAwareRequestFilter.class.isAssignableFrom(filter.getClass()))
+                .map(SecurityContextHolderAwareRequestFilter.class::cast).findFirst().ifPresent(this::resetRolePrefix);
     }
 
-    private void resetRolePrefix(
-            SecurityContextHolderAwareRequestFilter securityContextHolderAwareRequestFilter) {
-        resetRolePrefix(securityContextHolderAwareRequestFilter,
-                SecurityContextHolderAwareRequestFilter.class);
+    private void resetRolePrefix(SecurityContextHolderAwareRequestFilter securityContextHolderAwareRequestFilter) {
+        resetRolePrefix(securityContextHolderAwareRequestFilter, SecurityContextHolderAwareRequestFilter.class);
     }
 
-    private void resetRolePrefix(
-            SecurityContextHolderAwareRequestWrapper securityContextHolderAwareRequestWrapper) {
-        resetRolePrefix(securityContextHolderAwareRequestWrapper,
-                SecurityContextHolderAwareRequestWrapper.class);
+    private void resetRolePrefix(SecurityContextHolderAwareRequestWrapper securityContextHolderAwareRequestWrapper) {
+        resetRolePrefix(securityContextHolderAwareRequestWrapper, SecurityContextHolderAwareRequestWrapper.class);
     }
 
     private void resetRolePrefix(Object source, Class<?> type) {
@@ -128,10 +116,7 @@ public class VaadinRolePrefixHolder implements Serializable {
                 field.setAccessible(true);
                 rolePrefix = (String) field.get(source);
             } catch (IllegalAccessException e) {
-                getLogger().warn(
-                        String.format("Could not read %s#rolePrefix field.",
-                                type.getSimpleName()),
-                        e);
+                getLogger().warn(String.format("Could not read %s#rolePrefix field.", type.getSimpleName()), e);
             }
         }
         this.rolePrefixSet = true;
@@ -140,18 +125,14 @@ public class VaadinRolePrefixHolder implements Serializable {
     private SecurityContextHolderAwareRequestWrapper findSecurityContextHolderAwareRequestWrapper(
             VaadinRequest request) {
         if (request instanceof VaadinServletRequest) {
-            ServletRequest servletRequest = ((VaadinServletRequest) request)
-                    .getRequest();
+            ServletRequest servletRequest = ((VaadinServletRequest) request).getRequest();
             Set<Object> checkedWrappers = new HashSet<>();
-            while (servletRequest instanceof ServletRequestWrapper
-                    && !checkedWrappers.contains(servletRequest)) {
+            while (servletRequest instanceof ServletRequestWrapper && !checkedWrappers.contains(servletRequest)) {
                 checkedWrappers.add(servletRequest);
-                if (SecurityContextHolderAwareRequestWrapper.class
-                        .isAssignableFrom(servletRequest.getClass())) {
+                if (SecurityContextHolderAwareRequestWrapper.class.isAssignableFrom(servletRequest.getClass())) {
                     return (SecurityContextHolderAwareRequestWrapper) servletRequest;
                 }
-                servletRequest = ((ServletRequestWrapper) servletRequest)
-                        .getRequest();
+                servletRequest = ((ServletRequestWrapper) servletRequest).getRequest();
             }
         }
         return null;

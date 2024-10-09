@@ -48,13 +48,12 @@ public class InvalidUrlTest {
             throws InvalidRouteConfigurationException, ServiceException {
         UI ui = new UI();
 
-        ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
-                .forClass(Integer.class);
+        ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor.forClass(Integer.class);
 
         initUI(ui, "%3faaa", statusCodeCaptor);
 
-        assertEquals("Return message should have been 404 not found.",
-                Integer.valueOf(404), statusCodeCaptor.getValue());
+        assertEquals("Return message should have been 404 not found.", Integer.valueOf(404),
+                statusCodeCaptor.getValue());
     }
 
     @After
@@ -62,8 +61,7 @@ public class InvalidUrlTest {
         CurrentInstance.clearAll();
     }
 
-    private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor)
+    private static void initUI(UI ui, String initialLocation, ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException, ServiceException {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
@@ -87,8 +85,7 @@ public class InvalidUrlTest {
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
         Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
 
@@ -98,12 +95,10 @@ public class InvalidUrlTest {
 
         ui.getInternals().setSession(session);
 
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(ui.getRouter().getRegistry());
+        RouteConfiguration routeConfiguration = RouteConfiguration.forRegistry(ui.getRouter().getRegistry());
         routeConfiguration.update(() -> {
             routeConfiguration.getHandledRegistry().clean();
-            Arrays.asList(UITest.RootNavigationTarget.class,
-                    UITest.FooBarNavigationTarget.class)
+            Arrays.asList(UITest.RootNavigationTarget.class, UITest.FooBarNavigationTarget.class)
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });
 

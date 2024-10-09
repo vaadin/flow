@@ -52,24 +52,20 @@ public class DefaultBindingExceptionHandlerTest {
     @Test
     public void handleException_elementHasId_messageContainsIdReference() {
         element.setProperty("id", "foo");
-        Optional<BindingException> result = handler.handleException(component,
-                new Exception());
+        Optional<BindingException> result = handler.handleException(component, new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
-                "An exception has been thrown inside binding logic for the field element [id='foo']",
+        Assert.assertEquals("An exception has been thrown inside binding logic for the field element [id='foo']",
                 message);
     }
 
     @Test
     public void handleException_elementHasLabel_messageContainsLabelReference() {
         element.setProperty("label", "foo");
-        Optional<BindingException> result = handler.handleException(component,
-                new Exception());
+        Optional<BindingException> result = handler.handleException(component, new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
-                "An exception has been thrown inside binding logic for the field element [label='foo']",
+        Assert.assertEquals("An exception has been thrown inside binding logic for the field element [label='foo']",
                 message);
     }
 
@@ -80,8 +76,7 @@ public class DefaultBindingExceptionHandlerTest {
 
         element.setProperty("foo", "bar");
         element.setAttribute("baz", "foo-bar");
-        Optional<BindingException> result = handler.handleException(component,
-                new Exception());
+        Optional<BindingException> result = handler.handleException(component, new Exception());
 
         String message = result.get().getMessage();
         Assert.assertEquals(
@@ -96,8 +91,7 @@ public class DefaultBindingExceptionHandlerTest {
 
         element.setProperty("foo", "bar");
         element.setAttribute("baz", "foo-bar");
-        Optional<BindingException> result = handler.handleException(component,
-                new Exception());
+        Optional<BindingException> result = handler.handleException(component, new Exception());
 
         Assert.assertFalse(result.isPresent());
     }
@@ -113,13 +107,10 @@ public class DefaultBindingExceptionHandlerTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);
 
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        ApplicationConfiguration configuration = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(context.getAttribute(Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
                 .thenReturn(configuration);
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(productionMode);
+        Mockito.when(configuration.isProductionMode()).thenReturn(productionMode);
 
         return ui;
     }

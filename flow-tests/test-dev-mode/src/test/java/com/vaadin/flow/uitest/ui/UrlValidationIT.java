@@ -32,40 +32,31 @@ public class UrlValidationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden()
-            throws Exception {
+    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
         // open a view and wait till the expected label is displayed
         open();
-        waitUntil(input -> $(NativeLabelElement.class).id("elementId")
-                .isDisplayed());
+        waitUntil(input -> $(NativeLabelElement.class).id("elementId").isDisplayed());
         // check the forbidden url
-        sendRequestAndValidateResponseStatusBadRequest(
-                "/VAADIN/build/%252E%252E");
+        sendRequestAndValidateResponseStatusBadRequest("/VAADIN/build/%252E%252E");
     }
 
     @Test
-    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden()
-            throws Exception {
+    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden() throws Exception {
         // open a view and wait till the expected label is displayed
         open();
-        waitUntil(input -> $(NativeLabelElement.class).id("elementId")
-                .isDisplayed());
+        waitUntil(input -> $(NativeLabelElement.class).id("elementId").isDisplayed());
         // check the forbidden url
-        sendRequestAndValidateResponseStatusBadRequest(
-                "/VAADIN/build/%252E%252E/some-resource.css");
+        sendRequestAndValidateResponseStatusBadRequest("/VAADIN/build/%252E%252E/some-resource.css");
     }
 
-    private void sendRequestAndValidateResponseStatusBadRequest(
-            String pathToResource) throws Exception {
+    private void sendRequestAndValidateResponseStatusBadRequest(String pathToResource) throws Exception {
         final String urlString = getRootURL() + "/view" + pathToResource;
         URL url = new URL(urlString);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         int responseCode = connection.getResponseCode();
-        Assert.assertEquals(
-                "HTTP 400 Bad request expected for urls with "
-                        + "directory change",
+        Assert.assertEquals("HTTP 400 Bad request expected for urls with " + "directory change",
                 HttpURLConnection.HTTP_BAD_REQUEST, responseCode);
     }
 }

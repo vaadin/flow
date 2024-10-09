@@ -40,8 +40,7 @@ public class BigDecimalToLongConverterTest {
 
     @Test
     public void testConvertToModel() {
-        Result<Long> result = converter.convertToModel(BigDecimal.valueOf(42),
-                null);
+        Result<Long> result = converter.convertToModel(BigDecimal.valueOf(42), null);
         assertEquals(Result.ok(42L), result);
     }
 

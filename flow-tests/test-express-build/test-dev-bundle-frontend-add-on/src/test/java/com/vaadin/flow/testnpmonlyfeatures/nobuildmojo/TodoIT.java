@@ -27,25 +27,19 @@ public class TodoIT extends ChromeBrowserTest {
     public void testAddOn() {
         TestBenchElement template = $(TestBenchElement.class).id("template");
 
-        TestBenchElement createTemplate = template.$(TestBenchElement.class)
-                .id("creator");
+        TestBenchElement createTemplate = template.$(TestBenchElement.class).id("creator");
 
-        TestBenchElement todo = createTemplate.$(TestBenchElement.class)
-                .id("task-input");
+        TestBenchElement todo = createTemplate.$(TestBenchElement.class).id("task-input");
         todo.sendKeys("Important task");
 
-        TestBenchElement user = createTemplate.$(TestBenchElement.class)
-                .id("user-name-input");
+        TestBenchElement user = createTemplate.$(TestBenchElement.class).id("user-name-input");
         user.sendKeys("Teuvo testi");
 
-        TestBenchElement createButton = createTemplate.$(TestBenchElement.class)
-                .id("create-button");
+        TestBenchElement createButton = createTemplate.$(TestBenchElement.class).id("create-button");
         createButton.click();
 
-        TestBenchElement todoElement = template
-                .findElement(By.tagName("todo-element"));
-        Assert.assertEquals("Important task",
-                todoElement.$(TestBenchElement.class).id("task").getText());
+        TestBenchElement todoElement = template.findElement(By.tagName("todo-element"));
+        Assert.assertEquals("Important task", todoElement.$(TestBenchElement.class).id("task").getText());
 
     }
 
@@ -55,7 +49,6 @@ public class TodoIT extends ChromeBrowserTest {
 
         // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
-                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION)
-                        .exists());
+                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION).exists());
     }
 }

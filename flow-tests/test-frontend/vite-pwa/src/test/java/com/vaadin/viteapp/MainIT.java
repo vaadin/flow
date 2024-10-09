@@ -47,13 +47,11 @@ public class MainIT extends ChromeDeviceTest {
     public void openHomePage_setOffline_vitePingRequestIsRejected() {
         openPage("/");
 
-        Assert.assertTrue("Should allow Vite ping requests when online",
-                sendVitePingRequest());
+        Assert.assertTrue("Should allow Vite ping requests when online", sendVitePingRequest());
 
         getDevTools().setOfflineEnabled(true);
 
-        Assert.assertFalse("Should reject Vite ping requests when offline",
-                sendVitePingRequest());
+        Assert.assertFalse("Should reject Vite ping requests when offline", sendVitePingRequest());
     }
 
     @Test
@@ -62,8 +60,7 @@ public class MainIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         reloadPage();
 
-        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
-                || !msg.contains("Failed to load"));
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
@@ -89,8 +86,7 @@ public class MainIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         reloadPage();
 
-        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
-                || !msg.contains("Failed to load"));
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
@@ -106,17 +102,14 @@ public class MainIT extends ChromeDeviceTest {
     private Boolean sendVitePingRequest() {
         return (Boolean) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(
-                        "const done = arguments[arguments.length - 1];"
-                                + "fetch(arguments[0])"
-                                + "  .then((response) => done(response.ok))"
-                                + "  .catch(() => done(false))",
+                        "const done = arguments[arguments.length - 1];" + "fetch(arguments[0])"
+                                + "  .then((response) => done(response.ok))" + "  .catch(() => done(false))",
                         VITE_PING_PATH);
     }
 
     private void reloadPage() {
         executeScript("window.location.reload()");
-        waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                .executeScript("return document.readyState")
+        waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                 .equals("complete"));
     }
 

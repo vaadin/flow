@@ -30,8 +30,7 @@ public class SpecialCharactersView extends Span {
         div.setId("title");
         div.setText("This is the special view");
         add(div);
-        RouterLink helloLink = new RouterLink("Hello world view",
-                HelloWorldView.class);
+        RouterLink helloLink = new RouterLink("Hello world view", HelloWorldView.class);
         helloLink.setId("navigate-hello");
         add(helloLink);
     }

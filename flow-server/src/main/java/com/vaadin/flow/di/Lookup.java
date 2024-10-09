@@ -30,29 +30,23 @@ import com.vaadin.flow.server.VaadinServlet;
 /**
  * Provides a way to discover services used by Flow (SPI).
  * <p>
- * A lookup instance may be created based on a service, see
- * {@link #of(Object, Class...)}. Several lookup instances may be combined via
- * {@link #compose(Lookup, Lookup)} method which allows to make a lookup
- * instance based on a number of services. The resulting lookup instance may be
- * used in internal Flow code to transfer data in the unified way which allows
- * to change the available data types during the code evolution without changing
- * the internal API (like arguments in methods and constructors).
+ * A lookup instance may be created based on a service, see {@link #of(Object, Class...)}. Several lookup instances may
+ * be combined via {@link #compose(Lookup, Lookup)} method which allows to make a lookup instance based on a number of
+ * services. The resulting lookup instance may be used in internal Flow code to transfer data in the unified way which
+ * allows to change the available data types during the code evolution without changing the internal API (like arguments
+ * in methods and constructors).
  * <p>
- * There is the "global" application {@link Lookup} instance and the
- * {@link VaadinContext}. It has one to one mapping and is available even before
- * a {@link DeploymentConfiguration} (and {@link VaadinServlet}) is created. So
- * this is kind of a singleton for a Web Application. As a consequence it
- * provides and may return only web app singleton services. Dependency injection
- * frameworks can provide an implementation for the application {@code Lookup}
- * which manages instances according to the conventions of that framework.
+ * There is the "global" application {@link Lookup} instance and the {@link VaadinContext}. It has one to one mapping
+ * and is available even before a {@link DeploymentConfiguration} (and {@link VaadinServlet}) is created. So this is
+ * kind of a singleton for a Web Application. As a consequence it provides and may return only web app singleton
+ * services. Dependency injection frameworks can provide an implementation for the application {@code Lookup} which
+ * manages instances according to the conventions of that framework.
  * <p>
- * The application {@code Lookup} is similar to the {@link Instantiator} class
- * but a {@link Lookup} instance is available even before a
- * {@link VaadinService} instance is created (and as a consequence there is no
- * yet an {@link Instantiator} instance).
+ * The application {@code Lookup} is similar to the {@link Instantiator} class but a {@link Lookup} instance is
+ * available even before a {@link VaadinService} instance is created (and as a consequence there is no yet an
+ * {@link Instantiator} instance).
  * <p>
- * This is the code which one may use to get the application {@link Lookup}
- * instance:
+ * This is the code which one may use to get the application {@link Lookup} instance:
  *
  * <pre>
  * <code>
@@ -61,8 +55,8 @@ import com.vaadin.flow.server.VaadinServlet;
  * </code>
  * </pre>
  * <p>
- * This SPI is mostly for internal framework usage since {@link Instantiator}
- * provides all required services for the application developer.
+ * This SPI is mostly for internal framework usage since {@link Instantiator} provides all required services for the
+ * application developer.
  *
  *
  * @see Instantiator
@@ -74,8 +68,8 @@ public interface Lookup {
     /**
      * Lookup for a service of the given type.
      * <p>
-     * The {@code serviceClass} is usually an interface (though it doesn't have
-     * to be) and the returned value is some implementation of this interface.
+     * The {@code serviceClass} is usually an interface (though it doesn't have to be) and the returned value is some
+     * implementation of this interface.
      *
      * @param <T>
      *            a service type
@@ -83,42 +77,38 @@ public interface Lookup {
      *            a service SPI class
      *
      * @see Lookup#lookupAll(Class)
-     * @return a service which implements the {@code serviceClass}, may be
-     *         {@code null} if no services are registered for this SPI
+     * @return a service which implements the {@code serviceClass}, may be {@code null} if no services are registered
+     *         for this SPI
      */
     <T> T lookup(Class<T> serviceClass);
 
     /**
      * Lookup for all services by the provided {@code serviceClass}.
      * <p>
-     * The {@code serviceClass} is usually an interface class (though it doesn't
-     * have to be) and the returned value is all implementations of this
-     * interface.
+     * The {@code serviceClass} is usually an interface class (though it doesn't have to be) and the returned value is
+     * all implementations of this interface.
      *
      * @param <T>
      *            a service type
      * @param serviceClass
      *            a service SPI class
-     * @return all services which implement the {@code serviceClass}, if no
-     *         services found an empty list is returned (so {@code null} is not
-     *         returned)
+     * @return all services which implement the {@code serviceClass}, if no services found an empty list is returned (so
+     *         {@code null} is not returned)
      */
     <T> Collection<T> lookupAll(Class<T> serviceClass);
 
     /**
-     * Creates a lookup which contains (only) the provided {@code service} as
-     * instance of given {@code serviceTypes}.
+     * Creates a lookup which contains (only) the provided {@code service} as instance of given {@code serviceTypes}.
      * <p>
-     * This method may be used to create a temporary lookup which then can be
-     * used to extend an existing lookup via {@link #compose(Lookup, Lookup)}.
+     * This method may be used to create a temporary lookup which then can be used to extend an existing lookup via
+     * {@link #compose(Lookup, Lookup)}.
      *
      * @param <T>
      *            the service type
      * @param service
      *            the service object
      * @param serviceTypes
-     *            the supertypes of the service which may be used to access the
-     *            service
+     *            the supertypes of the service which may be used to access the service
      * @return a lookup initialized with the given {@code service}
      */
     @SafeVarargs
@@ -127,8 +117,7 @@ public interface Lookup {
         Set<Class<? super T>> services = Stream.of(serviceTypes).peek(type -> {
             if (!type.isInstance(service)) {
                 throw new IllegalArgumentException(
-                        "Service type" + service.getClass().getName()
-                                + " is not a subtype of " + type.getName());
+                        "Service type" + service.getClass().getName() + " is not a subtype of " + type.getName());
             }
         }).collect(Collectors.toSet());
         return new Lookup() {
@@ -136,8 +125,7 @@ public interface Lookup {
             @Override
             public <U> Collection<U> lookupAll(Class<U> serviceClass) {
                 U service = lookup(serviceClass);
-                return service == null ? Collections.emptyList()
-                        : Collections.singleton(service);
+                return service == null ? Collections.emptyList() : Collections.singleton(service);
             }
 
             @Override
@@ -151,18 +139,14 @@ public interface Lookup {
     }
 
     /**
-     * Make a composite lookup which contains the services from both
-     * {@code lookup1} and {@code lookup2}.
+     * Make a composite lookup which contains the services from both {@code lookup1} and {@code lookup2}.
      * <p>
-     * {@link #lookup(Class)} method will return the service from the first
-     * lookup if it's not null and fallbacks to the {@code lookup2} otherwise.
-     * So the first lookup takes precedence. The method
-     * {@link #lookupAll(Class)} simply combines all the services from both
-     * lookups.
+     * {@link #lookup(Class)} method will return the service from the first lookup if it's not null and fallbacks to the
+     * {@code lookup2} otherwise. So the first lookup takes precedence. The method {@link #lookupAll(Class)} simply
+     * combines all the services from both lookups.
      * <p>
-     * The resulting lookup is intended to be a "temporary" (short living)
-     * lookup to extend an existing lookup with some additional data which is
-     * required only in some isolated object.
+     * The resulting lookup is intended to be a "temporary" (short living) lookup to extend an existing lookup with some
+     * additional data which is required only in some isolated object.
      *
      * @param lookup1
      *            the first lookup to compose
@@ -175,9 +159,7 @@ public interface Lookup {
 
             @Override
             public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-                return Stream
-                        .concat(lookup1.lookupAll(serviceClass).stream(),
-                                lookup2.lookupAll(serviceClass).stream())
+                return Stream.concat(lookup1.lookupAll(serviceClass).stream(), lookup2.lookupAll(serviceClass).stream())
                         .collect(Collectors.toList());
             }
 

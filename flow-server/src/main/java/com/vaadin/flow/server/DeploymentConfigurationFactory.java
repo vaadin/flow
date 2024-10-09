@@ -32,17 +32,15 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 /**
- * Creates {@link DeploymentConfiguration} filled with all parameters specified
- * by the framework users.
+ * Creates {@link DeploymentConfiguration} filled with all parameters specified by the framework users.
  *
  * @since 1.2
  */
-public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
-        implements Serializable {
+public class DeploymentConfigurationFactory extends AbstractConfigurationFactory implements Serializable {
 
     /**
-     * Creates a {@link DeploymentConfiguration} instance that is filled with
-     * all parameters, specified for the current app.
+     * Creates a {@link DeploymentConfiguration} instance that is filled with all parameters, specified for the current
+     * app.
      *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
@@ -50,18 +48,15 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
      */
-    public DeploymentConfiguration createDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
-        return new DefaultDeploymentConfiguration(
-                ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
-                systemPropertyBaseClass,
-                createInitParameters(systemPropertyBaseClass, vaadinConfig));
+    public DeploymentConfiguration createDeploymentConfiguration(Class<?> systemPropertyBaseClass,
+            VaadinConfig vaadinConfig) {
+        return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
+                systemPropertyBaseClass, createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
     /**
-     * Creates a {@link DeploymentConfiguration} instance that has all
-     * parameters, specified for the current app without doing checks so
-     * property states and only returns default.
+     * Creates a {@link DeploymentConfiguration} instance that has all parameters, specified for the current app without
+     * doing checks so property states and only returns default.
      *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
@@ -69,17 +64,14 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
      */
-    public DeploymentConfiguration createPropertyDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
-        return new PropertyDeploymentConfiguration(
-                ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
-                systemPropertyBaseClass,
-                createInitParameters(systemPropertyBaseClass, vaadinConfig));
+    public DeploymentConfiguration createPropertyDeploymentConfiguration(Class<?> systemPropertyBaseClass,
+            VaadinConfig vaadinConfig) {
+        return new PropertyDeploymentConfiguration(ApplicationConfiguration.get(vaadinConfig.getVaadinContext()),
+                systemPropertyBaseClass, createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
     /**
-     * Generate Property containing parameters for with all parameters contained
-     * in current application.
+     * Generate Property containing parameters for with all parameters contained in current application.
      *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
@@ -87,21 +79,19 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *            the config to get the rest of the properties from
      * @return {@link Properties} instance
      */
-    protected Properties createInitParameters(Class<?> systemPropertyBaseClass,
-            VaadinConfig vaadinConfig) {
+    protected Properties createInitParameters(Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         Properties initParameters = new Properties();
         readUiFromEnclosingClass(systemPropertyBaseClass, initParameters);
 
         // Override with application config from web.xml
-        for (final Enumeration<String> e = vaadinConfig
-                .getConfigParameterNames(); e.hasMoreElements();) {
+        for (final Enumeration<String> e = vaadinConfig.getConfigParameterNames(); e.hasMoreElements();) {
             final String name = e.nextElement();
             String value = vaadinConfig.getConfigParameter(name);
             if (value != null) {
                 initParameters.setProperty(name, value);
             } else {
-                LoggerFactory.getLogger(DeploymentConfigurationFactory.class)
-                        .debug("Ignoring NULL init parameter {}", name);
+                LoggerFactory.getLogger(DeploymentConfigurationFactory.class).debug("Ignoring NULL init parameter {}",
+                        name);
             }
         }
 
@@ -109,15 +99,13 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
         return initParameters;
     }
 
-    private void readBuildInfo(Properties initParameters,
-            VaadinContext context) {
+    private void readBuildInfo(Properties initParameters, VaadinContext context) {
         String json = getTokenFileContent(initParameters::getProperty);
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
             JsonObject buildInfo = JsonUtil.parse(json);
-            Map<String, String> properties = getConfigParametersUsingTokenData(
-                    buildInfo);
+            Map<String, String> properties = getConfigParametersUsingTokenData(buildInfo);
             // only insert properties that haven't been defined
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 if (!initParameters.containsKey(entry.getKey())) {
@@ -128,14 +116,11 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
 
     }
 
-    private static void readUiFromEnclosingClass(
-            Class<?> systemPropertyBaseClass, Properties initParameters) {
+    private static void readUiFromEnclosingClass(Class<?> systemPropertyBaseClass, Properties initParameters) {
         Class<?> enclosingClass = systemPropertyBaseClass.getEnclosingClass();
 
-        if (enclosingClass != null
-                && UI.class.isAssignableFrom(enclosingClass)) {
-            initParameters.put(InitParameters.UI_PARAMETER,
-                    enclosingClass.getName());
+        if (enclosingClass != null && UI.class.isAssignableFrom(enclosingClass)) {
+            initParameters.put(InitParameters.UI_PARAMETER, enclosingClass.getName());
         }
     }
 

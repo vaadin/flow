@@ -26,29 +26,23 @@ public class ClearListIT extends ChromeBrowserTest {
         TestBenchElement template = $(TestBenchElement.class).id("template");
         List<String> initialMessages = getMessages(template);
 
-        Assert.assertEquals("Initial page does not contain expected messages",
-                Arrays.asList("1", "2"), initialMessages);
+        Assert.assertEquals("Initial page does not contain expected messages", Arrays.asList("1", "2"),
+                initialMessages);
 
         template.$(TestBenchElement.class).id("clearList").click();
 
-        Assert.assertTrue(
-                "Page should not contain elements after we've cleared them",
-                getMessages(template).isEmpty());
+        Assert.assertTrue("Page should not contain elements after we've cleared them", getMessages(template).isEmpty());
     }
 
     private void checkThatModelHasNoDefaultConstructor() {
-        Constructor<?>[] modelConstructors = ClearListView.Message.class
-                .getConstructors();
-        Assert.assertEquals("Expect model to have one constructor exactly", 1,
-                modelConstructors.length);
-        Assert.assertTrue(
-                "Expect model to have at least one parameter in its single constructor",
+        Constructor<?>[] modelConstructors = ClearListView.Message.class.getConstructors();
+        Assert.assertEquals("Expect model to have one constructor exactly", 1, modelConstructors.length);
+        Assert.assertTrue("Expect model to have at least one parameter in its single constructor",
                 modelConstructors[0].getParameterCount() > 0);
     }
 
     private List<String> getMessages(TestBenchElement template) {
-        return template.$(TestBenchElement.class).attribute("class", "msg")
-                .all().stream().map(WebElement::getText)
+        return template.$(TestBenchElement.class).attribute("class", "msg").all().stream().map(WebElement::getText)
                 .collect(Collectors.toList());
     }
 }

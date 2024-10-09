@@ -69,48 +69,39 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         // With Vite assets are served from /VAADIN/build in production mode
         String imageUrl = body.getCssValue("background-image");
         Assert.assertFalse("background-image should not be applied to body",
-                imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg.+\\.jpg\"\\)"));
+                imageUrl.matches("url\\(\"" + getRootURL() + "/VAADIN/build/bg.+\\.jpg\"\\)"));
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
-        Assert.assertEquals(
-                "Document style should be applied outside embedded component",
-                "rgba(0, 0, 255, 1)", $("*").id("global").getCssValue("color"));
-        Assert.assertEquals(
-                "Theme style should not be applied outside embedded component",
-                "rgba(0, 0, 0, 1)", $("*").id("internal").getCssValue("color"));
+        Assert.assertEquals("Document style should be applied outside embedded component", "rgba(0, 0, 255, 1)",
+                $("*").id("global").getCssValue("color"));
+        Assert.assertEquals("Theme style should not be applied outside embedded component", "rgba(0, 0, 0, 1)",
+                $("*").id("internal").getCssValue("color"));
 
         getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
 
-    private void validateEmbeddedComponent(TestBenchElement themedComponent,
-            String target) {
+    private void validateEmbeddedComponent(TestBenchElement themedComponent, String target) {
         // With Vite assets are served from /VAADIN/build in production mode
         String imageUrl = themedComponent.getCssValue("background-image");
         Assert.assertTrue(target + " didn't contain the background image",
-                imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg.+\\.jpg\"\\)"));
+                imageUrl.matches("url\\(\"" + getRootURL() + "/VAADIN/build/bg.+\\.jpg\"\\)"));
         Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
                 themedComponent.getCssValue("font-family"));
 
-        final TestBenchElement embeddedComponent = themedComponent
-                .$(DivElement.class).id(EMBEDDED_ID);
+        final TestBenchElement embeddedComponent = themedComponent.$(DivElement.class).id(EMBEDDED_ID);
 
-        final SpanElement handElement = embeddedComponent.$(SpanElement.class)
-                .id(HAND_ID);
+        final SpanElement handElement = embeddedComponent.$(SpanElement.class).id(HAND_ID);
 
-        Assert.assertEquals("Color should have been applied",
-                "rgba(0, 128, 0, 1)", handElement.getCssValue("color"));
+        Assert.assertEquals("Color should have been applied", "rgba(0, 128, 0, 1)", handElement.getCssValue("color"));
 
         // Ensure @CssImport styles are applied
-        final WebElement cssImportElement = embeddedComponent
-                .$("css-import-component").first().$(DivElement.class).single();
-        Assert.assertEquals(
-                "Color fom CSSImport annotation should have been applied",
-                "rgba(255, 215, 0, 1)", cssImportElement.getCssValue("color"));
+        final WebElement cssImportElement = embeddedComponent.$("css-import-component").first().$(DivElement.class)
+                .single();
+        Assert.assertEquals("Color fom CSSImport annotation should have been applied", "rgba(255, 215, 0, 1)",
+                cssImportElement.getCssValue("color"));
 
     }
 
@@ -119,15 +110,12 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         open();
 
         final TestBenchElement themedComponent = $("themed-component").first();
-        final TestBenchElement embeddedComponent = themedComponent
-                .$(DivElement.class).id(EMBEDDED_ID);
+        final TestBenchElement embeddedComponent = themedComponent.$(DivElement.class).id(EMBEDDED_ID);
 
-        TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+        TestBenchElement myField = embeddedComponent.$(TestBenchElement.class).id(MY_COMPONENT_ID);
+        TestBenchElement input = myField.$("vaadin-input-container").attribute("part", "input-field").first();
+        Assert.assertEquals("Polymer text field should have red background", "rgba(255, 0, 0, 1)",
+                input.getCssValue("background-color"));
     }
 
     @Test
@@ -135,20 +123,14 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
         final TestBenchElement themedComponent = $("themed-component").first();
-        final TestBenchElement embeddedComponent = themedComponent
-                .$(DivElement.class).id(EMBEDDED_ID);
+        final TestBenchElement embeddedComponent = themedComponent.$(DivElement.class).id(EMBEDDED_ID);
 
-        final SpanElement handElement = embeddedComponent.$(SpanElement.class)
-                .id(HAND_ID);
-        Assert.assertEquals("Font family faulty", "\"Font Awesome 5 Free\"",
-                handElement.getCssValue("font-family"));
-        Assert.assertEquals("Font weight faulty", "900",
-                handElement.getCssValue("font-weight"));
-        Assert.assertEquals("display value faulty", "inline-block",
-                handElement.getCssValue("display"));
+        final SpanElement handElement = embeddedComponent.$(SpanElement.class).id(HAND_ID);
+        Assert.assertEquals("Font family faulty", "\"Font Awesome 5 Free\"", handElement.getCssValue("font-family"));
+        Assert.assertEquals("Font weight faulty", "900", handElement.getCssValue("font-weight"));
+        Assert.assertEquals("display value faulty", "inline-block", handElement.getCssValue("display"));
 
-        getDriver().get(getRootURL()
-                + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2");
         Assert.assertFalse("Font resource should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -156,11 +138,10 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
         open();
 
-        Object ostrichFontStylesFound = getCommandExecutor().executeScript(
-                "let target = document;" + FIND_FONT_FACE_RULE_SCRIPT);
+        Object ostrichFontStylesFound = getCommandExecutor()
+                .executeScript("let target = document;" + FIND_FONT_FACE_RULE_SCRIPT);
 
-        Assert.assertTrue(
-                "Expected Ostrich font to be applied to document root element",
+        Assert.assertTrue("Expected Ostrich font to be applied to document root element",
                 (Boolean) ostrichFontStylesFound);
     }
 
@@ -169,12 +150,10 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         open();
 
         Object ostrichFontStylesFoundForEmbedded = getCommandExecutor()
-                .executeScript("let target = document.getElementsByTagName"
-                        + "('themed-component')[0].shadowRoot;"
+                .executeScript("let target = document.getElementsByTagName" + "('themed-component')[0].shadowRoot;"
                         + FIND_FONT_FACE_RULE_SCRIPT);
 
-        Assert.assertFalse(
-                "Expected no Ostrich font to be applied to embedded component",
+        Assert.assertFalse("Expected no Ostrich font to be applied to embedded component",
                 (Boolean) ostrichFontStylesFoundForEmbedded);
     }
 
@@ -183,29 +162,21 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
+        final WebElement documentHead = getDriver().findElement(By.xpath("/html/head"));
+        final List<WebElement> links = documentHead.findElements(By.tagName("link"));
 
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Poppins"));
-        Assert.assertTrue("Link with media query was not found", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Oswald"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("docImport.css"));
+        List<String> linkUrls = links.stream().map(link -> link.getAttribute("href")).collect(Collectors.toList());
+        Assert.assertTrue("Missing link for external url",
+                linkUrls.contains("https://fonts.googleapis.com/css?family=Poppins"));
+        Assert.assertTrue("Link with media query was not found",
+                linkUrls.contains("https://fonts.googleapis.com/css?family=Oswald"));
+        Assert.assertFalse("Found import that webpack should have resolved", linkUrls.contains("docImport.css"));
 
         final List<WebElement> mediaLinks = links.stream()
-                .filter(link -> link.getAttribute("href").equals(
-                        "https://fonts.googleapis.com/css?family=Oswald"))
+                .filter(link -> link.getAttribute("href").equals("https://fonts.googleapis.com/css?family=Oswald"))
                 .collect(Collectors.toList());
-        Assert.assertFalse("No expected media link found",
-                mediaLinks.isEmpty());
-        Assert.assertEquals("Wrong media attribute contents",
-                "screen and (orientation:landscape)",
+        Assert.assertFalse("No expected media link found", mediaLinks.isEmpty());
+        Assert.assertEquals("Wrong media attribute contents", "screen and (orientation:landscape)",
                 mediaLinks.get(0).getAttribute("media"));
     }
 
@@ -216,25 +187,20 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final TestBenchElement themedComponent = $("themed-component").first();
         final List<TestBenchElement> links = themedComponent.$("link").all();
 
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
+        List<String> linkUrls = links.stream().map(link -> link.getAttribute("href")).collect(Collectors.toList());
+        Assert.assertTrue("Missing link for external url",
+                linkUrls.contains("https://fonts.googleapis.com/css?family=Itim"));
     }
 
     @Test
     public void multipleSameEmbedded_cssTargetingDocumentShouldOnlyAddElementsOneTime() {
         open();
         checkLogsForErrors();
-        Assert.assertEquals(
-                "document.css adds 2 font links and those should not duplicate",
-                2l, getCommandExecutor().executeScript(
+        Assert.assertEquals("document.css adds 2 font links and those should not duplicate", 2l,
+                getCommandExecutor().executeScript(
                         "return document.head.querySelectorAll('link[rel=stylesheet][href^=\"https://fonts.googleapis.com\"]').length"));
-        Assert.assertEquals(
-                "Project contains 3 css injections to document and all should be hashed",
-                3l, getCommandExecutor().executeScript(
-                        "return window.Vaadin.theme.injectedGlobalCss.length"));
+        Assert.assertEquals("Project contains 3 css injections to document and all should be hashed", 3l,
+                getCommandExecutor().executeScript("return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 
     @Test
@@ -247,11 +213,9 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         validateEmbeddedComponent($("themed-component").id("second"), "second");
 
         final H1Element element = $(H1Element.class).waitForFirst();
-        Assert.assertFalse(
-                "Lumo styles (typography) should not have been applied to elements in embedding page",
+        Assert.assertFalse("Lumo styles (typography) should not have been applied to elements in embedding page",
                 element.getCssValue("font-family").contains("Roboto"));
-        Assert.assertEquals(
-                "Lumo styles (colors) should not have been applied to elements in embedding page",
+        Assert.assertEquals("Lumo styles (colors) should not have been applied to elements in embedding page",
                 "rgba(0, 0, 0, 1)", element.getCssValue("color"));
 
     }
@@ -265,10 +229,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         validateEmbeddedComponent($("themed-component").id("first"), "first");
         validateEmbeddedComponent($("themed-component").id("second"), "second");
 
-        final DivElement element = $(DivElement.class).withId("cssimport")
-                .waitForFirst();
-        Assert.assertEquals(
-                "CssImport styles (colors) should have been applied to elements in embedding page",
+        final DivElement element = $(DivElement.class).withId("cssimport").waitForFirst();
+        Assert.assertEquals("CssImport styles (colors) should have been applied to elements in embedding page",
                 "rgba(255, 215, 0, 1)", element.getCssValue("color"));
 
     }

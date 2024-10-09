@@ -70,8 +70,7 @@ public class ProxyConfig {
                 + "development-mode/node-js#proxy-settings-for-downloading-"
                 + "frontend-toolchain for information on proxy configuration.";
         if (proxies.isEmpty()) {
-            getLogger().info("No proxies configured. "
-                    + "If you are behind a proxy server, " + docLink);
+            getLogger().info("No proxies configured. " + "If you are behind a proxy server, " + docLink);
             return null;
         }
         final URI uri = URI.create(requestUrl);
@@ -80,17 +79,14 @@ public class ProxyConfig {
                 return proxy;
             }
         }
-        getLogger().info(
-                "Could not find matching proxy for host: {}" + " - " + docLink,
-                uri.getHost());
+        getLogger().info("Could not find matching proxy for host: {}" + " - " + docLink, uri.getHost());
         return null;
     }
 
     /**
      * Get a defined secure proxy.
      *
-     * @return first secure proxy from the proxy list, or null if no secure
-     *         proxies.
+     * @return first secure proxy from the proxy list, or null if no secure proxies.
      */
     public Proxy getSecureProxy() {
         for (Proxy proxy : proxies) {
@@ -104,8 +100,7 @@ public class ProxyConfig {
     /**
      * Get first proxy that is not secure.
      *
-     * @return first proxy that is not secure from the proxy list, or null if no
-     *         secure proxies.
+     * @return first proxy that is not secure from the proxy list, or null if no secure proxies.
      */
     public Proxy getInsecureProxy() {
         for (Proxy proxy : proxies) {
@@ -170,8 +165,8 @@ public class ProxyConfig {
          * @param nonProxyHosts
          *            excluded hosts string delimited by '|'
          */
-        public Proxy(String id, String protocol, String host, int port,
-                String username, String password, String nonProxyHosts) {
+        public Proxy(String id, String protocol, String host, int port, String username, String password,
+                String nonProxyHosts) {
             this.host = host;
             this.id = id;
             this.protocol = protocol;
@@ -187,8 +182,7 @@ public class ProxyConfig {
          * @param id
          *            proxy id
          * @param proxyUrl
-         *            proxy url with the format of
-         *            protocol://user:password@server:port
+         *            proxy url with the format of protocol://user:password@server:port
          * @param nonProxyHosts
          *            excluded hosts string delimited by '|'
          */
@@ -222,14 +216,11 @@ public class ProxyConfig {
          * @return URI for this proxy
          */
         public URI getUri() {
-            String authentication = useAuthentication()
-                    ? username + ":" + password
-                    : null;
+            String authentication = useAuthentication() ? username + ":" + password : null;
             try {
                 // Proxies should be schemed with http, even if the protocol is
                 // https
-                return new URI("http", authentication, host, port, null, null,
-                        null);
+                return new URI("http", authentication, host, port, null, null, null);
             } catch (URISyntaxException e) {
                 throw new ProxyConfigException("Invalid proxy settings", e);
             }
@@ -252,10 +243,8 @@ public class ProxyConfig {
          * @return true if host matches a nonProxyHosts pattern
          */
         public boolean isNonProxyHost(String host) {
-            if (host != null && nonProxyHosts != null
-                    && nonProxyHosts.length() > 0) {
-                for (StringTokenizer tokenizer = new StringTokenizer(
-                        nonProxyHosts, "|"); tokenizer.hasMoreTokens();) {
+            if (host != null && nonProxyHosts != null && nonProxyHosts.length() > 0) {
+                for (StringTokenizer tokenizer = new StringTokenizer(nonProxyHosts, "|"); tokenizer.hasMoreTokens();) {
                     String pattern = tokenizer.nextToken();
                     pattern = pattern.replace(".", "\\.").replace("*", ".*");
                     if (host.matches(pattern)) {
@@ -269,12 +258,8 @@ public class ProxyConfig {
 
         @Override
         public String toString() {
-            return id + "{" + "protocol='" + protocol + '\'' + ", host='" + host
-                    + '\'' + ", port=" + port
-                    + (useAuthentication()
-                            ? ", with username/passport authentication"
-                            : "")
-                    + '}';
+            return id + "{" + "protocol='" + protocol + '\'' + ", host='" + host + '\'' + ", port=" + port
+                    + (useAuthentication() ? ", with username/passport authentication" : "") + '}';
         }
     }
 

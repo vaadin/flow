@@ -44,20 +44,15 @@ public class AfterServerChangesView extends AbstractDivView {
 
         add(new OneWayPolymerBindingView());
 
-        add(createButton("Remove the second component", "remove",
-                event -> remove(component)));
+        add(createButton("Remove the second component", "remove", event -> remove(component)));
 
-        add(createButton("Update components", "update",
-                event -> updateComponents()));
+        add(createButton("Update components", "update", event -> updateComponents()));
     }
 
     private void updateComponents() {
-        getChildren()
-                .filter(component -> component.getClass()
-                        .equals(AfterServerChanges.class))
+        getChildren().filter(component -> component.getClass().equals(AfterServerChanges.class))
                 .map(AfterServerChanges.class::cast)
-                .forEach(component -> component.getModel()
-                        .setText(UUID.randomUUID().toString()));
+                .forEach(component -> component.getModel().setText(UUID.randomUUID().toString()));
     }
 
 }

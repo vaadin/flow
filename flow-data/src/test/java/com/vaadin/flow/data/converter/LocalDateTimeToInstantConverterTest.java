@@ -13,12 +13,9 @@ import com.vaadin.flow.data.binder.Result;
 
 public class LocalDateTimeToInstantConverterTest {
 
-    private static final Instant INSTANT_EXAMPLE = Instant
-            .parse("2007-12-03T10:15:30.00Z");
-    private static final LocalDateTime LOCAL_DATE_TIME_EXAMPLE = LocalDateTime
-            .of(2007, 12, 3, 10, 15, 30);
-    LocalDateTimeToInstantConverter converter = new LocalDateTimeToInstantConverter(
-            ZoneId.of("UTC"));
+    private static final Instant INSTANT_EXAMPLE = Instant.parse("2007-12-03T10:15:30.00Z");
+    private static final LocalDateTime LOCAL_DATE_TIME_EXAMPLE = LocalDateTime.of(2007, 12, 3, 10, 15, 30);
+    LocalDateTimeToInstantConverter converter = new LocalDateTimeToInstantConverter(ZoneId.of("UTC"));
 
     @Test
     public void testNullConversionToModel() {
@@ -32,13 +29,11 @@ public class LocalDateTimeToInstantConverterTest {
 
     @Test
     public void testConvertToModel() {
-        assertEquals(Result.ok(INSTANT_EXAMPLE),
-                converter.convertToModel(LOCAL_DATE_TIME_EXAMPLE, null));
+        assertEquals(Result.ok(INSTANT_EXAMPLE), converter.convertToModel(LOCAL_DATE_TIME_EXAMPLE, null));
     }
 
     @Test
     public void testConvertToPresentation() {
-        assertEquals(LOCAL_DATE_TIME_EXAMPLE,
-                converter.convertToPresentation(INSTANT_EXAMPLE, null));
+        assertEquals(LOCAL_DATE_TIME_EXAMPLE, converter.convertToPresentation(INSTANT_EXAMPLE, null));
     }
 }

@@ -56,8 +56,8 @@ public class DisableComponentTrackerTest {
     public void trackCreate_disabledInProductionMode() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(true);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
-                    InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
+            Mockito.when(appCfg.getBooleanProperty(
+                    ArgumentMatchers.eq(InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
                     ArgumentMatchers.anyBoolean())).then(i -> i.getArgument(1));
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
@@ -69,13 +69,12 @@ public class DisableComponentTrackerTest {
     public void trackAttach_disabledInProductionMode() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(true);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
-                    InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
+            Mockito.when(appCfg.getBooleanProperty(
+                    ArgumentMatchers.eq(InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
                     ArgumentMatchers.anyBoolean())).then(i -> i.getArgument(1));
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
-            ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(
-                    c1);
+            ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(c1);
             Assert.assertNull(ComponentTracker.findAttach(c1));
         });
     }
@@ -84,8 +83,8 @@ public class DisableComponentTrackerTest {
     public void trackCreate_disabledByConfiguration() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(false);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
-                    InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
+            Mockito.when(appCfg.getBooleanProperty(
+                    ArgumentMatchers.eq(InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
                     ArgumentMatchers.anyBoolean())).thenReturn(false);
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
@@ -97,29 +96,23 @@ public class DisableComponentTrackerTest {
     public void trackAttach_disabledByConfiguration() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(false);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
-                    InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
+            Mockito.when(appCfg.getBooleanProperty(
+                    ArgumentMatchers.eq(InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
                     ArgumentMatchers.anyBoolean())).thenReturn(false);
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
-            ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(
-                    c1);
+            ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(c1);
             Assert.assertNull(ComponentTracker.findAttach(c1));
         });
     }
 
-    private void withVaadinEnvironment(
-            Consumer<ApplicationConfiguration> action) {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .getInstances();
+    private void withVaadinEnvironment(Consumer<ApplicationConfiguration> action) {
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = Mockito.mock(ApplicationConfiguration.class);
+        Map<Class<?>, CurrentInstance> instances = CurrentInstance.getInstances();
         CurrentInstance.clearAll();
         VaadinService service = new MockVaadinServletService(configuration);
-        service.getContext().setAttribute(ApplicationConfiguration.class,
-                applicationConfiguration);
+        service.getContext().setAttribute(ApplicationConfiguration.class, applicationConfiguration);
         try {
             CurrentInstance.set(VaadinService.class, service);
             action.accept(applicationConfiguration);

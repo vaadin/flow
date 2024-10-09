@@ -30,22 +30,17 @@ import com.nimbusds.jose.proc.SecurityContext;
 public class DummyOAuth2Server {
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
-        RegisteredClient registeredClient = RegisteredClient
-                .withId(UUID.randomUUID().toString()).clientId("test-client")
-                .clientSecret("{noop}secret")
-                .clientAuthenticationMethod(
-                        ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(
-                        AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri("http://127.0.0.1:8080/oauth/authorize")
-                .redirectUri("http://127.0.0.1:8080/authorized")
+        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("test-client").clientSecret("{noop}secret")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("http://127.0.0.1:8080/oauth/authorize").redirectUri("http://127.0.0.1:8080/authorized")
                 .scope(OidcScopes.OPENID).build();
         return new InMemoryRegisteredClientRepository(registeredClient);
     }
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource()
-            throws NoSuchAlgorithmException {
+    public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
         RSAKey rsaKey = generateRsa();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
@@ -55,8 +50,7 @@ public class DummyOAuth2Server {
         KeyPair keyPair = generateRsaKey();
         RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
         RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        return new RSAKey.Builder(publicKey).privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString()).build();
+        return new RSAKey.Builder(publicKey).privateKey(privateKey).keyID(UUID.randomUUID().toString()).build();
     }
 
     private static KeyPair generateRsaKey() throws NoSuchAlgorithmException {

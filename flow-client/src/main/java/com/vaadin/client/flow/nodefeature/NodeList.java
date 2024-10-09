@@ -35,14 +35,11 @@ import elemental.json.JsonValue;
 /**
  * A state node feature that structures data as a list.
  * <p>
- * The list works as a reactive value with regards to its structure. A
- * {@link Computation} will get a dependency on this list for any read operation
- * that depends on the list structure, such as querying the length, iterating
- * the list or finding the index of an item. Accessing an item by index does not
- * create a dependency. The <code>Computation</code> is invalidated when items
- * are added, removed, reordered or replaced. It is not invalidated when the
- * contents of an item is updated since all items are expected to be either
- * immutable or reactive values of their own.
+ * The list works as a reactive value with regards to its structure. A {@link Computation} will get a dependency on this
+ * list for any read operation that depends on the list structure, such as querying the length, iterating the list or
+ * finding the index of an item. Accessing an item by index does not create a dependency. The <code>Computation</code>
+ * is invalidated when items are added, removed, reordered or replaced. It is not invalidated when the contents of an
+ * item is updated since all items are expected to be either immutable or reactive values of their own.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -56,14 +53,12 @@ public class NodeList extends NodeFeature implements ReactiveValue {
     private final ReactiveEventRouter<ListSpliceListener, ListSpliceEvent> eventRouter = new ReactiveEventRouter<ListSpliceListener, ListSpliceEvent>(
             this) {
         @Override
-        protected ListSpliceListener wrap(
-                ReactiveValueChangeListener reactiveValueChangeListener) {
+        protected ListSpliceListener wrap(ReactiveValueChangeListener reactiveValueChangeListener) {
             return reactiveValueChangeListener::onValueChange;
         }
 
         @Override
-        protected void dispatchEvent(ListSpliceListener listener,
-                ListSpliceEvent event) {
+        protected void dispatchEvent(ListSpliceListener listener, ListSpliceEvent event) {
             listener.onSplice(event);
         }
     };
@@ -114,9 +109,8 @@ public class NodeList extends NodeFeature implements ReactiveValue {
     }
 
     /**
-     * Shorthand for adding the given item at the given index. This method
-     * delegates to {@link #splice(int, int, JsArray)} which updates the list
-     * contents and fires the appropriate event.
+     * Shorthand for adding the given item at the given index. This method delegates to
+     * {@link #splice(int, int, JsArray)} which updates the list contents and fires the appropriate event.
      *
      * @param index
      *            the index where the item should be added
@@ -128,8 +122,7 @@ public class NodeList extends NodeFeature implements ReactiveValue {
     }
 
     /**
-     * Removes a number of items at the given index. This causes a
-     * {@link ListSpliceEvent} to be fired.
+     * Removes a number of items at the given index. This causes a {@link ListSpliceEvent} to be fired.
      *
      * @param index
      *            the index at which do do the operation
@@ -138,20 +131,17 @@ public class NodeList extends NodeFeature implements ReactiveValue {
      */
     public void splice(int index, int remove) {
         JsArray<Object> removed = values.splice(index, remove);
-        eventRouter.fireEvent(new ListSpliceEvent(this, index, removed,
-                JsCollections.array(), false));
+        eventRouter.fireEvent(new ListSpliceEvent(this, index, removed, JsCollections.array(), false));
     }
 
     /**
-     * Removes all the nodes from the list. This causes a
-     * {@link ListSpliceEvent} to be fired, with
+     * Removes all the nodes from the list. This causes a {@link ListSpliceEvent} to be fired, with
      * {@link ListSpliceEvent#isClear()} as <code>true</code>.
      */
     public void clear() {
         hasBeenCleared = true;
         JsArray<Object> removed = values.splice(0, values.length());
-        eventRouter.fireEvent(new ListSpliceEvent(this, 0, removed,
-                JsCollections.array(), true));
+        eventRouter.fireEvent(new ListSpliceEvent(this, 0, removed, JsCollections.array(), true));
     }
 
     /**
@@ -170,8 +160,7 @@ public class NodeList extends NodeFeature implements ReactiveValue {
         @SuppressWarnings("unchecked")
         JsArray<Object> addObject = (JsArray<Object>) add;
         JsArray<Object> removed = values.spliceArray(index, remove, addObject);
-        eventRouter.fireEvent(
-                new ListSpliceEvent(this, index, removed, add, false));
+        eventRouter.fireEvent(new ListSpliceEvent(this, index, removed, add, false));
     }
 
     @Override
@@ -196,8 +185,7 @@ public class NodeList extends NodeFeature implements ReactiveValue {
             Object value = values.get(i);
             // Crazy cast since otherwise SDM fails
             // for primitives values since primitives are not a JSO
-            json.set(json.length(),
-                    WidgetUtil.crazyJsoCast(converter.apply(value)));
+            json.set(json.length(), WidgetUtil.crazyJsoCast(converter.apply(value)));
         }
 
         return json;
@@ -216,8 +204,7 @@ public class NodeList extends NodeFeature implements ReactiveValue {
     }
 
     @Override
-    public EventRemover addReactiveValueChangeListener(
-            ReactiveValueChangeListener reactiveValueChangeListener) {
+    public EventRemover addReactiveValueChangeListener(ReactiveValueChangeListener reactiveValueChangeListener) {
         return eventRouter.addReactiveListener(reactiveValueChangeListener);
     }
 

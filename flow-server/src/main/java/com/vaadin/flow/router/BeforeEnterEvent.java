@@ -57,8 +57,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param layouts
      *            navigation layout chain, not <code>null</code>
      */
-    public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
-            RouteParameters parameters,
+    public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget, RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, parameters, layouts);
         errorEvent = event instanceof ErrorNavigationEvent;
@@ -70,8 +69,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param router
      *            the router that triggered the change, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
+     *            the type of user action that triggered this location change, not <code>null</code>
      * @param location
      *            the new location, not <code>null</code>
      * @param navigationTarget
@@ -79,12 +77,10 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param ui
      *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target, not
-     *            <code>null</code>
+     *            the layout chain for the navigation target, not <code>null</code>
      */
-    public BeforeEnterEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
+    public BeforeEnterEvent(Router router, NavigationTrigger trigger, Location location, Class<?> navigationTarget,
+            UI ui, List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, ui, layouts);
         errorEvent = false;
     }
@@ -95,8 +91,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param router
      *            the router that triggered the change, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
+     *            the type of user action that triggered this location change, not <code>null</code>
      * @param location
      *            the new location, not <code>null</code>
      * @param navigationTarget
@@ -106,15 +101,11 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param ui
      *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target, not
-     *            <code>null</code>
+     *            the layout chain for the navigation target, not <code>null</code>
      */
-    public BeforeEnterEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget,
-            RouteParameters parameters, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
-        super(router, trigger, location, navigationTarget, parameters, ui,
-                layouts);
+    public BeforeEnterEvent(Router router, NavigationTrigger trigger, Location location, Class<?> navigationTarget,
+            RouteParameters parameters, UI ui, List<Class<? extends RouterLayout>> layouts) {
+        super(router, trigger, location, navigationTarget, parameters, ui, layouts);
         errorEvent = false;
     }
 

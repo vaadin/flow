@@ -33,8 +33,7 @@ public class CustomCustomElementView extends AbstractDivView {
 
         getElement().appendChild(element);
 
-        add(new NativeButton("update property",
-                event -> element.setProperty("property", "updated")));
+        add(new NativeButton("update property", event -> element.setProperty("property", "updated")));
     }
 
 }

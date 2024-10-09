@@ -81,8 +81,7 @@ public class Platform {
         public static OS guess() {
             final String osName = System.getProperty("os.name");
             return osName.contains("Windows") ? OS.WINDOWS
-                    : osName.contains("Mac") ? OS.MAC
-                            : osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
+                    : osName.contains("Mac") ? OS.MAC : osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
         }
 
         /**
@@ -137,8 +136,7 @@ public class Platform {
         this(DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture, null);
     }
 
-    public Platform(String nodeDownloadRoot, OS os, Architecture architecture,
-            String classifier) {
+    public Platform(String nodeDownloadRoot, OS os, Architecture architecture, String classifier) {
         this.nodeDownloadRoot = nodeDownloadRoot;
         this.os = os;
         this.architecture = architecture;
@@ -243,8 +241,7 @@ public class Platform {
      * @return platform node classifier
      */
     public String getNodeClassifier(FrontendVersion nodeVersion) {
-        String result = getCodename() + "-"
-                + resolveArchitecture(nodeVersion).getName();
+        String result = getCodename() + "-" + resolveArchitecture(nodeVersion).getName();
         return classifier != null ? result + "-" + classifier : result;
     }
 
@@ -260,8 +257,7 @@ public class Platform {
     private Architecture resolveArchitecture(FrontendVersion nodeVersion) {
         if (isMac() && architecture == Architecture.ARM64) {
             Integer nodeMajorVersion = nodeVersion.getMajorVersion();
-            if (nodeMajorVersion == null
-                    || nodeMajorVersion < NODE_VERSION_THRESHOLD_MAC_ARM64) {
+            if (nodeMajorVersion == null || nodeMajorVersion < NODE_VERSION_THRESHOLD_MAC_ARM64) {
                 return Architecture.X64;
             }
         }

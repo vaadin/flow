@@ -38,13 +38,11 @@ public abstract class AbstractListDataViewListenerTest {
     public void addItemCountChangeListener_itemsCountChanged_listenersAreNotified() {
         String[] items = new String[] { "item1", "item2", "item3", "item4" };
         HasListDataView<String, ? extends AbstractListDataView<String>> component = getVerifiedComponent();
-        AbstractListDataView<String> dataView = component
-                .setItems(new ArrayList<>(Arrays.asList(items)));
+        AbstractListDataView<String> dataView = component.setItems(new ArrayList<>(Arrays.asList(items)));
 
         AtomicInteger invocationCounter = new AtomicInteger(0);
 
-        dataView.addItemCountChangeListener(
-                event -> invocationCounter.incrementAndGet());
+        dataView.addItemCountChangeListener(event -> invocationCounter.incrementAndGet());
 
         UI ui = new MockUI();
         ui.add((Component) component);
@@ -58,10 +56,8 @@ public abstract class AbstractListDataViewListenerTest {
 
         fakeClientCall(ui);
 
-        Assert.assertEquals(
-                "Unexpected number of item count change listener invocations "
-                        + "occurred",
-                1, invocationCounter.get());
+        Assert.assertEquals("Unexpected number of item count change listener invocations " + "occurred", 1,
+                invocationCounter.get());
     }
 
     @Test
@@ -78,8 +74,7 @@ public abstract class AbstractListDataViewListenerTest {
         // Make initial item count change
         fakeClientCall(ui);
 
-        dataView.addItemCountChangeListener(
-                event -> invocationChecker.getAndSet(true));
+        dataView.addItemCountChangeListener(event -> invocationChecker.getAndSet(true));
 
         dataView.setSortComparator(String::compareTo);
 
@@ -87,8 +82,7 @@ public abstract class AbstractListDataViewListenerTest {
         // count stays the same.
         fakeClientCall(ui);
 
-        Assert.assertFalse("Unexpected item count listener invocation",
-                invocationChecker.get());
+        Assert.assertFalse("Unexpected item count listener invocation", invocationChecker.get());
     }
 
     @Test
@@ -106,8 +100,7 @@ public abstract class AbstractListDataViewListenerTest {
         fakeClientCall(ui);
 
         dataView.addItemCountChangeListener(event -> {
-            Assert.assertEquals("Unexpected item count", 1,
-                    event.getItemCount());
+            Assert.assertEquals("Unexpected item count", 1, event.getItemCount());
             Assert.assertFalse(event.isItemCountEstimated());
             invocationChecker.set(true);
         });
@@ -118,28 +111,24 @@ public abstract class AbstractListDataViewListenerTest {
         // filtering.
         fakeClientCall(ui);
 
-        Assert.assertTrue("Item count change never called",
-                invocationChecker.get());
+        Assert.assertTrue("Item count change never called", invocationChecker.get());
     }
 
     @Test
     public void setItems_setNewItemsToComponent_filteringAndSortingRemoved() {
         HasListDataView<String, ? extends AbstractListDataView<String>> component = getVerifiedComponent();
 
-        AbstractListDataView<String> listDataView = component.setItems("item1",
-                "item2", "item3");
+        AbstractListDataView<String> listDataView = component.setItems("item1", "item2", "item3");
 
         SerializablePredicate<String> filter = "item2"::equals;
 
         listDataView.setFilter(filter);
 
-        Assert.assertEquals("Unexpected filtered item count", 1,
-                listDataView.getItemCount());
+        Assert.assertEquals("Unexpected filtered item count", 1, listDataView.getItemCount());
 
         listDataView = component.setItems("item1", "item2", "item3");
 
-        Assert.assertEquals("Non-filtered item count expected", 3,
-                listDataView.getItemCount());
+        Assert.assertEquals("Non-filtered item count expected", 3, listDataView.getItemCount());
     }
 
     protected abstract HasListDataView<String, ? extends AbstractListDataView<String>> getComponent();
@@ -187,12 +176,10 @@ public abstract class AbstractListDataViewListenerTest {
 
     private static class MockVaadinSession extends VaadinSession {
         /*
-         * Used to make sure there's at least one reference to the mock session
-         * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
+         * Used to make sure there's at least one reference to the mock session while it's locked. This is used to
+         * prevent the session from being eaten by GC in tests where @Before creates a session and sets it as the
+         * current instance without keeping any direct reference to it. This pattern has a chance of leaking memory if
+         * the session is not unlocked in the right way, but it should be acceptable for testing use.
          */
         private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
         private ReentrantLock lock = new ReentrantLock();
@@ -229,8 +216,7 @@ public abstract class AbstractListDataViewListenerTest {
         if (component instanceof Component) {
             return component;
         }
-        throw new IllegalArgumentException(String.format(
-                "Component subclass is expected, but was given a '%s'",
+        throw new IllegalArgumentException(String.format("Component subclass is expected, but was given a '%s'",
                 component.getClass().getSimpleName()));
     }
 }

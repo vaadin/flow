@@ -24,8 +24,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
 /**
- * Manages the queue of server invocations (RPC) which are waiting to be sent to
- * the server.
+ * Manages the queue of server invocations (RPC) which are waiting to be sent to the server.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -62,8 +61,7 @@ public class ServerRpcQueue {
      */
     public void add(JsonValue invocation) {
         if (!registry.getUILifecycle().isRunning()) {
-            Console.warn(
-                    "Trying to invoke method on not yet started or stopped application");
+            Console.warn("Trying to invoke method on not yet started or stopped application");
             return;
         }
         pendingInvocations.set(pendingInvocations.length(), invocation);
@@ -121,8 +119,8 @@ public class ServerRpcQueue {
     }
 
     /**
-     * Checks if a loading indicator should be shown when the RPCs have been
-     * sent to the server and we are waiting for a response.
+     * Checks if a loading indicator should be shown when the RPCs have been sent to the server and we are waiting for a
+     * response.
      *
      * @return true if a loading indicator should be shown, false otherwise
      */
@@ -133,8 +131,7 @@ public class ServerRpcQueue {
     /**
      * Returns the current invocations as JSON.
      *
-     * @return the current invocations in a JSON format ready to be sent to the
-     *         server
+     * @return the current invocations in a JSON format ready to be sent to the server
      */
     public JsonArray toJson() {
         return pendingInvocations;

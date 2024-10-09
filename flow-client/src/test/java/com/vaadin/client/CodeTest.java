@@ -46,8 +46,8 @@ import org.junit.Test;
 public class CodeTest {
 
     /**
-     * Verifies that all type declaration are of the implementation, not super
-     * interface, so that the GWT compiler inlines implementations.
+     * Verifies that all type declaration are of the implementation, not super interface, so that the GWT compiler
+     * inlines implementations.
      */
     @Test
     public void gwtGenerics() throws IOException {
@@ -94,17 +94,14 @@ public class CodeTest {
                 for (Object frament : node.fragments()) {
                     if (frament instanceof VariableDeclarationFragment) {
                         VariableDeclarationFragment variableDeclaration = (VariableDeclarationFragment) frament;
-                        Expression expression = variableDeclaration
-                                .getInitializer();
+                        Expression expression = variableDeclaration.getInitializer();
                         if (expression instanceof ClassInstanceCreation) {
                             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
                             Class<?> typeClass = getClass(node.getType());
-                            Class<?> instanceClass = getClass(
-                                    classInstanceCreation.getType());
-                            if (typeClass != instanceClass && typeClass
-                                    .isAssignableFrom(instanceClass)) {
-                                fail("Variable type must be the specific implementation in "
-                                        + node + " in " + file.getName());
+                            Class<?> instanceClass = getClass(classInstanceCreation.getType());
+                            if (typeClass != instanceClass && typeClass.isAssignableFrom(instanceClass)) {
+                                fail("Variable type must be the specific implementation in " + node + " in "
+                                        + file.getName());
                             }
                         }
                     }
@@ -153,8 +150,7 @@ public class CodeTest {
                         return clas;
                     }
 
-                    return Class.forName(
-                            packageName + '.' + fileName + '$' + className);
+                    return Class.forName(packageName + '.' + fileName + '$' + className);
                 } catch (ClassNotFoundException e) {
                     fail("Could not load class " + e);
                     return null;

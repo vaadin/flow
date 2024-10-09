@@ -71,8 +71,7 @@ public class DnDDisabledView extends Div {
             }
         });
         dragSource.addDragEndListener(event -> {
-            addLogEntry("End: " + event.getComponent().getText() + " "
-                    + event.getDropEffect());
+            addLogEntry("End: " + event.getComponent().getText() + " " + event.getDropEffect());
         });
         return box;
     }
@@ -88,8 +87,7 @@ public class DnDDisabledView extends Div {
     }
 
     private Div createDropLane(DropEffect dropEffect) {
-        String identifier = dropEffect == null ? "no-effect"
-                : dropEffect.toString();
+        String identifier = dropEffect == null ? "no-effect" : dropEffect.toString();
 
         Div lane = createLane(identifier);
 
@@ -98,9 +96,8 @@ public class DnDDisabledView extends Div {
         if (dropEffect != null) {
             dropTarget.setDropEffect(dropEffect);
         }
-        dropTarget.addDropListener(event -> addLogEntry("Drop: "
-                + event.getEffectAllowed() + " " + event.getDropEffect()
-                + (data ? (" " + event.getDragData()) : "")));
+        dropTarget.addDropListener(event -> addLogEntry("Drop: " + event.getEffectAllowed() + " "
+                + event.getDropEffect() + (data ? (" " + event.getDragData()) : "")));
 
         return lane;
     }
@@ -109,8 +106,7 @@ public class DnDDisabledView extends Div {
         eventLog = new Div();
         eventLog.add(new Text("Events:"));
         eventLog.add(new NativeButton("Clear", event -> {
-            eventLog.getChildren().filter(component -> component instanceof Div)
-                    .forEach(eventLog::remove);
+            eventLog.getChildren().filter(component -> component instanceof Div).forEach(eventLog::remove);
             eventCounter = 0;
         }));
         eventLog.add(new NativeButton("Data: " + data, event -> {
@@ -119,16 +115,14 @@ public class DnDDisabledView extends Div {
         }));
         eventLog.setHeightFull();
         eventLog.setWidth("400px");
-        eventLog.getStyle().set("display", "inline-block").set("border",
-                "2px " + "solid");
+        eventLog.getStyle().set("display", "inline-block").set("border", "2px " + "solid");
     }
 
     private Div createLane(String identifier) {
         Div lane = new Div();
         lane.add(identifier);
         lane.setId("lane-" + identifier);
-        lane.getStyle().set("margin", "20px").set("border", "1px solid black")
-                .set("display", "inline-block");
+        lane.getStyle().set("margin", "20px").set("border", "1px solid black").set("display", "inline-block");
         lane.setHeightFull();
         lane.setWidth("150px");
         return lane;

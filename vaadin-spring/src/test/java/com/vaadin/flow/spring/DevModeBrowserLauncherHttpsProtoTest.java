@@ -19,10 +19,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
-@TestPropertySource(properties = { "server.port = 1235",
-        "server.ssl.enabled = true" })
-public class DevModeBrowserLauncherHttpsProtoTest
-        extends AbstractDevModeBrowserLauncherTest {
+@TestPropertySource(properties = { "server.port = 1235", "server.ssl.enabled = true" })
+public class DevModeBrowserLauncherHttpsProtoTest extends AbstractDevModeBrowserLauncherTest {
 
     @Test
     public void getUrl_withHttpsProto_givesUrlWithHttpsInUrl() {

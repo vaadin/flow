@@ -18,8 +18,7 @@ package com.vaadin.flow.dom;
 import com.vaadin.flow.component.HasEnabled;
 
 /**
- * Controls RPC communication from the client side to the server side respecting
- * enabled state.
+ * Controls RPC communication from the client side to the server side respecting enabled state.
  *
  * @see Element#setEnabled(boolean)
  * @see Element#isEnabled()
@@ -32,13 +31,11 @@ import com.vaadin.flow.component.HasEnabled;
  */
 public enum DisabledUpdateMode {
     /**
-     * If used then updates from the client side are allowed even for disabled
-     * element.
+     * If used then updates from the client side are allowed even for disabled element.
      */
     ALWAYS,
     /**
-     * If used then updates from the client side are allowed only if element is
-     * enabled.
+     * If used then updates from the client side are allowed only if element is enabled.
      */
     ONLY_WHEN_ENABLED;
 
@@ -49,11 +46,9 @@ public enum DisabledUpdateMode {
      *            the first mode, or <code>null</code>
      * @param mode2
      *            the second mode, or <code>null</code>
-     * @return the most permissive mode, or <code>null</code> if both parameters
-     *         are <code>null</code>
+     * @return the most permissive mode, or <code>null</code> if both parameters are <code>null</code>
      */
-    public static DisabledUpdateMode mostPermissive(DisabledUpdateMode mode1,
-            DisabledUpdateMode mode2) {
+    public static DisabledUpdateMode mostPermissive(DisabledUpdateMode mode1, DisabledUpdateMode mode2) {
         if (mode1 == ALWAYS || mode2 == ALWAYS) {
             return ALWAYS;
         } else if (mode1 == ONLY_WHEN_ENABLED || mode2 == ONLY_WHEN_ENABLED) {

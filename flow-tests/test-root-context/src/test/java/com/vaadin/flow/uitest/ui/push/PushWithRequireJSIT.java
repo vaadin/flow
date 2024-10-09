@@ -14,8 +14,7 @@ public class PushWithRequireJSIT extends ChromeBrowserTest {
     public void pushWithRequireJS() {
         open();
 
-        checkLogsForErrors(
-                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
     }
 
 }

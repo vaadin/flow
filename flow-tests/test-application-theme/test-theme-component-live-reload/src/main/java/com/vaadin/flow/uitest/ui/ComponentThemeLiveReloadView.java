@@ -44,7 +44,6 @@ public class ComponentThemeLiveReloadView extends Div {
 
         attachIdLabel.setId(ATTACH_IDENTIFIER);
         add(attachIdLabel);
-        addAttachListener(
-                e -> attachIdLabel.setText(Integer.toString(random.nextInt())));
+        addAttachListener(e -> attachIdLabel.setText(Integer.toString(random.nextInt())));
     }
 }

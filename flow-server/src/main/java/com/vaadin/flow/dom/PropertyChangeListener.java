@@ -30,8 +30,7 @@ import com.vaadin.flow.shared.Registration;
 @FunctionalInterface
 public interface PropertyChangeListener extends Serializable {
     /**
-     * Invoked when this listener receives a property change event from an event
-     * source to which it has been added.
+     * Invoked when this listener receives a property change event from an event source to which it has been added.
      *
      * @param event
      *            the received event, not null

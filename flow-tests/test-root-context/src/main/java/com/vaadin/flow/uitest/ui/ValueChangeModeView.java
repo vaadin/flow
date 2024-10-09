@@ -18,16 +18,14 @@ public class ValueChangeModeView extends AbstractDebounceSynchronizeView {
         input.setId("input");
         input.setValueChangeTimeout(CHANGE_TIMEOUT);
         add(input);
-        input.addValueChangeListener(
-                event -> addChangeMessage(event.getValue()));
+        input.addValueChangeListener(event -> addChangeMessage(event.getValue()));
         addButtons(input);
         addChangeMessagesDiv();
     }
 
     private void addButtons(HasValueChangeMode component) {
         Arrays.stream(ValueChangeMode.values()).forEach(mode -> {
-            NativeButton button = createButton(mode.name(), mode.name(),
-                    event -> component.setValueChangeMode(mode));
+            NativeButton button = createButton(mode.name(), mode.name(), event -> component.setValueChangeMode(mode));
             add(button);
         });
     }

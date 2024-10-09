@@ -29,15 +29,13 @@ public class ElementInnerHtmlView extends AbstractDivView {
     protected void onShow() {
         innerHtml = new Div();
         innerHtml.setId("inner-html-field");
-        add(createButton("Foo"), createButton("Boo"), getNullButton(),
-                createToggleButton(), innerHtml);
+        add(createButton("Foo"), createButton("Boo"), getNullButton(), createToggleButton(), innerHtml);
 
     }
 
     private NativeButton createButton(String value) {
         NativeButton button = new NativeButton("Set value " + value,
-                click -> innerHtml.getElement().setProperty("innerHTML",
-                        String.format("<p>%s</p>", value)));
+                click -> innerHtml.getElement().setProperty("innerHTML", String.format("<p>%s</p>", value)));
         button.setId("set-" + value.toLowerCase());
         return button;
     }

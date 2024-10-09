@@ -27,14 +27,12 @@ public class BundleLitParserTest {
 
     @Test
     public void parseTemplate() {
-        final Element element = BundleLitParser.parseLitTemplateElement("in.ts",
-                content);
+        final Element element = BundleLitParser.parseLitTemplateElement("in.ts", content);
 
         Assert.assertEquals(
-                "The html should contain 12 elements making it 13 with the expected addition of a template element",
-                13, element.getAllElements().size());
-        Assert.assertEquals("", "vaadin-split-layout",
-                element.getElementsByTag("template").get(0).child(0).tagName());
+                "The html should contain 12 elements making it 13 with the expected addition of a template element", 13,
+                element.getAllElements().size());
+        Assert.assertEquals("", "vaadin-split-layout", element.getElementsByTag("template").get(0).child(0).tagName());
     }
 
     @Test
@@ -89,8 +87,7 @@ public class BundleLitParserTest {
         Assert.assertEquals(4, element.getAllElements().size());
         Assert.assertEquals(1, element.getElementsByTag("div").size());
         Assert.assertEquals(1, element.getElementsByTag("span").size());
-        Assert.assertEquals(1,
-                element.getElementsByTag("timer-element").size());
+        Assert.assertEquals(1, element.getElementsByTag("timer-element").size());
     }
 
     @Test
@@ -123,8 +120,7 @@ public class BundleLitParserTest {
         Assert.assertEquals(4, element.getAllElements().size());
         Assert.assertEquals(1, element.getElementsByTag("div").size());
         Assert.assertEquals(1, element.getElementsByTag("span").size());
-        Assert.assertEquals(1,
-                element.getElementsByTag("timer-element").size());
+        Assert.assertEquals(1, element.getElementsByTag("timer-element").size());
     }
 
     @Test
@@ -157,8 +153,7 @@ public class BundleLitParserTest {
         Assert.assertEquals(4, element.getAllElements().size());
         Assert.assertEquals(1, element.getElementsByTag("div").size());
         Assert.assertEquals(1, element.getElementsByTag("span").size());
-        Assert.assertEquals(1,
-                element.getElementsByTag("timer-element").size());
+        Assert.assertEquals(1, element.getElementsByTag("timer-element").size());
     }
 
 }

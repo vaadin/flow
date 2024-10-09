@@ -27,8 +27,7 @@ import com.vaadin.flow.component.internal.KeyboardEvent;
  *            the type of the {@link KeyboardEvent}
  * @since 1.0
  */
-public class KeyEventListener<E extends KeyboardEvent>
-        implements ComponentEventListener<E> {
+public class KeyEventListener<E extends KeyboardEvent> implements ComponentEventListener<E> {
 
     private final ComponentEventListener<E> listener;
 
@@ -37,9 +36,8 @@ public class KeyEventListener<E extends KeyboardEvent>
     private final EnumSet<KeyModifier> modifiers;
 
     /**
-     * Create a listener which will delegate to {@code listener} only if
-     * {@code key} is the target key. If any {@code modifiers} is required, the
-     * delegation occurs only if all the modifiers keys where pressed.
+     * Create a listener which will delegate to {@code listener} only if {@code key} is the target key. If any
+     * {@code modifiers} is required, the delegation occurs only if all the modifiers keys where pressed.
      *
      * @param listener
      *            the listener to delegate
@@ -48,13 +46,11 @@ public class KeyEventListener<E extends KeyboardEvent>
      * @param modifiers
      *            the optional modifier keys
      */
-    public KeyEventListener(ComponentEventListener<E> listener, Key key,
-            KeyModifier... modifiers) {
+    public KeyEventListener(ComponentEventListener<E> listener, Key key, KeyModifier... modifiers) {
         this.listener = listener;
         this.key = key;
         if (modifiers.length > 0) {
-            this.modifiers = EnumSet.of(modifiers[0],
-                    Arrays.copyOfRange(modifiers, 1, modifiers.length));
+            this.modifiers = EnumSet.of(modifiers[0], Arrays.copyOfRange(modifiers, 1, modifiers.length));
         } else {
             this.modifiers = EnumSet.noneOf(KeyModifier.class);
         }
@@ -62,8 +58,7 @@ public class KeyEventListener<E extends KeyboardEvent>
 
     @Override
     public void onComponentEvent(E event) {
-        if (key.getKeys().stream().anyMatch(event.getKey()::matches)
-                && event.getModifiers().containsAll(modifiers)) {
+        if (key.getKeys().stream().anyMatch(event.getKey()::matches) && event.getModifiers().containsAll(modifiers)) {
             listener.onComponentEvent(event);
         }
     }

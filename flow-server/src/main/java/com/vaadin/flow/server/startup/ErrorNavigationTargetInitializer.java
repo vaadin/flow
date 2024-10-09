@@ -25,28 +25,24 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
- * Servlet initializer for collecting all available error handler navigation
- * targets implementing {@link HasErrorParameter} on startup.
+ * Servlet initializer for collecting all available error handler navigation targets implementing
+ * {@link HasErrorParameter} on startup.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
 @HandlesTypes(HasErrorParameter.class)
-public class ErrorNavigationTargetInitializer
-        implements VaadinServletContextStartupInitializer {
+public class ErrorNavigationTargetInitializer implements VaadinServletContextStartupInitializer {
 
     @SuppressWarnings("unchecked")
     @Override
     public void initialize(Set<Class<?>> classSet, VaadinContext context) {
-        classSet = AbstractAnnotationValidator
-                .removeHandleTypesSelfReferences(classSet, this);
-        Set<Class<? extends Component>> routes = classSet.stream()
-                .map(clazz -> (Class<? extends Component>) clazz)
+        classSet = AbstractAnnotationValidator.removeHandleTypesSelfReferences(classSet, this);
+        Set<Class<? extends Component>> routes = classSet.stream().map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
 
-        ApplicationRouteRegistry.getInstance(context)
-                .setErrorNavigationTargets(routes);
+        ApplicationRouteRegistry.getInstance(context).setErrorNavigationTargets(routes);
     }
 
 }

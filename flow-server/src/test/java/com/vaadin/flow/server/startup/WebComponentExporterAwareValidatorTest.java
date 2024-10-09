@@ -66,8 +66,7 @@ public class WebComponentExporterAwareValidatorTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
     }
@@ -77,20 +76,15 @@ public class WebComponentExporterAwareValidatorTest {
     }
 
     @Test
-    public void process_no_exception_is_thrown_for_correctly_setup_classes()
-            throws ServletException {
-        annotationValidator
-                .process(Stream.of(AbstractMain.class, WCExporter.class)
-                        .collect(Collectors.toSet()), servletContext);
+    public void process_no_exception_is_thrown_for_correctly_setup_classes() throws ServletException {
+        annotationValidator.process(Stream.of(AbstractMain.class, WCExporter.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
-    public void process_all_failing_anotations_are_reported()
-            throws ServletException {
+    public void process_all_failing_anotations_are_reported() throws ServletException {
         try {
-            annotationValidator.process(
-                    Collections.singleton(ThemeViewportWithParent.class),
-                    servletContext);
+            annotationValidator.process(Collections.singleton(ThemeViewportWithParent.class), servletContext);
             Assert.fail("No exception was thrown for faulty setup.");
         } catch (InvalidApplicationConfigurationException iace) {
             String errorMessage = iace.getMessage();
@@ -104,25 +98,18 @@ public class WebComponentExporterAwareValidatorTest {
     }
 
     private void assertNon_linked_theme_throws(Class<? extends Component> clazz,
-            Class<? extends Annotation> annotationType)
-            throws ServletException {
+            Class<? extends Annotation> annotationType) throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_HINT);
         expectedEx.expectMessage(String.format(
-                "Class '%s' contains '%s', but it is not a router "
-                        + "layout/top level route/web component.",
+                "Class '%s' contains '%s', but it is not a router " + "layout/top level route/web component.",
                 clazz.getName(), "@" + annotationType.getSimpleName()));
 
-        annotationValidator.process(
-                Stream.of(clazz).collect(Collectors.toSet()), servletContext);
+        annotationValidator.process(Stream.of(clazz).collect(Collectors.toSet()), servletContext);
     }
 
-    private void assertHint(String msg,
-            Class<? extends Annotation> anntationType) {
-        MatcherAssert.assertThat("Exception has hint.", msg,
-                CoreMatchers.allOf(
-                        CoreMatchers
-                                .containsString(anntationType.getSimpleName()),
-                        CoreMatchers.containsString(ERROR_HINT)));
+    private void assertHint(String msg, Class<? extends Annotation> anntationType) {
+        MatcherAssert.assertThat("Exception has hint.", msg, CoreMatchers.allOf(
+                CoreMatchers.containsString(anntationType.getSimpleName()), CoreMatchers.containsString(ERROR_HINT)));
     }
 }

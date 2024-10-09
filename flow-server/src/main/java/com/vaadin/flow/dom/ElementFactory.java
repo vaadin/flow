@@ -47,8 +47,7 @@ public interface ElementFactory {
     }
 
     /**
-     * Creates an {@code &lt;a>} element with the given {@code href} attribute
-     * and text content.
+     * Creates an {@code &lt;a>} element with the given {@code href} attribute and text content.
      *
      * @param href
      *            the href parameter for the element
@@ -61,9 +60,8 @@ public interface ElementFactory {
     }
 
     /**
-     * Creates an {@code &lt;a>} element with the given {@code href} attribute,
-     * text content and the router link attribute. Router links are handled by
-     * the framework to perform view navigation without a page reload.
+     * Creates an {@code &lt;a>} element with the given {@code href} attribute, text content and the router link
+     * attribute. Router links are handled by the framework to perform view navigation without a page reload.
      *
      * @param href
      *            the href parameter for the element
@@ -72,8 +70,7 @@ public interface ElementFactory {
      * @return an {@code &lt;a>} element.
      */
     static Element createRouterLink(String href, String textContent) {
-        return createAnchor(href, textContent)
-                .setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "");
+        return createAnchor(href, textContent).setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "");
     }
 
     /**

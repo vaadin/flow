@@ -87,19 +87,15 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_ExcludeExperimentalComponent_WhenFeatureDisabled()
-            throws Exception {
-        Class<?>[] classes = { FlagView.class,
-                ExampleExperimentalComponent.class };
+    public void should_ExcludeExperimentalComponent_WhenFeatureDisabled() throws Exception {
+        Class<?>[] classes = { FlagView.class, ExampleExperimentalComponent.class };
 
         Lookup mockedLookup = Mockito.mock(Lookup.class);
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
@@ -107,98 +103,73 @@ public class NodeTasksViteTest {
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
 
         new NodeTasks(options).execute();
-        File importsFile = FrontendUtils
-                .getFlowGeneratedImports(getFrontendFolder());
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
+        File importsFile = FrontendUtils.getFlowGeneratedImports(getFrontendFolder());
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
 
-        assertFalse(content
-                .contains("@vaadin/example-flag/experimental-module-1.js"));
-        assertFalse(content
-                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        assertFalse(content.contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertFalse(content.contains("@vaadin/example-flag/experimental-module-2.js"));
         assertFalse(content.contains("experimental-Connector.js"));
     }
 
     @Test
-    public void should_IncludeExperimentalComponent_WhenFeatureEnabled()
-            throws Exception {
-        Class<?>[] classes = { FlagView.class,
-                ExampleExperimentalComponent.class };
+    public void should_IncludeExperimentalComponent_WhenFeatureEnabled() throws Exception {
+        Class<?>[] classes = { FlagView.class, ExampleExperimentalComponent.class };
 
         File propertiesDir = temporaryFolder.newFolder();
-        FileUtils.write(
-                new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME),
-                "com.vaadin.experimental.exampleFeatureFlag=true\n",
-                StandardCharsets.UTF_8);
+        FileUtils.write(new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME),
+                "com.vaadin.experimental.exampleFeatureFlag=true\n", StandardCharsets.UTF_8);
 
         Lookup mockedLookup = Mockito.mock(Lookup.class);
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
-                .setJavaResourceFolder(propertiesDir)
-                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+        Options options = new Options(mockedLookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
+                .setJavaResourceFolder(propertiesDir).withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
         new NodeTasks(options).execute();
-        File importsFile = FrontendUtils
-                .getFlowGeneratedImports(getFrontendFolder());
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
+        File importsFile = FrontendUtils.getFlowGeneratedImports(getFrontendFolder());
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
 
-        assertTrue(content
-                .contains("@vaadin/example-flag/experimental-module-1.js"));
-        assertTrue(content
-                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        assertTrue(content.contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertTrue(content.contains("@vaadin/example-flag/experimental-module-2.js"));
         assertTrue(content.contains("experimental-Connector.js"));
     }
 
     @Test
     public void should_UseDefaultFolders() throws Exception {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader())).when(mockedLookup)
+                .lookup(ClassFinder.class);
+        Options options = new Options(mockedLookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
-        Assert.assertEquals(
-                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+        Assert.assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(Paths.get(userDir, DEFAULT_FRONTEND_DIR,
-                FrontendUtils.GENERATED, "flow", IMPORTS_NAME).toFile()
-                .exists());
+        Assert.assertTrue(Paths.get(userDir, DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED, "flow", IMPORTS_NAME)
+                .toFile().exists());
     }
 
     @Test
     public void should_generateServiceWorkerWhenPwa() throws Exception {
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader())).when(mockedLookup)
+                .lookup(ClassFinder.class);
+        Options options = new Options(mockedLookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
-        Assert.assertEquals(
-                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+        Assert.assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(FrontendUtils
-                .getFlowGeneratedImports(getFrontendFolder()).exists());
+        Assert.assertTrue(FrontendUtils.getFlowGeneratedImports(getFrontendFolder()).exists());
     }
 
     @Test
@@ -206,24 +177,18 @@ public class NodeTasksViteTest {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
 
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader())).when(mockedLookup)
+                .lookup(ClassFinder.class);
+        Options options = new Options(mockedLookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
-        Assert.assertEquals(
-                new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
+        Assert.assertEquals(new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(new File(userDir,
-                "my_custom_sources_folder/generated/flow/" + IMPORTS_NAME)
-                .exists());
+        Assert.assertTrue(new File(userDir, "my_custom_sources_folder/generated/flow/" + IMPORTS_NAME).exists());
     }
 
     private File getFrontendFolder() {
@@ -235,16 +200,12 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
-            throws ExecutionFailedException {
+    public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode() throws ExecutionFailedException {
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader())).when(mockedLookup)
+                .lookup(ClassFinder.class);
+        Options options = new Options(mockedLookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
         new NodeTasks(options).execute();
@@ -254,30 +215,20 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_copyPackageLockJson_When_frontendHotdeploy()
-            throws ExecutionFailedException {
+    public void should_copyPackageLockJson_When_frontendHotdeploy() throws ExecutionFailedException {
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withFrontendHotdeploy(true).withProductionMode(false)
-                .withBuildResultFolders(npmFolder, npmFolder);
-        try (MockedStatic<BundleUtils> bundleUtils = Mockito
-                .mockStatic(BundleUtils.class);
-                MockedStatic<BundleValidationUtil> validationUtil = Mockito
-                        .mockStatic(BundleValidationUtil.class)) {
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader())).when(mockedLookup)
+                .lookup(ClassFinder.class);
+        Options options = new Options(mockedLookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder()).withFrontendHotdeploy(true)
+                .withProductionMode(false).withBuildResultFolders(npmFolder, npmFolder);
+        try (MockedStatic<BundleUtils> bundleUtils = Mockito.mockStatic(BundleUtils.class);
+                MockedStatic<BundleValidationUtil> validationUtil = Mockito.mockStatic(BundleValidationUtil.class)) {
             new NodeTasks(options).execute();
-            bundleUtils.verify(
-                    () -> BundleUtils.copyPackageLockFromBundle(options),
-                    Mockito.times(1));
-            validationUtil.verify(() -> BundleValidationUtil.needsBuild(
-                    any(Options.class), any(FrontendDependenciesScanner.class),
-                    any(Mode.class)), Mockito.never());
+            bundleUtils.verify(() -> BundleUtils.copyPackageLockFromBundle(options), Mockito.times(1));
+            validationUtil.verify(() -> BundleValidationUtil.needsBuild(any(Options.class),
+                    any(FrontendDependenciesScanner.class), any(Mode.class)), Mockito.never());
         }
     }
 

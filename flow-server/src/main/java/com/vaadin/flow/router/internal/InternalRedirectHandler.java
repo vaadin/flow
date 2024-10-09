@@ -23,8 +23,7 @@ import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 
 /**
- * Handles navigation by redirecting the user to some location in the
- * application.
+ * Handles navigation by redirecting the user to some location in the application.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -54,7 +53,6 @@ public class InternalRedirectHandler implements NavigationHandler {
             ui.getPage().getHistory().replaceState(null, target);
         }
 
-        return router.navigate(ui, target, event.getTrigger(),
-                event.getState().orElse(null));
+        return router.navigate(ui, target, event.getTrigger(), event.getState().orElse(null));
     }
 }

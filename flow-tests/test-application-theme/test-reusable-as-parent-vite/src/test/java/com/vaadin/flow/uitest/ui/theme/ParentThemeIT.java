@@ -36,17 +36,14 @@ import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.SUN_ID;
 
 public class ParentThemeIT extends ChromeBrowserTest {
-    private final Pattern BODY_IMAGE_PATTERN = Pattern.compile(
-            ("url\\(\"" + getRootURL() + "/VAADIN/build/bg(.*)\\.jpg\"\\)")
-                    .replaceAll("/", "\\\\/"));
+    private final Pattern BODY_IMAGE_PATTERN = Pattern
+            .compile(("url\\(\"" + getRootURL() + "/VAADIN/build/bg(.*)\\.jpg\"\\)").replaceAll("/", "\\\\/"));
 
-    private final Pattern BUTTERFLY_IMAGE_PATTERN = Pattern.compile(
-            ("url\\(\"" + getRootURL() + "/VAADIN/build/gobo(.*)\\.png\"\\)")
-                    .replaceAll("/", "\\\\/"));
+    private final Pattern BUTTERFLY_IMAGE_PATTERN = Pattern
+            .compile(("url\\(\"" + getRootURL() + "/VAADIN/build/gobo(.*)\\.png\"\\)").replaceAll("/", "\\\\/"));
 
-    private final Pattern OCTOPUSS_IMAGE_PATTERN = Pattern.compile(
-            ("url\\(\"" + getRootURL() + "/VAADIN/build/viking(.*)\\.png\"\\)")
-                    .replaceAll("/", "\\\\/"));
+    private final Pattern OCTOPUSS_IMAGE_PATTERN = Pattern
+            .compile(("url\\(\"" + getRootURL() + "/VAADIN/build/viking(.*)\\.png\"\\)").replaceAll("/", "\\\\/"));
 
     @Test
     public void childTheme_overridesParentTheme() {
@@ -56,58 +53,46 @@ public class ParentThemeIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
 
-        Assert.assertEquals("\"IBM Plex Mono\"",
-                body.getCssValue("font-family"));
+        Assert.assertEquals("\"IBM Plex Mono\"", body.getCssValue("font-family"));
 
-        Matcher bodyImageMatcher = BODY_IMAGE_PATTERN
-                .matcher(body.getCssValue("background-image"));
-        Assert.assertTrue("Should override the body background image",
-                bodyImageMatcher.matches());
+        Matcher bodyImageMatcher = BODY_IMAGE_PATTERN.matcher(body.getCssValue("background-image"));
+        Assert.assertTrue("Should override the body background image", bodyImageMatcher.matches());
 
         Matcher butterflyImageMatcher = BUTTERFLY_IMAGE_PATTERN
-                .matcher($(SpanElement.class).id(BUTTERFLY_ID)
-                        .getCssValue("background-image"));
-        Assert.assertTrue("Should override the butterfly background image",
-                butterflyImageMatcher.matches());
+                .matcher($(SpanElement.class).id(BUTTERFLY_ID).getCssValue("background-image"));
+        Assert.assertTrue("Should override the butterfly background image", butterflyImageMatcher.matches());
 
         Matcher octupussImageMatcher = OCTOPUSS_IMAGE_PATTERN
-                .matcher($(SpanElement.class).id(OCTOPUSS_ID)
-                        .getCssValue("background-image"));
-        Assert.assertTrue("Should override the octupuss background image",
-                octupussImageMatcher.matches());
+                .matcher($(SpanElement.class).id(OCTOPUSS_ID).getCssValue("background-image"));
+        Assert.assertTrue("Should override the octupuss background image", octupussImageMatcher.matches());
     }
 
     @Test
     public void componentThemeIsApplied_childThemeTextColorIsApplied() {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+        TestBenchElement input = myField.$("vaadin-input-container").attribute("part", "input-field").first();
+        Assert.assertEquals("Polymer text field should have red background", "rgba(255, 0, 0, 1)",
+                input.getCssValue("background-color"));
 
-        Assert.assertEquals("Text field should have color as green",
-                "rgba(0, 128, 0, 1)", input.getCssValue("color"));
+        Assert.assertEquals("Text field should have color as green", "rgba(0, 128, 0, 1)", input.getCssValue("color"));
 
     }
 
     @Test
     public void childTheme_cssAndAssetFromParentThemeAreApplied() {
         open();
-        String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
-                .getCssValue("background-image");
-        Assert.assertTrue(imageUrl.contains(getRootURL()
-                + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/keyboard.svg"));
+        String imageUrl = $(DivElement.class).id(KEYBOARD_ID).getCssValue("background-image");
+        Assert.assertTrue(imageUrl
+                .contains(getRootURL() + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/keyboard.svg"));
 
-        imageUrl = $(DivElement.class).id(LEMON_ID)
-                .getCssValue("background-image");
-        Assert.assertTrue(imageUrl.contains(getRootURL()
-                + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/lemon.svg"));
+        imageUrl = $(DivElement.class).id(LEMON_ID).getCssValue("background-image");
+        Assert.assertTrue(
+                imageUrl.contains(getRootURL() + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/lemon.svg"));
 
-        imageUrl = $(DivElement.class).id(SUN_ID)
-                .getCssValue("background-image");
-        Assert.assertTrue(imageUrl.contains(getRootURL()
-                + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/sun.svg"));
+        imageUrl = $(DivElement.class).id(SUN_ID).getCssValue("background-image");
+        Assert.assertTrue(
+                imageUrl.contains(getRootURL() + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/sun.svg"));
     }
 
     @Override

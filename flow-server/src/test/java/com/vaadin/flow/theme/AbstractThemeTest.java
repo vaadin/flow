@@ -10,12 +10,9 @@ import static org.junit.Assert.assertEquals;
 
 public class AbstractThemeTest {
     Supplier<Stream<String>> defaultResources = () -> Arrays
-            .asList("/webjars/button/2.0.0/src",
-                    "/webjars/button/2.0.0/src/Button.html",
-                    "/webjars/button/2.0.0/theme/",
-                    "/webjars/button/2.0.0/theme/custom/",
-                    "/webjars/button/2.0.0/theme/custom/Button.html",
-                    "/webjars/button/2.0.0/Button.html")
+            .asList("/webjars/button/2.0.0/src", "/webjars/button/2.0.0/src/Button.html",
+                    "/webjars/button/2.0.0/theme/", "/webjars/button/2.0.0/theme/custom/",
+                    "/webjars/button/2.0.0/theme/custom/Button.html", "/webjars/button/2.0.0/Button.html")
             .stream();
 
     @Test
@@ -83,19 +80,16 @@ public class AbstractThemeTest {
             }
         };
 
-        assertEquals("src/button/theme/custom/Button.html",
-                theme.translateUrl("src/button/src/Button.html"));
+        assertEquals("src/button/theme/custom/Button.html", theme.translateUrl("src/button/src/Button.html"));
     }
 
     private void assertUrlTranslations(AbstractTheme theme) {
-        assertEquals("button/theme/custom/Button.html",
-                theme.translateUrl("button/src/Button.html"));
+        assertEquals("button/theme/custom/Button.html", theme.translateUrl("button/src/Button.html"));
 
         assertEquals("Non base url should return as was", "button/Button.html",
                 theme.translateUrl("button/Button.html"));
 
-        assertEquals("Non base url should return as was",
-                "button/custom/Button.html",
+        assertEquals("Non base url should return as was", "button/custom/Button.html",
                 theme.translateUrl("button/custom/Button.html"));
     }
 

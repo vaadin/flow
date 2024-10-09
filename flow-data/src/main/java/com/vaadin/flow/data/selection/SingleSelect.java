@@ -31,7 +31,6 @@ import com.vaadin.flow.component.HasValueAndElement;
  *            the selection value type
  *
  */
-public interface SingleSelect<C extends Component, T>
-        extends HasValueAndElement<ComponentValueChangeEvent<C, T>, T> {
+public interface SingleSelect<C extends Component, T> extends HasValueAndElement<ComponentValueChangeEvent<C, T>, T> {
 
 }

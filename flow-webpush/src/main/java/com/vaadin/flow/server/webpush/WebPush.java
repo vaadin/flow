@@ -49,9 +49,8 @@ import elemental.json.JsonValue;
 /**
  * Base class for handling Web Push notifications.
  * <p>
- * Enables developers to register clients to the Push Server, return
- * subscription data to be stored on a server, unregister clients and sending
- * notifications to the clients.
+ * Enables developers to register clients to the Push Server, return subscription data to be stored on a server,
+ * unregister clients and sending notifications to the clients.
  *
  * @since 24.2
  */
@@ -62,8 +61,7 @@ public class WebPush {
     private String publicKey;
 
     private final SerializableConsumer<String> errorHandler = err -> {
-        throw new RuntimeException("Unable to execute web push "
-                + "command. JS error is '" + err + "'");
+        throw new RuntimeException("Unable to execute web push " + "command. JS error is '" + err + "'");
     };
 
     /**
@@ -77,8 +75,7 @@ public class WebPush {
      *            Subject used in the JWT payload (for VAPID).
      */
     public WebPush(String publicKey, String privateKey, String subject) {
-        if (!FeatureFlags.get(VaadinService.getCurrent().getContext())
-                .isEnabled(FeatureFlags.WEB_PUSH)) {
+        if (!FeatureFlags.get(VaadinService.getCurrent().getContext()).isEnabled(FeatureFlags.WEB_PUSH)) {
             throw new WebPushException("WebPush feature is not enabled. "
                     + "Add `com.vaadin.experimental.webPush=true` to `vaadin-featureflags.properties`file in resources to enable feature.");
         }
@@ -88,58 +85,45 @@ public class WebPush {
         try {
             // Initialize push service with the public key, private key and
             // subject
-            pushService = PushService.builder().withVapidPublicKey(publicKey)
-                    .withVapidPrivateKey(privateKey).withVapidSubject(subject)
-                    .build();
+            pushService = PushService.builder().withVapidPublicKey(publicKey).withVapidPrivateKey(privateKey)
+                    .withVapidSubject(subject).build();
         } catch (GeneralSecurityException e) {
-            throw new WebPushException(
-                    "Security exception initializing web push PushService", e);
+            throw new WebPushException("Security exception initializing web push PushService", e);
         }
     }
 
     /**
-     * Sends Web Push Notification to a client/browser having a given
-     * subscription.
+     * Sends Web Push Notification to a client/browser having a given subscription.
      *
      * @param subscription
      *            web push subscription of the client
      * @param message
-     *            notification message containing data to be shown, e.g.
-     *            <code>title</code> and <code>body</code>
+     *            notification message containing data to be shown, e.g. <code>title</code> and <code>body</code>
      * @throws WebPushException
      *             if sending a notification fails
      */
-    public void sendNotification(Subscription subscription,
-            WebPushMessage message) throws WebPushException {
+    public void sendNotification(Subscription subscription, WebPushMessage message) throws WebPushException {
         int statusCode = -1;
         HttpResponse<String> response = null;
         try {
-            Notification notification = Notification.builder()
-                    .subscription(subscription).payload(message.toJson())
+            Notification notification = Notification.builder().subscription(subscription).payload(message.toJson())
                     .build();
-            response = pushService.send(notification,
-                    PushService.DEFAULT_ENCODING,
+            response = pushService.send(notification, PushService.DEFAULT_ENCODING,
                     HttpResponse.BodyHandlers.ofString());
             statusCode = response.statusCode();
         } catch (Exception e) {
             getLogger().error("Failed to send notification.", e);
-            throw new WebPushException(
-                    "Sending of web push notification failed", e);
+            throw new WebPushException("Sending of web push notification failed", e);
         }
         if (statusCode != 201) {
-            getLogger().error(
-                    "Failed to send web push notification, received status code:"
-                            + statusCode);
+            getLogger().error("Failed to send web push notification, received status code:" + statusCode);
             getLogger().error(String.join("\n", response.body()));
-            throw new WebPushException(
-                    "Sending of web push notification failed with status code "
-                            + statusCode);
+            throw new WebPushException("Sending of web push notification failed with status code " + statusCode);
         }
     }
 
     /**
-     * Check if there is a web push subscription registered to the serviceWorker
-     * on the client.
+     * Check if there is a web push subscription registered to the serviceWorker on the client.
      *
      * @param ui
      *            current ui
@@ -151,9 +135,8 @@ public class WebPush {
             receiver.state(Boolean.parseBoolean(json.toJson()));
         };
 
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.registrationStatus()")
-                .then(resultHandler, errorHandler);
+        executeJavascript(ui, "return window.Vaadin.Flow.webPush.registrationStatus()").then(resultHandler,
+                errorHandler);
     }
 
     /**
@@ -168,9 +151,8 @@ public class WebPush {
         final SerializableConsumer<JsonValue> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toJson()));
 
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.notificationDenied()")
-                .then(resultHandler, errorHandler);
+        executeJavascript(ui, "return window.Vaadin.Flow.webPush.notificationDenied()").then(resultHandler,
+                errorHandler);
     }
 
     /**
@@ -185,14 +167,12 @@ public class WebPush {
         final SerializableConsumer<JsonValue> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toJson()));
 
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.notificationGranted()")
-                .then(resultHandler, errorHandler);
+        executeJavascript(ui, "return window.Vaadin.Flow.webPush.notificationGranted()").then(resultHandler,
+                errorHandler);
     }
 
     /**
-     * Subscribe web push for client. Will open an acceptance window for
-     * allowing notifications.
+     * Subscribe web push for client. Will open an acceptance window for allowing notifications.
      *
      * @param ui
      *            current ui
@@ -204,8 +184,8 @@ public class WebPush {
             JsonObject responseJson = Json.parse(json.toJson());
             receiver.subscription(generateSubscription(responseJson));
         };
-        executeJavascript(ui, "return window.Vaadin.Flow.webPush.subscribe($0)",
-                publicKey).then(resultHandler, errorHandler);
+        executeJavascript(ui, "return window.Vaadin.Flow.webPush.subscribe($0)", publicKey).then(resultHandler,
+                errorHandler);
     }
 
     /**
@@ -229,15 +209,12 @@ public class WebPush {
      * @param receiver
      *            the callback to which the details are provided
      */
-    public void fetchExistingSubscription(UI ui,
-            WebPushSubscriptionResponse receiver) {
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.getSubscription()")
+    public void fetchExistingSubscription(UI ui, WebPushSubscriptionResponse receiver) {
+        executeJavascript(ui, "return window.Vaadin.Flow.webPush.getSubscription()")
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
     }
 
-    private PendingJavaScriptResult executeJavascript(UI ui, String script,
-            Serializable... parameters) {
+    private PendingJavaScriptResult executeJavascript(UI ui, String script, Serializable... parameters) {
         initWebPushClient(ui);
         return ui.getPage().executeJs(script, parameters);
     }
@@ -251,20 +228,15 @@ public class WebPush {
         Page page = ui.getPage();
         try (InputStream stream = WebPush.class.getClassLoader()
                 .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
-            page.executeJs(StringUtil.removeComments(
-                    IOUtils.toString(stream, StandardCharsets.UTF_8)))
-                    .then(unused -> getLogger()
-                            .debug("Webpush client code initialized"),
-                            err -> getLogger().error(
-                                    "Webpush client code initialization failed: {}",
-                                    err));
+            page.executeJs(StringUtil.removeComments(IOUtils.toString(stream, StandardCharsets.UTF_8))).then(
+                    unused -> getLogger().debug("Webpush client code initialized"),
+                    err -> getLogger().error("Webpush client code initialization failed: {}", err));
         } catch (IOException ioe) {
             throw new WebPushException("Could not load webpush client code");
         }
     }
 
-    private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
-            WebPushSubscriptionResponse receiver) {
+    private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(WebPushSubscriptionResponse receiver) {
         return json -> {
             JsonObject responseJson;
             // It may happen that an error is sent as a plain string
@@ -283,8 +255,7 @@ public class WebPush {
     }
 
     private Subscription generateSubscription(JsonObject subscriptionJson) {
-        Subscription.Keys keys = new Subscription.Keys(
-                subscriptionJson.getObject("keys").getString("p256dh"),
+        Subscription.Keys keys = new Subscription.Keys(subscriptionJson.getObject("keys").getString("p256dh"),
                 subscriptionJson.getObject("keys").getString("auth"));
         return new Subscription(subscriptionJson.getString("endpoint"), keys);
     }

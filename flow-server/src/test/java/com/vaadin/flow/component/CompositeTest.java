@@ -52,8 +52,7 @@ public class CompositeTest {
     Component componentInsideLayoutInsideComposite;
 
     protected Component createTestComponent() {
-        return new TestComponent(
-                ElementFactory.createDiv("Component in composite"));
+        return new TestComponent(ElementFactory.createDiv("Component in composite"));
 
     }
 
@@ -66,8 +65,7 @@ public class CompositeTest {
         };
     }
 
-    public class CompositeWithComponent extends Composite<Component>
-            implements TracksAttachDetach {
+    public class CompositeWithComponent extends Composite<Component> implements TracksAttachDetach {
 
         private AtomicInteger attachEvents = new AtomicInteger();
         private AtomicInteger detachEvents = new AtomicInteger();
@@ -76,8 +74,7 @@ public class CompositeTest {
         protected Component initContent() {
             layoutInsideComposite = createTestLayout();
             componentInsideLayoutInsideComposite = createTestComponent();
-            layoutInsideComposite
-                    .addComponent(componentInsideLayoutInsideComposite);
+            layoutInsideComposite.addComponent(componentInsideLayoutInsideComposite);
             return layoutInsideComposite;
         }
 
@@ -117,11 +114,9 @@ public class CompositeTest {
 
         Assert.assertNull(VaadinService.getCurrent());
         VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
         VaadinService.setCurrent(service);
     }
 
@@ -132,56 +127,47 @@ public class CompositeTest {
 
     @Test
     public void getElement_compositeAndCompositeComponent() {
-        assertEquals(layoutInsideComposite.getElement(),
-                compositeWithComponent.getElement());
+        assertEquals(layoutInsideComposite.getElement(), compositeWithComponent.getElement());
     }
 
     @Test
     public void getParentElement_compositeInLayout() {
-        assertEquals(layoutWithSingleComponentComposite.getElement(),
-                compositeWithComponent.getElement().getParent());
+        assertEquals(layoutWithSingleComponentComposite.getElement(), compositeWithComponent.getElement().getParent());
     }
 
     @Test
     public void getElementChildren_layoutWithComponentInComposite() {
-        assertElementChildren(layoutWithSingleComponentComposite.getElement(),
-                layoutInsideComposite.getElement());
+        assertElementChildren(layoutWithSingleComponentComposite.getElement(), layoutInsideComposite.getElement());
     }
 
     @Test
     public void getParent_compositeInLayout() {
-        assertEquals(layoutWithSingleComponentComposite,
-                compositeWithComponent.getParent().get());
+        assertEquals(layoutWithSingleComponentComposite, compositeWithComponent.getParent().get());
     }
 
     @Test
     public void getParent_componentInComposite() {
-        assertEquals(compositeWithComponent,
-                layoutInsideComposite.getParent().get());
+        assertEquals(compositeWithComponent, layoutInsideComposite.getParent().get());
     }
 
     @Test
     public void getParent_componentInLayoutInComposite() {
-        assertEquals(layoutInsideComposite,
-                componentInsideLayoutInsideComposite.getParent().get());
+        assertEquals(layoutInsideComposite, componentInsideLayoutInsideComposite.getParent().get());
     }
 
     @Test
     public void getChildren_layoutWithComposite() {
-        ComponentTest.assertChildren(layoutWithSingleComponentComposite,
-                compositeWithComponent);
+        ComponentTest.assertChildren(layoutWithSingleComponentComposite, compositeWithComponent);
     }
 
     @Test
     public void getChildren_compositeWithComponent() {
-        ComponentTest.assertChildren(compositeWithComponent,
-                layoutInsideComposite);
+        ComponentTest.assertChildren(compositeWithComponent, layoutInsideComposite);
     }
 
     @Test
     public void getChildren_layoutInComposite() {
-        ComponentTest.assertChildren(layoutInsideComposite,
-                componentInsideLayoutInsideComposite);
+        ComponentTest.assertChildren(layoutInsideComposite, componentInsideLayoutInsideComposite);
     }
 
     @Test
@@ -196,8 +182,7 @@ public class CompositeTest {
 
     @Test(expected = IllegalStateException.class)
     public void compositeContentTypeWithVariableTypeParameter() {
-        class CompositeWithVariableType<C extends Component>
-                extends Composite<C> {
+        class CompositeWithVariableType<C extends Component> extends Composite<C> {
         }
 
         CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
@@ -209,8 +194,7 @@ public class CompositeTest {
 
     @Test
     public void compositeContentTypeWithSpecifiedType() {
-        class CompositeWithCustomComponent
-                extends Composite<CustomComponent<List<String>>> {
+        class CompositeWithCustomComponent extends Composite<CustomComponent<List<String>>> {
         }
 
         CompositeWithCustomComponent composite = new CompositeWithCustomComponent();
@@ -218,14 +202,12 @@ public class CompositeTest {
         assertEquals(CustomComponent.class, composite.getContent().getClass());
     }
 
-    public static class CompositeWithVariableType<C extends Component>
-            extends Composite<C> {
+    public static class CompositeWithVariableType<C extends Component> extends Composite<C> {
     }
 
     @Test(expected = IllegalStateException.class)
     public void compositeContentTypeWithTypeVariable() {
-        class CompositeWithComposite
-                extends Composite<CompositeWithVariableType<TestComponent>> {
+        class CompositeWithComposite extends Composite<CompositeWithVariableType<TestComponent>> {
         }
 
         CompositeWithComposite composite = new CompositeWithComposite();
@@ -280,10 +262,8 @@ public class CompositeTest {
         List<Component> attached = new ArrayList<>();
         List<Component> detached = new ArrayList<>();
 
-        ComponentEventListener<AttachEvent> attachListener = event -> attached
-                .add(event.getSource());
-        ComponentEventListener<DetachEvent> detachListener = event -> detached
-                .add(event.getSource());
+        ComponentEventListener<AttachEvent> attachListener = event -> attached.add(event.getSource());
+        ComponentEventListener<DetachEvent> detachListener = event -> detached.add(event.getSource());
 
         layoutInsideComposite.addAttachListener(attachListener);
         layoutWithSingleComponentComposite.addAttachListener(attachListener);
@@ -298,40 +278,32 @@ public class CompositeTest {
         layoutInsideComposite.assertAttachEvents(0);
         layoutWithSingleComponentComposite.assertAttachEvents(0);
         compositeWithComponent.assertAttachEvents(0);
-        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
-                .assertAttachEvents(0);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite).assertAttachEvents(0);
 
         ui.add(layoutWithSingleComponentComposite);
 
         layoutInsideComposite.assertAttachEvents(1);
         layoutWithSingleComponentComposite.assertAttachEvents(1);
         compositeWithComponent.assertAttachEvents(1);
-        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
-                .assertAttachEvents(1);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite).assertAttachEvents(1);
 
-        TestUtil.assertArrays(attached.toArray(),
-                new Component[] { componentInsideLayoutInsideComposite,
-                        layoutInsideComposite, compositeWithComponent,
-                        layoutWithSingleComponentComposite });
+        TestUtil.assertArrays(attached.toArray(), new Component[] { componentInsideLayoutInsideComposite,
+                layoutInsideComposite, compositeWithComponent, layoutWithSingleComponentComposite });
 
         layoutInsideComposite.assertDetachEvents(0);
         layoutWithSingleComponentComposite.assertDetachEvents(0);
         compositeWithComponent.assertDetachEvents(0);
-        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
-                .assertDetachEvents(0);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite).assertDetachEvents(0);
 
         ui.removeAll();
 
         layoutInsideComposite.assertDetachEvents(1);
         layoutWithSingleComponentComposite.assertDetachEvents(1);
         compositeWithComponent.assertDetachEvents(1);
-        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
-                .assertDetachEvents(1);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite).assertDetachEvents(1);
 
-        TestUtil.assertArrays(detached.toArray(),
-                new Component[] { componentInsideLayoutInsideComposite,
-                        layoutInsideComposite, compositeWithComponent,
-                        layoutWithSingleComponentComposite });
+        TestUtil.assertArrays(detached.toArray(), new Component[] { componentInsideLayoutInsideComposite,
+                layoutInsideComposite, compositeWithComponent, layoutWithSingleComponentComposite });
     }
 
     @Test
@@ -393,14 +365,12 @@ public class CompositeTest {
         UI ui = new UI();
         ui.add(composite);
 
-        TestUtil.assertArrays(triggered.toArray(),
-                new Integer[] { 1, 2, 3, 4, 5, 6 });
+        TestUtil.assertArrays(triggered.toArray(), new Integer[] { 1, 2, 3, 4, 5, 6 });
         triggered.clear();
 
         ui.remove(composite);
 
-        TestUtil.assertArrays(triggered.toArray(),
-                new Integer[] { -1, -2, -3, -4, -5, -6 });
+        TestUtil.assertArrays(triggered.toArray(), new Integer[] { -1, -2, -3, -4, -5, -6 });
 
         TestLayout container = createTestLayout();
         ui.add(container, composite);
@@ -409,12 +379,10 @@ public class CompositeTest {
 
         container.addComponent(composite);
 
-        TestUtil.assertArrays(triggered.toArray(),
-                new Integer[] { -1, -2, -3, -4, -5, -6, 1, 2, 3, 4, 5, 6 });
+        TestUtil.assertArrays(triggered.toArray(), new Integer[] { -1, -2, -3, -4, -5, -6, 1, 2, 3, 4, 5, 6 });
     }
 
-    public static void assertElementChildren(Element parent,
-            Element... expected) {
+    public static void assertElementChildren(Element parent, Element... expected) {
         assertEquals(expected.length, parent.getChildCount());
         for (int i = 0; i < parent.getChildCount(); i++) {
             assertEquals(expected[i], parent.getChild(i));

@@ -28,8 +28,8 @@ import com.vaadin.flow.component.notification.testbench.NotificationElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
- * Test that application is deployed and can be opened in the browser. Works
- * also when starting server with exec-maven-plugin. Waits for server to start.
+ * Test that application is deployed and can be opened in the browser. Works also when starting server with
+ * exec-maven-plugin. Waits for server to start.
  */
 public class SmokeTestIT extends AbstractSpringTest {
 
@@ -53,8 +53,7 @@ public class SmokeTestIT extends AbstractSpringTest {
 
         $(ButtonElement.class).first().click();
 
-        Assert.assertTrue(
-                "Clicking button should have opened a notification successfully.",
+        Assert.assertTrue("Clicking button should have opened a notification successfully.",
                 $(NotificationElement.class).exists());
     }
 
@@ -63,12 +62,10 @@ public class SmokeTestIT extends AbstractSpringTest {
         return "/component-test";
     }
 
-    private void waitViewUrl(int count)
-            throws MalformedURLException, InterruptedException {
+    private void waitViewUrl(int count) throws MalformedURLException, InterruptedException {
         String viewUrl = getContextRootURL() + getTestPath();
         if (count == 0) {
-            throw new IllegalStateException(
-                    "URL '" + viewUrl + "' is not available");
+            throw new IllegalStateException("URL '" + viewUrl + "' is not available");
         }
         URL url = new URL(viewUrl);
         try {

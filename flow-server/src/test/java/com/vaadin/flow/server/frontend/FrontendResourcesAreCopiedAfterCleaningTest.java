@@ -44,8 +44,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
 
     private File npmFolder;
 
-    private File testJar = TestUtils
-            .getTestJar("jar-with-frontend-resources.jar");
+    private File testJar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
 
     @Before
     public void setup() throws IOException, ExecutionFailedException {
@@ -66,57 +65,44 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         assertCopiedFrontendFileAmount(10);
     }
 
-    private void assertCopiedFrontendFileAmount(int fileCount)
-            throws IOException {
+    private void assertCopiedFrontendFileAmount(int fileCount) throws IOException {
         File dir = getJarFrontendResourcesFolder();
         FileUtils.forceMkdir(dir);
         List<String> files = TestUtils.listFilesRecursively(dir);
 
-        Assert.assertEquals("Should have frontend files", fileCount,
-                files.size());
+        Assert.assertEquals("Should have frontend files", fileCount, files.size());
     }
 
     private File getJarFrontendResourcesFolder() {
-        return new File(npmFolder,
-                Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR,
-                        FrontendUtils.GENERATED,
-                        FrontendUtils.JAR_RESOURCES_FOLDER).toString());
+        return new File(npmFolder, Paths
+                .get(FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED, FrontendUtils.JAR_RESOURCES_FOLDER)
+                .toString());
     }
 
     private void copyResources() throws ExecutionFailedException {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
-                FrontendResourcesAreCopiedAfterCleaningTest.class
-                        .getClassLoader());
+                FrontendResourcesAreCopiedAfterCleaningTest.class.getClassLoader());
         Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup)
-                .lookup(ClassFinder.class);
-        Options options = new Options(mockLookup, npmFolder)
-                .withBuildDirectory(TARGET);
+        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
+        Options options = new Options(mockLookup, npmFolder).withBuildDirectory(TARGET);
 
-        new NodeTasks(options.withEmbeddableWebComponents(false)
-                .enableImportsUpdate(false).createMissingPackageJson(true)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
+        new NodeTasks(options.withEmbeddableWebComponents(false).enableImportsUpdate(false)
+                .createMissingPackageJson(true).enableImportsUpdate(true).withRunNpmInstall(false)
                 .enablePackagesUpdate(true).withFrontendDirectory(npmFolder)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .copyResources(Collections.singleton(testJar))
-                .withBuildResultFolders(npmFolder, npmFolder)).execute();
+                .copyResources(Collections.singleton(testJar)).withBuildResultFolders(npmFolder, npmFolder)).execute();
     }
 
     private void performPackageClean() throws ExecutionFailedException {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
-                FrontendResourcesAreCopiedAfterCleaningTest.class
-                        .getClassLoader());
+                FrontendResourcesAreCopiedAfterCleaningTest.class.getClassLoader());
         Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup)
-                .lookup(ClassFinder.class);
-        Options options = new Options(mockLookup, npmFolder)
-                .withBuildDirectory(TARGET).withEmbeddableWebComponents(false)
-                .enableImportsUpdate(false).createMissingPackageJson(true)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .enableNpmFileCleaning(true).withFrontendDirectory(npmFolder)
-                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .copyResources(Collections.emptySet())
-                .withBuildResultFolders(npmFolder, npmFolder)
+        Mockito.doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
+        Options options = new Options(mockLookup, npmFolder).withBuildDirectory(TARGET)
+                .withEmbeddableWebComponents(false).enableImportsUpdate(false).createMissingPackageJson(true)
+                .enableImportsUpdate(true).withRunNpmInstall(false).enableNpmFileCleaning(true)
+                .withFrontendDirectory(npmFolder).withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .copyResources(Collections.emptySet()).withBuildResultFolders(npmFolder, npmFolder)
                 .enablePackagesUpdate(true);
         new NodeTasks(options).execute();
     }

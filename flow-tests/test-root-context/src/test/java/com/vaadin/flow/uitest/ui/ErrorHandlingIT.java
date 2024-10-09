@@ -13,8 +13,7 @@ public class ErrorHandlingIT extends AbstractErrorIT {
 
         assertNoSystemErrors();
 
-        assertErrorReported(
-                "An error occurred: java.lang.IllegalStateException: Intentional fail in click handler");
+        assertErrorReported("An error occurred: java.lang.IllegalStateException: Intentional fail in click handler");
     }
 
     @Test

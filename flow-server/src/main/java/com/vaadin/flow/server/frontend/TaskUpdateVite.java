@@ -40,8 +40,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private final Set<String> webComponentTags;
     private static final String[] reactPluginTemplatesUsedInStarters = new String[] {
-            getSimplifiedTemplate("vite.config-react.ts"),
-            getSimplifiedTemplate("vite.config-react-swc.ts") };
+            getSimplifiedTemplate("vite.config-react.ts"), getSimplifiedTemplate("vite.config-react-swc.ts") };
 
     static final String FILE_SYSTEM_ROUTER_DEPENDENCY = "@vaadin/hilla-file-router/vite-plugin.js";
 
@@ -56,17 +55,14 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private static String getTemplate(String string) {
         try {
-            return IOUtils.toString(
-                    TaskUpdateVite.class.getResourceAsStream(string),
-                    StandardCharsets.UTF_8);
+            return IOUtils.toString(TaskUpdateVite.class.getResourceAsStream(string), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     private static String simplifyTemplate(String text) {
-        return text.replace("\n", "").replace("\r", "").replace("\t", "")
-                .replace(" ", "");
+        return text.replace("\n", "").replace("\r", "").replace("\t", "").replace(" ", "");
     }
 
     @Override
@@ -81,8 +77,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private void createConfig() throws IOException {
         // Only create it if it does not exist
-        File configFile = new File(options.getNpmFolder(),
-                FrontendUtils.VITE_CONFIG);
+        File configFile = new File(options.getNpmFolder(), FrontendUtils.VITE_CONFIG);
         if (configFile.exists()) {
             if (!replaceWithDefault(configFile)) {
                 return;
@@ -91,8 +86,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     "Replacing vite.config.ts with the default version as the React plugin is now automatically included");
         }
 
-        URL resource = this.getClass().getClassLoader()
-                .getResource(FrontendUtils.VITE_CONFIG);
+        URL resource = this.getClass().getClassLoader().getResource(FrontendUtils.VITE_CONFIG);
         String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
         FileUtils.write(configFile, template, StandardCharsets.UTF_8);
         log().debug("Created vite configuration file: '{}'", configFile);
@@ -100,8 +94,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private boolean replaceWithDefault(File configFile) throws IOException {
-        String text = simplifyTemplate(
-                IOUtils.toString(configFile.toURI(), StandardCharsets.UTF_8));
+        String text = simplifyTemplate(IOUtils.toString(configFile.toURI(), StandardCharsets.UTF_8));
         for (String template : reactPluginTemplatesUsedInStarters) {
             if (text.equals(template)) {
                 return true;
@@ -112,41 +105,32 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private void createGeneratedConfig() throws IOException {
         // Always overwrite this
-        File generatedConfigFile = new File(options.getNpmFolder(),
-                FrontendUtils.VITE_GENERATED_CONFIG);
-        URL resource = this.getClass().getClassLoader()
-                .getResource(FrontendUtils.VITE_GENERATED_CONFIG);
+        File generatedConfigFile = new File(options.getNpmFolder(), FrontendUtils.VITE_GENERATED_CONFIG);
+        URL resource = this.getClass().getClassLoader().getResource(FrontendUtils.VITE_GENERATED_CONFIG);
         String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
 
         template = template
                 .replace("#settingsImport#",
-                        "./" + options.getBuildDirectoryName() + "/"
-                                + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
-                .replace("#buildFolder#",
-                        "./" + options.getBuildDirectoryName())
-                .replace("#webComponentTags#",
-                        webComponentTags == null || webComponentTags.isEmpty()
-                                ? ""
-                                : String.join(";", webComponentTags));
+                        "./" + options.getBuildDirectoryName() + "/" + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
+                .replace("#buildFolder#", "./" + options.getBuildDirectoryName())
+                .replace("#webComponentTags#", webComponentTags == null || webComponentTags.isEmpty() ? ""
+                        : String.join(";", webComponentTags));
         template = updateFileSystemRouterVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);
-        log().debug("Created vite generated configuration file: '{}'",
-                generatedConfigFile);
+        log().debug("Created vite generated configuration file: '{}'", generatedConfigFile);
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {
-        if (options.isReactEnabled() && FrontendUtils.isHillaUsed(
-                options.getFrontendDirectory(), options.getClassFinder())) {
+        if (options.isReactEnabled()
+                && FrontendUtils.isHillaUsed(options.getFrontendDirectory(), options.getClassFinder())) {
             return template
                     .replace("//#vitePluginFileSystemRouterImport#",
-                            "import vitePluginFileSystemRouter from '"
-                                    + FILE_SYSTEM_ROUTER_DEPENDENCY + "';")
-                    .replace("//#vitePluginFileSystemRouter#",
-                            ", vitePluginFileSystemRouter({isDevMode: devMode})");
+                            "import vitePluginFileSystemRouter from '" + FILE_SYSTEM_ROUTER_DEPENDENCY + "';")
+                    .replace("//#vitePluginFileSystemRouter#", ", vitePluginFileSystemRouter({isDevMode: devMode})");
         }
-        return template.replace("//#vitePluginFileSystemRouterImport#", "")
-                .replace("//#vitePluginFileSystemRouter#", "");
+        return template.replace("//#vitePluginFileSystemRouterImport#", "").replace("//#vitePluginFileSystemRouter#",
+                "");
     }
 
     private Logger log() {

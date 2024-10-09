@@ -38,8 +38,7 @@ public class PreserveOnRefreshDestroyBeanIT extends AbstractSpringTest {
         waitForElementPresent(By.id("main"));
 
         // refresh
-        getDriver().get(AbstractTestBenchTest.getTestURL(getRootURL(),
-                getContextPath() + "/preserve-pre-destroy"));
+        getDriver().get(AbstractTestBenchTest.getTestURL(getRootURL(), getContextPath() + "/preserve-pre-destroy"));
 
         waitForElementPresent(By.id("main"));
 

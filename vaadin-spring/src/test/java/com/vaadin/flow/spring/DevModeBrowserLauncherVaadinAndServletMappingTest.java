@@ -20,10 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.TestPropertySource;
 
-@TestPropertySource(properties = { "server.port = 1234",
-        "vaadin.url-mapping=/ui/*" })
-public class DevModeBrowserLauncherVaadinAndServletMappingTest
-        extends AbstractDevModeBrowserLauncherTest {
+@TestPropertySource(properties = { "server.port = 1234", "vaadin.url-mapping=/ui/*" })
+public class DevModeBrowserLauncherVaadinAndServletMappingTest extends AbstractDevModeBrowserLauncherTest {
 
     @Test
     public void getUrl_withContextPathAndUrlMapping_givesUrlWithContextPathAndUrlMapping() {

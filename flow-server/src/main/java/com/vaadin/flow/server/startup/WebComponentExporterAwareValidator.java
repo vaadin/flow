@@ -39,39 +39,33 @@ import com.vaadin.flow.server.VaadinContext;
  * @since 2.0
  */
 @HandlesTypes(Push.class)
-public class WebComponentExporterAwareValidator
-        extends AbstractAnnotationValidator
+public class WebComponentExporterAwareValidator extends AbstractAnnotationValidator
         implements VaadinServletContextStartupInitializer {
 
     @Override
     public void initialize(Set<Class<?>> classSet, VaadinContext context) {
-        validateClasses(AbstractAnnotationValidator
-                .removeHandleTypesSelfReferences(classSet, this));
+        validateClasses(AbstractAnnotationValidator.removeHandleTypesSelfReferences(classSet, this));
     }
 
     @Override
     protected Optional<String> handleNonRouterLayout(Class<?> clazz) {
-        if (WebComponentExporter.class
-                .isAssignableFrom(GenericTypeReflector.erase(clazz))) {
+        if (WebComponentExporter.class.isAssignableFrom(GenericTypeReflector.erase(clazz))) {
             return Optional.empty();
         }
         return Optional.of(String.format(
-                "Class '%s' contains '%s', but it is not a router "
-                        + "layout/top level route/web component.",
+                "Class '%s' contains '%s', but it is not a router " + "layout/top level route/web component.",
                 clazz.getName(), getClassAnnotations(clazz)));
     }
 
     @Override
     protected String getErrorHint() {
-        return "Found configuration annotations"
-                + " that will not be used in the application. \n"
+        return "Found configuration annotations" + " that will not be used in the application. \n"
                 + "Move it to a single route/a top router layout/web component of the application. \n";
     }
 
     @Override
     public List<Class<?>> getAnnotations() {
-        return Arrays.asList(
-                this.getClass().getAnnotation(HandlesTypes.class).value());
+        return Arrays.asList(this.getClass().getAnnotation(HandlesTypes.class).value());
     }
 
 }

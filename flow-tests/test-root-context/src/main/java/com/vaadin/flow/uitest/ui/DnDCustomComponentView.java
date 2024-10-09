@@ -35,8 +35,7 @@ public class DnDCustomComponentView extends Div {
 
     private final Div dropTarget;
 
-    public class DraggableItem extends Div
-            implements DragSource<DraggableItem> {
+    public class DraggableItem extends Div implements DragSource<DraggableItem> {
 
         private final Div dragHandle;
 
@@ -68,8 +67,7 @@ public class DnDCustomComponentView extends Div {
     }
 
     public DnDCustomComponentView() {
-        Stream.of(EffectAllowed.values()).map(DraggableItem::new)
-                .forEach(this::add);
+        Stream.of(EffectAllowed.values()).map(DraggableItem::new).forEach(this::add);
 
         dropTarget = new Div();
         dropTarget.add(new Text("Drop Here"));
@@ -78,8 +76,8 @@ public class DnDCustomComponentView extends Div {
         dropTarget.getStyle().set("border", "solid 1px pink");
         add(dropTarget);
 
-        DropTarget.create(dropTarget).addDropListener(event -> event.getSource()
-                .add(new Span(event.getDragData().get().toString())));
+        DropTarget.create(dropTarget)
+                .addDropListener(event -> event.getSource().add(new Span(event.getDragData().get().toString())));
     }
 
     private void onDragStart(DragStartEvent<DraggableItem> event) {

@@ -29,15 +29,13 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         super.setup();
 
         // Init using test project
-        File mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1");
+        File mavenProjectFolder = TestUtils.getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
     }
 
     private void createServer(int statusCode, String message) throws Exception {
         this.server = new TestHttpServer(statusCode, message);
-        Mockito.when(sender.getReportingUrl())
-                .thenReturn("http://localhost:" + server.getPort() + "/");
+        Mockito.when(sender.getReportingUrl()).thenReturn("http://localhost:" + server.getPort() + "/");
     }
 
     @After
@@ -59,10 +57,8 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
         Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Default interval should be 24H in seconds",
-                SEC_24H, sender.getInterval(fullStats));
+        Assert.assertTrue("Status should be 200", sender.getLastSendStatus(fullStats).contains("200"));
+        Assert.assertEquals("Default interval should be 24H in seconds", SEC_24H, sender.getInterval(fullStats));
     }
 
     @Test
@@ -76,10 +72,8 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
         Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Custom interval should be 48H in seconds", SEC_48H,
-                sender.getInterval(fullStats));
+        Assert.assertTrue("Status should be 200", sender.getLastSendStatus(fullStats).contains("200"));
+        Assert.assertEquals("Custom interval should be 48H in seconds", SEC_48H, sender.getInterval(fullStats));
     }
 
     @Test
@@ -92,10 +86,8 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
         Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Minimum interval should be 12H in seconds",
-                SEC_12H, sender.getInterval(fullStats));
+        Assert.assertTrue("Status should be 200", sender.getLastSendStatus(fullStats).contains("200"));
+        Assert.assertEquals("Minimum interval should be 12H in seconds", SEC_12H, sender.getInterval(fullStats));
     }
 
     @Test
@@ -107,12 +99,9 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         sender.sendStatistics(fullStats);
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
-        Assert.assertTrue("Send time should be not be updated",
-                newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Maximum interval should be 30D in seconds",
-                SEC_30D, sender.getInterval(fullStats));
+        Assert.assertTrue("Send time should be not be updated", newSend > lastSend);
+        Assert.assertTrue("Status should be 200", sender.getLastSendStatus(fullStats).contains("200"));
+        Assert.assertEquals("Maximum interval should be 30D in seconds", SEC_30D, sender.getInterval(fullStats));
     }
 
     @Test
@@ -127,10 +116,8 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
         long newSend = sender.getLastSendTime(fullStats);
         Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 500",
-                sender.getLastSendStatus(fullStats).contains("500"));
-        Assert.assertEquals("In case of errors we should use default interval",
-                SEC_24H, sender.getInterval(fullStats));
+        Assert.assertTrue("Status should be 500", sender.getLastSendStatus(fullStats).contains("500"));
+        Assert.assertEquals("In case of errors we should use default interval", SEC_24H, sender.getInterval(fullStats));
     }
 
     @Test
@@ -144,12 +131,9 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
         Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Default interval should be 24H in seconds",
-                SEC_24H, sender.getInterval(fullStats));
-        Assert.assertEquals("Message should be returned", "Hello",
-                sender.getLastServerMessage(fullStats));
+        Assert.assertTrue("Status should be 200", sender.getLastSendStatus(fullStats).contains("200"));
+        Assert.assertEquals("Default interval should be 24H in seconds", SEC_24H, sender.getInterval(fullStats));
+        Assert.assertEquals("Message should be returned", "Hello", sender.getLastServerMessage(fullStats));
     }
 
     /**
@@ -164,13 +148,10 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
             this.httpServer = createStubGatherServlet(code, response);
         }
 
-        private HttpServer createStubGatherServlet(int status, String response)
-                throws Exception {
-            HttpServer httpServer = HttpServer.create(
-                    new InetSocketAddress(PortProber.findFreePort()), 0);
+        private HttpServer createStubGatherServlet(int status, String response) throws Exception {
+            HttpServer httpServer = HttpServer.create(new InetSocketAddress(PortProber.findFreePort()), 0);
             httpServer.createContext("/", exchange -> {
-                this.lastRequestContent = IOUtils.toString(
-                        exchange.getRequestBody(), Charset.defaultCharset());
+                this.lastRequestContent = IOUtils.toString(exchange.getRequestBody(), Charset.defaultCharset());
                 exchange.sendResponseHeaders(status, response.length());
                 exchange.getResponseBody().write(response.getBytes());
                 exchange.close();

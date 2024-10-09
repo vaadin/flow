@@ -29,17 +29,14 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Data holder class for collected {@link Inline} annotations to be added to the
- * initial page.
+ * Data holder class for collected {@link Inline} annotations to be added to the initial page.
  *
  * @since 1.0
  */
 public class InlineTargets {
 
-    private final Map<Inline.Position, List<JsonObject>> inlineHead = new EnumMap<>(
-            Inline.Position.class);
-    private final Map<Inline.Position, List<JsonObject>> inlineBody = new EnumMap<>(
-            Inline.Position.class);
+    private final Map<Inline.Position, List<JsonObject>> inlineHead = new EnumMap<>(Inline.Position.class);
+    private final Map<Inline.Position, List<JsonObject>> inlineBody = new EnumMap<>(Inline.Position.class);
 
     /**
      * Inline contents from classpath file to head of initial page.
@@ -62,8 +59,7 @@ public class InlineTargets {
         dependency.put(Dependency.KEY_TYPE, type.toString());
         dependency.put("LoadMode", LoadMode.INLINE.toString());
 
-        dependency.put(Dependency.KEY_CONTENTS,
-                BootstrapUtils.getDependencyContents(service, inline.value()));
+        dependency.put(Dependency.KEY_CONTENTS, BootstrapUtils.getDependencyContents(service, inline.value()));
 
         // Add to correct element target
         if (inline.target() == TargetElement.BODY) {

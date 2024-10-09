@@ -21,8 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * This event is fired by {@link ReloadListener} when Spring Boot DevTools is
- * about to trigger a reload.
+ * This event is fired by {@link ReloadListener} when Spring Boot DevTools is about to trigger a reload.
  */
 class ReloadEvent implements Serializable {
 
@@ -51,10 +50,7 @@ class ReloadEvent implements Serializable {
     }
 
     private Set<String> extractPackageNames(Set<String> classNames) {
-        return classNames.stream()
-                .map(name -> name.contains(".")
-                        ? name.substring(0, name.lastIndexOf("."))
-                        : name)
+        return classNames.stream().map(name -> name.contains(".") ? name.substring(0, name.lastIndexOf(".")) : name)
                 .collect(Collectors.toSet());
     }
 }

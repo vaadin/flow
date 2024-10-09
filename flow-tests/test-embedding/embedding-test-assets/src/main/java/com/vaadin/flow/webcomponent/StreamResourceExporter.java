@@ -30,8 +30,7 @@ public class StreamResourceExporter extends WebComponentExporter<Div> {
     }
 
     @Override
-    protected void configureInstance(WebComponent<Div> webComponent,
-            Div component) {
+    protected void configureInstance(WebComponent<Div> webComponent, Div component) {
         StreamResource relativeUrl = createStreamResource("relativeURL");
         Anchor relativeLink = new Anchor(relativeUrl, "Relative Link");
         relativeLink.setId("relativeLink");
@@ -40,8 +39,7 @@ public class StreamResourceExporter extends WebComponentExporter<Div> {
         Anchor absoluteLink = new Anchor(absoluteUrl, "Absolute Link");
         absoluteLink.setId("absoluteLink");
 
-        StreamResource schemalessUrl = createStreamResource(
-                "absoluteURLschemaless");
+        StreamResource schemalessUrl = createStreamResource("absoluteURLschemaless");
         Anchor schemalessLink = new Anchor(schemalessUrl, "Schemaless Link");
         schemalessLink.setId("schemalessLink");
 
@@ -49,8 +47,8 @@ public class StreamResourceExporter extends WebComponentExporter<Div> {
     }
 
     private StreamResource createStreamResource(String type) {
-        return new StreamResource(type + ".txt", (stream, session) -> stream
-                .write(type.getBytes(StandardCharsets.UTF_8)));
+        return new StreamResource(type + ".txt",
+                (stream, session) -> stream.write(type.getBytes(StandardCharsets.UTF_8)));
     }
 
 }

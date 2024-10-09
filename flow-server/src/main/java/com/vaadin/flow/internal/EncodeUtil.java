@@ -32,8 +32,8 @@ public final class EncodeUtil {
     }
 
     /**
-     * Encodes the given string to UTF-8 <code>value-chars</code> as defined in
-     * RFC5987 for use in e.g. the <code>Content-Disposition</code> HTTP header.
+     * Encodes the given string to UTF-8 <code>value-chars</code> as defined in RFC5987 for use in e.g. the
+     * <code>Content-Disposition</code> HTTP header.
      *
      * @param value
      *            the string to encode, not <code>null</code>

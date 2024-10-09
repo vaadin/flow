@@ -30,8 +30,7 @@ import elemental.json.JsonObject;
 public class VirtualChildrenListTest {
 
     private StateNode node = new StateNode(VirtualChildrenList.class);
-    private VirtualChildrenList list = node
-            .getFeature(VirtualChildrenList.class);
+    private VirtualChildrenList list = node.getFeature(VirtualChildrenList.class);
 
     private StateNode child = new StateNode(ElementData.class);
 
@@ -41,8 +40,7 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(child, list.get(0));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
-                .getPayload();
+        JsonObject payload = (JsonObject) child.getFeature(ElementData.class).getPayload();
         Assert.assertNotNull(payload);
 
         Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
@@ -52,8 +50,7 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(anotherChild, list.get(0));
 
-        payload = (JsonObject) anotherChild.getFeature(ElementData.class)
-                .getPayload();
+        payload = (JsonObject) anotherChild.getFeature(ElementData.class).getPayload();
         Assert.assertNotNull(payload);
 
         Assert.assertEquals("bar", payload.get(NodeProperties.TYPE).asString());
@@ -65,13 +62,11 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(child, list.get(0));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
-                .getPayload();
+        JsonObject payload = (JsonObject) child.getFeature(ElementData.class).getPayload();
         Assert.assertNotNull(payload);
 
         Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
-        Assert.assertEquals("bar",
-                payload.get(NodeProperties.PAYLOAD).asString());
+        Assert.assertEquals("bar", payload.get(NodeProperties.PAYLOAD).asString());
     }
 
     @Test
@@ -83,8 +78,7 @@ public class VirtualChildrenListTest {
         Assert.assertEquals(2, list.size());
 
         Set<StateNode> set = StreamSupport
-                .stream(Spliterators.spliteratorUnknownSize(list.iterator(),
-                        Spliterator.ORDERED), false)
+                .stream(Spliterators.spliteratorUnknownSize(list.iterator(), Spliterator.ORDERED), false)
                 .collect(Collectors.toSet());
         Assert.assertEquals(2, set.size());
 
@@ -105,8 +99,7 @@ public class VirtualChildrenListTest {
         Assert.assertEquals(0, list.size());
         Assert.assertEquals(-1, list.indexOf(child));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
-                .getPayload();
+        JsonObject payload = (JsonObject) child.getFeature(ElementData.class).getPayload();
         Assert.assertNull(payload);
     }
 

@@ -53,30 +53,22 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
  * @since
  *
  */
-@HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
-        DeprecatedPolymerPublishedEventHandler.class,
-        EndpointGeneratorTaskFactory.class,
-        ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
-        AppShellPredicate.class, StaticFileHandlerFactory.class,
-        DevModeHandlerManager.class, BrowserLiveReloadAccessor.class,
-        RoutePathProvider.class })
-public class LookupServletContainerInitializer
-        implements ClassLoaderAwareServletContainerInitializer {
+@HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class, DeprecatedPolymerPublishedEventHandler.class,
+        EndpointGeneratorTaskFactory.class, ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
+        AppShellPredicate.class, StaticFileHandlerFactory.class, DevModeHandlerManager.class,
+        BrowserLiveReloadAccessor.class, RoutePathProvider.class })
+public class LookupServletContainerInitializer implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
+    public void process(Set<Class<?>> classSet, ServletContext servletContext) throws ServletException {
         if (classSet == null) {
-            throw new ServletException(ServletContainerInitializer.class
-                    .getSimpleName() + " is called but the "
-                    + "provided set of classes is 'null'. "
-                    + LookupInitializer.class + " should always be present "
+            throw new ServletException(ServletContainerInitializer.class.getSimpleName() + " is called but the "
+                    + "provided set of classes is 'null'. " + LookupInitializer.class + " should always be present "
                     + "and has to be passed to the 'onStartup' method as an argument "
                     + "in the set of classes if the servlet container supports Servlet 5.0 specification. "
                     + "The project configuration is broken or you are using a Servlet 5.0 incompatible container.");
         }
-        classSet = AbstractAnnotationValidator
-                .removeHandleTypesSelfReferences(classSet, this);
+        classSet = AbstractAnnotationValidator.removeHandleTypesSelfReferences(classSet, this);
 
         if (!classSet.contains(LookupInitializer.class)) {
             // this is a specific case for OSGi (PAX web): at some point it may
@@ -89,8 +81,7 @@ public class LookupServletContainerInitializer
             // executed at all.
             return;
         }
-        VaadinServletContext vaadinContext = new VaadinServletContext(
-                servletContext);
+        VaadinServletContext vaadinContext = new VaadinServletContext(servletContext);
         Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
 
         collectSubclasses(AbstractLookupInitializer.class, classSet, services);
@@ -106,10 +97,8 @@ public class LookupServletContainerInitializer
 
             DeferredServletContextInitializers deferredInitializers;
             synchronized (servletContext) {
-                deferredInitializers = vaadinContext
-                        .getAttribute(DeferredServletContextInitializers.class);
-                vaadinContext.removeAttribute(
-                        DeferredServletContextInitializers.class);
+                deferredInitializers = vaadinContext.getAttribute(DeferredServletContextInitializers.class);
+                vaadinContext.removeAttribute(DeferredServletContextInitializers.class);
             }
 
             if (deferredInitializers != null) {
@@ -124,42 +113,31 @@ public class LookupServletContainerInitializer
     }
 
     /**
-     * Gets the service types that are used to set services into the
-     * {@link Lookup} based on found subtypes by the
+     * Gets the service types that are used to set services into the {@link Lookup} based on found subtypes by the
      * {@link ServletContainerInitializer}.
      * <p>
-     * {@link LookupServletContainerInitializer} uses
-     * {@link ServletContainerInitializer} classes discovering mechanism based
-     * on {@link HandlesTypes} annotation. The method may be overridden to
-     * return the service types which should be put into the {@link Lookup}
-     * instance if another mechanism of class searching is used (e.g. Spring
-     * boot case).
+     * {@link LookupServletContainerInitializer} uses {@link ServletContainerInitializer} classes discovering mechanism
+     * based on {@link HandlesTypes} annotation. The method may be overridden to return the service types which should
+     * be put into the {@link Lookup} instance if another mechanism of class searching is used (e.g. Spring boot case).
      * <p>
-     * The set of classes (passed into the {@link #process(Set, ServletContext)}
-     * method) will be filtered via checking whether they are assignable to the
-     * service types and the resulting classes will be instantiated via
-     * reflection.
+     * The set of classes (passed into the {@link #process(Set, ServletContext)} method) will be filtered via checking
+     * whether they are assignable to the service types and the resulting classes will be instantiated via reflection.
      *
-     * @return a collection of service types which should be available via
-     *         Lookup
-     * @see LookupInitializer#initialize(VaadinContext, Map,
-     *      VaadinApplicationInitializationBootstrap)
+     * @return a collection of service types which should be available via Lookup
+     * @see LookupInitializer#initialize(VaadinContext, Map, VaadinApplicationInitializationBootstrap)
      */
     protected Collection<Class<?>> getServiceTypes() {
         HandlesTypes annotation = getClass().getAnnotation(HandlesTypes.class);
         if (annotation == null) {
             throw new IllegalStateException(
-                    "Cannot collect service types based on "
-                            + HandlesTypes.class.getSimpleName()
+                    "Cannot collect service types based on " + HandlesTypes.class.getSimpleName()
                             + " annotation. The default 'getServiceTypes' method implementation can't be used.");
         }
-        return Stream.of(annotation.value())
-                .filter(clazz -> !clazz.equals(LookupInitializer.class))
+        return Stream.of(annotation.value()).filter(clazz -> !clazz.equals(LookupInitializer.class))
                 .collect(Collectors.toSet());
     }
 
-    private void collectServiceImplementations(Set<Class<?>> classSet,
-            Map<Class<?>, Collection<Class<?>>> services) {
+    private void collectServiceImplementations(Set<Class<?>> classSet, Map<Class<?>, Collection<Class<?>>> services) {
         for (Class<?> serviceType : getServiceTypes()) {
             collectSubclasses(serviceType, classSet, services);
         }
@@ -168,24 +146,18 @@ public class LookupServletContainerInitializer
 
     private void collectSubclasses(Class<?> clazz, Set<Class<?>> classSet,
             Map<Class<?>, Collection<Class<?>>> services) {
-        services.put(clazz, filterSubClasses(clazz, classSet).stream()
-                .collect(Collectors.toList()));
+        services.put(clazz, filterSubClasses(clazz, classSet).stream().collect(Collectors.toList()));
     }
 
-    private Set<Class<?>> filterSubClasses(Class<?> clazz,
-            Set<Class<?>> classes) {
+    private Set<Class<?>> filterSubClasses(Class<?> clazz, Set<Class<?>> classes) {
         return classes == null ? Collections.emptySet()
-                : classes.stream().filter(clazz::isAssignableFrom)
-                        .filter(ReflectTools::isInstantiableService)
-                        .filter(cls -> !clazz.equals(cls))
-                        .collect(Collectors.toSet());
+                : classes.stream().filter(clazz::isAssignableFrom).filter(ReflectTools::isInstantiableService)
+                        .filter(cls -> !clazz.equals(cls)).collect(Collectors.toSet());
     }
 
-    private AbstractLookupInitializer getLookupInitializer(
-            Map<Class<?>, Collection<Class<?>>> services)
+    private AbstractLookupInitializer getLookupInitializer(Map<Class<?>, Collection<Class<?>>> services)
             throws ServletException {
-        Collection<Class<?>> initializers = services
-                .remove(AbstractLookupInitializer.class);
+        Collection<Class<?>> initializers = services.remove(AbstractLookupInitializer.class);
         if (initializers == null) {
             initializers = Collections.emptyList();
         } else {
@@ -196,12 +168,11 @@ public class LookupServletContainerInitializer
         if (initializers.isEmpty()) {
             initializer = new LookupInitializer();
         } else if (initializers.size() > 1) {
-            throw new ServletException("Several implementation of "
-                    + AbstractLookupInitializer.class.getSimpleName()
+            throw new ServletException("Several implementation of " + AbstractLookupInitializer.class.getSimpleName()
                     + " are found in the claspath: " + initializers);
         } else {
-            initializer = AbstractLookupInitializer.class.cast(ReflectTools
-                    .createInstance(initializers.iterator().next()));
+            initializer = AbstractLookupInitializer.class
+                    .cast(ReflectTools.createInstance(initializers.iterator().next()));
         }
         return initializer;
     }

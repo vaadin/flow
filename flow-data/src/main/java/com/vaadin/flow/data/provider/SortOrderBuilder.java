@@ -21,9 +21,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Base class for helper classes with fluent API for constructing sort order
- * lists. When the sort order is ready to be passed on, calling {@link #build()}
- * will create the list of sort orders.
+ * Base class for helper classes with fluent API for constructing sort order lists. When the sort order is ready to be
+ * passed on, calling {@link #build()} will create the list of sort orders.
  *
  * @param <T>
  *            the sort order type
@@ -35,8 +34,7 @@ import java.util.List;
  * @see #build()
  * @since 1.0
  */
-public abstract class SortOrderBuilder<T extends SortOrder<V>, V>
-        implements Serializable {
+public abstract class SortOrderBuilder<T extends SortOrder<V>, V> implements Serializable {
 
     private final List<T> sortOrders = new ArrayList<>();
 
@@ -63,8 +61,7 @@ public abstract class SortOrderBuilder<T extends SortOrder<V>, V>
     }
 
     /**
-     * Returns an unmodifiable copy of the list of current sort orders in this
-     * sort builder.
+     * Returns an unmodifiable copy of the list of current sort orders in this sort builder.
      *
      * @return an unmodifiable sort order list
      */

@@ -14,13 +14,11 @@ public class PushUtil {
 
     public static void setupPush() {
         // server-side bootstrap
-        String transportName = VaadinRequest.getCurrent()
-                .getParameter("transport");
+        String transportName = VaadinRequest.getCurrent().getParameter("transport");
 
         // client-side bootstrap
         if (transportName == null) {
-            List<String> list = UI.getCurrent().getInternals()
-                    .getLastHandledLocation().getQueryParameters()
+            List<String> list = UI.getCurrent().getInternals().getLastHandledLocation().getQueryParameters()
                     .getParameters().get("transport");
             if (list != null && !list.isEmpty()) {
                 transportName = list.get(0);
@@ -29,13 +27,10 @@ public class PushUtil {
 
         Transport transport = Transport.getByIdentifier(transportName);
         if (transport != null) {
-            PushConfiguration pushConfiguration = UI.getCurrent()
-                    .getPushConfiguration();
+            PushConfiguration pushConfiguration = UI.getCurrent().getPushConfiguration();
             pushConfiguration.setPushMode(PushMode.MANUAL);
             pushConfiguration.setTransport(transport);
-            Transport fallbackTransport = transport == Transport.WEBSOCKET_XHR
-                    ? Transport.WEBSOCKET
-                    : transport;
+            Transport fallbackTransport = transport == Transport.WEBSOCKET_XHR ? Transport.WEBSOCKET : transport;
             pushConfiguration.setFallbackTransport(fallbackTransport);
         }
     }

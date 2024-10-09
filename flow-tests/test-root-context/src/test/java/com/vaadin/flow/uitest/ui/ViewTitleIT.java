@@ -55,8 +55,7 @@ public class ViewTitleIT extends ChromeBrowserTest {
     }
 
     private void verifyTitle(String title) {
-        Assert.assertEquals("Page title does not match", title,
-                getDriver().getTitle());
+        Assert.assertEquals("Page title does not match", title, getDriver().getTitle());
     }
 
 }

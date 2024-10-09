@@ -55,8 +55,7 @@ import org.springframework.security.web.context.HttpRequestResponseHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
 
 /**
- * A {@link SecurityContextRepository} implementation that stores the
- * authentication using a JWT persisted in cookies.
+ * A {@link SecurityContextRepository} implementation that stores the authentication using a JWT persisted in cookies.
  */
 class JwtSecurityContextRepository implements SecurityContextRepository {
     private static final String ROLES_CLAIM = "roles";
@@ -71,20 +70,17 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     private JwtDecoder jwtDecoder;
     private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
-    JwtSecurityContextRepository(
-            SerializedJwtSplitCookieRepository serializedJwtSplitCookieRepository) {
+    JwtSecurityContextRepository(SerializedJwtSplitCookieRepository serializedJwtSplitCookieRepository) {
         this.serializedJwtSplitCookieRepository = serializedJwtSplitCookieRepository;
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthorityPrefix(ROLE_AUTHORITY_PREFIX);
         grantedAuthoritiesConverter.setAuthoritiesClaimName(ROLES_CLAIM);
 
         jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter
-                .setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
     }
 
-    void setJwkSource(
-            JWKSource<com.nimbusds.jose.proc.SecurityContext> jwkSource) {
+    void setJwkSource(JWKSource<com.nimbusds.jose.proc.SecurityContext> jwkSource) {
         this.jwkSource = jwkSource;
     }
 
@@ -120,41 +116,33 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         jwtProcessor.setJWSKeySelector(jwsKeySelector);
         NimbusJwtDecoder nimbusJwtDecoder = new NimbusJwtDecoder(jwtProcessor);
         nimbusJwtDecoder.setJwtValidator(
-                issuer != null ? JwtValidators.createDefaultWithIssuer(issuer)
-                        : JwtValidators.createDefault());
+                issuer != null ? JwtValidators.createDefaultWithIssuer(issuer) : JwtValidators.createDefault());
         this.jwtDecoder = nimbusJwtDecoder;
         return jwtDecoder;
     }
 
-    private String encodeJwt(Authentication authentication)
-            throws JOSEException {
-        if (authentication == null
-                || trustResolver.isAnonymous(authentication)) {
+    private String encodeJwt(Authentication authentication) throws JOSEException {
+        if (authentication == null || trustResolver.isAnonymous(authentication)) {
             return null;
         }
 
         final Date now = new Date();
 
-        final List<String> roles = authentication.getAuthorities().stream()
-                .map(Objects::toString)
-                .filter(a -> a.startsWith(ROLE_AUTHORITY_PREFIX))
-                .map(a -> a.substring(ROLE_AUTHORITY_PREFIX.length()))
+        final List<String> roles = authentication.getAuthorities().stream().map(Objects::toString)
+                .filter(a -> a.startsWith(ROLE_AUTHORITY_PREFIX)).map(a -> a.substring(ROLE_AUTHORITY_PREFIX.length()))
                 .collect(Collectors.toList());
 
         SignedJWT signedJWT;
         JWSHeader jwsHeader = new JWSHeader(jwsAlgorithm);
-        JWKSelector jwkSelector = new JWKSelector(
-                JWKMatcher.forJWSHeader(jwsHeader));
+        JWKSelector jwkSelector = new JWKSelector(JWKMatcher.forJWSHeader(jwsHeader));
 
         List<JWK> jwks = jwkSource.get(jwkSelector, null);
         JWK jwk = jwks.get(0);
 
-        JWSSigner signer = new DefaultJWSSignerFactory().createJWSSigner(jwk,
-                jwsAlgorithm);
-        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(authentication.getName()).issuer(issuer).issueTime(now)
-                .expirationTime(new Date(now.getTime() + expiresIn * 1000))
-                .claim(ROLES_CLAIM, roles).build();
+        JWSSigner signer = new DefaultJWSSignerFactory().createJWSSigner(jwk, jwsAlgorithm);
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(authentication.getName()).issuer(issuer)
+                .issueTime(now).expirationTime(new Date(now.getTime() + expiresIn * 1000)).claim(ROLES_CLAIM, roles)
+                .build();
         signedJWT = new SignedJWT(jwsHeader, claimsSet);
         signedJWT.sign(signer);
 
@@ -162,8 +150,7 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     }
 
     private Jwt decodeJwt(HttpServletRequest request) {
-        String serializedJwt = serializedJwtSplitCookieRepository
-                .loadSerializedJwt(request);
+        String serializedJwt = serializedJwtSplitCookieRepository.loadSerializedJwt(request);
         if (serializedJwt == null) {
             return null;
         }
@@ -172,46 +159,40 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
             return getJwtDecoder().decode(serializedJwt);
         } catch (JwtException e) {
             if (this.logger.isTraceEnabled()) {
-                this.logger.trace(
-                        "Cannot decode JWT when loading SecurityContext", e);
+                this.logger.trace("Cannot decode JWT when loading SecurityContext", e);
             }
             return null;
         }
     }
 
     @Override
-    public SecurityContext loadContext(
-            HttpRequestResponseHolder requestResponseHolder) {
+    public SecurityContext loadContext(HttpRequestResponseHolder requestResponseHolder) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
 
         HttpServletRequest request = requestResponseHolder.getRequest();
 
         Jwt jwt = decodeJwt(request);
         if (jwt != null) {
-            Authentication authentication = jwtAuthenticationConverter
-                    .convert(jwt);
+            Authentication authentication = jwtAuthenticationConverter.convert(jwt);
             context.setAuthentication(authentication);
         }
         return context;
     }
 
     @Override
-    public void saveContext(SecurityContext context, HttpServletRequest request,
-            HttpServletResponse response) {
+    public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
         String serializedJwt = null;
         try {
             serializedJwt = encodeJwt(context.getAuthentication());
         } catch (JOSEException e) {
             logger.warn("Cannot serialize SecurityContext as JWT", e);
         } finally {
-            serializedJwtSplitCookieRepository.saveSerializedJwt(serializedJwt,
-                    request, response);
+            serializedJwtSplitCookieRepository.saveSerializedJwt(serializedJwt, request, response);
         }
     }
 
     @Override
     public boolean containsContext(HttpServletRequest request) {
-        return serializedJwtSplitCookieRepository
-                .containsSerializedJwt(request);
+        return serializedJwtSplitCookieRepository.containsSerializedJwt(request);
     }
 }

@@ -29,8 +29,8 @@ import elemental.json.JsonValue;
 /**
  * MessageSender is responsible for sending messages to the server.
  * <p>
- * Internally uses {@link XhrConnection} and/or {@link PushConnection} for
- * delivering messages, depending on the application configuration.
+ * Internally uses {@link XhrConnection} and/or {@link PushConnection} for delivering messages, depending on the
+ * application configuration.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -76,21 +76,18 @@ public class MessageSender {
     }
 
     /**
-     * Sends any pending invocations to the server if there is no request in
-     * progress and the application is running.
+     * Sends any pending invocations to the server if there is no request in progress and the application is running.
      * <p>
-     * If a request is in progress, this method does nothing and assumes that it
-     * is called again when the request completes.
+     * If a request is in progress, this method does nothing and assumes that it is called again when the request
+     * completes.
      */
     public void sendInvocationsToServer() {
         if (!registry.getUILifecycle().isRunning()) {
-            Console.warn(
-                    "Trying to send RPC from not yet started or stopped application");
+            Console.warn("Trying to send RPC from not yet started or stopped application");
             return;
         }
 
-        if (registry.getRequestResponseTracker().hasActiveRequest()
-                || (push != null && !push.isActive())) {
+        if (registry.getRequestResponseTracker().hasActiveRequest() || (push != null && !push.isActive())) {
             // There is an active request or push is enabled but not active
             // -> send when current request completes or push becomes active
         } else {
@@ -99,15 +96,13 @@ public class MessageSender {
     }
 
     /**
-     * Sends all pending method invocations (server RPC and legacy variable
-     * changes) to the server.
+     * Sends all pending method invocations (server RPC and legacy variable changes) to the server.
      *
      */
     private void doSendInvocationsToServer() {
 
         ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
-        if (serverRpcQueue.isEmpty()
-                && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
+        if (serverRpcQueue.isEmpty() && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
             return;
         }
 
@@ -115,12 +110,10 @@ public class MessageSender {
         JsonArray reqJson = serverRpcQueue.toJson();
         serverRpcQueue.clear();
 
-        if (reqJson.length() == 0
-                && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
+        if (reqJson.length() == 0 && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
             // Nothing to send, all invocations were filtered out (for
             // non-existing connectors)
-            Console.warn(
-                    "All RPCs filtered out, not sending anything to the server");
+            Console.warn("All RPCs filtered out, not sending anything to the server");
             return;
         }
 
@@ -144,25 +137,21 @@ public class MessageSender {
      * @param extraJson
      *            Parameters that are added to the payload
      */
-    protected void send(final JsonArray reqInvocations,
-            final JsonObject extraJson) {
+    protected void send(final JsonArray reqInvocations, final JsonObject extraJson) {
         registry.getRequestResponseTracker().startRequest();
         send(preparePayload(reqInvocations, extraJson));
 
     }
 
-    private JsonObject preparePayload(final JsonArray reqInvocations,
-            final JsonObject extraJson) {
+    private JsonObject preparePayload(final JsonArray reqInvocations, final JsonObject extraJson) {
         JsonObject payload = Json.createObject();
         String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
             payload.put(ApplicationConstants.CSRF_TOKEN, csrfToken);
         }
         payload.put(ApplicationConstants.RPC_INVOCATIONS, reqInvocations);
-        payload.put(ApplicationConstants.SERVER_SYNC_ID,
-                registry.getMessageHandler().getLastSeenServerSyncId());
-        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
-                clientToServerMessageId++);
+        payload.put(ApplicationConstants.SERVER_SYNC_ID, registry.getMessageHandler().getLastSeenServerSyncId());
+        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID, clientToServerMessageId++);
         if (extraJson != null) {
             for (String key : extraJson.keys()) {
                 JsonValue value = extraJson.get(key);
@@ -173,8 +162,7 @@ public class MessageSender {
     }
 
     /**
-     * Sends an asynchronous or synchronous UIDL request to the server using the
-     * given URI.
+     * Sends an asynchronous or synchronous UIDL request to the server using the given URI.
      *
      * @param payload
      *            The contents of the request to send
@@ -191,8 +179,7 @@ public class MessageSender {
      * Sets the status for the push connection.
      *
      * @param enabled
-     *            <code>true</code> to enable the push connection;
-     *            <code>false</code> to disable the push connection.
+     *            <code>true</code> to enable the push connection; <code>false</code> to disable the push connection.
      */
     public void setPushEnabled(boolean enabled) {
         if (enabled && push == null) {
@@ -201,17 +188,15 @@ public class MessageSender {
             push.disconnect(() -> {
                 push = null;
                 /*
-                 * If push has been enabled again while we were waiting for the
-                 * old connection to disconnect, now is the right time to open a
-                 * new connection
+                 * If push has been enabled again while we were waiting for the old connection to disconnect, now is the
+                 * right time to open a new connection
                  */
                 if (registry.getPushConfiguration().isPushEnabled()) {
                     setPushEnabled(true);
                 }
 
                 /*
-                 * Send anything that was enqueued while we waited for the
-                 * connection to close
+                 * Send anything that was enqueued while we waited for the connection to close
                  */
                 if (registry.getServerRpcQueue().isFlushPending()) {
                     registry.getServerRpcQueue().flush();
@@ -221,8 +206,7 @@ public class MessageSender {
     }
 
     /**
-     * Returns a human readable string representation of the method used to
-     * communicate with the server.
+     * Returns a human readable string representation of the method used to communicate with the server.
      *
      * @return A string representation of the current transport type
      */
@@ -236,13 +220,11 @@ public class MessageSender {
             }
         }
 
-        return "Client to server: " + clientToServer + ", "
-                + "server to client: " + serverToClient;
+        return "Client to server: " + clientToServer + ", " + "server to client: " + serverToClient;
     }
 
     /**
-     * Resynchronize the client side, i.e. reload all component hierarchy and
-     * state from the server
+     * Resynchronize the client side, i.e. reload all component hierarchy and state from the server
      */
     public void resynchronize() {
         if (requestResynchronize()) {
@@ -264,8 +246,7 @@ public class MessageSender {
             return;
         }
         if (force) {
-            Console.log(
-                    "Forced update of clientId to " + clientToServerMessageId);
+            Console.log("Forced update of clientId to " + clientToServerMessageId);
             clientToServerMessageId = nextExpectedId;
             return;
         }
@@ -275,13 +256,11 @@ public class MessageSender {
                 // We have never sent a message to the server, so likely the
                 // server knows better (typical case is that we refreshed a
                 // @PreserveOnRefresh UI)
-                Console.log("Updating client-to-server id to " + nextExpectedId
-                        + " based on server");
+                Console.log("Updating client-to-server id to " + nextExpectedId + " based on server");
             } else {
-                Console.warn("Server expects next client-to-server id to be "
-                        + nextExpectedId + " but we were going to use "
-                        + clientToServerMessageId + ". Will use "
-                        + nextExpectedId + ".");
+                Console.warn(
+                        "Server expects next client-to-server id to be " + nextExpectedId + " but we were going to use "
+                                + clientToServerMessageId + ". Will use " + nextExpectedId + ".");
             }
             clientToServerMessageId = nextExpectedId;
         } else {
@@ -291,11 +270,9 @@ public class MessageSender {
     }
 
     /**
-     * Modifies the resynchronize state to indicate that resynchronization is
-     * desired
+     * Modifies the resynchronize state to indicate that resynchronization is desired
      *
-     * @return true if the resynchronize request still needs to be sent; false
-     *         otherwise
+     * @return true if the resynchronize request still needs to be sent; false otherwise
      */
     boolean requestResynchronize() {
         switch (resynchronizationState) {

@@ -24,12 +24,9 @@ public class SpringBootAutoConfigurationUrlMappedTest {
 
     @Test
     public void urlMappingPassedToAtmosphere() {
-        Assert.assertFalse(RootMappedCondition
-                .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
-        Assert.assertEquals(Set.of("/zing/*"),
-                servletRegistrationBean.getUrlMappings());
+        Assert.assertFalse(RootMappedCondition.isRootMapping(RootMappedCondition.getUrlMapping(environment)));
+        Assert.assertEquals(Set.of("/zing/*"), servletRegistrationBean.getUrlMappings());
         Assert.assertEquals("/zing/" + Constants.PUSH_MAPPING,
-                servletRegistrationBean.getInitParameters()
-                        .get(ApplicationConfig.JSR356_MAPPING_PATH));
+                servletRegistrationBean.getInitParameters().get(ApplicationConfig.JSR356_MAPPING_PATH));
     }
 }

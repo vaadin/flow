@@ -13,8 +13,7 @@ public abstract class SendMultibyteCharactersView extends Div {
         CustomPush push = getClass().getAnnotation(CustomPush.class);
 
         attachEvent.getUI().getPushConfiguration().setPushMode(push.value());
-        attachEvent.getUI().getPushConfiguration()
-                .setTransport(push.transport());
+        attachEvent.getUI().getPushConfiguration().setTransport(push.transport());
 
         Div div = new Div();
         div.setText("Just a label");

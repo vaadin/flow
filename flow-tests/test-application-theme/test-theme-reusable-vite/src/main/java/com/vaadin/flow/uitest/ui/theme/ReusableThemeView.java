@@ -52,30 +52,24 @@ public class ReusableThemeView extends Div {
         faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
 
-        Image snowFlake = new Image(
-                "themes/reusable-theme/fortawesome/icons/snowflake.svg",
-                "snowflake");
+        Image snowFlake = new Image("themes/reusable-theme/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
         add(textSpan, snowFlake, subCss, butterfly, octopuss, faText);
 
-        Div keyboardIconFromParentTheme = new Div(
-                "Keyboard Icon in theme sub folder");
+        Div keyboardIconFromParentTheme = new Div("Keyboard Icon in theme sub folder");
         keyboardIconFromParentTheme.addClassName("icon-keyboard");
         keyboardIconFromParentTheme.setId(KEYBOARD_ID);
 
-        Div lemonIconFromParentTheme = new Div(
-                "Lemon Icon in nested theme subfolder");
+        Div lemonIconFromParentTheme = new Div("Lemon Icon in nested theme subfolder");
         lemonIconFromParentTheme.addClassName("icon-lemon");
         lemonIconFromParentTheme.setId(LEMON_ID);
 
-        Div sunIconFromParentTheme = new Div(
-                "Sun Icon in nested theme subfolder");
+        Div sunIconFromParentTheme = new Div("Sun Icon in nested theme subfolder");
         sunIconFromParentTheme.addClassName("icon-sun");
         sunIconFromParentTheme.setId(SUN_ID);
-        add(keyboardIconFromParentTheme, lemonIconFromParentTheme,
-                sunIconFromParentTheme);
+        add(keyboardIconFromParentTheme, lemonIconFromParentTheme, sunIconFromParentTheme);
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));

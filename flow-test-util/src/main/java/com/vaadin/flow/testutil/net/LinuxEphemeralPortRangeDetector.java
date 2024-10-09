@@ -28,15 +28,13 @@ import java.nio.file.Files;
 import org.slf4j.LoggerFactory;
 
 /**
- * Calculate the available port range for linux system or the default fixed
- * range if ip_local_port_range is not defined.
+ * Calculate the available port range for linux system or the default fixed range if ip_local_port_range is not defined.
  * <p>
  * Derived from SeleniumHQ / selenium
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class LinuxEphemeralPortRangeDetector
-        implements EphemeralPortRangeDetector {
+public class LinuxEphemeralPortRangeDetector implements EphemeralPortRangeDetector {
 
     private final int firstEphemeralPort;
     private final int lastEphemeralPort;
@@ -49,15 +47,13 @@ public class LinuxEphemeralPortRangeDetector
     public static LinuxEphemeralPortRangeDetector getInstance() {
         File file = new File("/proc/sys/net/ipv4/ip_local_port_range");
         if (file.exists() && file.canRead()) {
-            try (Reader inputFil = Files.newBufferedReader(file.toPath(),
-                    Charset.defaultCharset())) {
+            try (Reader inputFil = Files.newBufferedReader(file.toPath(), Charset.defaultCharset())) {
                 return new LinuxEphemeralPortRangeDetector(inputFil);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         }
-        return new LinuxEphemeralPortRangeDetector(
-                new StringReader("49152 65535"));
+        return new LinuxEphemeralPortRangeDetector(new StringReader("49152 65535"));
     }
 
     LinuxEphemeralPortRangeDetector(Reader inputFil) {
@@ -69,8 +65,7 @@ public class LinuxEphemeralPortRangeDetector
             lowPort = Integer.parseInt(split[0]);
             highPort = Integer.parseInt(split[1]);
         } catch (IOException | NullPointerException ignore) {
-            LoggerFactory.getLogger("PortRangeDetector")
-                    .trace("Failed to read input", ignore);
+            LoggerFactory.getLogger("PortRangeDetector").trace("Failed to read input", ignore);
         }
         firstEphemeralPort = lowPort;
         lastEphemeralPort = highPort;

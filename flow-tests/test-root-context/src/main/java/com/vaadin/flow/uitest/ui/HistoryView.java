@@ -46,8 +46,7 @@ public class HistoryView extends AbstractDivView {
         addRow(createStateButton("pushState", history::pushState),
                 createStateButton("replaceState", history::replaceState));
 
-        addRow(createActionButton("back", history::back),
-                createActionButton("forward", history::forward));
+        addRow(createActionButton("back", history::back), createActionButton("forward", history::forward));
 
         addRow(createActionButton("clear", this::clear));
 
@@ -67,8 +66,7 @@ public class HistoryView extends AbstractDivView {
 
     private void clear() {
         while (true) {
-            Element lastChild = getElement()
-                    .getChild(getElement().getChildCount() - 1);
+            Element lastChild = getElement().getChild(getElement().getChildCount() - 1);
             if (lastChild.getClassList().contains("status")) {
                 lastChild.removeFromParent();
             } else {
@@ -81,8 +79,7 @@ public class HistoryView extends AbstractDivView {
         return createButton(text, e -> command.execute());
     }
 
-    private Element createStateButton(String text,
-            BiConsumer<JsonObject, String> stateUpdater) {
+    private Element createStateButton(String text, BiConsumer<JsonObject, String> stateUpdater) {
         return createButton(text, e -> {
             String stateJsonString = stateJsonInput.getProperty("value", "");
             JsonObject stateJson;
@@ -112,8 +109,7 @@ public class HistoryView extends AbstractDivView {
         statusRow.getClassList().add("status");
     }
 
-    private static Element createButton(String id,
-            ComponentEventListener<ClickEvent<NativeButton>> listener) {
+    private static Element createButton(String id, ComponentEventListener<ClickEvent<NativeButton>> listener) {
         return createButton(id, id, listener).getElement();
     }
 

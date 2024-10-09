@@ -23,8 +23,8 @@ import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
 /**
- * Convenience alias for {@link org.springframework.stereotype.Component} to
- * prevent conflicts with {@link com.vaadin.flow.component.Component}.
+ * Convenience alias for {@link org.springframework.stereotype.Component} to prevent conflicts with
+ * {@link com.vaadin.flow.component.Component}.
  *
  * @author Vaadin Ltd
  */
@@ -34,8 +34,8 @@ import org.springframework.stereotype.Component;
 @Component
 public @interface SpringComponent {
     /**
-     * The value may indicate a suggestion for a logical component name, to be
-     * turned into a Spring bean in case of an autodetected component.
+     * The value may indicate a suggestion for a logical component name, to be turned into a Spring bean in case of an
+     * autodetected component.
      *
      * @see Component#value()
      *

@@ -41,13 +41,12 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SEND_URLS_
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
 
 /**
- * The property handling implementation of {@link DeploymentConfiguration} based
- * on a base class for resolving system properties and a set of init parameters.
+ * The property handling implementation of {@link DeploymentConfiguration} based on a base class for resolving system
+ * properties and a set of init parameters.
  *
  * @since 1.2
  */
-public class PropertyDeploymentConfiguration
-        extends AbstractDeploymentConfiguration {
+public class PropertyDeploymentConfiguration extends AbstractDeploymentConfiguration {
 
     private final Class<?> systemPropertyBaseClass;
 
@@ -64,15 +63,12 @@ public class PropertyDeploymentConfiguration
      * @param parentConfig
      *            a parent application configuration
      * @param systemPropertyBaseClass
-     *            the class that should be used as a basis when reading system
-     *            properties
+     *            the class that should be used as a basis when reading system properties
      * @param initParameters
-     *            the init parameters that should make up the foundation for
-     *            this configuration
+     *            the init parameters that should make up the foundation for this configuration
      */
-    public PropertyDeploymentConfiguration(
-            ApplicationConfiguration parentConfig,
-            Class<?> systemPropertyBaseClass, Properties initParameters) {
+    public PropertyDeploymentConfiguration(ApplicationConfiguration parentConfig, Class<?> systemPropertyBaseClass,
+            Properties initParameters) {
         super(filterStringProperties(initParameters));
         this.parentConfig = parentConfig;
         allProperties = mergeProperties(parentConfig, initParameters);
@@ -112,8 +108,7 @@ public class PropertyDeploymentConfiguration
         }
 
         // Try lowercased system properties
-        val = System.getProperty(
-                pkgName + parameterName.toLowerCase(Locale.ENGLISH));
+        val = System.getProperty(pkgName + parameterName.toLowerCase(Locale.ENGLISH));
 
         if (val != null) {
             return val;
@@ -131,12 +126,9 @@ public class PropertyDeploymentConfiguration
      */
     @Override
     public String getApplicationProperty(String parameterName) {
-        String val = getApplicationProperty(getProperties()::get,
-                parameterName);
+        String val = getApplicationProperty(getProperties()::get, parameterName);
         if (val == null) {
-            val = getApplicationProperty(
-                    prop -> parentConfig.getStringProperty(prop, null),
-                    parameterName);
+            val = getApplicationProperty(prop -> parentConfig.getStringProperty(prop, null), parameterName);
         }
         return val;
     }
@@ -152,8 +144,7 @@ public class PropertyDeploymentConfiguration
     @Override
     public boolean frontendHotdeploy() {
         if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
-            return getBooleanProperty(FRONTEND_HOTDEPLOY,
-                    FrontendUtils.isHillaUsed(getFrontendFolder()));
+            return getBooleanProperty(FRONTEND_HOTDEPLOY, FrontendUtils.isHillaUsed(getFrontendFolder()));
         }
         return parentConfig.frontendHotdeploy();
     }
@@ -181,8 +172,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isUsageStatisticsEnabled() {
-        return !isProductionMode() && getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS, true);
+        return !isProductionMode() && getBooleanProperty(InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS, true);
     }
 
     @Override
@@ -203,8 +193,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isRequestTiming() {
-        return getBooleanProperty(SERVLET_PARAMETER_REQUEST_TIMING,
-                !isProductionMode());
+        return getBooleanProperty(SERVLET_PARAMETER_REQUEST_TIMING, !isProductionMode());
     }
 
     @Override
@@ -255,8 +244,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isSendUrlsAsParameters() {
-        return getBooleanProperty(SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
-                true);
+        return getBooleanProperty(SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, true);
     }
 
     @Override
@@ -276,14 +264,12 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isDevModeLiveReloadEnabled() {
-        return isDevToolsEnabled() && getBooleanProperty(
-                SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true);
+        return isDevToolsEnabled() && getBooleanProperty(SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true);
     }
 
     @Override
     public boolean isDevToolsEnabled() {
-        return !isProductionMode() && getBooleanProperty(
-                SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true);
+        return !isProductionMode() && getBooleanProperty(SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true);
     }
 
     @Override
@@ -292,19 +278,16 @@ public class PropertyDeploymentConfiguration
     }
 
     /**
-     * Checks whether the given {@code property} is the property explicitly set
-     * in this deployment configuration (not in it's parent config).
+     * Checks whether the given {@code property} is the property explicitly set in this deployment configuration (not in
+     * it's parent config).
      * <p>
-     * The deployment configuration consists of properties defined in the
-     * configuration itself and properties which are coming from the application
-     * configuration. The properties which are defined in the deployment
-     * configuration itself (own properties) should take precedence: their
-     * values should override the parent config properties values.
+     * The deployment configuration consists of properties defined in the configuration itself and properties which are
+     * coming from the application configuration. The properties which are defined in the deployment configuration
+     * itself (own properties) should take precedence: their values should override the parent config properties values.
      *
      * @param property
      *            a property name
-     * @return whether the {@code property} is explicitly set in the
-     *         configuration
+     * @return whether the {@code property} is explicitly set in the configuration
      */
     protected boolean isOwnProperty(String property) {
         return getApplicationProperty(getProperties()::get, property) != null;
@@ -319,8 +302,7 @@ public class PropertyDeploymentConfiguration
         return parentConfig;
     }
 
-    private Properties mergeProperties(ApplicationConfiguration config,
-            Properties properties) {
+    private Properties mergeProperties(ApplicationConfiguration config, Properties properties) {
         Properties result = new Properties();
         Enumeration<String> propertyNames = config.getPropertyNames();
         while (propertyNames.hasMoreElements()) {
@@ -331,8 +313,7 @@ public class PropertyDeploymentConfiguration
         return result;
     }
 
-    private static Map<String, String> filterStringProperties(
-            Properties properties) {
+    private static Map<String, String> filterStringProperties(Properties properties) {
         Map<String, String> result = new HashMap<>();
         for (Entry<Object, Object> entry : properties.entrySet()) {
             Object key = entry.getKey();

@@ -43,39 +43,33 @@ public class DevToolsWrapper {
     }
 
     /**
-     * Controls the throttling `Offline` option in DevTools via the
-     * corresponding Selenium API.
+     * Controls the throttling `Offline` option in DevTools via the corresponding Selenium API.
      *
      * @param isEnabled
      *            whether to enable the offline mode.
      */
     public void setOfflineEnabled(Boolean isEnabled) {
-        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty()));
-        sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
-                Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty()));
+        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+        sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1, Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty()));
     }
 
     /**
-     * Controls the `Disable cache` option in DevTools via the corresponding
-     * Selenium API.
+     * Controls the `Disable cache` option in DevTools via the corresponding Selenium API.
      *
      * @param isDisabled
      *            whether to disable the browser cache.
      */
     public void setCacheDisabled(Boolean isDisabled) {
-        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty()));
+        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
         sendToAllTargets(Network.setCacheDisabled(isDisabled));
     }
 
     /**
      * Creates a custom DevTools CDP connection if there is not one yet.
      *
-     * Note, there is already a CDP connection provided by {@link DevTools} but
-     * it allows sending commands only to the page session whereas we need to
-     * also send commands to service workers. Therefore a custom connection is
+     * Note, there is already a CDP connection provided by {@link DevTools} but it allows sending commands only to the
+     * page session whereas we need to also send commands to service workers. Therefore a custom connection is
      * necessary.
      */
     private void createConnectionIfThereIsNotOne() {
@@ -85,9 +79,8 @@ public class DevToolsWrapper {
     }
 
     /**
-     * Attaches to all the available targets by creating a session per each.
-     * These sessions can be later used for sending commands to the
-     * corresponding targets.
+     * Attaches to all the available targets by creating a session per each. These sessions can be later used for
+     * sending commands to the corresponding targets.
      *
      * Every target represents a certain browser page, service worker and etc.
      *
@@ -97,15 +90,10 @@ public class DevToolsWrapper {
     private void attachToAllTargets() {
         createConnectionIfThereIsNotOne();
 
-        connection
-                .sendAndWait(null, getDomains().target().getTargets(), timeout)
-                .stream()
-                .filter((target) -> !attachedTargets
-                        .containsKey(target.getTargetId()))
-                .forEach((target) -> {
+        connection.sendAndWait(null, getDomains().target().getTargets(), timeout).stream()
+                .filter((target) -> !attachedTargets.containsKey(target.getTargetId())).forEach((target) -> {
                     TargetID targetId = target.getTargetId();
-                    SessionID sessionId = connection.sendAndWait(null,
-                            getDomains().target().attachToTarget(targetId),
+                    SessionID sessionId = connection.sendAndWait(null, getDomains().target().attachToTarget(targetId),
                             timeout);
                     attachedTargets.put(targetId, sessionId);
                 });
@@ -123,8 +111,7 @@ public class DevToolsWrapper {
     }
 
     private DevTools getDevTools() {
-        WebDriver driver = new Augmenter()
-                .augment((RemoteWebDriver) this.driver);
+        WebDriver driver = new Augmenter().augment((RemoteWebDriver) this.driver);
         return ((HasDevTools) driver).getDevTools();
     }
 

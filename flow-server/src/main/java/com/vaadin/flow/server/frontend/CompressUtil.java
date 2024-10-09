@@ -43,8 +43,8 @@ public class CompressUtil {
     }
 
     /**
-     * Compress target directory and children into given target outfile. All
-     * files will be zipped and the targetDirectory will not be in the package.
+     * Compress target directory and children into given target outfile. All files will be zipped and the
+     * targetDirectory will not be in the package.
      *
      * @param targetDirectory
      *            directory content to compress
@@ -52,22 +52,17 @@ public class CompressUtil {
      *            file to compress directory content to
      */
     public static void compressDirectory(File targetDirectory, File outfile) {
-        try (ZipOutputStream zipOut = new ZipOutputStream(
-                new FileOutputStream(outfile))) {
+        try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(outfile))) {
 
             for (File child : targetDirectory.listFiles()) {
                 zip(child, child.getName(), zipOut);
             }
         } catch (IOException e) {
-            throw new CompressionException(
-                    "Failed to compress bundle files to '" + outfile.getPath()
-                            + "'",
-                    e);
+            throw new CompressionException("Failed to compress bundle files to '" + outfile.getPath() + "'", e);
         }
     }
 
-    private static void zip(File fileToZip, String fileName,
-            ZipOutputStream zipOut) throws IOException {
+    private static void zip(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
         if (fileToZip.isHidden()) {
             return;
         }
@@ -109,22 +104,19 @@ public class CompressUtil {
             return;
         }
         byte[] buffer = new byte[1024];
-        try (ZipInputStream zis = new ZipInputStream(
-                new FileInputStream(zip))) {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zip))) {
             ZipEntry zipEntry = zis.getNextEntry();
             while (zipEntry != null) {
                 File newFile = newFile(targetDirectory, zipEntry);
                 if (zipEntry.isDirectory()) {
                     if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        throw new IOException(
-                                "Failed to create directory " + newFile);
+                        throw new IOException("Failed to create directory " + newFile);
                     }
                 } else {
                     // fix for Windows-created archives
                     File parent = newFile.getParentFile();
                     if (!parent.isDirectory() && !parent.mkdirs()) {
-                        throw new IOException(
-                                "Failed to create directory " + parent);
+                        throw new IOException("Failed to create directory " + parent);
                     }
 
                     try (FileOutputStream fos = new FileOutputStream(newFile)) {
@@ -138,21 +130,18 @@ public class CompressUtil {
             }
             zis.closeEntry();
         } catch (IOException e) {
-            throw new CompressionException(
-                    "Failed to unpack '" + zip.getPath() + "'", e);
+            throw new CompressionException("Failed to unpack '" + zip.getPath() + "'", e);
         }
     }
 
-    private static File newFile(File destinationDir, ZipEntry zipEntry)
-            throws IOException {
+    private static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
         File destFile = new File(destinationDir, zipEntry.getName());
 
         String destDirPath = destinationDir.getCanonicalPath();
         String destFilePath = destFile.getCanonicalPath();
 
         if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: "
-                    + zipEntry.getName());
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
         }
 
         return destFile;
@@ -169,8 +158,7 @@ public class CompressUtil {
      * @throws IOException
      *             if an I/O error occurs
      */
-    public static String readFileContentFromZip(File zip, String filename)
-            throws IOException {
+    public static String readFileContentFromZip(File zip, String filename) throws IOException {
         try (ZipFile zipFile = new ZipFile(zip)) {
             ZipEntry entry = zipFile.getEntry(filename);
             if (entry == null) {

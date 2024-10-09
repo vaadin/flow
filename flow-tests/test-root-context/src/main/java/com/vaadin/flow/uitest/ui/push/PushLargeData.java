@@ -20,13 +20,11 @@ public abstract class PushLargeData extends AbstractTestViewWithLog {
     // 3 MB is enough for streaming to reconnect
     static final int DEFAULT_DATA_TO_PUSH = 3 * 1000 * 1000;
 
-    static final int DEFAULT_DURATION_MS = DEFAULT_DATA_TO_PUSH
-            / DEFAULT_SIZE_BYTES * DEFAULT_DELAY_MS;
+    static final int DEFAULT_DURATION_MS = DEFAULT_DATA_TO_PUSH / DEFAULT_SIZE_BYTES * DEFAULT_DELAY_MS;
 
     private Div dataLabel = new Div();
 
-    private final ExecutorService executor = Executors
-            .newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     protected Input dataSize;
 
@@ -65,11 +63,10 @@ public abstract class PushLargeData extends AbstractTestViewWithLog {
             Integer pushSize = Integer.parseInt(dataSize.getValue());
             Integer pushInterval = Integer.parseInt(interval.getValue());
             Integer pushDuration = Integer.parseInt(duration.getValue());
-            PushRunnable runnable = new PushRunnable(this, pushSize,
-                    pushInterval, pushDuration);
+            PushRunnable runnable = new PushRunnable(this, pushSize, pushInterval, pushDuration);
             executor.execute(runnable);
-            log("Starting push, size: " + pushSize + ", interval: "
-                    + pushInterval + "ms, duration: " + pushDuration + "ms");
+            log("Starting push, size: " + pushSize + ", interval: " + pushInterval + "ms, duration: " + pushDuration
+                    + "ms");
         });
         add(button, dataLabel);
     }
@@ -85,8 +82,7 @@ public abstract class PushLargeData extends AbstractTestViewWithLog {
         private Integer duration;
         private final PushLargeData pushLargeData;
 
-        public PushRunnable(PushLargeData pushLargeData, Integer size,
-                Integer interval, Integer duration) {
+        public PushRunnable(PushLargeData pushLargeData, Integer size, Integer interval, Integer duration) {
             this.size = size;
             this.interval = interval;
             this.duration = duration;
@@ -103,8 +99,7 @@ public abstract class PushLargeData extends AbstractTestViewWithLog {
                 pushLargeData.getUI().get().access(() -> {
                     // Using description as it is not rendered to the DOM
                     // immediately
-                    pushLargeData.getDataLabel()
-                            .setText(System.currentTimeMillis() + ": " + data);
+                    pushLargeData.getDataLabel().setText(System.currentTimeMillis() + ": " + data);
                     pushLargeData.log("Package " + idx + " pushed");
                 });
                 try {

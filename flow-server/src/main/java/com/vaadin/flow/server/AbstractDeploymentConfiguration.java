@@ -21,15 +21,15 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 /**
- * An abstract base class for DeploymentConfiguration implementations. This
- * class provides default implementation for common config properties.
+ * An abstract base class for DeploymentConfiguration implementations. This class provides default implementation for
+ * common config properties.
  *
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class AbstractDeploymentConfiguration extends
-        AbstractPropertyConfiguration implements DeploymentConfiguration {
+public abstract class AbstractDeploymentConfiguration extends AbstractPropertyConfiguration
+        implements DeploymentConfiguration {
 
     /**
      * Creates a new configuration based on {@code properties}.
@@ -43,8 +43,7 @@ public abstract class AbstractDeploymentConfiguration extends
 
     @Override
     public String getUIClassName() {
-        return getStringProperty(InitParameters.UI_PARAMETER,
-                UI.class.getName());
+        return getStringProperty(InitParameters.UI_PARAMETER, UI.class.getName());
     }
 
     @Override

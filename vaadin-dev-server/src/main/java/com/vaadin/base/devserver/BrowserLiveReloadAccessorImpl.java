@@ -24,21 +24,17 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
- * Default implementation for {@link BrowserLiveReloadAccessor} that stores the
- * instance in the Vaadin context.
+ * Default implementation for {@link BrowserLiveReloadAccessor} that stores the instance in the Vaadin context.
  */
-public class BrowserLiveReloadAccessorImpl
-        implements BrowserLiveReloadAccessor {
+public class BrowserLiveReloadAccessorImpl implements BrowserLiveReloadAccessor {
 
     @Override
     public BrowserLiveReload getLiveReload(VaadinContext context) {
         if (ApplicationConfiguration.get(context).isProductionMode()) {
-            getLogger().debug(
-                    "BrowserLiveReloadAccessImpl::getLiveReload is called in production mode.");
+            getLogger().debug("BrowserLiveReloadAccessImpl::getLiveReload is called in production mode.");
             return null;
         }
-        return context.getAttribute(BrowserLiveReload.class,
-                () -> new DebugWindowConnection(context));
+        return context.getAttribute(BrowserLiveReload.class, () -> new DebugWindowConnection(context));
     }
 
     @Override

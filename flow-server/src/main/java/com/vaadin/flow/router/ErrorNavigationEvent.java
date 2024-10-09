@@ -39,13 +39,12 @@ public class ErrorNavigationEvent extends NavigationEvent {
      * @param ui
      *            the UI in which the navigation occurs, not {@code null}
      * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
+     *            the type of user action that triggered this navigation event, not {@code null}
      * @param errorParameter
      *            parameter containing navigation error information
      */
-    public ErrorNavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, ErrorParameter<?> errorParameter) {
+    public ErrorNavigationEvent(Router router, Location location, UI ui, NavigationTrigger trigger,
+            ErrorParameter<?> errorParameter) {
         super(router, location, ui, trigger);
 
         this.errorParameter = errorParameter;
@@ -61,17 +60,15 @@ public class ErrorNavigationEvent extends NavigationEvent {
      * @param ui
      *            the UI in which the navigation occurs, not {@code null}
      * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
+     *            the type of user action that triggered this navigation event, not {@code null}
      * @param errorParameter
      *            parameter containing navigation error information
      * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
+     *            includes navigation state info including for example the scroll position and the complete href of the
+     *            RouterLink
      */
-    public ErrorNavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, ErrorParameter<?> errorParameter,
-            JsonValue state) {
+    public ErrorNavigationEvent(Router router, Location location, UI ui, NavigationTrigger trigger,
+            ErrorParameter<?> errorParameter, JsonValue state) {
         super(router, location, ui, trigger, state, false);
 
         this.errorParameter = errorParameter;

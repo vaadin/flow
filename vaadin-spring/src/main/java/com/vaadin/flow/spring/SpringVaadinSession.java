@@ -49,20 +49,16 @@ public class SpringVaadinSession extends VaadinSession {
      */
     public void fireSessionDestroy() {
         SessionDestroyEvent event = new SessionDestroyEvent(getService(), this);
-        destroyListeners.stream()
-                .forEach(listener -> listener.sessionDestroy(event));
+        destroyListeners.stream().forEach(listener -> listener.sessionDestroy(event));
         destroyListeners.clear();
     }
 
     /**
-     * Adds a listener that gets notified when the Vaadin service session is
-     * destroyed.
+     * Adds a listener that gets notified when the Vaadin service session is destroyed.
      * <p>
-     * No need to remove the listener since all listeners are removed
-     * automatically once session is destroyed
+     * No need to remove the listener since all listeners are removed automatically once session is destroyed
      * <p>
-     * The session being destroyed is locked and its UIs have been removed when
-     * the listeners are called.
+     * The session being destroyed is locked and its UIs have been removed when the listeners are called.
      *
      * @see VaadinService#addSessionInitListener(SessionInitListener)
      *

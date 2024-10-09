@@ -21,10 +21,8 @@ public class NavigationRpcHandlerTest {
     @Before
     public void setup() {
         ui = new UI();
-        historyStateChangeHandler = Mockito
-                .mock(History.HistoryStateChangeHandler.class);
-        ui.getPage().getHistory()
-                .setHistoryStateChangeHandler(historyStateChangeHandler);
+        historyStateChangeHandler = Mockito.mock(History.HistoryStateChangeHandler.class);
+        ui.getPage().getHistory().setHistoryStateChangeHandler(historyStateChangeHandler);
 
         ui.add(new RouterLink());
 
@@ -39,8 +37,7 @@ public class NavigationRpcHandlerTest {
         rpcHandler.handle(ui, invocation);
 
         Mockito.verify(historyStateChangeHandler, Mockito.times(1))
-                .onHistoryStateChange(
-                        Mockito.any(History.HistoryStateChangeEvent.class));
+                .onHistoryStateChange(Mockito.any(History.HistoryStateChangeEvent.class));
     }
 
     @Test
@@ -53,8 +50,7 @@ public class NavigationRpcHandlerTest {
         rpcHandler.handle(ui, invocation);
 
         Mockito.verify(historyStateChangeHandler, Mockito.times(1))
-                .onHistoryStateChange(
-                        Mockito.any(History.HistoryStateChangeEvent.class));
+                .onHistoryStateChange(Mockito.any(History.HistoryStateChangeEvent.class));
     }
 
     @Test
@@ -63,7 +59,6 @@ public class NavigationRpcHandlerTest {
         rpcHandler.handle(ui, invocation);
 
         Mockito.verify(historyStateChangeHandler, Mockito.times(1))
-                .onHistoryStateChange(
-                        Mockito.any(History.HistoryStateChangeEvent.class));
+                .onHistoryStateChange(Mockito.any(History.HistoryStateChangeEvent.class));
     }
 }

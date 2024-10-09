@@ -29,7 +29,6 @@ import java.util.function.BiPredicate;
  * @param <U>
  *            the type of the second input to the predicate
  */
-public interface SerializableBiPredicate<T, U>
-        extends BiPredicate<T, U>, Serializable {
+public interface SerializableBiPredicate<T, U> extends BiPredicate<T, U>, Serializable {
     // Only method inherited from BiPredicate
 }

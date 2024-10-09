@@ -29,38 +29,31 @@ public class VaadinServletConfigTest {
         ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
         servletContext = Mockito.mock(ServletContext.class);
 
-        Mockito.when(servletConfig.getServletContext())
-                .thenReturn(servletContext);
+        Mockito.when(servletConfig.getServletContext()).thenReturn(servletContext);
 
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-                .then(invocationOnMock -> attributeMap
-                        .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
-                invocationOnMock.getArguments()[0].toString(),
+                .then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
+        Mockito.doAnswer(invocationOnMock -> attributeMap.put(invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
                 .setAttribute(Mockito.anyString(), Mockito.any());
 
         properties = new HashMap<>();
-        properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
-                "true");
+        properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
         properties.put(InitParameters.FRONTEND_HOTDEPLOY, "false");
 
-        Mockito.when(servletConfig.getInitParameterNames())
-                .thenReturn(Collections.enumeration(properties.keySet()));
-        Mockito.when(servletConfig.getInitParameter(Mockito.anyString())).then(
-                invocation -> properties.get(invocation.getArguments()[0]));
+        Mockito.when(servletConfig.getInitParameterNames()).thenReturn(Collections.enumeration(properties.keySet()));
+        Mockito.when(servletConfig.getInitParameter(Mockito.anyString()))
+                .then(invocation -> properties.get(invocation.getArguments()[0]));
         config = new VaadinServletConfig(servletConfig);
     }
 
     @Test
     public void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections.list(config.getConfigParameterNames());
-        Assert.assertEquals(
-                "Context should return only keys defined in ServletContext",
-                properties.size(), list.size());
+        Assert.assertEquals("Context should return only keys defined in ServletContext", properties.size(),
+                list.size());
         for (String key : properties.keySet()) {
-            Assert.assertEquals(String.format(
-                    "Value should be same from context for key '%s'", key),
+            Assert.assertEquals(String.format("Value should be same from context for key '%s'", key),
                     properties.get(key), config.getConfigParameter(key));
         }
     }

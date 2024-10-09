@@ -43,11 +43,9 @@ import com.vaadin.flow.server.VaadinServlet;
 /**
  * Vaadin servlet configuration.
  * <p>
- * The configuration is used only when the Vaadin servlet is mapped to the root
- * ({@literal "/*"}) because in this case the servlet is mapped to
- * {@literal "/vaadinServlet/*"} instead of ({@literal "/*"}). It's done to make
- * possible to configure other Spring services (like endpoints) which have
- * overlapping path.
+ * The configuration is used only when the Vaadin servlet is mapped to the root ({@literal "/*"}) because in this case
+ * the servlet is mapped to {@literal "/vaadinServlet/*"} instead of ({@literal "/*"}). It's done to make possible to
+ * configure other Spring services (like endpoints) which have overlapping path.
  *
  *
  * @author Vaadin Ltd
@@ -61,8 +59,7 @@ public class VaadinServletConfiguration {
     public static final String EXCLUDED_URLS_PROPERTY = "vaadin.excludeUrls";
 
     /**
-     * Gets the excluded URLs in a way compatible with both plain Spring and
-     * Spring Boot.
+     * Gets the excluded URLs in a way compatible with both plain Spring and Spring Boot.
      *
      * @param environment
      *            the application environment
@@ -71,15 +68,12 @@ public class VaadinServletConfiguration {
     private static List<String> getExcludedUrls(Environment environment) {
         if (SpringUtil.isSpringBoot()) {
             try {
-                return (List<String>) Class.forName(
-                        "com.vaadin.flow.spring.VaadinConfigurationProperties")
-                        .getMethod("getExcludedUrls", Environment.class)
-                        .invoke(null, environment);
-            } catch (IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException | NoSuchMethodException
-                    | SecurityException | ClassNotFoundException e) {
-                LoggerFactory.getLogger(RootMappedCondition.class).error(
-                        "Unable to find excluded URLs from properties", e);
+                return (List<String>) Class.forName("com.vaadin.flow.spring.VaadinConfigurationProperties")
+                        .getMethod("getExcludedUrls", Environment.class).invoke(null, environment);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+                LoggerFactory.getLogger(RootMappedCondition.class).error("Unable to find excluded URLs from properties",
+                        e);
                 return null;
             }
         } else {
@@ -87,8 +81,7 @@ public class VaadinServletConfiguration {
             if (value == null || value.isEmpty()) {
                 return Collections.emptyList();
             } else {
-                return Arrays.stream(value.split(",")).map(url -> url.trim())
-                        .collect(Collectors.toList());
+                return Arrays.stream(value.split(",")).map(url -> url.trim()).collect(Collectors.toList());
             }
         }
     }
@@ -98,8 +91,7 @@ public class VaadinServletConfiguration {
         private AntPathMatcher matcher;
         private UrlPathHelper urlPathHelper = new UrlPathHelper();
 
-        public RootExcludeHandler(List<String> excludeUrls,
-                Controller vaadinForwardingController) {
+        public RootExcludeHandler(List<String> excludeUrls, Controller vaadinForwardingController) {
             this.excludeUrls = excludeUrls;
             matcher = new AntPathMatcher();
 
@@ -108,21 +100,16 @@ public class VaadinServletConfiguration {
             // This is /** and not /* so that it is not interpreted as a
             // "default handler"
             // and we can override the behavior in getHandlerInternal
-            setUrlMap(Collections.singletonMap("/**",
-                    vaadinForwardingController));
+            setUrlMap(Collections.singletonMap("/**", vaadinForwardingController));
         }
 
         @Override
-        protected Object getHandlerInternal(HttpServletRequest request)
-                throws Exception {
+        protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
             if (excludeUrls != null && !excludeUrls.isEmpty()) {
-                String requestPath = urlPathHelper
-                        .getPathWithinApplication(request);
+                String requestPath = urlPathHelper.getPathWithinApplication(request);
                 for (String pattern : excludeUrls) {
                     if (matcher.match(pattern, requestPath)) {
-                        getLogger().debug(
-                                "Ignoring request to {} excluded by {}",
-                                requestPath, pattern);
+                        getLogger().debug("Ignoring request to {} excluded by {}", requestPath, pattern);
                         return null;
                     }
                 }
@@ -137,16 +124,14 @@ public class VaadinServletConfiguration {
     }
 
     /**
-     * Makes an url handler mapping allowing to forward requests from a
-     * {@link DispatcherServlet} to {@link VaadinServlet}.
+     * Makes an url handler mapping allowing to forward requests from a {@link DispatcherServlet} to
+     * {@link VaadinServlet}.
      *
-     * @return an url handler mapping instance which forwards requests to vaadin
-     *         servlet
+     * @return an url handler mapping instance which forwards requests to vaadin servlet
      */
     @Bean
     public RootExcludeHandler vaadinRootMapping(Environment environment) {
-        return new RootExcludeHandler(getExcludedUrls(environment),
-                vaadinForwardingController());
+        return new RootExcludeHandler(getExcludedUrls(environment), vaadinForwardingController());
     }
 
     /**
@@ -157,8 +142,7 @@ public class VaadinServletConfiguration {
     @Bean
     public Controller vaadinForwardingController() {
         ServletForwardingController controller = new ServletForwardingController();
-        controller.setServletName(
-                ClassUtils.getShortNameAsProperty(SpringServlet.class));
+        controller.setServletName(ClassUtils.getShortNameAsProperty(SpringServlet.class));
         return controller;
     }
 

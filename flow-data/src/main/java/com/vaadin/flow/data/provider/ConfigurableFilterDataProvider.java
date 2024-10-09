@@ -16,8 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 /**
- * A data provider that supports programmatically setting a filter that will be
- * applied to all queries.
+ * A data provider that supports programmatically setting a filter that will be applied to all queries.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -29,15 +28,13 @@ package com.vaadin.flow.data.provider;
  * @param <C>
  *            the configurable filter type
  */
-public interface ConfigurableFilterDataProvider<T, Q, C>
-        extends DataProvider<T, Q> {
+public interface ConfigurableFilterDataProvider<T, Q, C> extends DataProvider<T, Q> {
 
     /**
      * Sets the filter to use for all queries handled by this data provider.
      *
      * @param filter
-     *            the filter to set, or <code>null</code> to clear any
-     *            previously set filter
+     *            the filter to set, or <code>null</code> to clear any previously set filter
      */
     void setFilter(C filter);
 

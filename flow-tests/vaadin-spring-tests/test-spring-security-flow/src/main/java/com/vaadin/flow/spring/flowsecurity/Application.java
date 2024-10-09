@@ -45,11 +45,8 @@ public class Application {
             }
 
             @Override
-            public String getTranslation(String key, Locale locale,
-                    Object... params) {
-                return messageSource.getMessage(key,
-                        (params != null ? Stream.of(params).toArray() : null),
-                        locale);
+            public String getTranslation(String key, Locale locale, Object... params) {
+                return messageSource.getMessage(key, (params != null ? Stream.of(params).toArray() : null), locale);
             }
         };
     }
@@ -57,8 +54,7 @@ public class Application {
     @Bean
     public MenuAccessControl customMenuAccessControl() {
         var menuAccessControl = new DefaultMenuAccessControl();
-        menuAccessControl.setPopulateClientSideMenu(
-                MenuAccessControl.PopulateClientMenu.ALWAYS);
+        menuAccessControl.setPopulateClientSideMenu(MenuAccessControl.PopulateClientMenu.ALWAYS);
         return menuAccessControl;
     }
 }

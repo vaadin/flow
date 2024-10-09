@@ -43,8 +43,7 @@ public class MockUI extends UI {
     private static VaadinSession findOrCreateSession() {
         VaadinSession session = VaadinSession.getCurrent();
         if (session == null) {
-            session = new AlwaysLockedVaadinSession(
-                    Mockito.mock(VaadinService.class));
+            session = new AlwaysLockedVaadinSession(Mockito.mock(VaadinService.class));
             VaadinSession.setCurrent(session);
         }
         return session;
@@ -61,12 +60,10 @@ public class MockUI extends UI {
 
     public static class MockVaadinSession extends VaadinSession {
         /*
-         * Used to make sure there's at least one reference to the mock session
-         * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
+         * Used to make sure there's at least one reference to the mock session while it's locked. This is used to
+         * prevent the session from being eaten by GC in tests where @Before creates a session and sets it as the
+         * current instance without keeping any direct reference to it. This pattern has a chance of leaking memory if
+         * the session is not unlocked in the right way, but it should be acceptable for testing use.
          */
         private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
 

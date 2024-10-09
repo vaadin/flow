@@ -16,8 +16,7 @@
 package com.vaadin.flow.server;
 
 /**
- * Defines the interface to handle exceptions thrown during the execution of a
- * FutureAccess.
+ * Defines the interface to handle exceptions thrown during the execution of a FutureAccess.
  *
  * @author Vaadin Ltd
  * @since 1.0

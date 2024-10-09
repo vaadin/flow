@@ -18,22 +18,17 @@ import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 
 /**
- * Publishes the annotated method so it can be invoked from the client side as
- * template event handlers.
+ * Publishes the annotated method so it can be invoked from the client side as template event handlers.
  *
  * @see EventData
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated Event handlers are not supported by Lit templates. Add a
- *             corresponding DOM listener from server side API instead or fire a
- *             custom event from client side template. Also you may handle an
- *             event directly on the client side and the server side may be
- *             called from this handler via {@code this.$server._some_method}.
- *             Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Event handlers are not supported by Lit templates. Add a corresponding DOM listener from server side API
+ *             instead or fire a custom event from client side template. Also you may handle an event directly on the
+ *             client side and the server side may be called from this handler via {@code this.$server._some_method}.
+ *             Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 @Retention(RetentionPolicy.RUNTIME)
@@ -42,8 +37,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 public @interface EventHandler {
 
     /**
-     * Controls event handling for the method from the client side to the server
-     * side when the element is disabled.
+     * Controls event handling for the method from the client side to the server side when the element is disabled.
      *
      * @return the property update mode for disabled element
      */

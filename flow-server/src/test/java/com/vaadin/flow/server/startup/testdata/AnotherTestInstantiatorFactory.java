@@ -38,8 +38,7 @@ public class AnotherTestInstantiatorFactory implements InstantiatorFactory {
         }
 
         @Override
-        public <T extends Component> T createComponent(
-                Class<T> componentClass) {
+        public <T extends Component> T createComponent(Class<T> componentClass) {
             return null;
         }
 

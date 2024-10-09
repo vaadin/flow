@@ -31,8 +31,8 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "view-with-all-events", layout = MainLayout.class)
-public class ViewWithAllEvents extends Div implements BeforeEnterObserver,
-        AfterNavigationObserver, HasUrlParameter<String>, BeforeLeaveObserver {
+public class ViewWithAllEvents extends Div
+        implements BeforeEnterObserver, AfterNavigationObserver, HasUrlParameter<String>, BeforeLeaveObserver {
     private Div logger;
 
     public ViewWithAllEvents() {
@@ -41,8 +41,7 @@ public class ViewWithAllEvents extends Div implements BeforeEnterObserver,
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         addLog("1 setParameter");
     }
 

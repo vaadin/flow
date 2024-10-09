@@ -38,8 +38,7 @@ public class InjectableLitElementInitializerTest {
 
     private Element element = ElementFactory.createDiv();
 
-    private InjectableLitElementInitializer initializer = new InjectableLitElementInitializer(
-            element, Component.class);
+    private InjectableLitElementInitializer initializer = new InjectableLitElementInitializer(element, Component.class);
 
     @Test
     public void initializeElement_setId_idIsSetAsAttribute() {
@@ -109,11 +108,9 @@ public class InjectableLitElementInitializerTest {
 
     @Test
     public void initializeElement_setStyle_styleIsSetAsAttribute() {
-        initializer.accept(
-                Collections.singletonMap("style", "width:100px;height:50px"));
+        initializer.accept(Collections.singletonMap("style", "width:100px;height:50px"));
 
-        Assert.assertEquals("width:100px;height:50px",
-                element.getAttribute("style"));
+        Assert.assertEquals("width:100px;height:50px", element.getAttribute("style"));
 
         TestComponent comp = new TestComponent(element);
         Assert.assertEquals("100px", comp.getStyle().get("width"));
@@ -124,8 +121,7 @@ public class InjectableLitElementInitializerTest {
     public void initializeElement_disabled_exceptionIsThrown() {
 
         expectedEx.expect(IllegalAttributeException.class);
-        expectedEx.expectMessage(
-                Matchers.containsString("element 'div' with id 'labelId'"));
+        expectedEx.expectMessage(Matchers.containsString("element 'div' with id 'labelId'"));
 
         Map<String, String> attributes = new HashMap<>();
         attributes.put("disabled", Boolean.TRUE.toString());

@@ -29,13 +29,11 @@ public class CompositeTest {
     public static class MyTemplate extends PolymerTemplate<TemplateModel> {
 
         public MyTemplate() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='div'></dom-module>")));
+            super((clazz, tag, service) -> new TemplateData("", Jsoup.parse("<dom-module id='div'></dom-module>")));
         }
     }
 
-    public static class KeyNotifierComposite extends Composite<MyTemplate>
-            implements KeyNotifier {
+    public static class KeyNotifierComposite extends Composite<MyTemplate> implements KeyNotifier {
 
         @Override
         protected MyTemplate initContent() {
@@ -54,11 +52,9 @@ public class CompositeTest {
     public void setup() {
         service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
     }
 
     @After

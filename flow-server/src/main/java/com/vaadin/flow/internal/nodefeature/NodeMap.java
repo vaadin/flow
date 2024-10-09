@@ -114,14 +114,12 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    private static class HashMapValues extends HashMap<String, Serializable>
-            implements Values {
+    private static class HashMapValues extends HashMap<String, Serializable> implements Values {
 
         public HashMapValues(Values previousValues) {
             super(previousValues == null ? 0 : previousValues.size());
             if (previousValues != null) {
-                previousValues.keySet().forEach(
-                        key -> super.put(key, previousValues.get(key)));
+                previousValues.keySet().forEach(key -> super.put(key, previousValues.get(key)));
             }
         }
 
@@ -162,8 +160,7 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Stores a value with the given key, replacing any value previously stored
-     * with the same key.
+     * Stores a value with the given key, replacing any value previously stored with the same key.
      *
      * @param key
      *            the key to use
@@ -175,8 +172,7 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Stores a value with the given key, replacing any value previously stored
-     * with the same key.
+     * Stores a value with the given key, replacing any value previously stored with the same key.
      *
      * @param key
      *            the key to use
@@ -184,11 +180,9 @@ public abstract class NodeMap extends NodeFeature {
      *            the value to store
      * @param emitChange
      *            true to create a change event for the client side
-     * @return the previous value, or <code>null</code> if there was no previous
-     *         value
+     * @return the previous value, or <code>null</code> if there was no previous value
      */
-    protected Serializable put(String key, Serializable value,
-            boolean emitChange) {
+    protected Serializable put(String key, Serializable value, boolean emitChange) {
         Serializable oldValue = get(key);
         if (!producePutChange(key, contains(key), value)) {
             return oldValue;
@@ -221,8 +215,8 @@ public abstract class NodeMap extends NodeFeature {
      *
      * @param key
      *            the key to get a value for
-     * @return the value corresponding to the key; <code>null</code> if there is
-     *         no value stored, or if <code>null</code> is stored as a value
+     * @return the value corresponding to the key; <code>null</code> if there is no value stored, or if
+     *         <code>null</code> is stored as a value
      */
     protected Serializable get(String key) {
         setAccessed(key);
@@ -233,16 +227,15 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Gets the value corresponding to the given key, or the given default value
-     * if no value is stored for the given key or the value is null.
+     * Gets the value corresponding to the given key, or the given default value if no value is stored for the given key
+     * or the value is null.
      *
      * @param key
      *            the key to get a value for
      * @param defaultValue
      *            the value to return if no value is stored for the given key
-     * @return the value corresponding to the key or the given
-     *         {@code defaultValue} if no value is stored for the key or the
-     *         stored value is null
+     * @return the value corresponding to the key or the given {@code defaultValue} if no value is stored for the key or
+     *         the stored value is null
      */
     protected String getOrDefault(String key, String defaultValue) {
         if (contains(key)) {
@@ -257,16 +250,15 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Gets the value corresponding to the given key, or the given default value
-     * if no value is stored for the given key or the value is null.
+     * Gets the value corresponding to the given key, or the given default value if no value is stored for the given key
+     * or the value is null.
      *
      * @param key
      *            the key to get a value for
      * @param defaultValue
      *            the value to return if no value is stored for the given key
-     * @return the value corresponding to the key or the given
-     *         {@code defaultValue} if no value is stored for the key or the
-     *         stored value is null
+     * @return the value corresponding to the key or the given {@code defaultValue} if no value is stored for the key or
+     *         the stored value is null
      */
     protected int getOrDefault(String key, int defaultValue) {
         if (contains(key)) {
@@ -281,16 +273,15 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Gets the value corresponding to the given key, or the given default value
-     * if no value is stored for the given key or the value is null.
+     * Gets the value corresponding to the given key, or the given default value if no value is stored for the given key
+     * or the value is null.
      *
      * @param key
      *            the key to get a value for
      * @param defaultValue
      *            the value to return if no value is stored for the given key
-     * @return the value corresponding to the key or the given
-     *         {@code defaultValue} if no value is stored for the key or the
-     *         stored value is null
+     * @return the value corresponding to the key or the given {@code defaultValue} if no value is stored for the key or
+     *         the stored value is null
      */
     protected boolean getOrDefault(String key, boolean defaultValue) {
         if (contains(key)) {
@@ -321,8 +312,7 @@ public abstract class NodeMap extends NodeFeature {
      *
      * @param key
      *            the key to check
-     * @return <code>true</code> if there is a value stored; <code>false</code>
-     *         if no value is stored
+     * @return <code>true</code> if there is a value stored; <code>false</code> if no value is stored
      */
     protected boolean contains(String key) {
         setAccessed(key);
@@ -412,8 +402,7 @@ public abstract class NodeMap extends NodeFeature {
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
         boolean hasChanges = false;
-        for (Entry<String, Serializable> entry : getChangeTracker()
-                .entrySet()) {
+        for (Entry<String, Serializable> entry : getChangeTracker().entrySet()) {
             String key = entry.getKey();
             Serializable value = entry.getValue();
             boolean containsNow = values != null && values.containsKey(key);
@@ -421,8 +410,7 @@ public abstract class NodeMap extends NodeFeature {
             if (containedEarlier && !containsNow) {
                 collector.accept(new MapRemoveChange(this, key));
                 hasChanges = true;
-            } else if (containsNow
-                    && producePutChange(key, containedEarlier, value)) {
+            } else if (containsNow && producePutChange(key, containedEarlier, value)) {
                 Object currentValue = values.get(key);
                 // New or changed value
                 collector.accept(new MapPutChange(this, key, currentValue));
@@ -460,16 +448,13 @@ public abstract class NodeMap extends NodeFeature {
         }
         assert !values.isEmpty();
 
-        values.streamValues().filter(v -> v instanceof StateNode)
-                .forEach(v -> action.accept((StateNode) v));
+        values.streamValues().filter(v -> v instanceof StateNode).forEach(v -> action.accept((StateNode) v));
     }
 
     /**
-     * Receives a value update from the client. The map value is updated without
-     * creating a change record since the client already knows the current
-     * value. The value is only updated if
-     * {@link #mayUpdateFromClient(String, Serializable)} has been overridden to
-     * accept the value.
+     * Receives a value update from the client. The map value is updated without creating a change record since the
+     * client already knows the current value. The value is only updated if
+     * {@link #mayUpdateFromClient(String, Serializable)} has been overridden to accept the value.
      *
      * @param key
      *            the key to use
@@ -478,25 +463,23 @@ public abstract class NodeMap extends NodeFeature {
      */
     public void updateFromClient(String key, Serializable value) {
         if (!mayUpdateFromClient(key, value)) {
-            throw new IllegalArgumentException(String.format(
-                    "Feature '%s' doesn't allow the client to update '%s'",
-                    getClass().getName(), key));
+            throw new IllegalArgumentException(
+                    String.format("Feature '%s' doesn't allow the client to update '%s'", getClass().getName(), key));
         }
 
         put(key, value, false);
     }
 
     /**
-     * Checks whether the client is allowed to store the given value with the
-     * given key. Always returns <code>false</code> by default.
+     * Checks whether the client is allowed to store the given value with the given key. Always returns
+     * <code>false</code> by default.
      *
      * @param key
      *            the key to use
      * @param value
      *            the value to store
-     * @return <code>true</code> if the value update is accepted,
-     *         <code>false</code> if the value should not be allowed to be
-     *         updated
+     * @return <code>true</code> if the value update is accepted, <code>false</code> if the value should not be allowed
+     *         to be updated
      */
     protected boolean mayUpdateFromClient(String key, Serializable value) {
         return false;
@@ -513,8 +496,7 @@ public abstract class NodeMap extends NodeFeature {
      *            the new value for the {@code key}
      * @return
      */
-    protected boolean producePutChange(String key, boolean hadValueEarlier,
-            Serializable newValue) {
+    protected boolean producePutChange(String key, boolean hadValueEarlier, Serializable newValue) {
         return !hadValueEarlier || !Objects.equals(newValue, values.get(key));
     }
 

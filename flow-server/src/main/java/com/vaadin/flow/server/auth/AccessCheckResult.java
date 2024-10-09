@@ -20,23 +20,18 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * A representation of the access check result, potentially providing deny
- * reason.
+ * A representation of the access check result, potentially providing deny reason.
  */
 public class AccessCheckResult implements Serializable {
 
     /**
-     * A result instance informing that the navigation to the target view is
-     * allowed for the current user.
+     * A result instance informing that the navigation to the target view is allowed for the current user.
      */
-    private static final AccessCheckResult ALLOW = new AccessCheckResult(
-            AccessCheckDecision.ALLOW, null);
+    private static final AccessCheckResult ALLOW = new AccessCheckResult(AccessCheckDecision.ALLOW, null);
     /**
-     * A result instance informing that the checker cannot take a decision based
-     * on the given navigation information.
+     * A result instance informing that the checker cannot take a decision based on the given navigation information.
      */
-    private static final AccessCheckResult NEUTRAL = new AccessCheckResult(
-            AccessCheckDecision.NEUTRAL, null);
+    private static final AccessCheckResult NEUTRAL = new AccessCheckResult(AccessCheckDecision.NEUTRAL, null);
     private final String reason;
 
     private final AccessCheckDecision decision;
@@ -53,10 +48,8 @@ public class AccessCheckResult implements Serializable {
         if (decision == null) {
             throw new IllegalArgumentException("Decision must not be null");
         }
-        if ((decision == AccessCheckDecision.DENY
-                || decision == AccessCheckDecision.REJECT) && reason == null) {
-            throw new IllegalArgumentException(
-                    decision.name() + " requires a not null reason");
+        if ((decision == AccessCheckDecision.DENY || decision == AccessCheckDecision.REJECT) && reason == null) {
+            throw new IllegalArgumentException(decision.name() + " requires a not null reason");
         }
         this.decision = decision;
         this.reason = reason;
@@ -91,8 +84,7 @@ public class AccessCheckResult implements Serializable {
             return false;
         }
         AccessCheckResult result = (AccessCheckResult) o;
-        return Objects.equals(reason, result.reason)
-                && decision == result.decision;
+        return Objects.equals(reason, result.reason) && decision == result.decision;
     }
 
     @Override
@@ -102,33 +94,28 @@ public class AccessCheckResult implements Serializable {
 
     @Override
     public String toString() {
-        return "Access decision: " + decision
-                + (reason != null ? (". " + reason) : "");
+        return "Access decision: " + decision + (reason != null ? (". " + reason) : "");
     }
 
     /**
      * Create a result instance for the provided decision and reason.
      * <p>
      * </p>
-     * The {@code reason} cannot be {@literal null} for
-     * {@link AccessCheckDecision#DENY} and {@link AccessCheckDecision#REJECT}.
-     * For {@link AccessCheckDecision#ALLOW} the reason is ignored.
+     * The {@code reason} cannot be {@literal null} for {@link AccessCheckDecision#DENY} and
+     * {@link AccessCheckDecision#REJECT}. For {@link AccessCheckDecision#ALLOW} the reason is ignored.
      *
      * @param decision
      *            the decision for this result, never {@literal null}.
      * @param reason
-     *            a message explaining why the current decision has been taken.
-     *            Useful for debugging purposes.
+     *            a message explaining why the current decision has been taken. Useful for debugging purposes.
      * @return a result instance for given decision and reason.
      */
-    public static AccessCheckResult create(AccessCheckDecision decision,
-            String reason) {
+    public static AccessCheckResult create(AccessCheckDecision decision, String reason) {
         return new AccessCheckResult(decision, reason);
     }
 
     /**
-     * Create a result instance informing that the navigation to the target view
-     * is allowed for the current user.
+     * Create a result instance informing that the navigation to the target view is allowed for the current user.
      *
      * @return a {@link AccessCheckDecision#ALLOW} result instance.
      */
@@ -137,8 +124,8 @@ public class AccessCheckResult implements Serializable {
     }
 
     /**
-     * Create a result instance informing that the checker cannot take a
-     * decision based on the given navigation information.
+     * Create a result instance informing that the checker cannot take a decision based on the given navigation
+     * information.
      *
      * @return a {@link AccessCheckDecision#NEUTRAL} result instance.
      */
@@ -147,12 +134,10 @@ public class AccessCheckResult implements Serializable {
     }
 
     /**
-     * Create a result instance informing that the navigation to the target view
-     * is denied for the current user.
+     * Create a result instance informing that the navigation to the target view is denied for the current user.
      *
      * @param reason
-     *            a message explaining why the navigation has been denied.
-     *            Useful for debugging purposes.
+     *            a message explaining why the navigation has been denied. Useful for debugging purposes.
      * @return a {@link AccessCheckDecision#DENY} result instance.
      */
     public static AccessCheckResult deny(String reason) {
@@ -160,13 +145,12 @@ public class AccessCheckResult implements Serializable {
     }
 
     /**
-     * Create a result instance informing that the navigation to the target view
-     * is denied for the current user because of a misconfiguration or a
-     * critical development time error.
+     * Create a result instance informing that the navigation to the target view is denied for the current user because
+     * of a misconfiguration or a critical development time error.
      *
      * @param reason
-     *            a message explaining why the navigation has been denied and
-     *            the critical issue encountered. Useful for debugging purposes.
+     *            a message explaining why the navigation has been denied and the critical issue encountered. Useful for
+     *            debugging purposes.
      * @return a {@link AccessCheckDecision#REJECT} result instance.
      */
     public static AccessCheckResult reject(String reason) {

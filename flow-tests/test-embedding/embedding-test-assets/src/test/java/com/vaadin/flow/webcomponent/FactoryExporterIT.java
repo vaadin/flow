@@ -36,7 +36,7 @@ public class FactoryExporterIT extends ChromeBrowserTest implements HasById {
         waitForElementVisible(By.id("interface"));
         WebElement paragraph = byId("interface", "paragraph");
 
-        Assert.assertNotNull("Web component exported by interface based "
-                + "exporter should have been upgraded", paragraph);
+        Assert.assertNotNull("Web component exported by interface based " + "exporter should have been upgraded",
+                paragraph);
     }
 }

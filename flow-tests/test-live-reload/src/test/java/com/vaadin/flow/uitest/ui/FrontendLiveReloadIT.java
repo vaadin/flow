@@ -37,29 +37,23 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         open();
 
         // when: the frontend code is updated
-        WebElement codeField = findElement(
-                By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
+        WebElement codeField = findElement(By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
         String oldCode = getValue(codeField);
-        String newCode = oldCode.replace("Custom component contents",
-                "Updated component contents");
+        String newCode = oldCode.replace("Custom component contents", "Updated component contents");
         codeField.clear();
         codeField.sendKeys(newCode);
 
-        waitForElementPresent(
-                By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
-        WebElement liveReloadTrigger = findElement(
-                By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
+        waitForElementPresent(By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
+        WebElement liveReloadTrigger = findElement(By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         liveReloadTrigger.click();
 
         // when: the page has reloaded
         waitForLiveReload();
 
         // then: the frontend changes are visible in the DOM
-        TestBenchElement customComponent = $("*")
-                .id(FrontendLiveReloadView.CUSTOM_COMPONENT);
+        TestBenchElement customComponent = $("*").id(FrontendLiveReloadView.CUSTOM_COMPONENT);
         TestBenchElement embeddedDiv = customComponent.$("*").id("custom-div");
-        Assert.assertEquals("Updated component contents",
-                embeddedDiv.getText());
+        Assert.assertEquals("Updated component contents", embeddedDiv.getText());
     }
 
     @Test
@@ -67,14 +61,12 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         open();
 
         // when: a webpack error occurs during frontend file edit
-        WebElement codeField = findElement(
-                By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
+        WebElement codeField = findElement(By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
         String oldCode = getValue(codeField);
         String erroneousCode = "{" + oldCode;
         codeField.clear();
         codeField.sendKeys(erroneousCode); // illegal TS
-        WebElement insertWebpackError = findElement(
-                By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
+        WebElement insertWebpackError = findElement(By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         insertWebpackError.click();
 
         // then: an error box is shown
@@ -90,8 +82,7 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
     }
 
     private String getValue(WebElement element) {
-        Object result = getCommandExecutor()
-                .executeScript("return arguments[0].value;", element);
+        Object result = getCommandExecutor().executeScript("return arguments[0].value;", element);
         return result == null ? "" : result.toString();
     }
 

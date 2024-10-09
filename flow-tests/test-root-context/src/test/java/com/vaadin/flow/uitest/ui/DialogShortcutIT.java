@@ -26,10 +26,8 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     public void init() {
         open();
         eventLog = $(DivElement.class).id(DialogShortcutView.EVENT_LOG_ID);
-        openDialogButton = $(NativeButtonElement.class)
-                .id(DialogShortcutView.OPEN_BUTTON);
-        uiLevelButton = $(NativeButtonElement.class)
-                .id(DialogShortcutView.UI_BUTTON);
+        openDialogButton = $(NativeButtonElement.class).id(DialogShortcutView.OPEN_BUTTON);
+        uiLevelButton = $(NativeButtonElement.class).id(DialogShortcutView.UI_BUTTON);
         dialogCounter = new AtomicInteger(-1);
     }
 
@@ -71,8 +69,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         validateShortcutEvent(1, 2, DialogShortcutView.UI_BUTTON);
 
         closeDialog(dialogIndex);
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(DialogShortcutView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(DialogShortcutView.UI_BUTTON));
         validateLatestShortcutEvent(4, DialogShortcutView.UI_BUTTON);
     }
 
@@ -133,8 +130,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         final InputTextElement dialogInput = getDialogInput(firstDialogIndex);
         pressShortcutKey(dialogInput);
         validateLatestDialogShortcut(0, firstDialogIndex);
-        Assert.assertNotEquals(
-                "Entered shortcut key should not be visible in input due to prevent default",
+        Assert.assertNotEquals("Entered shortcut key should not be visible in input due to prevent default",
                 DialogShortcutView.KEY_STRING, dialogInput.getValue());
 
         // use another key
@@ -142,23 +138,20 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         dialogInput.sendKeys("fooxbar");
         // only x triggers event and value changes
         validateLatestDialogShortcut(1, firstDialogIndex);
-        Assert.assertEquals("Entered value should be visible in input",
-                "foobar", dialogInput.getValue());
+        Assert.assertEquals("Entered value should be visible in input", "foobar", dialogInput.getValue());
     }
 
     // #10362
     @Test
     public void shortcutAddedWithAllowDefault_inputFocused_allKeysAcceptedToInput() {
-        $(NativeButtonElement.class)
-                .id(DialogShortcutView.ALLOW_BROWSER_DEFAULT_BUTTON).click();
+        $(NativeButtonElement.class).id(DialogShortcutView.ALLOW_BROWSER_DEFAULT_BUTTON).click();
         final int firstDialogIndex = openNewDialog();
         listenToShortcutOnDialog(firstDialogIndex);
 
         final InputTextElement dialogInput = getDialogInput(firstDialogIndex);
         pressShortcutKey(dialogInput);
         validateLatestDialogShortcut(0, firstDialogIndex);
-        Assert.assertEquals(
-                "Entered shortcut key should be visible in input due to allow default",
+        Assert.assertEquals("Entered shortcut key should be visible in input due to allow default",
                 DialogShortcutView.KEY_STRING, dialogInput.getValue());
         dialogInput.clear();
 
@@ -166,8 +159,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
         dialogInput.sendKeys("foo" + DialogShortcutView.KEY_STRING + "bar");
         // only x triggers event and value changes
         validateLatestDialogShortcut(1, firstDialogIndex);
-        Assert.assertEquals("Entered value should be visible in input",
-                "foo" + DialogShortcutView.KEY_STRING + "bar",
+        Assert.assertEquals("Entered value should be visible in input", "foo" + DialogShortcutView.KEY_STRING + "bar",
                 dialogInput.getValue());
     }
 
@@ -181,29 +173,21 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     }
 
     private void closeDialog(int dialogIndex) {
-        $(NativeButtonElement.class)
-                .id(DialogShortcutView.DIALOG_CLOSE_BUTTON + dialogIndex)
-                .click();
+        $(NativeButtonElement.class).id(DialogShortcutView.DIALOG_CLOSE_BUTTON + dialogIndex).click();
     }
 
-    protected void validateLatestDialogShortcut(int eventCounter,
-            int dialogId) {
-        validateShortcutEvent(0, eventCounter,
-                DialogShortcutView.DIALOG_ID + dialogId);
+    protected void validateLatestDialogShortcut(int eventCounter, int dialogId) {
+        validateShortcutEvent(0, eventCounter, DialogShortcutView.DIALOG_ID + dialogId);
     }
 
-    protected void validateLatestShortcutEvent(int eventCounter,
-            String eventSourceId) {
+    protected void validateLatestShortcutEvent(int eventCounter, String eventSourceId) {
         validateShortcutEvent(0, eventCounter, eventSourceId);
     }
 
-    private void validateShortcutEvent(int indexFromTop, int eventCounter,
-            String eventSourceId) {
-        final WebElement latestEvent = waitUntil(driver -> eventLog.findElement(
-                By.xpath(String.format("div[%d]", indexFromTop + 1))));
-        Assert.assertEquals(
-                "Invalid latest event with " + indexFromTop + ":" + ":"
-                        + eventSourceId,
+    private void validateShortcutEvent(int indexFromTop, int eventCounter, String eventSourceId) {
+        final WebElement latestEvent = waitUntil(
+                driver -> eventLog.findElement(By.xpath(String.format("div[%d]", indexFromTop + 1))));
+        Assert.assertEquals("Invalid latest event with " + indexFromTop + ":" + ":" + eventSourceId,
                 eventCounter + "-" + eventSourceId, latestEvent.getText());
     }
 
@@ -213,32 +197,22 @@ public class DialogShortcutIT extends ChromeBrowserTest {
     }
 
     protected InputTextElement getDialogInput(int dialogIndex) {
-        return $(DivElement.class)
-                .id(DialogShortcutView.CONTENT_ID + dialogIndex)
-                .$(InputTextElement.class).first();
+        return $(DivElement.class).id(DialogShortcutView.CONTENT_ID + dialogIndex).$(InputTextElement.class).first();
     }
 
     private void listenToShortcutOnUI(int dialogIndex) {
-        $(NativeButtonElement.class)
-                .id(DialogShortcutView.LISTEN_ON_UI_BUTTON + dialogIndex)
-                .click();
+        $(NativeButtonElement.class).id(DialogShortcutView.LISTEN_ON_UI_BUTTON + dialogIndex).click();
     }
 
     protected void listenToShortcutOnDialog(int dialogIndex) {
-        $(NativeButtonElement.class)
-                .id(DialogShortcutView.LISTEN_ON_DIALOG_BUTTON + dialogIndex)
-                .click();
+        $(NativeButtonElement.class).id(DialogShortcutView.LISTEN_ON_DIALOG_BUTTON + dialogIndex).click();
     }
 
     private void listenToButtonShortcutOnUI(int dialogIndex) {
-        $(NativeButtonElement.class)
-                .id(DialogShortcutView.LISTEN_CLICK_ON_UI_BUTTON + dialogIndex)
-                .click();
+        $(NativeButtonElement.class).id(DialogShortcutView.LISTEN_CLICK_ON_UI_BUTTON + dialogIndex).click();
     }
 
     private void listenToButtonShortcutOnDialog(int dialogIndex) {
-        $(NativeButtonElement.class).id(
-                DialogShortcutView.LISTEN_CLICK_ON_DIALOG_BUTTON + dialogIndex)
-                .click();
+        $(NativeButtonElement.class).id(DialogShortcutView.LISTEN_CLICK_ON_DIALOG_BUTTON + dialogIndex).click();
     }
 }

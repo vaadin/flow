@@ -36,34 +36,30 @@ public class VaadinConfigurationProperties {
     /**
      * Gets the url mapping using the given environment.
      *
-     * This is needed only when VaadinConfigurationProperties is not available
-     * for injection, e.g. in a condition.
+     * This is needed only when VaadinConfigurationProperties is not available for injection, e.g. in a condition.
      *
      * @param environment
      *            the application environment
      * @return the url mapping or null if none is defined
      */
     public static String getUrlMapping(Environment environment) {
-        return Binder.get(environment)
-                .bind("vaadin", VaadinConfigurationProperties.class)
+        return Binder.get(environment).bind("vaadin", VaadinConfigurationProperties.class)
                 .map(conf -> conf.getUrlMapping()).orElse(null);
     }
 
     /**
      * Gets the excluded URLs using the given environment.
      *
-     * This is needed only when VaadinConfigurationProperties is not available
-     * for injection, e.g. when using Spring without Boot.
+     * This is needed only when VaadinConfigurationProperties is not available for injection, e.g. when using Spring
+     * without Boot.
      *
      * @param environment
      *            the application environment
      * @return the excluded URLs or null if none is defined
      */
     public static List<String> getExcludedUrls(Environment environment) {
-        return Binder.get(environment)
-                .bind("vaadin", VaadinConfigurationProperties.class)
-                .map(VaadinConfigurationProperties::getExcludeUrls)
-                .orElse(null);
+        return Binder.get(environment).bind("vaadin", VaadinConfigurationProperties.class)
+                .map(VaadinConfigurationProperties::getExcludeUrls).orElse(null);
     }
 
     /**
@@ -122,27 +118,23 @@ public class VaadinConfigurationProperties {
     private boolean launchBrowser = false;
 
     /**
-     * Timeout until a new browser should be launched on startup when in
-     * development mode.
+     * Timeout until a new browser should be launched on startup when in development mode.
      */
     private int launchBrowserDelay = 30;
 
     /**
-     * URL patterns that should not be handled by the Vaadin servlet when mapped
-     * to the context root.
+     * URL patterns that should not be handled by the Vaadin servlet when mapped to the context root.
      */
     private List<String> excludeUrls;
 
     /**
-     * Enables class scan caching between reloads when using Spring Boot
-     * DevTools.
+     * Enables class scan caching between reloads when using Spring Boot DevTools.
      */
     private boolean devmodeCaching = true;
 
     public static class Frontend {
         /**
-         * Whether a frontend development server (Vite) is used in development
-         * mode or not.
+         * Whether a frontend development server (Vite) is used in development mode or not.
          */
         private boolean hotdeploy = false;
 
@@ -182,8 +174,7 @@ public class VaadinConfigurationProperties {
          * Enables/disabled pnpm support.
          *
          * @param enable
-         *            if {@code true} then pnpm support is enabled, otherwise
-         *            it's disabled
+         *            if {@code true} then pnpm support is enabled, otherwise it's disabled
          *
          */
         public void setEnable(boolean enable) {
@@ -209,8 +200,7 @@ public class VaadinConfigurationProperties {
          * Enables/disabled bun support.
          *
          * @param enable
-         *            if {@code true} then bun support is enabled, otherwise
-         *            it's disabled
+         *            if {@code true} then bun support is enabled, otherwise it's disabled
          *
          */
         public void setEnable(boolean enable) {
@@ -236,8 +226,7 @@ public class VaadinConfigurationProperties {
          * Enables/disabled react support.
          *
          * @param enable
-         *            if {@code true} then react support is enabled, otherwise
-         *            it's disabled
+         *            if {@code true} then react support is enabled, otherwise it's disabled
          *
          */
         public void setEnable(boolean enable) {
@@ -248,16 +237,14 @@ public class VaadinConfigurationProperties {
 
     public static class Devmode {
         /**
-         * A comma separated list of IP addresses, potentially with wildcards,
-         * which can connect to the dev tools. If not specified, only localhost
-         * connections are allowed.
+         * A comma separated list of IP addresses, potentially with wildcards, which can connect to the dev tools. If
+         * not specified, only localhost connections are allowed.
          */
         private String hostsAllowed = "";
 
         /**
-         * The name of the custom HTTP header that contains the client IP
-         * address. If not specified, {@literal X-Forwarded-For} will be
-         * checked.
+         * The name of the custom HTTP header that contains the client IP address. If not specified,
+         * {@literal X-Forwarded-For} will be checked.
          */
         private String remoteAddressHeader;
 
@@ -282,31 +269,28 @@ public class VaadinConfigurationProperties {
         }
 
         /**
-         * Gets the name of the custom HTTP header that contains the client IP
-         * address that is checked to allow access to the dev mode server.
+         * Gets the name of the custom HTTP header that contains the client IP address that is checked to allow access
+         * to the dev mode server.
          *
-         * @return the name of the custom HTTP header that contains the client
-         *         IP address that is checked to allow access to the dev mode
-         *         server.
+         * @return the name of the custom HTTP header that contains the client IP address that is checked to allow
+         *         access to the dev mode server.
          */
         public String getRemoteAddressHeader() {
             return remoteAddressHeader;
         }
 
         /**
-         * Sets the name of the custom HTTP header that contains the client IP
-         * address that is checked to allow access to the dev mode server.
+         * Sets the name of the custom HTTP header that contains the client IP address that is checked to allow access
+         * to the dev mode server.
          *
-         * The HTTP header is supposed to contain a single address, and the HTTP
-         * request to have a single occurrence of the header.
+         * The HTTP header is supposed to contain a single address, and the HTTP request to have a single occurrence of
+         * the header.
          *
-         * If not specified, remote address are read from the
-         * {@literal X-Forwarded-For} header.
+         * If not specified, remote address are read from the {@literal X-Forwarded-For} header.
          *
          * @param remoteAddressHeader
-         *            the name of the custom HTTP header that contains the
-         *            client IP address that is checked to allow access to the
-         *            dev mode server.
+         *            the name of the custom HTTP header that contains the client IP address that is checked to allow
+         *            access to the dev mode server.
          */
         public void setRemoteAddressHeader(String remoteAddressHeader) {
             this.remoteAddressHeader = remoteAddressHeader;
@@ -354,10 +338,9 @@ public class VaadinConfigurationProperties {
     /**
      * Returns if servlet is loaded on startup.
      * <p>
-     * If the servlet is not loaded on startup then the first request to the
-     * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * If the servlet is not loaded on startup then the first request to the server might be incorrectly handled by
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a public view will be denied instead of
+     * allowed.
      *
      * @return if servlet is loaded on startup
      */
@@ -368,70 +351,59 @@ public class VaadinConfigurationProperties {
     /**
      * Sets whether servlet is loaded on startup.
      * <p>
-     * If the servlet is not loaded on startup then the first request to the
-     * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * If the servlet is not loaded on startup then the first request to the server might be incorrectly handled by
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a public view will be denied instead of
+     * allowed.
      *
      * @param loadOnStartup
-     *            {@code true} to load the servlet on startup, {@code false}
-     *            otherwise
+     *            {@code true} to load the servlet on startup, {@code false} otherwise
      */
     public void setLoadOnStartup(boolean loadOnStartup) {
         this.loadOnStartup = loadOnStartup;
     }
 
     /**
-     * Returns if a browser should be launched on startup when in development
-     * mode.
+     * Returns if a browser should be launched on startup when in development mode.
      * <p>
      *
-     * @return if a browser should be launched on startup when in development
-     *         mode
+     * @return if a browser should be launched on startup when in development mode
      */
     public boolean isLaunchBrowser() {
         return launchBrowser;
     }
 
     /**
-     * Sets whether a browser should be launched on startup when in development
-     * mode.
+     * Sets whether a browser should be launched on startup when in development mode.
      *
      * @param launchBrowser
-     *            {@code true} to launch a browser on startup when in
-     *            development mode, {@code false} otherwise
+     *            {@code true} to launch a browser on startup when in development mode, {@code false} otherwise
      */
     public void setLaunchBrowser(boolean launchBrowser) {
         this.launchBrowser = launchBrowser;
     }
 
     /**
-     * Returns timout after which a browser should be launched again on startup
-     * when in development mode.
+     * Returns timout after which a browser should be launched again on startup when in development mode.
      * <p>
      *
-     * @return if a browser should be launched on startup when in development
-     *         mode
+     * @return if a browser should be launched on startup when in development mode
      */
     public int getLaunchBrowserDelay() {
         return launchBrowserDelay;
     }
 
     /**
-     * Sets timout for launching a new browser on startup when in development
-     * mode.
+     * Sets timout for launching a new browser on startup when in development mode.
      *
      * @param launchBrowser
-     *            {@code true} to launch a browser on startup when in
-     *            development mode, {@code false} otherwise
+     *            {@code true} to launch a browser on startup when in development mode, {@code false} otherwise
      */
     public void setLaunchBrowserDelay(int launchBrowser) {
         this.launchBrowserDelay = launchBrowser;
     }
 
     /**
-     * Returns whether class scan caching between reloads when using Spring Boot
-     * DevTools should be enabled.
+     * Returns whether class scan caching between reloads when using Spring Boot DevTools should be enabled.
      * <p>
      *
      * @return if class scan caching should be enabled
@@ -441,12 +413,10 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Sets whether class scan caching between reloads when using Spring Boot
-     * DevTools should be enabled.
+     * Sets whether class scan caching between reloads when using Spring Boot DevTools should be enabled.
      *
      * @param devmodeCaching
-     *            {@code true} to enable class scan caching when in development
-     *            mode, {@code false} otherwise
+     *            {@code true} to enable class scan caching when in development mode, {@code false} otherwise
      */
     public void setDevmodeCaching(boolean devmodeCaching) {
         this.devmodeCaching = devmodeCaching;
@@ -504,8 +474,8 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Set list of packages to be scanned. If <code>allowedPackages</code> is
-     * set then <code>blockedPackages</code> is ignored.
+     * Set list of packages to be scanned. If <code>allowedPackages</code> is set then <code>blockedPackages</code> is
+     * ignored.
      *
      * @param allowedPackages
      *            list of packages to be scanned
@@ -526,8 +496,8 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Set list of packages to be scanned. If <code>allowedPackages</code> is
-     * set then <code>blockedPackages</code> is ignored.
+     * Set list of packages to be scanned. If <code>allowedPackages</code> is set then <code>blockedPackages</code> is
+     * ignored.
      *
      * @param allowedPackages
      *            list of packages to be scanned
@@ -539,8 +509,7 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Get a list of URL patterns that are not handled by the Vaadin servlet
-     * when it is mapped to the context root.
+     * Get a list of URL patterns that are not handled by the Vaadin servlet when it is mapped to the context root.
      *
      * @return a list of url patterns to exclude
      */
@@ -549,8 +518,7 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Set a list of URL patterns that are not handled by the Vaadin servlet
-     * when it is mapped to the context root.
+     * Set a list of URL patterns that are not handled by the Vaadin servlet when it is mapped to the context root.
      *
      * @param excludeUrls
      *            a list of url patterns to exclude

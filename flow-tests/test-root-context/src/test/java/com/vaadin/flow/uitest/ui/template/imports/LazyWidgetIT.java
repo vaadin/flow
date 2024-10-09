@@ -24,8 +24,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 /**
- * This test is intended to check that templates work as Polymer elements even
- * if they're lazy loaded.
+ * This test is intended to check that templates work as Polymer elements even if they're lazy loaded.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -40,8 +39,7 @@ public class LazyWidgetIT extends ChromeBrowserTest {
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         String input = "InputMaster";
-        Assert.assertFalse(
-                "No greeting should be present before we press the button",
+        Assert.assertFalse("No greeting should be present before we press the button",
                 template.$("*").attribute("id", "greeting").exists());
 
         template.$(TestBenchElement.class).id("input").sendKeys(input);

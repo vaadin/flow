@@ -51,19 +51,17 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * @since
  *
  */
-@Component(service = ApplicationConfigurationFactory.class, property = Constants.SERVICE_RANKING
-        + ":Integer=" + Integer.MIN_VALUE)
-public class DefaultApplicationConfigurationFactory
-        extends AbstractConfigurationFactory
+@Component(service = ApplicationConfigurationFactory.class, property = Constants.SERVICE_RANKING + ":Integer="
+        + Integer.MIN_VALUE)
+public class DefaultApplicationConfigurationFactory extends AbstractConfigurationFactory
         implements ApplicationConfigurationFactory {
 
-    protected static class ApplicationConfigurationImpl extends
-            AbstractPropertyConfiguration implements ApplicationConfiguration {
+    protected static class ApplicationConfigurationImpl extends AbstractPropertyConfiguration
+            implements ApplicationConfiguration {
 
         private final VaadinContext context;
 
-        protected ApplicationConfigurationImpl(VaadinContext context,
-                Map<String, String> properties) {
+        protected ApplicationConfigurationImpl(VaadinContext context, Map<String, String> properties) {
             super(properties);
             this.context = context;
         }
@@ -85,9 +83,7 @@ public class DefaultApplicationConfigurationFactory
 
         @Override
         public boolean isDevModeSessionSerializationEnabled() {
-            return getBooleanProperty(
-                    APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION,
-                    false);
+            return getBooleanProperty(APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION, false);
         }
 
     }
@@ -96,8 +92,7 @@ public class DefaultApplicationConfigurationFactory
     public ApplicationConfiguration create(VaadinContext context) {
         Objects.requireNonNull(context);
         Map<String, String> props = new HashMap<>();
-        for (final Enumeration<String> paramNames = context
-                .getContextParameterNames(); paramNames.hasMoreElements();) {
+        for (final Enumeration<String> paramNames = context.getContextParameterNames(); paramNames.hasMoreElements();) {
             final String name = paramNames.nextElement();
             props.put(name, context.getContextParameter(name));
         }
@@ -126,8 +121,7 @@ public class DefaultApplicationConfigurationFactory
      *            the context parameters, not {@code null}
      * @return a new application configuration instance
      */
-    protected ApplicationConfigurationImpl doCreate(VaadinContext context,
-            Map<String, String> properties) {
+    protected ApplicationConfigurationImpl doCreate(VaadinContext context, Map<String, String> properties) {
         Objects.requireNonNull(context);
         Objects.requireNonNull(properties);
         return new ApplicationConfigurationImpl(context, properties);
@@ -136,74 +130,58 @@ public class DefaultApplicationConfigurationFactory
     /**
      * Gets token file from the classpath using the provided {@code context}.
      * <p>
-     * The {@code contextClass} may be a class which is defined in the Web
-     * Application module/bundle and in this case it may be used to get Web
-     * Application resources. Also a {@link VaadinContext} {@code context}
-     * instance may be used to get a context of the Web Application (since the
-     * {@code contextClass} may be a class not from Web Application module). In
-     * WAR case it doesn't matter which class is used to get the resources (Web
-     * Application classes or e.g. "flow-server" classes) since they are loaded
-     * by the same {@link ClassLoader}. But in OSGi "flow-server" module classes
-     * can't be used to get Web Application resources since they are in
-     * different bundles.
+     * The {@code contextClass} may be a class which is defined in the Web Application module/bundle and in this case it
+     * may be used to get Web Application resources. Also a {@link VaadinContext} {@code context} instance may be used
+     * to get a context of the Web Application (since the {@code contextClass} may be a class not from Web Application
+     * module). In WAR case it doesn't matter which class is used to get the resources (Web Application classes or e.g.
+     * "flow-server" classes) since they are loaded by the same {@link ClassLoader}. But in OSGi "flow-server" module
+     * classes can't be used to get Web Application resources since they are in different bundles.
      *
      * @param context
-     *            a VaadinContext which may provide information how to get token
-     *            file for the web application
+     *            a VaadinContext which may provide information how to get token file for the web application
      * @return the token file content
      * @throws IOException
      *             if I/O fails during access to the token file
      */
-    protected String getTokenFileFromClassloader(VaadinContext context)
-            throws IOException {
+    protected String getTokenFileFromClassloader(VaadinContext context) throws IOException {
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
         Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
+        ResourceProvider resourceProvider = lookup.lookup(ResourceProvider.class);
 
-        List<URL> resources = resourceProvider
-                .getApplicationResources(tokenResource);
+        List<URL> resources = resourceProvider.getApplicationResources(tokenResource);
 
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
-        URL resource = resources.stream()
-                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
-                .findFirst().orElse(null);
+        URL resource = resources.stream().filter(url -> !url.getPath().endsWith("jar!/" + tokenResource)).findFirst()
+                .orElse(null);
         if (resource == null && !resources.isEmpty()) {
             return getPossibleJarResource(context, resources);
         }
-        return resource == null ? null
-                : FrontendUtils.streamToString(resource.openStream());
+        return resource == null ? null : FrontendUtils.streamToString(resource.openStream());
 
     }
 
     /**
-     * Check if the webpack.generated.js resources is inside 2 jars
-     * (flow-server.jar and application.jar) if this is the case then we can
-     * accept a build info file from inside jar with a single jar in the path.
+     * Check if the webpack.generated.js resources is inside 2 jars (flow-server.jar and application.jar) if this is the
+     * case then we can accept a build info file from inside jar with a single jar in the path.
      * <p>
-     * Else we will accept any flow-build-info and log a warning that it may not
-     * be the correct file, but it's the best we could find.
+     * Else we will accept any flow-build-info and log a warning that it may not be the correct file, but it's the best
+     * we could find.
      */
-    private String getPossibleJarResource(VaadinContext context,
-            List<URL> resources) throws IOException {
+    private String getPossibleJarResource(VaadinContext context, List<URL> resources) throws IOException {
         Objects.requireNonNull(resources);
 
         Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
+        ResourceProvider resourceProvider = lookup.lookup(ResourceProvider.class);
 
-        assert !resources.isEmpty()
-                : "Possible jar resource requires resources to be available.";
+        assert !resources.isEmpty() : "Possible jar resource requires resources to be available.";
 
-        URL viteGenerated = resourceProvider
-                .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG);
+        URL viteGenerated = resourceProvider.getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG);
 
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar
-        if (viteGenerated != null
-                && countInstances(viteGenerated.getPath(), "jar!/") >= 2) {
+        if (viteGenerated != null && countInstances(viteGenerated.getPath(), "jar!/") >= 2) {
             for (URL resource : resources) {
                 // As we now know that we are running from a jar we can accept a
                 // build info with a single jar in the path
@@ -214,16 +192,13 @@ public class DefaultApplicationConfigurationFactory
         }
         URL firstResource = resources.get(0);
         if (resources.size() > 1) {
-            String warningMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible.%n"
-                            + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size());
+            String warningMessage = String.format("Unable to fully determine correct flow-build-info.%n"
+                    + "Accepting file '%s' first match of '%s' possible.%n"
+                    + "Please verify flow-build-info file content.", firstResource.getPath(), resources.size());
             getLogger().warn(warningMessage);
         } else {
             String debugMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'",
+                    "Unable to fully determine correct flow-build-info.%n" + "Accepting file '%s'",
                     firstResource.getPath());
             getLogger().debug(debugMessage);
         }
@@ -235,8 +210,7 @@ public class DefaultApplicationConfigurationFactory
     }
 
     private Logger getLogger() {
-        return LoggerFactory
-                .getLogger(DefaultApplicationConfigurationFactory.class);
+        return LoggerFactory.getLogger(DefaultApplicationConfigurationFactory.class);
     }
 
 }

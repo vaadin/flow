@@ -23,11 +23,9 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 
 /**
- * Tracks the reconnect configuration stored in the root node and provides it
- * with an easier to use API.
+ * Tracks the reconnect configuration stored in the root node and provides it with an easier to use API.
  * <p>
- * Also triggers {@link ConnectionStateHandler#configurationUpdated()} whenever
- * part of the configuration changes.
+ * Also triggers {@link ConnectionStateHandler#configurationUpdated()} whenever part of the configuration changes.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -47,17 +45,15 @@ public class ReconnectConfiguration {
     }
 
     /**
-     * Binds this ReconnectDialogConfiguration to the given
-     * {@link ConnectionStateHandler} so that
-     * {@link ConnectionStateHandler#configurationUpdated()} is run whenever a
-     * relevant part of {@link ReconnectConfiguration} changes.
+     * Binds this ReconnectDialogConfiguration to the given {@link ConnectionStateHandler} so that
+     * {@link ConnectionStateHandler#configurationUpdated()} is run whenever a relevant part of
+     * {@link ReconnectConfiguration} changes.
      *
      * @param connectionStateHandler
      *            the connection state handler to bind to
      */
     public static void bind(ConnectionStateHandler connectionStateHandler) {
-        Reactive.runWhenDependenciesChange(
-                () -> connectionStateHandler.configurationUpdated());
+        Reactive.runWhenDependenciesChange(() -> connectionStateHandler.configurationUpdated());
     }
 
     private MapProperty getProperty(String key) {
@@ -75,37 +71,29 @@ public class ReconnectConfiguration {
      */
     @Deprecated
     public String getDialogText() {
-        return getProperty(ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY)
-                .getValueOrDefault(null);
+        return getProperty(ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY).getValueOrDefault(null);
     }
 
     /**
-     * Gets the text to show in the reconnect dialog when no longer trying to
-     * reconnect.
+     * Gets the text to show in the reconnect dialog when no longer trying to reconnect.
      *
-     * @return the text to show in the reconnect dialog when no longer trying to
-     *         reconnect
+     * @return the text to show in the reconnect dialog when no longer trying to reconnect
      *
      * @deprecated The API for configuring the connection indicator has changed.
      */
     @Deprecated
     public String getDialogTextGaveUp() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
-                .getValueOrDefault(null);
+        return getProperty(ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY).getValueOrDefault(null);
     }
 
     /**
-     * Gets the number of reconnect attempts that should be performed before
-     * giving up.
+     * Gets the number of reconnect attempts that should be performed before giving up.
      *
      * @return the number of reconnect attempts to perform
      */
     public int getReconnectAttempts() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
-                .getValueOrDefault(
-                        ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
+        return getProperty(ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
+                .getValueOrDefault(ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
     }
 
     /**
@@ -114,9 +102,7 @@ public class ReconnectConfiguration {
      * @return the interval in milliseconds to wait between reconnect attempts
      */
     public int getReconnectInterval() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
-                .getValueOrDefault(
-                        ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
+        return getProperty(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
+                .getValueOrDefault(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
     }
 }

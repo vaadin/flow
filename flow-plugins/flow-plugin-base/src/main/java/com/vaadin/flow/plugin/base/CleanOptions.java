@@ -31,8 +31,7 @@ public class CleanOptions {
     private boolean removePnpmFile = true;
 
     /**
-     * Set to false to keep package lock file (pnpm-lock.yaml or bun.lockb or
-     * package-lock.json).
+     * Set to false to keep package lock file (pnpm-lock.yaml or bun.lockb or package-lock.json).
      *
      * @param removePackageLock
      *            whether to remove lock file
@@ -62,8 +61,7 @@ public class CleanOptions {
      *            whether to remove the generated ts folder
      * @return for chaining
      */
-    public CleanOptions withRemoveGeneratedTSFolder(
-            boolean removeGeneratedTSFolder) {
+    public CleanOptions withRemoveGeneratedTSFolder(boolean removeGeneratedTSFolder) {
         this.removeGeneratedTSFolder = removeGeneratedTSFolder;
         return this;
     }
@@ -75,8 +73,7 @@ public class CleanOptions {
      *            whether to remove the frontend generated folder
      * @return for chaining
      */
-    public CleanOptions withRemoveFrontendGeneratedFolder(
-            boolean removeFrontendGeneratedFolder) {
+    public CleanOptions withRemoveFrontendGeneratedFolder(boolean removeFrontendGeneratedFolder) {
         this.removeFrontendGeneratedFolder = removeFrontendGeneratedFolder;
         return this;
     }
@@ -118,8 +115,7 @@ public class CleanOptions {
     }
 
     /**
-     * @return whether to remove package lock file (pnpm-lock.yaml or bun.lockb
-     *         or package-lock.json)
+     * @return whether to remove package lock file (pnpm-lock.yaml or bun.lockb or package-lock.json)
      */
     public boolean isRemovePackageLock() {
         return removePackageLock;
@@ -133,8 +129,7 @@ public class CleanOptions {
     }
 
     /**
-     * @return whether to remove the generated ts folder where flow will put TS
-     *         API files for client projects.
+     * @return whether to remove the generated ts folder where flow will put TS API files for client projects.
      */
     public boolean isRemoveGeneratedTSFolder() {
         return removeGeneratedTSFolder;

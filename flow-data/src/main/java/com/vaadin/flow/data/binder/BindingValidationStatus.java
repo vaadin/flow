@@ -26,21 +26,18 @@ import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 
 /**
- * Represents the status of field validation. Status can be {@code Status.OK},
- * {@code Status.ERROR} or {@code Status.UNRESOLVED}. Status OK and ERROR are
- * always associated with a ValidationResult {@link #getResult}.
+ * Represents the status of field validation. Status can be {@code Status.OK}, {@code Status.ERROR} or
+ * {@code Status.UNRESOLVED}. Status OK and ERROR are always associated with a ValidationResult {@link #getResult}.
  * <p>
- * Use
- * {@link BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)}
- * to register a handler for field level validation status changes.
+ * Use {@link BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)} to register a handler for
+ * field level validation status changes.
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
  * @param <TARGET>
- *            the target data type of the binding for which the validation
- *            status changed, matches the field type unless a converter has been
- *            set
+ *            the target data type of the binding for which the validation status changed, matches the field type unless
+ *            a converter has been set
  *
  * @see BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)
  * @see Binding#validate()
@@ -53,9 +50,8 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     /**
      * Status of the validation.
      * <p>
-     * The status is the part of {@link BindingValidationStatus} which indicates
-     * whether the validation failed or not, or whether it is in unresolved
-     * state (e.g. after clear or reset).
+     * The status is the part of {@link BindingValidationStatus} which indicates whether the validation failed or not,
+     * or whether it is in unresolved state (e.g. after clear or reset).
      */
     public enum Status {
         /** Validation passed. */
@@ -63,11 +59,9 @@ public class BindingValidationStatus<TARGET> implements Serializable {
         /** Validation failed. */
         ERROR,
         /**
-         * Unresolved status, e.g field has not yet been validated because value
-         * was cleared.
+         * Unresolved status, e.g field has not yet been validated because value was cleared.
          * <p>
-         * In practice this status means that the value might be invalid, but
-         * validation errors should be hidden.
+         * In practice this status means that the value might be invalid, but validation errors should be hidden.
          */
         UNRESOLVED;
     }
@@ -80,8 +74,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     /**
      * Creates a new status change event.
      * <p>
-     * If {@code result} is {@code null}, the {@code status} is
-     * {@link Status#UNRESOLVED}.
+     * If {@code result} is {@code null}, the {@code status} is {@link Status#UNRESOLVED}.
      *
      * @param result
      *            the related result object, may be {@code null}
@@ -89,16 +82,14 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      *            field whose status has changed, not {@code null}
      *
      */
-    public BindingValidationStatus(Result<TARGET> result,
-            Binding<?, TARGET> source) {
+    public BindingValidationStatus(Result<TARGET> result, Binding<?, TARGET> source) {
         Objects.requireNonNull(source, "Event source may not be null");
 
         binding = source;
         if (result != null) {
             this.status = result.isError() ? Status.ERROR : Status.OK;
             if (result instanceof ValidationResultWrap) {
-                results = ((ValidationResultWrap<TARGET>) result)
-                        .getValidationResults();
+                results = ((ValidationResultWrap<TARGET>) result).getValidationResults();
             } else {
                 results = Collections.emptyList();
             }
@@ -110,18 +101,15 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     }
 
     /**
-     * Convenience method for creating a {@link Status#UNRESOLVED} validation
-     * status for the given binding.
+     * Convenience method for creating a {@link Status#UNRESOLVED} validation status for the given binding.
      *
      * @param source
      *            the source binding
      * @return unresolved validation status
      * @param <TARGET>
-     *            the target data type of the binding for which the validation
-     *            status was reset
+     *            the target data type of the binding for which the validation status was reset
      */
-    public static <TARGET> BindingValidationStatus<TARGET> createUnresolvedStatus(
-            Binding<?, TARGET> source) {
+    public static <TARGET> BindingValidationStatus<TARGET> createUnresolvedStatus(Binding<?, TARGET> source) {
         return new BindingValidationStatus<TARGET>(null, source);
     }
 
@@ -137,8 +125,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     /**
      * Gets whether the validation failed or not.
      *
-     * @return {@code true} if validation failed, {@code false} if validation
-     *         passed
+     * @return {@code true} if validation failed, {@code false} if validation passed
      */
     public boolean isError() {
         return status == Status.ERROR;
@@ -147,8 +134,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     /**
      * Gets error validation message if status is {@link Status#ERROR}.
      *
-     * @return an optional validation error status or an empty optional if
-     *         status is not an error
+     * @return an optional validation error status or an empty optional if status is not an error
      */
     public Optional<String> getMessage() {
         if (getStatus() == Status.OK || result == null) {
@@ -158,9 +144,8 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     }
 
     /**
-     * Gets the validation result if status is either {@link Status#OK} or
-     * {@link Status#ERROR} or an empty optional if status is
-     * {@link Status#UNRESOLVED}.
+     * Gets the validation result if status is either {@link Status#OK} or {@link Status#ERROR} or an empty optional if
+     * status is {@link Status#UNRESOLVED}.
      *
      * @return the validation result
      */
@@ -168,14 +153,12 @@ public class BindingValidationStatus<TARGET> implements Serializable {
         if (result == null) {
             return Optional.empty();
         }
-        return Optional.of(result.isError()
-                ? ValidationResult.error(result.getMessage().orElse(""))
-                : ValidationResult.ok());
+        return Optional
+                .of(result.isError() ? ValidationResult.error(result.getMessage().orElse("")) : ValidationResult.ok());
     }
 
     /**
-     * Gets all the validation results related to this binding validation
-     * status.
+     * Gets all the validation results related to this binding validation status.
      *
      * @return list of validation results
      *

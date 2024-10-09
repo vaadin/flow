@@ -61,9 +61,9 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
     private static final String CYCLONEDX_VERBOSE = "cyclonedx.verbose";
     private static final String VERBOSE = "verbose";
     /**
-     * The component type associated to the SBOM metadata. See <a href=
-     * "https://cyclonedx.org/docs/1.4/json/#metadata_component_type">CycloneDX
-     * reference</a> for supported values.
+     * The component type associated to the SBOM metadata. See
+     * <a href= "https://cyclonedx.org/docs/1.4/json/#metadata_component_type">CycloneDX reference</a> for supported
+     * values.
      */
     @Parameter(property = PROJECT_TYPE, defaultValue = "application")
     private String projectType;
@@ -113,14 +113,13 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
     @Parameter(property = OUTPUT_REACTOR_PROJECTS, defaultValue = "true")
     private boolean outputReactorProjects;
     /**
-     * The CycloneDX output format that should be generated (<code>xml</code>,
-     * <code>json</code> or <code>all</code>).
+     * The CycloneDX output format that should be generated (<code>xml</code>, <code>json</code> or <code>all</code>).
      */
     @Parameter(property = OUTPUT_FORMAT, defaultValue = "json")
     private String outputFormat;
     /**
-     * The CycloneDX output file name (without extension) that should be
-     * generated (in {@code outputDirectory} directory).
+     * The CycloneDX output file name (without extension) that should be generated (in {@code outputDirectory}
+     * directory).
      */
     @Parameter(property = OUTPUT_NAME, defaultValue = "bom")
     private String outputName;
@@ -145,8 +144,7 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
     @Parameter(property = EXCLUDE_GROUP_ID)
     private String[] excludeGroupId;
     /**
-     * Should reactor project (aka module) artifactId with the word "test" be
-     * excluded from aggregate BOM?
+     * Should reactor project (aka module) artifactId with the word "test" be excluded from aggregate BOM?
      */
     @Parameter(property = EXCLUDE_TEST_PROJECT, defaultValue = "false")
     private boolean excludeTestProject;
@@ -159,39 +157,27 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
-        InvocationRequest request = requestBuilder.groupId(GROUP)
-                .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
+        InvocationRequest request = requestBuilder.groupId(GROUP).artifactId(ARTIFACT).version(VERSION).goal(GOAL)
                 .createInvocationRequest();
 
         Properties properties = new Properties();
         properties.setProperty(PROJECT_TYPE, projectType);
         properties.setProperty(SCHEMA_VERSION, schemaVersion);
-        properties.setProperty(INCLUDE_BOM_SERIAL_NUMBER,
-                String.valueOf(includeBomSerialNumber));
-        properties.setProperty(INCLUDE_COMPILE_SCOPE,
-                String.valueOf(includeCompileScope));
-        properties.setProperty(INCLUDE_PROVIDED_SCOPE,
-                String.valueOf(includeProvidedScope));
-        properties.setProperty(INCLUDE_RUNTIME_SCOPE,
-                String.valueOf(includeRuntimeScope));
-        properties.setProperty(INCLUDE_TEST_SCOPE,
-                String.valueOf(includeTestScope));
-        properties.setProperty(INCLUDE_SYSTEM_SCOPE,
-                String.valueOf(includeSystemScope));
-        properties.setProperty(INCLUDE_LICENSE_TEXT,
-                String.valueOf(includeLicenseText));
-        properties.setProperty(OUTPUT_REACTOR_PROJECTS,
-                String.valueOf(outputReactorProjects));
+        properties.setProperty(INCLUDE_BOM_SERIAL_NUMBER, String.valueOf(includeBomSerialNumber));
+        properties.setProperty(INCLUDE_COMPILE_SCOPE, String.valueOf(includeCompileScope));
+        properties.setProperty(INCLUDE_PROVIDED_SCOPE, String.valueOf(includeProvidedScope));
+        properties.setProperty(INCLUDE_RUNTIME_SCOPE, String.valueOf(includeRuntimeScope));
+        properties.setProperty(INCLUDE_TEST_SCOPE, String.valueOf(includeTestScope));
+        properties.setProperty(INCLUDE_SYSTEM_SCOPE, String.valueOf(includeSystemScope));
+        properties.setProperty(INCLUDE_LICENSE_TEXT, String.valueOf(includeLicenseText));
+        properties.setProperty(OUTPUT_REACTOR_PROJECTS, String.valueOf(outputReactorProjects));
         properties.setProperty(OUTPUT_FORMAT, outputFormat);
         properties.setProperty(OUTPUT_NAME, outputName);
         properties.setProperty(OUTPUT_DIRECTORY, outputDirectory);
         properties.setProperty(EXCLUDE_TYPES, String.join(",", excludeTypes));
-        properties.setProperty(EXCLUDE_ARTIFACT_ID,
-                String.join(",", excludeArtifactId));
-        properties.setProperty(EXCLUDE_GROUP_ID,
-                String.join(",", excludeGroupId));
-        properties.setProperty(EXCLUDE_TEST_PROJECT,
-                String.valueOf(excludeTestProject));
+        properties.setProperty(EXCLUDE_ARTIFACT_ID, String.join(",", excludeArtifactId));
+        properties.setProperty(EXCLUDE_GROUP_ID, String.join(",", excludeGroupId));
+        properties.setProperty(EXCLUDE_TEST_PROJECT, String.valueOf(excludeTestProject));
         properties.setProperty(CYCLONEDX_VERBOSE, String.valueOf(verbose));
         request.setProperties(properties);
 
@@ -199,12 +185,10 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
         try {
             InvocationResult result = invoker.execute(request);
             if (result.getExitCode() != 0) {
-                throw new MojoFailureException("Maven SBOM generation failed.",
-                        result.getExecutionException());
+                throw new MojoFailureException("Maven SBOM generation failed.", result.getExecutionException());
             }
         } catch (MavenInvocationException e) {
-            throw new MojoExecutionException(
-                    "Error during Maven SBOM generation", e);
+            throw new MojoExecutionException("Error during Maven SBOM generation", e);
         }
     }
 

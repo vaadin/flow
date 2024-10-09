@@ -27,8 +27,7 @@ import org.junit.Test;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
-public class SerializableNodeListTest
-        extends AbstractNodeFeatureTest<ElementClassList> {
+public class SerializableNodeListTest extends AbstractNodeFeatureTest<ElementClassList> {
 
     private ElementClassList nodeList = createFeature();
 
@@ -43,8 +42,7 @@ public class SerializableNodeListTest
             values.add(nodeList.get(i));
         }
 
-        NodeList<Serializable> copy = SerializationUtils
-                .deserialize(SerializationUtils.serialize(nodeList));
+        NodeList<Serializable> copy = SerializationUtils.deserialize(SerializationUtils.serialize(nodeList));
 
         Assert.assertNotSame(nodeList, copy);
 
@@ -74,23 +72,20 @@ public class SerializableNodeListTest
         i.remove();
         List<NodeChange> changes = collectChanges(nodeList);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(0,
-                ((ListRemoveChange<?>) changes.get(0)).getIndex());
+        Assert.assertEquals(0, ((ListRemoveChange<?>) changes.get(0)).getIndex());
 
         i.next();
         i.next();
         i.remove();
         changes = collectChanges(nodeList);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(1,
-                ((ListRemoveChange<?>) changes.get(0)).getIndex());
+        Assert.assertEquals(1, ((ListRemoveChange<?>) changes.get(0)).getIndex());
 
         List<String> actual = new ArrayList<>();
         for (int j = 0; j < nodeList.size(); j++) {
             actual.add(nodeList.get(j));
         }
-        Assert.assertArrayEquals(new String[] { "2", "4", "5" },
-                actual.toArray());
+        Assert.assertArrayEquals(new String[] { "2", "4", "5" }, actual.toArray());
 
     }
 
@@ -108,10 +103,8 @@ public class SerializableNodeListTest
 
         List<NodeChange> changes = collectChanges(nodeList);
         Assert.assertEquals(2, changes.size());
-        Assert.assertEquals(0,
-                ((ListRemoveChange<?>) changes.get(0)).getIndex());
-        Assert.assertEquals(0,
-                ((ListRemoveChange<?>) changes.get(1)).getIndex());
+        Assert.assertEquals(0, ((ListRemoveChange<?>) changes.get(0)).getIndex());
+        Assert.assertEquals(0, ((ListRemoveChange<?>) changes.get(1)).getIndex());
         Assert.assertEquals(0, nodeList.size());
     }
 }

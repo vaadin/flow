@@ -57,20 +57,16 @@ import jakarta.servlet.http.HttpServletResponse;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern
-            .compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
-    private static final Pattern BYTE_RANGE_PATTERN = Pattern
-            .compile("(\\d*)-(\\d*)");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile("(\\d*)-(\\d*)");
 
     /**
-     * Maximum number of ranges accepted in a single Range header. Remaining
-     * ranges will be ignored.
+     * Maximum number of ranges accepted in a single Range header. Remaining ranges will be ignored.
      */
     private static final int MAX_RANGE_COUNT = 16;
 
     /**
-     * Maximum number of overlapping ranges allowed. The request will be denied
-     * if above this threshold.
+     * Maximum number of overlapping ranges allowed. The request will be denied if above this threshold.
      */
     private static final int MAX_OVERLAPPING_RANGE_COUNT = 2;
 
@@ -100,15 +96,12 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
-     * Writes the contents and content type (if available) of the given
-     * resourceUrl to the response.
+     * Writes the contents and content type (if available) of the given resourceUrl to the response.
      * <p>
-     * WARNING: note that this should not be used for a {@code resourceUrl} that
-     * represents a directory! For security reasons, the directory contents
-     * should not be ever written into the {@code response}, and the
-     * implementation which is used for setting the content length relies on
-     * {@link URLConnection#getContentLengthLong()} method which returns
-     * incorrect values for directories.
+     * WARNING: note that this should not be used for a {@code resourceUrl} that represents a directory! For security
+     * reasons, the directory contents should not be ever written into the {@code response}, and the implementation
+     * which is used for setting the content length relies on {@link URLConnection#getContentLengthLong()} method which
+     * returns incorrect values for directories.
      *
      * @param filenameWithPath
      *            the name of the file being sent
@@ -119,12 +112,10 @@ public class ResponseWriter implements Serializable {
      * @param response
      *            the response object to write to
      * @throws IOException
-     *             if the servlet container threw an exception while locating
-     *             the resource
+     *             if the servlet container threw an exception while locating the resource
      */
-    public void writeResponseContents(String filenameWithPath, URL resourceUrl,
-            HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    public void writeResponseContents(String filenameWithPath, URL resourceUrl, HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
         writeContentType(filenameWithPath, request, response);
 
         URL url = null;
@@ -141,9 +132,7 @@ public class ResponseWriter implements Serializable {
                     response.setHeader("Content-Encoding", "br");
                 }
             } catch (Exception e) {
-                getLogger().debug(
-                        "Unexpected exception looking for Brotli resource {}",
-                        brotliFilenameWithPath, e);
+                getLogger().debug("Unexpected exception looking for Brotli resource {}", brotliFilenameWithPath, e);
             }
         }
 
@@ -158,9 +147,7 @@ public class ResponseWriter implements Serializable {
                     response.setHeader("Content-Encoding", "gzip");
                 }
             } catch (Exception e) {
-                getLogger().debug(
-                        "Unexpected exception looking for gzipped resource {}",
-                        gzippedFilenameWithPath, e);
+                getLogger().debug("Unexpected exception looking for gzipped resource {}", gzippedFilenameWithPath, e);
             }
         }
 
@@ -184,8 +171,7 @@ public class ResponseWriter implements Serializable {
                 if (0 <= contentLength) {
                     setContentLength(response, contentLength);
                 }
-                writeStream(response.getOutputStream(), dataStream,
-                        Long.MAX_VALUE);
+                writeStream(response.getOutputStream(), dataStream, Long.MAX_VALUE);
             }
         } catch (IOException e) {
             getLogger().debug("Error writing static file to user", e);
@@ -205,16 +191,12 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
-     * Handle a "Header:" request. The handling logic is splits on single or
-     * multiple ranges: for a single range, send a regular response with
-     * Content-Length; for multiple ranges, send a "Content-Type:
-     * multipart/byteranges" response. If the byte ranges are satisfiable, the
-     * response code is 206, otherwise it is 416. See e.g.
-     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests for
-     * protocol details.
+     * Handle a "Header:" request. The handling logic is splits on single or multiple ranges: for a single range, send a
+     * regular response with Content-Length; for multiple ranges, send a "Content-Type: multipart/byteranges" response.
+     * If the byte ranges are satisfiable, the response code is 206, otherwise it is 416. See e.g.
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests for protocol details.
      */
-    private void writeRangeContents(String range, HttpServletResponse response,
-            URL resourceURL) throws IOException {
+    private void writeRangeContents(String range, HttpServletResponse response, URL resourceURL) throws IOException {
         response.setHeader("Accept-Ranges", "bytes");
 
         URLConnection connection = resourceURL.openConnection();
@@ -237,19 +219,14 @@ public class ResponseWriter implements Serializable {
             if (startGroup.isEmpty() && endGroup.isEmpty()) {
                 response.setContentLengthLong(0L);
                 response.setStatus(416); // Range Not Satisfiable
-                getLogger().info("received a malformed range: '{}'",
-                        rangeMatcher.group());
+                getLogger().info("received a malformed range: '{}'", rangeMatcher.group());
                 return;
             }
             long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
-            long end = endGroup.isEmpty() ? Long.MAX_VALUE
-                    : Long.parseLong(endGroup);
-            if (end < start
-                    || (resourceLength >= 0 && start >= resourceLength)) {
+            long end = endGroup.isEmpty() ? Long.MAX_VALUE : Long.parseLong(endGroup);
+            if (end < start || (resourceLength >= 0 && start >= resourceLength)) {
                 // illegal range -> 416
-                getLogger().info(
-                        "received an illegal range '{}' for resource '{}'",
-                        rangeMatcher.group(), resourceURL);
+                getLogger().info("received an illegal range '{}' for resource '{}'", rangeMatcher.group(), resourceURL);
                 response.setContentLengthLong(0L);
                 response.setStatus(416);
                 return;
@@ -258,8 +235,7 @@ public class ResponseWriter implements Serializable {
 
             if (!verifyRangeLimits(ranges)) {
                 ranges.pop();
-                getLogger().info(
-                        "serving only {} ranges for resource '{}' even though more were requested",
+                getLogger().info("serving only {} ranges for resource '{}' even though more were requested",
                         ranges.size(), resourceURL);
                 break;
             }
@@ -277,8 +253,7 @@ public class ResponseWriter implements Serializable {
                 end = Math.min(end, resourceLength - 1);
             }
             setContentLength(response, end - start + 1);
-            response.setHeader("Content-Range",
-                    createContentRangeHeader(start, end, resourceLength));
+            response.setHeader("Content-Range", createContentRangeHeader(start, end, resourceLength));
 
             final InputStream dataStream = connection.getInputStream();
             try {
@@ -289,22 +264,18 @@ public class ResponseWriter implements Serializable {
                 closeStream(dataStream);
             }
         } else {
-            writeMultipartRangeContents(ranges, connection, response,
-                    resourceURL);
+            writeMultipartRangeContents(ranges, connection, response, resourceURL);
         }
     }
 
     /**
-     * Write a multi-part request with MIME type "multipart/byteranges",
-     * separated by boundaries and use "Transfer-Encoding: chunked" mode to
-     * avoid computing "Content-Length".
+     * Write a multi-part request with MIME type "multipart/byteranges", separated by boundaries and use
+     * "Transfer-Encoding: chunked" mode to avoid computing "Content-Length".
      */
-    private void writeMultipartRangeContents(List<Pair<Long, Long>> ranges,
-            URLConnection connection, HttpServletResponse response,
-            URL resourceURL) throws IOException {
+    private void writeMultipartRangeContents(List<Pair<Long, Long>> ranges, URLConnection connection,
+            HttpServletResponse response, URL resourceURL) throws IOException {
         String partBoundary = UUID.randomUUID().toString();
-        response.setContentType(String
-                .format("multipart/byteranges; boundary=%s", partBoundary));
+        response.setContentType(String.format("multipart/byteranges; boundary=%s", partBoundary));
         response.setHeader("Transfer-Encoding", "chunked");
 
         long position = 0L;
@@ -313,19 +284,16 @@ public class ResponseWriter implements Serializable {
         ServletOutputStream outputStream = response.getOutputStream();
         try {
             for (Pair<Long, Long> rangePair : ranges) {
-                outputStream.write(String.format("\r\n--%s\r\n", partBoundary)
-                        .getBytes(StandardCharsets.UTF_8));
+                outputStream.write(String.format("\r\n--%s\r\n", partBoundary).getBytes(StandardCharsets.UTF_8));
                 long start = rangePair.getFirst();
                 long end = rangePair.getSecond();
                 if (mimeType != null) {
-                    outputStream.write(
-                            String.format("Content-Type: %s\r\n", mimeType)
-                                    .getBytes(StandardCharsets.UTF_8));
+                    outputStream
+                            .write(String.format("Content-Type: %s\r\n", mimeType).getBytes(StandardCharsets.UTF_8));
                 }
                 outputStream.write(String
                         .format("Content-Range: %s\r\n\r\n",
-                                createContentRangeHeader(start, end,
-                                        connection.getContentLengthLong()))
+                                createContentRangeHeader(start, end, connection.getContentLengthLong()))
                         .getBytes(StandardCharsets.UTF_8));
 
                 if (position > start) {
@@ -344,8 +312,7 @@ public class ResponseWriter implements Serializable {
         } finally {
             closeStream(dataStream);
         }
-        outputStream.write(String.format("\r\n--%s", partBoundary)
-                .getBytes(StandardCharsets.UTF_8));
+        outputStream.write(String.format("\r\n--%s", partBoundary).getBytes(StandardCharsets.UTF_8));
     }
 
     private String createContentRangeHeader(long start, long end, long size) {
@@ -353,8 +320,7 @@ public class ResponseWriter implements Serializable {
         return String.format("bytes %d-%d/%s", start, end, lengthString);
     }
 
-    private void setContentLength(HttpServletResponse response,
-            long contentLength) {
+    private void setContentLength(HttpServletResponse response, long contentLength) {
         try {
             response.setContentLengthLong(contentLength);
         } catch (Exception e) {
@@ -363,9 +329,8 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
-     * Returns true if the number of ranges in <code>ranges</code> is less than
-     * the upper limit and the number that overlap (= have at least one byte in
-     * common) with the range <code>[start, end]</code> are less than the upper
+     * Returns true if the number of ranges in <code>ranges</code> is less than the upper limit and the number that
+     * overlap (= have at least one byte in common) with the range <code>[start, end]</code> are less than the upper
      * limit.
      */
     private boolean verifyRangeLimits(List<Pair<Long, Long>> ranges) {
@@ -377,29 +342,25 @@ public class ResponseWriter implements Serializable {
         for (int i = 0; i < ranges.size(); i++) {
             for (int j = i + 1; j < ranges.size(); j++) {
                 if (ranges.get(i).getFirst() <= ranges.get(j).getSecond()
-                        && ranges.get(j).getFirst() <= ranges.get(i)
-                                .getSecond()) {
+                        && ranges.get(j).getFirst() <= ranges.get(i).getSecond()) {
                     count++;
                 }
             }
         }
         if (count > MAX_OVERLAPPING_RANGE_COUNT) {
-            getLogger().info("more than {} overlapping ranges requested",
-                    MAX_OVERLAPPING_RANGE_COUNT);
+            getLogger().info("more than {} overlapping ranges requested", MAX_OVERLAPPING_RANGE_COUNT);
             return false;
         }
         return true;
     }
 
-    private URL getResource(HttpServletRequest request, String resource)
-            throws MalformedURLException {
+    private URL getResource(HttpServletRequest request, String resource) throws MalformedURLException {
         URL url = request.getServletContext().getResource(resource);
         if (url != null) {
             return url;
-        } else if (resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                && isAllowedVAADINBuildUrl(resource)) {
-            url = request.getServletContext().getClassLoader().getResource(
-                    VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
+        } else if (resource.startsWith("/" + VAADIN_BUILD_FILES_PATH) && isAllowedVAADINBuildUrl(resource)) {
+            url = request.getServletContext().getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
         }
         return url;
     }
@@ -407,8 +368,8 @@ public class ResponseWriter implements Serializable {
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
-     * ClassLoader is applicable for use when we are in npm mode and are serving
-     * from the VAADIN/build folder with no folder changes in path.
+     * ClassLoader is applicable for use when we are in npm mode and are serving from the VAADIN/build folder with no
+     * folder changes in path.
      *
      * @param filenameWithPath
      *            requested filename containing path
@@ -416,41 +377,35 @@ public class ResponseWriter implements Serializable {
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
         // Check that we target VAADIN/build and do not have '/../'
-        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || filenameWithPath.contains("/../")) {
-            getLogger().info("Blocked attempt to access file: {}",
-                    filenameWithPath);
+        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH) || filenameWithPath.contains("/../")) {
+            getLogger().info("Blocked attempt to access file: {}", filenameWithPath);
             return false;
         }
 
         return true;
     }
 
-    private void writeStream(ServletOutputStream outputStream,
-            InputStream dataStream, long count) throws IOException {
+    private void writeStream(ServletOutputStream outputStream, InputStream dataStream, long count) throws IOException {
         final byte[] buffer = new byte[bufferSize];
 
         long bytesTotal = 0L;
         int bytes;
-        while (bytesTotal < count && (bytes = dataStream.read(buffer, 0,
-                (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
+        while (bytesTotal < count
+                && (bytes = dataStream.read(buffer, 0, (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
             outputStream.write(buffer, 0, bytes);
             bytesTotal += bytes;
         }
     }
 
     /**
-     * Returns whether it is ok to serve a gzipped version of the given
-     * resource.
+     * Returns whether it is ok to serve a gzipped version of the given resource.
      * <p>
-     * If this method returns true, the browser is ok with receiving a gzipped
-     * version of the resource. In other cases, an uncompressed file must be
-     * sent.
+     * If this method returns true, the browser is ok with receiving a gzipped version of the resource. In other cases,
+     * an uncompressed file must be sent.
      *
      * @param request
      *            the request for the resource
-     * @return true if the servlet should attempt to serve a gzipped version of
-     *         the resource, false otherwise
+     * @return true if the servlet should attempt to serve a gzipped version of the resource, false otherwise
      */
     protected boolean acceptsGzippedResource(HttpServletRequest request) {
         return acceptsEncoding(request, "gzip");
@@ -459,21 +414,18 @@ public class ResponseWriter implements Serializable {
     /**
      * Returns whether it is ok to serve a Brotli version of the given resource.
      * <p>
-     * If this method returns true, the browser is ok with receiving a Brotli
-     * version of the resource. In other cases, an uncompressed or gzipped file
-     * must be sent.
+     * If this method returns true, the browser is ok with receiving a Brotli version of the resource. In other cases,
+     * an uncompressed or gzipped file must be sent.
      *
      * @param request
      *            the request for the resource
-     * @return true if the servlet should attempt to serve a Brotli version of
-     *         the resource, false otherwise
+     * @return true if the servlet should attempt to serve a Brotli version of the resource, false otherwise
      */
     protected boolean acceptsBrotliResource(HttpServletRequest request) {
         return acceptsEncoding(request, "br");
     }
 
-    private static boolean acceptsEncoding(HttpServletRequest request,
-            String encodingName) {
+    private static boolean acceptsEncoding(HttpServletRequest request, String encodingName) {
         String accept = request.getHeader("Accept-Encoding");
         if (accept == null) {
             return false;
@@ -494,18 +446,14 @@ public class ResponseWriter implements Serializable {
         return accept.contains("*") && !isQualityValueZero(accept, "*");
     }
 
-    void writeContentType(String filenameWithPath, ServletRequest request,
-            ServletResponse response) {
+    void writeContentType(String filenameWithPath, ServletRequest request, ServletResponse response) {
         // Set type mime type if we can determine it based on the filename
-        String mimetype = request.getServletContext()
-                .getMimeType(filenameWithPath);
+        String mimetype = request.getServletContext().getMimeType(filenameWithPath);
         if (mimetype != null) {
             response.setContentType(mimetype);
             String lowerCaseMimeType = mimetype.toLowerCase(Locale.ENGLISH);
             if (!lowerCaseMimeType.contains("charset=")) {
-                if (lowerCaseMimeType.startsWith("text/")
-                        || utf8EncodingByDefault
-                                .containsKey(lowerCaseMimeType)) {
+                if (lowerCaseMimeType.startsWith("text/") || utf8EncodingByDefault.containsKey(lowerCaseMimeType)) {
                     response.setCharacterEncoding("utf-8");
                 }
             }
@@ -513,8 +461,7 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
-     * Check the quality value of the encoding. If the value is zero the
-     * encoding is disabled and not accepted.
+     * Check the quality value of the encoding. If the value is zero the encoding is disabled and not accepted.
      *
      * @param acceptEncoding
      *            Accept-Encoding header from request
@@ -522,8 +469,7 @@ public class ResponseWriter implements Serializable {
      *            encoding to check
      * @return true if quality value is Zero
      */
-    private static boolean isQualityValueZero(String acceptEncoding,
-            String encoding) {
+    private static boolean isQualityValueZero(String acceptEncoding, String encoding) {
         String qPrefix = encoding + ";q=";
         int qValueIndex = acceptEncoding.indexOf(qPrefix);
         if (qValueIndex == -1) {
@@ -531,8 +477,7 @@ public class ResponseWriter implements Serializable {
         }
 
         // gzip;q=0.123 or gzip;q=0.123,compress...
-        String qValue = acceptEncoding
-                .substring(qValueIndex + qPrefix.length());
+        String qValue = acceptEncoding.substring(qValueIndex + qPrefix.length());
         int endOfQValue = qValue.indexOf(',');
         if (endOfQValue != -1) {
             qValue = qValue.substring(0, endOfQValue);

@@ -43,8 +43,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
     private static final String GREEN_COLOR = "rgba(0, 255, 0, 1)";
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
-    private static final String THEME_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR
-            + "themes/my-theme/";
+    private static final String THEME_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR + "themes/my-theme/";
 
     private File fontFile;
 
@@ -56,8 +55,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        File bundle = new File(baseDir,
-                "target/" + Constants.DEV_BUNDLE_LOCATION);
+        File bundle = new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION);
         statsJson = new File(bundle, "config/stats.json");
         themeAssetsInBundle = new File(bundle, "/assets/themes/my-theme");
         final File themeFolder = new File(baseDir, THEME_FOLDER);
@@ -122,22 +120,18 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         // check that the bundle has entries in stats.json for custom and
         // parent theme
         try {
-            String themeJsonContent = FileUtils.readFileToString(statsJson,
-                    StandardCharsets.UTF_8);
+            String themeJsonContent = FileUtils.readFileToString(statsJson, StandardCharsets.UTF_8);
             JsonObject json = Json.parse(themeJsonContent);
             Assert.assertTrue(json.hasKey("themeJsonContents"));
             JsonObject themeJsonContents = json.getObject("themeJsonContents");
 
             Assert.assertTrue(themeJsonContents.hasKey("my-theme"));
-            Assert.assertFalse(
-                    themeJsonContents.getString("my-theme").isBlank());
+            Assert.assertFalse(themeJsonContents.getString("my-theme").isBlank());
 
             Assert.assertTrue(themeJsonContents.hasKey("parent-theme"));
-            Assert.assertFalse(
-                    themeJsonContents.getString("parent-theme").isBlank());
+            Assert.assertFalse(themeJsonContents.getString("parent-theme").isBlank());
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to verify theme.json content in stats.json", e);
+            throw new RuntimeException("Failed to verify theme.json content in stats.json", e);
         }
     }
 
@@ -146,27 +140,19 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         // check that the bundle has entries in stats.json for custom and
         // parent theme
         try {
-            String themeJsonContent = FileUtils.readFileToString(statsJson,
-                    StandardCharsets.UTF_8);
+            String themeJsonContent = FileUtils.readFileToString(statsJson, StandardCharsets.UTF_8);
             JsonObject json = Json.parse(themeJsonContent);
             Assert.assertTrue(json.hasKey("frontendHashes"));
             JsonObject frontendHashes = json.getObject("frontendHashes");
 
-            Assert.assertTrue(frontendHashes
-                    .hasKey("themes/my-theme/components/my-component.css"));
-            Assert.assertFalse(frontendHashes
-                    .getString("themes/my-theme/components/my-component.css")
-                    .isBlank());
+            Assert.assertTrue(frontendHashes.hasKey("themes/my-theme/components/my-component.css"));
+            Assert.assertFalse(frontendHashes.getString("themes/my-theme/components/my-component.css").isBlank());
 
-            Assert.assertTrue(frontendHashes.hasKey(
-                    "themes/parent-theme/components/my-parent-component.css"));
-            Assert.assertFalse(frontendHashes.getString(
-                    "themes/parent-theme/components/my-parent-component.css")
-                    .isBlank());
+            Assert.assertTrue(frontendHashes.hasKey("themes/parent-theme/components/my-parent-component.css"));
+            Assert.assertFalse(
+                    frontendHashes.getString("themes/parent-theme/components/my-parent-component.css").isBlank());
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to verify hashes for shadow DOM stylesheets content in stats.json",
-                    e);
+            throw new RuntimeException("Failed to verify hashes for shadow DOM stylesheets content in stats.json", e);
         }
     }
 
@@ -195,17 +181,13 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     }
 
     private void verifyExternalAssetInBundle() {
-        File lineAwesome = new File(themeAssetsInBundle,
-                "line-awesome/dist/line-awesome/css/line-awesome.min.css");
-        Assert.assertTrue("External asset file is not found in the bundle",
-                lineAwesome.exists());
+        File lineAwesome = new File(themeAssetsInBundle, "line-awesome/dist/line-awesome/css/line-awesome.min.css");
+        Assert.assertTrue("External asset file is not found in the bundle", lineAwesome.exists());
     }
 
     private void verifyFontInBundle() {
-        File font = new File(themeAssetsInBundle,
-                "fonts/" + fontFile.getName());
-        Assert.assertTrue("Font file is not found in the bundle",
-                font.exists());
+        File font = new File(themeAssetsInBundle, "fonts/" + fontFile.getName());
+        Assert.assertTrue("Font file is not found in the bundle", font.exists());
     }
 
     private void waitUntilCustomBackgroundColor() {
@@ -240,13 +222,11 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
 
     private void changeBackgroundColor(String from, String to) {
         try {
-            String content = FileUtils.readFileToString(stylesCss,
-                    StandardCharsets.UTF_8);
+            String content = FileUtils.readFileToString(stylesCss, StandardCharsets.UTF_8);
             content = content.replace(from, to);
             FileUtils.write(stylesCss, content, StandardCharsets.UTF_8.name());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to apply new background styles",
-                    e);
+            throw new RuntimeException("Failed to apply new background styles", e);
         }
     }
 

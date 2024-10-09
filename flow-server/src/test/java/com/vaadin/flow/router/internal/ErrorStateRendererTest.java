@@ -59,8 +59,7 @@ public class ErrorStateRendererTest {
      */
     @Tag(Tag.A)
     @Route("npe")
-    public static class InfiniteLoopNPEView extends Component
-            implements BeforeEnterObserver {
+    public static class InfiniteLoopNPEView extends Component implements BeforeEnterObserver {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             event.rerouteToError(NullPointerException.class);
@@ -71,8 +70,7 @@ public class ErrorStateRendererTest {
      * This layout forwards to {@link InfiniteLoopNPEView}
      */
     @Tag(Tag.A)
-    public static class InfiniteLoopErrorLayout extends Component
-            implements RouterLayout, BeforeEnterObserver {
+    public static class InfiniteLoopErrorLayout extends Component implements RouterLayout, BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -82,17 +80,14 @@ public class ErrorStateRendererTest {
     }
 
     /**
-     * This class has a parent layout which forwards to
-     * {@link InfiniteLoopNPEView}
+     * This class has a parent layout which forwards to {@link InfiniteLoopNPEView}
      */
     @Tag(Tag.A)
     @ParentLayout(InfiniteLoopErrorLayout.class)
-    public static class InfiniteLoopErrorTarget extends Component
-            implements HasErrorParameter<Exception> {
+    public static class InfiniteLoopErrorTarget extends Component implements HasErrorParameter<Exception> {
 
         @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter<Exception> parameter) {
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<Exception> parameter) {
             return 500;
         }
 
@@ -104,8 +99,7 @@ public class ErrorStateRendererTest {
     }
 
     @Tag(Tag.A)
-    public static class HappyPathErrorLayout extends Component
-            implements RouterLayout, BeforeEnterObserver {
+    public static class HappyPathErrorLayout extends Component implements RouterLayout, BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -116,12 +110,10 @@ public class ErrorStateRendererTest {
 
     @Tag(Tag.A)
     @ParentLayout(HappyPathErrorLayout.class)
-    public static class HappyPathErrorTarget extends Component
-            implements HasErrorParameter<Exception> {
+    public static class HappyPathErrorTarget extends Component implements HasErrorParameter<Exception> {
 
         @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter<Exception> parameter) {
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<Exception> parameter) {
             return 500;
         }
 
@@ -131,19 +123,15 @@ public class ErrorStateRendererTest {
     public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
-        NavigationState state = new NavigationStateBuilder(
-                ui.getInternals().getRouter())
+        NavigationState state = new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(InfiniteLoopErrorTarget.class).build();
         ErrorStateRenderer renderer = new ErrorStateRenderer(state);
 
-        RouteConfiguration
-                .forRegistry(ui.getInternals().getRouter().getRegistry())
+        RouteConfiguration.forRegistry(ui.getInternals().getRouter().getRegistry())
                 .setAnnotatedRoute(InfiniteLoopNPEView.class);
 
-        ErrorParameter<Exception> parameter = new ErrorParameter<>(
-                Exception.class, new NullPointerException());
-        ErrorNavigationEvent event = new ErrorNavigationEvent(
-                ui.getInternals().getRouter(), new Location("error"), ui,
+        ErrorParameter<Exception> parameter = new ErrorParameter<>(Exception.class, new NullPointerException());
+        ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getInternals().getRouter(), new Location("error"), ui,
                 NavigationTrigger.CLIENT_SIDE, parameter);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
@@ -154,20 +142,16 @@ public class ErrorStateRendererTest {
     public void handle_openNPEView_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
-        NavigationState state = new NavigationStateBuilder(
-                ui.getInternals().getRouter())
+        NavigationState state = new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(InfiniteLoopNPEView.class).build();
         NavigationStateRenderer renderer = new NavigationStateRenderer(state);
 
-        RouteConfiguration
-                .forRegistry(ui.getInternals().getRouter().getRegistry())
+        RouteConfiguration.forRegistry(ui.getInternals().getRouter().getRegistry())
                 .setAnnotatedRoute(InfiniteLoopNPEView.class);
         ((ApplicationRouteRegistry) ui.getInternals().getRouter().getRegistry())
-                .setErrorNavigationTargets(
-                        Collections.singleton(InfiniteLoopErrorTarget.class));
+                .setErrorNavigationTargets(Collections.singleton(InfiniteLoopErrorTarget.class));
 
-        NavigationEvent event = new NavigationEvent(
-                ui.getInternals().getRouter(), new Location("npe"), ui,
+        NavigationEvent event = new NavigationEvent(ui.getInternals().getRouter(), new Location("npe"), ui,
                 NavigationTrigger.CLIENT_SIDE);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
@@ -178,9 +162,8 @@ public class ErrorStateRendererTest {
         routerLinkState.put("scrollPositionX", 0d);
         routerLinkState.put("scrollPositionY", 0d);
 
-        event = new NavigationEvent(ui.getInternals().getRouter(),
-                new Location("npe"), ui, NavigationTrigger.ROUTER_LINK,
-                routerLinkState, false);
+        event = new NavigationEvent(ui.getInternals().getRouter(), new Location("npe"), ui,
+                NavigationTrigger.ROUTER_LINK, routerLinkState, false);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
         renderer.handle(event);
@@ -190,24 +173,19 @@ public class ErrorStateRendererTest {
     public void handle_errorViewLayoutForwardsToAView_viewIsNavigated() {
         UI ui = configureMocks();
 
-        NavigationState state = new NavigationStateBuilder(
-                ui.getInternals().getRouter())
+        NavigationState state = new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(HappyPathErrorTarget.class).build();
         ErrorStateRenderer renderer = new ErrorStateRenderer(state);
 
-        RouteConfiguration
-                .forRegistry(ui.getInternals().getRouter().getRegistry())
+        RouteConfiguration.forRegistry(ui.getInternals().getRouter().getRegistry())
                 .setAnnotatedRoute(HappyPathViewView.class);
 
-        ErrorParameter<Exception> parameter = new ErrorParameter<>(
-                Exception.class, new NullPointerException());
-        ErrorNavigationEvent event = new ErrorNavigationEvent(
-                ui.getInternals().getRouter(), new Location("error"), ui,
+        ErrorParameter<Exception> parameter = new ErrorParameter<>(Exception.class, new NullPointerException());
+        ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getInternals().getRouter(), new Location("error"), ui,
                 NavigationTrigger.CLIENT_SIDE, parameter);
         Assert.assertEquals(200, renderer.handle(event));
 
-        List<HasElement> chain = ui.getInternals()
-                .getActiveRouterTargetsChain();
+        List<HasElement> chain = ui.getInternals().getActiveRouterTargetsChain();
         Assert.assertEquals(1, chain.size());
         Assert.assertEquals(HappyPathViewView.class, chain.get(0).getClass());
     }

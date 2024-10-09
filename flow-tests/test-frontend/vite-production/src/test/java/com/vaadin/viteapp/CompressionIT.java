@@ -20,8 +20,7 @@ public class CompressionIT {
     public void resourcesAvailableAsUncompressed() throws Exception {
         String bundleName = getJsBundleName();
 
-        String file = IOUtils.toString(new URL(getRootURL() + bundleName),
-                StandardCharsets.UTF_8);
+        String file = IOUtils.toString(new URL(getRootURL() + bundleName), StandardCharsets.UTF_8);
         Assert.assertTrue(file.contains("generated-flow-imports"));
     }
 
@@ -30,18 +29,15 @@ public class CompressionIT {
         String bundleName = getJsBundleName();
 
         URL compressedUrl = new URL(getRootURL() + bundleName + ".br");
-        BrotliInputStream stream = new BrotliInputStream(
-                compressedUrl.openStream());
+        BrotliInputStream stream = new BrotliInputStream(compressedUrl.openStream());
 
         String file = IOUtils.toString(stream, StandardCharsets.UTF_8);
         Assert.assertTrue(file.contains("generated-flow-imports"));
     }
 
     private String getJsBundleName() throws Exception {
-        String indexHtml = IOUtils.toString(
-                new URL(getRootURL() + "/index.html"), StandardCharsets.UTF_8);
-        Pattern p = Pattern.compile(".* src=\"./VAADIN/build/([^\"]*).*",
-                Pattern.DOTALL);
+        String indexHtml = IOUtils.toString(new URL(getRootURL() + "/index.html"), StandardCharsets.UTF_8);
+        Pattern p = Pattern.compile(".* src=\"./VAADIN/build/([^\"]*).*", Pattern.DOTALL);
 
         Matcher m = p.matcher(indexHtml);
         if (!m.matches()) {

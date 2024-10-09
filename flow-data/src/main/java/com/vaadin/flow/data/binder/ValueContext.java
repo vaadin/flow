@@ -24,8 +24,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 
 /**
- * Value context for {@code Converter}s. Contains relevant information for
- * converting values.
+ * Value context for {@code Converter}s. Contains relevant information for converting values.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -71,9 +70,8 @@ public class ValueContext implements Serializable {
      * @param binder
      *            the Binder using the value context
      * @param component
-     *            The component related to current value. Can be null. If the
-     *            component implements {@link HasValue}, it will be returned by
-     *            {@link #getHasValue()} as well.
+     *            The component related to current value. Can be null. If the component implements {@link HasValue}, it
+     *            will be returned by {@link #getHasValue()} as well.
      */
     public ValueContext(Binder binder, Component component) {
         this.binder = binder;
@@ -96,8 +94,7 @@ public class ValueContext implements Serializable {
      * @param hasValue
      *            The value source related to current value. Can be null.
      */
-    public ValueContext(Binder binder, Component component,
-            HasValue<?, ?> hasValue) {
+    public ValueContext(Binder binder, Component component, HasValue<?, ?> hasValue) {
         this.binder = binder;
         this.component = component;
         this.hasValue = hasValue;
@@ -114,11 +111,9 @@ public class ValueContext implements Serializable {
      * @param locale
      *            The locale used with conversion. Can be {@code null}.
      * @param hasValue
-     *            The value source related to current value. Can be
-     *            {@code null}.
+     *            The value source related to current value. Can be {@code null}.
      */
-    public ValueContext(Binder binder, Component component,
-            HasValue<?, ?> hasValue, Locale locale) {
+    public ValueContext(Binder binder, Component component, HasValue<?, ?> hasValue, Locale locale) {
         this.binder = binder;
         this.component = component;
         this.hasValue = hasValue;
@@ -157,9 +152,8 @@ public class ValueContext implements Serializable {
      * Constructor for {@code ValueContext}.
      *
      * @param component
-     *            The component related to current value. Can be null. If the
-     *            component implements {@link HasValue}, it will be returned by
-     *            {@link #getHasValue()} as well.
+     *            The component related to current value. Can be null. If the component implements {@link HasValue}, it
+     *            will be returned by {@link #getHasValue()} as well.
      * @deprecated Use the version with binder reference instead
      */
     @Deprecated
@@ -199,13 +193,11 @@ public class ValueContext implements Serializable {
      * @param locale
      *            The locale used with conversion. Can be {@code null}.
      * @param hasValue
-     *            The value source related to current value. Can be
-     *            {@code null}.
+     *            The value source related to current value. Can be {@code null}.
      * @deprecated Use the version with binder reference instead
      */
     @Deprecated
-    public ValueContext(Component component, HasValue<?, ?> hasValue,
-            Locale locale) {
+    public ValueContext(Component component, HasValue<?, ?> hasValue, Locale locale) {
         this.binder = null;
         this.component = component;
         this.hasValue = hasValue;
@@ -227,8 +219,7 @@ public class ValueContext implements Serializable {
     }
 
     /**
-     * Returns an {@code Optional} for the {@code Component} related to value
-     * conversion.
+     * Returns an {@code Optional} for the {@code Component} related to value conversion.
      *
      * @return the optional of component
      */
@@ -237,8 +228,7 @@ public class ValueContext implements Serializable {
     }
 
     /**
-     * Returns an {@code Optional} for the {@code Locale} used in the value
-     * conversion.
+     * Returns an {@code Optional} for the {@code Locale} used in the value conversion.
      *
      * @return the optional of locale
      */
@@ -247,9 +237,8 @@ public class ValueContext implements Serializable {
     }
 
     /**
-     * Returns an {@code Optional} for the {@code HasValue} used in the value
-     * conversion. In certain complicated cases, ex. cross-field validation,
-     * HasValue might be not available.
+     * Returns an {@code Optional} for the {@code HasValue} used in the value conversion. In certain complicated cases,
+     * ex. cross-field validation, HasValue might be not available.
      *
      * @return the optional of {@code HasValue}
      */
@@ -259,8 +248,7 @@ public class ValueContext implements Serializable {
     }
 
     /**
-     * Returns an {@code Optional} for the {@code Binder} owning this value
-     * context.
+     * Returns an {@code Optional} for the {@code Binder} owning this value context.
      *
      * @return the optional of {@code Binder}
      */

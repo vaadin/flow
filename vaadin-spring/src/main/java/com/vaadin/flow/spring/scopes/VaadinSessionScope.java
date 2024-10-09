@@ -23,11 +23,9 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.SpringVaadinSession;
 
 /**
- * Implementation of Spring's
- * {@link org.springframework.beans.factory.config.Scope} that binds the beans
- * to the current {@link com.vaadin.flow.server.VaadinSession} (as opposed to
- * the current Servlet session). Registered by default as the scope "
- * {@value #VAADIN_SESSION_SCOPE_NAME}".
+ * Implementation of Spring's {@link org.springframework.beans.factory.config.Scope} that binds the beans to the current
+ * {@link com.vaadin.flow.server.VaadinSession} (as opposed to the current Servlet session). Registered by default as
+ * the scope " {@value #VAADIN_SESSION_SCOPE_NAME}".
  *
  * @see com.vaadin.flow.spring.annotation.VaadinSessionScope
  *
@@ -46,11 +44,9 @@ public class VaadinSessionScope extends AbstractScope {
             super(session);
             if (session instanceof SpringVaadinSession) {
                 sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
+                ((SpringVaadinSession) session).addDestroyListener(event -> destroy());
             } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
+                sessionDestroyListenerRegistration = session.getService().addSessionDestroyListener(event -> destroy());
             }
         }
 
@@ -69,8 +65,7 @@ public class VaadinSessionScope extends AbstractScope {
     }
 
     @Override
-    public void postProcessBeanFactory(
-            ConfigurableListableBeanFactory beanFactory) {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
         beanFactory.registerScope(VAADIN_SESSION_SCOPE_NAME, this);
         ObjectFactory<VaadinSession> factory = this::getVaadinSession;
         beanFactory.registerResolvableDependency(VaadinSession.class, factory);

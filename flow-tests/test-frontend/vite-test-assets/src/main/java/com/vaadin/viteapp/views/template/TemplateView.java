@@ -36,8 +36,7 @@ public class TemplateView extends Div {
 
         // Add component by reflection to excercise fallback chunk
         try {
-            Class<?> clazz = Class.forName(
-                    "com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent");
+            Class<?> clazz = Class.forName("com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent");
             add((Component) clazz.newInstance());
         } catch (Exception e) {
             e.printStackTrace();

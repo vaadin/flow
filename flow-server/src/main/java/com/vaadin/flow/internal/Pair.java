@@ -25,8 +25,7 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class Pair<U extends Serializable, V extends Serializable>
-        implements Serializable {
+public class Pair<U extends Serializable, V extends Serializable> implements Serializable {
 
     private final U first;
     private final V second;

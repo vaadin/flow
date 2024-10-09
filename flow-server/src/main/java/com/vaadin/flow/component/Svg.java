@@ -27,13 +27,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * A component that displays a given SVG image.
  * <p>
- * Note that it is the developer's responsibility to sanitize and remove any
- * dangerous parts of the SVG before sending it to the user through this
- * component. Passing raw input data to the user will possibly lead to
- * cross-site scripting attacks.
+ * Note that it is the developer's responsibility to sanitize and remove any dangerous parts of the SVG before sending
+ * it to the user through this component. Passing raw input data to the user will possibly lead to cross-site scripting
+ * attacks.
  * <p>
- * Note, because of implementation details, we currently wrap the SVG in a div
- * element. This might change in the future.
+ * Note, because of implementation details, we currently wrap the SVG in a div element. This might change in the future.
  *
  * @author Vaadin Ltd
  * @since 24.0
@@ -41,8 +39,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Svg extends Component {
 
     /**
-     * Creates an instance based on the given SVG input. The string must have
-     * exactly one root element.
+     * Creates an instance based on the given SVG input. The string must have exactly one root element.
      *
      * @param stream
      *            the SVG to display
@@ -53,8 +50,7 @@ public class Svg extends Component {
     }
 
     /**
-     * Creates an instance based on the given SVG string. The string must have
-     * exactly one root element.
+     * Creates an instance based on the given SVG string. The string must have exactly one root element.
      *
      * @param svg
      *            the SVG to display
@@ -101,14 +97,11 @@ public class Svg extends Component {
         }
         try {
             /*
-             * Cannot use any of the methods that accept a stream since they all
-             * parse as a document rather than as a body fragment. The logic for
-             * reading a stream into a String is the same that is used
-             * internally by JSoup if you strip away all the logic to guess an
-             * encoding in case one isn't defined.
+             * Cannot use any of the methods that accept a stream since they all parse as a document rather than as a
+             * body fragment. The logic for reading a stream into a String is the same that is used internally by JSoup
+             * if you strip away all the logic to guess an encoding in case one isn't defined.
              */
-            return UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
-                    .toString();
+            return UTF_8.decode(DataUtil.readToByteBuffer(stream, 0)).toString();
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read SVG from stream", e);
         }
@@ -119,8 +112,7 @@ public class Svg extends Component {
             // remove possible xml header & doc types
             int startIndex = svgInput.indexOf("<svg");
             if (startIndex == -1) {
-                throw new IllegalArgumentException(
-                        "The content don't appear to be SVG");
+                throw new IllegalArgumentException("The content don't appear to be SVG");
             }
             svgInput = svgInput.substring(startIndex);
         }

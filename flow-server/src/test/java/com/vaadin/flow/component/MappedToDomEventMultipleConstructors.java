@@ -17,16 +17,15 @@
 package com.vaadin.flow.component;
 
 @DomEvent("dom-event")
-public class MappedToDomEventMultipleConstructors
-        extends ComponentEvent<Component> {
+public class MappedToDomEventMultipleConstructors extends ComponentEvent<Component> {
 
-    public MappedToDomEventMultipleConstructors(Component source,
-            boolean fromClient, @EventData("someParam") int someParam) {
+    public MappedToDomEventMultipleConstructors(Component source, boolean fromClient,
+            @EventData("someParam") int someParam) {
         super(source, fromClient);
     }
 
-    public MappedToDomEventMultipleConstructors(Component source,
-            boolean fromClient, @EventData("otherParam") boolean otherParam) {
+    public MappedToDomEventMultipleConstructors(Component source, boolean fromClient,
+            @EventData("otherParam") boolean otherParam) {
         super(source, fromClient);
     }
 

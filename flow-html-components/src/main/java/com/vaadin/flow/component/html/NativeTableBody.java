@@ -27,8 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TBODY)
-public class NativeTableBody extends HtmlContainer
-        implements NativeTableRowContainer, ClickNotifier<NativeTableBody> {
+public class NativeTableBody extends HtmlContainer implements NativeTableRowContainer, ClickNotifier<NativeTableBody> {
 
     /**
      * Creates a new empty table body.

@@ -18,17 +18,12 @@ import com.vaadin.flow.component.template.Id;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
- * @deprecated Use
- *             {@link com.vaadin.flow.component.template.internal.IdCollector}
- *             instead. Polymer template support is deprecated - we recommend
- *             you to use {@code LitTemplate} instead. Read more details from
- *             <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Use {@link com.vaadin.flow.component.template.internal.IdCollector} instead. Polymer template support is
+ *             deprecated - we recommend you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
-public class IdCollector
-        extends com.vaadin.flow.component.template.internal.IdCollector {
+public class IdCollector extends com.vaadin.flow.component.template.internal.IdCollector {
 
     /**
      * Creates a collector the the given template.
@@ -36,14 +31,11 @@ public class IdCollector
      * @param templateClass
      *            the template class, containing the {@code @Id} fields
      * @param templateFile
-     *            The name of the file containing the template or
-     *            <code>null</code> if not available {@code null}
+     *            The name of the file containing the template or <code>null</code> if not available {@code null}
      * @param templateRoot
-     *            The root element of the template or <code>null</code> if not
-     *            available
+     *            The root element of the template or <code>null</code> if not available
      */
-    public IdCollector(Class<?> templateClass, String templateFile,
-            Element templateRoot) {
+    public IdCollector(Class<?> templateClass, String templateFile, Element templateRoot) {
         super(templateClass, templateFile, templateRoot);
     }
 

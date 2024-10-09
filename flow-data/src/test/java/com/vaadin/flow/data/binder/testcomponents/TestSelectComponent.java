@@ -17,15 +17,13 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 
 @Tag("test-select-field")
-public class TestSelectComponent<T>
-        extends AbstractSinglePropertyField<TestSelectComponent<T>, Set<T>>
+public class TestSelectComponent<T> extends AbstractSinglePropertyField<TestSelectComponent<T>, Set<T>>
         implements MultiSelect<TestSelectComponent<T>, T>, HasValidation {
 
     private final KeyMapper<T> keyMapper = new KeyMapper<>(i -> i);
 
     public TestSelectComponent() {
-        super("value", Collections.emptySet(), JsonArray.class,
-                TestSelectComponent::presentationToModel,
+        super("value", Collections.emptySet(), JsonArray.class, TestSelectComponent::presentationToModel,
                 TestSelectComponent::modelToPresentation);
     }
 
@@ -43,11 +41,9 @@ public class TestSelectComponent<T>
     }
 
     @Override
-    public Registration addSelectionListener(
-            MultiSelectionListener<TestSelectComponent<T>, T> listener) {
+    public Registration addSelectionListener(MultiSelectionListener<TestSelectComponent<T>, T> listener) {
         return addValueChangeListener(event -> listener
-                .selectionChange(new MultiSelectionEvent<>(this, this,
-                        event.getOldValue(), event.isFromClient())));
+                .selectionChange(new MultiSelectionEvent<>(this, this, event.getOldValue(), event.isFromClient())));
     }
 
     private String errorMessage = "";
@@ -76,8 +72,7 @@ public class TestSelectComponent<T>
         return invalid;
     }
 
-    private static <T> Set<T> presentationToModel(TestSelectComponent<T> group,
-            JsonArray presentation) {
+    private static <T> Set<T> presentationToModel(TestSelectComponent<T> group, JsonArray presentation) {
         Set<T> set = new HashSet<>();
         for (int i = 0; i < presentation.length(); i++) {
             set.add(group.keyMapper.get(presentation.getString(i)));
@@ -85,15 +80,13 @@ public class TestSelectComponent<T>
         return set;
     }
 
-    private static <T> JsonArray modelToPresentation(
-            TestSelectComponent<T> group, Set<T> model) {
+    private static <T> JsonArray modelToPresentation(TestSelectComponent<T> group, Set<T> model) {
         JsonArray array = Json.createArray();
         if (model.isEmpty()) {
             return array;
         }
 
-        model.stream().map(group.keyMapper::key)
-                .forEach(key -> array.set(array.length(), key));
+        model.stream().map(group.keyMapper::key).forEach(key -> array.set(array.length(), key));
         return array;
     }
 

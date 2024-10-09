@@ -27,12 +27,10 @@ import java.util.Comparator;
 public class DateRangeValidator extends RangeValidator<LocalDate> {
 
     /**
-     * Creates a validator for checking that a LocalDate is within a given
-     * range.
+     * Creates a validator for checking that a LocalDate is within a given range.
      * <p>
-     * By default the range is inclusive i.e. both minValue and maxValue are
-     * valid values. Use {@link #setMinValueIncluded(boolean)} or
-     * {@link #setMaxValueIncluded(boolean)} to change it.
+     * By default the range is inclusive i.e. both minValue and maxValue are valid values. Use
+     * {@link #setMinValueIncluded(boolean)} or {@link #setMaxValueIncluded(boolean)} to change it.
      * </p>
      *
      * @param errorMessage
@@ -42,8 +40,7 @@ public class DateRangeValidator extends RangeValidator<LocalDate> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public DateRangeValidator(String errorMessage, LocalDate minValue,
-            LocalDate maxValue) {
+    public DateRangeValidator(String errorMessage, LocalDate minValue, LocalDate maxValue) {
         super(errorMessage, Comparator.naturalOrder(), minValue, maxValue);
     }
 

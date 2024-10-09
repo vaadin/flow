@@ -14,8 +14,7 @@ public class ComplexDialogShortcutIT extends DialogShortcutIT {
         listenToShortcutOnDialog(firstDialogIndex);
         pressShortcutKey(getDialogInput(firstDialogIndex));
         // focus on dialog -> only dialog shortcut occurs
-        validateLatestShortcutEvent(0,
-                DialogShortcutView.DIALOG_ID + firstDialogIndex);
+        validateLatestShortcutEvent(0, DialogShortcutView.DIALOG_ID + firstDialogIndex);
 
         init(); // need to reset elements too
 
@@ -38,9 +37,7 @@ public class ComplexDialogShortcutIT extends DialogShortcutIT {
     }
 
     private void waitForTransport(int expectedDialogCounter) {
-        waitForElementPresent(By.id(
-                ComplexDialogShortcutView.OVERLAY_ID + expectedDialogCounter));
-        waitForElementPresent(By.id(
-                ComplexDialogShortcutView.CONTENT_ID + expectedDialogCounter));
+        waitForElementPresent(By.id(ComplexDialogShortcutView.OVERLAY_ID + expectedDialogCounter));
+        waitForElementPresent(By.id(ComplexDialogShortcutView.CONTENT_ID + expectedDialogCounter));
     }
 }

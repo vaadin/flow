@@ -21,8 +21,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Represents <code>target</code> attribute values for an <code>&lt;a&gt;</code>
- * element.
+ * Represents <code>target</code> attribute values for an <code>&lt;a&gt;</code> element.
  *
  * @author Vaadin Ltd
  * @since
@@ -48,9 +47,8 @@ public interface AnchorTargetValue extends Serializable {
      * @return an object wrapping the string value
      */
     public static AnchorTargetValue forString(String value) {
-        Optional<AnchorTarget> target = Stream.of(AnchorTarget.values()).filter(
-                type -> type.getValue().equals(Objects.requireNonNull(value)))
-                .findFirst();
+        Optional<AnchorTarget> target = Stream.of(AnchorTarget.values())
+                .filter(type -> type.getValue().equals(Objects.requireNonNull(value))).findFirst();
         if (target.isPresent()) {
             return target.get();
         }

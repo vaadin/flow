@@ -24,8 +24,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.HasValidation;
 
 /**
- * Base class for validation tests of components that implement
- * {@link HasValidation}.
+ * Base class for validation tests of components that implement {@link HasValidation}.
  *
  * @see ValidationTestView
  * @since 1.0
@@ -92,8 +91,7 @@ public abstract class AbstractValidationTest extends AbstractComponentIT {
 
     private void assertInvalid() {
         String invalid = field.getAttribute("invalid");
-        Assert.assertTrue("The element should be in invalid state",
-                Boolean.parseBoolean(invalid));
+        Assert.assertTrue("The element should be in invalid state", Boolean.parseBoolean(invalid));
 
         String errorMessage = field.getAttribute("errorMessage");
         Assert.assertEquals("Invalidated from server", errorMessage);
@@ -101,8 +99,7 @@ public abstract class AbstractValidationTest extends AbstractComponentIT {
 
     private void assertValid() {
         String invalid = field.getAttribute("invalid");
-        Assert.assertFalse("The element should be in valid state",
-                Boolean.parseBoolean(invalid));
+        Assert.assertFalse("The element should be in valid state", Boolean.parseBoolean(invalid));
 
         String errorMessage = field.getAttribute("errorMessage");
         Assert.assertEquals("", errorMessage);

@@ -23,10 +23,9 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 
 /**
- * An updater that it's run when the servlet context is initialised in dev-mode
- * or when flow-maven-plugin goals are run in order to update Flow imports file
- * and {@value FrontendUtils#JAR_RESOURCES_FOLDER} contents by visiting all
- * classes with {@link JsModule} and {@link Theme} annotations.
+ * An updater that it's run when the servlet context is initialised in dev-mode or when flow-maven-plugin goals are run
+ * in order to update Flow imports file and {@value FrontendUtils#JAR_RESOURCES_FOLDER} contents by visiting all classes
+ * with {@link JsModule} and {@link Theme} annotations.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -35,8 +34,7 @@ import com.vaadin.flow.theme.Theme;
 public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
-        UpdateMainImportsFile(Options options,
-                FrontendDependenciesScanner scanner,
+        UpdateMainImportsFile(Options options, FrontendDependenciesScanner scanner,
                 GeneratedFilesSupport generatedFilesSupport) {
             super(options, scanner, generatedFilesSupport);
         }
@@ -63,8 +61,7 @@ public class TaskUpdateImports extends NodeUpdater {
      * @param options
      *            options for the task
      */
-    TaskUpdateImports(FrontendDependenciesScanner frontendDepScanner,
-            Options options) {
+    TaskUpdateImports(FrontendDependenciesScanner frontendDepScanner, Options options) {
         super(frontendDepScanner, options);
     }
 
@@ -75,8 +72,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(options,
-                frontDeps, generatedFilesSupport);
+        UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(options, frontDeps, generatedFilesSupport);
         mainUpdate.run();
     }
 

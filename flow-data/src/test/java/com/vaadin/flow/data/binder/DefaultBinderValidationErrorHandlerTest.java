@@ -47,8 +47,8 @@ public class DefaultBinderValidationErrorHandlerTest {
 
         Assert.assertTrue(field.isInvalid());
 
-        Assert.assertTrue(field.getElement().getThemeList()
-                .contains(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH)));
+        Assert.assertTrue(
+                field.getElement().getThemeList().contains(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH)));
     }
 
     @Test
@@ -56,21 +56,19 @@ public class DefaultBinderValidationErrorHandlerTest {
         TestHasTheme field = new TestHasTheme();
         handler.handleError(field, ValidationResult.error(""));
 
-        Mockito.verify(themes)
-                .add(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH));
+        Mockito.verify(themes).add(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH));
     }
 
     @Test
     public void clearError_setValidationStatus_clearErrorTheme() {
         field.setInvalid(true);
-        field.getElement().getThemeList()
-                .add(ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH));
+        field.getElement().getThemeList().add(ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH));
         handler.clearError(field);
 
         Assert.assertFalse(field.isInvalid());
 
-        Assert.assertFalse(field.getElement().getThemeList().contains(
-                ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH)));
+        Assert.assertFalse(
+                field.getElement().getThemeList().contains(ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH)));
     }
 
     @Test
@@ -78,7 +76,6 @@ public class DefaultBinderValidationErrorHandlerTest {
         TestHasTheme field = new TestHasTheme();
         handler.clearError(field);
 
-        Mockito.verify(themes)
-                .remove(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH));
+        Mockito.verify(themes).remove(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH));
     }
 }

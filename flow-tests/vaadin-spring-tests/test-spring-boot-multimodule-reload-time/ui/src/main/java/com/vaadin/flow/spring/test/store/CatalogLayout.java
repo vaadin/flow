@@ -44,8 +44,7 @@ public class CatalogLayout extends VerticalLayout implements RouterLayout {
         layout.addAndExpand(leftSideLayout, rightSideLayout);
 
         for (int index = 0; index < 10; index++) {
-            leftSideLayout.add(new RouterLink("Product " + index,
-                    ProductView.class, index));
+            leftSideLayout.add(new RouterLink("Product " + index, ProductView.class, index));
         }
         add(layout);
     }

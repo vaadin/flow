@@ -51,8 +51,7 @@ import jakarta.servlet.MultipartConfigElement;
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
-@Import({ VaadinApplicationConfiguration.class,
-        VaadinServletConfiguration.class })
+@Import({ VaadinApplicationConfiguration.class, VaadinServletConfiguration.class })
 public class SpringBootAutoConfiguration {
 
     @Autowired
@@ -74,8 +73,7 @@ public class SpringBootAutoConfiguration {
     }
 
     /**
-     * Creates a {@link ServletRegistrationBean} instance with Spring aware
-     * Vaadin servlet.
+     * Creates a {@link ServletRegistrationBean} instance with Spring aware Vaadin servlet.
      *
      * @param multipartConfig
      *            multipart configuration, if available
@@ -94,9 +92,7 @@ public class SpringBootAutoConfiguration {
 
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            initParameters.put(
-                    VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
-                    "");
+            initParameters.put(VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH, "");
         }
 
         String pushUrl = rootMapping ? "" : mapping.replace("/*", "");
@@ -107,17 +103,14 @@ public class SpringBootAutoConfiguration {
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);
         registration.setInitParameters(initParameters);
-        registration
-                .setAsyncSupported(configurationProperties.isAsyncSupported());
-        registration.setName(
-                ClassUtils.getShortNameAsProperty(SpringServlet.class));
+        registration.setAsyncSupported(configurationProperties.isAsyncSupported());
+        registration.setName(ClassUtils.getShortNameAsProperty(SpringServlet.class));
         // Setup multi part form processing for non root servlet mapping to be
         // able to process Hilla login out of the box
         if (!rootMapping) {
             multipartConfig.ifAvailable(registration::setMultipartConfig);
         }
-        registration.setLoadOnStartup(
-                configurationProperties.isLoadOnStartup() ? 1 : -1);
+        registration.setLoadOnStartup(configurationProperties.isLoadOnStartup() ? 1 : -1);
         return registration;
     }
 

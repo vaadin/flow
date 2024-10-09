@@ -16,8 +16,7 @@ import com.vaadin.flow.server.VaadinService;
 /**
  * Template content parser.
  * <p>
- * It returns a JSOUP element representing the content of template for the given
- * template class.
+ * It returns a JSOUP element representing the content of template for the given template class.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -25,11 +24,9 @@ import com.vaadin.flow.server.VaadinService;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use {@code LitTemplateParser} for {@code LitTemplate} components.
- *             Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Use {@code LitTemplateParser} for {@code LitTemplate} components. Polymer template support is deprecated
+ *             - we recommend you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 @FunctionalInterface
@@ -38,8 +35,7 @@ public interface TemplateParser {
     /**
      * Wrapper for the parsing result.
      * <p>
-     * The data contains path uri where the template is declared and its content
-     * as an {@link Element} instance.
+     * The data contains path uri where the template is declared and its content as an {@link Element} instance.
      *
      * @author Vaadin Ltd
      * @since 1.0
@@ -78,8 +74,8 @@ public interface TemplateParser {
     /**
      * Template parser factory.
      * <p>
-     * To be able to create a parser which can be provided as SPI use
-     * {@link Instantiator} to create the factory and then get a parser from it:
+     * To be able to create a parser which can be provided as SPI use {@link Instantiator} to create the factory and
+     * then get a parser from it:
      *
      * <pre>
      * <code>
@@ -107,8 +103,8 @@ public interface TemplateParser {
     }
 
     /**
-     * Gets the template data which contains a JSOUP {@link Element}
-     * representing the template content and the template uri.
+     * Gets the template data which contains a JSOUP {@link Element} representing the template content and the template
+     * uri.
      *
      * @param clazz
      *            the template class
@@ -119,6 +115,5 @@ public interface TemplateParser {
      *
      * @return the template data
      */
-    TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
-            String tag, VaadinService service);
+    TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz, String tag, VaadinService service);
 }

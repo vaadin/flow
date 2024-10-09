@@ -52,8 +52,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     private final StateNode node;
 
     /**
-     * Private constructor for initializing with an existing node and state
-     * provider.
+     * Private constructor for initializing with an existing node and state provider.
      *
      * @param node
      *            the state node, not null
@@ -66,8 +65,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
         if (!stateProvider.supports(node)) {
             throw new IllegalArgumentException(
-                    stateProvider.getClass().getSimpleName()
-                            + " does not support the given state node");
+                    stateProvider.getClass().getSimpleName() + " does not support the given state node");
         }
 
         this.stateProvider = stateProvider;
@@ -114,9 +112,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public Element getChild(int index) {
         if (index < 0 || index >= getChildCount()) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "get",
-                    index, getChildCount()));
+            throw new IllegalArgumentException(
+                    String.format(CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "get", index, getChildCount()));
         }
 
         return getStateProvider().getChild(getNode(), index);
@@ -140,8 +137,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N appendChild(Element... children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
         return appendChild(Arrays.asList(children));
@@ -156,8 +152,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N appendChild(Collection<Element> children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
         insertChild(getChildCount(), children);
@@ -168,10 +163,9 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     /**
      * Appends the given children as the virtual children of the element.
      * <p>
-     * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory, but it's not attached
-     * to the DOM tree. The resulting element is referenced via the server side
-     * {@link Element} in JS function call as usual.
+     * The virtual child is not really a child of the DOM element. The client-side counterpart is created in the memory,
+     * but it's not attached to the DOM tree. The resulting element is referenced via the server side {@link Element} in
+     * JS function call as usual.
      *
      * @param children
      *            the element(s) to add
@@ -179,8 +173,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N appendVirtualChild(Element... children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
         return appendVirtualChild(Arrays.asList(children));
@@ -189,10 +182,9 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     /**
      * Appends the given children as the virtual children of the element.
      * <p>
-     * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory, but it's not attached
-     * to the DOM tree. The resulting element is referenced via the server side
-     * {@link Element} in JS function call as usual.
+     * The virtual child is not really a child of the DOM element. The client-side counterpart is created in the memory,
+     * but it's not attached to the DOM tree. The resulting element is referenced via the server side {@link Element} in
+     * JS function call as usual.
      *
      * @param children
      *            the element(s) to add
@@ -200,23 +192,19 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N appendVirtualChild(Collection<Element> children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
         for (Element child : children) {
             if (child == null) {
-                throw new IllegalArgumentException(
-                        "Element to insert must not be null");
+                throw new IllegalArgumentException("Element to insert must not be null");
             }
             Node<?> parentNode = child.getParentNode();
             if (parentNode != null) {
                 throw new IllegalArgumentException(
-                        "Element to insert already has a parent and can't "
-                                + "be added as a virtual child");
+                        "Element to insert already has a parent and can't " + "be added as a virtual child");
             }
-            getStateProvider().appendVirtualChild(getNode(), child,
-                    NodeProperties.IN_MEMORY_CHILD, null);
+            getStateProvider().appendVirtualChild(getNode(), child, NodeProperties.IN_MEMORY_CHILD, null);
             ensureChildHasParent(child, true);
         }
 
@@ -224,63 +212,53 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     /**
-     * Removes the given children that have been attached as the virtual
-     * children of this element.
+     * Removes the given children that have been attached as the virtual children of this element.
      * <p>
-     * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory but it's not attached to
-     * the DOM tree. The resulting element is referenced via the server side
-     * {@link Element} in JS function call as usual. *
+     * The virtual child is not really a child of the DOM element. The client-side counterpart is created in the memory
+     * but it's not attached to the DOM tree. The resulting element is referenced via the server side {@link Element} in
+     * JS function call as usual. *
      *
      * @param children
      *            the element(s) to remove
      * @return this element
      */
     /*
-     * The use case for removing virtual children is when exported Flow web
-     * components are detached from their parent due to missing heart beats +
-     * timeout.
+     * The use case for removing virtual children is when exported Flow web components are detached from their parent
+     * due to missing heart beats + timeout.
      */
     public N removeVirtualChild(Element... children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
         return removeVirtualChild(Arrays.asList(children));
     }
 
     /**
-     * Removes the given children that have been attached as the virtual
-     * children of this element.
+     * Removes the given children that have been attached as the virtual children of this element.
      * <p>
-     * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory but it's not attached to
-     * the DOM tree. The resulting element is referenced via the server side
-     * {@link Element} in JS function call as usual. *
+     * The virtual child is not really a child of the DOM element. The client-side counterpart is created in the memory
+     * but it's not attached to the DOM tree. The resulting element is referenced via the server side {@link Element} in
+     * JS function call as usual. *
      *
      * @param children
      *            the element(s) to remove
      * @return this element
      */
     /*
-     * The use case for removing virtual children is when exported Flow web
-     * components are detached from their parent due to missing heart beats +
-     * timeout.
+     * The use case for removing virtual children is when exported Flow web components are detached from their parent
+     * due to missing heart beats + timeout.
      */
     public N removeVirtualChild(Collection<Element> children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
         if (getNode().hasFeature(VirtualChildrenList.class)) {
-            VirtualChildrenList childrenList = getNode()
-                    .getFeature(VirtualChildrenList.class);
+            VirtualChildrenList childrenList = getNode().getFeature(VirtualChildrenList.class);
             for (Element child : children) {
                 if (child == null) {
-                    throw new IllegalArgumentException(
-                            "Element to remove must not be null");
+                    throw new IllegalArgumentException("Element to remove must not be null");
                 }
                 int index = childrenList.indexOf(child.getNode());
                 if (index == -1) {
@@ -297,8 +275,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     /**
      * Gets whether this element is a virtual child of its parent.
      *
-     * @return <code>true</code> if the element has a parent and the element is
-     *         a virtual child of it, <code>false</code> otherwise.
+     * @return <code>true</code> if the element has a parent and the element is a virtual child of it,
+     *         <code>false</code> otherwise.
      */
     public boolean isVirtualChild() {
         Node<?> parentNode = getParentNode();
@@ -306,13 +284,10 @@ public abstract class Node<N extends Node<N>> implements Serializable {
             return false;
         }
         if (!parentNode.getNode().hasFeature(VirtualChildrenList.class)
-                || !parentNode.getNode()
-                        .getFeatureIfInitialized(VirtualChildrenList.class)
-                        .isPresent()) {
+                || !parentNode.getNode().getFeatureIfInitialized(VirtualChildrenList.class).isPresent()) {
             return false;
         }
-        Iterator<StateNode> iterator = parentNode.getNode()
-                .getFeature(VirtualChildrenList.class).iterator();
+        Iterator<StateNode> iterator = parentNode.getNode().getFeature(VirtualChildrenList.class).iterator();
         while (iterator.hasNext()) {
             StateNode child = iterator.next();
             if (getNode().equals(child)) {
@@ -333,8 +308,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N insertChild(int index, Element... children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
         return insertChild(index, Arrays.asList(children));
@@ -351,24 +325,18 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N insertChild(int index, Collection<Element> children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
         if (index > getChildCount()) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "insert",
-                    index, getChildCount()));
+            throw new IllegalArgumentException(
+                    String.format(CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "insert", index, getChildCount()));
         }
 
-        List<Element> childrenList = children instanceof List
-                ? (List<Element>) children
-                : new ArrayList<>(children);
-        for (int i = 0, insertIndex = index; i < childrenList
-                .size(); i++, insertIndex++) {
+        List<Element> childrenList = children instanceof List ? (List<Element>) children : new ArrayList<>(children);
+        for (int i = 0, insertIndex = index; i < childrenList.size(); i++, insertIndex++) {
             Element child = childrenList.get(i);
             if (child == null) {
-                throw new IllegalArgumentException(
-                        "Element to insert must not be null");
+                throw new IllegalArgumentException("Element to insert must not be null");
             }
             if (equals(child.getParentNode())) {
                 int childIndex = indexOfChild(child);
@@ -396,8 +364,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     /**
-     * Returns the index of the specified {@code child} in the children list, or
-     * -1 if this list does not contain the {@code child}.
+     * Returns the index of the specified {@code child} in the children list, or -1 if this list does not contain the
+     * {@code child}.
      *
      * @param child
      *            the child element
@@ -405,8 +373,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public int indexOfChild(Element child) {
         if (child == null) {
-            throw new IllegalArgumentException(
-                    "Child parameter cannot be null");
+            throw new IllegalArgumentException("Child parameter cannot be null");
         }
         if (!equals(child.getParentNode())) {
             return -1;
@@ -435,9 +402,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         }
         int childCount = getChildCount();
         if (index < 0) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
-                    index, getChildCount()));
+            throw new IllegalArgumentException(
+                    String.format(CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set", index, getChildCount()));
         } else if (index < childCount) {
             if (getChild(index).equals(child)) {
                 // Already there
@@ -448,9 +414,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         } else if (index == childCount) {
             insertChild(index, child);
         } else {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
-                    index, getChildCount()));
+            throw new IllegalArgumentException(
+                    String.format(CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set", index, getChildCount()));
         }
         return getSelf();
     }
@@ -464,8 +429,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N removeChild(Element... children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
         return removeChild(Arrays.asList(children));
@@ -480,8 +444,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N removeChild(Collection<Element> children) {
         if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
         for (Element child : children) {
             ensureChildHasParent(child, false);
@@ -499,9 +462,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N removeChild(int index) {
         if (index < 0 || index >= getChildCount()) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "remove",
-                    index, getChildCount()));
+            throw new IllegalArgumentException(
+                    String.format(CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "remove", index, getChildCount()));
 
         }
 
@@ -510,8 +472,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     /**
-     * Removes all child elements, including elements only present at the
-     * client-side.
+     * Removes all child elements, including elements only present at the client-side.
      *
      * @return this element
      */
@@ -571,15 +532,13 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
         // Constructors guarantee that neither getNode() nor stateProvider is
         // null
-        return other.getNode().equals(getNode())
-                && other.getStateProvider().equals(getStateProvider());
+        return other.getNode().equals(getNode()) && other.getStateProvider().equals(getStateProvider());
     }
 
     /**
      * Ensures that the {@code child} has the correct parent.
      * <p>
-     * Default implementation doesn't do anything. Subclasses may override the
-     * method to implement their own behavior.
+     * Default implementation doesn't do anything. Subclasses may override the method to implement their own behavior.
      *
      * @param child
      *            the element to check for its parent
@@ -591,29 +550,24 @@ public abstract class Node<N extends Node<N>> implements Serializable {
             if (internalCheck) {
                 assert false : "Child should have this element as a parent";
             } else {
-                throw new IllegalArgumentException(
-                        "Child should have this element as a parent");
+                throw new IllegalArgumentException("Child should have this element as a parent");
             }
         }
     }
 
     /**
-     * Attaches a child element with the given {@code tagName} which is the next
-     * sibling for the {@code previousSibling}.
+     * Attaches a child element with the given {@code tagName} which is the next sibling for the
+     * {@code previousSibling}.
      * <p>
-     * The {@code previousSibling} parameter value can be {@code null} which
-     * means that the very first child with the given {@code tagName} will be
-     * used to attach (if any).
+     * The {@code previousSibling} parameter value can be {@code null} which means that the very first child with the
+     * given {@code tagName} will be used to attach (if any).
      * <p>
-     * This method may be used to get a server side element for the client side
-     * DOM element which has been created on the client side aside of the
-     * server.
+     * This method may be used to get a server side element for the client side DOM element which has been created on
+     * the client side aside of the server.
      * <p>
-     * The element is not returned right away since it may not exist at all on
-     * the client side and its index in the children list is unknown. The
-     * provided {@code callback} is used instead to provide the mapped
-     * server-side element in case it has been found or report an error if it
-     * doesn't exist.
+     * The element is not returned right away since it may not exist at all on the client side and its index in the
+     * children list is unknown. The provided {@code callback} is used instead to provide the mapped server-side element
+     * in case it has been found or report an error if it doesn't exist.
      * <p>
      * This API is experimental and disabled for public usage.
      *
@@ -622,14 +576,12 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param previousSibling
      *            previous sibling, may be {@code null}
      * @param callback
-     *            the callback which will be invoked with a server side element
-     *            instance or an error will be reported, not {@code null}
+     *            the callback which will be invoked with a server side element instance or an error will be reported,
+     *            not {@code null}
      * @return this element
      */
-    private N attachExistingElement(String tagName, Element previousSibling,
-            ChildElementConsumer callback) {
-        getStateProvider().attachExistingElement(getNode(), tagName,
-                previousSibling, callback);
+    private N attachExistingElement(String tagName, Element previousSibling, ChildElementConsumer callback) {
+        getStateProvider().attachExistingElement(getNode(), tagName, previousSibling, callback);
         return getSelf();
     }
 }

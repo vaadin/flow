@@ -20,8 +20,7 @@ import com.vaadin.flow.component.internal.AbstractAttachDetachEvent;
 /**
  * Event fired after a {@link Component} is attached to the UI.
  * <p>
- * When a hierarchy of components is being attached, this event is fired
- * child-first.
+ * When a hierarchy of components is being attached, this event is fired child-first.
  *
  * @since 1.0
  */
@@ -35,8 +34,7 @@ public class AttachEvent extends AbstractAttachDetachEvent {
      * @param source
      *            the component that was attached
      * @param initialAttach
-     *            indicates whether this is the first time the component
-     *            (element) has been attached
+     *            indicates whether this is the first time the component (element) has been attached
      */
     public AttachEvent(Component source, boolean initialAttach) {
         super(source);
@@ -46,8 +44,7 @@ public class AttachEvent extends AbstractAttachDetachEvent {
     /**
      * Checks whether this is the first time the component has been attached.
      *
-     * @return <code>true</code> if this it the first time the component has
-     *         been attached, <code>false</code> otherwise
+     * @return <code>true</code> if this it the first time the component has been attached, <code>false</code> otherwise
      */
     public boolean isInitialAttach() {
         return initialAttach;

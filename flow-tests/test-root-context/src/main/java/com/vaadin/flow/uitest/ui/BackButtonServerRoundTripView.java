@@ -14,8 +14,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.BackButtonServerRoundTripView", layout = ViewTestLayout.class)
-public class BackButtonServerRoundTripView extends Div
-        implements HasUrlParameter<String> {
+public class BackButtonServerRoundTripView extends Div implements HasUrlParameter<String> {
 
     static final String BUTTON_ID = "button";
     static final String QUERY_LABEL_ID = "query";
@@ -28,18 +27,14 @@ public class BackButtonServerRoundTripView extends Div
         add(queryLabel);
 
         NativeButton button = new NativeButton("Change query parameter",
-                e -> UI.getCurrent().navigate(
-                        "com.vaadin.flow.uitest.ui.BackButtonServerRoundTripView/1",
-                        QueryParameters.simple(
-                                Collections.singletonMap("query", "bar"))));
+                e -> UI.getCurrent().navigate("com.vaadin.flow.uitest.ui.BackButtonServerRoundTripView/1",
+                        QueryParameters.simple(Collections.singletonMap("query", "bar"))));
         button.setId(BUTTON_ID);
         add(button);
     }
 
     @Override
-    public void setParameter(BeforeEvent beforeEvent,
-            @OptionalParameter String param) {
-        queryLabel.setText(beforeEvent.getLocation().getQueryParameters()
-                .getQueryString());
+    public void setParameter(BeforeEvent beforeEvent, @OptionalParameter String param) {
+        queryLabel.setText(beforeEvent.getLocation().getQueryParameters().getQueryString());
     }
 }

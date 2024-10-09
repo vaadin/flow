@@ -40,8 +40,7 @@ public class ParameterInfo implements Serializable {
         this.template = template;
 
         if (!RouteFormat.isParameter(template)) {
-            throw new IllegalArgumentException(
-                    "The given string is not a parameter template.");
+            throw new IllegalArgumentException("The given string is not a parameter template.");
         }
 
         optional = RouteFormat.isOptionalParameter(template);
@@ -62,8 +61,7 @@ public class ParameterInfo implements Serializable {
 
             name = template.substring(0, regexStartIndex);
 
-            regex = template.substring(regexStartIndex + 1,
-                    template.length() - 1);
+            regex = template.substring(regexStartIndex + 1, template.length() - 1);
         } else {
             name = template;
             regex = null;

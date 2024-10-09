@@ -31,8 +31,7 @@ public class MavenUtilsTest {
         File pomXml = getPomXml("pom-standalone.xml");
         Document parse = MavenUtils.parsePomFile(pomXml);
         Assert.assertEquals("this.group", MavenUtils.getGroupId(parse));
-        Assert.assertEquals("this-the-artifact",
-                MavenUtils.getArtifactId(parse));
+        Assert.assertEquals("this-the-artifact", MavenUtils.getArtifactId(parse));
     }
 
     @Test
@@ -40,32 +39,28 @@ public class MavenUtilsTest {
         File pomXml = getPomXml("standard-multimodule/module1/pom.xml");
         Document parse = MavenUtils.parsePomFile(pomXml);
         Assert.assertEquals("this.group", MavenUtils.getGroupId(parse));
-        Assert.assertEquals("this-the-artifact",
-                MavenUtils.getArtifactId(parse));
+        Assert.assertEquals("this-the-artifact", MavenUtils.getArtifactId(parse));
     }
 
     @Test
     public void detectsPomIsPartOfASimpleMultimoduleProject() throws Exception {
         File parent = getPomXml("standard-multimodule/pom.xml");
-        Assert.assertEquals(parent, MavenUtils.getParentPomOfMultiModuleProject(
-                getPomXml("standard-multimodule/module1/pom.xml")));
+        Assert.assertEquals(parent,
+                MavenUtils.getParentPomOfMultiModuleProject(getPomXml("standard-multimodule/module1/pom.xml")));
     }
 
     @Test
-    public void detectsPomWithRelativePathIsPartOfASimpleMultimoduleProject()
-            throws Exception {
+    public void detectsPomWithRelativePathIsPartOfASimpleMultimoduleProject() throws Exception {
         File parent = getPomXml("standard-multimodule/pom.xml");
-        Assert.assertEquals(parent, MavenUtils.getParentPomOfMultiModuleProject(
-                getPomXml("standard-multimodule/module2/pom.xml")));
+        Assert.assertEquals(parent,
+                MavenUtils.getParentPomOfMultiModuleProject(getPomXml("standard-multimodule/module2/pom.xml")));
     }
 
     @Test
-    public void detectsPomIsPartOfAComplexMultimoduleProject()
-            throws Exception {
+    public void detectsPomIsPartOfAComplexMultimoduleProject() throws Exception {
         File parent = getPomXml("complex-multimodule/pom-parent.xml");
         File parentPomOfMultiModuleProject = MavenUtils
-                .getParentPomOfMultiModuleProject(getPomXml(
-                        "complex-multimodule/module1/pom-with-parent.xml"));
+                .getParentPomOfMultiModuleProject(getPomXml("complex-multimodule/module1/pom-with-parent.xml"));
         Assert.assertEquals(parent, parentPomOfMultiModuleProject);
     }
 
@@ -73,16 +68,14 @@ public class MavenUtilsTest {
     public void findsModulesInSimpleMultiModulePom() throws Exception {
         File pomXml = getPomXml("standard-multimodule/pom.xml");
         Document pom = MavenUtils.parsePomFile(pomXml);
-        Assert.assertEquals(List.of("module1", "module2"),
-                MavenUtils.getModuleFolders(pom));
+        Assert.assertEquals(List.of("module1", "module2"), MavenUtils.getModuleFolders(pom));
     }
 
     @Test
     public void findsModulesInComplexMultiModulePom() throws Exception {
         File pomXml = getPomXml("complex-multimodule/pom-parent.xml");
         Document pom = MavenUtils.parsePomFile(pomXml);
-        Assert.assertEquals(List.of("module1", "module2"),
-                MavenUtils.getModuleFolders(pom));
+        Assert.assertEquals(List.of("module1", "module2"), MavenUtils.getModuleFolders(pom));
     }
 
     @Test

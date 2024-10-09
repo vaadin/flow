@@ -41,8 +41,7 @@ public class Xhr {
          * @param xhr
          *            the request object
          * @param exception
-         *            the exception which cause the request to fail, or null if
-         *            not available
+         *            the exception which cause the request to fail, or null if not available
          */
         void onFail(XMLHttpRequest xhr, Exception exception);
 
@@ -77,8 +76,7 @@ public class Xhr {
     }
 
     /**
-     * Send a GET request to the <code>url</code> and dispatch updates to the
-     * <code>callback</code>.
+     * Send a GET request to the <code>url</code> and dispatch updates to the <code>callback</code>.
      *
      * @param url
      *            the URL
@@ -91,26 +89,22 @@ public class Xhr {
     }
 
     /**
-     * Send a GET request to the <code>url</code> and dispatch updates to the
-     * <code>callback</code>.
+     * Send a GET request to the <code>url</code> and dispatch updates to the <code>callback</code>.
      *
      * @param window
-     *            the window object used to access the XMLHttpRequest
-     *            constructor
+     *            the window object used to access the XMLHttpRequest constructor
      * @param url
      *            the URL
      * @param callback
      *            the callback to be notified
      * @return a reference to the sent XmlHttpRequest
      */
-    public static XMLHttpRequest get(Window window, String url,
-            Callback callback) {
+    public static XMLHttpRequest get(Window window, String url, Callback callback) {
         return request(create(window), "GET", url, callback);
     }
 
     /**
-     * Send a HEAD request to the <code>url</code> and dispatch updates to the
-     * <code>callback</code>.
+     * Send a HEAD request to the <code>url</code> and dispatch updates to the <code>callback</code>.
      *
      * @param url
      *            the URL
@@ -123,26 +117,22 @@ public class Xhr {
     }
 
     /**
-     * Send a HEAD request to the <code>url</code> and dispatch updates to the
-     * <code>callback</code>.
+     * Send a HEAD request to the <code>url</code> and dispatch updates to the <code>callback</code>.
      *
      * @param window
-     *            the window object used to access the XMLHttpRequest
-     *            constructor
+     *            the window object used to access the XMLHttpRequest constructor
      * @param url
      *            the URL
      * @param callback
      *            the callback to be notified
      * @return a reference to the sent XmlHttpRequest
      */
-    public static XMLHttpRequest head(Window window, String url,
-            Callback callback) {
+    public static XMLHttpRequest head(Window window, String url, Callback callback) {
         return request(create(window), "HEAD", url, callback);
     }
 
     /**
-     * Send a POST request to the <code>url</code> and dispatch updates to the
-     * <code>callback</code>.
+     * Send a POST request to the <code>url</code> and dispatch updates to the <code>callback</code>.
      *
      * @param url
      *            the URL
@@ -154,19 +144,15 @@ public class Xhr {
      *            the callback to notify
      * @return a reference to the sent XmlHttpRequest
      */
-    public static XMLHttpRequest post(String url, String requestData,
-            String contentType, Callback callback) {
-        return request(create(), "POST", url, requestData, contentType,
-                callback);
+    public static XMLHttpRequest post(String url, String requestData, String contentType, Callback callback) {
+        return request(create(), "POST", url, requestData, contentType, callback);
     }
 
     /**
-     * Send a POST request to the <code>url</code> and dispatch updates to the
-     * <code>callback</code>.
+     * Send a POST request to the <code>url</code> and dispatch updates to the <code>callback</code>.
      *
      * @param window
-     *            the window object used to access the XMLHttpRequest
-     *            constructor
+     *            the window object used to access the XMLHttpRequest constructor
      * @param url
      *            the URL
      * @param requestData
@@ -177,10 +163,9 @@ public class Xhr {
      *            the callback to notify
      * @return a reference to the sent XmlHttpRequest
      */
-    public static XMLHttpRequest post(Window window, String url,
-            String requestData, String contentType, Callback callback) {
-        return request(create(window), "POST", url, requestData, contentType,
-                callback);
+    public static XMLHttpRequest post(Window window, String url, String requestData, String contentType,
+            Callback callback) {
+        return request(create(window), "POST", url, requestData, contentType, callback);
     }
 
     private static XMLHttpRequest create() {
@@ -188,18 +173,16 @@ public class Xhr {
     }
 
     /**
-     * Replacement for {@link XMLHttpRequest#create()} that allows better
-     * control of which window object is used to access the XMLHttpRequest
-     * constructor.
+     * Replacement for {@link XMLHttpRequest#create()} that allows better control of which window object is used to
+     * access the XMLHttpRequest constructor.
      */
     private static native XMLHttpRequest create(Window window)
     /*-{
         return new window.XMLHttpRequest();
     }-*/;
 
-    private static XMLHttpRequest request(XMLHttpRequest xhr, String method,
-            String url, String requestData, String contentType,
-            Callback callback) {
+    private static XMLHttpRequest request(XMLHttpRequest xhr, String method, String url, String requestData,
+            String contentType, Callback callback) {
         try {
             xhr.setOnReadyStateChange(new Handler(callback));
             xhr.open(method, url);
@@ -215,8 +198,7 @@ public class Xhr {
         return xhr;
     }
 
-    private static XMLHttpRequest request(XMLHttpRequest xhr, String method,
-            String url, final Callback callback) {
+    private static XMLHttpRequest request(XMLHttpRequest xhr, String method, String url, final Callback callback) {
         try {
             xhr.setOnReadyStateChange(new Handler(callback));
             xhr.open(method, url);

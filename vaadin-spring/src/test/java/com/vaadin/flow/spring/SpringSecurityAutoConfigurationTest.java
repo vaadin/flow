@@ -55,26 +55,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SpringSecurityAutoConfigurationTest {
 
-    static final AccessPathChecker DISABLED_PATH_CHECKER = (path, principal,
-            roleChecker) -> true;
+    static final AccessPathChecker DISABLED_PATH_CHECKER = (path, principal, roleChecker) -> true;
 
     static final AccessAnnotationChecker DISABLED_ANNOTATION_CHECKER = new AccessAnnotationChecker() {
-        public boolean hasAccess(Method method, Principal principal,
-                Function<String, Boolean> roleChecker) {
+        public boolean hasAccess(Method method, Principal principal, Function<String, Boolean> roleChecker) {
             return true;
         }
 
-        public boolean hasAccess(Class<?> cls, Principal principal,
-                Function<String, Boolean> roleChecker) {
+        public boolean hasAccess(Class<?> cls, Principal principal, Function<String, Boolean> roleChecker) {
             return true;
         }
     };
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
-            .withConfiguration(
-                    AutoConfigurations.of(SecurityAutoConfiguration.class,
-                            SpringBootAutoConfiguration.class,
-                            SpringSecurityAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(SecurityAutoConfiguration.class, SpringBootAutoConfiguration.class,
+                    SpringSecurityAutoConfiguration.class));
 
     @Test
     void defaultConfiguration() {
@@ -85,8 +80,7 @@ class SpringSecurityAutoConfigurationTest {
                     .isExactlyInstanceOf(AccessAnnotationChecker.class);
 
             assertThat(context).hasSingleBean(AccessPathChecker.class);
-            assertThat(context).getBean(AccessPathChecker.class)
-                    .isInstanceOf(SpringAccessPathChecker.class);
+            assertThat(context).getBean(AccessPathChecker.class).isInstanceOf(SpringAccessPathChecker.class);
 
             assertThat(context).hasSingleBean(NavigationAccessControl.class);
             assertThat(context).getBean(NavigationAccessControl.class)
@@ -96,38 +90,29 @@ class SpringSecurityAutoConfigurationTest {
 
     @Test
     void customAccessPathChecker() {
-        this.contextRunner.withUserConfiguration(CustomAccessPathChecker.class)
-                .run((context) -> {
-                    assertThat(context).hasSingleBean(AccessPathChecker.class);
-                    assertThat(context).getBean(AccessPathChecker.class)
-                            .isSameAs(DISABLED_PATH_CHECKER);
-                });
+        this.contextRunner.withUserConfiguration(CustomAccessPathChecker.class).run((context) -> {
+            assertThat(context).hasSingleBean(AccessPathChecker.class);
+            assertThat(context).getBean(AccessPathChecker.class).isSameAs(DISABLED_PATH_CHECKER);
+        });
     }
 
     @Test
     void customAccessAnnotationChecker() {
-        this.contextRunner
-                .withUserConfiguration(CustomAccessAnnotationChecker.class)
-                .run((context) -> {
-                    assertThat(context)
-                            .hasSingleBean(AccessAnnotationChecker.class);
-                    assertThat(context).getBean(AccessAnnotationChecker.class)
-                            .isSameAs(DISABLED_ANNOTATION_CHECKER);
-                });
+        this.contextRunner.withUserConfiguration(CustomAccessAnnotationChecker.class).run((context) -> {
+            assertThat(context).hasSingleBean(AccessAnnotationChecker.class);
+            assertThat(context).getBean(AccessAnnotationChecker.class).isSameAs(DISABLED_ANNOTATION_CHECKER);
+        });
     }
 
     @Test
     void customNavigationAccessCheckersConfigurerOnVaadinWebSecurityExtension() {
-        this.contextRunner
-                .withUserConfiguration(
-                        CustomNavigationAccessCheckersConfigurer.class)
+        this.contextRunner.withUserConfiguration(CustomNavigationAccessCheckersConfigurer.class)
                 .run(SpringSecurityAutoConfigurationTest::assertThatCustomNavigationAccessCheckerIsUsed);
     }
 
     @Test
     void customNavigationAccessCheckersConfigurerWithoutVaadinWebSecurityExtension() {
-        this.contextRunner.withUserConfiguration(
-                CustomNavigationAccessCheckersConfigurerWithoutVaadinWebSecurity.class)
+        this.contextRunner.withUserConfiguration(CustomNavigationAccessCheckersConfigurerWithoutVaadinWebSecurity.class)
                 .run(SpringSecurityAutoConfigurationTest::assertThatCustomNavigationAccessCheckerIsUsed);
     }
 
@@ -136,47 +121,34 @@ class SpringSecurityAutoConfigurationTest {
         this.contextRunner.run((context) -> {
 
             // view access checker
-            assertThat(context).getBean(AccessAnnotationChecker.class)
-                    .satisfies(this::assertObjectIsSerializable);
+            assertThat(context).getBean(AccessAnnotationChecker.class).satisfies(this::assertObjectIsSerializable);
 
-            assertThat(context).getBean(AnnotatedViewAccessChecker.class)
-                    .satisfies(this::assertObjectIsSerializable);
+            assertThat(context).getBean(AnnotatedViewAccessChecker.class).satisfies(this::assertObjectIsSerializable);
 
-            assertThat(context).getBean(AccessPathChecker.class)
-                    .satisfies(this::assertObjectIsSerializable);
+            assertThat(context).getBean(AccessPathChecker.class).satisfies(this::assertObjectIsSerializable);
 
-            assertThat(context).getBean(RoutePathAccessChecker.class)
-                    .satisfies(this::assertObjectIsSerializable);
+            assertThat(context).getBean(RoutePathAccessChecker.class).satisfies(this::assertObjectIsSerializable);
 
-            assertThat(context).getBean(NavigationAccessControl.class)
-                    .satisfies(this::assertObjectIsSerializable);
+            assertThat(context).getBean(NavigationAccessControl.class).satisfies(this::assertObjectIsSerializable);
         });
 
     }
 
-    private static void assertThatCustomNavigationAccessCheckerIsUsed(
-            AssertableWebApplicationContext context) {
+    private static void assertThatCustomNavigationAccessCheckerIsUsed(AssertableWebApplicationContext context) {
         assertThat(context).hasSingleBean(NavigationAccessControl.class);
-        NavigationAccessControl control = context
-                .getBean(NavigationAccessControl.class);
-        NavigationContext navigationContext = Mockito
-                .mock(NavigationContext.class);
-        Mockito.when(navigationContext.getNavigationTarget())
-                .thenReturn((Class) Component.class);
-        Mockito.when(navigationContext.getLocation())
-                .thenReturn(new Location("path"));
+        NavigationAccessControl control = context.getBean(NavigationAccessControl.class);
+        NavigationContext navigationContext = Mockito.mock(NavigationContext.class);
+        Mockito.when(navigationContext.getNavigationTarget()).thenReturn((Class) Component.class);
+        Mockito.when(navigationContext.getLocation()).thenReturn(new Location("path"));
         Mockito.when(navigationContext.allow()).thenCallRealMethod();
         Mockito.when(navigationContext.neutral()).thenCallRealMethod();
-        Mockito.when(navigationContext.deny(ArgumentMatchers.anyString()))
-                .thenCallRealMethod();
+        Mockito.when(navigationContext.deny(ArgumentMatchers.anyString())).thenCallRealMethod();
 
-        AccessCheckResult result = control.checkAccess(navigationContext,
-                false);
+        AccessCheckResult result = control.checkAccess(navigationContext, false);
         assertThat(result.decision()).isEqualTo(AccessCheckDecision.DENY);
         assertThat(result.reason()).isEqualTo("Custom Implementation");
 
-        Mockito.verify(navigationContext, Mockito.times(2))
-                .deny(ArgumentMatchers.anyString());
+        Mockito.verify(navigationContext, Mockito.times(2)).deny(ArgumentMatchers.anyString());
         Mockito.verify(navigationContext, Mockito.never()).allow();
         Mockito.verify(navigationContext, Mockito.never()).neutral();
     }
@@ -188,8 +160,7 @@ class SpringSecurityAutoConfigurationTest {
                 out.writeObject(instance);
             }
             byte[] data = bs.toByteArray();
-            try (ObjectInputStream in = new ObjectInputStream(
-                    new ByteArrayInputStream(data))) {
+            try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
 
                 @SuppressWarnings("unchecked")
                 T readObject = (T) in.readObject();
@@ -218,29 +189,24 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class CustomNavigationAccessCheckersConfigurer
-            extends VaadinWebSecurity {
+    static class CustomNavigationAccessCheckersConfigurer extends VaadinWebSecurity {
 
-        private static final NavigationAccessChecker CUSTOM = context -> context
-                .deny("Custom Implementation");
+        private static final NavigationAccessChecker CUSTOM = context -> context.deny("Custom Implementation");
 
         @Bean
         static NavigationAccessControlConfigurer navigationAccessCheckersConfigurer() {
-            return new NavigationAccessControlConfigurer()
-                    .withNavigationAccessChecker(CUSTOM);
+            return new NavigationAccessControlConfigurer().withNavigationAccessChecker(CUSTOM);
         }
     }
 
     @TestConfiguration(proxyBeanMethods = false)
     static class CustomNavigationAccessCheckersConfigurerWithoutVaadinWebSecurity {
 
-        private static final NavigationAccessChecker CUSTOM = context -> context
-                .deny("Custom Implementation");
+        private static final NavigationAccessChecker CUSTOM = context -> context.deny("Custom Implementation");
 
         @Bean
         NavigationAccessControlConfigurer navigationAccessCheckersConfigurer() {
-            return new NavigationAccessControlConfigurer()
-                    .withNavigationAccessChecker(CUSTOM);
+            return new NavigationAccessControlConfigurer().withNavigationAccessChecker(CUSTOM);
         }
     }
 

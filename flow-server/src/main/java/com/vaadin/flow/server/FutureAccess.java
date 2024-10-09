@@ -21,9 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Encapsulates a {@link Command} submitted using
- * {@link VaadinSession#access(Command)}. This class is used internally by the
- * framework and is not intended to be directly used by application developers.
+ * Encapsulates a {@link Command} submitted using {@link VaadinSession#access(Command)}. This class is used internally
+ * by the framework and is not intended to be directly used by application developers.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -49,14 +48,12 @@ public class FutureAccess extends FutureTask<Void> {
     @Override
     public Void get() throws InterruptedException, ExecutionException {
         /*
-         * Help the developer avoid programming patterns that cause deadlocks
-         * unless implemented very carefully. get(long, TimeUnit) does not have
-         * the same detection since a sensible timeout should avoid completely
-         * locking up the application.
+         * Help the developer avoid programming patterns that cause deadlocks unless implemented very carefully.
+         * get(long, TimeUnit) does not have the same detection since a sensible timeout should avoid completely locking
+         * up the application.
          *
-         * Even though no deadlock could occur after the command has been run,
-         * the check is always done as the deterministic behavior makes it
-         * easier to detect potential problems.
+         * Even though no deadlock could occur after the command has been run, the check is always done as the
+         * deterministic behavior makes it easier to detect potential problems.
          */
         VaadinService.verifyNoOtherSessionLocked(session);
         return super.get();
@@ -77,8 +74,7 @@ public class FutureAccess extends FutureTask<Void> {
             } else {
                 ErrorEvent errorEvent = new ErrorEvent(exception);
 
-                ErrorHandler errorHandler = ErrorEvent
-                        .findErrorHandler(session);
+                ErrorHandler errorHandler = ErrorEvent.findErrorHandler(session);
 
                 if (errorHandler == null) {
                     errorHandler = new DefaultErrorHandler();

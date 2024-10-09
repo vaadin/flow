@@ -47,8 +47,7 @@ public final class TestUtils {
     }
 
     /**
-     * Gets a test jar file by its resource name using
-     * {@link TestUtils#getTestResource(String)}.
+     * Gets a test jar file by its resource name using {@link TestUtils#getTestResource(String)}.
      *
      * @param jarName
      *            the resource name of a jar file
@@ -59,8 +58,7 @@ public final class TestUtils {
     }
 
     /**
-     * Gets a test folder by its resource name using
-     * {@link TestUtils#getTestResource(String)}.
+     * Gets a test folder by its resource name using {@link TestUtils#getTestResource(String)}.
      *
      * @param name
      *            the resource name of the folder
@@ -73,26 +71,23 @@ public final class TestUtils {
     }
 
     /**
-     * Gets a test resouce by its name using using
-     * {@link ClassLoader#getResource(String)}. Fails if the file was not found
-     * ({@code null}).
+     * Gets a test resouce by its name using using {@link ClassLoader#getResource(String)}. Fails if the file was not
+     * found ({@code null}).
      *
      * @param resourceName
      *            the resource name
      * @return corresponding resource url
      */
     public static URL getTestResource(String resourceName) {
-        URL resourceUrl = TestUtils.class.getClassLoader()
-                .getResource(resourceName);
-        assertNotNull(String.format(
-                "Expect the test resource to be present in test resource folder with name = '%s'",
+        URL resourceUrl = TestUtils.class.getClassLoader().getResource(resourceName);
+        assertNotNull(String.format("Expect the test resource to be present in test resource folder with name = '%s'",
                 resourceName), resourceUrl);
         return resourceUrl;
     }
 
     /**
-     * Lists all file (not directories) paths in directory specified. Fails if
-     * directory specified does not exist or is not a directory.
+     * Lists all file (not directories) paths in directory specified. Fails if directory specified does not exist or is
+     * not a directory.
      *
      * @param directory
      *            directory to list files in
@@ -100,22 +95,15 @@ public final class TestUtils {
      */
     public static List<String> listFilesRecursively(File directory) {
         assert directory != null && directory.isDirectory()
-                : "This method expects valid directory as input, but got: "
-                        + directory;
+                : "This method expects valid directory as input, but got: " + directory;
 
         try {
-            return Files.walk(directory.toPath())
-                    .filter(file -> Files.isRegularFile(file))
-                    .map(Path::toString)
+            return Files.walk(directory.toPath()).filter(file -> Files.isRegularFile(file)).map(Path::toString)
                     .map(path -> path.replace(directory.getAbsolutePath(), ""))
-                    .map(path -> path.startsWith(File.separator)
-                            ? path.substring(1)
-                            : path)
+                    .map(path -> path.startsWith(File.separator) ? path.substring(1) : path)
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            throw new AssertionError(String.format(
-                    "Unexpected: could not list files in directory '%s'",
-                    directory), e);
+            throw new AssertionError(String.format("Unexpected: could not list files in directory '%s'", directory), e);
         }
     }
 }

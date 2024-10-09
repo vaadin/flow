@@ -25,11 +25,9 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.StateNode;
 
 /**
- * Temporary storage of data required to handle existing element attachment
- * callback from the client side.
+ * Temporary storage of data required to handle existing element attachment callback from the client side.
  * <p>
- * The data is going to be destroyed once the response from the client side is
- * received.
+ * The data is going to be destroyed once the response from the client side is received.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -54,21 +52,18 @@ public class AttachExistingElementFeature extends ServerSideFeature {
     }
 
     /**
-     * Registers the data for the {@code child} node requested as being attached
-     * to an existing element.
+     * Registers the data for the {@code child} node requested as being attached to an existing element.
      *
      * @param parent
      *            parent node of the {@code child}
      * @param previousSibling
      *            previous sibling for the requested existing element
      * @param child
-     *            the state node that is going to be associated with the
-     *            existing element
+     *            the state node that is going to be associated with the existing element
      * @param callback
      *            the callback to report the result
      */
-    public void register(Node<?> parent, Element previousSibling,
-            StateNode child, ChildElementConsumer callback) {
+    public void register(Node<?> parent, Element previousSibling, StateNode child, ChildElementConsumer callback) {
         if (callbacks == null) {
             callbacks = new HashMap<>();
         }

@@ -41,15 +41,12 @@ public interface Registration extends Serializable {
     void remove();
 
     /**
-     * Creates a registration that will run a command only once. This makes it
-     * safe for the registration to be removed multiple times even in cases when
-     * the command should be run only once.
+     * Creates a registration that will run a command only once. This makes it safe for the registration to be removed
+     * multiple times even in cases when the command should be run only once.
      *
      * @param command
-     *            the command to run the first time the registration is removed,
-     *            not <code>null</code>
-     * @return a registration that will invoke the command once, not
-     *         <code>null</code>
+     *            the command to run the first time the registration is removed, not <code>null</code>
+     * @return a registration that will invoke the command once, not <code>null</code>
      * @since
      */
     @GwtIncompatible("Command is not in a package available to GWT")
@@ -73,8 +70,7 @@ public interface Registration extends Serializable {
      *
      * @param registrations
      *            the registrations to remove, not <code>null</code>
-     * @return a registration that removes all provided registrations, not
-     *         <code>null</code>
+     * @return a registration that removes all provided registrations, not <code>null</code>
      * @since
      */
     static Registration combine(Registration... registrations) {
@@ -85,20 +81,18 @@ public interface Registration extends Serializable {
     }
 
     /**
-     * Creates a registration by adding an item to a collection immediately and
-     * removing the item from the collection when the registration is removed.
+     * Creates a registration by adding an item to a collection immediately and removing the item from the collection
+     * when the registration is removed.
      * <p>
-     * Care should be used when using this pattern to iterate over a copy of the
-     * collection to avoid {@link ConcurrentModificationException} if a listener
-     * or other callback may trigger adding or removing registrations.
+     * Care should be used when using this pattern to iterate over a copy of the collection to avoid
+     * {@link ConcurrentModificationException} if a listener or other callback may trigger adding or removing
+     * registrations.
      *
      * @param collection
-     *            the collection to which the item should be added and removed,
-     *            not <code>null</code>
+     *            the collection to which the item should be added and removed, not <code>null</code>
      * @param item
      *            the item to add and remove
-     * @return a registration that will remove the item from the collection, not
-     *         <code>null</code>
+     * @return a registration that will remove the item from the collection, not <code>null</code>
      * @since
      */
     static <T> Registration addAndRemove(Collection<T> collection, T item) {

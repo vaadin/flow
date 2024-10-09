@@ -68,16 +68,13 @@ public class BeanInListingView extends PolymerTemplate<ListModel> {
 
     public BeanInListingView() {
         setId("template");
-        getModel()
-                .setUsers(Arrays.asList(createUser("foo"), createUser("bar")));
+        getModel().setUsers(Arrays.asList(createUser("foo"), createUser("bar")));
 
         getModel().setMessages(Arrays.asList("baz", "msg"));
 
-        getElement().addPropertyChangeListener("activeUser",
-                event -> patientSelected());
+        getElement().addPropertyChangeListener("activeUser", event -> patientSelected());
 
-        getElement().addPropertyChangeListener("activeMessage",
-                event -> messageSelected());
+        getElement().addPropertyChangeListener("activeMessage", event -> messageSelected());
 
         getModel().setActiveUser(getModel().getUsers().get(0));
     }

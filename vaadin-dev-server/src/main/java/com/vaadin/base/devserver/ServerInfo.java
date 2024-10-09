@@ -66,14 +66,11 @@ public class ServerInfo implements Serializable {
     }
 
     public static String fetchVaadinVersion() {
-        return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?")
-                : "-";
+        return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?") : "-";
     }
 
     public static String fetchHillaVersion() {
-        return EndpointRequestUtil.isHillaAvailable()
-                ? Platform.getHillaVersion().orElse("?")
-                : "-";
+        return EndpointRequestUtil.isHillaAvailable() ? Platform.getHillaVersion().orElse("?") : "-";
     }
 
     public List<NameAndVersion> getVersions() {
@@ -81,7 +78,7 @@ public class ServerInfo implements Serializable {
     }
 
     private static boolean isVaadinAvailable() {
-        return Thread.currentThread().getContextClassLoader().getResource(
-                "META-INF/maven/com.vaadin/vaadin-core/pom.properties") != null;
+        return Thread.currentThread().getContextClassLoader()
+                .getResource("META-INF/maven/com.vaadin/vaadin-core/pom.properties") != null;
     }
 }

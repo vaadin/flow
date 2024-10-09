@@ -29,8 +29,7 @@ public class PushComponent extends Div {
 
     private AtomicInteger count = new AtomicInteger();
 
-    private final ScheduledExecutorService service = Executors
-            .newScheduledThreadPool(1);
+    private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
     private static final int DELAY = 100;
 

@@ -32,8 +32,7 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TR)
-public class NativeTableRow extends HtmlContainer
-        implements HasOrderedComponents, ClickNotifier<NativeTableRow> {
+public class NativeTableRow extends HtmlContainer implements HasOrderedComponents, ClickNotifier<NativeTableRow> {
 
     /**
      * Creates a new empty table row component.
@@ -112,8 +111,7 @@ public class NativeTableRow extends HtmlContainer
      * @return A list of all header cells in this row.
      */
     public List<NativeTableHeaderCell> getHeaderCells() {
-        return getChildren().filter(c -> c instanceof NativeTableHeaderCell)
-                .map(c -> (NativeTableHeaderCell) c)
+        return getChildren().filter(c -> c instanceof NativeTableHeaderCell).map(c -> (NativeTableHeaderCell) c)
                 .collect(Collectors.toList());
     }
 
@@ -123,8 +121,8 @@ public class NativeTableRow extends HtmlContainer
      * @return A list of all data cells in this row.
      */
     public List<NativeTableCell> getDataCells() {
-        return getChildren().filter(c -> c instanceof NativeTableCell)
-                .map(c -> (NativeTableCell) c).collect(Collectors.toList());
+        return getChildren().filter(c -> c instanceof NativeTableCell).map(c -> (NativeTableCell) c)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -133,25 +131,20 @@ public class NativeTableRow extends HtmlContainer
      * @return a list of all cells in this row.
      */
     public List<Component> getAllCells() {
-        return getChildren()
-                .filter(c -> c instanceof NativeTableCell
-                        || c instanceof NativeTableHeaderCell)
+        return getChildren().filter(c -> c instanceof NativeTableCell || c instanceof NativeTableHeaderCell)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Returns the header cell at a given position relative to other header
-     * cells.
+     * Returns the header cell at a given position relative to other header cells.
      *
      * @param index
-     *            the position of the header cell relative to other header
-     *            cells.
-     * @return the header cell at the given position (relative to other header
-     *         cells).
+     *            the position of the header cell relative to other header cells.
+     * @return the header cell at the given position (relative to other header cells).
      */
     public Optional<NativeTableHeaderCell> getHeaderCell(int index) {
-        return getChildren().filter(c -> c instanceof NativeTableHeaderCell)
-                .map(c -> (NativeTableHeaderCell) c).skip(index).findFirst();
+        return getChildren().filter(c -> c instanceof NativeTableHeaderCell).map(c -> (NativeTableHeaderCell) c)
+                .skip(index).findFirst();
     }
 
     /**
@@ -159,12 +152,11 @@ public class NativeTableRow extends HtmlContainer
      *
      * @param index
      *            the position of the data cell relative to other data cells.
-     * @return the data cell at the given position (relative to other data
-     *         cells).
+     * @return the data cell at the given position (relative to other data cells).
      */
     public Optional<NativeTableCell> getDataCell(int index) {
-        return getChildren().filter(c -> c instanceof NativeTableCell)
-                .map(c -> (NativeTableCell) c).skip(index).findFirst();
+        return getChildren().filter(c -> c instanceof NativeTableCell).map(c -> (NativeTableCell) c).skip(index)
+                .findFirst();
     }
 
     /**
@@ -174,14 +166,11 @@ public class NativeTableRow extends HtmlContainer
      *            the position of the cell.
      * @return the cell at the given position
      * @throws IndexOutOfBoundsException
-     *             if index is negative or greater than (or equal to) the number
-     *             of cells in the row
+     *             if index is negative or greater than (or equal to) the number of cells in the row
      */
     public Optional<Component> getCell(int index) {
-        return getChildren()
-                .filter(c -> c instanceof NativeTableCell
-                        || c instanceof NativeTableHeaderCell)
-                .skip(index).findFirst();
+        return getChildren().filter(c -> c instanceof NativeTableCell || c instanceof NativeTableHeaderCell).skip(index)
+                .findFirst();
     }
 
     /**
@@ -198,8 +187,7 @@ public class NativeTableRow extends HtmlContainer
      * Removes the header cell at a position relative to other header cells.
      *
      * @param index
-     *            the position of the header cell relative to other header
-     *            cells.
+     *            the position of the header cell relative to other header cells.
      */
     public void removeHeaderCell(int index) {
         getHeaderCell(index).ifPresent(this::remove);
@@ -219,8 +207,7 @@ public class NativeTableRow extends HtmlContainer
      * Removes the data cell at a given position relative to other data cells.
      *
      * @param index
-     *            the position of the data cell to remove relative to other data
-     *            cells.
+     *            the position of the data cell to remove relative to other data cells.
      */
     public void removeDataCell(int index) {
         getDataCell(index).ifPresent(this::remove);

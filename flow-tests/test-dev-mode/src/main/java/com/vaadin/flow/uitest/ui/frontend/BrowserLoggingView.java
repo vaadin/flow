@@ -34,10 +34,9 @@ public class BrowserLoggingView extends Div {
         label.setId("elementId");
         add(label);
 
-        NativeButton causeException = new NativeButton(
-                "Cause client side exception", e -> {
-                    getUI().get().getPage().executeJs("null.foo");
-                });
+        NativeButton causeException = new NativeButton("Cause client side exception", e -> {
+            getUI().get().getPage().executeJs("null.foo");
+        });
         causeException.setId("exception");
         add(causeException);
     }

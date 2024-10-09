@@ -6,8 +6,7 @@ import com.vaadin.flow.server.PWA;
 
 import static com.vaadin.flow.spring.flowsecurity.Configurator.ICONS_PATH;
 
-@PWA(name = "Spring Security Helper Test Project", shortName = "SSH Test", iconPath = ICONS_PATH
-        + "hey.png")
+@PWA(name = "Spring Security Helper Test Project", shortName = "SSH Test", iconPath = ICONS_PATH + "hey.png")
 public class Configurator implements AppShellConfigurator {
 
     public static final String ICONS_PATH = "custom/icons/path/";

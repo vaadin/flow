@@ -47,16 +47,14 @@ public class NotEmptyTest {
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
             String vaadinPackagePrefix = getClass().getPackage().getName();
-            vaadinPackagePrefix = vaadinPackagePrefix.substring(0,
-                    vaadinPackagePrefix.lastIndexOf('.'));
+            vaadinPackagePrefix = vaadinPackagePrefix.substring(0, vaadinPackagePrefix.lastIndexOf('.'));
             if (name.equals(UnitTest.class.getName())) {
                 super.loadClass(name);
             } else if (name.startsWith(NotEmpty.class.getPackage().getName())) {
                 throw new ClassNotFoundException();
             } else if (name.startsWith(vaadinPackagePrefix)) {
                 String path = name.replace('.', '/').concat(".class");
-                URL resource = Thread.currentThread().getContextClassLoader()
-                        .getResource(path);
+                URL resource = Thread.currentThread().getContextClassLoader().getResource(path);
                 InputStream stream;
                 try {
                     stream = resource.openStream();
@@ -86,8 +84,7 @@ public class NotEmptyTest {
                 Assert.fail();
             } catch (ClassNotFoundException e) {
             }
-            BeanValidationBinder<BeanToValidate> binder = new BeanValidationBinder<>(
-                    BeanToValidate.class);
+            BeanValidationBinder<BeanToValidate> binder = new BeanValidationBinder<>(BeanToValidate.class);
 
             BeanToValidate item = new BeanToValidate();
             String name = "Johannes";
@@ -103,11 +100,9 @@ public class NotEmptyTest {
     }
 
     @Test
-    public void notEmptyAnnotationIsNotInClasspath()
-            throws ClassNotFoundException, NoSuchMethodException,
-            SecurityException, InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException, IOException,
-            InterruptedException {
+    public void notEmptyAnnotationIsNotInClasspath() throws ClassNotFoundException, NoSuchMethodException,
+            SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, IOException, InterruptedException {
         try (URLClassLoader loader = new TestClassLoader()) {
             Class<?> clazz = loader.loadClass(NotEmptyUnitTest.class.getName());
             UnitTest test = (UnitTest) clazz.newInstance();

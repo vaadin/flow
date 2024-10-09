@@ -26,8 +26,7 @@ public class InvalidRouteScopeUsage extends Div {
 
     // Injection point is valid and there is a bean eligible for injection. But
     // the scope doesn't exist: so this should fail
-    public InvalidRouteScopeUsage(
-            @Autowired @RouteScopeOwner(ButtonInLayout.class) ButtonScopedBean bean) {
+    public InvalidRouteScopeUsage(@Autowired @RouteScopeOwner(ButtonInLayout.class) ButtonScopedBean bean) {
         setId("invalid-bean");
     }
 

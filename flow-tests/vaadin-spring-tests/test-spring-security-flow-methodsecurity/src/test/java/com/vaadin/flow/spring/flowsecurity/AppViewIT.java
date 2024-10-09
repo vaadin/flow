@@ -21,9 +21,7 @@ public class AppViewIT extends AbstractIT {
 
         $(ButtonElement.class).id("applyForLoan").click();
         String balance = $("span").id("balanceText").getText();
-        Assert.assertEquals(
-                "Hello John the User, your bank account balance is $20000.00.",
-                balance);
+        Assert.assertEquals("Hello John the User, your bank account balance is $20000.00.", balance);
     }
 
     @Test
@@ -34,8 +32,7 @@ public class AppViewIT extends AbstractIT {
         assertPrivatePageShown(USER_FULLNAME);
 
         $(ButtonElement.class).id("applyForHugeLoan").click();
-        String notification = $(NotificationElement.class).waitForFirst()
-                .getText();
+        String notification = $(NotificationElement.class).waitForFirst().getText();
         Assert.assertEquals("Application failed: Access Denied", notification);
     }
 
@@ -48,9 +45,7 @@ public class AppViewIT extends AbstractIT {
 
         $(ButtonElement.class).id("applyForHugeLoan").click();
         String balance = $("span").id("balanceText").getText();
-        Assert.assertEquals(
-                "Hello Emma the Admin, your bank account balance is $1200000.00.",
-                balance);
+        Assert.assertEquals("Hello Emma the Admin, your bank account balance is $1200000.00.", balance);
     }
 
     @Test
@@ -61,8 +56,7 @@ public class AppViewIT extends AbstractIT {
         assertPrivatePageShown(ADMIN_FULLNAME);
 
         $(ButtonElement.class).id("applyForLoan").click();
-        String notification = $(NotificationElement.class).waitForFirst()
-                .getText();
+        String notification = $(NotificationElement.class).waitForFirst().getText();
         Assert.assertEquals("Application failed: Access Denied", notification);
     }
 

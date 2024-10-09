@@ -50,8 +50,7 @@ public class LocaleChangeIT extends ChromeBrowserTest {
             String id = String.format("%s-%d", SAME_UI_RESULT_ID, i);
             waitForElementPresent(By.id(id));
             WebElement result = findElement(By.id(id));
-            Assert.assertTrue(
-                    "Component's UI and current UI instances are different",
+            Assert.assertTrue("Component's UI and current UI instances are different",
                     Boolean.parseBoolean(result.getText()));
         });
     }

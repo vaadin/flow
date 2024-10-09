@@ -43,10 +43,8 @@ public class ViteWebsocketConnectionTest {
 
     @Before
     public void reservePort() throws IOException {
-        httpServer = HttpServer.create(new InetSocketAddress("127.0.0.1", 0),
-                10);
-        httpServer.createContext("/VAADIN",
-                exchange -> handlerSupplier.accept(exchange));
+        httpServer = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 10);
+        httpServer.createContext("/VAADIN", exchange -> handlerSupplier.accept(exchange));
         httpServer.start();
     }
 
@@ -66,50 +64,40 @@ public class ViteWebsocketConnectionTest {
             handshake(exchange);
         };
         long startTime = System.nanoTime();
-        new ViteWebsocketConnection(httpServer.getAddress().getPort(),
-                "/VAADIN", "proto", x -> {
-                }, () -> {
-                    closeLatch.countDown();
-                }, err -> {
-                });
+        new ViteWebsocketConnection(httpServer.getAddress().getPort(), "/VAADIN", "proto", x -> {
+        }, () -> {
+            closeLatch.countDown();
+        }, err -> {
+        });
         closeLatch.await(2, TimeUnit.SECONDS);
-        long elapsedTime = Duration.ofNanos(System.nanoTime() - startTime)
-                .toMillis();
-        Assert.assertTrue(
-                "Should have waited for connection to be established (elapsed time: "
-                        + elapsedTime + ")",
+        long elapsedTime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
+        Assert.assertTrue("Should have waited for connection to be established (elapsed time: " + elapsedTime + ")",
                 elapsedTime > 500);
-        Assert.assertTrue(
-                "Should not have been blocked too long after connection (elapsed time: "
-                        + elapsedTime + ")",
+        Assert.assertTrue("Should not have been blocked too long after connection (elapsed time: " + elapsedTime + ")",
                 elapsedTime < 1000);
 
     }
 
     @Test
-    public void waitForConnection_clientWebsocketNotAvailable_fails()
-            throws InterruptedException {
+    public void waitForConnection_clientWebsocketNotAvailable_fails() throws InterruptedException {
         // Immediately closing connection to simulate connection failure
         handlerSupplier = HttpExchange::close;
         CountDownLatch errorLatch = new CountDownLatch(1);
-        new ViteWebsocketConnection(httpServer.getAddress().getPort(),
-                "/VAADIN", "proto", x -> {
-                }, () -> {
-                }, err -> errorLatch.countDown());
+        new ViteWebsocketConnection(httpServer.getAddress().getPort(), "/VAADIN", "proto", x -> {
+        }, () -> {
+        }, err -> errorLatch.countDown());
         errorLatch.await(2, TimeUnit.SECONDS);
     }
 
     private static void handshake(HttpExchange exchange) throws IOException {
         Headers requestHeaders = exchange.getRequestHeaders();
-        if ("GET".equalsIgnoreCase(exchange.getRequestMethod()) && "upgrade"
-                .equalsIgnoreCase(requestHeaders.getFirst("Connection"))) {
+        if ("GET".equalsIgnoreCase(exchange.getRequestMethod())
+                && "upgrade".equalsIgnoreCase(requestHeaders.getFirst("Connection"))) {
             String wsKey = requestHeaders.getFirst("Sec-websocket-key");
             String wsAcceptKey;
             try {
-                wsAcceptKey = Base64.getEncoder().encodeToString(
-                        MessageDigest.getInstance("SHA-1").digest(
-                                (wsKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
-                                        .getBytes(StandardCharsets.UTF_8)));
+                wsAcceptKey = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1")
+                        .digest((wsKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes(StandardCharsets.UTF_8)));
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             }

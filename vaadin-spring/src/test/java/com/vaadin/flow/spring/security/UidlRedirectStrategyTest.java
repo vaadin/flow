@@ -46,8 +46,7 @@ public class UidlRedirectStrategyTest {
     }
 
     @Test
-    public void isInternalRequest_setPageLocation()
-            throws IOException, ServletException {
+    public void isInternalRequest_setPageLocation() throws IOException, ServletException {
         when(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(ApplicationConstants.REQUEST_TYPE_UIDL);
 
@@ -63,11 +62,9 @@ public class UidlRedirectStrategyTest {
     }
 
     @Test
-    public void isExternalRequest_useDefaultRedirect()
-            throws IOException, ServletException {
+    public void isExternalRequest_useDefaultRedirect() throws IOException, ServletException {
         when(request.getContextPath()).thenReturn("");
-        when(response.encodeRedirectURL(anyString()))
-                .thenAnswer(i -> i.getArguments()[0]);
+        when(response.encodeRedirectURL(anyString())).thenAnswer(i -> i.getArguments()[0]);
 
         strategy.sendRedirect(request, response, "/foo");
 

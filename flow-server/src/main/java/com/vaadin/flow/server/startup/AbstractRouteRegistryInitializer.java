@@ -61,84 +61,68 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @return a resulting set of the route component classes
      */
     @SuppressWarnings("unchecked")
-    protected Set<Class<? extends Component>> validateRouteClasses(
-            VaadinContext context, Stream<Class<?>> routeClasses) {
+    protected Set<Class<? extends Component>> validateRouteClasses(VaadinContext context,
+            Stream<Class<?>> routeClasses) {
 
-        return routeClasses
-                .peek(clazz -> checkForConflictingAnnotations(context, clazz))
-                .filter(this::isApplicableClass)
-                .map(target -> (Class<? extends Component>) target)
+        return routeClasses.peek(clazz -> checkForConflictingAnnotations(context, clazz))
+                .filter(this::isApplicableClass).map(target -> (Class<? extends Component>) target)
                 .collect(Collectors.toSet());
     }
 
     /**
-     * Any navigation target applicable to be registered on startup should be a
-     * {@link Component}, contain the {@link Route} annotation and have
-     * {@link Route#registerAtStartup} be {@code true}.
+     * Any navigation target applicable to be registered on startup should be a {@link Component}, contain the
+     * {@link Route} annotation and have {@link Route#registerAtStartup} be {@code true}.
      *
      * @param clazz
      *            class to check for filer
      * @return true if applicable class
      */
     private boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Route.class)
-                && Component.class.isAssignableFrom(clazz)
+        return clazz.isAnnotationPresent(Route.class) && Component.class.isAssignableFrom(clazz)
                 && clazz.getAnnotation(Route.class).registerAtStartup();
     }
 
-    private void checkForConflictingAnnotations(VaadinContext context,
-            Class<?> route) {
-        if (route.isAnnotationPresent(RouteAlias.class)
-                && !route.isAnnotationPresent(Route.class)) {
+    private void checkForConflictingAnnotations(VaadinContext context, Class<?> route) {
+        if (route.isAnnotationPresent(RouteAlias.class) && !route.isAnnotationPresent(Route.class)) {
             throw new InvalidRouteLayoutConfigurationException(String.format(
-                    "'%s'" + " declares '@%s' but doesn't declare '@%s'. "
-                            + "The '%s' may not be used without '%s'",
-                    route.getCanonicalName(), RouteAlias.class.getSimpleName(),
-                    Route.class.getSimpleName(),
-                    RouteAlias.class.getSimpleName(),
-                    Route.class.getSimpleName()));
+                    "'%s'" + " declares '@%s' but doesn't declare '@%s'. " + "The '%s' may not be used without '%s'",
+                    route.getCanonicalName(), RouteAlias.class.getSimpleName(), Route.class.getSimpleName(),
+                    RouteAlias.class.getSimpleName(), Route.class.getSimpleName()));
 
         }
 
         RouteAlias[] aliases = route.getAnnotationsByType(RouteAlias.class);
         if (aliases.length > 0) {
             String routePath = RouteUtil.getRoutePath(context, route);
-            Map<String, Long> stats = Arrays.stream(aliases)
-                    .map(ann -> RouteUtil.getRouteAliasPath(route, ann))
-                    .collect(Collectors.groupingBy(Function.identity(),
-                            Collectors.counting()));
+            Map<String, Long> stats = Arrays.stream(aliases).map(ann -> RouteUtil.getRouteAliasPath(route, ann))
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
             if (stats.containsKey(routePath)) {
                 throw new InvalidRouteConfigurationException(String.format(
                         "'%s' declares '@%s' and '@%s' with the same path '%s'. "
                                 + "Make sure paths are different by checking annotation values "
                                 + "and prefixes defined by layouts",
-                        route.getCanonicalName(), Route.class.getSimpleName(),
-                        RouteAlias.class.getSimpleName(), routePath));
+                        route.getCanonicalName(), Route.class.getSimpleName(), RouteAlias.class.getSimpleName(),
+                        routePath));
             }
-            String repeatedAliases = stats.entrySet().stream()
-                    .filter(e -> e.getValue() > 1).map(Map.Entry::getKey)
+            String repeatedAliases = stats.entrySet().stream().filter(e -> e.getValue() > 1).map(Map.Entry::getKey)
                     .collect(Collectors.joining(", "));
             if (!repeatedAliases.isEmpty()) {
                 throw new InvalidRouteConfigurationException(String.format(
                         "'%s' declares multiple '@%s' with same paths: %s."
                                 + "Make sure paths are different by checking annotation values "
                                 + "and prefixes defined by layouts.",
-                        route.getCanonicalName(),
-                        RouteAlias.class.getSimpleName(), repeatedAliases));
+                        route.getCanonicalName(), RouteAlias.class.getSimpleName(), repeatedAliases));
             }
         }
 
-        if (route.isAnnotationPresent(PageTitle.class)
-                && HasDynamicTitle.class.isAssignableFrom(route)) {
-            throw new DuplicateNavigationTitleException(String.format(
-                    "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
-                    route.getName()));
+        if (route.isAnnotationPresent(PageTitle.class) && HasDynamicTitle.class.isAssignableFrom(route)) {
+            throw new DuplicateNavigationTitleException(String
+                    .format("'%s' has a PageTitle annotation, but also implements HasDynamicTitle.", route.getName()));
         }
 
         /* Validate annotation usage */
         getValidationAnnotations().forEach(type -> {
-            Class<? extends Annotation> annotation = type
-                    .asSubclass(Annotation.class);
+            Class<? extends Annotation> annotation = type.asSubclass(Annotation.class);
 
             validateRouteAnnotation(context, route, annotation);
 
@@ -151,11 +135,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     private Stream<Class<?>> getValidationAnnotations() {
-        return Stream.concat(
-                Stream.of(AnnotationValidator.class
-                        .getAnnotation(HandlesTypes.class).value()),
-                Stream.of(WebComponentExporterAwareValidator.class
-                        .getAnnotation(HandlesTypes.class).value()));
+        return Stream.concat(Stream.of(AnnotationValidator.class.getAnnotation(HandlesTypes.class).value()),
+                Stream.of(WebComponentExporterAwareValidator.class.getAnnotation(HandlesTypes.class).value()));
     }
 
     /* Route validator methods for bootstrap implementations */
@@ -169,8 +150,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             throw new InvalidRouteLayoutConfigurationException(String.format(
                     "The class '%s' should either be a '%s' or only a navigation target using"
                             + " '%s.layout' to set the parent layout",
-                    route.getSimpleName(), RouterLayout.class.getSimpleName(),
-                    Route.class.getSimpleName()));
+                    route.getSimpleName(), RouterLayout.class.getSimpleName(), Route.class.getSimpleName()));
         }
     }
 
@@ -178,81 +158,64 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     private void validateRouteAnnotation(VaadinContext context, Class<?> route,
             Class<? extends Annotation> annotation) {
         Route routeAnnotation = route.getAnnotation(Route.class);
-        if (routeAnnotation != null
-                && !UI.class.equals(routeAnnotation.layout())) {
+        if (routeAnnotation != null && !UI.class.equals(routeAnnotation.layout())) {
             if (route.isAnnotationPresent(annotation)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
-                                annotation.getSimpleName(),
-                                RouteUtil.getTopParentLayout(context, route,
-                                        RouteUtil.resolve(context, route))
-                                        .getName(),
-                                route.getName()));
+                throw new InvalidRouteLayoutConfigurationException(String.format(
+                        "%s annotation needs to be on the top parent layout '%s' not on '%s'",
+                        annotation.getSimpleName(),
+                        RouteUtil.getTopParentLayout(context, route, RouteUtil.resolve(context, route)).getName(),
+                        route.getName()));
             }
 
-            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(context, route,
-                            RouteUtil.resolve(context, route));
-            Class<? extends RouterLayout> topParentLayout = RouteUtil
-                    .getTopParentLayout(context, route,
-                            RouteUtil.resolve(context, route));
+            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil.getParentLayouts(context, route,
+                    RouteUtil.resolve(context, route));
+            Class<? extends RouterLayout> topParentLayout = RouteUtil.getTopParentLayout(context, route,
+                    RouteUtil.resolve(context, route));
 
-            validateParentAnnotation(parentLayouts, topParentLayout,
-                    annotation);
+            validateParentAnnotation(parentLayouts, topParentLayout, annotation);
         }
     }
 
-    private void validateRouteAliasAnnotation(VaadinContext context,
-            Class<?> route, RouteAlias alias,
+    private void validateRouteAliasAnnotation(VaadinContext context, Class<?> route, RouteAlias alias,
             Class<? extends Annotation> annotation) {
         if (!UI.class.equals(alias.layout())) {
             if (route.isAnnotationPresent(annotation)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
-                                annotation.getSimpleName(),
-                                RouteUtil.getTopParentLayout(context, route,
-                                        alias.value()).getName(),
-                                route.getName()));
+                throw new InvalidRouteLayoutConfigurationException(String.format(
+                        "%s annotation needs to be on the top parent layout '%s' not on '%s'",
+                        annotation.getSimpleName(),
+                        RouteUtil.getTopParentLayout(context, route, alias.value()).getName(), route.getName()));
             }
 
-            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(context, route, alias.value());
-            Class<? extends RouterLayout> topParentLayout = RouteUtil
-                    .getTopParentLayout(context, route, alias.value());
+            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil.getParentLayouts(context, route,
+                    alias.value());
+            Class<? extends RouterLayout> topParentLayout = RouteUtil.getTopParentLayout(context, route, alias.value());
 
-            validateParentAnnotation(parentLayouts, topParentLayout,
-                    annotation);
+            validateParentAnnotation(parentLayouts, topParentLayout, annotation);
         }
     }
 
-    private void validateParentAnnotation(
-            List<Class<? extends RouterLayout>> parentLayouts,
-            Class<? extends RouterLayout> topParentLayout,
-            Class<? extends Annotation> annotation) {
-        Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts
-                .stream()
+    private void validateParentAnnotation(List<Class<? extends RouterLayout>> parentLayouts,
+            Class<? extends RouterLayout> topParentLayout, Class<? extends Annotation> annotation) {
+        Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts.stream()
                 .filter(layout -> layout.isAnnotationPresent(annotation));
         if (streamSupplier.get().count() > 1) {
-            throw new InvalidRouteLayoutConfigurationException("Only one "
-                    + annotation.getSimpleName()
+            throw new InvalidRouteLayoutConfigurationException("Only one " + annotation.getSimpleName()
                     + " annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                    + streamSupplier.get().map(Class::getName)
-                            .collect(Collectors.joining(", ")));
+                    + streamSupplier.get().map(Class::getName).collect(Collectors.joining(", ")));
         }
 
         streamSupplier.get().findFirst().ifPresent(layout -> {
             if (!layout.equals(topParentLayout)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s annotation should be on the top most route layout '%s'. Offending class: '%s'",
-                                annotation.getSimpleName(),
-                                topParentLayout.getName(), layout.getName()));
+                throw new InvalidRouteLayoutConfigurationException(String.format(
+                        "%s annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                        annotation.getSimpleName(), topParentLayout.getName(), layout.getName()));
             }
         });
     }
 
     /**
-     * Validate PWA annotations of the potential route classes stream, search
-     * for properly annotated PWA class and return it, or null if none existing.
+     * Validate PWA annotations of the potential route classes stream, search for properly annotated PWA class and
+     * return it, or null if none existing.
      *
      * @param context
      *            a Vaadin context
@@ -261,8 +224,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @return a PWA -annotated class, or null if none exist.
      */
     @SuppressWarnings("unchecked")
-    protected Class<?> validatePwaClass(VaadinContext context,
-            Stream<Class<?>> routeClasses) {
+    protected Class<?> validatePwaClass(VaadinContext context, Stream<Class<?>> routeClasses) {
         pwaClass = null;
         routeClasses.forEach(route -> {
             // check and validate route pwa annotation
@@ -271,9 +233,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             Route routeAnnotation = route.getAnnotation(Route.class);
 
             if (!UI.class.equals(routeAnnotation.layout())) {
-                Class<? extends RouterLayout> topParentLayout = RouteUtil
-                        .getTopParentLayout(context, route,
-                                RouteUtil.resolve(context, route));
+                Class<? extends RouterLayout> topParentLayout = RouteUtil.getTopParentLayout(context, route,
+                        RouteUtil.resolve(context, route));
                 // check and validate top parent layout pwa annotation
                 validatePwa(topParentLayout);
             }
@@ -282,16 +243,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     private void validatePwa(Class<?> pwaClassCandidate) {
-        if (pwaClassCandidate == null
-                || !pwaClassCandidate.isAnnotationPresent(PWA.class)) {
+        if (pwaClassCandidate == null || !pwaClassCandidate.isAnnotationPresent(PWA.class)) {
             return;
         } else if (pwaClass == null || pwaClass == pwaClassCandidate) {
             pwaClass = pwaClassCandidate;
         } else {
             throw new InvalidRouteLayoutConfigurationException(String.format(
                     "Expected only one '%s' annotation that is placed on the main layout of the application. Got multiple annotations in '%s' and '%s'",
-                    PWA.class.getSimpleName(), pwaClass.getSimpleName(),
-                    pwaClassCandidate.getSimpleName()));
+                    PWA.class.getSimpleName(), pwaClass.getSimpleName(), pwaClassCandidate.getSimpleName()));
         }
     }
 

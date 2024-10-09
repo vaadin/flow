@@ -33,8 +33,7 @@ public interface ThemeList extends Set<String>, Serializable {
      *            the theme name to set or remove
      * @param set
      *            true to set the theme name, false to remove it
-     * @return true if the theme list was modified (theme name added or
-     *         removed), false otherwise
+     * @return true if the theme list was modified (theme name added or removed), false otherwise
      */
     default boolean set(String themeName, boolean set) {
         return set ? add(themeName) : remove(themeName);

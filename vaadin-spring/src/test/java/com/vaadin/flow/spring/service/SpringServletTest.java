@@ -43,8 +43,7 @@ public class SpringServletTest {
     @Test
     public void readUniformNameProperty_propertyNameContainsDash_propertyNameIsConvertedToCamelCaseAndReadProperly()
             throws ServletException {
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         PushMode pushMode = service.getDeploymentConfiguration().getPushMode();
         Assert.assertEquals(PushMode.MANUAL, pushMode);
     }

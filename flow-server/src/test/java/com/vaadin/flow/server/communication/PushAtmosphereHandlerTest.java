@@ -59,14 +59,11 @@ public class PushAtmosphereHandlerTest {
         Mockito.when(resource.uuid()).thenReturn("1");
 
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
+        ApplicationConfiguration config = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(config.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
         Mockito.when(config.getContext()).thenReturn(context);
         VaadinServletService service = new VaadinServletService(null,
-                new DefaultDeploymentConfiguration(config, getClass(),
-                        new Properties()));
+                new DefaultDeploymentConfiguration(config, getClass(), new Properties()));
 
         PushHandler handler = new PushHandler(service);
 
@@ -84,18 +81,15 @@ public class PushAtmosphereHandlerTest {
         writeSessionExpiredAsync("POST");
     }
 
-    private void writeSessionExpiredAsync(String httpMethod)
-            throws IOException {
+    private void writeSessionExpiredAsync(String httpMethod) throws IOException {
         Mockito.when(request.getMethod()).thenReturn(httpMethod);
 
         atmosphereHandler.onRequest(resource);
 
-        String responseContent = CommunicationUtil
-                .getStringWhenWriteString(printWriter);
+        String responseContent = CommunicationUtil.getStringWhenWriteString(printWriter);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"async\":true,\"sessionExpired\":true}}]",
+        Assert.assertEquals("Invalid response", "for(;;);[{\"meta\":{\"async\":true,\"sessionExpired\":true}}]",
                 responseContent);
     }
 

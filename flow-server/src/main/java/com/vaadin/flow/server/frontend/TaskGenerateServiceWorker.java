@@ -48,8 +48,7 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        try (InputStream swStream = getClass()
-                .getResourceAsStream(SERVICE_WORKER_SRC)) {
+        try (InputStream swStream = getClass().getResourceAsStream(SERVICE_WORKER_SRC)) {
             return IOUtils.toString(swStream, UTF_8);
         }
     }
@@ -61,10 +60,8 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        File serviceWorker = new File(options.getFrontendDirectory(),
-                SERVICE_WORKER_SRC);
-        File serviceWorkerJs = new File(options.getFrontendDirectory(),
-                SERVICE_WORKER_SRC_JS);
+        File serviceWorker = new File(options.getFrontendDirectory(), SERVICE_WORKER_SRC);
+        File serviceWorkerJs = new File(options.getFrontendDirectory(), SERVICE_WORKER_SRC_JS);
         return !serviceWorker.exists() && !serviceWorkerJs.exists();
     }
 }

@@ -35,17 +35,14 @@ public class InjectScriptTagIT extends ChromeBrowserTest {
         Assert.assertEquals("<!-- <script>", div.getText());
 
         WebElement slot = findElement(By.id("slot-1"));
-        Assert.assertEquals("<!-- <script> --><!-- <script></script>",
-                slot.getText());
+        Assert.assertEquals("<!-- <script> --><!-- <script></script>", slot.getText());
 
-        TestBenchElement button = parent.$(TestBenchElement.class)
-                .id("change-value");
+        TestBenchElement button = parent.$(TestBenchElement.class).id("change-value");
         button.click();
 
         Assert.assertEquals("<!-- <SCRIPT>", div.getText());
         slot = findElement(By.id("slot-2"));
-        Assert.assertEquals("<!-- <SCRIPT> --><!-- <SCRIPT></SCRIPT>",
-                slot.getText());
+        Assert.assertEquals("<!-- <SCRIPT> --><!-- <SCRIPT></SCRIPT>", slot.getText());
     }
 
 }

@@ -28,8 +28,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Models the selection logic of a {@code Listing} component. Determines how
- * items can be selected and deselected.
+ * Models the selection logic of a {@code Listing} component. Determines how items can be selected and deselected.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -42,20 +41,18 @@ import com.vaadin.flow.shared.Registration;
 public interface SelectionModel<C extends Component, T> extends Serializable {
 
     /**
-     * A selection model in which at most one item can be selected at a time.
-     * Selecting another item deselects the originally selected item.
+     * A selection model in which at most one item can be selected at a time. Selecting another item deselects the
+     * originally selected item.
      *
      * @param <T>
      *            the type of the items to select
      * @param <C>
      *            the component type
      */
-    public interface Single<C extends Component, T>
-            extends SelectionModel<C, T> {
+    public interface Single<C extends Component, T> extends SelectionModel<C, T> {
 
         /**
-         * Selects the given item. If another item was already selected, that
-         * item is deselected.
+         * Selects the given item. If another item was already selected, that item is deselected.
          *
          * @param item
          *            the item to select
@@ -64,17 +61,14 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
         void select(T item);
 
         /**
-         * Returns the currently selected item, or an empty optional if no item
-         * is selected.
+         * Returns the currently selected item, or an empty optional if no item is selected.
          *
-         * @return an optional of the selected item if any, an empty optional
-         *         otherwise
+         * @return an optional of the selected item if any, an empty optional otherwise
          */
         Optional<T> getSelectedItem();
 
         /**
-         * Sets the current selection to the given item, or clears selection if
-         * given {@code null}.
+         * Sets the current selection to the given item, or clears selection if given {@code null}.
          *
          * @param item
          *            the item to select or {@code null} to clear selection
@@ -93,18 +87,15 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
         }
 
         /**
-         * Returns a singleton set of the currently selected item or an empty
-         * set if no item is selected.
+         * Returns a singleton set of the currently selected item or an empty set if no item is selected.
          *
-         * @return a singleton set of the selected item if any, an empty set
-         *         otherwise
+         * @return a singleton set of the selected item if any, an empty set otherwise
          *
          * @see #getSelectedItem()
          */
         @Override
         default Set<T> getSelectedItems() {
-            return getSelectedItem().map(Collections::singleton)
-                    .orElse(Collections.emptySet());
+            return getSelectedItem().map(Collections::singleton).orElse(Collections.emptySet());
         }
 
         @Override
@@ -113,43 +104,37 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
         }
 
         /**
-         * Sets whether it's allowed to deselect the selected row through the
-         * UI. Deselection is allowed by default.
+         * Sets whether it's allowed to deselect the selected row through the UI. Deselection is allowed by default.
          *
          * @param deselectAllowed
-         *            <code>true</code> if the selected row can be deselected
-         *            without selecting another row instead; otherwise
-         *            <code>false</code>.
+         *            <code>true</code> if the selected row can be deselected without selecting another row instead;
+         *            otherwise <code>false</code>.
          */
         void setDeselectAllowed(boolean deselectAllowed);
 
         /**
-         * Gets whether it's allowed to deselect the selected row through the
-         * UI.
+         * Gets whether it's allowed to deselect the selected row through the UI.
          *
-         * @return <code>true</code> if deselection is allowed; otherwise
-         *         <code>false</code>
+         * @return <code>true</code> if deselection is allowed; otherwise <code>false</code>
          */
         boolean isDeselectAllowed();
     }
 
     /**
-     * A selection model in which multiple items can be selected at the same
-     * time. Selecting an item adds it to the selection.
+     * A selection model in which multiple items can be selected at the same time. Selecting an item adds it to the
+     * selection.
      *
      * @param <T>
      *            the type of the items to select
      * @param <C>
      *            the component type
      */
-    public interface Multi<C extends Component, T>
-            extends SelectionModel<C, T> {
+    public interface Multi<C extends Component, T> extends SelectionModel<C, T> {
 
         /**
          * Adds the given item to the set of currently selected items.
          * <p>
-         * By default this does not clear any previous selection. To do that,
-         * use {@link #deselectAll()}.
+         * By default this does not clear any previous selection. To do that, use {@link #deselectAll()}.
          * <p>
          * If the item was already selected, this is a NO-OP.
          *
@@ -165,13 +150,11 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
         /**
          * Adds the given items to the set of currently selected items.
          * <p>
-         * By default this does not clear any previous selection. To do that,
-         * use {@link #deselectAll()}.
+         * By default this does not clear any previous selection. To do that, use {@link #deselectAll()}.
          * <p>
          * If the all the items were already selected, this is a NO-OP.
          * <p>
-         * This is a short-hand for {@link #updateSelection(Set, Set)} with
-         * nothing to deselect.
+         * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing to deselect.
          *
          * @param items
          *            to add to selection, not {@code null}
@@ -180,8 +163,7 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
             Objects.requireNonNull(items);
             Stream.of(items).forEach(Objects::requireNonNull);
 
-            updateSelection(new LinkedHashSet<>(Arrays.asList(items)),
-                    Collections.emptySet());
+            updateSelection(new LinkedHashSet<>(Arrays.asList(items)), Collections.emptySet());
         }
 
         @SuppressWarnings("unchecked")
@@ -195,8 +177,7 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
          * <p>
          * If the none of the items were selected, this is a NO-OP.
          * <p>
-         * This is a short-hand for {@link #updateSelection(Set, Set)} with
-         * nothing to select.
+         * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing to select.
          *
          * @param items
          *            to remove from selection, not {@code null}
@@ -205,15 +186,13 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
             Objects.requireNonNull(items);
             Stream.of(items).forEach(Objects::requireNonNull);
 
-            updateSelection(Collections.emptySet(),
-                    new LinkedHashSet<>(Arrays.asList(items)));
+            updateSelection(Collections.emptySet(), new LinkedHashSet<>(Arrays.asList(items)));
         }
 
         /**
          * Updates the selection by adding and removing the given items from it.
          * <p>
-         * If all the added items were already selected and the removed items
-         * were not selected, this is a NO-OP.
+         * If all the added items were already selected and the removed items were not selected, this is a NO-OP.
          * <p>
          * Duplicate items (in both add &amp; remove sets) are ignored.
          *
@@ -236,12 +215,11 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
     }
 
     /**
-     * Returns an immutable set of the currently selected items. It is safe to
-     * invoke other {@code SelectionModel} methods while iterating over the set.
+     * Returns an immutable set of the currently selected items. It is safe to invoke other {@code SelectionModel}
+     * methods while iterating over the set.
      * <p>
-     * <em>Implementation note:</em> the iteration order of the items in the
-     * returned set should be well-defined and documented by the implementing
-     * class.
+     * <em>Implementation note:</em> the iteration order of the items in the returned set should be well-defined and
+     * documented by the implementing class.
      *
      * @return the items in the current selection, not null
      */
@@ -250,8 +228,7 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
     /**
      * Get first selected data item.
      * <p>
-     * This is the same as {@link Single#getSelectedItem()} in case of single
-     * selection and the first selected item from
+     * This is the same as {@link Single#getSelectedItem()} in case of single selection and the first selected item from
      * {@link Multi#getSelectedItems()} in case of multiselection.
      *
      * @return the first selected item.
@@ -259,8 +236,8 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
     Optional<T> getFirstSelectedItem();
 
     /**
-     * Selects the given item. Depending on the implementation, may cause other
-     * items to be deselected. If the item is already selected, does nothing.
+     * Selects the given item. Depending on the implementation, may cause other items to be deselected. If the item is
+     * already selected, does nothing.
      *
      * @param item
      *            the item to select, not null
@@ -268,8 +245,7 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
     void select(T item);
 
     /**
-     * Deselects the given item. If the item is not currently selected, does
-     * nothing.
+     * Deselects the given item. If the item is not currently selected, does nothing.
      *
      * @param item
      *            the item to deselect, not null
@@ -293,8 +269,7 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
     }
 
     /**
-     * Adds a generic listener to this selection model, accepting both single
-     * and multiselection events.
+     * Adds a generic listener to this selection model, accepting both single and multiselection events.
      *
      * @param listener
      *            the listener to add, not {@code null}

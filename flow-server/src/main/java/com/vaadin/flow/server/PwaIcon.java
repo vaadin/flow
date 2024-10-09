@@ -34,14 +34,12 @@ import org.jsoup.nodes.Element;
 /**
  * Implementation of icons used in PWA resources.
  *
- * Creates the href automatically based on - baseName (the file name with path,
- * as {@literal icons/icon.png"}) - width (width of icon) - height (height of
- * icon) - (possibly) fileHash (the hashcode of image file)
+ * Creates the href automatically based on - baseName (the file name with path, as {@literal icons/icon.png"}) - width
+ * (width of icon) - height (height of icon) - (possibly) fileHash (the hashcode of image file)
  *
  * The href will be set as: {@code [basename]-[width]x[height].png{?[filehash]}}
  *
- * The trailing {@literal ?[filehash]} will be added if icon cache is not
- * controlled by service worker: cached = false
+ * The trailing {@literal ?[filehash]} will be added if icon cache is not controlled by service worker: cached = false
  *
  * Icon caching is left to the browser if it's not cached with service worker.
  *
@@ -76,13 +74,11 @@ public class PwaIcon implements Serializable {
         this(width, height, baseName, domain, false);
     }
 
-    PwaIcon(int width, int height, String baseName, Domain domain,
-            boolean shouldBeCached) {
+    PwaIcon(int width, int height, String baseName, Domain domain, boolean shouldBeCached) {
         this(width, height, baseName, domain, shouldBeCached, "icon", "");
     }
 
-    PwaIcon(int width, int height, String baseName, Domain domain,
-            boolean shouldBeCached, String rel, String media) {
+    PwaIcon(int width, int height, String baseName, Domain domain, boolean shouldBeCached, String rel, String media) {
         this.width = width;
         this.height = height;
         this.baseName = baseName;
@@ -139,8 +135,7 @@ public class PwaIcon implements Serializable {
 
     private void setRelativeName() {
         int split = baseName.lastIndexOf('.');
-        String link = baseName.substring(0, split) + "-" + getSizes()
-                + baseName.substring(split);
+        String link = baseName.substring(0, split) + "-" + getSizes() + baseName.substring(split);
         if (!shouldBeCached) {
             link = link + "?" + fileHash;
         }
@@ -183,8 +178,7 @@ public class PwaIcon implements Serializable {
      * @return "{ url: '[href]', revision: '[fileHash' }"
      */
     public String getCacheFormat() {
-        return String.format("{ url: '%s', revision: '%s' }", getHref(),
-                fileHash);
+        return String.format("{ url: '%s', revision: '%s' }", getHref(), fileHash);
     }
 
     /**
@@ -251,9 +245,7 @@ public class PwaIcon implements Serializable {
         try {
             outputStream.write(data);
         } catch (IOException ioe) {
-            throw new UncheckedIOException(
-                    "Failed to store the icon image into the stream provided",
-                    ioe);
+            throw new UncheckedIOException("Failed to store the icon image into the stream provided", ioe);
         }
     }
 
@@ -262,8 +254,7 @@ public class PwaIcon implements Serializable {
         // resizing
         int bgColor = baseImage.getRGB(0, 0);
 
-        BufferedImage bimage = new BufferedImage(this.getWidth(),
-                this.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bimage = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
         // Draw the image on to the buffered image
         Graphics2D graphics = bimage.createGraphics();
 
@@ -272,13 +263,9 @@ public class PwaIcon implements Serializable {
         graphics.clearRect(0, 0, this.getWidth(), this.getHeight());
 
         // calculate ratio (bigger ratio) for resize
-        float ratio = (float) baseImage.getWidth()
-                / (float) this.getWidth() > (float) baseImage.getHeight()
-                        / (float) this.getHeight()
-                                ? (float) baseImage.getWidth()
-                                        / (float) this.getWidth()
-                                : (float) baseImage.getHeight()
-                                        / (float) this.getHeight();
+        float ratio = (float) baseImage.getWidth() / (float) this.getWidth() > (float) baseImage.getHeight()
+                / (float) this.getHeight() ? (float) baseImage.getWidth() / (float) this.getWidth()
+                        : (float) baseImage.getHeight() / (float) this.getHeight();
 
         // Forbid upscaling of image
         ratio = ratio > 1.0f ? ratio : 1.0f;
@@ -288,11 +275,8 @@ public class PwaIcon implements Serializable {
         int newHeight = Math.round(baseImage.getWidth() / ratio);
 
         // draw rescaled img in the center of created image
-        graphics.drawImage(
-                baseImage.getScaledInstance(newWidth, newHeight,
-                        Image.SCALE_SMOOTH),
-                (this.getWidth() - newWidth) / 2,
-                (this.getHeight() - newHeight) / 2, null);
+        graphics.drawImage(baseImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH),
+                (this.getWidth() - newWidth) / 2, (this.getHeight() - newHeight) / 2, null);
         graphics.dispose();
         return bimage;
     }

@@ -26,8 +26,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.UL)
-public class UnorderedList extends HtmlContainer
-        implements ClickNotifier<UnorderedList> {
+public class UnorderedList extends HtmlContainer implements ClickNotifier<UnorderedList> {
 
     /**
      * Creates a new empty unordered list.

@@ -29,8 +29,7 @@ public class RestoreViewWithAttachedByIdIT extends ChromeBrowserTest {
     public void injectedComponentWorksAfterReattach() {
         open();
 
-        WebElement target = $(TestBenchElement.class).id("template")
-                .$(TestBenchElement.class).id("target");
+        WebElement target = $(TestBenchElement.class).id("template").$(TestBenchElement.class).id("target");
         Assert.assertEquals("Server Side Text", target.getText());
 
         // replace the template with a label
@@ -42,8 +41,7 @@ public class RestoreViewWithAttachedByIdIT extends ChromeBrowserTest {
         // return the template back
         button.click();
 
-        target = $(TestBenchElement.class).id("template")
-                .$(TestBenchElement.class).id("target");
+        target = $(TestBenchElement.class).id("template").$(TestBenchElement.class).id("target");
         Assert.assertEquals("Server Side Text", target.getText());
     }
 }

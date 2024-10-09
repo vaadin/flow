@@ -40,16 +40,14 @@ public class URIResolver extends VaadinUriResolver {
     }
 
     /**
-     * Translates a Vaadin URI to a URL that can be loaded by the browser. The
-     * following URI schemes are supported:
+     * Translates a Vaadin URI to a URL that can be loaded by the browser. The following URI schemes are supported:
      * <ul>
-     * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
-     * resolves to the application context root</li>
-     * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
-     * resolves to the base URI of the page</li>
+     * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> - resolves to the application context
+     * root</li>
+     * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> - resolves to the base URI of the page</li>
      * </ul>
-     * Any other URI protocols, such as <code>http://</code> or
-     * <code>https://</code> are passed through this method unmodified.
+     * Any other URI protocols, such as <code>http://</code> or <code>https://</code> are passed through this method
+     * unmodified.
      *
      * @param uri
      *            the URI to resolve
@@ -60,22 +58,18 @@ public class URIResolver extends VaadinUriResolver {
     }
 
     protected String getContextRootUrl() {
-        String root = registry.getApplicationConfiguration()
-                .getContextRootUrl();
+        String root = registry.getApplicationConfiguration().getContextRootUrl();
         assert root.endsWith("/");
         return root;
     }
 
     /**
-     * Returns the current document location as relative to the base uri of the
-     * document.
+     * Returns the current document location as relative to the base uri of the document.
      *
-     * @return the document current location as relative to the document base
-     *         uri
+     * @return the document current location as relative to the document base uri
      */
     public static String getCurrentLocationRelativeToBaseUri() {
-        return getBaseRelativeUri(Browser.getDocument().getBaseURI(),
-                Browser.getDocument().getLocation().getHref());
+        return getBaseRelativeUri(Browser.getDocument().getBaseURI(), Browser.getDocument().getLocation().getHref());
     }
 
     /**
@@ -85,8 +79,7 @@ public class URIResolver extends VaadinUriResolver {
      *            the base uri of the document
      * @param uri
      *            an absolute uri to transform
-     * @return the uri as relative to the document base uri, or the given uri
-     *         unmodified if it is for different context.
+     * @return the uri as relative to the document base uri, or the given uri unmodified if it is for different context.
      */
     public static String getBaseRelativeUri(String baseURI, String uri) {
         if (uri.startsWith(baseURI)) {

@@ -36,21 +36,18 @@ final class HierarchicalFilterUtils {
             extends ConfigurableFilterDataProviderWrapper<T, Q, C, F>
             implements HierarchicalConfigurableFilterDataProvider<T, Q, C> {
 
-        HierarchialConfigurableFilterDataProviderWrapper(
-                HierarchicalDataProvider<T, F> dataProvider) {
+        HierarchialConfigurableFilterDataProviderWrapper(HierarchicalDataProvider<T, F> dataProvider) {
             super(dataProvider);
         }
 
         @Override
         public int getChildCount(HierarchicalQuery<T, Q> query) {
-            return getDataProvider()
-                    .getChildCount(adapt(query, getFilter(query)));
+            return getDataProvider().getChildCount(adapt(query, getFilter(query)));
         }
 
         @Override
         public Stream<T> fetchChildren(HierarchicalQuery<T, Q> query) {
-            return getDataProvider()
-                    .fetchChildren(adapt(query, getFilter(query)));
+            return getDataProvider().fetchChildren(adapt(query, getFilter(query)));
         }
 
         @Override
@@ -65,22 +62,18 @@ final class HierarchicalFilterUtils {
 
         @Override
         public Stream<T> fetch(Query<T, Q> query) {
-            return HierarchicalConfigurableFilterDataProvider.super.fetch(
-                    query);
+            return HierarchicalConfigurableFilterDataProvider.super.fetch(query);
         }
 
         @Override
         public <U, V> HierarchicalConfigurableFilterDataProvider<T, U, V> withConfigurableFilter(
                 SerializableBiFunction<U, V, Q> filterCombiner) {
-            return HierarchicalConfigurableFilterDataProvider.super.withConfigurableFilter(
-                    filterCombiner);
+            return HierarchicalConfigurableFilterDataProvider.super.withConfigurableFilter(filterCombiner);
         }
 
         @Override
-        public <U> HierarchicalDataProvider<T, U> withConvertedFilter(
-                SerializableFunction<U, Q> filterConverter) {
-            return HierarchicalConfigurableFilterDataProvider.super.withConvertedFilter(
-                    filterConverter);
+        public <U> HierarchicalDataProvider<T, U> withConvertedFilter(SerializableFunction<U, Q> filterConverter) {
+            return HierarchicalConfigurableFilterDataProvider.super.withConvertedFilter(filterConverter);
         }
 
         @Override
@@ -95,25 +88,21 @@ final class HierarchicalFilterUtils {
     }
 
     @SuppressWarnings("serial")
-    abstract static class HierarchicalFilterDataProviderWrapper<T, F, M>
-            extends DataProviderWrapper<T, F, M>
+    abstract static class HierarchicalFilterDataProviderWrapper<T, F, M> extends DataProviderWrapper<T, F, M>
             implements HierarchicalDataProvider<T, F> {
 
-        HierarchicalFilterDataProviderWrapper(
-                HierarchicalDataProvider<T, M> dataProvider) {
+        HierarchicalFilterDataProviderWrapper(HierarchicalDataProvider<T, M> dataProvider) {
             super(dataProvider);
         }
 
         @Override
         public int getChildCount(HierarchicalQuery<T, F> query) {
-            return getDataProvider()
-                    .getChildCount(adapt(query, getFilter(query)));
+            return getDataProvider().getChildCount(adapt(query, getFilter(query)));
         }
 
         @Override
         public Stream<T> fetchChildren(HierarchicalQuery<T, F> query) {
-            return getDataProvider()
-                    .fetchChildren(adapt(query, getFilter(query)));
+            return getDataProvider().fetchChildren(adapt(query, getFilter(query)));
         }
 
         @Override
@@ -134,15 +123,12 @@ final class HierarchicalFilterUtils {
         @Override
         public <U, V> HierarchicalConfigurableFilterDataProvider<T, U, V> withConfigurableFilter(
                 SerializableBiFunction<U, V, F> filterCombiner) {
-            return HierarchicalDataProvider.super.withConfigurableFilter(
-                    filterCombiner);
+            return HierarchicalDataProvider.super.withConfigurableFilter(filterCombiner);
         }
 
         @Override
-        public <U> HierarchicalDataProvider<T, U> withConvertedFilter(
-                SerializableFunction<U, F> filterConverter) {
-            return HierarchicalDataProvider.super.withConvertedFilter(
-                    filterConverter);
+        public <U> HierarchicalDataProvider<T, U> withConvertedFilter(SerializableFunction<U, F> filterConverter) {
+            return HierarchicalDataProvider.super.withConvertedFilter(filterConverter);
         }
 
         @Override
@@ -160,11 +146,9 @@ final class HierarchicalFilterUtils {
         // avoid instantiating utility class
     }
 
-    private static <T, F, Q> HierarchicalQuery<T, F> adapt(
-            HierarchicalQuery<T, Q> query, F filter) {
-        return new HierarchicalQuery<T, F>(query.getOffset(), query.getLimit(),
-                query.getSortOrders(), query.getInMemorySorting(), filter,
-                query.getParent());
+    private static <T, F, Q> HierarchicalQuery<T, F> adapt(HierarchicalQuery<T, Q> query, F filter) {
+        return new HierarchicalQuery<T, F>(query.getOffset(), query.getLimit(), query.getSortOrders(),
+                query.getInMemorySorting(), filter, query.getParent());
     }
 
 }

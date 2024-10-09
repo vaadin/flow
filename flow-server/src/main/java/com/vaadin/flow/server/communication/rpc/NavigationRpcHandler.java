@@ -49,20 +49,14 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
     public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
         History history = ui.getPage().getHistory();
 
-        HistoryStateChangeHandler historyStateChangeHandler = history
-                .getHistoryStateChangeHandler();
+        HistoryStateChangeHandler historyStateChangeHandler = history.getHistoryStateChangeHandler();
         if (historyStateChangeHandler != null) {
-            JsonValue state = invocationJson
-                    .get(JsonConstants.RPC_NAVIGATION_STATE);
-            String location = invocationJson
-                    .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
-            boolean triggeredByLink = invocationJson
-                    .hasKey(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
-            NavigationTrigger trigger = triggeredByLink
-                    ? NavigationTrigger.ROUTER_LINK
-                    : NavigationTrigger.HISTORY;
-            HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
-                    state, new Location(location), trigger);
+            JsonValue state = invocationJson.get(JsonConstants.RPC_NAVIGATION_STATE);
+            String location = invocationJson.getString(JsonConstants.RPC_NAVIGATION_LOCATION);
+            boolean triggeredByLink = invocationJson.hasKey(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
+            NavigationTrigger trigger = triggeredByLink ? NavigationTrigger.ROUTER_LINK : NavigationTrigger.HISTORY;
+            HistoryStateChangeEvent event = new HistoryStateChangeEvent(history, state, new Location(location),
+                    trigger);
             historyStateChangeHandler.onHistoryStateChange(event);
         }
 

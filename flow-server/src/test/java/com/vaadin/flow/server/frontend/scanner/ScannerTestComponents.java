@@ -223,30 +223,25 @@ public class ScannerTestComponents {
         }
     }
 
-    public static class NoThemeExporter
-            extends WebComponentExporter<RootViewWithTheme> {
+    public static class NoThemeExporter extends WebComponentExporter<RootViewWithTheme> {
         public NoThemeExporter() {
             super("root-view");
         }
 
         @Override
-        public void configureInstance(
-                WebComponent<RootViewWithTheme> webComponent,
-                RootViewWithTheme component) {
+        public void configureInstance(WebComponent<RootViewWithTheme> webComponent, RootViewWithTheme component) {
 
         }
     }
 
     @Theme(themeClass = Theme2.class)
-    public static class ThemeExporter
-            extends WebComponentExporter<RootViewWithoutThemeAnnotation> {
+    public static class ThemeExporter extends WebComponentExporter<RootViewWithoutThemeAnnotation> {
         public ThemeExporter() {
             super("root-view");
         }
 
         @Override
-        public void configureInstance(
-                WebComponent<RootViewWithoutThemeAnnotation> webComponent,
+        public void configureInstance(WebComponent<RootViewWithoutThemeAnnotation> webComponent,
                 RootViewWithoutThemeAnnotation component) {
 
         }
@@ -262,8 +257,7 @@ public class ScannerTestComponents {
     @Route("route-1")
     @NoTheme
     @JsModule("./foo")
-    public static class RoutedClassWithAnnotations
-            extends RoutedClassWithoutAnnotations {
+    public static class RoutedClassWithAnnotations extends RoutedClassWithoutAnnotations {
     }
 
     public static class BridgeClass extends RoutedClassWithAnnotations {
@@ -316,16 +310,14 @@ public class ScannerTestComponents {
 
         @SuppressWarnings("unchecked")
         private void registerRoute() {
-            RouteConfiguration.forSessionScope().setRoute("foo",
-                    DynamicComponentClass.class, DynamicLayoutClass.class);
+            RouteConfiguration.forSessionScope().setRoute("foo", DynamicComponentClass.class, DynamicLayoutClass.class);
         }
     }
 
     @Route()
     public static class RouteWithViewBean {
         public RouteWithViewBean() {
-            UI.getCurrent()
-                    .add(BeanFactory.getBean(DynamicComponentClass.class));
+            UI.getCurrent().add(BeanFactory.getBean(DynamicComponentClass.class));
         }
     }
 
@@ -338,17 +330,14 @@ public class ScannerTestComponents {
     @Route()
     public static class RouteWithService {
         public RouteWithService() {
-            UserRouteService.registerUserRoute(
-                    RouteConfiguration.forSessionScope(), "donald");
+            UserRouteService.registerUserRoute(RouteConfiguration.forSessionScope(), "donald");
         }
     }
 
     public static class UserRouteService {
         @SuppressWarnings("unchecked")
-        public static void registerUserRoute(RouteConfiguration config,
-                String userId) {
-            config.setRoute(userId, DynamicComponentClass.class,
-                    DynamicLayoutClass.class);
+        public static void registerUserRoute(RouteConfiguration config, String userId) {
+            config.setRoute(userId, DynamicComponentClass.class, DynamicLayoutClass.class);
         }
     }
 }

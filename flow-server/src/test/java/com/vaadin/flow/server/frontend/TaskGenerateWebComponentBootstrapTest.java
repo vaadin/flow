@@ -39,33 +39,27 @@ public class TaskGenerateWebComponentBootstrapTest {
     @Before
     public void setup() throws Exception {
         frontendDirectory = temporaryFolder.newFolder(DEFAULT_FRONTEND_DIR);
-        generatedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendDirectory);
+        generatedImports = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
         generatedImports.getParentFile().mkdirs();
         generatedImports.createNewFile();
-        Options options = new Options(Mockito.mock(Lookup.class), null)
-                .withFrontendDirectory(frontendDirectory);
+        Options options = new Options(Mockito.mock(Lookup.class), null).withFrontendDirectory(frontendDirectory);
 
-        taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
-                options);
+        taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(options);
     }
 
     @Test
-    public void should_importGeneratedImports()
-            throws ExecutionFailedException {
+    public void should_importGeneratedImports() throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import 'Frontend/generated/flow/"
-                + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "'"));
+        Assert.assertTrue(
+                content.contains("import 'Frontend/generated/flow/" + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "'"));
     }
 
     @Test
-    public void should_importAndInitializeFlowClient()
-            throws ExecutionFailedException {
+    public void should_importAndInitializeFlowClient() throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
-                "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
-                        + "FlowClient.js';\n" + "init()"));
+                "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT + "FlowClient.js';\n" + "init()"));
     }
 }

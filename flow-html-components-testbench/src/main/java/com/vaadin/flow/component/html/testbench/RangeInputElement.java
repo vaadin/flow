@@ -19,8 +19,7 @@ import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
 /**
- * A TestBench element representing an <code>&lt;input type='range'&gt;</code>
- * element.
+ * A TestBench element representing an <code>&lt;input type='range'&gt;</code> element.
  *
  * @since 1.0
  */
@@ -28,8 +27,7 @@ import com.vaadin.testbench.elementsbase.Element;
 public class RangeInputElement extends TestBenchElement {
 
     /**
-     * Sets the value of the text input to the given value, clearing out any old
-     * value of the input.
+     * Sets the value of the text input to the given value, clearing out any old value of the input.
      *
      * @param value
      *            the value to set

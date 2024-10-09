@@ -27,8 +27,7 @@ public class ProjectFolderInfo extends Div {
 
     public ProjectFolderInfo() {
         VaadinContext context = VaadinService.getCurrent().getContext();
-        Span info = new Span(ApplicationConfiguration.get(context)
-                .getProjectFolder().getAbsolutePath());
+        Span info = new Span(ApplicationConfiguration.get(context).getProjectFolder().getAbsolutePath());
         add(info);
     }
 }

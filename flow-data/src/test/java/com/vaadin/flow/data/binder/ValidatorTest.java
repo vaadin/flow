@@ -39,8 +39,7 @@ public class ValidatorTest extends ValidatorTestBase {
 
     @Test
     public void from() {
-        Validator<String> validator = Validator.from(Objects::nonNull,
-                "Cannot be null");
+        Validator<String> validator = Validator.from(Objects::nonNull, "Cannot be null");
         ValidationResult result = validator.apply(null, new ValueContext());
         Assert.assertTrue(result.isError());
 
@@ -54,17 +53,16 @@ public class ValidatorTest extends ValidatorTestBase {
         String englishError = "The user must be an adult";
         String notTranslatableError = "NOT TRANSLATABLE";
 
-        Validator<Integer> ageValidator = Validator.from(age -> age >= 18,
-                ctx -> {
-                    Locale locale = ctx.getLocale().orElse(Locale.ENGLISH);
+        Validator<Integer> ageValidator = Validator.from(age -> age >= 18, ctx -> {
+            Locale locale = ctx.getLocale().orElse(Locale.ENGLISH);
 
-                    if (locale.getLanguage().equals("fi")) {
-                        return finnishError;
-                    } else if (locale.getLanguage().equals("en")) {
-                        return englishError;
-                    }
-                    return notTranslatableError;
-                });
+            if (locale.getLanguage().equals("fi")) {
+                return finnishError;
+            } else if (locale.getLanguage().equals("en")) {
+                return englishError;
+            }
+            return notTranslatableError;
+        });
 
         setLocale(Locale.ENGLISH);
         assertFails(17, englishError, ageValidator);

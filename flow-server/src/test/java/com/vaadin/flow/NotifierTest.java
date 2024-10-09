@@ -29,8 +29,7 @@ import com.vaadin.flow.component.Tag;
 public class NotifierTest {
     @Tag("div")
     public static class NotifierComponent extends Component
-            implements BlurNotifier<NotifierComponent>,
-            ClickNotifier<NotifierComponent>, CompositionNotifier,
+            implements BlurNotifier<NotifierComponent>, ClickNotifier<NotifierComponent>, CompositionNotifier,
             FocusNotifier<NotifierComponent>, InputNotifier, KeyNotifier {
     }
 

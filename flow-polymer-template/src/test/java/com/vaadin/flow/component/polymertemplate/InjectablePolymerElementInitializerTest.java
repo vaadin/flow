@@ -23,8 +23,8 @@ public class InjectablePolymerElementInitializerTest {
 
     private Element element = ElementFactory.createDiv();
 
-    private InjectablePolymerElementInitializer initializer = new InjectablePolymerElementInitializer(
-            element, Component.class);
+    private InjectablePolymerElementInitializer initializer = new InjectablePolymerElementInitializer(element,
+            Component.class);
 
     @Test
     public void initializeElement_setId_idIsSetAsAttribute() {
@@ -102,11 +102,9 @@ public class InjectablePolymerElementInitializerTest {
 
     @Test
     public void initializeElement_setStyle_styleIsSetAsAttribute() {
-        initializer.accept(
-                Collections.singletonMap("style", "width:100px;height:50px"));
+        initializer.accept(Collections.singletonMap("style", "width:100px;height:50px"));
 
-        Assert.assertEquals("width:100px;height:50px",
-                element.getAttribute("style"));
+        Assert.assertEquals("width:100px;height:50px", element.getAttribute("style"));
 
         TestComponent comp = new TestComponent(element);
         Assert.assertEquals("100px", comp.getStyle().get("width"));
@@ -115,12 +113,10 @@ public class InjectablePolymerElementInitializerTest {
 
     @Test
     public void initializeElement_disabled_elementIsEnabledContainsProperty() {
-        initializer.accept(
-                Collections.singletonMap("disabled", Boolean.TRUE.toString()));
+        initializer.accept(Collections.singletonMap("disabled", Boolean.TRUE.toString()));
 
         Assert.assertTrue("Element should stay enabled", element.isEnabled());
-        Assert.assertTrue("Disabled should show as a property",
-                element.hasProperty("disabled"));
+        Assert.assertTrue("Disabled should show as a property", element.hasProperty("disabled"));
     }
 
     @Tag(Tag.DIV)

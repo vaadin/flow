@@ -33,19 +33,15 @@ import elemental.dom.Text;
 import elemental.html.AnchorElement;
 
 public class DomApiAbstractionUsageTest {
-    private static final Set<String> ignoredClasses = Stream
-            .of(DomElement.class, DomNode.class, ResourceLoader.class,
-                    BrowserInfo.class, SystemErrorHandler.class, Profiler.class)
-            .map(Class::getName).collect(Collectors.toSet());
-
-    private static final Set<Class<?>> ignoredElementalClasses = Stream
-            .of(Document.class, AnchorElement.class, Text.class)
+    private static final Set<String> ignoredClasses = Stream.of(DomElement.class, DomNode.class, ResourceLoader.class,
+            BrowserInfo.class, SystemErrorHandler.class, Profiler.class).map(Class::getName)
             .collect(Collectors.toSet());
 
-    private static final Set<String> ignoredElementMethods = Stream
-            .of("getTagName", "addEventListener", "getOwnerDocument",
-                    "hasAttribute", "getStyle", "getLocalName", "getAttribute",
-                    "equals", "getClass")
+    private static final Set<Class<?>> ignoredElementalClasses = Stream
+            .of(Document.class, AnchorElement.class, Text.class).collect(Collectors.toSet());
+
+    private static final Set<String> ignoredElementMethods = Stream.of("getTagName", "addEventListener",
+            "getOwnerDocument", "hasAttribute", "getStyle", "getLocalName", "getAttribute", "equals", "getClass")
             .collect(Collectors.toSet());
 
     private final ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM5) {
@@ -53,8 +49,8 @@ public class DomApiAbstractionUsageTest {
         private String className;
 
         @Override
-        public void visit(int version, int access, String name,
-                String signature, String superName, String[] interfaces) {
+        public void visit(int version, int access, String name, String signature, String superName,
+                String[] interfaces) {
             className = name.replace('/', '.');
 
             String outerClassName = className.replaceAll("\\$.*", "");
@@ -62,8 +58,7 @@ public class DomApiAbstractionUsageTest {
         }
 
         @Override
-        public FieldVisitor visitField(int access, String name, String desc,
-                String signature, Object value) {
+        public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             // Trim array markers (not efficient, but straightforward)
             while (desc.startsWith("[")) {
                 desc = desc.substring(1);
@@ -74,42 +69,38 @@ public class DomApiAbstractionUsageTest {
                 String typeName = desc.substring(1, desc.length() - 1);
                 Class<?> type = DomApiAbstractionUsageTest.getClass(typeName);
                 if (DomNode.class.isAssignableFrom(type)) {
-                    Assert.fail(className + "." + name
-                            + " references a wrapped node");
+                    Assert.fail(className + "." + name + " references a wrapped node");
                 }
             }
             return null;
         }
 
         @Override
-        public MethodVisitor visitMethod(int access, String methodName,
-                String desc, String signature, String[] exceptions) {
+        public MethodVisitor visitMethod(int access, String methodName, String desc, String signature,
+                String[] exceptions) {
             if (whitelistedClass) {
                 return null;
             }
 
             return new MethodVisitor(api) {
                 @Override
-                public void visitMethodInsn(int opcode, String targetClass,
-                        String targetMethod, String targetDesc,
+                public void visitMethodInsn(int opcode, String targetClass, String targetMethod, String targetDesc,
                         boolean inInterface) {
-                    verifyMethod(className + "." + methodName, targetClass,
-                            targetMethod);
+                    verifyMethod(className + "." + methodName, targetClass, targetMethod);
                 }
             };
         }
     };
 
     /**
-     * This tests that no API from {@link DomElement} or {@link DomNode} is used
-     * without wrapping it with a {@link DomApi#wrap(elemental.dom.Node)} call.
+     * This tests that no API from {@link DomElement} or {@link DomNode} is used without wrapping it with a
+     * {@link DomApi#wrap(elemental.dom.Node)} call.
      */
     @Test
     public void testDomApiCodeNotUsed() throws IOException {
         String classesPath = getClassesLocation(Bootstrapper.class);
 
-        Files.walk(Paths.get(classesPath))
-                .filter(path -> path.toString().endsWith(".class"))
+        Files.walk(Paths.get(classesPath)).filter(path -> path.toString().endsWith(".class"))
                 .forEach(this::testClassFile);
     }
 
@@ -124,8 +115,7 @@ public class DomApiAbstractionUsageTest {
         }
     }
 
-    private static void verifyMethod(String callingMethod,
-            String targetClassName, String targetMethod) {
+    private static void verifyMethod(String callingMethod, String targetClassName, String targetMethod) {
         // Won't care about overhead of loading all
         // classes since this is just a test
         Class<?> targetClass = getClass(targetClassName);
@@ -143,8 +133,7 @@ public class DomApiAbstractionUsageTest {
             return;
         }
 
-        Assert.fail(callingMethod + " calls " + targetClass.getName() + "."
-                + targetMethod);
+        Assert.fail(callingMethod + " calls " + targetClass.getName() + "." + targetMethod);
     }
 
     private static Class<?> getClass(String targetClassName) {
@@ -157,8 +146,7 @@ public class DomApiAbstractionUsageTest {
     }
 
     private String getClassesLocation(Class<Bootstrapper> sampleClass) {
-        String sampleClassName = '/' + sampleClass.getName().replace('.', '/')
-                + ".class";
+        String sampleClassName = '/' + sampleClass.getName().replace('.', '/') + ".class";
 
         URL sampleClassLocation = sampleClass.getResource(sampleClassName);
 
@@ -166,16 +154,13 @@ public class DomApiAbstractionUsageTest {
 
         String sampleClassAbsolutePath;
         try {
-            sampleClassAbsolutePath = Paths.get(sampleClassLocation.toURI())
-                    .toFile().getPath();
+            sampleClassAbsolutePath = Paths.get(sampleClassLocation.toURI()).toFile().getPath();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
 
-        assert sampleClassAbsolutePath
-                .endsWith(sampleClassName.replace('/', File.separatorChar));
+        assert sampleClassAbsolutePath.endsWith(sampleClassName.replace('/', File.separatorChar));
 
-        return sampleClassAbsolutePath.substring(0,
-                sampleClassAbsolutePath.length() - sampleClassName.length());
+        return sampleClassAbsolutePath.substring(0, sampleClassAbsolutePath.length() - sampleClassName.length());
     }
 }

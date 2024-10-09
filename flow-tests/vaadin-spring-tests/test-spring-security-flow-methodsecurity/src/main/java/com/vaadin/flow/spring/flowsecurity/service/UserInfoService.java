@@ -13,16 +13,13 @@ public class UserInfoService {
     public static String ROLE_USER = "user";
     public static String ROLE_ADMIN = "admin";
 
-    private static final ConcurrentMap<String, UserInfo> USER_INFO_CACHE = new ConcurrentHashMap<>(
-            2);
+    private static final ConcurrentMap<String, UserInfo> USER_INFO_CACHE = new ConcurrentHashMap<>(2);
 
     public UserInfoService(PasswordEncoder encoder) {
-        USER_INFO_CACHE.putIfAbsent("emma",
-                new UserInfo("emma", encoder.encode("emma"), "Emma the Admin",
-                        "public/profiles/admin.svg", ROLE_ADMIN));
+        USER_INFO_CACHE.putIfAbsent("emma", new UserInfo("emma", encoder.encode("emma"), "Emma the Admin",
+                "public/profiles/admin.svg", ROLE_ADMIN));
         USER_INFO_CACHE.putIfAbsent("john",
-                new UserInfo("john", encoder.encode("john"), "John the User",
-                        "public/profiles/user.svg", ROLE_USER));
+                new UserInfo("john", encoder.encode("john"), "John the User", "public/profiles/user.svg", ROLE_USER));
     }
 
     public UserInfo findByUsername(String username) {

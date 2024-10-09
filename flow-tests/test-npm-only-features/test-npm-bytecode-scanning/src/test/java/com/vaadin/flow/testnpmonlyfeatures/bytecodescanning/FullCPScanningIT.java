@@ -28,13 +28,11 @@ public class FullCPScanningIT extends ChromeBrowserTest {
     public void buttonIsInitializedInDevMode() {
         open();
 
-        TestBenchElement component = $(TestBenchElement.class)
-                .id(ByteCodeScanningView.COMPONENT_ID);
+        TestBenchElement component = $(TestBenchElement.class).id(ByteCodeScanningView.COMPONENT_ID);
 
         // in dev mode we use complete bundle by default, so component
         // should be initialized and shown
-        Assert.assertFalse("component expected initialized in dev mode",
-                component.$("button").all().isEmpty());
+        Assert.assertFalse("component expected initialized in dev mode", component.$("button").all().isEmpty());
     }
 
     @Override

@@ -33,10 +33,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
 /**
- * Lightweight profiling tool that can be used to collect profiling data with
- * zero overhead unless enabled. To enable profiling, add
- * <code>&lt;set-property name="vaadin.profiler" value="true" /&gt;</code> to
- * your .gwt.xml file.
+ * Lightweight profiling tool that can be used to collect profiling data with zero overhead unless enabled. To enable
+ * profiling, add <code>&lt;set-property name="vaadin.profiler" value="true" /&gt;</code> to your .gwt.xml file.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -78,12 +76,10 @@ public class Profiler {
     }
 
     /**
-     * A hierarchical representation of the time spent running a named block of
-     * code.
+     * A hierarchical representation of the time spent running a named block of code.
      * <p>
-     * <b>Warning!</b> This class is most likely to change in the future and is
-     * therefore defined in this class in an internal package instead of
-     * Profiler where it might seem more logical.
+     * <b>Warning!</b> This class is most likely to change in the future and is therefore defined in this class in an
+     * internal package instead of Profiler where it might seem more logical.
      */
     public static class Node {
         private final String name;
@@ -114,8 +110,7 @@ public class Profiler {
         }
 
         /**
-         * Creates a new child node or retrieves and existing child and updates
-         * its total time and hit count.
+         * Creates a new child node or retrieves and existing child and updates its total time and hit count.
          *
          * @param name
          *            the name of the child
@@ -135,8 +130,7 @@ public class Profiler {
         }
 
         /**
-         * Gets the total time spent in this node, including time spent in sub
-         * nodes.
+         * Gets the total time spent in this node, including time spent in sub nodes.
          *
          * @return the total time spent, in milliseconds
          */
@@ -145,8 +139,7 @@ public class Profiler {
         }
 
         /**
-         * Gets the minimum time spent for one invocation of this node,
-         * including time spent in sub nodes.
+         * Gets the minimum time spent for one invocation of this node, including time spent in sub nodes.
          *
          * @return the time spent for the fastest invocation, in milliseconds
          */
@@ -155,8 +148,7 @@ public class Profiler {
         }
 
         /**
-         * Gets the maximum time spent for one invocation of this node,
-         * including time spent in sub nodes.
+         * Gets the maximum time spent for one invocation of this node, including time spent in sub nodes.
          *
          * @return the time spent for the slowest invocation, in milliseconds
          */
@@ -174,8 +166,7 @@ public class Profiler {
         }
 
         /**
-         * Gets the total time spent in this node, excluding time spent in sub
-         * nodes.
+         * Gets the total time spent in this node, excluding time spent in sub nodes.
          *
          * @return the total time spent, in milliseconds
          */
@@ -205,25 +196,17 @@ public class Profiler {
             if (getName() == null) {
                 return "";
             }
-            String msg = prefix + " " + getName() + " in "
-                    + roundToSignificantFigures(getTimeSpent()) + " ms.";
+            String msg = prefix + " " + getName() + " in " + roundToSignificantFigures(getTimeSpent()) + " ms.";
             if (getCount() > 1) {
-                msg += " Invoked " + getCount() + " times ("
-                        + roundToSignificantFigures(getTimeSpent() / getCount())
-                        + " ms per time, min "
-                        + roundToSignificantFigures(getMinTimeSpent())
-                        + " ms, max "
-                        + roundToSignificantFigures(getMaxTimeSpent())
-                        + " ms).";
+                msg += " Invoked " + getCount() + " times (" + roundToSignificantFigures(getTimeSpent() / getCount())
+                        + " ms per time, min " + roundToSignificantFigures(getMinTimeSpent()) + " ms, max "
+                        + roundToSignificantFigures(getMaxTimeSpent()) + " ms).";
             }
             if (!children.isEmpty()) {
                 double ownTime = getOwnTime();
-                msg += " " + roundToSignificantFigures(ownTime)
-                        + " ms spent in own code";
+                msg += " " + roundToSignificantFigures(ownTime) + " ms spent in own code";
                 if (getCount() > 1) {
-                    msg += " ("
-                            + roundToSignificantFigures(ownTime / getCount())
-                            + " ms per time)";
+                    msg += " (" + roundToSignificantFigures(ownTime / getCount()) + " ms per time)";
                 }
                 msg += '.';
             }
@@ -256,10 +239,8 @@ public class Profiler {
 
                 totalNode.time += getOwnTime();
                 totalNode.count += getCount();
-                totalNode.minTime = roundToSignificantFigures(
-                        Math.min(totalNode.minTime, getMinTimeSpent()));
-                totalNode.maxTime = roundToSignificantFigures(
-                        Math.max(totalNode.maxTime, getMaxTimeSpent()));
+                totalNode.minTime = roundToSignificantFigures(Math.min(totalNode.minTime, getMinTimeSpent()));
+                totalNode.maxTime = roundToSignificantFigures(Math.max(totalNode.maxTime, getMaxTimeSpent()));
             }
             for (Node node : children.values()) {
                 node.sumUpTotals(totals);
@@ -338,8 +319,7 @@ public class Profiler {
     /**
      * Checks whether the profiling gathering is enabled.
      *
-     * @return <code>true</code> if the profiling is enabled, else
-     *         <code>false</code>
+     * @return <code>true</code> if the profiling is enabled, else <code>false</code>
      */
     public static boolean isEnabled() {
         // This will be fully inlined by the compiler
@@ -348,9 +328,8 @@ public class Profiler {
     }
 
     /**
-     * Enters a named block. There should always be a matching invocation of
-     * {@link #leave(String)} when leaving the block. Calls to this method will
-     * be removed by the compiler unless profiling is enabled.
+     * Enters a named block. There should always be a matching invocation of {@link #leave(String)} when leaving the
+     * block. Calls to this method will be removed by the compiler unless profiling is enabled.
      *
      * @param name
      *            the name of the entered block
@@ -362,9 +341,8 @@ public class Profiler {
     }
 
     /**
-     * Leaves a named block. There should always be a matching invocation of
-     * {@link #enter(String)} when entering the block. Calls to this method will
-     * be removed by the compiler unless profiling is enabled.
+     * Leaves a named block. There should always be a matching invocation of {@link #enter(String)} when entering the
+     * block. Calls to this method will be removed by the compiler unless profiling is enabled.
      *
      * @param name
      *            the name of the left block
@@ -376,9 +354,8 @@ public class Profiler {
     }
 
     /**
-     * Returns time relative to the particular page load time. The value should
-     * not be used directly but rather difference between two values returned by
-     * this method should be used to compare measurements.
+     * Returns time relative to the particular page load time. The value should not be used directly but rather
+     * difference between two values returned by this method should be used to compare measurements.
      *
      * @return the relative time in milliseconds
      *
@@ -401,15 +378,14 @@ public class Profiler {
     }-*/;
 
     /**
-     * Resets the collected profiler data. Calls to this method will be removed
-     * by the compiler unless profiling is enabled.
+     * Resets the collected profiler data. Calls to this method will be removed by the compiler unless profiling is
+     * enabled.
      */
     public static void reset() {
         if (isEnabled()) {
             /*
-             * Old implementations might call reset for initialization, so
-             * ensure it is initialized here as well. Initialization has no side
-             * effects if already done.
+             * Old implementations might call reset for initialization, so ensure it is initialized here as well.
+             * Initialization has no side effects if already done.
              */
             initialize();
 
@@ -418,14 +394,11 @@ public class Profiler {
     }
 
     /**
-     * Initializes the profiler. This should be done before calling any other
-     * function in this class. Failing to do so might cause undesired behavior.
-     * This method has no side effects if the initialization has already been
-     * done.
+     * Initializes the profiler. This should be done before calling any other function in this class. Failing to do so
+     * might cause undesired behavior. This method has no side effects if the initialization has already been done.
      * <p>
-     * Please note that this method should be called even if the profiler is not
-     * enabled because it will then remove a logger function that might have
-     * been included in the HTML page and that would leak memory unless removed.
+     * Please note that this method should be called even if the profiler is not enabled because it will then remove a
+     * logger function that might have been included in the HTML page and that would leak memory unless removed.
      * </p>
      *
      */
@@ -447,8 +420,7 @@ public class Profiler {
      */
     public static void logTimings() {
         if (!isEnabled()) {
-            Console.warn(
-                    "Profiler is not enabled, no data has been collected.");
+            Console.warn("Profiler is not enabled, no data has been collected.");
             return;
         }
 
@@ -476,11 +448,9 @@ public class Profiler {
             boolean isBeginEvent = "begin".equals(type);
 
             Node stackTop = stack.getLast();
-            boolean inEvent = eventName.equals(stackTop.getName())
-                    && !isBeginEvent;
+            boolean inEvent = eventName.equals(stackTop.getName()) && !isBeginEvent;
 
-            if (!inEvent && stack.size() >= 2
-                    && eventName.equals(stack.get(stack.size() - 2).getName())
+            if (!inEvent && stack.size() >= 2 && eventName.equals(stack.get(stack.size() - 2).getName())
                     && !isBeginEvent) {
                 // back out of sub event
                 if (extendedTimeNodes.contains(stackTop) && isExtendedEvent) {
@@ -496,8 +466,7 @@ public class Profiler {
 
             if (type.equals("end")) {
                 if (!inEvent) {
-                    Console.error("Got end event for " + eventName
-                            + " but is currently in " + stackTop.getName());
+                    Console.error("Got end event for " + eventName + " but is currently in " + stackTop.getName());
                     return;
                 }
                 Node previousStackTop = stack.removeLast();
@@ -507,9 +476,7 @@ public class Profiler {
                     previousStackTop.leave(gwtStatsEvent.getMillis());
                 }
             } else {
-                double millis = isExtendedEvent
-                        ? gwtStatsEvent.getRelativeMillis()
-                        : gwtStatsEvent.getMillis();
+                double millis = isExtendedEvent ? gwtStatsEvent.getRelativeMillis() : gwtStatsEvent.getMillis();
                 if (!inEvent) {
                     stackTop = stackTop.enterChild(eventName, millis);
                     stack.add(stackTop);
@@ -519,8 +486,7 @@ public class Profiler {
                 }
                 if (!isBeginEvent) {
                     // Create sub event
-                    Node subNode = stackTop.enterChild(eventName + "." + type,
-                            millis);
+                    Node subNode = stackTop.enterChild(eventName + "." + type, millis);
                     if (isExtendedEvent) {
                         extendedTimeNodes.add(subNode);
                     }
@@ -530,8 +496,7 @@ public class Profiler {
         }
 
         if (stack.size() != 1) {
-            Console.warn("Not all nodes are left, the last node is "
-                    + stack.getLast().getName());
+            Console.warn("Not all nodes are left, the last node is " + stack.getLast().getName());
             return;
         }
 
@@ -552,32 +517,26 @@ public class Profiler {
     }
 
     /**
-     * Overridden in {@link EnabledProfiler} to make {@link #isEnabled()} return
-     * true if GWT.create returns that class.
+     * Overridden in {@link EnabledProfiler} to make {@link #isEnabled()} return true if GWT.create returns that class.
      *
-     * @return <code>true</code> if the profiling is enabled, else
-     *         <code>false</code>
+     * @return <code>true</code> if the profiling is enabled, else <code>false</code>
      */
     protected boolean isImplEnabled() {
         return false;
     }
 
     /**
-     * Outputs the time passed since various events recorded in
-     * performance.timing if supported by the browser.
+     * Outputs the time passed since various events recorded in performance.timing if supported by the browser.
      */
     public static void logBootstrapTimings() {
         if (isEnabled()) {
             double now = Duration.currentTimeMillis();
 
-            String[] keys = new String[] { "navigationStart",
-                    "unloadEventStart", "unloadEventEnd", "redirectStart",
-                    "redirectEnd", "fetchStart", "domainLookupStart",
-                    "domainLookupEnd", "connectStart", "connectEnd",
-                    "requestStart", "responseStart", "responseEnd",
-                    "domLoading", "domInteractive",
-                    "domContentLoadedEventStart", "domContentLoadedEventEnd",
-                    "domComplete", "loadEventStart", "loadEventEnd" };
+            String[] keys = new String[] { "navigationStart", "unloadEventStart", "unloadEventEnd", "redirectStart",
+                    "redirectEnd", "fetchStart", "domainLookupStart", "domainLookupEnd", "connectStart", "connectEnd",
+                    "requestStart", "responseStart", "responseEnd", "domLoading", "domInteractive",
+                    "domContentLoadedEventStart", "domContentLoadedEventEnd", "domComplete", "loadEventStart",
+                    "loadEventEnd" };
 
             LinkedHashMap<String, Double> timings = new LinkedHashMap<>();
 
@@ -591,8 +550,7 @@ public class Profiler {
             }
 
             if (timings.isEmpty()) {
-                Console.log(
-                        "Bootstrap timings not supported, please ensure your browser supports performance.timing");
+                Console.log("Bootstrap timings not supported, please ensure your browser supports performance.timing");
                 return;
             }
 
@@ -617,8 +575,7 @@ public class Profiler {
     }-*/;
 
     /**
-     * Add logger if it's not already there, also initializing the event array
-     * if needed.
+     * Add logger if it's not already there, also initializing the event array if needed.
      */
     private static native void ensureLogger()
     /*-{
@@ -634,8 +591,7 @@ public class Profiler {
     }-*/;
 
     /**
-     * Remove logger function and event array if it seems like the function has
-     * been added by us.
+     * Remove logger function and event array if it seems like the function has been added by us.
      */
     private static native void ensureNoLogger()
     /*-{
@@ -653,20 +609,16 @@ public class Profiler {
     }-*/;
 
     /**
-     * Sets the profiler result consumer that is used to output the profiler
-     * data to the user.
+     * Sets the profiler result consumer that is used to output the profiler data to the user.
      * <p>
-     * <b>Warning!</b> This is internal API and should not be used by
-     * applications or add-ons.
+     * <b>Warning!</b> This is internal API and should not be used by applications or add-ons.
      *
      * @param profilerResultConsumer
      *            the consumer that gets profiler data
      */
-    public static void setProfilerResultConsumer(
-            ProfilerResultConsumer profilerResultConsumer) {
+    public static void setProfilerResultConsumer(ProfilerResultConsumer profilerResultConsumer) {
         if (consumer != null) {
-            throw new IllegalStateException(
-                    "The consumer has already been set");
+            throw new IllegalStateException("The consumer has already been set");
         }
         consumer = profilerResultConsumer;
     }
@@ -684,8 +636,7 @@ public class Profiler {
         double getRelativeTime();
     }
 
-    private static class DefaultRelativeTimeSupplier
-            implements RelativeTimeSupplier {
+    private static class DefaultRelativeTimeSupplier implements RelativeTimeSupplier {
 
         @Override
         public native double getRelativeTime()
@@ -694,8 +645,7 @@ public class Profiler {
         }-*/;
     }
 
-    private static class HighResolutionTimeSupplier
-            implements RelativeTimeSupplier {
+    private static class HighResolutionTimeSupplier implements RelativeTimeSupplier {
 
         @Override
         public native double getRelativeTime()
@@ -705,14 +655,12 @@ public class Profiler {
     }
 
     /**
-     * Returns a string, suitable for output to the user, containing the number
-     * of milliseconds which have elapsed since the given reference time.
+     * Returns a string, suitable for output to the user, containing the number of milliseconds which have elapsed since
+     * the given reference time.
      *
      * @param reference
-     *            the reference time, as returned by
-     *            {@link #getRelativeTimeMillis()}
-     * @return a string containing the number of ms elapsed since the reference
-     *         time
+     *            the reference time, as returned by {@link #getRelativeTimeMillis()}
+     * @return a string containing the number of ms elapsed since the reference time
      */
     public static String getRelativeTimeString(double reference) {
         return "" + round(Profiler.getRelativeTimeMillis() - reference, 3);

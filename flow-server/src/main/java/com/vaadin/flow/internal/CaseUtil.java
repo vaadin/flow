@@ -33,26 +33,22 @@ public final class CaseUtil {
     }
 
     /**
-     * Converts an UPPER_CASE_STRING to a human friendly format (Upper Case
-     * String).
+     * Converts an UPPER_CASE_STRING to a human friendly format (Upper Case String).
      * <p>
      * Splits words on {@code _}. Examples:
      * <p>
-     * {@literal MY_BEAN_CONTAINER} becomes {@literal My Bean Container}
-     * {@literal AWESOME_URL_FACTORY} becomes {@literal Awesome Url Factory}
-     * {@literal SOMETHING} becomes {@literal Something}
+     * {@literal MY_BEAN_CONTAINER} becomes {@literal My Bean Container} {@literal AWESOME_URL_FACTORY} becomes
+     * {@literal Awesome Url Factory} {@literal SOMETHING} becomes {@literal Something}
      *
      * @param upperCaseUnderscoreString
      *            The input string in UPPER_CASE_UNDERSCORE format
      * @return A human friendly version of the input
      */
-    public static String upperCaseUnderscoreToHumanFriendly(
-            String upperCaseUnderscoreString) {
+    public static String upperCaseUnderscoreToHumanFriendly(String upperCaseUnderscoreString) {
         if (upperCaseUnderscoreString == null) {
             return null;
         }
-        String[] parts = upperCaseUnderscoreString.replaceFirst("^_*", "")
-                .split("_");
+        String[] parts = upperCaseUnderscoreString.replaceFirst("^_*", "").split("_");
         for (int i = 0; i < parts.length; i++) {
             parts[i] = capitalize(parts[i].toLowerCase(Locale.ROOT));
         }
@@ -60,8 +56,7 @@ public final class CaseUtil {
     }
 
     /**
-     * Capitalizes the first character in the given string in a way suitable for
-     * use in code (methods, properties etc).
+     * Capitalizes the first character in the given string in a way suitable for use in code (methods, properties etc).
      *
      * @param string
      *            The string to capitalize
@@ -76,8 +71,7 @@ public final class CaseUtil {
             return string.toUpperCase(Locale.ROOT);
         }
 
-        return string.substring(0, 1).toUpperCase(Locale.ROOT)
-                + string.substring(1);
+        return string.substring(0, 1).toUpperCase(Locale.ROOT) + string.substring(1);
     }
 
 }

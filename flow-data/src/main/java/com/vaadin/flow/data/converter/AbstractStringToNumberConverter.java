@@ -25,10 +25,9 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from the number type T to {@link String} and back.
- * Uses the given locale and {@link NumberFormat} for formatting and parsing.
- * Automatically trims the input string, removing any leading and trailing white
- * space.
+ * A converter that converts from the number type T to {@link String} and back. Uses the given locale and
+ * {@link NumberFormat} for formatting and parsing. Automatically trims the input string, removing any leading and
+ * trailing white space.
  * <p>
  * Override and overwrite {@link #getFormat(Locale)} to use a different format.
  * </p>
@@ -39,46 +38,38 @@ import com.vaadin.flow.data.binder.ValueContext;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class AbstractStringToNumberConverter<T extends Number>
-        implements Converter<String, T> {
+public abstract class AbstractStringToNumberConverter<T extends Number> implements Converter<String, T> {
 
     private final ErrorMessageProvider errorMessageProvider;
     private T emptyValue;
 
     /**
-     * Creates a new converter instance with the given presentation value for
-     * empty string and error message provider.
+     * Creates a new converter instance with the given presentation value for empty string and error message provider.
      *
      * @param emptyValue
-     *            the presentation value to return when converting an empty
-     *            string, may be <code>null</code>
+     *            the presentation value to return when converting an empty string, may be <code>null</code>
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    protected AbstractStringToNumberConverter(T emptyValue,
-            ErrorMessageProvider errorMessageProvider) {
+    protected AbstractStringToNumberConverter(T emptyValue, ErrorMessageProvider errorMessageProvider) {
         this.emptyValue = emptyValue;
         this.errorMessageProvider = errorMessageProvider;
     }
 
     /**
-     * Creates a new converter instance with the given presentation value for
-     * empty string and error message.
+     * Creates a new converter instance with the given presentation value for empty string and error message.
      *
      * @param emptyValue
-     *            the presentation value to return when converting an empty
-     *            string, may be <code>null</code>
+     *            the presentation value to return when converting an empty string, may be <code>null</code>
      * @param errorMessage
      *            the error message to use if conversion fails
      */
-    protected AbstractStringToNumberConverter(T emptyValue,
-            String errorMessage) {
+    protected AbstractStringToNumberConverter(T emptyValue, String errorMessage) {
         this(emptyValue, ctx -> errorMessage);
     }
 
     /**
-     * Returns the format used by
-     * {@link #convertToPresentation(Object, ValueContext)} and
+     * Returns the format used by {@link #convertToPresentation(Object, ValueContext)} and
      * {@link #convertToModel(Object, ValueContext)}.
      *
      * @param locale
@@ -94,8 +85,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
     }
 
     /**
-     * Convert the value to a Number using the given locale and
-     * {@link #getFormat(Locale)}.
+     * Convert the value to a Number using the given locale and {@link #getFormat(Locale)}.
      *
      * @param value
      *            The value to convert
@@ -103,8 +93,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
      *            The value context for conversion
      * @return The converted value
      */
-    protected Result<Number> convertToNumber(String value,
-            ValueContext context) {
+    protected Result<Number> convertToNumber(String value, ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -115,8 +104,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
         // Parse and detect errors. If the full string was not used, it is
         // an error.
         ParsePosition parsePosition = new ParsePosition(0);
-        Number parsedValue = getFormat(context.getLocale().orElse(null))
-                .parse(value, parsePosition);
+        Number parsedValue = getFormat(context.getLocale().orElse(null)).parse(value, parsePosition);
         if (parsePosition.getIndex() != value.length()) {
             return Result.error(getErrorMessage(context));
         }

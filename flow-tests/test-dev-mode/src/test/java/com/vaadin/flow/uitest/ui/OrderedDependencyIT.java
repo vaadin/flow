@@ -47,8 +47,7 @@ public class OrderedDependencyIT extends ChromeBrowserTest {
         int index = messages.indexOf("Messagehandler initialized in module 1");
         Assert.assertTrue("Js Module is not found on the page", index >= 0);
 
-        Assert.assertEquals("Messagehandler initialized in module 2",
-                messages.get(index + 1));
+        Assert.assertEquals("Messagehandler initialized in module 2", messages.get(index + 1));
     }
 
     @Test

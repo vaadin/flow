@@ -26,26 +26,20 @@ import java.util.stream.Stream;
 /**
  * An interface to represent keyboard keys.
  * <p>
- * While the {@code Key} values defined here consist of multiple values in order
- * to account for variability in browsers, the {@code Key} values that come from
- * the client only consist of the single value known to the client's Browser.
+ * While the {@code Key} values defined here consist of multiple values in order to account for variability in browsers,
+ * the {@code Key} values that come from the client only consist of the single value known to the client's Browser.
  * <p>
- * Some of the {@code Key} values map only to {@code event.key} values while
- * other {@code Key} values contain values for both {@code event.key} and
- * {@code event.code}, and some only contain a {@code event.code} value. In
- * cases where a {@code Key} containing only {@code event.code} value is a
- * subset of a {@code Key} based on {@code event.key} value, the
- * {@code event.code} is included in the latter {@code Key} only.
+ * Some of the {@code Key} values map only to {@code event.key} values while other {@code Key} values contain values for
+ * both {@code event.key} and {@code event.code}, and some only contain a {@code event.code} value. In cases where a
+ * {@code Key} containing only {@code event.code} value is a subset of a {@code Key} based on {@code event.key} value,
+ * the {@code event.code} is included in the latter {@code Key} only.
  * <p>
- * For example, {@code Key ALT} consists of values {@code [Alt, AltLeft]} and
- * {@code ALT_LEFT} is a key itself. See the documentation of the {@code Key}
- * instance for more information about its relation to {@code event.key} and
+ * For example, {@code Key ALT} consists of values {@code [Alt, AltLeft]} and {@code ALT_LEFT} is a key itself. See the
+ * documentation of the {@code Key} instance for more information about its relation to {@code event.key} and
  * {@code event.code} values.
  * <p>
- * See
- * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
- * for event.key values and https://w3c.github.io/uievents-code/ for event.code
- * values.
+ * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values for event.key values and
+ * https://w3c.github.io/uievents-code/ for event.code values.
  *
  * @author Vaadin Ltd.
  * @since 1.0
@@ -54,13 +48,12 @@ import java.util.stream.Stream;
 public interface Key extends Serializable {
 
     /**
-     * The user agent wasn't able to map the event's virtual keycode to a
-     * specific key value. This can happen due to hardware or software
-     * constraints, or because of constraints around the platform on which the
-     * user agent is running.
+     * The user agent wasn't able to map the event's virtual keycode to a specific key value. This can happen due to
+     * hardware or software constraints, or because of constraints around the platform on which the user agent is
+     * running.
      * <p>
-     * In the case of <code>event.code</code> values, this value code should be
-     * used when no other value given in this specification is appropriate.
+     * In the case of <code>event.code</code> values, this value code should be used when no other value given in this
+     * specification is appropriate.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -76,9 +69,8 @@ public interface Key extends Serializable {
     Key ALT = Key.of("Alt", "AltLeft");
 
     /**
-     * The <code>AltGr</code> or <code>AltGraph</code> (Alternate Graphics) key.
-     * Enables the ISO Level 3 shift modifier (where <code>Shift</code> is the
-     * level 2 modifier).
+     * The <code>AltGr</code> or <code>AltGraph</code> (Alternate Graphics) key. Enables the ISO Level 3 shift modifier
+     * (where <code>Shift</code> is the level 2 modifier).
      * <p>
      * The second value matches DOM's KeyboardEvent's <code>event.code</code>.
      *
@@ -87,19 +79,17 @@ public interface Key extends Serializable {
     Key ALT_GRAPH = Key.of("AltGraph", "AltRight");
 
     /**
-     * The <code>CapsLock</code> or <code>⇪</code> key. Toggles the capital
-     * character lock on and off for subsequent input.
+     * The <code>CapsLock</code> or <code>⇪</code> key. Toggles the capital character lock on and off for subsequent
+     * input.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key CAPS_LOCK = Key.of("CapsLock");
 
     /**
-     * The <code>Control</code>, <code>Ctrl</code>, or <code>Ctl</code> key.
-     * Allows typing control characters.
+     * The <code>Control</code>, <code>Ctrl</code>, or <code>Ctl</code> key. Allows typing control characters.
      * <p>
-     * The second and third values match DOM's KeyboardEvent's
-     * <code>event.code</code>.
+     * The second and third values match DOM's KeyboardEvent's <code>event.code</code>.
      *
      * @see #CONTROL_LEFT
      * @see #CONTROL_RIGHT
@@ -107,20 +97,18 @@ public interface Key extends Serializable {
     Key CONTROL = Key.of("Control", "ControlLeft", "ControlRight");
 
     /**
-     * The <code>Fn</code> (Function modifier) key. Used to allow generating
-     * function key (<code>F1</code>-<code>F15</code>, for instance) characters
-     * on keyboards without a dedicated function key area. Often handled in
-     * hardware so that events aren't generated for this key.
+     * The <code>Fn</code> (Function modifier) key. Used to allow generating function key
+     * (<code>F1</code>-<code>F15</code>, for instance) characters on keyboards without a dedicated function key area.
+     * Often handled in hardware so that events aren't generated for this key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key FN = Key.of("Fn");
 
     /**
-     * The <code>FnLock</code> or <code>F-Lock</code> (Function Lock) key.
-     * Toggles the function key mode described by "Fn" on and off. Often handled
-     * in hardware so that events aren't generated for this key. Found on the
-     * Microsoft Natural Keyboard.
+     * The <code>FnLock</code> or <code>F-Lock</code> (Function Lock) key. Toggles the function key mode described by
+     * "Fn" on and off. Often handled in hardware so that events aren't generated for this key. Found on the Microsoft
+     * Natural Keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -134,38 +122,33 @@ public interface Key extends Serializable {
     Key HYPER = Key.of("Hyper");
 
     /**
-     * The <code>Meta</code> key. Allows issuing special command inputs. This is
-     * the <code>Windows</code> logo key, or the <code>Command</code> or
-     * <code>⌘</code> key on Mac keyboards.
+     * The <code>Meta</code> key. Allows issuing special command inputs. This is the <code>Windows</code> logo key, or
+     * the <code>Command</code> or <code>⌘</code> key on Mac keyboards.
      */
     Key META = Key.of("Meta");
 
     /**
-     * The <code>NumLock</code> (Number Lock) key. Toggles the numeric keypad
-     * between number entry some other mode (often directional arrows).
+     * The <code>NumLock</code> (Number Lock) key. Toggles the numeric keypad between number entry some other mode
+     * (often directional arrows).
      * <p>
-     * On the Mac, the " NumLock " code should be used for the numpad
-     * <code>Clear</code> key.
+     * On the Mac, the " NumLock " code should be used for the numpad <code>Clear</code> key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUM_LOCK = Key.of("NumLock");
 
     /**
-     * The <code>Scroll Lock</code> key. Toggles between scrolling and cursor
-     * movement modes.
+     * The <code>Scroll Lock</code> key. Toggles between scrolling and cursor movement modes.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key SCROLL_LOCK = Key.of("ScrollLock");
 
     /**
-     * The <code>Shift</code> key. Modifies keystrokes to allow typing upper (or
-     * other) case letters, and to support typing punctuation and other special
-     * characters.
+     * The <code>Shift</code> key. Modifies keystrokes to allow typing upper (or other) case letters, and to support
+     * typing punctuation and other special characters.
      * <p>
-     * The second and third values match DOM's KeyboardEvent's
-     * <code>event.code</code>.
+     * The second and third values match DOM's KeyboardEvent's <code>event.code</code>.
      *
      * @see #SHIFT_LEFT
      * @see #SHIFT_RIGHT
@@ -180,8 +163,7 @@ public interface Key extends Serializable {
     Key SUPER = Key.of("Super");
 
     /**
-     * The <code>Symbol</code> modifier key (found on certain virtual
-     * keyboards).
+     * The <code>Symbol</code> modifier key (found on certain virtual keyboards).
      */
     Key SYMBOL = Key.of("Symbol");
 
@@ -191,8 +173,7 @@ public interface Key extends Serializable {
     Key SYMBOL_LOCK = Key.of("SymbolLock");
 
     /**
-     * The <code>Enter</code> or <code>↵</code> key. Labelled
-     * <code>Return</code> on Apple keyboards.
+     * The <code>Enter</code> or <code>↵</code> key. Labelled <code>Return</code> on Apple keyboards.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -243,41 +224,36 @@ public interface Key extends Serializable {
     /**
      * The <code>End</code> key. Moves to the end of content.
      * <p>
-     * In case of a <code>event.code</code> in the case of
-     * <code>event.key</code> the name may be <code>Page Down</code> ,
-     * <code>End</code> or <code>↘</code>.
+     * In case of a <code>event.code</code> in the case of <code>event.key</code> the name may be <code>Page Down</code>
+     * , <code>End</code> or <code>↘</code>.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key END = Key.of("End");
 
     /**
-     * The <code>Home</code> or <code>↖</code> key. Moves to the start of
-     * content.
+     * The <code>Home</code> or <code>↖</code> key. Moves to the start of content.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key HOME = Key.of("Home");
 
     /**
-     * The <code>Page Down</code> (or <code>PgDn</code>) key. Scrolls down or
-     * displays the next page of content.
+     * The <code>Page Down</code> (or <code>PgDn</code>) key. Scrolls down or displays the next page of content.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PAGE_DOWN = Key.of("PageDown");
 
     /**
-     * The <code>Page Up</code> (or <code>PgUp</code>) key. Scrolls up or
-     * displays the previous page of content.
+     * The <code>Page Up</code> (or <code>PgUp</code>) key. Scrolls up or displays the previous page of content.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PAGE_UP = Key.of("PageUp");
 
     /**
-     * <code>Backspace</code> or <code>⌫</code>. Labelled <code>Delete</code> on
-     * Apple keyboards.
+     * <code>Backspace</code> or <code>⌫</code>. Labelled <code>Delete</code> on Apple keyboards.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -308,17 +284,15 @@ public interface Key extends Serializable {
     Key CUT = Key.of("Cut");
 
     /**
-     * The Delete key, <code>Del</code>, and <code>⌦</code> . The forward delete
-     * key. Note that on Apple keyboards, the key labelled <code>Delete</code>
-     * on the main part of the keyboard should be encoded as " Backspace " .
+     * The Delete key, <code>Del</code>, and <code>⌦</code> . The forward delete key. Note that on Apple keyboards, the
+     * key labelled <code>Delete</code> on the main part of the keyboard should be encoded as " Backspace " .
      * <p>
      * This first value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key DELETE = Key.of("Delete", "Del");
 
     /**
-     * Erase to End of Field. Deletes all characters from the current cursor
-     * position to the end of the current field.
+     * Erase to End of Field. Deletes all characters from the current cursor position to the end of the current field.
      */
     Key ERASE_EOF = Key.of("EraseEof");
 
@@ -328,8 +302,8 @@ public interface Key extends Serializable {
     Key EX_SEL = Key.of("ExSel");
 
     /**
-     * The Insert key, <code>Ins</code>. Toggles&nbsp; between inserting and
-     * overwriting text. Not present on Apple keyboards.
+     * The Insert key, <code>Ins</code>. Toggles&nbsp; between inserting and overwriting text. Not present on Apple
+     * keyboards.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -355,15 +329,13 @@ public interface Key extends Serializable {
     Key UNDO = Key.of("Undo");
 
     /**
-     * The <code>Accept</code>, <code>Commit</code>, or <code>OK</code> key or
-     * button. Accepts the currently selected option or input method sequence
-     * conversion.
+     * The <code>Accept</code>, <code>Commit</code>, or <code>OK</code> key or button. Accepts the currently selected
+     * option or input method sequence conversion.
      */
     Key ACCEPT = Key.of("Accept");
 
     /**
-     * The <code>Again</code> key. Redoes or repeats a previous action. Found on
-     * Sun’s USB keyboard.
+     * The <code>Again</code> key. Redoes or repeats a previous action. Found on Sun’s USB keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -380,19 +352,17 @@ public interface Key extends Serializable {
     Key CANCEL = Key.of("Cancel");
 
     /**
-     * Shows the context menu. Typically found between the <code>Windows</code>
-     * (or <code>OS</code>) key and the <code>Control</code> key on the right
-     * side of the keyboard.
+     * Shows the context menu. Typically found between the <code>Windows</code> (or <code>OS</code>) key and the
+     * <code>Control</code> key on the right side of the keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key CONTEXT_MENU = Key.of("ContextMenu");
 
     /**
-     * The <code>Esc</code> (Escape) or <code>⎋</code> key. Typically used as an
-     * exit, cancel, or "escape this operation" button. Historically, the Escape
-     * character was used to signal the start of a special control sequence of
-     * characters called an "escape sequence."
+     * The <code>Esc</code> (Escape) or <code>⎋</code> key. Typically used as an exit, cancel, or "escape this
+     * operation" button. Historically, the Escape character was used to signal the start of a special control sequence
+     * of characters called an "escape sequence."
      * <p>
      * The first value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -404,8 +374,7 @@ public interface Key extends Serializable {
     Key EXECUTE = Key.of("Execute");
 
     /**
-     * The <code>Find</code> key. Opens an interface (typically a dialog box)
-     * for performing a find/search operation.
+     * The <code>Find</code> key. Opens an interface (typically a dialog box) for performing a find/search operation.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -417,28 +386,26 @@ public interface Key extends Serializable {
     Key FINISH = Key.of("Finish");
 
     /**
-     * The <code>Help</code> key. Opens or toggles the display of help
-     * information. Not present on standard PC keyboards.
+     * The <code>Help</code> key. Opens or toggles the display of help information. Not present on standard PC
+     * keyboards.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key HELP = Key.of("Help");
 
     /**
-     * The <code>Pause</code> key. Pauses the current application or state, if
-     * applicable. Note: This shouldn't be confused with the
-     * <code>"MediaPause"</code> key value, which is used for media controllers,
-     * rather than to control applications and processes.
+     * The <code>Pause</code> key. Pauses the current application or state, if applicable. Note: This shouldn't be
+     * confused with the <code>"MediaPause"</code> key value, which is used for media controllers, rather than to
+     * control applications and processes.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PAUSE = Key.of("Pause");
 
     /**
-     * The <code>Play</code> key. Resumes a previously paused application, if
-     * applicable. Note: This shouldn't be confused with the
-     * <code>"MediaPlay"</code> key value, which is used for media controllers,
-     * rather than to control applications and processes.
+     * The <code>Play</code> key. Resumes a previously paused application, if applicable. Note: This shouldn't be
+     * confused with the <code>"MediaPlay"</code> key value, which is used for media controllers, rather than to control
+     * applications and processes.
      */
     Key PLAY = Key.of("Play");
 
@@ -467,8 +434,7 @@ public interface Key extends Serializable {
     Key ZOOM_OUT = Key.of("ZoomOut");
 
     /**
-     * The Brightness Down key. Typically used to reduce the brightness of the
-     * display.
+     * The Brightness Down key. Typically used to reduce the brightness of the display.
      */
     Key BRIGHTNESS_DOWN = Key.of("BrightnessDown");
 
@@ -478,8 +444,8 @@ public interface Key extends Serializable {
     Key BRIGHTNESS_UP = Key.of("BrightnessUp");
 
     /**
-     * The <code>Eject</code> or <code>⏏</code> key. Ejects removable media (or
-     * toggles an optical storage device tray open and closed).
+     * The <code>Eject</code> or <code>⏏</code> key. Ejects removable media (or toggles an optical storage device tray
+     * open and closed).
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -500,45 +466,40 @@ public interface Key extends Serializable {
     Key POWER = Key.of("Power");
 
     /**
-     * The <code>PowerOff</code> or <code>PowerDown</code> key. Shuts off the
-     * system.
+     * The <code>PowerOff</code> or <code>PowerDown</code> key. Shuts off the system.
      */
     Key POWER_OFF = Key.of("PowerOff");
 
     /**
-     * The <code>PrintScreen</code> or <code>PrtScr</code> key. Sometimes
-     * <code>SnapShot</code>. Captures the screen and prints it or saves it to
-     * disk.
+     * The <code>PrintScreen</code> or <code>PrtScr</code> key. Sometimes <code>SnapShot</code>. Captures the screen and
+     * prints it or saves it to disk.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PRINT_SCREEN = Key.of("PrintScreen");
 
     /**
-     * The <code>Hibernate</code> key. This saves the state of the computer to
-     * disk and then shuts down; the computer can be returned to its previous
-     * state by restoring the saved state information.
+     * The <code>Hibernate</code> key. This saves the state of the computer to disk and then shuts down; the computer
+     * can be returned to its previous state by restoring the saved state information.
      */
     Key HIBERNATE = Key.of("Hibernate");
 
     /**
-     * The <code>Standby</code> key; also known as <code>Suspend</code> or
-     * <code>Sleep</code>. This turns off the display and puts the computer in a
-     * low power consumption mode, without completely powering off.
+     * The <code>Standby</code> key; also known as <code>Suspend</code> or <code>Sleep</code>. This turns off the
+     * display and puts the computer in a low power consumption mode, without completely powering off.
      */
     Key STANDBY = Key.of("Standby");
 
     /**
-     * The <code>WakeUp</code> key; used to wake the computer from the
-     * hibernation or standby modes.
+     * The <code>WakeUp</code> key; used to wake the computer from the hibernation or standby modes.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key WAKE_UP = Key.of("WakeUp");
 
     /**
-     * The <code>All Candidates</code> key, which starts multi-candidate mode,
-     * in which multiple candidates are displayed for the ongoing input.
+     * The <code>All Candidates</code> key, which starts multi-candidate mode, in which multiple candidates are
+     * displayed for the ongoing input.
      */
     Key ALL_CANDIDATES = Key.of("AllCandidates");
 
@@ -548,9 +509,8 @@ public interface Key extends Serializable {
     Key ALPHANUMERIC = Key.of("Alphanumeric");
 
     /**
-     * The <code>Code Input</code> key, which enables code input mode, which
-     * lets the user enter characters by typing their code points (their Unicode
-     * character numbers, typically).
+     * The <code>Code Input</code> key, which enables code input mode, which lets the user enter characters by typing
+     * their code points (their Unicode character numbers, typically).
      */
     Key CODE_INPUT = Key.of("CodeInput");
 
@@ -560,8 +520,8 @@ public interface Key extends Serializable {
     Key COMPOSE = Key.of("Compose");
 
     /**
-     * The <code>Convert</code> key, which instructs the IME to convert the
-     * current input method sequence into the resulting character.
+     * The <code>Convert</code> key, which instructs the IME to convert the current input method sequence into the
+     * resulting character.
      * <p>
      * Japanese: <code>変換</code> ( henkan )
      * <p>
@@ -570,43 +530,37 @@ public interface Key extends Serializable {
     Key CONVERT = Key.of("Convert");
 
     /**
-     * A dead "combining" key; that is, a key which is used in tandem with other
-     * keys to generate accented and other modified characters.
+     * A dead "combining" key; that is, a key which is used in tandem with other keys to generate accented and other
+     * modified characters.
      */
     Key DEAD = Key.of("Dead");
 
     /**
-     * The <code>Final</code> (Final Mode) key is used on some Asian keyboards
-     * to enter final mode when using IMEs.
+     * The <code>Final</code> (Final Mode) key is used on some Asian keyboards to enter final mode when using IMEs.
      */
     Key FINAL_MODE = Key.of("FinalMode");
 
     /**
-     * Switches to the first character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
-     * keyboard</a>. Each key may have multiple groups of characters, each in
-     * its own column. Pressing this key instructs the device to interpret
-     * keypresses as coming from the first column on subsequent keystrokes.
+     * Switches to the first character group on an <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * keyboard</a>. Each key may have multiple groups of characters, each in its own column. Pressing this key
+     * instructs the device to interpret keypresses as coming from the first column on subsequent keystrokes.
      */
     Key GROUP_FIRST = Key.of("GroupFirst");
 
     /**
-     * Switches to the last character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * Switches to the last character group on an <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
      * keyboard</a>.
      */
     Key GROUP_LAST = Key.of("GroupLast");
 
     /**
-     * Switches to the next character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * Switches to the next character group on an <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
      * keyboard</a>.
      */
     Key GROUP_NEXT = Key.of("GroupNext");
 
     /**
-     * Switches to the previous character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * Switches to the previous character group on an <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
      * keyboard</a>.
      */
     Key GROUP_PREVIOUS = Key.of("GroupPrevious");
@@ -617,15 +571,13 @@ public interface Key extends Serializable {
     Key MODE_CHANGE = Key.of("ModeChange");
 
     /**
-     * The Next Candidate function key. Selects the next possible match for the
-     * ongoing input.
+     * The Next Candidate function key. Selects the next possible match for the ongoing input.
      */
     Key NEXT_CANDIDATE = Key.of("NextCandidate");
 
     /**
-     * The <code>NonConvert</code> ("Don't convert") key. This accepts the
-     * current input method sequence without running conversion when using an
-     * IME.
+     * The <code>NonConvert</code> ("Don't convert") key. This accepts the current input method sequence without running
+     * conversion when using an IME.
      * <p>
      * Japanese: <code>無変換</code> ( muhenkan )
      * <p>
@@ -634,45 +586,38 @@ public interface Key extends Serializable {
     Key NON_CONVERT = Key.of("NonConvert");
 
     /**
-     * The Previous Candidate key. Selects the previous possible match for the
-     * ongoing input.
+     * The Previous Candidate key. Selects the previous possible match for the ongoing input.
      */
     Key PREVIOUS_CANDIDATE = Key.of("PreviousCandidate");
 
     /**
-     * The <code>Process</code> key. Instructs the IME to process the
-     * conversion.
+     * The <code>Process</code> key. Instructs the IME to process the conversion.
      */
     Key PROCESS = Key.of("Process");
 
     /**
-     * The Single Candidate key. Enables single candidate mode (as opposed to
-     * multi-candidate mode); in this mode, only one candidate is displayed at a
-     * time.
+     * The Single Candidate key. Enables single candidate mode (as opposed to multi-candidate mode); in this mode, only
+     * one candidate is displayed at a time.
      */
     Key SINGLE_CANDIDATE = Key.of("SingleCandidate");
 
     /**
-     * The <code>Hangul</code> (Korean character set) mode key, which toggles
-     * between Hangul and English entry modes.
+     * The <code>Hangul</code> (Korean character set) mode key, which toggles between Hangul and English entry modes.
      */
     Key HANGUL_MODE = Key.of("HangulMode");
 
     /**
-     * Selects the Hanja mode, for converting Hangul characters to the more
-     * specific Hanja characters.
+     * Selects the Hanja mode, for converting Hangul characters to the more specific Hanja characters.
      */
     Key HANJA_MODE = Key.of("HanjaMode");
 
     /**
-     * Selects the Junja mode, in which Korean is represented using single-byte
-     * Latin characters.
+     * Selects the Junja mode, in which Korean is represented using single-byte Latin characters.
      */
     Key JUNJA_MODE = Key.of("JunjaMode");
 
     /**
-     * The <code>Eisu</code> key. This key's purpose is defined by the IME, but
-     * may be used to close the IME.
+     * The <code>Eisu</code> key. This key's purpose is defined by the IME, but may be used to close the IME.
      */
     Key EISU = Key.of("Eisu");
 
@@ -682,8 +627,8 @@ public interface Key extends Serializable {
     Key HANKAKU = Key.of("Hankaku");
 
     /**
-     * The <code>Hiragana</code> key. Use for dedicated <code>ひらがな</code> key
-     * found on some Japanese word processing keyboards.
+     * The <code>Hiragana</code> key. Use for dedicated <code>ひらがな</code> key found on some Japanese word processing
+     * keyboards.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -704,14 +649,14 @@ public interface Key extends Serializable {
     Key KANA_MODE = Key.of("KanaMode");
 
     /**
-     * The <code>Kanji Mode</code> key. Enables entering Japanese text using the
-     * ideographic characters of Chinese origin.
+     * The <code>Kanji Mode</code> key. Enables entering Japanese text using the ideographic characters of Chinese
+     * origin.
      */
     Key KANJI_MODE = Key.of("KanjiMode");
 
     /**
-     * The <code>Katakana</code> key. Use for dedicated <code>カタカナ</code> key
-     * found on some Japanese word processing keyboards.
+     * The <code>Katakana</code> key. Use for dedicated <code>カタカナ</code> key found on some Japanese word processing
+     * keyboards.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -877,8 +822,7 @@ public interface Key extends Serializable {
     Key SOFT4 = Key.of("Soft4");
 
     /**
-     * Presents a list of recently-used applications which lets the user change
-     * apps quickly.
+     * Presents a list of recently-used applications which lets the user change apps quickly.
      */
     Key APP_SWITCH = Key.of("AppSwitch");
 
@@ -908,14 +852,13 @@ public interface Key extends Serializable {
     Key GO_BACK = Key.of("GoBack");
 
     /**
-     * The <code>Home</code> button, which takes the user to the phone's main
-     * screen (usually an application launcher).
+     * The <code>Home</code> button, which takes the user to the phone's main screen (usually an application launcher).
      */
     Key GO_HOME = Key.of("GoHome");
 
     /**
-     * The <code>Headset Hook</code> key. This is typically actually a button on
-     * the headset which is used to hang up calls and play or pause media.
+     * The <code>Headset Hook</code> key. This is typically actually a button on the headset which is used to hang up
+     * calls and play or pause media.
      */
     Key HEADSET_HOOK = Key.of("HeadsetHook");
 
@@ -930,8 +873,7 @@ public interface Key extends Serializable {
     Key NOTIFICATION = Key.of("Notification");
 
     /**
-     * A button which cycles among the notification modes: silent, vibrate,
-     * ring, and so forth.
+     * A button which cycles among the notification modes: silent, vibrate, ring, and so forth.
      */
     Key MANNER_MODE = Key.of("MannerMode");
 
@@ -956,14 +898,12 @@ public interface Key extends Serializable {
     Key MEDIA_FAST_FORWARD = Key.of("MediaFastForward");
 
     /**
-     * Pauses the currently playing media. Some older applications use simply
-     * "Pause" but this is not correct.
+     * Pauses the currently playing media. Some older applications use simply "Pause" but this is not correct.
      */
     Key MEDIA_PAUSE = Key.of("MediaPause");
 
     /**
-     * Starts or continues playing media at normal speed, if not already doing
-     * so. Has no effect otherwise.
+     * Starts or continues playing media at normal speed, if not already doing so. Has no effect otherwise.
      */
     Key MEDIA_PLAY = Key.of("MediaPlay");
 
@@ -985,9 +925,8 @@ public interface Key extends Serializable {
     Key MEDIA_REWIND = Key.of("MediaRewind");
 
     /**
-     * Stops the current media activity (such as playing, recording, pausing,
-     * forwarding, or rewinding). Has no effect if the media is currently
-     * stopped already.
+     * Stops the current media activity (such as playing, recording, pausing, forwarding, or rewinding). Has no effect
+     * if the media is currently stopped already.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -1023,8 +962,7 @@ public interface Key extends Serializable {
     Key AUDIO_BASS_DOWN = Key.of("AudioBassDown");
 
     /**
-     * Reduces bass boosting or cycles downward through bass boost modes or
-     * states.
+     * Reduces bass boosting or cycles downward through bass boost modes or states.
      */
     Key AUDIO_BASS_BOOST_DOWN = Key.of("AudioBassBoostDown");
 
@@ -1034,8 +972,7 @@ public interface Key extends Serializable {
     Key AUDIO_BASS_BOOST_TOGGLE = Key.of("AudioBassBoostToggle");
 
     /**
-     * Increases the amount of bass boosting, or cycles upward through a set of
-     * bass boost modes or states.
+     * Increases the amount of bass boosting, or cycles upward through a set of bass boost modes or states.
      */
     Key AUDIO_BASS_BOOST_UP = Key.of("AudioBassBoostUp");
 
@@ -1131,21 +1068,20 @@ public interface Key extends Serializable {
     Key TV_AUDIO_DESCRIPTION = Key.of("TVAudioDescription");
 
     /**
-     * Decreases the audio description's mixing volume; reduces the volume of
-     * the audio descriptions relative to the program sound.
+     * Decreases the audio description's mixing volume; reduces the volume of the audio descriptions relative to the
+     * program sound.
      */
     Key TV_AUDIO_DESCRIPTION_MIX_DOWN = Key.of("TVAudioDescriptionMixDown");
 
     /**
-     * Increases the audio description's mixing volume; increases the volume of
-     * the audio descriptions relative to the program sound.
+     * Increases the audio description's mixing volume; increases the volume of the audio descriptions relative to the
+     * program sound.
      */
     Key TV_AUDIO_DESCRIPTION_MIX_UP = Key.of("TVAudioDescriptionMixUp");
 
     /**
-     * Displays or hides the media contents available for playback (this may be
-     * a channel guide showing the currently airing programs, or a list of media
-     * files to play).
+     * Displays or hides the media contents available for playback (this may be a channel guide showing the currently
+     * airing programs, or a list of media files to play).
      */
     Key TV_CONTENTS_MENU = Key.of("TVContentsMenu");
 
@@ -1250,14 +1186,12 @@ public interface Key extends Serializable {
     Key TV_SATELLITE_TOGGLE = Key.of("TVSatelliteToggle");
 
     /**
-     * Selects analog terrestrial television service (analog cable or antenna
-     * reception).
+     * Selects analog terrestrial television service (analog cable or antenna reception).
      */
     Key TV_TERRESTRIAL_ANALOG = Key.of("TVTerrestrialAnalog");
 
     /**
-     * Selects digital terrestrial television service (digital cable or antenna
-     * reception).
+     * Selects digital terrestrial television service (digital cable or antenna reception).
      */
     Key TV_TERRESTRIAL_DIGITAL = Key.of("TVTerrestrialDigital");
 
@@ -1277,38 +1211,32 @@ public interface Key extends Serializable {
     Key AVR_POWER = Key.of("AVRPower");
 
     /**
-     * General-purpose media function key, color-coded red; this has index 0
-     * among the colored keys.
+     * General-purpose media function key, color-coded red; this has index 0 among the colored keys.
      */
     Key COLOR_F0_RED = Key.of("ColorF0Red");
 
     /**
-     * General-purpose media function key, color-coded green; this has index 1
-     * among the colored keys.
+     * General-purpose media function key, color-coded green; this has index 1 among the colored keys.
      */
     Key COLOR_F1_GREEN = Key.of("ColorF1Green");
 
     /**
-     * General-purpose media function key, color-coded yellow; this has index 2
-     * among the colored keys.
+     * General-purpose media function key, color-coded yellow; this has index 2 among the colored keys.
      */
     Key COLOR_F2_YELLOW = Key.of("ColorF2Yellow");
 
     /**
-     * General-purpose media function key, color-coded blue; this has index 3
-     * among the colored keys.
+     * General-purpose media function key, color-coded blue; this has index 3 among the colored keys.
      */
     Key COLOR_F3_BLUE = Key.of("ColorF3Blue");
 
     /**
-     * General-purpose media function key, color-coded grey; this has index 4
-     * among the colored keys.
+     * General-purpose media function key, color-coded grey; this has index 4 among the colored keys.
      */
     Key COLOR_F4_GREY = Key.of("ColorF4Grey");
 
     /**
-     * General-purpose media function key, color-coded brown; this has index 5
-     * among the colored keys.
+     * General-purpose media function key, color-coded brown; this has index 5 among the colored keys.
      */
     Key COLOR_F5_BROWN = Key.of("ColorF5Brown");
 
@@ -1318,8 +1246,8 @@ public interface Key extends Serializable {
     Key CLOSED_CAPTION_TOGGLE = Key.of("ClosedCaptionToggle");
 
     /**
-     * Adjusts the brightness of the device by toggling between two brightness
-     * levels <em>or</em> by cycling among multiple brightness levels.
+     * Adjusts the brightness of the device by toggling between two brightness levels <em>or</em> by cycling among
+     * multiple brightness levels.
      */
     Key DIMMER = Key.of("Dimmer");
 
@@ -1359,26 +1287,22 @@ public interface Key extends Serializable {
     Key FAVORITE_CLEAR3 = Key.of("FavoriteClear3");
 
     /**
-     * Selects (recalls) the program or content stored in the first favorites
-     * list slot.
+     * Selects (recalls) the program or content stored in the first favorites list slot.
      */
     Key FAVORITE_RECALL0 = Key.of("FavoriteRecall0");
 
     /**
-     * Selects (recalls) the program or content stored in the second favorites
-     * list slot.
+     * Selects (recalls) the program or content stored in the second favorites list slot.
      */
     Key FAVORITE_RECALL1 = Key.of("FavoriteRecall1");
 
     /**
-     * Selects (recalls) the program or content stored in the third favorites
-     * list slot.
+     * Selects (recalls) the program or content stored in the third favorites list slot.
      */
     Key FAVORITE_RECALL2 = Key.of("FavoriteRecall2");
 
     /**
-     * Selects (recalls) the program or content stored in the fourth favorites
-     * list slot.
+     * Selects (recalls) the program or content stored in the fourth favorites list slot.
      */
     Key FAVORITE_RECALL3 = Key.of("FavoriteRecall3");
 
@@ -1388,8 +1312,7 @@ public interface Key extends Serializable {
     Key FAVORITE_STORE0 = Key.of("FavoriteStore0");
 
     /**
-     * Stores the current program or content into the second favorites list
-     * slot.
+     * Stores the current program or content into the second favorites list slot.
      */
     Key FAVORITE_STORE1 = Key.of("FavoriteStore1");
 
@@ -1399,8 +1322,7 @@ public interface Key extends Serializable {
     Key FAVORITE_STORE2 = Key.of("FavoriteStore2");
 
     /**
-     * Stores the current program or content into the fourth favorites list
-     * slot.
+     * Stores the current program or content into the fourth favorites list slot.
      */
     Key FAVORITE_STORE3 = Key.of("FavoriteStore3");
 
@@ -1410,27 +1332,23 @@ public interface Key extends Serializable {
     Key GUIDE = Key.of("Guide");
 
     /**
-     * If the guide is currently displayed, this button tells the guide to
-     * display the next day's content.
+     * If the guide is currently displayed, this button tells the guide to display the next day's content.
      */
     Key GUIDE_NEXT_DAY = Key.of("GuideNextDay");
 
     /**
-     * If the guide is currently displayed, this button tells the guide to
-     * display the previous day's content.
+     * If the guide is currently displayed, this button tells the guide to display the previous day's content.
      */
     Key GUIDE_PREVIOUS_DAY = Key.of("GuidePreviousDay");
 
     /**
-     * Toggles the display of information about the currently selected content,
-     * program, or media.
+     * Toggles the display of information about the currently selected content, program, or media.
      */
     Key INFO = Key.of("Info");
 
     /**
-     * Tells the device to perform an instant replay (typically some form of
-     * jumping back a short amount of time then playing it again, possibly but
-     * not usually in slow motion).
+     * Tells the device to perform an instant replay (typically some form of jumping back a short amount of time then
+     * playing it again, possibly but not usually in slow motion).
      */
     Key INSTANT_REPLAY = Key.of("InstantReplay");
 
@@ -1455,8 +1373,7 @@ public interface Key extends Serializable {
     Key LOCK = Key.of("Lock");
 
     /**
-     * Presents a list of media applications, such as photo viewers, audio and
-     * video players, and games.
+     * Presents a list of media applications, such as photo viewers, audio and video players, and games.
      */
     Key MEDIA_APPS = Key.of("MediaApps");
 
@@ -1491,8 +1408,7 @@ public interface Key extends Serializable {
     Key MEDIA_STEP_FORWARD = Key.of("MediaStepForward");
 
     /**
-     * Top Menu button; opens the media's main menu, such as on a DVD or Blu-Ray
-     * disc.
+     * Top Menu button; opens the media's main menu, such as on a DVD or Blu-Ray disc.
      */
     Key MEDIA_TOP_MENU = Key.of("MediaTopMenu");
 
@@ -1522,14 +1438,12 @@ public interface Key extends Serializable {
     Key NEXT_FAVORITE_CHANNEL = Key.of("NextFavoriteChannel");
 
     /**
-     * Cycles to the next saved user profile, if this feature is supported and
-     * multiple profiles exist.
+     * Cycles to the next saved user profile, if this feature is supported and multiple profiles exist.
      */
     Key NEXT_USER_PROFILE = Key.of("NextUserProfile");
 
     /**
-     * Opens the user interface for selecting on demand content or programs to
-     * watch.
+     * Opens the user interface for selecting on demand content or programs to watch.
      */
     Key ON_DEMAND = Key.of("OnDemand");
 
@@ -1579,8 +1493,7 @@ public interface Key extends Serializable {
     Key RANDOM_TOGGLE = Key.of("RandomToggle");
 
     /**
-     * A code sent when the remote control's battery is low. This doesn't
-     * actually correspond to a physical key at all.
+     * A code sent when the remote control's battery is low. This doesn't actually correspond to a physical key at all.
      */
     Key RC_LOW_BATTERY = Key.of("RcLowBattery");
 
@@ -1590,15 +1503,14 @@ public interface Key extends Serializable {
     Key RECORD_SPEED_NEXT = Key.of("RecordSpeedNext");
 
     /**
-     * Toggles radio frequency (RF) input bypass mode on and off. RF bypass mode
-     * passes RF input directly to the RF output without any processing or
-     * filtering.
+     * Toggles radio frequency (RF) input bypass mode on and off. RF bypass mode passes RF input directly to the RF
+     * output without any processing or filtering.
      */
     Key RF_BYPASS = Key.of("RfBypass");
 
     /**
-     * Toggles the channel scan mode on and off; this is a mode which flips
-     * through channels automatically until the user stops the scan.
+     * Toggles the channel scan mode on and off; this is a mode which flips through channels automatically until the
+     * user stops the scan.
      */
     Key SCAN_CHANNELS_TOGGLE = Key.of("ScanChannelsToggle");
 
@@ -1633,9 +1545,7 @@ public interface Key extends Serializable {
     Key SUBTITLE = Key.of("Subtitle");
 
     /**
-     * Toggles display of
-     * <a href="https://en.wikipedia.org/wiki/teletext">teletext</a>, if
-     * available.
+     * Toggles display of <a href="https://en.wikipedia.org/wiki/teletext">teletext</a>, if available.
      */
     Key TELETEXT = Key.of("Teletext");
 
@@ -1645,28 +1555,24 @@ public interface Key extends Serializable {
     Key VIDEO_MODE_NEXT = Key.of("VideoModeNext");
 
     /**
-     * Causes the device to identify itself in some fashion, such as by flashing
-     * a light, briefly changing the brightness of indicator lights, or emitting
-     * a tone.
+     * Causes the device to identify itself in some fashion, such as by flashing a light, briefly changing the
+     * brightness of indicator lights, or emitting a tone.
      */
     Key WINK = Key.of("Wink");
 
     /**
-     * Toggles between full-screen and scaled content display, or otherwise
-     * change the magnification level.
+     * Toggles between full-screen and scaled content display, or otherwise change the magnification level.
      */
     Key ZOOM_TOGGLE = Key.of("ZoomToggle");
 
     /**
-     * Presents a list of possible corrections for a word which was incorrectly
-     * identified.
+     * Presents a list of possible corrections for a word which was incorrectly identified.
      */
     Key SPEECH_CORRECTION_LIST = Key.of("SpeechCorrectionList");
 
     /**
-     * Toggles between dictation mode and command/control mode. This lets the
-     * speech engine know whether to interpret spoken words as input text or as
-     * commands.
+     * Toggles between dictation mode and command/control mode. This lets the speech engine know whether to interpret
+     * spoken words as input text or as commands.
      */
     Key SPEECH_INPUT_TOGGLE = Key.of("SpeechInputToggle");
 
@@ -1718,8 +1624,8 @@ public interface Key extends Serializable {
     Key MAIL_SEND = Key.of("MailSend");
 
     /**
-     * The <code>Calculator</code> key. This is often used as a generic
-     * application launcher key (<code>APPCOMMAND_LAUNCH_APP2</code>).
+     * The <code>Calculator</code> key. This is often used as a generic application launcher key
+     * (<code>APPCOMMAND_LAUNCH_APP2</code>).
      */
     Key LAUNCH_CALCULATOR = Key.of("LaunchCalculator");
 
@@ -1751,15 +1657,13 @@ public interface Key extends Serializable {
     Key LAUNCH_MUSIC_PLAYER = Key.of("LaunchMusicPlayer");
 
     /**
-     * The <code>My Computer</code> key on Windows keyboards. This is often used
-     * as a generic application launcher key
+     * The <code>My Computer</code> key on Windows keyboards. This is often used as a generic application launcher key
      * (<code>APPCOMMAND_LAUNCH_APP1</code>).
      */
     Key LAUNCH_MY_COMPUTER = Key.of("LaunchMyComputer");
 
     /**
-     * The <code>Phone</code> key, to open the phone dialer application if one
-     * is present.
+     * The <code>Phone</code> key, to open the phone dialer application if one is present.
      */
     Key LAUNCH_PHONE = Key.of("LaunchPhone");
 
@@ -1784,8 +1688,8 @@ public interface Key extends Serializable {
     Key LAUNCH_WEB_CAM = Key.of("LaunchWebCam");
 
     /**
-     * The <code>Word Processor</code> key. This may be an icon of a specific
-     * word processor application, or a generic document icon.
+     * The <code>Word Processor</code> key. This may be an icon of a specific word processor application, or a generic
+     * document icon.
      */
     Key LAUNCH_WORD_PROCESSOR = Key.of("LaunchWordProcessor");
 
@@ -1870,9 +1774,8 @@ public interface Key extends Serializable {
     Key LAUNCH_APPLICATION16 = Key.of("LaunchApplication16");
 
     /**
-     * Navigates to the previous content or page in the current Web view's
-     * history. Some laptops place this key to the left of the <code>↑</code>
-     * key.
+     * Navigates to the previous content or page in the current Web view's history. Some laptops place this key to the
+     * left of the <code>↑</code> key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -1886,8 +1789,8 @@ public interface Key extends Serializable {
     Key BROWSER_FAVORITES = Key.of("BrowserFavorites");
 
     /**
-     * Navigates to the next content or page in the current Web view's history.
-     * Some laptops place this key to the right of the <code>↑</code> key.
+     * Navigates to the next content or page in the current Web view's history. Some laptops place this key to the right
+     * of the <code>↑</code> key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -1908,8 +1811,7 @@ public interface Key extends Serializable {
     Key BROWSER_REFRESH = Key.of("BrowserRefresh");
 
     /**
-     * Activates the user's preferred search engine or the search interface
-     * within their browser.
+     * Activates the user's preferred search engine or the search interface within their browser.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -1923,8 +1825,7 @@ public interface Key extends Serializable {
     Key BROWSER_STOP = Key.of("BrowserStop");
 
     /**
-     * The decimal point key (typically <code>.</code> or <code>,</code>)
-     * depending on the region.
+     * The decimal point key (typically <code>.</code> or <code>,</code>) depending on the region.
      */
     Key DECIMAL = Key.of("Decimal");
 
@@ -1959,24 +1860,23 @@ public interface Key extends Serializable {
     Key SUBTRACT = Key.of("Subtract");
 
     /**
-     * The numeric keypad's places separator character (in the United States,
-     * this is a comma, but elsewhere it is frequently a period).
+     * The numeric keypad's places separator character (in the United States, this is a comma, but elsewhere it is
+     * frequently a period).
      */
     Key SEPARATOR = Key.of("Separator");
 
     /**
-     * <code>`~</code> on a US keyboard. This is the <code>半角/全角/漢字</code> (
-     * hankaku/zenkaku/kanji ) key on Japanese keyboards
+     * <code>`~</code> on a US keyboard. This is the <code>半角/全角/漢字</code> ( hankaku/zenkaku/kanji ) key on Japanese
+     * keyboards
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BACKQUOTE = Key.of("Backquote");
 
     /**
-     * Used for both the US <code>\|</code> (on the 101-key layout) and also for
-     * the keylocated between the <code>"</code> and <code>Enter</code> keys on
-     * row C of the 102-, 104- and 106-key layouts. Labelled <code>#~</code> on
-     * a UK (102) keyboard.
+     * Used for both the US <code>\|</code> (on the 101-key layout) and also for the keylocated between the
+     * <code>"</code> and <code>Enter</code> keys on row C of the 102-, 104- and 106-key layouts. Labelled
+     * <code>#~</code> on a UK (102) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2081,33 +1981,30 @@ public interface Key extends Serializable {
     Key EQUAL = Key.of("Equal");
 
     /**
-     * Located between the left <code>Shift</code> and <code>Z</code>
-     * keys.Labelled <code>\|</code> on a UK keyboard.
+     * Located between the left <code>Shift</code> and <code>Z</code> keys.Labelled <code>\|</code> on a UK keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key INTL_BACKSLASH = Key.of("IntlBackslash");
 
     /**
-     * Located between the <code>/</code> and right <code>Shift</code>
-     * keys.Labelled <code>\ろ</code> ( ro ) on a Japanese keyboard.
+     * Located between the <code>/</code> and right <code>Shift</code> keys.Labelled <code>\ろ</code> ( ro ) on a
+     * Japanese keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key INTL_RO = Key.of("IntlRo");
 
     /**
-     * Located between the <code>=</code> and <code>Backspace</code>
-     * keys.Labelled <code>¥</code> ( yen ) on a Japanese keyboard.
-     * <code>\/</code> on a Russian keyboard.
+     * Located between the <code>=</code> and <code>Backspace</code> keys.Labelled <code>¥</code> ( yen ) on a Japanese
+     * keyboard. <code>\/</code> on a Russian keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key INTL_YEN = Key.of("IntlYen");
 
     /**
-     * <code>a</code> on a US keyboard.Labelled <code>q</code> on an AZERTY
-     * (e.g., French) keyboard.
+     * <code>a</code> on a US keyboard.Labelled <code>q</code> on an AZERTY (e.g., French) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2219,8 +2116,7 @@ public interface Key extends Serializable {
     Key KEY_P = Key.of("KeyP");
 
     /**
-     * <code>q</code> on a US keyboard.Labelled <code>a</code> on an AZERTY
-     * (e.g., French) keyboard.
+     * <code>q</code> on a US keyboard.Labelled <code>a</code> on an AZERTY (e.g., French) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2262,8 +2158,7 @@ public interface Key extends Serializable {
     Key KEY_V = Key.of("KeyV");
 
     /**
-     * <code>w</code> on a US keyboard.Labelled <code>z</code> on an AZERTY
-     * (e.g., French) keyboard.
+     * <code>w</code> on a US keyboard.Labelled <code>z</code> on an AZERTY (e.g., French) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2277,17 +2172,15 @@ public interface Key extends Serializable {
     Key KEY_X = Key.of("KeyX");
 
     /**
-     * <code>y</code> on a US keyboard.Labelled <code>z</code> on a QWERTZ
-     * (e.g., German) keyboard.
+     * <code>y</code> on a US keyboard.Labelled <code>z</code> on a QWERTZ (e.g., German) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key KEY_Y = Key.of("KeyY");
 
     /**
-     * <code>z</code> on a US keyboard.Labelled <code>w</code> on an AZERTY
-     * (e.g., French) keyboard, and <code>y</code> on a QWERTZ (e.g., German)
-     * keyboard.
+     * <code>z</code> on a US keyboard.Labelled <code>w</code> on an AZERTY (e.g., French) keyboard, and <code>y</code>
+     * on a QWERTZ (e.g., German) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2336,8 +2229,8 @@ public interface Key extends Serializable {
     Key ALT_LEFT = Key.of("AltLeft");
 
     /**
-     * <code>Alt</code> , <code>Option</code> or <code>⌥</code> .This is
-     * labelled <code>AltGr</code> key on many keyboard layouts.
+     * <code>Alt</code> , <code>Option</code> or <code>⌥</code> .This is labelled <code>AltGr</code> key on many
+     * keyboard layouts.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2358,16 +2251,14 @@ public interface Key extends Serializable {
     Key CONTROL_RIGHT = Key.of("ControlRight");
 
     /**
-     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol
-     * key.
+     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key META_LEFT = Key.of("MetaLeft");
 
     /**
-     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol
-     * key.
+     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2388,16 +2279,14 @@ public interface Key extends Serializable {
     Key SHIFT_RIGHT = Key.of("ShiftRight");
 
     /**
-     * Korean: HangulMode <code>한/영</code> ( han/yeong ) Japanese (Mac
-     * keyboard): <code>かな</code> ( kana )
+     * Korean: HangulMode <code>한/영</code> ( han/yeong ) Japanese (Mac keyboard): <code>かな</code> ( kana )
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key LANG_1 = Key.of("Lang1");
 
     /**
-     * Korean: Hanja <code>한자</code> ( hanja ) Japanese (Mac keyboard):
-     * <code>英数</code> ( eisu )
+     * Korean: Hanja <code>한자</code> ( hanja ) Japanese (Mac keyboard): <code>英数</code> ( eisu )
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2425,56 +2314,49 @@ public interface Key extends Serializable {
     Key LANG_5 = Key.of("Lang5");
 
     /**
-     * <code>0 Ins</code> on a keyboard <code>0</code> on a phone or remote
-     * control
+     * <code>0 Ins</code> on a keyboard <code>0</code> on a phone or remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_0 = Key.of("Numpad0");
 
     /**
-     * <code>1 End</code> on a keyboard <code>1</code> or <code>1 QZ</code> on a
-     * phone orremote control
+     * <code>1 End</code> on a keyboard <code>1</code> or <code>1 QZ</code> on a phone orremote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_1 = Key.of("Numpad1");
 
     /**
-     * <code>2 ↓</code> on a keyboard <code>2 ABC</code> on a phone or remote
-     * control
+     * <code>2 ↓</code> on a keyboard <code>2 ABC</code> on a phone or remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_2 = Key.of("Numpad2");
 
     /**
-     * <code>3 PgDn</code> on a keyboard <code>3 DEF</code> on a phone or remote
-     * control
+     * <code>3 PgDn</code> on a keyboard <code>3 DEF</code> on a phone or remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_3 = Key.of("Numpad3");
 
     /**
-     * <code>4 ←</code> on a keyboard <code>4 GHI</code> on a phone or remote
-     * control
+     * <code>4 ←</code> on a keyboard <code>4 GHI</code> on a phone or remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_4 = Key.of("Numpad4");
 
     /**
-     * <code>5</code> on a keyboard <code>5 JKL</code> on a phone or remote
-     * control
+     * <code>5</code> on a keyboard <code>5 JKL</code> on a phone or remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_5 = Key.of("Numpad5");
 
     /**
-     * <code>6 →</code> on a keyboard <code>6 MNO</code> on a phone or remote
-     * control
+     * <code>6 →</code> on a keyboard <code>6 MNO</code> on a phone or remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2489,8 +2371,7 @@ public interface Key extends Serializable {
     Key NUMPAD_7 = Key.of("Numpad7");
 
     /**
-     * <code>8 ↑</code> on a keyboard <code>8 TUV</code> on a phone or remote
-     * control
+     * <code>8 ↑</code> on a keyboard <code>8 TUV</code> on a phone or remote control
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2519,10 +2400,9 @@ public interface Key extends Serializable {
     Key NUMPAD_BACKSPACE = Key.of("NumpadBackspace");
 
     /**
-     * <code>C</code> or <code>AC</code> (All Clear). Also for use with numpads
-     * that have a <code>Clear</code> key that is separate from the
-     * <code>NumLock</code> key. On the Mac, the numpad <code>Clear</code> key
-     * should always be encoded as " NumLock " .
+     * <code>C</code> or <code>AC</code> (All Clear). Also for use with numpads that have a <code>Clear</code> key that
+     * is separate from the <code>NumLock</code> key. On the Mac, the numpad <code>Clear</code> key should always be
+     * encoded as " NumLock " .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2536,17 +2416,16 @@ public interface Key extends Serializable {
     Key NUMPAD_CLEAR_ENTRY = Key.of("NumpadClearEntry");
 
     /**
-     * <code>,</code> (thousands separator). For locales where the thousands
-     * separatoris a "." (e.g., Brazil), this key may generate a <code>.</code>
-     * .
+     * <code>,</code> (thousands separator). For locales where the thousands separatoris a "." (e.g., Brazil), this key
+     * may generate a <code>.</code> .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_COMMA = Key.of("NumpadComma");
 
     /**
-     * <code>. Del</code> . For locales where the decimal separator is ","
-     * (e.g.,Brazil), this key may generate a <code>,</code> .
+     * <code>. Del</code> . For locales where the decimal separator is "," (e.g.,Brazil), this key may generate a
+     * <code>,</code> .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2572,9 +2451,8 @@ public interface Key extends Serializable {
     Key NUMPAD_EQUAL = Key.of("NumpadEqual");
 
     /**
-     * <code>#</code> on a phone or remote control device. This key is typically
-     * foundbelow the <code>9</code> key and to the right of the <code>0</code>
-     * key.
+     * <code>#</code> on a phone or remote control device. This key is typically foundbelow the <code>9</code> key and
+     * to the right of the <code>0</code> key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2595,16 +2473,14 @@ public interface Key extends Serializable {
     Key NUMPAD_MEMORY_CLEAR = Key.of("NumpadMemoryClear");
 
     /**
-     * <code>MR</code> Replace the current entry with the value stored in
-     * memory.
+     * <code>MR</code> Replace the current entry with the value stored in memory.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_MEMORY_RECALL = Key.of("NumpadMemoryRecall");
 
     /**
-     * <code>MS</code> Replace the value stored in memory with the current
-     * entry.
+     * <code>MS</code> Replace the value stored in memory with the current entry.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2618,10 +2494,9 @@ public interface Key extends Serializable {
     Key NUMPAD_MEMORY_SUBTRACT = Key.of("NumpadMemorySubtract");
 
     /**
-     * <code>*</code> on a keyboard. For use with numpads that provide
-     * mathematicaloperations ( <code>+</code> , <code>-</code> , <code>*</code>
-     * and <code>/</code> ). Use " NumpadStar " for the <code>*</code> key on
-     * phones and remote controls.
+     * <code>*</code> on a keyboard. For use with numpads that provide mathematicaloperations ( <code>+</code> ,
+     * <code>-</code> , <code>*</code> and <code>/</code> ). Use " NumpadStar " for the <code>*</code> key on phones and
+     * remote controls.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2642,10 +2517,8 @@ public interface Key extends Serializable {
     Key NUMPAD_PAREN_RIGHT = Key.of("NumpadParenRight");
 
     /**
-     * <code>*</code> on a phone or remote control device.This key is typically
-     * found below the <code>7</code> key and to the left of the <code>0</code>
-     * key. Use " NumpadMultiply " for the <code>*</code> key on numeric
-     * keypads.
+     * <code>*</code> on a phone or remote control device.This key is typically found below the <code>7</code> key and
+     * to the left of the <code>0</code> key. Use " NumpadMultiply " for the <code>*</code> key on numeric keypads.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2703,23 +2576,20 @@ public interface Key extends Serializable {
     Key SUSPEND = Key.of("Suspend");
 
     /**
-     * This value is reserved for corner cases of no key value present in event
-     * e.g. when browser autosuggest is used.
+     * This value is reserved for corner cases of no key value present in event e.g. when browser autosuggest is used.
      */
     Key NONE = Key.of("None");
 
     /**
      * Returns a {@link Key} instance for a printable representation of the key.
      * <p>
-     * The optional {@code additionalKeys} parameter can be used to create an
-     * instance which will match additional printable representations of the
-     * same key, in the rare cases where browsers don't agree.
+     * The optional {@code additionalKeys} parameter can be used to create an instance which will match additional
+     * printable representations of the same key, in the rare cases where browsers don't agree.
      * <p>
      * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
      *
      * @param key
-     *            the printable representation of the key, not <code>null</code>
-     *            nor empty
+     *            the printable representation of the key, not <code>null</code> nor empty
      * @param additionalKeys
      *            additional printable representations of the same key
      * @return the {@link Key} instance
@@ -2744,8 +2614,8 @@ public interface Key extends Serializable {
                 if (keys.size() == 1) {
                     return keys.get(0);
                 }
-                return keys.get(0) + ",  additional keys : [" + keys.stream()
-                        .skip(1).collect(Collectors.joining(", ")) + "]";
+                return keys.get(0) + ",  additional keys : [" + keys.stream().skip(1).collect(Collectors.joining(", "))
+                        + "]";
             }
 
             @Override
@@ -2770,9 +2640,8 @@ public interface Key extends Serializable {
     }
 
     /**
-     * Returns the list (with at least one element) of printable representations
-     * of the key, which should reflect the <code>key</code> property in the
-     * JavaScript <code>KeyboardEvent</code>.
+     * Returns the list (with at least one element) of printable representations of the key, which should reflect the
+     * <code>key</code> property in the JavaScript <code>KeyboardEvent</code>.
      * <p>
      * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
      *
@@ -2781,13 +2650,11 @@ public interface Key extends Serializable {
     List<String> getKeys();
 
     /**
-     * Checks if <code>key</code> is a printable representation for this
-     * instance.
+     * Checks if <code>key</code> is a printable representation for this instance.
      *
      * @param key
      *            a printable representation of a key
-     * @return true, if <code>key</code> is a printable representation for this
-     *         instance
+     * @return true, if <code>key</code> is a printable representation for this instance
      */
     default boolean matches(String key) {
         return getKeys().contains(key);
@@ -2803,8 +2670,7 @@ public interface Key extends Serializable {
      * @return true if the key argument is a modifier, otherwise false.
      */
     static boolean isModifier(Key key) {
-        return Stream.of(KeyModifier.values())
-                .anyMatch(k -> k.matches(key.getKeys().get(0)));
+        return Stream.of(KeyModifier.values()).anyMatch(k -> k.matches(key.getKeys().get(0)));
     }
 
 }

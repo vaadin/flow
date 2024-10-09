@@ -27,8 +27,7 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class BeanInListingIT extends ChromeBrowserTest {
 
-    private static final class SelectedCondition
-            implements ExpectedCondition<Boolean> {
+    private static final class SelectedCondition implements ExpectedCondition<Boolean> {
 
         private final WebElement selected;
         private final String expected;
@@ -45,8 +44,7 @@ public class BeanInListingIT extends ChromeBrowserTest {
 
         @Override
         public String toString() {
-            return "The value of selected element is '" + selected.getText()
-                    + "', expected '" + expected + "'";
+            return "The value of selected element is '" + selected.getText() + "', expected '" + expected + "'";
         }
 
     }
@@ -55,8 +53,7 @@ public class BeanInListingIT extends ChromeBrowserTest {
     public void beanInTwoWayBinding() throws InterruptedException {
         open();
 
-        TestBenchElement selected = $(TestBenchElement.class).id("template")
-                .$(TestBenchElement.class).id("selected");
+        TestBenchElement selected = $(TestBenchElement.class).id("template").$(TestBenchElement.class).id("selected");
 
         assertSelectionValue("user-item", selected, "foo");
 
@@ -67,13 +64,10 @@ public class BeanInListingIT extends ChromeBrowserTest {
         assertSelectionValue("msg-item", selected, "msg");
     }
 
-    private void assertSelectionValue(String className, WebElement selected,
-            String item) {
+    private void assertSelectionValue(String className, WebElement selected, String item) {
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        List<TestBenchElement> items = template.$(TestBenchElement.class)
-                .attribute("class", className).all();
-        items.stream().filter(itemElement -> itemElement.getText().equals(item))
-                .findFirst().get().click();
+        List<TestBenchElement> items = template.$(TestBenchElement.class).attribute("class", className).all();
+        items.stream().filter(itemElement -> itemElement.getText().equals(item)).findFirst().get().click();
 
         waitUntil(new SelectedCondition(selected, item));
     }

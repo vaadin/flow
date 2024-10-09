@@ -53,8 +53,7 @@ public class ExecutionFailedException extends Exception {
     }
 
     /**
-     * Creates a new exception instance with the given {@code message} and
-     * {@code cause}.
+     * Creates a new exception instance with the given {@code message} and {@code cause}.
      *
      * @param message
      *            the exception message

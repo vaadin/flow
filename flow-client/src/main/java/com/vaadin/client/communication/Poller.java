@@ -60,8 +60,8 @@ public class Poller {
     /**
      * Sets the polling interval.
      * <p>
-     * Changing the polling interval will stop any current polling and schedule
-     * a new poll to happen after the given interval.
+     * Changing the polling interval will stop any current polling and schedule a new poll to happen after the given
+     * interval.
      *
      * @param interval
      *            The interval to use
@@ -85,8 +85,7 @@ public class Poller {
      */
     public void poll() {
         StateTree stateTree = registry.getStateTree();
-        stateTree.sendEventToServer(stateTree.getRootNode(),
-                PollEvent.DOM_EVENT_NAME, null);
+        stateTree.sendEventToServer(stateTree.getRootNode(), PollEvent.DOM_EVENT_NAME, null);
     }
 
 }

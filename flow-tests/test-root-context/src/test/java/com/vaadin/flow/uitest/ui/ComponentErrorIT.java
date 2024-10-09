@@ -17,10 +17,8 @@ public class ComponentErrorIT extends ChromeBrowserTest {
 
         $(NativeButtonElement.class).id("throw").click();
 
-        Assert.assertEquals("true",
-                $(SpanElement.class).id("present").getText());
-        Assert.assertEquals("com.vaadin.flow.component.html.NativeButton",
-                $(SpanElement.class).id("name").getText());
+        Assert.assertEquals("true", $(SpanElement.class).id("present").getText());
+        Assert.assertEquals("com.vaadin.flow.component.html.NativeButton", $(SpanElement.class).id("name").getText());
 
     }
 }

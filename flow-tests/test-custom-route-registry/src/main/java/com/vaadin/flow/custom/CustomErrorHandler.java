@@ -29,14 +29,11 @@ import com.vaadin.flow.router.HasErrorParameter;
  * This should not be available through the CustomRouteRegistry.
  */
 @Tag(Tag.DIV)
-public class CustomErrorHandler extends Component
-        implements HasErrorParameter<IllegalAccessException> {
+public class CustomErrorHandler extends Component implements HasErrorParameter<IllegalAccessException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<IllegalAccessException> parameter) {
-        getElement().appendChild(
-                new Span("This shouldn't be available").getElement());
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<IllegalAccessException> parameter) {
+        getElement().appendChild(new Span("This shouldn't be available").getElement());
         return 0;
     }
 }

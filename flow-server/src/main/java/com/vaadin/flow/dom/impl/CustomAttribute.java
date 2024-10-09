@@ -25,9 +25,8 @@ import java.util.Set;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Callback for handling attributes with special semantics. This is used for
- * e.g. <code>class</code> which is assembled from a separate list of tokens
- * instead of being stored as a regular attribute string.
+ * Callback for handling attributes with special semantics. This is used for e.g. <code>class</code> which is assembled
+ * from a separate list of tokens instead of being stored as a regular attribute string.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -51,8 +50,7 @@ public abstract class CustomAttribute implements Serializable {
      *
      * @param name
      *            the name of the attribute
-     * @return and optional custom attribute, or an empty optional if there is
-     *         no attribute with the given name
+     * @return and optional custom attribute, or an empty optional if there is no attribute with the given name
      */
     public static Optional<CustomAttribute> get(String name) {
         return Optional.ofNullable(customAttributes.get(name));
@@ -68,19 +66,16 @@ public abstract class CustomAttribute implements Serializable {
     }
 
     /**
-     * Checks what {@link Element#hasAttribute(String)} should return for this
-     * attribute.
+     * Checks what {@link Element#hasAttribute(String)} should return for this attribute.
      *
      * @param element
      *            the element to check, not <code>null</code>
-     * @return <code>true</code> if the element has a value for this attribute,
-     *         otherwise <code>false</code>
+     * @return <code>true</code> if the element has a value for this attribute, otherwise <code>false</code>
      */
     public abstract boolean hasAttribute(Element element);
 
     /**
-     * Gets the value that should be returned by
-     * {@link Element#getAttribute(String)} for this attribute.
+     * Gets the value that should be returned by {@link Element#getAttribute(String)} for this attribute.
      *
      * @param element
      *            the element to check, not <code>null</code>
@@ -89,8 +84,7 @@ public abstract class CustomAttribute implements Serializable {
     public abstract String getAttribute(Element element);
 
     /**
-     * Sets the value when {@link Element#setAttribute(String, String)} is
-     * called for this attribute.
+     * Sets the value when {@link Element#setAttribute(String, String)} is called for this attribute.
      *
      * @param element
      *            the element for which to set the value, not <code>null</code>
@@ -100,12 +94,10 @@ public abstract class CustomAttribute implements Serializable {
     public abstract void setAttribute(Element element, String value);
 
     /**
-     * Removes the attribute when {@link Element#removeAttribute(String)} is
-     * called for this attribute.
+     * Removes the attribute when {@link Element#removeAttribute(String)} is called for this attribute.
      *
      * @param element
-     *            the element for which to remove the attribute, not
-     *            <code>null</code>
+     *            the element for which to remove the attribute, not <code>null</code>
      */
     public abstract void removeAttribute(Element element);
 }

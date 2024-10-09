@@ -26,14 +26,11 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class ParentThemeView extends Div {
 
     public ParentThemeView() {
-        Image snowFlake = new Image(
-                "themes/reusable-theme/fortawesome/icons/snowflake.svg",
-                "snowflake");
+        Image snowFlake = new Image("themes/reusable-theme/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("5em");
         snowFlake.setId("snowflake");
         add(snowFlake);
 
-        add(new Paragraph(
-                "This is a Paragraph to test the applied parent styles"));
+        add(new Paragraph("This is a Paragraph to test the applied parent styles"));
     }
 }

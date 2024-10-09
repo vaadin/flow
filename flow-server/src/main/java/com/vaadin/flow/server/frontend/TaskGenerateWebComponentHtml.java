@@ -36,12 +36,10 @@ public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
     private File webComponentHtml;
 
     /**
-     * Create a task to generate <code>web-component.html</code> in the frontend
-     * directory if necessary.
+     * Create a task to generate <code>web-component.html</code> in the frontend directory if necessary.
      *
      * @param options
-     *            frontend directory is to check if the file already exists
-     *            there.
+     *            frontend directory is to check if the file already exists there.
      */
     TaskGenerateWebComponentHtml(Options options) {
         // The user is generally not supposed to modify web-component.html and
@@ -50,14 +48,12 @@ public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
         // It is however generated in the frontend directory like index.html
         // since it is easier to serve it from there in terms of the Vite
         // config.
-        webComponentHtml = new File(options.getFrontendDirectory(),
-                WEB_COMPONENT_HTML);
+        webComponentHtml = new File(options.getFrontendDirectory(), WEB_COMPONENT_HTML);
     }
 
     @Override
     protected String getFileContent() throws IOException {
-        try (InputStream indexStream = getClass()
-                .getResourceAsStream(WEB_COMPONENT_HTML)) {
+        try (InputStream indexStream = getClass().getResourceAsStream(WEB_COMPONENT_HTML)) {
             return IOUtils.toString(indexStream, UTF_8);
         }
     }

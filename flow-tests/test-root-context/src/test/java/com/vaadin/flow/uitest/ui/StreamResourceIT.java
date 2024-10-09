@@ -57,8 +57,7 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
     }
 
     @Test
-    public void detact_attachALink_getDynamicVaadinResource()
-            throws IOException {
+    public void detact_attachALink_getDynamicVaadinResource() throws IOException {
         open();
 
         findElement(By.id("detach-attach")).click();
@@ -66,19 +65,16 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
         assertDownloadedContent("link", "file%20name");
     }
 
-    private void assertDownloadedContent(String downloadId, String filename)
-            throws IOException {
+    private void assertDownloadedContent(String downloadId, String filename) throws IOException {
         WebElement link = findElement(By.id(downloadId));
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
+        Assert.assertEquals("Anchor element should have router-ignore " + "attribute", "",
                 link.getAttribute("router-ignore"));
         String url = link.getAttribute("href");
 
         getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
 
         try (InputStream stream = download(url)) {
-            List<String> lines = IOUtils.readLines(stream,
-                    StandardCharsets.UTF_8);
+            List<String> lines = IOUtils.readLines(stream, StandardCharsets.UTF_8);
             String text = lines.stream().collect(Collectors.joining());
             Assert.assertEquals("foo", text);
         }

@@ -27,8 +27,8 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 /**
  * Annotates getters for which properties should be synchronized to the server.
  * <p>
- * By default deduces the name of the property from the name of the getter
- * unless it has been specified using {@link #property()}.
+ * By default deduces the name of the property from the name of the getter unless it has been specified using
+ * {@link #property()}.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -39,9 +39,8 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 public @interface Synchronize {
 
     /**
-     * The DOM event(s) to use for synchronization. Those events need to be
-     * fired by the root element of the webcomponent (or bubbled to the root
-     * element). Events from inner elements of the webcomponent that are not
+     * The DOM event(s) to use for synchronization. Those events need to be fired by the root element of the
+     * webcomponent (or bubbled to the root element). Events from inner elements of the webcomponent that are not
      * bubbled to the outside are not intercepted by the server.
      *
      * @return the name of the DOM event(s) to use for synchronization
@@ -49,24 +48,20 @@ public @interface Synchronize {
     String[] value();
 
     /**
-     * The name of the property to synchronize. By default deduced from the name
-     * of the getter.
+     * The name of the property to synchronize. By default deduced from the name of the getter.
      *
      * @return the name of the property to synchronize
      */
     String property() default "";
 
     /**
-     * Controls updates for the property from the client side to the server side
-     * when the element is disabled.
+     * Controls updates for the property from the client side to the server side when the element is disabled.
      * <p>
-     * When multiple update mode settings are defined for the same property, the
-     * most permissive mode is used. This means that there might be unexpected
-     * updates for a disabled component if multiple parties independently
-     * configure different aspects for the same component. This is based on the
-     * assumption that if a property is explicitly safe to update for disabled
-     * components in one context, then the nature of that property is probably
-     * such that it's also safe to update in other contexts.
+     * When multiple update mode settings are defined for the same property, the most permissive mode is used. This
+     * means that there might be unexpected updates for a disabled component if multiple parties independently configure
+     * different aspects for the same component. This is based on the assumption that if a property is explicitly safe
+     * to update for disabled components in one context, then the nature of that property is probably such that it's
+     * also safe to update in other contexts.
      *
      * @return the property update mode for disabled element
      */

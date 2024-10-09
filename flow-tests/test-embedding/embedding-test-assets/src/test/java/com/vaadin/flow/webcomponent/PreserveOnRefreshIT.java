@@ -45,109 +45,85 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
 
     @Test
     public void twoPreservedComponents_modifiedValue_shouldNot_propagateToOtherComponentAfterRefresh() {
-        Assert.assertEquals(MODIFIED + " input should be empty", "",
-                getValue(MODIFIED));
-        Assert.assertEquals(UNMODIFIED + " input should be empty", "",
-                getValue(UNMODIFIED));
+        Assert.assertEquals(MODIFIED + " input should be empty", "", getValue(MODIFIED));
+        Assert.assertEquals(UNMODIFIED + " input should be empty", "", getValue(UNMODIFIED));
 
         final String EXPECTED = "expected text";
         writeInInput(MODIFIED, EXPECTED);
 
-        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED,
-                getValue(MODIFIED));
-        Assert.assertEquals(UNMODIFIED + " input should be empty", "",
-                getValue(UNMODIFIED));
+        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED, getValue(MODIFIED));
+        Assert.assertEquals(UNMODIFIED + " input should be empty", "", getValue(UNMODIFIED));
 
         refreshPage();
 
-        Assert.assertEquals(MODIFIED + " input should have text after refresh",
-                EXPECTED, getValue(MODIFIED));
-        Assert.assertEquals(UNMODIFIED + " input should be empty after refresh",
-                "", getValue(UNMODIFIED));
+        Assert.assertEquals(MODIFIED + " input should have text after refresh", EXPECTED, getValue(MODIFIED));
+        Assert.assertEquals(UNMODIFIED + " input should be empty after refresh", "", getValue(UNMODIFIED));
     }
 
     @Test
     public void preservedAndUnpreservedComponents_onlyPreservedComponent_should_keepNewValueAfterRefresh() {
-        Assert.assertEquals(MODIFIED + " input should be empty", "",
-                getValue(MODIFIED));
-        Assert.assertEquals(NO_PRESERVE + " input should be empty", "",
-                getValue(NO_PRESERVE));
+        Assert.assertEquals(MODIFIED + " input should be empty", "", getValue(MODIFIED));
+        Assert.assertEquals(NO_PRESERVE + " input should be empty", "", getValue(NO_PRESERVE));
 
         final String EXPECTED = "expected text";
         writeInInput(MODIFIED, EXPECTED);
         writeInInput(NO_PRESERVE, EXPECTED);
 
-        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED,
-                getValue(MODIFIED));
-        Assert.assertEquals(NO_PRESERVE + " input should have text", EXPECTED,
-                getValue(NO_PRESERVE));
+        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED, getValue(MODIFIED));
+        Assert.assertEquals(NO_PRESERVE + " input should have text", EXPECTED, getValue(NO_PRESERVE));
 
         refreshPage();
 
-        Assert.assertEquals(MODIFIED + " input should have text after refresh",
-                EXPECTED, getValue(MODIFIED));
-        Assert.assertEquals(
-                NO_PRESERVE + " input should be empty after refresh", "",
-                getValue(NO_PRESERVE));
+        Assert.assertEquals(MODIFIED + " input should have text after refresh", EXPECTED, getValue(MODIFIED));
+        Assert.assertEquals(NO_PRESERVE + " input should be empty after refresh", "", getValue(NO_PRESERVE));
     }
 
     @Test
     public void whenValueIsChangedOnPreservingComponent_should_preserveTheNewValueAfterRefresh() {
-        Assert.assertEquals(MODIFIED + " input should be empty", "",
-                getValue(MODIFIED));
+        Assert.assertEquals(MODIFIED + " input should be empty", "", getValue(MODIFIED));
 
         // first value change and refresh
         final String EXPECTED_1 = "expected text";
         writeInInput(MODIFIED, EXPECTED_1);
 
-        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED_1,
-                getValue(MODIFIED));
+        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED_1, getValue(MODIFIED));
 
         refreshPage();
-        Assert.assertEquals(MODIFIED + " input should display first changed "
-                + "text after refresh", EXPECTED_1, getValue(MODIFIED));
+        Assert.assertEquals(MODIFIED + " input should display first changed " + "text after refresh", EXPECTED_1,
+                getValue(MODIFIED));
 
         // second value change and refresh
         final String EXPECTED_2 = EXPECTED_1 + " with additions";
         writeInInput(MODIFIED, " with additions");
 
-        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED_2,
-                getValue(MODIFIED));
+        Assert.assertEquals(MODIFIED + " input should have text", EXPECTED_2, getValue(MODIFIED));
 
         refreshPage();
-        Assert.assertEquals(MODIFIED + " input should display second changed "
-                + "text after refresh", EXPECTED_2, getValue(MODIFIED));
+        Assert.assertEquals(MODIFIED + " input should display second changed " + "text after refresh", EXPECTED_2,
+                getValue(MODIFIED));
     }
 
     @Test
     public void openingToAnotherPageWithSameComponents_should_preserveComponentWithoutChangedIdAttribute() {
         /*
-         * Currently, when preserving exported components, they are identified
-         * by window name, component's tag, and generated id of the embedded web
-         * component or id of the wrapping element (if available). Since windows
-         * name does not necessarily change when page changes, and generated id
-         * is only defined by type of the web component and its order on the
-         * page, the component cannot be reliably identified uniquely. In order
-         * to assure uniqueness, the user must provide id for the component. If
-         * if is provided, the uniqueness can be assured between pages. Contents
-         * are synchronized between locations in two cases: - embedded element
-         * has the same id as its counter-part in the different location. -
-         * component does not have user-assigned id and has the same generated
-         * id on both locations (this happens, if the component has the same
-         * counted index within the component type between pages)
+         * Currently, when preserving exported components, they are identified by window name, component's tag, and
+         * generated id of the embedded web component or id of the wrapping element (if available). Since windows name
+         * does not necessarily change when page changes, and generated id is only defined by type of the web component
+         * and its order on the page, the component cannot be reliably identified uniquely. In order to assure
+         * uniqueness, the user must provide id for the component. If if is provided, the uniqueness can be assured
+         * between pages. Contents are synchronized between locations in two cases: - embedded element has the same id
+         * as its counter-part in the different location. - component does not have user-assigned id and has the same
+         * generated id on both locations (this happens, if the component has the same counted index within the
+         * component type between pages)
          */
 
         final String TEXT_CONTENTS = "black cat";
 
-        TestBenchElement noIdElement = findTagWithoutId(
-                PRESERVE_ON_REFRESH_TAG);
+        TestBenchElement noIdElement = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
 
-        Assert.assertEquals(MODIFIED + " input should be empty", "",
-                getValue(MODIFIED));
-        Assert.assertEquals(UNMODIFIED + " input should be empty", "",
-                getValue(UNMODIFIED));
-        Assert.assertEquals("Input without id should be empty", "",
-                getValue(noIdElement));
+        Assert.assertEquals(MODIFIED + " input should be empty", "", getValue(MODIFIED));
+        Assert.assertEquals(UNMODIFIED + " input should be empty", "", getValue(UNMODIFIED));
+        Assert.assertEquals("Input without id should be empty", "", getValue(noIdElement));
 
         writeInInput(MODIFIED, TEXT_CONTENTS);
         writeInInput(UNMODIFIED, TEXT_CONTENTS);
@@ -156,18 +132,14 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
         relocateTo("preserveOnRefreshSecondary.html");
 
         // same place, same id
-        Assert.assertEquals(MODIFIED + " input should have preserved state",
-                TEXT_CONTENTS, getValue(MODIFIED));
+        Assert.assertEquals(MODIFIED + " input should have preserved state", TEXT_CONTENTS, getValue(MODIFIED));
 
         // same place, different id
-        Assert.assertEquals(NEW_ID + " input should be empty", "",
-                getValue(NEW_ID));
+        Assert.assertEquals(NEW_ID + " input should be empty", "", getValue(NEW_ID));
 
         // same place, no assigned id
-        TestBenchElement noIdElement2 = findTagWithoutId(
-                PRESERVE_ON_REFRESH_TAG);
-        Assert.assertEquals("Input without id should have preserved state",
-                TEXT_CONTENTS, getValue(noIdElement2));
+        TestBenchElement noIdElement2 = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
+        Assert.assertEquals("Input without id should have preserved state", TEXT_CONTENTS, getValue(noIdElement2));
     }
 
     private String getValue(String id) {
@@ -194,14 +166,11 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
     }
 
     private void relocateTo(String page) {
-        getCommandExecutor().executeScript("location.assign('"
-                + Constants.PAGE_CONTEXT + "/" + page + "')");
+        getCommandExecutor().executeScript("location.assign('" + Constants.PAGE_CONTEXT + "/" + page + "')");
         waitForElementVisible(By.id(MODIFIED));
     }
 
     private TestBenchElement findTagWithoutId(String tag) {
-        return $(tag).all().stream()
-                .filter(webElement -> webElement.getAttribute("id").isEmpty())
-                .findFirst().get();
+        return $(tag).all().stream().filter(webElement -> webElement.getAttribute("id").isEmpty()).findFirst().get();
     }
 }

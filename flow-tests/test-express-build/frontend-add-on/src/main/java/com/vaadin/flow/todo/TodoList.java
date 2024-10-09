@@ -39,8 +39,7 @@ public class TodoList extends LitTemplate {
     private void addNewTodoItem(Todo todo) {
         TodoElement todoElement = new TodoElement(todo);
 
-        todoElement.getElement().addEventListener("remove",
-                e -> getElement().removeChild(todoElement.getElement()));
+        todoElement.getElement().addEventListener("remove", e -> getElement().removeChild(todoElement.getElement()));
 
         todoElement.addStateChangeListener(() -> {
             if (todoElement.isCompleted()) {

@@ -28,8 +28,7 @@ import org.junit.Test;
 public class ShortcutSerializationTest {
 
     @Test
-    public void addShortcutForLifecycleOwner_serializationWorks()
-            throws Exception {
+    public void addShortcutForLifecycleOwner_serializationWorks() throws Exception {
         Component owner = new FakeComponent();
         UI ui = new UI();
         Component[] components = new Component[] { ui };
@@ -42,8 +41,7 @@ public class ShortcutSerializationTest {
     }
 
     @Test
-    public void addAndRemoverShortcutForLifecycleOwner_serializationWorks()
-            throws Exception {
+    public void addAndRemoverShortcutForLifecycleOwner_serializationWorks() throws Exception {
         Component owner = new FakeComponent();
         UI ui = new UI();
         Component[] components = new Component[] { ui };
@@ -65,8 +63,7 @@ public class ShortcutSerializationTest {
         }
     }
 
-    private Object deserialize(byte[] bytes)
-            throws IOException, ClassNotFoundException {
+    private Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 ObjectInputStream ois = new ObjectInputStream(bais)) {
             return ois.readObject();

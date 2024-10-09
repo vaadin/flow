@@ -54,8 +54,7 @@ public class RoutingTestBase {
     @Route("greeting")
     @PageTitle("Custom Title")
     @Tag(Tag.DIV)
-    public static class GreetingNavigationTarget extends Component
-            implements HasUrlParameter<String> {
+    public static class GreetingNavigationTarget extends Component implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
@@ -64,8 +63,7 @@ public class RoutingTestBase {
     @Route("greeting/other")
     @PageTitle("Custom Title")
     @Tag(Tag.DIV)
-    public static class OtherGreetingNavigationTarget extends Component
-            implements HasUrlParameter<String> {
+    public static class OtherGreetingNavigationTarget extends Component implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
@@ -109,8 +107,8 @@ public class RoutingTestBase {
     protected Router router;
 
     @Before
-    public void init() throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
+    public void init()
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         router = new Router(new TestRouteRegistry());
     }
 }

@@ -35,8 +35,7 @@ public class UpgradeElementIT extends ChromeBrowserTest {
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         WebElement input = template.$(TestBenchElement.class).id("input");
-        new Actions(getDriver()).click(input).sendKeys("foo")
-                .sendKeys(Keys.ENTER).build().perform();
+        new Actions(getDriver()).click(input).sendKeys("foo").sendKeys(Keys.ENTER).build().perform();
         WebElement result = findElement(By.id("text-update"));
         Assert.assertEquals("foo", result.getText());
     }

@@ -31,24 +31,20 @@ import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuc
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-class VaadinSimpleUrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler
-        implements Serializable {
+class VaadinSimpleUrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler implements Serializable {
 
     @Override
-    public void onLogoutSuccess(HttpServletRequest request,
-            HttpServletResponse response, Authentication authentication)
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
         handle(request, response, authentication);
     }
 
     @Override
-    protected void handle(HttpServletRequest request,
-            HttpServletResponse response, Authentication authentication)
+    protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
         if (response == null) {
             // tolerate null response without failing
-            String targetUrl = determineTargetUrl(request, response,
-                    authentication);
+            String targetUrl = determineTargetUrl(request, response, authentication);
             getRedirectStrategy().sendRedirect(request, response, targetUrl);
         } else {
             super.handle(request, response, authentication);

@@ -38,34 +38,20 @@ public class InitialExtendedClientDetailsIT extends ChromeBrowserTest {
     public void verifyClientDetails() {
         open();
 
-        Assert.assertThat(findElement(By.id("screenWidth")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("screenHeight")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("windowInnerWidth")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("windowInnerHeight")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("bodyClientWidth")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("bodyClientHeight")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("timezoneOffset")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("timeZoneId")).getText(),
-                not(isEmptyString()));
-        Assert.assertThat(findElement(By.id("rawTimezoneOffset")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("DSTSavings")).getText(),
-                isParseableAsInteger());
-        Assert.assertThat(findElement(By.id("DSTInEffect")).getText(),
-                isOneOf("true", "false"));
-        Assert.assertThat(findElement(By.id("currentDate")).getText(),
-                not(isEmptyString()));
-        Assert.assertThat(findElement(By.id("touchDevice")).getText(),
-                isOneOf("true", "false"));
-        Assert.assertThat(findElement(By.id("windowName")).getText(),
-                not(isEmptyString()));
+        Assert.assertThat(findElement(By.id("screenWidth")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("screenHeight")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("windowInnerWidth")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("windowInnerHeight")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("bodyClientWidth")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("bodyClientHeight")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("timezoneOffset")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("timeZoneId")).getText(), not(isEmptyString()));
+        Assert.assertThat(findElement(By.id("rawTimezoneOffset")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("DSTSavings")).getText(), isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("DSTInEffect")).getText(), isOneOf("true", "false"));
+        Assert.assertThat(findElement(By.id("currentDate")).getText(), not(isEmptyString()));
+        Assert.assertThat(findElement(By.id("touchDevice")).getText(), isOneOf("true", "false"));
+        Assert.assertThat(findElement(By.id("windowName")).getText(), not(isEmptyString()));
     }
 
 }

@@ -24,8 +24,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 
 /**
- * An element for displaying the Todo item. Task can be edited and completion of
- * task can be set in the element.
+ * An element for displaying the Todo item. Task can be edited and completion of task can be set in the element.
  */
 @Tag("todo-element")
 @JsModule("./TodoElement.js")
@@ -52,16 +51,13 @@ public class TodoElement extends LitTemplate {
         getElement().setProperty("task", todo.getTask());
         getElement().setProperty("user", todo.getUser());
         getElement().setProperty("rid", todo.getRid());
-        getElement().setProperty("time", todo.getTime()
-                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy - HH:mm")));
+        getElement().setProperty("time", todo.getTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy - HH:mm")));
         getElement().setProperty("completed", todo.isCompleted());
     }
 
     private void addChangeListeners(Todo todo) {
-        getElement().addPropertyChangeListener("completed",
-                event -> taskCompleted());
-        getElement().addPropertyChangeListener("task",
-                event -> todo.setTask(getElement().getAttribute("task")));
+        getElement().addPropertyChangeListener("completed", event -> taskCompleted());
+        getElement().addPropertyChangeListener("task", event -> todo.setTask(getElement().getAttribute("task")));
     }
 
     private void taskCompleted() {
@@ -89,8 +85,7 @@ public class TodoElement extends LitTemplate {
     }
 
     /**
-     * Add a state change listener that is informed when the completed state
-     * changes.
+     * Add a state change listener that is informed when the completed state changes.
      *
      * @param listener
      *            runnable method to be used as a listener

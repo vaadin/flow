@@ -24,11 +24,9 @@ public class VaadinServletRequestTest {
 
     @Test
     public void getContentLengthLong_delegateToServletRequestGetContentLengthLong() {
-        HttpServletRequest servletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest servletRequest = Mockito.mock(HttpServletRequest.class);
 
-        VaadinServletRequest request = new VaadinServletRequest(servletRequest,
-                null);
+        VaadinServletRequest request = new VaadinServletRequest(servletRequest, null);
         request.getContentLengthLong();
         Mockito.verify(servletRequest).getContentLengthLong();
     }

@@ -37,8 +37,7 @@ public interface ArrayUpdater extends Serializable {
      */
     public interface Update extends Serializable {
         /**
-         * Clears {@code length} elements in array from the {@code start}
-         * position.
+         * Clears {@code length} elements in array from the {@code start} position.
          *
          * @param start
          *            the start index

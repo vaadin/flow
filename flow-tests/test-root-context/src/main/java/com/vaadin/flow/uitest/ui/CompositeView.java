@@ -61,8 +61,7 @@ public class CompositeView extends AbstractDivView {
             return input.getValue();
         }
 
-        public void addNameChangeListener(
-                ComponentEventListener<NameChangeEvent> nameChangeListener) {
+        public void addNameChangeListener(ComponentEventListener<NameChangeEvent> nameChangeListener) {
             addListener(NameChangeEvent.class, nameChangeListener);
         }
 
@@ -84,8 +83,7 @@ public class CompositeView extends AbstractDivView {
         nameField.setId(CompositeNestedView.NAME_FIELD_ID);
         nameField.addNameChangeListener(e -> {
             name.setText("Name on server: " + nameField.getName());
-            String text = "Name value changed to " + nameField.getName()
-                    + " on the ";
+            String text = "Name value changed to " + nameField.getName() + " on the ";
             if (e.isFromClient()) {
                 text += "client";
             } else {
@@ -99,13 +97,11 @@ public class CompositeView extends AbstractDivView {
 
         Input serverInput = new Input();
         serverInput.setId(SERVER_INPUT_ID);
-        NativeButton serverInputButton = createButton("Set",
-                SERVER_INPUT_BUTTON_ID, e -> {
-                    nameField.setName(serverInput.getValue());
-                    serverInput.clear();
-                });
-        add(new Text("Enter a value to set the name on the server"),
-                serverInput, serverInputButton);
+        NativeButton serverInputButton = createButton("Set", SERVER_INPUT_BUTTON_ID, e -> {
+            nameField.setName(serverInput.getValue());
+            serverInput.clear();
+        });
+        add(new Text("Enter a value to set the name on the server"), serverInput, serverInputButton);
 
         add(new Hr());
 

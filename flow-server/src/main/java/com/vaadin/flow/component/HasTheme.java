@@ -46,21 +46,18 @@ public interface HasTheme extends HasElement {
      *
      * @param themeName
      *            the theme name to remove, not <code>null</code>
-     * @return <code>true</code> if the theme name was removed,
-     *         <code>false</code> if the theme list didn't contain the theme
-     *         name
+     * @return <code>true</code> if the theme name was removed, <code>false</code> if the theme list didn't contain the
+     *         theme name
      */
     default boolean removeThemeName(String themeName) {
         return getThemeNames().remove(themeName);
     }
 
     /**
-     * Sets the theme names of this component. This method overwrites any
-     * previous set theme names.
+     * Sets the theme names of this component. This method overwrites any previous set theme names.
      *
      * @param themeName
-     *            a space-separated string of theme names to set, or empty
-     *            string to remove all theme names
+     *            a space-separated string of theme names to set, or empty string to remove all theme names
      */
     default void setThemeName(String themeName) {
         getElement().setAttribute("theme", themeName);
@@ -69,18 +66,16 @@ public interface HasTheme extends HasElement {
     /**
      * Gets the theme names for this component.
      *
-     * @return a space-separated string of theme names, empty string if there
-     *         are no theme names or <code>null</code> if attribute (theme) is
-     *         not set at all
+     * @return a space-separated string of theme names, empty string if there are no theme names or <code>null</code> if
+     *         attribute (theme) is not set at all
      */
     default String getThemeName() {
         return getElement().getAttribute("theme");
     }
 
     /**
-     * Gets the set of theme names used for this element. The returned set can
-     * be modified to add or remove theme names. The contents of the set is also
-     * reflected in the value of the <code>theme</code> attribute.
+     * Gets the set of theme names used for this element. The returned set can be modified to add or remove theme names.
+     * The contents of the set is also reflected in the value of the <code>theme</code> attribute.
      *
      * @see Element#getThemeList()
      *
@@ -96,8 +91,7 @@ public interface HasTheme extends HasElement {
      * @param themeName
      *            the theme name to set or remove, not <code>null</code>
      * @param set
-     *            <code>true</code> to set the theme name, <code>false</code> to
-     *            remove it
+     *            <code>true</code> to set the theme name, <code>false</code> to remove it
      */
     default void setThemeName(String themeName, boolean set) {
         getThemeNames().set(themeName, set);
@@ -108,16 +102,15 @@ public interface HasTheme extends HasElement {
      *
      * @param themeName
      *            the theme name to check for
-     * @return <code>true</code> if the component has the given theme name,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the component has the given theme name, <code>false</code> otherwise
      */
     default boolean hasThemeName(String themeName) {
         return getThemeNames().contains(themeName);
     }
 
     /**
-     * Adds one or more theme names to this component. Multiple theme names can
-     * be specified by using multiple parameters.
+     * Adds one or more theme names to this component. Multiple theme names can be specified by using multiple
+     * parameters.
      *
      * @param themeNames
      *            the theme name or theme names to be added to the component
@@ -127,8 +120,8 @@ public interface HasTheme extends HasElement {
     }
 
     /**
-     * Removes one or more theme names from component. Multiple theme names can
-     * be specified by using multiple parameters.
+     * Removes one or more theme names from component. Multiple theme names can be specified by using multiple
+     * parameters.
      *
      * @param themeNames
      *            the theme name or theme names to be removed from the component

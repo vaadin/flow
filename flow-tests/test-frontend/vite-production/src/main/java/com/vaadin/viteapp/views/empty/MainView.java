@@ -24,8 +24,7 @@ public class MainView extends Div {
     public static final String OUTSIDE_RESULT = "outsideResult";
 
     public MainView() {
-        Image img = new Image("themes/vite-production/images/plant.png",
-                "placeholder plant");
+        Image img = new Image("themes/vite-production/images/plant.png", "placeholder plant");
         img.setId(PLANT);
         img.setWidth("200px");
         add(img);
@@ -41,11 +40,10 @@ public class MainView extends Div {
         setSizeFull();
         getStyle().set("text-align", "center");
 
-        NativeButton checkOutsideJs = new NativeButton("Check outside JS",
-                e -> {
-                    getElement().executeJs(OUTSIDE_RESULT
-                            + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
-                });
+        NativeButton checkOutsideJs = new NativeButton("Check outside JS", e -> {
+            getElement().executeJs(
+                    OUTSIDE_RESULT + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
+        });
         checkOutsideJs.setId(OUTSIDE);
         add(checkOutsideJs);
         Paragraph outsideStatus = new Paragraph();

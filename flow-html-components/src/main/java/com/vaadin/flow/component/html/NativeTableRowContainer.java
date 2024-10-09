@@ -46,21 +46,20 @@ interface NativeTableRowContainer extends HasOrderedComponents {
      * @return all the rows in the container.
      */
     default List<NativeTableRow> getRows() {
-        return getChildren().filter(c -> c instanceof NativeTableRow)
-                .map(c -> (NativeTableRow) c).collect(Collectors.toList());
+        return getChildren().filter(c -> c instanceof NativeTableRow).map(c -> (NativeTableRow) c)
+                .collect(Collectors.toList());
     }
 
     /**
      * Returns the row at the given index.
      *
      * @param index
-     *            the index of the row. Must be greater than 0 and less than the
-     *            size of the container.
+     *            the index of the row. Must be greater than 0 and less than the size of the container.
      * @return the row at position {@code index}.
      */
     default Optional<NativeTableRow> getRow(int index) {
-        return getChildren().filter(c -> c instanceof NativeTableRow)
-                .map(c -> (NativeTableRow) c).skip(index).findFirst();
+        return getChildren().filter(c -> c instanceof NativeTableRow).map(c -> (NativeTableRow) c).skip(index)
+                .findFirst();
     }
 
     /**
@@ -101,8 +100,8 @@ interface NativeTableRowContainer extends HasOrderedComponents {
      * Remove a list of rows from the container.
      *
      * @param rows
-     *            the rows to remove. If a component in the list is not a child
-     *            of the container, it will throw an exception.
+     *            the rows to remove. If a component in the list is not a child of the container, it will throw an
+     *            exception.
      */
     default void removeRows(NativeTableRow... rows) {
         remove(rows);
@@ -127,8 +126,8 @@ interface NativeTableRowContainer extends HasOrderedComponents {
     }
 
     /**
-     * Replaces the row at a given position with a new one. If both rows exist
-     * within the container, they swap positions.
+     * Replaces the row at a given position with a new one. If both rows exist within the container, they swap
+     * positions.
      *
      * @param index
      *            the index of the row to replace.

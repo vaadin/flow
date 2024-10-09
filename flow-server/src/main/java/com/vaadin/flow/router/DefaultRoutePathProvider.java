@@ -25,8 +25,7 @@ import org.osgi.service.component.annotations.Component;
  * @since
  *
  */
-@Component(service = RoutePathProvider.class, property = Constants.SERVICE_RANKING
-        + ":Integer=" + Integer.MIN_VALUE)
+@Component(service = RoutePathProvider.class, property = Constants.SERVICE_RANKING + ":Integer=" + Integer.MIN_VALUE)
 public class DefaultRoutePathProvider implements RoutePathProvider {
 
     @Override
@@ -47,9 +46,7 @@ public class DefaultRoutePathProvider implements RoutePathProvider {
                 return "";
             }
             if (simpleName.endsWith("View")) {
-                return simpleName
-                        .substring(0, simpleName.length() - "View".length())
-                        .toLowerCase();
+                return simpleName.substring(0, simpleName.length() - "View".length()).toLowerCase();
             }
             return simpleName.toLowerCase();
         }

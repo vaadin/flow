@@ -47,11 +47,9 @@ public class StateNode {
 
     private final JsMap<Double, NodeFeature> features = JsCollections.map();
 
-    private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
-            .set();
+    private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections.set();
 
-    private final JsSet<Function<StateNode, Boolean>> domNodeSetListeners = JsCollections
-            .set();
+    private final JsSet<Function<StateNode, Boolean>> domNodeSetListeners = JsCollections.set();
 
     private final JsMap<Class<?>, Object> nodeData = JsCollections.map();
 
@@ -89,8 +87,7 @@ public class StateNode {
     }
 
     /**
-     * Gets the node list with the given id. Creates a new node list if one
-     * doesn't already exist.
+     * Gets the node list with the given id. Creates a new node list if one doesn't already exist.
      *
      * @param id
      *            the id of the list
@@ -110,8 +107,7 @@ public class StateNode {
     }
 
     /**
-     * Gets the node map with the given id. Creates a new map if one doesn't
-     * already exist.
+     * Gets the node map with the given id. Creates a new map if one doesn't already exist.
      *
      * @param id
      *            the id of the map
@@ -135,8 +131,7 @@ public class StateNode {
      *
      * @param id
      *            the id of the feature
-     * @return <code>true</code> if this node has the given feature; otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if this node has the given feature; otherwise <code>false</code>
      */
     public boolean hasFeature(int id) {
         return features.has(Double.valueOf(id));
@@ -153,8 +148,7 @@ public class StateNode {
     }
 
     /**
-     * Gets a JSON object representing the contents of this node. Only intended
-     * for debugging purposes.
+     * Gets a JSON object representing the contents of this node. Only intended for debugging purposes.
      *
      * @return a JSON representation
      */
@@ -164,8 +158,7 @@ public class StateNode {
         forEachFeature((feature, featureId) -> {
             JsonValue json = feature.getDebugJson();
             if (json != null) {
-                object.put(tree.getFeatureDebugName(featureId.intValue()),
-                        json);
+                object.put(tree.getFeatureDebugName(featureId.intValue()), json);
             }
         });
 
@@ -178,22 +171,19 @@ public class StateNode {
      *
      * @see StateTree#unregisterNode(StateNode)
      *
-     * @return <code>true</code> if this node has been unregistered;
-     *         <code>false</code> if the node is still registered
+     * @return <code>true</code> if this node has been unregistered; <code>false</code> if the node is still registered
      */
     public boolean isUnregistered() {
         return unregistered;
     }
 
     /**
-     * Unregisters this node, causing all registered node unregister listeners
-     * to be notified.
+     * Unregisters this node, causing all registered node unregister listeners to be notified.
      *
      * @see #addUnregisterListener(NodeUnregisterListener)
      */
     public void unregister() {
-        assert tree.getNode(id) == null
-                : "Node should no longer be findable from the tree";
+        assert tree.getNode(id) == null : "Node should no longer be findable from the tree";
 
         assert !unregistered : "Node is already unregistered";
 
@@ -201,8 +191,7 @@ public class StateNode {
 
         NodeUnregisterEvent event = new NodeUnregisterEvent(this);
 
-        JsSet<NodeUnregisterListener> copy = JsCollections
-                .set(unregisterListeners);
+        JsSet<NodeUnregisterListener> copy = JsCollections.set(unregisterListeners);
         copy.forEach(l -> l.onUnregister(event));
         // Don't refer to the listeners which won't be ever used again
         unregisterListeners.clear();
@@ -224,8 +213,7 @@ public class StateNode {
     /**
      * Gets the DOM node associated with this state node.
      *
-     * @return the DOM node, or <code>null</code> if no DOM node has been
-     *         associated with this state node
+     * @return the DOM node, or <code>null</code> if no DOM node has been associated with this state node
      */
     public Node getDomNode() {
         return domNode;
@@ -238,12 +226,10 @@ public class StateNode {
      *            the associated DOM node
      */
     public void setDomNode(Node node) {
-        assert domNode == null || node == null
-                : "StateNode already has a DOM node";
+        assert domNode == null || node == null : "StateNode already has a DOM node";
 
         domNode = node;
-        JsSet<Function<StateNode, Boolean>> copy = JsCollections
-                .set(domNodeSetListeners);
+        JsSet<Function<StateNode, Boolean>> copy = JsCollections.set(domNodeSetListeners);
         copy.forEach(listener -> {
             if (listener.apply(this) == Boolean.TRUE) {
                 domNodeSetListeners.delete(listener);
@@ -252,18 +238,16 @@ public class StateNode {
     }
 
     /**
-     * Adds a listener to get a notification when the DOM Node is set for this
-     * {@link StateNode}.
+     * Adds a listener to get a notification when the DOM Node is set for this {@link StateNode}.
      * <p>
-     * The listener return value is used to decide whether the listener should
-     * be removed immediately if it returns {@code true}.
+     * The listener return value is used to decide whether the listener should be removed immediately if it returns
+     * {@code true}.
      *
      * @param listener
      *            listener to add
      * @return an event remover that can be used for removing the added listener
      */
-    public EventRemover addDomNodeSetListener(
-            Function<StateNode, Boolean> listener) {
+    public EventRemover addDomNodeSetListener(Function<StateNode, Boolean> listener) {
         domNodeSetListeners.add(listener);
         return () -> domNodeSetListeners.delete(listener);
     }
@@ -290,10 +274,9 @@ public class StateNode {
     /**
      * Stores the {@code object} in the {@link StateNode} instance.
      * <p>
-     * The {@code object} may represent any kind of data. This data can be
-     * retrieved later on via the {@link #getNodeData(Class)} providing the
-     * class of the object. So make sure you are using some custom type for your
-     * data to avoid clash with other types.
+     * The {@code object} may represent any kind of data. This data can be retrieved later on via the
+     * {@link #getNodeData(Class)} providing the class of the object. So make sure you are using some custom type for
+     * your data to avoid clash with other types.
      *
      * @see #getNodeData(Class)
      *
@@ -307,11 +290,9 @@ public class StateNode {
     }
 
     /**
-     * Gets the object previously stored by the {@link #setNodeData(Object)} by
-     * its type.
+     * Gets the object previously stored by the {@link #setNodeData(Object)} by its type.
      * <p>
-     * If there is no stored object with the given type then the method returns
-     * {@code null}.
+     * If there is no stored object with the given type then the method returns {@code null}.
      *
      * @param clazz
      *            the type of the object to get

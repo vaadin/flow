@@ -30,8 +30,7 @@ public class LongPollingPushIT extends ChromeBrowserTest {
     @Test
     public void openPage_thereAreNoErrorsInTheConsole() {
         open();
-        checkLogsForErrors(msg -> msg.contains("sockjs-node")
-                || msg.contains("[WDS] Disconnected!"));
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS] Disconnected!"));
 
         waitForElementNotPresent(By.id("child"));
 
@@ -49,8 +48,7 @@ public class LongPollingPushIT extends ChromeBrowserTest {
          *
          * This entry may be ignored.
          */
-        checkLogsForErrors(msg -> msg.contains("sockjs-node")
-                || msg.contains("[WDS] Disconnected!"));
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS] Disconnected!"));
     }
 
 }

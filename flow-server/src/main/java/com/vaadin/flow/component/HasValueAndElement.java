@@ -27,8 +27,7 @@ import com.vaadin.flow.component.HasValue.ValueChangeEvent;
  * @param <V>
  *            the value type
  */
-public interface HasValueAndElement<E extends ValueChangeEvent<V>, V>
-        extends HasValue<E, V>, HasElement, HasEnabled {
+public interface HasValueAndElement<E extends ValueChangeEvent<V>, V> extends HasValue<E, V>, HasElement, HasEnabled {
 
     @Override
     default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {

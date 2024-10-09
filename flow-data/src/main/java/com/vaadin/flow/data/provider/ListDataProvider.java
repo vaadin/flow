@@ -31,8 +31,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  *            data type
  * @since 1.0
  */
-public class ListDataProvider<T>
-        extends AbstractDataProvider<T, SerializablePredicate<T>>
+public class ListDataProvider<T> extends AbstractDataProvider<T, SerializablePredicate<T>>
         implements InMemoryDataProvider<T> {
 
     private SerializableComparator<T> sortOrder = null;
@@ -44,9 +43,8 @@ public class ListDataProvider<T>
     /**
      * Constructs a new ListDataProvider.
      * <p>
-     * No protective copy is made of the list, and changes in the provided
-     * backing Collection will be visible via this data provider. The caller
-     * should copy the list if necessary.
+     * No protective copy is made of the list, and changes in the provided backing Collection will be visible via this
+     * data provider. The caller should copy the list if necessary.
      *
      * @param items
      *            the initial data, not null
@@ -70,9 +68,7 @@ public class ListDataProvider<T>
     public Stream<T> fetch(Query<T, SerializablePredicate<T>> query) {
         Stream<T> stream = getFilteredStream(query);
 
-        Optional<Comparator<T>> comparing = Stream
-                .of(query.getInMemorySorting(), sortOrder)
-                .filter(Objects::nonNull)
+        Optional<Comparator<T>> comparing = Stream.of(query.getInMemorySorting(), sortOrder).filter(Objects::nonNull)
                 .reduce((c1, c2) -> c1.thenComparing(c2));
 
         if (comparing.isPresent()) {
@@ -87,8 +83,7 @@ public class ListDataProvider<T>
         return (int) getFilteredStream(query).count();
     }
 
-    private Stream<T> getFilteredStream(
-            Query<T, SerializablePredicate<T>> query) {
+    private Stream<T> getFilteredStream(Query<T, SerializablePredicate<T>> query) {
         Stream<T> stream = backend.stream();
 
         // Apply our own filters first so that query filters never see the items

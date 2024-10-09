@@ -71,8 +71,7 @@ public @interface Inline {
     Position position() default Position.APPEND;
 
     /**
-     * The element type to inline as. Default is automatic which tries to figure
-     * out the correct type by file ending.
+     * The element type to inline as. Default is automatic which tries to figure out the correct type by file ending.
      *
      * @return inline element type
      */

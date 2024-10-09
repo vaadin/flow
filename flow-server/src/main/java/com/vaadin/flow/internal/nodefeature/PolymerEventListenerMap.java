@@ -29,8 +29,8 @@ import com.vaadin.flow.shared.Registration;
 import elemental.json.Json;
 
 /**
- * Map of PolymerTemplate events with server-side listeners. The key set of this
- * map describes the event types for which event date is present.
+ * Map of PolymerTemplate events with server-side listeners. The key set of this map describes the event types for which
+ * event date is present.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -39,11 +39,9 @@ import elemental.json.Json;
  */
 public class PolymerEventListenerMap extends NodeMap {
     /*
-     * Shared empty serializable set instance to avoid allocating lots of memory
-     * for the default case of no event data expressions at all. Cannot easily
-     * make the instance immutable while still implementing ArrayList. To avoid
-     * accidental modification, we instead assert that it's empty when it's
-     * used.
+     * Shared empty serializable set instance to avoid allocating lots of memory for the default case of no event data
+     * expressions at all. Cannot easily make the instance immutable while still implementing ArrayList. To avoid
+     * accidental modification, we instead assert that it's empty when it's used.
      */
     private static final ArrayList<String> emptyArrayList = new ArrayList<>(0);
 
@@ -87,8 +85,7 @@ public class PolymerEventListenerMap extends NodeMap {
         }
 
         if (eventDataExpressions.length != 0) {
-            List<String> eventData = new ArrayList<>(
-                    typeToExpressions.get(methodName));
+            List<String> eventData = new ArrayList<>(typeToExpressions.get(methodName));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
                 // Update the constant pool reference if the value has changed
@@ -102,10 +99,8 @@ public class PolymerEventListenerMap extends NodeMap {
         return () -> removeListener(methodName);
     }
 
-    private static ConstantPoolKey createConstantPoolKey(
-            List<String> eventData) {
-        return new ConstantPoolKey(eventData.stream().map(Json::create)
-                .collect(JsonUtils.asArray()));
+    private static ConstantPoolKey createConstantPoolKey(List<String> eventData) {
+        return new ConstantPoolKey(eventData.stream().map(Json::create).collect(JsonUtils.asArray()));
     }
 
     private void removeListener(String eventType) {

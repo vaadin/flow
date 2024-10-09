@@ -22,8 +22,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
-public class CustomInMemoryDataProvider<T>
-        extends AbstractDataProvider<T, SerializablePredicate<T>>
+public class CustomInMemoryDataProvider<T> extends AbstractDataProvider<T, SerializablePredicate<T>>
         implements InMemoryDataProvider<T> {
 
     private List<T> items;

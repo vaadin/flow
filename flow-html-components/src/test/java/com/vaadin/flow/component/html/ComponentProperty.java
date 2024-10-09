@@ -33,9 +33,8 @@ public class ComponentProperty {
     public Class<?> type;
     private Class<? extends Component> componentType;
 
-    public <T> ComponentProperty(Class<? extends Component> componentType,
-            String name, Class<T> type, T defaultValue, T otherValue,
-            boolean optional, boolean removeDefault) {
+    public <T> ComponentProperty(Class<? extends Component> componentType, String name, Class<T> type, T defaultValue,
+            T otherValue, boolean optional, boolean removeDefault) {
         this.componentType = componentType;
         this.name = name;
         this.propertyOrAttributeTag = name;
@@ -54,10 +53,8 @@ public class ComponentProperty {
         return optional;
     }
 
-    public Object getUsingGetter(Component component)
-            throws NoSuchMethodException, SecurityException,
-            IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
+    public Object getUsingGetter(Component component) throws NoSuchMethodException, SecurityException,
+            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         return getGetter().invoke(component);
     }
@@ -82,17 +79,14 @@ public class ComponentProperty {
     public void setToOtherValueUsingSetter(Component component) {
         try {
             setUsingSetter(component, otherValue);
-        } catch (IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException e) {
             throw new AssertionError(e);
         }
     }
 
-    public void setUsingSetter(Component component, Object someValue)
-            throws IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException, NoSuchMethodException,
-            SecurityException {
+    public void setUsingSetter(Component component, Object someValue) throws IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         getSetter().invoke(component, someValue);
     }
 

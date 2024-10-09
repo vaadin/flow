@@ -44,8 +44,7 @@ public class FileIOUtils {
     }
 
     /**
-     * Writes the given content into the given file unless the file already
-     * contains that content.
+     * Writes the given content into the given file unless the file already contains that content.
      *
      * @param file
      *            the file to write to
@@ -55,15 +54,12 @@ public class FileIOUtils {
      * @throws IOException
      *             if something went wrong
      */
-    public static boolean writeIfChanged(File file, List<String> content)
-            throws IOException {
-        return writeIfChanged(file,
-                content.stream().collect(Collectors.joining("\n")));
+    public static boolean writeIfChanged(File file, List<String> content) throws IOException {
+        return writeIfChanged(file, content.stream().collect(Collectors.joining("\n")));
     }
 
     /**
-     * Writes the given content into the given file unless the file already
-     * contains that content.
+     * Writes the given content into the given file unless the file already contains that content.
      *
      * @param file
      *            the file to write to
@@ -73,18 +69,15 @@ public class FileIOUtils {
      * @throws IOException
      *             if something went wrong
      */
-    public static boolean writeIfChanged(File file, String content)
-            throws IOException {
+    public static boolean writeIfChanged(File file, String content) throws IOException {
         String existingFileContent = getExistingFileContent(file);
         if (content.equals(existingFileContent)) {
             // Do not write the same contents to avoid frontend recompiles
-            log().debug("skipping writing to file '{}' because content matches",
-                    file);
+            log().debug("skipping writing to file '{}' because content matches", file);
             return false;
         }
 
-        log().debug("writing to file '{}' because content does not match",
-                file);
+        log().debug("writing to file '{}' because content does not match", file);
 
         FileUtils.forceMkdirParent(file);
         FileUtils.writeStringToFile(file, content, StandardCharsets.UTF_8);
@@ -105,8 +98,7 @@ public class FileIOUtils {
     /**
      * Try determining the project folder from the classpath.
      *
-     * @return A file referring to the project folder or null if the folder
-     *         could not be determined
+     * @return A file referring to the project folder or null if the folder could not be determined
      */
     public static File getProjectFolderFromClasspath() {
         try {
@@ -121,8 +113,7 @@ public class FileIOUtils {
 
     }
 
-    static File getProjectFolderFromClasspath(URL rootFolder)
-            throws URISyntaxException {
+    static File getProjectFolderFromClasspath(URL rootFolder) throws URISyntaxException {
         // URI decodes the path so that e.g. " " works correctly
         // Path.of makes windows paths work correctly
         Path path = Path.of(rootFolder.toURI());
@@ -153,28 +144,23 @@ public class FileIOUtils {
      *            glob pattern to filter files, e.g. "*.js".
      * @return a list of files matching a given pattern
      * @throws IOException
-     *             if an I/O error is thrown while walking through the tree in
-     *             base directory
+     *             if an I/O error is thrown while walking through the tree in base directory
      */
-    public static List<Path> getFilesByPattern(Path baseDir, String pattern)
-            throws IOException {
+    public static List<Path> getFilesByPattern(Path baseDir, String pattern) throws IOException {
         if (baseDir == null || !baseDir.toFile().exists()) {
-            throw new IllegalArgumentException(
-                    "Base directory is empty or doesn't exist: " + baseDir);
+            throw new IllegalArgumentException("Base directory is empty or doesn't exist: " + baseDir);
         }
 
         if (pattern == null || pattern.isBlank()) {
             pattern = "*";
         }
 
-        PathMatcher matcher = FileSystems.getDefault()
-                .getPathMatcher("glob:" + pattern);
+        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
 
         List<Path> matchingPaths = new ArrayList<>();
         Files.walkFileTree(baseDir, new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path file,
-                    BasicFileAttributes attrs) {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if (matcher.matches(file)) {
                     matchingPaths.add(file);
                 }
@@ -195,16 +181,14 @@ public class FileIOUtils {
      *            a function to compare the normalized strings
      * @return true if the normalized strings are equal, false otherwise
      */
-    public static boolean compareIgnoringIndentationAndEOL(String content1,
-            String content2, BiPredicate<String, String> compareFn) {
-        return compareFn.test(replaceIndentationAndEOL(content1),
-                replaceIndentationAndEOL(content2));
+    public static boolean compareIgnoringIndentationAndEOL(String content1, String content2,
+            BiPredicate<String, String> compareFn) {
+        return compareFn.test(replaceIndentationAndEOL(content1), replaceIndentationAndEOL(content2));
     }
 
     /**
-     * Compare two file content strings ignoring indentation, EOL characters and
-     * white space where it does not matter (before and after {, }, ' and :
-     * chars).
+     * Compare two file content strings ignoring indentation, EOL characters and white space where it does not matter
+     * (before and after {, }, ' and : chars).
      *
      * @param content1
      *            the first file content to compare
@@ -214,33 +198,27 @@ public class FileIOUtils {
      *            a function to compare the normalized strings
      * @return true if the normalized strings are equal, false otherwise
      */
-    public static boolean compareIgnoringIndentationEOLAndWhiteSpace(
-            String content1, String content2,
+    public static boolean compareIgnoringIndentationEOLAndWhiteSpace(String content1, String content2,
             BiPredicate<String, String> compareFn) {
-        return compareFn.test(
-                replaceWhiteSpace(replaceIndentationAndEOL(content1)),
+        return compareFn.test(replaceWhiteSpace(replaceIndentationAndEOL(content1)),
                 replaceWhiteSpace(replaceIndentationAndEOL(content2)));
     }
 
     // Normalize EOL and removes indentation and potential EOL at the end of the
     // FILE
     private static String replaceIndentationAndEOL(String text) {
-        return text.replace("\r\n", "\n").replaceFirst("\n$", "")
-                .replaceAll("(?m)^(\\s)+", "");
+        return text.replace("\r\n", "\n").replaceFirst("\n$", "").replaceAll("(?m)^(\\s)+", "");
     }
 
     private static String replaceWhiteSpace(String text) {
-        for (String character : Stream.of("{", "}", ":", "'", "[", "]")
-                .toList()) {
+        for (String character : Stream.of("{", "}", ":", "'", "[", "]").toList()) {
             text = replaceWhiteSpaceAround(text, character);
         }
         return text;
     }
 
-    private static String replaceWhiteSpaceAround(String text,
-            String character) {
-        return text
-                .replaceAll(String.format("(\\s)*\\%s", character), character)
+    private static String replaceWhiteSpaceAround(String text, String character) {
+        return text.replaceAll(String.format("(\\s)*\\%s", character), character)
                 .replaceAll(String.format("\\%s(\\s)*", character), character);
     }
 }

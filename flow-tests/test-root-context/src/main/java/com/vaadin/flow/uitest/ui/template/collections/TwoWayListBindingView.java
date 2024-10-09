@@ -33,8 +33,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.TwoWayListBindingView", layout = ViewTestLayout.class)
 @Tag("two-way-list-binding")
 @JsModule("./TwoWayListBinding.js")
-public class TwoWayListBindingView
-        extends PolymerTemplate<TwoWayListBindingView.TwoWayBindingModel>
+public class TwoWayListBindingView extends PolymerTemplate<TwoWayListBindingView.TwoWayBindingModel>
         implements HasComponents {
 
     public interface TwoWayBindingModel extends TemplateModel {
@@ -48,11 +47,9 @@ public class TwoWayListBindingView
     }
 
     public TwoWayListBindingView() {
-        getModel().setMessages(
-                Arrays.asList(new Message("foo"), new Message("bar")));
+        getModel().setMessages(Arrays.asList(new Message("foo"), new Message("bar")));
 
-        add(AbstractDivView.createButton("Show listing", "enable",
-                event -> getModel().setEnable(true)));
+        add(AbstractDivView.createButton("Show listing", "enable", event -> getModel().setEnable(true)));
     }
 
     @EventHandler

@@ -251,8 +251,7 @@ public abstract class AbstractNodeTest {
 
         parent.appendChild(child1, child2, child3);
 
-        List<Element> children = parent.getChildren()
-                .collect(Collectors.toList());
+        List<Element> children = parent.getChildren().collect(Collectors.toList());
         Assert.assertEquals(Arrays.asList(child1, child2, child3), children);
     }
 
@@ -378,10 +377,9 @@ public abstract class AbstractNodeTest {
         parent.setChild(0, child1);
 
         AtomicInteger changesCausedBySetChild = new AtomicInteger(0);
-        parent.getNode().getFeature(ElementChildrenList.class)
-                .collectChanges(change -> {
-                    changesCausedBySetChild.incrementAndGet();
-                });
+        parent.getNode().getFeature(ElementChildrenList.class).collectChanges(change -> {
+            changesCausedBySetChild.incrementAndGet();
+        });
         Assert.assertEquals(0, changesCausedBySetChild.get());
     }
 
@@ -545,12 +543,10 @@ public abstract class AbstractNodeTest {
 
     protected void checkIsNotChild(Node<?> parent, Element child) {
         Assert.assertNotEquals(child.getParentNode(), parent);
-        Assert.assertFalse(
-                parent.getChildren().anyMatch(el -> el.equals(child)));
+        Assert.assertFalse(parent.getChildren().anyMatch(el -> el.equals(child)));
     }
 
-    protected void assertMethodsReturnType(Class<? extends Node<?>> clazz,
-            Set<String> ignore) {
+    protected void assertMethodsReturnType(Class<? extends Node<?>> clazz, Set<String> ignore) {
         for (Method method : clazz.getMethods()) {
             if (method.getDeclaringClass().equals(Object.class)) {
                 continue;
@@ -564,19 +560,13 @@ public abstract class AbstractNodeTest {
             if (method.isBridge()) {
                 continue;
             }
-            if (method.getName().startsWith("get")
-                    || method.getName().startsWith("has")
-                    || method.getName().startsWith("is")
-                    || ignore.contains(method.getName())) {
+            if (method.getName().startsWith("get") || method.getName().startsWith("has")
+                    || method.getName().startsWith("is") || ignore.contains(method.getName())) {
                 // Ignore
             } else {
                 // Setters and such
-                Type returnType = GenericTypeReflector
-                        .getExactReturnType(method, clazz);
-                Assert.assertEquals(
-                        "Method " + method.getName()
-                                + " has invalid return type",
-                        clazz, returnType);
+                Type returnType = GenericTypeReflector.getExactReturnType(method, clazz);
+                Assert.assertEquals("Method " + method.getName() + " has invalid return type", clazz, returnType);
             }
         }
     }

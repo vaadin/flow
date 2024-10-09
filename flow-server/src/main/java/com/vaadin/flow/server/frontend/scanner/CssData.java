@@ -19,9 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * A container for CssImport information when scanning the class path. It
- * overrides equals and hashCode in order to use HashSet to eliminate
- * duplicates.
+ * A container for CssImport information when scanning the class path. It overrides equals and hashCode in order to use
+ * HashSet to eliminate duplicates.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -101,8 +100,7 @@ public final class CssData implements Serializable {
             return false;
         }
         CssData that = (CssData) other;
-        return Objects.equals(value, that.value) && Objects.equals(id, that.id)
-                && Objects.equals(include, that.include)
+        return Objects.equals(value, that.value) && Objects.equals(id, that.id) && Objects.equals(include, that.include)
                 && Objects.equals(themefor, that.themefor);
     }
 
@@ -113,8 +111,7 @@ public final class CssData implements Serializable {
 
     @Override
     public String toString() {
-        return "value: " + value + (id != null ? " id:" + id : "")
-                + (include != null ? " include:" + include : "")
+        return "value: " + value + (id != null ? " id:" + id : "") + (include != null ? " include:" + include : "")
                 + (themefor != null ? " themefor:" + themefor : "");
     }
 }

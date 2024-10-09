@@ -17,8 +17,7 @@
 package com.vaadin.flow.server.auth;
 
 /**
- * Invalid type of and MenuAccessControl, not implementing the required
- * interface.
+ * Invalid type of and MenuAccessControl, not implementing the required interface.
  */
 public class InvalidMenuAccessControl {
 }

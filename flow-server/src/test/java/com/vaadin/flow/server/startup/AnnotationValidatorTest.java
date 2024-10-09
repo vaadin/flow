@@ -85,64 +85,49 @@ public class AnnotationValidatorTest {
     }
 
     @Test
-    public void onStartUp_all_failing_anotations_are_reported()
-            throws ServletException {
+    public void onStartUp_all_failing_anotations_are_reported() throws ServletException {
         try {
-            annotationValidator.process(Stream
-                    .of(InlineViewportWithParent.class,
-                            BodySizeViewportWithParent.class,
-                            ViewPortViewportWithParent.class)
-                    .collect(Collectors.toSet()), servletContext);
+            annotationValidator.process(Stream.of(InlineViewportWithParent.class, BodySizeViewportWithParent.class,
+                    ViewPortViewportWithParent.class).collect(Collectors.toSet()), servletContext);
             Assert.fail("No exception was thrown for faulty setup.");
         } catch (InvalidApplicationConfigurationException iace) {
             String errorMessage = iace.getMessage();
-            Assert.assertTrue("Exception has wrong beginning.",
-                    errorMessage.startsWith(ERROR_MESSAGE_BEGINNING));
-            Assert.assertTrue("Exception was missing Inline exception",
-                    errorMessage.contains(String.format(NON_PARENT,
-                            InlineViewportWithParent.class.getName(),
-                            "@" + Inline.class.getSimpleName())));
+            Assert.assertTrue("Exception has wrong beginning.", errorMessage.startsWith(ERROR_MESSAGE_BEGINNING));
+            Assert.assertTrue("Exception was missing Inline exception", errorMessage.contains(String.format(NON_PARENT,
+                    InlineViewportWithParent.class.getName(), "@" + Inline.class.getSimpleName())));
             Assert.assertTrue("Exception was missing Viewport exception",
-                    errorMessage.contains(String.format(NON_PARENT,
-                            ViewPortViewportWithParent.class.getName(),
+                    errorMessage.contains(String.format(NON_PARENT, ViewPortViewportWithParent.class.getName(),
                             "@" + Viewport.class.getSimpleName())));
             Assert.assertTrue("Exception was missing BodySize exception",
-                    errorMessage.contains(String.format(NON_PARENT,
-                            BodySizeViewportWithParent.class.getName(),
+                    errorMessage.contains(String.format(NON_PARENT, BodySizeViewportWithParent.class.getName(),
                             "@" + BodySize.class.getSimpleName())));
         }
     }
 
     @Test
-    public void onStartUp_all_failing_annotations_are_marked_for_class()
-            throws ServletException {
+    public void onStartUp_all_failing_annotations_are_marked_for_class() throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
-        expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
-                NON_PARENT, FailingMultiAnnotation.class.getName(),
-                "@" + BodySize.class.getSimpleName() + ", " + "@"
-                        + Inline.class.getSimpleName()));
+        expectedEx.expectMessage(
+                ERROR_MESSAGE_BEGINNING + String.format(NON_PARENT, FailingMultiAnnotation.class.getName(),
+                        "@" + BodySize.class.getSimpleName() + ", " + "@" + Inline.class.getSimpleName()));
 
-        annotationValidator.process(Stream.of(FailingMultiAnnotation.class)
-                .collect(Collectors.toSet()), servletContext);
+        annotationValidator.process(Stream.of(FailingMultiAnnotation.class).collect(Collectors.toSet()),
+                servletContext);
 
         Assert.fail("No exception was thrown for faulty setup.");
     }
 
     @Test
-    public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
-            throws ServletException {
-        annotationValidator
-                .process(Stream.of(MultiAnnotation.class, AbstractMain.class)
-                        .collect(Collectors.toSet()), servletContext);
+    public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes() throws ServletException {
+        annotationValidator.process(Stream.of(MultiAnnotation.class, AbstractMain.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
-    public static class HandlesTypesTest
-            implements ServletContainerInitializer {
+    public static class HandlesTypesTest implements ServletContainerInitializer {
 
         @Override
-        public void onStartup(Set<Class<?>> c, ServletContext ctx)
-                throws ServletException {
+        public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
         }
     }
 
@@ -153,8 +138,7 @@ public class AnnotationValidatorTest {
     @HandlesTypes({ HasErrorParameter.class, HasSomethingElse.class })
     public class HasErrorParameterTest implements ServletContainerInitializer {
         @Override
-        public void onStartup(Set<Class<?>> c, ServletContext ctx)
-                throws ServletException {
+        public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
         }
     }
 
@@ -168,8 +152,7 @@ public class AnnotationValidatorTest {
     public static class DummyHasErrorParameter implements HasErrorParameter {
 
         @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter parameter) {
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter parameter) {
             return 0;
         }
 
@@ -179,11 +162,9 @@ public class AnnotationValidatorTest {
     public void selfReferencesAreRemoved() {
         HandlesTypesTest annotationTest = new HandlesTypesTest();
         assertTypes(annotationTest, Set.of(Viewport.class), Set.of());
-        assertTypes(annotationTest,
-                Set.of(Viewport.class, AnnotationValidatorTest.class),
+        assertTypes(annotationTest, Set.of(Viewport.class, AnnotationValidatorTest.class),
                 Set.of(AnnotationValidatorTest.class));
-        assertTypes(annotationTest,
-                Set.of(Viewport.class, AnnotationValidatorTest.class),
+        assertTypes(annotationTest, Set.of(Viewport.class, AnnotationValidatorTest.class),
                 Set.of(AnnotationValidatorTest.class));
 
         ExtendedHandlesTypesTest extendedAnnotationTest = new ExtendedHandlesTypesTest();
@@ -191,22 +172,16 @@ public class AnnotationValidatorTest {
 
         HasErrorParameterTest interfaceTest = new HasErrorParameterTest();
 
-        assertTypes(interfaceTest, Set.of(DummyHasErrorParameter.class),
+        assertTypes(interfaceTest, Set.of(DummyHasErrorParameter.class), Set.of(DummyHasErrorParameter.class));
+        assertTypes(interfaceTest, Set.of(DummyHasErrorParameter.class), Set.of(DummyHasErrorParameter.class));
+        assertTypes(interfaceTest, Set.of(HasErrorParameter.class, DummyHasErrorParameter.class),
                 Set.of(DummyHasErrorParameter.class));
-        assertTypes(interfaceTest, Set.of(DummyHasErrorParameter.class),
-                Set.of(DummyHasErrorParameter.class));
-        assertTypes(interfaceTest,
-                Set.of(HasErrorParameter.class, DummyHasErrorParameter.class),
-                Set.of(DummyHasErrorParameter.class));
-        assertTypes(interfaceTest,
-                Set.of(HasErrorParameter.class, HasSomethingElse.class,
-                        DummyHasErrorParameter.class, DummySomethingElse.class),
-                Set.of(DummyHasErrorParameter.class, DummySomethingElse.class));
+        assertTypes(interfaceTest, Set.of(HasErrorParameter.class, HasSomethingElse.class, DummyHasErrorParameter.class,
+                DummySomethingElse.class), Set.of(DummyHasErrorParameter.class, DummySomethingElse.class));
     }
 
-    private void assertTypes(Object testObject, Set<Class<?>> input,
-            Set<Class<?>> expectedOutput) {
-        Assert.assertEquals(expectedOutput, AbstractAnnotationValidator
-                .removeHandleTypesSelfReferences(input, testObject));
+    private void assertTypes(Object testObject, Set<Class<?>> input, Set<Class<?>> expectedOutput) {
+        Assert.assertEquals(expectedOutput,
+                AbstractAnnotationValidator.removeHandleTypesSelfReferences(input, testObject));
     }
 }

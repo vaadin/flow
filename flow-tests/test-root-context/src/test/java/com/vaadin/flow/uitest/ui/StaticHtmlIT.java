@@ -26,7 +26,6 @@ public class StaticHtmlIT extends ChromeBrowserTest {
     @Test
     public void ensureStaticHtmlShown() {
         open();
-        Assert.assertEquals("NetBeans plugin",
-                findElement(By.xpath("//a[@href='/netbeans']")).getText());
+        Assert.assertEquals("NetBeans plugin", findElement(By.xpath("//a[@href='/netbeans']")).getText());
     }
 }

@@ -4,8 +4,7 @@ import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
-public class TestSecurityContextHolderStrategy
-        implements SecurityContextHolderStrategy {
+public class TestSecurityContextHolderStrategy implements SecurityContextHolderStrategy {
     @Override
     public void clearContext() {
     }

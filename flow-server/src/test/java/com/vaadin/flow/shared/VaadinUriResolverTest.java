@@ -15,8 +15,7 @@ public class VaadinUriResolverTest {
     @Test
     public void testContextProtocol() {
         NullContextVaadinUriResolver resolver = new NullContextVaadinUriResolver();
-        assertEquals("http://someplace/my-component.html",
-                resolver.resolveVaadinUri("context://my-component.html"));
+        assertEquals("http://someplace/my-component.html", resolver.resolveVaadinUri("context://my-component.html"));
     }
 
 }

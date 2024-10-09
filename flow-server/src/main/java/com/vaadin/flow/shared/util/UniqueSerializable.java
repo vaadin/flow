@@ -20,8 +20,8 @@ import java.io.Serializable;
 /**
  * A base class for generating an unique object that is serializable.
  * <p>
- * This class is abstract but has no abstract methods to force users to create
- * an anonymous inner class. Otherwise each instance will not be unique.
+ * This class is abstract but has no abstract methods to force users to create an anonymous inner class. Otherwise each
+ * instance will not be unique.
  *
  * @author Vaadin Ltd
  * @since 1.0

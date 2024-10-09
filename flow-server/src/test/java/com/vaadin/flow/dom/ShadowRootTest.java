@@ -56,8 +56,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         parent.appendChild(child);
 
-        child.addDetachListener(
-                e -> Assert.fail("Child should not be detached"));
+        child.addDetachListener(e -> Assert.fail("Child should not be detached"));
         parent.insertChild(0, child);
     }
 
@@ -253,8 +252,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         child.addAttachListener(event -> {
             Assert.assertNotNull(event.getSource().getNode().getOwner());
-            Assert.assertNotEquals(NullOwner.get(),
-                    event.getSource().getNode().getOwner());
+            Assert.assertNotEquals(NullOwner.get(), event.getSource().getNode().getOwner());
         });
         child.addAttachListener(event -> attached.incrementAndGet());
 
@@ -272,8 +270,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         child.addDetachListener(event -> {
             Assert.assertNotNull(event.getSource().getNode().getOwner());
-            Assert.assertNotEquals(NullOwner.get(),
-                    event.getSource().getNode().getOwner());
+            Assert.assertNotEquals(NullOwner.get(), event.getSource().getNode().getOwner());
         });
         child.addDetachListener(event -> detached.incrementAndGet());
 
@@ -299,10 +296,8 @@ public class ShadowRootTest extends AbstractNodeTest {
         ShadowRootStateProvider.get().visit(subject.getNode(), visitor);
 
         Assert.assertEquals(1, visitor.getVisited().size());
-        Assert.assertEquals(subject,
-                visitor.getVisited().keySet().iterator().next());
-        Assert.assertEquals(null,
-                visitor.getVisited().values().iterator().next());
+        Assert.assertEquals(subject, visitor.getVisited().keySet().iterator().next());
+        Assert.assertEquals(null, visitor.getVisited().values().iterator().next());
     }
 
     @Test
@@ -317,9 +312,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         Assert.assertTrue(map.size() > 1);
 
-        Assert.assertEquals(
-                "The collected descendants doesn't match expected descendatns",
-                map, visitor.getVisited());
+        Assert.assertEquals("The collected descendants doesn't match expected descendatns", map, visitor.getVisited());
     }
 
     private ShadowRoot createHierarchy(Map<Node<?>, ElementType> map) {
@@ -339,8 +332,8 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         Element virtualGrandChild = ElementFactory.createDiv();
 
-        shadowChild.getStateProvider().appendVirtualChild(shadowChild.getNode(),
-                virtualGrandChild, NodeProperties.INJECT_BY_ID, "id");
+        shadowChild.getStateProvider().appendVirtualChild(shadowChild.getNode(), virtualGrandChild,
+                NodeProperties.INJECT_BY_ID, "id");
 
         map.put(virtualGrandChild, ElementType.VIRTUAL_ATTACHED);
 

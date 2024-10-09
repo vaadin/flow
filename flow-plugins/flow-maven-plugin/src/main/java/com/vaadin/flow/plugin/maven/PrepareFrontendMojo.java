@@ -30,11 +30,10 @@ import org.codehaus.plexus.build.BuildContext;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 
 /**
- * This goal checks that node and npm tools are installed and creates or updates
- * `package.json` and the frontend build tool configuration files.
+ * This goal checks that node and npm tools are installed and creates or updates `package.json` and the frontend build
+ * tool configuration files.
  * <p>
- * Copies frontend resources available inside `.jar` dependencies to
- * `node_modules` when building a jar package.
+ * Copies frontend resources available inside `.jar` dependencies to `node_modules` when building a jar package.
  *
  * @since 2.0
  */
@@ -63,8 +62,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             BuildFrontendUtil.prepareFrontend(this);
         } catch (Exception exception) {
-            throw new MojoFailureException(
-                    "Could not execute prepare-frontend goal.", exception);
+            throw new MojoFailureException("Could not execute prepare-frontend goal.", exception);
         }
 
     }

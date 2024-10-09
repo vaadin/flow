@@ -36,25 +36,21 @@ public class PreserveOnRefreshNavigationView extends Div {
         add(createNavigationButton("two"));
         add(createNavigationButton("three"));
 
-        getElement().appendChild(createRouterLink("one"),
-                createRouterLink("two"), createRouterLink("three"));
+        getElement().appendChild(createRouterLink("one"), createRouterLink("two"), createRouterLink("three"));
     }
 
     private NativeButton createNavigationButton(String param) {
-        NativeButton button = new NativeButton("navigate to " + param,
-                ev -> selfNavigate(param));
+        NativeButton button = new NativeButton("navigate to " + param, ev -> selfNavigate(param));
         button.setId("button-" + param);
         return button;
     }
 
     private void selfNavigate(String param) {
-        UI.getCurrent().navigate(PreserveOnRefreshNavigationView.class,
-                QueryParameters.of("param", param));
+        UI.getCurrent().navigate(PreserveOnRefreshNavigationView.class, QueryParameters.of("param", param));
     }
 
     private Element createRouterLink(String param) {
-        Element routerLink = ElementFactory.createRouterLink(
-                VIEW_PATH + "?param=" + param, "link to " + param);
+        Element routerLink = ElementFactory.createRouterLink(VIEW_PATH + "?param=" + param, "link to " + param);
         routerLink.setAttribute("id", "link-" + param);
         return routerLink;
     }

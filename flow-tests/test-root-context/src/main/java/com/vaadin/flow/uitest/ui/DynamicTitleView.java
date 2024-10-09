@@ -7,13 +7,12 @@ import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DynamicTitleView", layout = ViewTestLayout.class)
-public class DynamicTitleView extends AbstractDivView
-        implements HasDynamicTitle {
+public class DynamicTitleView extends AbstractDivView implements HasDynamicTitle {
 
     @Override
     protected void onShow() {
-        getElement().removeAllChildren().appendChild(new Element(Tag.DIV)
-                .setText("Dynamic").setAttribute("id", "dynamic"));
+        getElement().removeAllChildren()
+                .appendChild(new Element(Tag.DIV).setText("Dynamic").setAttribute("id", "dynamic"));
     }
 
     @Override

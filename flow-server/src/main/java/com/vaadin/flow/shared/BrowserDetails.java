@@ -18,8 +18,7 @@ package com.vaadin.flow.shared;
 import java.io.Serializable;
 
 /**
- * Parses the user agent string from the browser and provides information about
- * the browser.
+ * Parses the user agent string from the browser and provides information about the browser.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -75,25 +74,21 @@ public class BrowserDetails implements Serializable {
         userAgent = userAgent.toLowerCase();
 
         // browser engine name
-        isGecko = userAgent.contains("gecko") && !userAgent.contains("webkit")
-                && !userAgent.contains("trident/");
+        isGecko = userAgent.contains("gecko") && !userAgent.contains("webkit") && !userAgent.contains("trident/");
         isPresto = userAgent.contains(" presto/");
         isTrident = userAgent.contains("trident/");
         isWebKit = !isTrident && userAgent.contains("applewebkit");
 
         // browser name
-        isChrome = userAgent.contains(CHROME) || userAgent.contains(" crios/")
-                || userAgent.contains(HEADLESSCHROME);
+        isChrome = userAgent.contains(CHROME) || userAgent.contains(" crios/") || userAgent.contains(HEADLESSCHROME);
         isOpera = userAgent.contains("opera");
-        isIE = userAgent.contains("msie") && !isOpera
-                && !userAgent.contains("webtv");
+        isIE = userAgent.contains("msie") && !isOpera && !userAgent.contains("webtv");
         // IE 11 no longer contains MSIE in the user agent
         isIE = isIE || isTrident;
 
         isSafari = !isChrome && !isIE && userAgent.contains("safari");
         isFirefox = userAgent.contains(" firefox/");
-        if (userAgent.contains(" edge/") || userAgent.contains(" edg/")
-                || userAgent.contains(" edga/")
+        if (userAgent.contains(" edge/") || userAgent.contains(" edg/") || userAgent.contains(" edga/")
                 || userAgent.contains(" edgios/")) {
             isEdge = true;
             isChrome = false;
@@ -115,13 +110,11 @@ public class BrowserDetails implements Serializable {
                     browserEngineVersion = Float.parseFloat(tmp);
                 }
             } else if (isWebKit) {
-                String tmp = userAgent
-                        .substring(userAgent.indexOf("webkit/") + 7);
+                String tmp = userAgent.substring(userAgent.indexOf("webkit/") + 7);
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                 browserEngineVersion = Float.parseFloat(tmp);
             } else if (isTrident) {
-                String tmp = userAgent
-                        .substring(userAgent.indexOf("trident/") + 8);
+                String tmp = userAgent.substring(userAgent.indexOf("trident/") + 8);
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                 browserEngineVersion = Float.parseFloat(tmp);
                 if (browserEngineVersion > 7) {
@@ -157,10 +150,8 @@ public class BrowserDetails implements Serializable {
                     browserMajorVersion = 4 + (int) browserEngineVersion;
                     browserMinorVersion = 0;
                 } else {
-                    String ieVersionString = userAgent
-                            .substring(userAgent.indexOf("msie ") + 5);
-                    ieVersionString = safeSubstring(ieVersionString, 0,
-                            ieVersionString.indexOf(';'));
+                    String ieVersionString = userAgent.substring(userAgent.indexOf("msie ") + 5);
+                    ieVersionString = safeSubstring(ieVersionString, 0, ieVersionString.indexOf(';'));
                     parseVersionString(ieVersionString);
                 }
             } else if (isFirefox) {
@@ -237,9 +228,7 @@ public class BrowserDetails implements Serializable {
             parseAndroidVersion(userAgent);
         } else if (userAgent.contains("linux")) {
             os = OperatingSystem.LINUX;
-        } else if (userAgent.contains("macintosh")
-                || userAgent.contains("mac osx")
-                || userAgent.contains("mac os x")) {
+        } else if (userAgent.contains("macintosh") || userAgent.contains("mac osx") || userAgent.contains("mac os x")) {
             isIPad = userAgent.contains("ipad");
             isIPhone = userAgent.contains("iphone");
             if (isIPad || isIPhone) {
@@ -315,8 +304,7 @@ public class BrowserDetails implements Serializable {
      *            index for version string start
      * @return length of version number
      */
-    private static int getVersionStringLength(String userAgent,
-            int startIndex) {
+    private static int getVersionStringLength(String userAgent, int startIndex) {
         final String versionSubString = userAgent.substring(startIndex);
         int versionBreak = versionSubString.indexOf(" ");
         if (versionBreak == -1) {
@@ -331,11 +319,9 @@ public class BrowserDetails implements Serializable {
             return;
         }
 
-        String osVersionString = safeSubstring(userAgent,
-                userAgent.indexOf("android ") + "android ".length(),
+        String osVersionString = safeSubstring(userAgent, userAgent.indexOf("android ") + "android ".length(),
                 userAgent.length());
-        osVersionString = safeSubstring(osVersionString, 0,
-                osVersionString.indexOf(";"));
+        osVersionString = safeSubstring(osVersionString, 0, osVersionString.indexOf(";"));
         String[] parts = osVersionString.split("\\.");
         parseOsVersion(parts);
     }
@@ -346,8 +332,7 @@ public class BrowserDetails implements Serializable {
             return;
         }
 
-        String osVersionString = safeSubstring(userAgent,
-                userAgent.indexOf("os ") + 3, userAgent.indexOf(" like mac"));
+        String osVersionString = safeSubstring(userAgent, userAgent.indexOf("os ") + 3, userAgent.indexOf(" like mac"));
         String[] parts = osVersionString.split("_");
         parseOsVersion(parts);
     }
@@ -388,13 +373,11 @@ public class BrowserDetails implements Serializable {
             }
             idx2 = versionString.length();
         }
-        String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
-                .replaceAll("[^0-9].*", "");
+        String minorVersionPart = safeSubstring(versionString, idx + 1, idx2).replaceAll("[^0-9].*", "");
         browserMinorVersion = parseVersionPart(minorVersionPart, BROWSER_MINOR);
     }
 
-    private static String safeSubstring(String string, int beginIndex,
-            int endIndex) {
+    private static String safeSubstring(String string, int beginIndex, int endIndex) {
         int trimmedStart, trimmedEnd;
         if (beginIndex < 0) {
             trimmedStart = 0;
@@ -510,8 +493,8 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Returns the version of the browser engine. For WebKit this is an integer
-     * e.g., 532.0. For gecko it is a float e.g., 1.8 or 1.9.
+     * Returns the version of the browser engine. For WebKit this is an integer e.g., 532.0. For gecko it is a float
+     * e.g., 1.8 or 1.9.
      *
      * @return The version of the browser engine
      */
@@ -520,11 +503,9 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Returns the browser major version e.g., 3 for Firefox 3.5, 4 for Chrome
-     * 4, 8 for Internet Explorer 8.
+     * Returns the browser major version e.g., 3 for Firefox 3.5, 4 for Chrome 4, 8 for Internet Explorer 8.
      * <p>
-     * Note that Internet Explorer 8 and newer will return the document mode so
-     * IE8 rendering as IE7 will return 7.
+     * Note that Internet Explorer 8 and newer will return the document mode so IE8 rendering as IE7 will return 7.
      * </p>
      *
      * @return The major version of the browser.
@@ -608,8 +589,7 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Returns the major version of the operating system. Currently only
-     * supported for mobile devices (iOS/Android)
+     * Returns the major version of the operating system. Currently only supported for mobile devices (iOS/Android)
      *
      * @return The major version or -1 if unknown
      */
@@ -618,8 +598,7 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Returns the minor version of the operating system. Currently only
-     * supported for mobile devices (iOS/Android)
+     * Returns the minor version of the operating system. Currently only supported for mobile devices (iOS/Android)
      *
      * @return The minor version or -1 if unknown
      */
@@ -630,8 +609,7 @@ public class BrowserDetails implements Serializable {
     /**
      * Checks if the browser is so old that it simply won't work.
      *
-     * @return true if the browser won't work, false if not the browser is
-     *         supported or might work
+     * @return true if the browser won't work, false if not the browser is supported or might work
      */
     public boolean isTooOldToFunctionProperly() {
         // IE is not supported
@@ -645,8 +623,7 @@ public class BrowserDetails implements Serializable {
         // Safari 14+
         if (isSafari() && getBrowserMajorVersion() < 14) {
             if (isIPhone() && (getOperatingSystemMajorVersion() > 14
-                    || (getOperatingSystemMajorVersion() == 14
-                            && getOperatingSystemMinorVersion() >= 7))) {
+                    || (getOperatingSystemMajorVersion() == 14 && getOperatingSystemMinorVersion() >= 7))) {
                 // #11654
                 return false;
             }

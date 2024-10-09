@@ -35,8 +35,7 @@ public class FileWatcher {
     /**
      * Creates an instance of the file watcher for the given directory.
      * <p>
-     * Reports the changed file or directory as a {@link File} instance to the
-     * provided consumer.
+     * Reports the changed file or directory as a {@link File} instance to the provided consumer.
      * <p>
      * Watches the files create/delete and directory create/delete events.
      *
@@ -46,16 +45,12 @@ public class FileWatcher {
      *            the directory to watch for changes, cannot be empty
      * @throws IOException
      */
-    public FileWatcher(SerializableConsumer<File> onChangeConsumer,
-            File watchDirectory) throws IOException {
-        Objects.requireNonNull(watchDirectory,
-                "Watch directory cannot be null");
-        Objects.requireNonNull(onChangeConsumer,
-                "Change listener cannot be null");
-        watcher = DirectoryWatcher.builder().path(watchDirectory.toPath())
-                .listener(e -> {
-                    onChangeConsumer.accept(e.path().toFile());
-                }).build();
+    public FileWatcher(SerializableConsumer<File> onChangeConsumer, File watchDirectory) throws IOException {
+        Objects.requireNonNull(watchDirectory, "Watch directory cannot be null");
+        Objects.requireNonNull(onChangeConsumer, "Change listener cannot be null");
+        watcher = DirectoryWatcher.builder().path(watchDirectory.toPath()).listener(e -> {
+            onChangeConsumer.accept(e.path().toFile());
+        }).build();
     }
 
     /**

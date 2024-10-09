@@ -37,8 +37,7 @@ public class PolymerIdTestView extends PolymerTemplate<TemplateModel> {
     public PolymerIdTestView() {
         button.addClickListener(e -> {
             String s = content.getText();
-            Integer val = 1
-                    + Integer.parseInt(s == null || s.isEmpty() ? "0" : s);
+            Integer val = 1 + Integer.parseInt(s == null || s.isEmpty() ? "0" : s);
             content.setText(String.valueOf(val));
         });
     }

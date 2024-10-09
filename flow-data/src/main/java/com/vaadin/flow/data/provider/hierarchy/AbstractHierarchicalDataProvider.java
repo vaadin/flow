@@ -20,8 +20,7 @@ import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * Abstract hierarchical data provider implementation which takes care of item
- * refreshes and associated events.
+ * Abstract hierarchical data provider implementation which takes care of item refreshes and associated events.
  *
  * @author Vaadin Ltd
  *
@@ -31,21 +30,18 @@ import com.vaadin.flow.function.SerializableFunction;
  *            filter type
  * @since 1.2
  */
-public abstract class AbstractHierarchicalDataProvider<T, F> extends
-        AbstractDataProvider<T, F> implements HierarchicalDataProvider<T, F> {
+public abstract class AbstractHierarchicalDataProvider<T, F> extends AbstractDataProvider<T, F>
+        implements HierarchicalDataProvider<T, F> {
 
     @Override
     public <Q, C> HierarchicalConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
             SerializableBiFunction<Q, C, F> filterCombiner) {
-        return HierarchicalDataProvider.super.withConfigurableFilter(
-                filterCombiner);
+        return HierarchicalDataProvider.super.withConfigurableFilter(filterCombiner);
     }
 
     @Override
-    public <C> HierarchicalDataProvider<T, C> withConvertedFilter(
-            SerializableFunction<C, F> filterConverter) {
-        return HierarchicalDataProvider.super.withConvertedFilter(
-                filterConverter);
+    public <C> HierarchicalDataProvider<T, C> withConvertedFilter(SerializableFunction<C, F> filterConverter) {
+        return HierarchicalDataProvider.super.withConvertedFilter(filterConverter);
     }
 
     @Override

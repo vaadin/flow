@@ -9,8 +9,7 @@ import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * Mocked Options that creates a lookup mock and class finder mock, if it's not
- * given.
+ * Mocked Options that creates a lookup mock and class finder mock, if it's not given.
  */
 public class MockOptions extends Options {
 
@@ -25,8 +24,7 @@ public class MockOptions extends Options {
     public MockOptions(ClassFinder classFinder, File projectFolder) {
         super(Mockito.mock(Lookup.class), classFinder, projectFolder);
 
-        Mockito.when(getLookup().lookup(ClassFinder.class))
-                .thenReturn(classFinder);
+        Mockito.when(getLookup().lookup(ClassFinder.class)).thenReturn(classFinder);
     }
 
     /**

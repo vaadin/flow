@@ -35,8 +35,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 class BeanStore implements Serializable {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(BeanStore.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(BeanStore.class.getName());
 
     private final VaadinSession session;
 
@@ -61,8 +60,8 @@ class BeanStore implements Serializable {
      * @param name
      *            the name of the object to retrieve
      * @param objectFactory
-     *            the {@link ObjectFactory} to use to create the scoped object
-     *            if it is not present in the underlying storage mechanism
+     *            the {@link ObjectFactory} to use to create the scoped object if it is not present in the underlying
+     *            storage mechanism
      * @return the desired object (never {@code null})
      *
      * @see Scope#get(String, ObjectFactory)
@@ -83,10 +82,8 @@ class BeanStore implements Serializable {
     }
 
     /**
-     * Register a callback to be executed on destruction of the specified object
-     * in the scope (or at destruction of the entire scope, if the scope does
-     * not destroy individual objects but rather only terminates in its
-     * entirety).
+     * Register a callback to be executed on destruction of the specified object in the scope (or at destruction of the
+     * entire scope, if the scope does not destroy individual objects but rather only terminates in its entirety).
      *
      * @see Scope#registerDestructionCallback(String, Runnable)
      */
@@ -109,8 +106,7 @@ class BeanStore implements Serializable {
                 try {
                     destructionCallback.run();
                 } catch (Throwable throwable) {
-                    LOGGER.error("BeanStore destruction callback failed",
-                            throwable);
+                    LOGGER.error("BeanStore destruction callback failed", throwable);
                 }
             }
         } finally {

@@ -31,17 +31,14 @@ public class ScriptInjectIT extends ChromeBrowserTest {
     public void ensureNoAlerts() {
         open();
         List<WebElement> inputs = findElements(By.xpath("//input")).stream()
-                .filter(element -> "text".equals(element.getAttribute("type")))
-                .collect(Collectors.toList());
+                .filter(element -> "text".equals(element.getAttribute("type"))).collect(Collectors.toList());
         Assert.assertEquals(ScriptInjectView.values.length, inputs.size());
 
         // All inputs should contain some variant of
         // <script>alert('foo');</script>
         for (int i = 0; i < inputs.size(); i++) {
             WebElement e = inputs.get(i);
-            Assert.assertEquals(
-                    ScriptInjectView.getValue(ScriptInjectView.values[i]),
-                    e.getAttribute("value"));
+            Assert.assertEquals(ScriptInjectView.getValue(ScriptInjectView.values[i]), e.getAttribute("value"));
         }
 
     }

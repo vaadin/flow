@@ -29,8 +29,7 @@ public class CustomWebIconsIT extends AbstractSpringTest {
 
     private static final int SERVER_PORT = 8888;
 
-    private final HttpClient client = HttpClient.newBuilder()
-            .followRedirects(HttpClient.Redirect.NORMAL).build();
+    private final HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
 
     @Override
     protected int getDeploymentPort() {
@@ -54,26 +53,21 @@ public class CustomWebIconsIT extends AbstractSpringTest {
         assertResourceIsAccessible(path, false);
     }
 
-    protected void assertResourceIsAccessible(String path, boolean absolute)
-            throws Exception {
-        String url = getRootURL() + (absolute ? "/" : "/urlmapping/")
-                + Configurator.ICONS_PATH + path;
+    protected void assertResourceIsAccessible(String path, boolean absolute) throws Exception {
+        String url = getRootURL() + (absolute ? "/" : "/urlmapping/") + Configurator.ICONS_PATH + path;
         String loginUrl = getRootURL() + "/urlmapping/login";
         driver.get(url);
         waitUntil(driver -> {
             String currentUrl = driver.getCurrentUrl();
-            Assert.assertNotEquals("Expecting " + url
-                    + " to be accessible but browser was redirected to "
-                    + currentUrl, loginUrl, currentUrl);
+            Assert.assertNotEquals("Expecting " + url + " to be accessible but browser was redirected to " + currentUrl,
+                    loginUrl, currentUrl);
             return url.equals(currentUrl);
         });
         HttpResponse<String> response = client.send(
-                HttpRequest.newBuilder().GET()
-                        .uri(URI.create(driver.getCurrentUrl())).build(),
+                HttpRequest.newBuilder().GET().uri(URI.create(driver.getCurrentUrl())).build(),
                 HttpResponse.BodyHandlers.ofString());
         Assert.assertEquals("Expecting 200 OK", 200, response.statusCode());
-        Assert.assertFalse(
-                "Expecting " + url + " to reference an image, not an HTML page",
+        Assert.assertFalse("Expecting " + url + " to reference an image, not an HTML page",
                 response.body().matches("<html.*>"));
     }
 }

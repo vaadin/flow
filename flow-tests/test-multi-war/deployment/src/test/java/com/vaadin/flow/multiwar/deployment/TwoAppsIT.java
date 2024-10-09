@@ -24,16 +24,12 @@ public class TwoAppsIT extends ChromeBrowserTest {
     }
 
     private void testWarWorks(String warId) {
-        getDriver().get(
-                getTestURL(getRootURL(), "/test-" + warId, new String[] {}));
+        getDriver().get(getTestURL(getRootURL(), "/test-" + warId, new String[] {}));
         waitForDevServer();
         WebElement helloText = findElement(By.id("hello"));
-        Assert.assertEquals(
-                "Hello from com.vaadin.flow.multiwar." + warId + ".MainView",
-                helloText.getText());
+        Assert.assertEquals("Hello from com.vaadin.flow.multiwar." + warId + ".MainView", helloText.getText());
         helloText.click();
-        Assert.assertEquals("Hello Hello from com.vaadin.flow.multiwar." + warId
-                + ".MainView", helloText.getText());
+        Assert.assertEquals("Hello Hello from com.vaadin.flow.multiwar." + warId + ".MainView", helloText.getText());
 
     }
 
@@ -44,12 +40,8 @@ public class TwoAppsIT extends ChromeBrowserTest {
         WebElement hello1 = findElement(By.id("hello1"));
         WebElement hello2 = findElement(By.id("hello2"));
 
-        Assert.assertEquals(
-                "Hello from com.vaadin.flow.multiwar.war1.HelloComponent",
-                hello1.getText());
-        Assert.assertEquals(
-                "Hello from com.vaadin.flow.multiwar.war2.HelloComponent",
-                hello2.getText());
+        Assert.assertEquals("Hello from com.vaadin.flow.multiwar.war1.HelloComponent", hello1.getText());
+        Assert.assertEquals("Hello from com.vaadin.flow.multiwar.war2.HelloComponent", hello2.getText());
     }
 
 }

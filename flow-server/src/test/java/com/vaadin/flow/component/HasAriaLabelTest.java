@@ -23,8 +23,7 @@ import org.junit.Test;
 public class HasAriaLabelTest {
 
     @Tag(Tag.MAIN) // main is used, because div is not a valid target by default
-    private static class TestComponent extends Component
-            implements HasAriaLabel {
+    private static class TestComponent extends Component implements HasAriaLabel {
 
     }
 
@@ -101,7 +100,6 @@ public class HasAriaLabelTest {
         TestComponent component = new TestComponent();
         component.setAriaLabelledBy("test AriaLabelledBy");
 
-        assertEquals("test AriaLabelledBy",
-                component.getAriaLabelledBy().get());
+        assertEquals("test AriaLabelledBy", component.getAriaLabelledBy().get());
     }
 }

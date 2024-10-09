@@ -29,8 +29,7 @@ public abstract class AbstractUpdateDivIT extends ChromeBrowserTest {
 
         int initialUpdateCount = getUpdateCount();
         Assert.assertTrue(
-                "The initial update count should be less than maximum 50, but it has value "
-                        + initialUpdateCount,
+                "The initial update count should be less than maximum 50, but it has value " + initialUpdateCount,
                 initialUpdateCount < 50);
 
         waitUntil(driver -> getUpdateCount() > initialUpdateCount, 5);
@@ -38,17 +37,14 @@ public abstract class AbstractUpdateDivIT extends ChromeBrowserTest {
         int nextUpdateCount = getUpdateCount();
 
         Assert.assertTrue(
-                "The next interim update count should be less than maximum 50, but it has value "
-                        + nextUpdateCount,
+                "The next interim update count should be less than maximum 50, but it has value " + nextUpdateCount,
                 nextUpdateCount < 50);
 
         waitUntil(driver -> getUpdateCount() == 50, 5);
 
         int updateCount = getUpdateCount();
-        Assert.assertEquals(
-                "The update count should have reached the maximin 50, but it has value "
-                        + updateCount,
-                50, updateCount);
+        Assert.assertEquals("The update count should have reached the maximin 50, but it has value " + updateCount, 50,
+                updateCount);
     }
 
     private int getUpdateCount() {

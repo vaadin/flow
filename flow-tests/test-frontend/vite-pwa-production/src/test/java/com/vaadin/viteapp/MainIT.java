@@ -87,8 +87,7 @@ public class MainIT extends ChromeDeviceTest {
     private void setOfflineAndReload() {
         getDevTools().setOfflineEnabled(true);
         executeScript("window.location.reload()");
-        waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                .executeScript("return document.readyState")
+        waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                 .equals("complete"));
     }
 

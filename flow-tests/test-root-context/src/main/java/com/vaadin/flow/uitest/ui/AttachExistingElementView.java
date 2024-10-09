@@ -40,8 +40,7 @@ public class AttachExistingElementView extends AbstractDivView {
         }
 
         @Override
-        public void onError(Node<?> parent, String tag,
-                Element previousSibling) {
+        public void onError(Node<?> parent, String tag, Element previousSibling) {
             Div div = new Div();
             div.setText("Non-exisint element error");
             div.setId("non-existing-element");
@@ -53,32 +52,23 @@ public class AttachExistingElementView extends AbstractDivView {
     @Override
     protected void onShow() {
         setId("root-div");
-        add(createButton("Attach label", "attach-label",
-                event -> getElement().getStateProvider().attachExistingElement(
-                        getElement().getNode(), "label", null,
-                        this::handleLabel)));
-        add(createButton("Attach Header", "attach-header",
-                event -> getElement().getStateProvider().attachExistingElement(
-                        getElement().getNode(), "h1", null,
-                        this::handleHeader)));
+        add(createButton("Attach label", "attach-label", event -> getElement().getStateProvider()
+                .attachExistingElement(getElement().getNode(), "label", null, this::handleLabel)));
+        add(createButton("Attach Header", "attach-header", event -> getElement().getStateProvider()
+                .attachExistingElement(getElement().getNode(), "h1", null, this::handleHeader)));
 
         Div div = new Div();
         div.setId("element-with-shadow");
         ShadowRoot shadowRoot = div.getElement().attachShadow();
 
-        add(createButton("Attach label in shadow", "attach-label-inshadow",
-                event -> shadowRoot.getStateProvider().attachExistingElement(
-                        shadowRoot.getNode(), "label", null,
-                        this::handleLabelInShadow)));
+        add(createButton("Attach label in shadow", "attach-label-inshadow", event -> shadowRoot.getStateProvider()
+                .attachExistingElement(shadowRoot.getNode(), "label", null, this::handleLabelInShadow)));
 
-        add(createButton("Attach non-existing element", "non-existing-element",
-                event -> getElement().getStateProvider().attachExistingElement(
-                        getElement().getNode(), "image", null,
-                        new NonExistingElementCallback())));
+        add(createButton("Attach non-existing element", "non-existing-element", event -> getElement().getStateProvider()
+                .attachExistingElement(getElement().getNode(), "image", null, new NonExistingElementCallback())));
 
         add(div);
-        getPage().executeJs("$0.appendChild(document.createElement('label'));",
-                shadowRoot);
+        getPage().executeJs("$0.appendChild(document.createElement('label'));", shadowRoot);
 
         getPage().executeJs(
                 "$0.appendChild(document.createElement('span')); $0.appendChild(document.createElement('label'));"
@@ -91,10 +81,8 @@ public class AttachExistingElementView extends AbstractDivView {
         attachedLabel.setText("Client side label");
         attachedLabel.setId("label");
 
-        add(AbstractDivView.createButton("Attach the already attached label",
-                "attach-populated-label",
-                event -> getElement().getStateProvider().attachExistingElement(
-                        getElement().getNode(), "label", null,
+        add(AbstractDivView.createButton("Attach the already attached label", "attach-populated-label",
+                event -> getElement().getStateProvider().attachExistingElement(getElement().getNode(), "label", null,
                         this::handleAttachedLabel)));
 
         add(createButton("Remove myself on the server side", "remove-self",
@@ -102,8 +90,8 @@ public class AttachExistingElementView extends AbstractDivView {
     }
 
     private void handleAttachedLabel(Element label) {
-        Element child = getElement().getChild(attachedLabel.getParent().get()
-                .getElement().indexOfChild(attachedLabel.getElement()));
+        Element child = getElement()
+                .getChild(attachedLabel.getParent().get().getElement().indexOfChild(attachedLabel.getElement()));
         // child is already populated label. The <code>label</code> should be
         // the same element
         if (child.equals(label)) {

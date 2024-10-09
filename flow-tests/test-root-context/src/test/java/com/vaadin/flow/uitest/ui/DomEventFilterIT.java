@@ -47,20 +47,16 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         open();
 
         /*
-         * Note, the client side implementation "merges" all these settings in
-         * the single "Debouncer" (per element-eventtype-timeout, not per server
-         * side listener). This is probably an issue in the original
-         * implementation that could maybe be refactored in some upcoming
-         * release, but then we should create identifiers for server side
-         * listeners and handle those somehow separately. My hunch is that it is
-         * better just to document the limitations and focus on something that
-         * actually benefits users. Today, real world use cases seem to be
+         * Note, the client side implementation "merges" all these settings in the single "Debouncer" (per
+         * element-eventtype-timeout, not per server side listener). This is probably an issue in the original
+         * implementation that could maybe be refactored in some upcoming release, but then we should create identifiers
+         * for server side listeners and handle those somehow separately. My hunch is that it is better just to document
+         * the limitations and focus on something that actually benefits users. Today, real world use cases seem to be
          * somewhat in good shape.
          *
-         * Thus, even though the element can be configured to have both trailing
-         * and intermediate configured for the same element, for different
-         * listeners, only one settings are currently supported. leading phase
-         * can be configured with either.
+         * Thus, even though the element can be configured to have both trailing and intermediate configured for the
+         * same element, for different listeners, only one settings are currently supported. leading phase can be
+         * configured with either.
          */
         WebElement debounce = findElement(By.id("debounce"));
 
@@ -135,8 +131,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         Thread.sleep(10);
         throttle.sendKeys("d");
 
-        long millisToNextIntermediate = ((burstStart + 2000)
-                - System.currentTimeMillis());
+        long millisToNextIntermediate = ((burstStart + 2000) - System.currentTimeMillis());
 
         Thread.sleep(millisToNextIntermediate + 100);
 
@@ -166,18 +161,14 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         assertMessages(nextMsg++, "input:abcd, phase:TRAILING");
 
         /*
-         * This is the special weirdomode, we get all the phases. As
-         * INTERMEDIATE will practically always fire after TRAILING. We will
-         * re-send the last event twice to server, the last just with different
-         * phase.
+         * This is the special weirdomode, we get all the phases. As INTERMEDIATE will practically always fire after
+         * TRAILING. We will re-send the last event twice to server, the last just with different phase.
          *
-         * Might be in theor handy if actual events are not relevant, but the
-         * activity time and still somewhat fresh content is needed during the
-         * burst from time to time.
+         * Might be in theor handy if actual events are not relevant, but the activity time and still somewhat fresh
+         * content is needed during the burst from time to time.
          *
-         * The best would be to investigate if somebody is actually usign this
-         * feature and remove if not (or rare). Makes the whole system very
-         * complex and fragile (although not the only thing causing that).
+         * The best would be to investigate if somebody is actually usign this feature and remove if not (or rare).
+         * Makes the whole system very complex and fragile (although not the only thing causing that).
          */
         WebElement godMode = findElement(By.id("godMode"));
         godMode.sendKeys("a");
@@ -188,8 +179,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         Thread.sleep(50);
         godMode.sendKeys("c");
         Thread.sleep(2000);
-        assertMessages(nextMsg++, "godmode:abc, phase:INTERMEDIATE",
-                "godmode:abc, phase:TRAILING");
+        assertMessages(nextMsg++, "godmode:abc, phase:INTERMEDIATE", "godmode:abc, phase:TRAILING");
         nextMsg++;
 
         WebElement twoEvents = findElement(By.id("twoEvents"));
@@ -242,83 +232,65 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         WebElement button = findElement(By.id("listener-removal-button"));
         WebElement input = findElement(By.id("listener-input"));
 
-        Assert.assertEquals("Result paragraph should be empty", "",
-                paragraph.getText());
+        Assert.assertEquals("Result paragraph should be empty", "", paragraph.getText());
 
         input.sendKeys("a");
-        Assert.assertEquals(
-                "Filter should have prevented default, and input is empty", "",
+        Assert.assertEquals("Filter should have prevented default, and input is empty", "",
                 input.getAttribute("value"));
-        Assert.assertEquals(
-                "Event was sent to server and paragraph should be 'A'", "A",
-                paragraph.getText());
+        Assert.assertEquals("Event was sent to server and paragraph should be 'A'", "A", paragraph.getText());
 
         input.sendKeys("b");
-        Assert.assertEquals(
-                "Filter should have prevented default, and input is empty", "",
+        Assert.assertEquals("Filter should have prevented default, and input is empty", "",
                 input.getAttribute("value"));
-        Assert.assertEquals(
-                "Event was sent to server and paragraph should be 'B'", "B",
-                paragraph.getText());
+        Assert.assertEquals("Event was sent to server and paragraph should be 'B'", "B", paragraph.getText());
 
         // remove keybind for A
         button.click();
-        Assert.assertEquals("Result paragraph should be 'REMOVED'", "REMOVED",
-                paragraph.getText());
+        Assert.assertEquals("Result paragraph should be 'REMOVED'", "REMOVED", paragraph.getText());
 
         // keybind for A should no longer work
         input.sendKeys("a");
-        Assert.assertEquals("Filter should be removed, and input has 'a'", "a",
-                input.getAttribute("value"));
-        Assert.assertEquals("Result paragraph should still be 'REMOVED'",
-                "REMOVED", paragraph.getText());
+        Assert.assertEquals("Filter should be removed, and input has 'a'", "a", input.getAttribute("value"));
+        Assert.assertEquals("Result paragraph should still be 'REMOVED'", "REMOVED", paragraph.getText());
 
         // b should still be functional
         input.sendKeys("b");
-        Assert.assertEquals(
-                "Filter should have prevented default, and input has only 'a'",
-                "a", input.getAttribute("value"));
-        Assert.assertEquals(
-                "Event was sent to server and paragraph should be 'B'", "B",
-                paragraph.getText());
+        Assert.assertEquals("Filter should have prevented default, and input has only 'a'", "a",
+                input.getAttribute("value"));
+        Assert.assertEquals("Event was sent to server and paragraph should be 'B'", "B", paragraph.getText());
     }
 
     private void assertMessages(int skip, String... expectedTail) {
         List<WebElement> messages = getMessages();
         if (messages.size() < skip) {
-            Assert.fail("Cannot skip " + skip + " messages when there are only "
-                    + messages.size() + "messages. " + joinMessages(messages));
+            Assert.fail("Cannot skip " + skip + " messages when there are only " + messages.size() + "messages. "
+                    + joinMessages(messages));
         }
 
         messages = messages.subList(skip, messages.size());
 
         if (messages.size() < expectedTail.length) {
-            Assert.fail("Expected " + expectedTail.length
-                    + " messages, but there are only " + messages.size() + ". "
+            Assert.fail("Expected " + expectedTail.length + " messages, but there are only " + messages.size() + ". "
                     + joinMessages(messages));
         }
 
         for (int i = 0; i < expectedTail.length; i++) {
-            Assert.assertEquals("Unexpected message at index " + i,
-                    expectedTail[i], messages.get(i).getText());
+            Assert.assertEquals("Unexpected message at index " + i, expectedTail[i], messages.get(i).getText());
         }
 
         if (messages.size() > expectedTail.length) {
             Assert.fail("There are unexpected messages at the end. "
-                    + joinMessages(messages.subList(expectedTail.length,
-                            messages.size())));
+                    + joinMessages(messages.subList(expectedTail.length, messages.size())));
         }
     }
 
     private static String joinMessages(List<WebElement> messages) {
-        return messages.stream().map(WebElement::getText)
-                .collect(Collectors.joining("\n", "\n", ""));
+        return messages.stream().map(WebElement::getText).collect(Collectors.joining("\n", "\n", ""));
     }
 
     private List<WebElement> getMessages() {
         WebElement messagesHolder = findElement(By.id("messages"));
-        List<WebElement> messages = messagesHolder
-                .findElements(By.cssSelector("div"));
+        List<WebElement> messages = messagesHolder.findElements(By.cssSelector("div"));
         return messages;
     }
 }

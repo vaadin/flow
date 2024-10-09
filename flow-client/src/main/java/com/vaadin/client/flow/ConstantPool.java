@@ -35,8 +35,7 @@ public class ConstantPool {
      * Imports new constants into this pool.
      *
      * @param json
-     *            a JSON object mapping constant keys to constant values, not
-     *            <code>null</code>
+     *            a JSON object mapping constant keys to constant values, not <code>null</code>
      */
     public void importFromJson(JsonObject json) {
         assert json != null;
@@ -55,8 +54,7 @@ public class ConstantPool {
      *
      * @param key
      *            the key to check, not <code>null</code>
-     * @return <code>true</code> if there is a constant for the given key;
-     *         otherwise <code>false</code>
+     * @return <code>true</code> if there is a constant for the given key; otherwise <code>false</code>
      */
     public boolean has(String key) {
         assert key != null;
@@ -70,8 +68,7 @@ public class ConstantPool {
      *            the key to get a constant for, not <code>null</code>
      * @param <T>
      *            the constant type
-     * @return the constant value, or <code>null</code> if there is no constant
-     *         with the given key
+     * @return the constant value, or <code>null</code> if there is no constant with the given key
      */
     @SuppressWarnings("unchecked")
     // Returns any type to make it easier to use constants as JsInterop types

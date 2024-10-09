@@ -24,9 +24,8 @@ import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * A generic interface for field components and other user interface objects
- * that have a user-editable value. Emits change events whenever the value is
- * changed, either by the user or programmatically.
+ * A generic interface for field components and other user interface objects that have a user-editable value. Emits
+ * change events whenever the value is changed, either by the user or programmatically.
  *
  * @param <E>
  *            the type of the value change event fired by this instance
@@ -35,8 +34,7 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public interface HasValue<E extends ValueChangeEvent<V>, V>
-        extends Serializable {
+public interface HasValue<E extends ValueChangeEvent<V>, V> extends Serializable {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -50,14 +48,12 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
         /**
          * Checks if this event originated from the client side.
          *
-         * @return <code>true</code> if the event originated from the client
-         *         side, <code>false</code> otherwise
+         * @return <code>true</code> if the event originated from the client side, <code>false</code> otherwise
          */
         boolean isFromClient();
 
         /**
-         * Returns the value of the source before this value change event
-         * occurred.
+         * Returns the value of the source before this value change event occurred.
          *
          * @return the value previously held by the source of this event
          */
@@ -80,12 +76,10 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * @see Registration
      */
     @FunctionalInterface
-    interface ValueChangeListener<E extends ValueChangeEvent<?>>
-            extends EventListener, Serializable {
+    interface ValueChangeListener<E extends ValueChangeEvent<?>> extends EventListener, Serializable {
 
         /**
-         * Invoked when this listener receives a value change event from an
-         * event source to which it has been added.
+         * Invoked when this listener receives a value change event from an event source to which it has been added.
          *
          * @param event
          *            the received event, not null
@@ -94,13 +88,11 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     }
 
     /**
-     * Sets the value of this object. If the new value is not equal to
-     * {@code getValue()}, fires a value change event. May throw
-     * {@code IllegalArgumentException} if the value is not acceptable.
+     * Sets the value of this object. If the new value is not equal to {@code getValue()}, fires a value change event.
+     * May throw {@code IllegalArgumentException} if the value is not acceptable.
      * <p>
-     * <i>Implementation note:</i> the implementing class should document
-     * whether null values are accepted or not, and override
-     * {@link #getEmptyValue()} if the empty value is not {@code null}.
+     * <i>Implementation note:</i> the implementing class should document whether null values are accepted or not, and
+     * override {@link #getEmptyValue()} if the empty value is not {@code null}.
      *
      * @param value
      *            the new value
@@ -112,30 +104,28 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     /**
      * Returns the current value of this object.
      * <p>
-     * <i>Implementation note:</i> the implementing class should document
-     * whether null values may be returned or not, and override
-     * {@link #getEmptyValue()} if the empty value is not {@code null}.
+     * <i>Implementation note:</i> the implementing class should document whether null values may be returned or not,
+     * and override {@link #getEmptyValue()} if the empty value is not {@code null}.
      *
      * @return the current value
      */
     V getValue();
 
     /**
-     * Adds a value change listener. The listener is called when the value of
-     * this {@code HasValue} is changed either by the user or programmatically.
+     * Adds a value change listener. The listener is called when the value of this {@code HasValue} is changed either by
+     * the user or programmatically.
      *
      * @param listener
      *            the value change listener, not null
      * @return a registration for the listener
      */
-    Registration addValueChangeListener(
-            ValueChangeListener<? super E> listener);
+    Registration addValueChangeListener(ValueChangeListener<? super E> listener);
 
     /**
      * Returns the value that represents an empty value.
      * <p>
-     * By default {@link HasValue} is expected to support {@code null} as empty
-     * values. Specific implementations might not support this.
+     * By default {@link HasValue} is expected to support {@code null} as empty values. Specific implementations might
+     * not support this.
      *
      * @return empty value
      */
@@ -146,8 +136,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     /**
      * Returns the current value of this object, wrapped in an {@code Optional}.
      * <p>
-     * The {@code Optional} will be empty if the value is {@code null} or
-     * {@code isEmpty()} returns {@code true}.
+     * The {@code Optional} will be empty if the value is {@code null} or {@code isEmpty()} returns {@code true}.
      *
      * @return the current value, wrapped in an {@code Optional}
      */
@@ -158,8 +147,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     /**
      * Returns whether this {@code HasValue} is considered to be empty.
      * <p>
-     * By default this is an equality check between current value and empty
-     * value.
+     * By default this is an equality check between current value and empty value.
      *
      * @return {@code true} if considered empty; {@code false} if not
      */
@@ -170,8 +158,8 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     /**
      * Resets the value to the empty one.
      * <p>
-     * This is just a shorthand for resetting the value, see the methods
-     * {@link #setValue(Object)} and {@link #getEmptyValue()}.
+     * This is just a shorthand for resetting the value, see the methods {@link #setValue(Object)} and
+     * {@link #getEmptyValue()}.
      *
      * @see #setValue(Object)
      * @see #getEmptyValue()
@@ -181,24 +169,21 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     }
 
     /**
-     * Sets the read-only mode of this {@code HasValue} to given mode. The user
-     * can't change the value when in read-only mode.
+     * Sets the read-only mode of this {@code HasValue} to given mode. The user can't change the value when in read-only
+     * mode.
      * <p>
-     * A {@code HasValue} with a visual component in read-only mode typically
-     * looks visually different to signal to the user that the value cannot be
-     * edited.
+     * A {@code HasValue} with a visual component in read-only mode typically looks visually different to signal to the
+     * user that the value cannot be edited.
      *
      * @param readOnly
-     *            a boolean value specifying whether the component is put
-     *            read-only mode or not
+     *            a boolean value specifying whether the component is put read-only mode or not
      */
     void setReadOnly(boolean readOnly);
 
     /**
      * Returns whether this {@code HasValue} is in read-only mode or not.
      *
-     * @return {@code false} if the user can modify the value, {@code true} if
-     *         not.
+     * @return {@code false} if the user can modify the value, {@code true} if not.
      */
     boolean isReadOnly();
 
@@ -207,20 +192,16 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * <p>
      * If set visible, it is visually indicated in the user interface.
      * <p>
-     * The method is intended to be used with <code>Binder</code> which does
-     * server-side validation. In case HTML element has its own (client-side)
-     * validation it should be disabled when
-     * <code>setRequiredIndicatorVisible(true)</code> is called and re-enabled
-     * back on <code>setRequiredIndicatorVisible(false)</code>. It's
-     * responsibility of each component implementation to follow the contract so
-     * that the method call doesn't do anything else than show/hide the
-     * "required" indication. Usually components provide their own
-     * <code>setRequired</code> method which should be called in case the
-     * client-side validation is required.
+     * The method is intended to be used with <code>Binder</code> which does server-side validation. In case HTML
+     * element has its own (client-side) validation it should be disabled when
+     * <code>setRequiredIndicatorVisible(true)</code> is called and re-enabled back on
+     * <code>setRequiredIndicatorVisible(false)</code>. It's responsibility of each component implementation to follow
+     * the contract so that the method call doesn't do anything else than show/hide the "required" indication. Usually
+     * components provide their own <code>setRequired</code> method which should be called in case the client-side
+     * validation is required.
      *
      * @param requiredIndicatorVisible
-     *            <code>true</code> to make the required indicator visible,
-     *            <code>false</code> if not
+     *            <code>true</code> to make the required indicator visible, <code>false</code> if not
      */
     void setRequiredIndicatorVisible(boolean requiredIndicatorVisible);
 

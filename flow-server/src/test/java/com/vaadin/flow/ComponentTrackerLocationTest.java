@@ -31,16 +31,12 @@ public class ComponentTrackerLocationTest {
     @Test
     public void findJavaFile_simpleClass() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
-        Mockito.when(configuration.getJavaSourceFolder())
-                .thenReturn(fakeSrcDir);
+        AbstractConfiguration configuration = Mockito.mock(AbstractConfiguration.class);
+        Mockito.when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
-        ComponentTracker.Location location = new ComponentTracker.Location(
-                "com.example.app.MyClass", "MyClass.java", "whoCares", 99);
-        File expectedFile = fakeSrcDir.toPath()
-                .resolve(Path.of("com", "example", "app", "MyClass.java"))
-                .toFile();
+        ComponentTracker.Location location = new ComponentTracker.Location("com.example.app.MyClass", "MyClass.java",
+                "whoCares", 99);
+        File expectedFile = fakeSrcDir.toPath().resolve(Path.of("com", "example", "app", "MyClass.java")).toFile();
 
         File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
@@ -49,16 +45,12 @@ public class ComponentTrackerLocationTest {
     @Test
     public void findJavaFile_simpleClass_dollarInPackage() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
-        Mockito.when(configuration.getJavaSourceFolder())
-                .thenReturn(fakeSrcDir);
+        AbstractConfiguration configuration = Mockito.mock(AbstractConfiguration.class);
+        Mockito.when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
-        ComponentTracker.Location location = new ComponentTracker.Location(
-                "com.exa$mple.app.MyClass", "MyClass.java", "whoCares", 99);
-        File expectedFile = fakeSrcDir.toPath()
-                .resolve(Path.of("com", "exa$mple", "app", "MyClass.java"))
-                .toFile();
+        ComponentTracker.Location location = new ComponentTracker.Location("com.exa$mple.app.MyClass", "MyClass.java",
+                "whoCares", 99);
+        File expectedFile = fakeSrcDir.toPath().resolve(Path.of("com", "exa$mple", "app", "MyClass.java")).toFile();
 
         File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
@@ -67,16 +59,12 @@ public class ComponentTrackerLocationTest {
     @Test
     public void findJavaFile_simpleClass_dollarInName() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
-        Mockito.when(configuration.getJavaSourceFolder())
-                .thenReturn(fakeSrcDir);
+        AbstractConfiguration configuration = Mockito.mock(AbstractConfiguration.class);
+        Mockito.when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
-        ComponentTracker.Location location = new ComponentTracker.Location(
-                "com.example.app.MyClass$NotInner", "MyClass$NotInner.java",
-                "whoCares", 99);
-        File expectedFile = fakeSrcDir.toPath().resolve(
-                Path.of("com", "example", "app", "MyClass$NotInner.java"))
+        ComponentTracker.Location location = new ComponentTracker.Location("com.example.app.MyClass$NotInner",
+                "MyClass$NotInner.java", "whoCares", 99);
+        File expectedFile = fakeSrcDir.toPath().resolve(Path.of("com", "example", "app", "MyClass$NotInner.java"))
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
@@ -86,17 +74,12 @@ public class ComponentTrackerLocationTest {
     @Test
     public void findJavaFile_innerClass() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
-        Mockito.when(configuration.getJavaSourceFolder())
-                .thenReturn(fakeSrcDir);
+        AbstractConfiguration configuration = Mockito.mock(AbstractConfiguration.class);
+        Mockito.when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
-        ComponentTracker.Location location = new ComponentTracker.Location(
-                "com.example.app.MyClass$Inner", "MyClass.java", "whoCares",
-                99);
-        File expectedFile = fakeSrcDir.toPath()
-                .resolve(Path.of("com", "example", "app", "MyClass.java"))
-                .toFile();
+        ComponentTracker.Location location = new ComponentTracker.Location("com.example.app.MyClass$Inner",
+                "MyClass.java", "whoCares", 99);
+        File expectedFile = fakeSrcDir.toPath().resolve(Path.of("com", "example", "app", "MyClass.java")).toFile();
 
         File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
@@ -105,17 +88,12 @@ public class ComponentTrackerLocationTest {
     @Test
     public void findJavaFile_nestedInnerClass() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
-        Mockito.when(configuration.getJavaSourceFolder())
-                .thenReturn(fakeSrcDir);
+        AbstractConfiguration configuration = Mockito.mock(AbstractConfiguration.class);
+        Mockito.when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
-        ComponentTracker.Location location = new ComponentTracker.Location(
-                "com.example.app.MyClass$Deep$Nested$Inner", "MyClass.java",
-                "whoCares", 99);
-        File expectedFile = fakeSrcDir.toPath()
-                .resolve(Path.of("com", "example", "app", "MyClass.java"))
-                .toFile();
+        ComponentTracker.Location location = new ComponentTracker.Location("com.example.app.MyClass$Deep$Nested$Inner",
+                "MyClass.java", "whoCares", 99);
+        File expectedFile = fakeSrcDir.toPath().resolve(Path.of("com", "example", "app", "MyClass.java")).toFile();
 
         File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
@@ -125,15 +103,12 @@ public class ComponentTrackerLocationTest {
     public void findKotlinFile_simpleClass() {
         File defaultJavaSrcDir = new File("src/main/java");
         File kotlinExpectedSrcDir = new File("src/main/kotlin");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
-        Mockito.when(configuration.getJavaSourceFolder())
-                .thenReturn(defaultJavaSrcDir);
+        AbstractConfiguration configuration = Mockito.mock(AbstractConfiguration.class);
+        Mockito.when(configuration.getJavaSourceFolder()).thenReturn(defaultJavaSrcDir);
 
-        ComponentTracker.Location location = new ComponentTracker.Location(
-                "com.example.app.MyClass", "MyClass.kt", "whoCares", 99);
-        File expectedFile = kotlinExpectedSrcDir.toPath()
-                .resolve(Path.of("com", "example", "app", "MyClass.kt"))
+        ComponentTracker.Location location = new ComponentTracker.Location("com.example.app.MyClass", "MyClass.kt",
+                "whoCares", 99);
+        File expectedFile = kotlinExpectedSrcDir.toPath().resolve(Path.of("com", "example", "app", "MyClass.kt"))
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);

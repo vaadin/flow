@@ -20,12 +20,10 @@ import com.vaadin.client.Console;
 import elemental.dom.Node;
 
 /**
- * Access point for DOM API. All operations and interactions with DOM nodes and
- * elements should go through this class.
+ * Access point for DOM API. All operations and interactions with DOM nodes and elements should go through this class.
  * <p>
- * This class delegates the operations to the actual DOM API implementations,
- * which might be changed on the run, meaning after dependencies have been
- * loaded.
+ * This class delegates the operations to the actual DOM API implementations, which might be changed on the run, meaning
+ * after dependencies have been loaded.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -40,8 +38,7 @@ public class DomApi {
     static boolean polymerMicroLoaded = false;
 
     /**
-     * The currently used DOM API implementation. By default just returns the
-     * same object.
+     * The currently used DOM API implementation. By default just returns the same object.
      *
      * Package protected for testing reasons.
      */
@@ -52,8 +49,7 @@ public class DomApi {
     }
 
     /**
-     * Wraps the given DOM node to make it safe to invoke any of the methods
-     * from {@link DomNode} or {@link DomElement}.
+     * Wraps the given DOM node to make it safe to invoke any of the methods from {@link DomNode} or {@link DomElement}.
      *
      * @param node
      *            the node to wrap

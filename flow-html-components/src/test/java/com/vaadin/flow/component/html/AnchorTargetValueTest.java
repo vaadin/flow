@@ -32,8 +32,7 @@ public class AnchorTargetValueTest {
 
     @Test
     public void fromString_enumValue_resultIsEnum() {
-        AnchorTargetValue value = AnchorTargetValue
-                .forString(AnchorTarget.TOP.getValue());
+        AnchorTargetValue value = AnchorTargetValue.forString(AnchorTarget.TOP.getValue());
         Assert.assertEquals(AnchorTarget.TOP, value);
     }
 }

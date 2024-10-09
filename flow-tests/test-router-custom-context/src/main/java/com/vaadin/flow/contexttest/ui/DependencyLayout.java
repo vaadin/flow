@@ -73,25 +73,20 @@ public abstract class DependencyLayout extends Div {
         getElement().appendChild(ElementFactory.createHr());
         add(new JsResourceComponent());
 
-        Element jsOrder = ElementFactory.createButton("Load js")
-                .setAttribute("id", "loadJs");
-        StreamRegistration jsStreamRegistration = VaadinSession.getCurrent()
-                .getResourceRegistry().registerResource(getJsResource());
+        Element jsOrder = ElementFactory.createButton("Load js").setAttribute("id", "loadJs");
+        StreamRegistration jsStreamRegistration = VaadinSession.getCurrent().getResourceRegistry()
+                .registerResource(getJsResource());
         jsOrder.addEventListener("click", event -> {
-            UI.getCurrent().getPage().addJavaScript("base://"
-                    + jsStreamRegistration.getResourceUri().toString());
+            UI.getCurrent().getPage().addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
         });
-        Element allBlue = ElementFactory
-                .createButton("Load 'everything blue' stylesheet")
-                .setAttribute("id", "loadBlue");
+        Element allBlue = ElementFactory.createButton("Load 'everything blue' stylesheet").setAttribute("id",
+                "loadBlue");
         allBlue.addEventListener("click", event -> {
             add(new AllBlueImportantComponent());
 
         });
 
-        Element runPush = ElementFactory
-                .createButton("Run delayed push request")
-                .setAttribute("id", RUN_PUSH_ID);
+        Element runPush = ElementFactory.createButton("Run delayed push request").setAttribute("id", RUN_PUSH_ID);
 
         pushWorks = ElementFactory.createDiv(NO_PUSH_YET_TEXT);
         pushWorks.setAttribute("id", PUSH_SIGNAL_ID);
@@ -108,8 +103,7 @@ public abstract class DependencyLayout extends Div {
                                 ui.push();
                             } catch (Throwable e) {
                                 LoggerFactory.getLogger(DependencyLayout.class)
-                                        .debug("Push does not work (most probably not a problem)",
-                                                e);
+                                        .debug("Push does not work (most probably not a problem)", e);
                                 return;
                             }
                             pushWorks.setText(PUSH_WORKS_TEXT);
@@ -123,16 +117,13 @@ public abstract class DependencyLayout extends Div {
                 }
             }.start();
         });
-        getElement().appendChild(jsOrder, allBlue, runPush,
-                ElementFactory.createHr(), pushWorks);
+        getElement().appendChild(jsOrder, allBlue, runPush, ElementFactory.createHr(), pushWorks);
     }
 
     private StreamResource getJsResource() {
         StreamResource jsRes = new StreamResource("element-appender.js", () -> {
-            String js = "var div = document.createElement('div');"
-                    + "div.id = 'appended-element';"
-                    + "div.textContent = 'Added by script';"
-                    + "document.body.appendChild(div, null);";
+            String js = "var div = document.createElement('div');" + "div.id = 'appended-element';"
+                    + "div.textContent = 'Added by script';" + "document.body.appendChild(div, null);";
 
             // Wait to ensure that client side will stop until the JavaScript is
             // loaded
@@ -140,8 +131,7 @@ public abstract class DependencyLayout extends Div {
                 Thread.sleep(500);
             } catch (Exception ignored) {
             }
-            return new ByteArrayInputStream(
-                    js.getBytes(StandardCharsets.UTF_8));
+            return new ByteArrayInputStream(js.getBytes(StandardCharsets.UTF_8));
         });
         return jsRes;
     }

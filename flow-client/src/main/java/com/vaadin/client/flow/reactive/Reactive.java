@@ -23,16 +23,13 @@ import com.vaadin.client.flow.collection.JsSet;
 import elemental.events.EventRemover;
 
 /**
- * Handles global features related to reactivity, such as keeping track of the
- * current {@link Computation}, providing a lazy flush cycle and registering
- * reactive event collectors.
+ * Handles global features related to reactivity, such as keeping track of the current {@link Computation}, providing a
+ * lazy flush cycle and registering reactive event collectors.
  * <p>
- * With a reactive programming model, the dependencies needed for producing a
- * result are automatically registered when the result is computed. When any
- * dependency of a computation is changed, that computation is scheduled to be
- * recomputed. To reduce the number of recomputations performed when many
- * dependencies are updated, the recomputation is performed lazily the next time
- * {@link #flush()} is invoked.
+ * With a reactive programming model, the dependencies needed for producing a result are automatically registered when
+ * the result is computed. When any dependency of a computation is changed, that computation is scheduled to be
+ * recomputed. To reduce the number of recomputations performed when many dependencies are updated, the recomputation is
+ * performed lazily the next time {@link #flush()} is invoked.
  *
  * @see Computation
  *
@@ -57,9 +54,8 @@ public class Reactive {
     }
 
     /**
-     * Adds a listener that will be invoked the next time {@link #flush()} is
-     * invoked. A listener added during a flush will be invoked before that
-     * flush finishes.
+     * Adds a listener that will be invoked the next time {@link #flush()} is invoked. A listener added during a flush
+     * will be invoked before that flush finishes.
      *
      * @param flushListener
      *            the flush listener to add
@@ -72,10 +68,9 @@ public class Reactive {
     }
 
     /**
-     * Adds a listener that will be invoked during the next {@link #flush()},
-     * after all regular flush listeners have been invoked. If a post flush
-     * listener adds new flush listeners, those flush listeners will be invoked
-     * before the next post flush listener is invoked.
+     * Adds a listener that will be invoked during the next {@link #flush()}, after all regular flush listeners have
+     * been invoked. If a post flush listener adds new flush listeners, those flush listeners will be invoked before the
+     * next post flush listener is invoked.
      *
      * @param postFlushListener
      *            the listener to add
@@ -88,10 +83,8 @@ public class Reactive {
     }
 
     /**
-     * Flushes all flush listeners and post flush listeners. A listener is
-     * discarded after it has been invoked once. This means that there will be
-     * no listeners registered for the next flush at the time this method
-     * returns.
+     * Flushes all flush listeners and post flush listeners. A listener is discarded after it has been invoked once.
+     * This means that there will be no listeners registered for the next flush at the time this method returns.
      *
      * @see #addFlushListener(FlushListener)
      * @see #addPostFlushListener(FlushListener)
@@ -131,31 +124,26 @@ public class Reactive {
     }
 
     /**
-     * Gets the currently active computation. Any reactive value that is
-     * accessed when a computation is active should be added as a dependency to
-     * that computation so that the computation will be invalidated if the value
-     * changes.
+     * Gets the currently active computation. Any reactive value that is accessed when a computation is active should be
+     * added as a dependency to that computation so that the computation will be invalidated if the value changes.
      *
-     * @return the current computation, or <code>null</code> if there is no
-     *         current computation.
+     * @return the current computation, or <code>null</code> if there is no current computation.
      */
     public static Computation getCurrentComputation() {
         return currentComputation;
     }
 
     /**
-     * Runs a task with the given computation set as
-     * {@link #getCurrentComputation()}. If another computation is set as the
-     * current computation, it is temporarily replaced by the provided
-     * computation, but restored again after the provided task has been run.
+     * Runs a task with the given computation set as {@link #getCurrentComputation()}. If another computation is set as
+     * the current computation, it is temporarily replaced by the provided computation, but restored again after the
+     * provided task has been run.
      *
      * @param computation
      *            the computation to set as current
      * @param command
      *            the command to run while the computation is set as current
      */
-    public static void runWithComputation(Computation computation,
-            Command command) {
+    public static void runWithComputation(Computation computation, Command command) {
         Computation oldComputation = currentComputation;
         currentComputation = computation;
         try {
@@ -166,15 +154,14 @@ public class Reactive {
     }
 
     /**
-     * Adds a reactive change listener that will be invoked whenever a reactive
-     * change event is fired from any reactive event router.
+     * Adds a reactive change listener that will be invoked whenever a reactive change event is fired from any reactive
+     * event router.
      *
      * @param reactiveValueChangeListener
      *            the listener to add
      * @return an event remover that can be used to remove the listener
      */
-    public static EventRemover addEventCollector(
-            ReactiveValueChangeListener reactiveValueChangeListener) {
+    public static EventRemover addEventCollector(ReactiveValueChangeListener reactiveValueChangeListener) {
         if (eventCollectors == null) {
             eventCollectors = JsCollections.set();
         }
@@ -193,21 +180,18 @@ public class Reactive {
      */
     public static void notifyEventCollectors(ReactiveValueChangeEvent event) {
         if (eventCollectors != null) {
-            JsSet<ReactiveValueChangeListener> copy = JsCollections
-                    .set(eventCollectors);
+            JsSet<ReactiveValueChangeListener> copy = JsCollections.set(eventCollectors);
 
             copy.forEach(listener -> listener.onValueChange(event));
         }
     }
 
     /**
-     * Evaluates the given command whenever there is a change in any
-     * {@link ReactiveValue} used in the command.
+     * Evaluates the given command whenever there is a change in any {@link ReactiveValue} used in the command.
      *
      * @param command
      *            the command to run
-     * @return A {@link Computation} object which can be used to control the
-     *         evaluation
+     * @return A {@link Computation} object which can be used to control the evaluation
      */
     public static Computation runWhenDependenciesChange(Command command) {
         return new Computation() {
@@ -221,8 +205,8 @@ public class Reactive {
     /**
      * Resets Reactive to the initial state.
      * <p>
-     * Intended for test cases to call in setup to avoid having tests affect
-     * each other as Reactive state is static and shared.
+     * Intended for test cases to call in setup to avoid having tests affect each other as Reactive state is static and
+     * shared.
      * <p>
      * Should never be called from non-test code!
      *

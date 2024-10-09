@@ -18,8 +18,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 import com.vaadin.flow.data.provider.BackEndDataProvider;
 
 /**
- * A data provider that lazy loads items from a back end containing hierarchical
- * data.
+ * A data provider that lazy loads items from a back end containing hierarchical data.
  *
  * @author Vaadin Ltd
  *

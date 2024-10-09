@@ -27,12 +27,10 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @Tag(Tag.DIV)
 @AnonymousAllowed
 @DefaultErrorHandler
-public class RouteNotFoundError extends AbstractRouteNotFoundError
-        implements HasErrorParameter<NotFoundException> {
+public class RouteNotFoundError extends AbstractRouteNotFoundError implements HasErrorParameter<NotFoundException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NotFoundException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NotFoundException> parameter) {
         return super.setRouteNotFoundErrorParameter(event, parameter);
     }
 

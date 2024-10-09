@@ -43,8 +43,7 @@ public interface DevModeHandler extends RequestHandler {
      * @throws IOException
      *             on connection error
      */
-    HttpURLConnection prepareConnection(String path, String method)
-            throws IOException;
+    HttpURLConnection prepareConnection(String path, String method) throws IOException;
 
     /**
      * Serve a file by proxying to the dev server.
@@ -57,8 +56,7 @@ public interface DevModeHandler extends RequestHandler {
      * @throws IOException
      *             in the case something went wrong like connection refused
      */
-    boolean serveDevModeRequest(HttpServletRequest request,
-            HttpServletResponse response) throws IOException;
+    boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
     /**
      * Stop the dev-server.

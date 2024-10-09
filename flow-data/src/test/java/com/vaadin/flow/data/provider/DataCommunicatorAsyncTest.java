@@ -131,9 +131,8 @@ public class DataCommunicatorAsyncTest {
             }
         };
 
-        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
-                data -> {
-                }, element.getNode());
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater, data -> {
+        }, element.getNode());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -154,8 +153,7 @@ public class DataCommunicatorAsyncTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotEquals("Expected initial reset not yet done.",
-                Range.withLength(0, 50), lastSet);
+        Assert.assertNotEquals("Expected initial reset not yet done.", Range.withLength(0, 50), lastSet);
 
         try {
             latch.await();
@@ -163,8 +161,7 @@ public class DataCommunicatorAsyncTest {
             throw new RuntimeException(e);
         }
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        Assert.assertEquals("Expected initial full reset.", Range.withLength(0, 50), lastSet);
         lastSet = null;
 
         element.removeFromParent();
@@ -183,8 +180,7 @@ public class DataCommunicatorAsyncTest {
             throw new RuntimeException(e);
         }
 
-        Assert.assertEquals("Expected initial full reset after reattach",
-                Range.withLength(0, 50), lastSet);
+        Assert.assertEquals("Expected initial full reset after reattach", Range.withLength(0, 50), lastSet);
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
@@ -214,8 +210,7 @@ public class DataCommunicatorAsyncTest {
                 // setting lastSet here
                 lastSet = Range.withLength(query.getOffset(), query.getLimit());
                 latch.countDown();
-                return asParallelIfRequired(IntStream.range(query.getOffset(),
-                        query.getLimit() + query.getOffset()))
+                return asParallelIfRequired(IntStream.range(query.getOffset(), query.getLimit() + query.getOffset()))
                         .mapToObj(Item::new);
             }
         };
@@ -253,8 +248,7 @@ public class DataCommunicatorAsyncTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new AlwaysLockedVaadinSession(
-                        new VaadinServletService(new VaadinServlet(), null));
+                session = new AlwaysLockedVaadinSession(new VaadinServletService(new VaadinServlet(), null));
                 VaadinSession.setCurrent(session);
             }
             return session;
@@ -272,12 +266,10 @@ public class DataCommunicatorAsyncTest {
 
     public static class MockVaadinSession extends VaadinSession {
         /*
-         * Used to make sure there's at least one reference to the mock session
-         * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
+         * Used to make sure there's at least one reference to the mock session while it's locked. This is used to
+         * prevent the session from being eaten by GC in tests where @Before creates a session and sets it as the
+         * current instance without keeping any direct reference to it. This pattern has a chance of leaking memory if
+         * the session is not unlocked in the right way, but it should be acceptable for testing use.
          */
         private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
 

@@ -45,49 +45,41 @@ public class LocaleUtilTest {
         MockitoAnnotations.initMocks(this);
 
         // request locales are returned as Enumeration
-        Mockito.when(request.getLocales()).thenReturn(
-                new Vector<>(Arrays.asList(new Locale("fi"), LOCALE_EN))
-                        .elements());
+        Mockito.when(request.getLocales())
+                .thenReturn(new Vector<>(Arrays.asList(new Locale("fi"), LOCALE_EN)).elements());
     }
 
     @Test
     public void exact_match_provided_matches() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(
-                request, Arrays.asList(Locale.ENGLISH, LOCALE_EN));
+        Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(request,
+                Arrays.asList(Locale.ENGLISH, LOCALE_EN));
 
-        Assert.assertEquals(
-                "Found wrong locale event though an exact match should have been available.",
-                LOCALE_EN, exactLocaleMatch.get());
+        Assert.assertEquals("Found wrong locale event though an exact match should have been available.", LOCALE_EN,
+                exactLocaleMatch.get());
     }
 
     @Test
     public void no_exact_match_returns_null() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil
-                .getExactLocaleMatch(request, Arrays.asList(Locale.ENGLISH));
+        Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(request, Arrays.asList(Locale.ENGLISH));
 
-        Assert.assertFalse(
-                "Found locale event though none should have been available.",
-                exactLocaleMatch.isPresent());
+        Assert.assertFalse("Found locale event though none should have been available.", exactLocaleMatch.isPresent());
     }
 
     @Test
     public void language_match_gets_correct_target_by_request_priority() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
-                request, Arrays.asList(Locale.US, LOCALE_FI));
+        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(request,
+                Arrays.asList(Locale.US, LOCALE_FI));
 
-        Assert.assertEquals(
-                "Found wrong locale event though an language match should have been available.",
-                LOCALE_FI, exactLocaleMatch.get());
+        Assert.assertEquals("Found wrong locale event though an language match should have been available.", LOCALE_FI,
+                exactLocaleMatch.get());
     }
 
     @Test
     public void language_match_returns_null_when_no_match() {
-        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
-                request, Arrays.asList(Locale.FRENCH, Locale.KOREA));
+        Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(request,
+                Arrays.asList(Locale.FRENCH, Locale.KOREA));
 
-        Assert.assertFalse(
-                "Found locale event though none should have been available.",
-                exactLocaleMatch.isPresent());
+        Assert.assertFalse("Found locale event though none should have been available.", exactLocaleMatch.isPresent());
     }
 
 }

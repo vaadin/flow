@@ -42,30 +42,24 @@ public class RouteBasicIT extends AbstractSpringTest {
     }
 
     @Test
-    public void uiScopedProxiedTargetView_shouldUseSameViewInstance()
-            throws Exception {
+    public void uiScopedProxiedTargetView_shouldUseSameViewInstance() throws Exception {
         getDriver().get(getTestURL() + "proxied");
         waitForDevServer();
 
         String prevUuid = null;
         AtomicReference<String> prevCounter = new AtomicReference<>("");
         for (int i = 0; i < 5; i++) {
-            String uuid = waitUntil(d -> d.findElement(By.id("COMPONENT_ID")))
-                    .getText();
+            String uuid = waitUntil(d -> d.findElement(By.id("COMPONENT_ID"))).getText();
 
-            waitUntil(d -> !prevCounter.get()
-                    .equals(d.findElement(By.id("CLICK_COUNTER")).getText()));
+            waitUntil(d -> !prevCounter.get().equals(d.findElement(By.id("CLICK_COUNTER")).getText()));
 
             if (prevUuid != null) {
-                Assert.assertEquals("UUID should not have been changed",
-                        prevUuid, uuid);
+                Assert.assertEquals("UUID should not have been changed", prevUuid, uuid);
             } else {
                 prevUuid = uuid;
             }
             String counter = findElement(By.id("CLICK_COUNTER")).getText();
-            Assert.assertEquals(
-                    "Parameter and counter should have the same value",
-                    "P:" + i + ", C:" + i, counter);
+            Assert.assertEquals("Parameter and counter should have the same value", "P:" + i + ", C:" + i, counter);
 
             prevCounter.set(counter);
 

@@ -31,24 +31,21 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * A fake DevModeHandler whose only purpose is to eagerly show a "build in
- * progress" HTML page to the user, during the creation of the development
- * bundle.
+ * A fake DevModeHandler whose only purpose is to eagerly show a "build in progress" HTML page to the user, during the
+ * creation of the development bundle.
  * <p>
  * </p>
- * The {@link #getPort()} method returns a fixed value of {@literal -1}, meaning
- * that this handler will not start a server listening for incoming requests.
+ * The {@link #getPort()} method returns a fixed value of {@literal -1}, meaning that this handler will not start a
+ * server listening for incoming requests.
  * <p>
  * </p>
- * Most of the other methods should not be invoked, and they may throw an
- * exception if called.
+ * Most of the other methods should not be invoked, and they may throw an exception if called.
  */
 public final class DevBundleBuildingHandler implements DevModeHandler {
 
     private final transient CompletableFuture<Void> buildCompletedFuture;
 
-    public DevBundleBuildingHandler(
-            CompletableFuture<Void> buildCompletedFuture) {
+    public DevBundleBuildingHandler(CompletableFuture<Void> buildCompletedFuture) {
         this.buildCompletedFuture = buildCompletedFuture;
     }
 
@@ -63,8 +60,7 @@ public final class DevBundleBuildingHandler implements DevModeHandler {
     }
 
     @Override
-    public boolean serveDevModeRequest(HttpServletRequest request,
-            HttpServletResponse response) {
+    public boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) {
         return false;
     }
 
@@ -89,17 +85,16 @@ public final class DevBundleBuildingHandler implements DevModeHandler {
     }
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
-        return AbstractDevServerRunner.handleRequestInternal(request, response,
-                buildCompletedFuture, new AtomicBoolean());
+    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
+        return AbstractDevServerRunner.handleRequestInternal(request, response, buildCompletedFuture,
+                new AtomicBoolean());
     }
 
     /**
      * Waits for the dev bundle to be built.
      * <p>
-     * Suspends the caller's thread until the dev bundle is created (or failed
-     * to create).
+     * Suspends the caller's thread until the dev bundle is created (or failed to create).
      */
     public void waitForDevBundle() {
         buildCompletedFuture.join();

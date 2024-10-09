@@ -35,11 +35,10 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 
 /**
- * Primary target of this IT is class scanning of DevModeServletContextListener
- * in {@link com.vaadin.flow.spring.VaadinServletContextInitializer} and
- * especially usage of {@code vaadin.blocked-packages} and
- * {@code vaadin.allowed-packages} in a multi-module Maven project with jar
- * packaged dependencies.
+ * Primary target of this IT is class scanning of DevModeServletContextListener in
+ * {@link com.vaadin.flow.spring.VaadinServletContextInitializer} and especially usage of
+ * {@code vaadin.blocked-packages} and {@code vaadin.allowed-packages} in a multi-module Maven project with jar packaged
+ * dependencies.
  */
 public class ClassScannerIT extends ChromeBrowserTest {
 
@@ -54,8 +53,7 @@ public class ClassScannerIT extends ChromeBrowserTest {
     public void libAllowedModule_withAllowedPackagesJar() {
         open();
         assertClassAllowed(AllowedRoute.class.getSimpleName());
-        assertClassAllowed(
-                CustomVaadinServiceInitListener.class.getSimpleName());
+        assertClassAllowed(CustomVaadinServiceInitListener.class.getSimpleName());
         assertClassBlocked(BlockedRoute.class.getSimpleName());
     }
 
@@ -63,8 +61,7 @@ public class ClassScannerIT extends ChromeBrowserTest {
     public void libBlockedModule_withBlockedPackagesJar() {
         open();
         assertClassBlocked(ScannedBlockedRoute.class.getSimpleName());
-        assertClassBlocked(
-                BlockedCustomVaadinServiceInitListener.class.getSimpleName());
+        assertClassBlocked(BlockedCustomVaadinServiceInitListener.class.getSimpleName());
         assertClassAllowed(ScannedAllowedRoute.class.getSimpleName());
     }
 
@@ -83,18 +80,16 @@ public class ClassScannerIT extends ChromeBrowserTest {
     }
 
     private void assertClassAllowed(String className) {
-        Assert.assertTrue(className + " should be allowed.",
-                getScannedClasses().contains(className));
+        Assert.assertTrue(className + " should be allowed.", getScannedClasses().contains(className));
     }
 
     private void assertClassBlocked(String className) {
-        Assert.assertFalse(className + " should be blocked.",
-                getScannedClasses().contains(className));
+        Assert.assertFalse(className + " should be blocked.", getScannedClasses().contains(className));
     }
 
     private List<String> getScannedClasses() {
-        return Stream.of(findElement(By.id(ClassScannerView.SCANNED_CLASSES))
-                .getText().split(",")).map(String::trim).toList();
+        return Stream.of(findElement(By.id(ClassScannerView.SCANNED_CLASSES)).getText().split(",")).map(String::trim)
+                .toList();
     }
 
     @Override

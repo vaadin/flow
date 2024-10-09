@@ -44,8 +44,7 @@ public class InvalidateHttpSessionView extends Div {
 
         add(div);
 
-        SessionId closedSessionId = attachEvent.getSession().getService()
-                .getContext().getAttribute(SessionId.class);
+        SessionId closedSessionId = attachEvent.getSession().getService().getContext().getAttribute(SessionId.class);
         if (closedSessionId != null) {
             div = new Div();
             div.setText(closedSessionId.id);

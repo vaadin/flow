@@ -25,7 +25,6 @@ public class PushSettingsView extends AbstractDivView {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         setId("pushMode");
-        setText("Push mode: "
-                + attachEvent.getUI().getPushConfiguration().getPushMode());
+        setText("Push mode: " + attachEvent.getUI().getPushConfiguration().getPushMode());
     }
 }

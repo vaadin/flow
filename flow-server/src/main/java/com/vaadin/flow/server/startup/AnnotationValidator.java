@@ -27,16 +27,15 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
- * Validation class that is run during servlet container initialization which
- * checks that specific annotations are not configured wrong.
+ * Validation class that is run during servlet container initialization which checks that specific annotations are not
+ * configured wrong.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */
 @HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
-public class AnnotationValidator extends AbstractAnnotationValidator
-        implements VaadinServletContextStartupInitializer {
+public class AnnotationValidator extends AbstractAnnotationValidator implements VaadinServletContextStartupInitializer {
 
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context) {
@@ -45,8 +44,7 @@ public class AnnotationValidator extends AbstractAnnotationValidator
 
     @Override
     public List<Class<?>> getAnnotations() {
-        return Arrays.asList(
-                this.getClass().getAnnotation(HandlesTypes.class).value());
+        return Arrays.asList(this.getClass().getAnnotation(HandlesTypes.class).value());
     }
 
 }

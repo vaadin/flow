@@ -21,8 +21,7 @@ import java.util.EventListener;
 import com.vaadin.flow.component.Component;
 
 /**
- * A listener for listening to selection changes on a single selection
- * component.
+ * A listener for listening to selection changes on a single selection component.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -36,8 +35,7 @@ import com.vaadin.flow.component.Component;
  * @see SingleSelectionEvent
  */
 @FunctionalInterface
-public interface SingleSelectionListener<C extends Component, T>
-        extends Serializable, EventListener {
+public interface SingleSelectionListener<C extends Component, T> extends Serializable, EventListener {
 
     /**
      * Invoked when selection has been changed.

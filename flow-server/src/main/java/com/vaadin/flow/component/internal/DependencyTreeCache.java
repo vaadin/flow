@@ -40,8 +40,7 @@ import com.vaadin.flow.function.SerializableFunction;
  */
 public class DependencyTreeCache<T> implements Serializable {
     /**
-     * Maps a path to a list of dependencies or a placeholder indicating that
-     * parsing is in progress.
+     * Maps a path to a list of dependencies or a placeholder indicating that parsing is in progress.
      */
     private final ConcurrentHashMap<T, Object> cache = new ConcurrentHashMap<>();
 
@@ -51,17 +50,14 @@ public class DependencyTreeCache<T> implements Serializable {
      * Creates a dependency cache with the given dependency parser.
      *
      * @param dependencyParser
-     *            a potentially slow callback function that finds the direct
-     *            dependencies for any given value
+     *            a potentially slow callback function that finds the direct dependencies for any given value
      */
-    public DependencyTreeCache(
-            SerializableFunction<T, Collection<T>> dependencyParser) {
+    public DependencyTreeCache(SerializableFunction<T, Collection<T>> dependencyParser) {
         this.dependencyParser = dependencyParser;
     }
 
     /**
-     * Collects all transitive dependencies of the given node, including the
-     * node itself.
+     * Collects all transitive dependencies of the given node, including the node itself.
      *
      * @param node
      *            the node for which to collect dependencies
@@ -85,15 +81,13 @@ public class DependencyTreeCache<T> implements Serializable {
             // Restore interrupted state
             Thread.currentThread().interrupt();
 
-            throw new RuntimeException(
-                    "Interrupted while finding dependencies for " + node, e);
+            throw new RuntimeException("Interrupted while finding dependencies for " + node, e);
         }
 
         return result;
     }
 
-    private Collection<T> getOrParseDependencies(T node)
-            throws InterruptedException {
+    private Collection<T> getOrParseDependencies(T node) throws InterruptedException {
         Object placeholder = new Object();
         Object valueOrPlaceholder = cache.putIfAbsent(node, placeholder);
         if (valueOrPlaceholder instanceof Collection<?>) {
@@ -106,11 +100,9 @@ public class DependencyTreeCache<T> implements Serializable {
             return dependencies;
         } else if (valueOrPlaceholder == null) {
             /*
-             * No previous value in the cache. This means that we were the first
-             * to look for this node. In that case, we should use the parser to
-             * find dependencies and then notify anyone else who have found the
-             * placeholder we put into the cache and is now waiting for the real
-             * result.
+             * No previous value in the cache. This means that we were the first to look for this node. In that case, we
+             * should use the parser to find dependencies and then notify anyone else who have found the placeholder we
+             * put into the cache and is now waiting for the real result.
              */
             Collection<T> dependencies = dependencyParser.apply(node);
 
@@ -123,27 +115,23 @@ public class DependencyTreeCache<T> implements Serializable {
             return dependencies;
         } else {
             /*
-             * We got a placeholder that has been put there by another thread.
-             * Wait until the other thread is done parsing and has put the real
-             * dependencies into the cache.
+             * We got a placeholder that has been put there by another thread. Wait until the other thread is done
+             * parsing and has put the real dependencies into the cache.
              */
             return waitForDependencies(node, valueOrPlaceholder);
         }
     }
 
-    private Collection<T> waitForDependencies(T node, Object placeholder)
-            throws InterruptedException {
+    private Collection<T> waitForDependencies(T node, Object placeholder) throws InterruptedException {
         synchronized (placeholder) {
             // Loop because of spurious wakeups
             while (true) {
                 Object valueOrPlaceholder = cache.get(node);
                 if (valueOrPlaceholder == null) {
                     /*
-                     * Special case if clear() happens after a result was added
-                     * to the cache, but before this thread got notified. Ensure
-                     * that parsing happens again. The end result is thus the
-                     * same as if clear() happened already before this thread
-                     * found the placeholder.
+                     * Special case if clear() happens after a result was added to the cache, but before this thread got
+                     * notified. Ensure that parsing happens again. The end result is thus the same as if clear()
+                     * happened already before this thread found the placeholder.
                      */
                     return getOrParseDependencies(node);
                 } else if (valueOrPlaceholder != placeholder) {
@@ -152,18 +140,13 @@ public class DependencyTreeCache<T> implements Serializable {
                     Collection<T> dependencies = (Collection<T>) valueOrPlaceholder;
 
                     /*
-                     * The thread that did the parsing will most likely be
-                     * working on the first dependency by the time we get here.
-                     * To reduce the risk that we'll end up waiting for the same
-                     * thread again when traversing children, we randomize our
-                     * own traversal order. This increases the probability that
-                     * all threads querying for the same information will
-                     * contribute the needed parsing work.
+                     * The thread that did the parsing will most likely be working on the first dependency by the time
+                     * we get here. To reduce the risk that we'll end up waiting for the same thread again when
+                     * traversing children, we randomize our own traversal order. This increases the probability that
+                     * all threads querying for the same information will contribute the needed parsing work.
                      */
-                    List<T> shuffledDependencies = new ArrayList<>(
-                            dependencies);
-                    Collections.shuffle(shuffledDependencies,
-                            ThreadLocalRandom.current());
+                    List<T> shuffledDependencies = new ArrayList<>(dependencies);
+                    Collections.shuffle(shuffledDependencies, ThreadLocalRandom.current());
                     return shuffledDependencies;
                 }
 
@@ -173,9 +156,8 @@ public class DependencyTreeCache<T> implements Serializable {
     }
 
     /**
-     * Clears all the contents of the cache. A lookup that is in progress while
-     * the cache is cleared may return a result that combines previously cached
-     * dependencies with newly parsed dependencies.
+     * Clears all the contents of the cache. A lookup that is in progress while the cache is cleared may return a result
+     * that combines previously cached dependencies with newly parsed dependencies.
      */
     public void clear() {
         cache.clear();

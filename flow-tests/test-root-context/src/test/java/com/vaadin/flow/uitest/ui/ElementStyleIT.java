@@ -14,9 +14,9 @@ public class ElementStyleIT extends ChromeBrowserTest {
         DivElement red = $(DivElement.class).id("red-border");
         DivElement green = $(DivElement.class).id("green-border");
 
-        Assert.assertEquals(ElementStyleView.RED_BORDER, executeScript(
-                "return getComputedStyle(arguments[0]).border", red));
-        Assert.assertEquals(ElementStyleView.GREEN_BORDER, executeScript(
-                "return getComputedStyle(arguments[0]).border", green));
+        Assert.assertEquals(ElementStyleView.RED_BORDER,
+                executeScript("return getComputedStyle(arguments[0]).border", red));
+        Assert.assertEquals(ElementStyleView.GREEN_BORDER,
+                executeScript("return getComputedStyle(arguments[0]).border", green));
     }
 }

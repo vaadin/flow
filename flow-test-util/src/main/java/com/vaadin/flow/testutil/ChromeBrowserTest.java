@@ -43,12 +43,10 @@ import com.vaadin.testbench.parallel.Browser;
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
  * <p>
- * It is required to set system property with path to the driver to be able to
- * run the test.
+ * It is required to set system property with path to the driver to be able to run the test.
  * <p>
- * The test can be executed locally and on a test Hub. Chrome browser is used
- * only if test is executed locally. The test Hub target browsers can be
- * configured via {@link #getHubBrowsersToTest()}.
+ * The test can be executed locally and on a test Hub. Chrome browser is used only if test is executed locally. The test
+ * Hub target browsers can be configured via {@link #getHubBrowsersToTest()}.
  *
  *
  * @author Vaadin Ltd
@@ -71,11 +69,9 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
 
         // Log CDP mismatch message only once
-        java.util.logging.Logger rootLogger = java.util.logging.Logger
-                .getLogger("");
+        java.util.logging.Logger rootLogger = java.util.logging.Logger.getLogger("");
         java.util.logging.Handler handler = new ConsoleHandler();
-        Arrays.stream(rootLogger.getHandlers())
-                .forEach(rootLogger::removeHandler);
+        Arrays.stream(rootLogger.getHandlers()).forEach(rootLogger::removeHandler);
         rootLogger.addHandler(handler);
         handler.setFilter(new Filter() {
             @Override
@@ -96,16 +92,14 @@ public class ChromeBrowserTest extends ViewOrUITest {
     @Override
     public void setup() throws Exception {
         if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver(
-                    this::updateHeadlessChromeOptions));
+            setDriver(createHeadlessChromeDriver(this::updateHeadlessChromeOptions));
         } else {
             super.setup();
         }
     }
 
     /**
-     * Allows modifying the chrome options to be used when running on a local
-     * Chrome.
+     * Allows modifying the chrome options to be used when running on a local Chrome.
      *
      * @param chromeOptions
      *            chrome options to use when running on a local Chrome
@@ -114,36 +108,30 @@ public class ChromeBrowserTest extends ViewOrUITest {
     }
 
     static boolean isJavaInDebugMode() {
-        return ManagementFactory.getRuntimeMXBean().getInputArguments()
-                .toString().contains("jdwp");
+        return ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains("jdwp");
     }
 
-    static WebDriver createHeadlessChromeDriver(
-            Consumer<ChromeOptions> optionsUpdater) {
+    static WebDriver createHeadlessChromeDriver(Consumer<ChromeOptions> optionsUpdater) {
         for (int i = 0; i < 3; i++) {
             try {
                 return tryCreateHeadlessChromeDriver(optionsUpdater);
             } catch (Exception e) {
-                getLogger().warn(
-                        "Unable to create chromedriver on attempt " + i, e);
+                getLogger().warn("Unable to create chromedriver on attempt " + i, e);
             }
         }
-        throw new RuntimeException(
-                "Gave up trying to create a chromedriver instance");
+        throw new RuntimeException("Gave up trying to create a chromedriver instance");
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ChromeBrowserTest.class);
     }
 
-    private static WebDriver tryCreateHeadlessChromeDriver(
-            Consumer<ChromeOptions> optionsUpdater) {
+    private static WebDriver tryCreateHeadlessChromeDriver(Consumer<ChromeOptions> optionsUpdater) {
         ChromeOptions headlessOptions = createHeadlessChromeOptions();
         optionsUpdater.accept(headlessOptions);
 
         int port = PortProber.findFreePort();
-        ChromeDriverService service = new ChromeDriverService.Builder()
-                .usingPort(port).withSilent(true).build();
+        ChromeDriverService service = new ChromeDriverService.Builder().usingPort(port).withSilent(true).build();
         ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
         return TestBench.createDriver(chromeDriver);
     }
@@ -154,18 +142,14 @@ public class ChromeBrowserTest extends ViewOrUITest {
     }
 
     @Override
-    protected List<DesiredCapabilities> getBrowserCapabilities(
-            Browser... browsers) {
+    protected List<DesiredCapabilities> getBrowserCapabilities(Browser... browsers) {
         return customizeCapabilities(super.getBrowserCapabilities(browsers));
     }
 
-    protected List<DesiredCapabilities> customizeCapabilities(
-            List<DesiredCapabilities> capabilities) {
+    protected List<DesiredCapabilities> customizeCapabilities(List<DesiredCapabilities> capabilities) {
 
-        capabilities.stream()
-                .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
-                .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
-                        createHeadlessChromeOptions()));
+        capabilities.stream().filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+                .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY, createHeadlessChromeOptions()));
 
         return capabilities;
     }

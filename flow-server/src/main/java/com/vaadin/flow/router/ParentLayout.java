@@ -36,8 +36,7 @@ public @interface ParentLayout {
     /**
      * Sets the parent component for the route target component.
      * <p>
-     * When navigating between components that use the same layout, the same
-     * component instance is reused.
+     * When navigating between components that use the same layout, the same component instance is reused.
      *
      * @return the layout component class used by the route target component.
      */

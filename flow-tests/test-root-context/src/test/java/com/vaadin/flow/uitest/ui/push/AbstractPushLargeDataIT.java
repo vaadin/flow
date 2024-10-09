@@ -36,7 +36,6 @@ public abstract class AbstractPushLargeDataIT extends AbstractLogTest {
         Thread.sleep(PushLargeData.DEFAULT_DURATION_MS);
 
         // Wait until push is actually done
-        waitUntil(
-                textToBePresentInElement(() -> getLastLog(), "Push complete"));
+        waitUntil(textToBePresentInElement(() -> getLastLog(), "Push complete"));
     }
 }

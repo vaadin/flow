@@ -21,14 +21,11 @@ import java.util.Comparator;
 /**
  * A {@link Comparator} that is also {@link Serializable}.
  * <p>
- * You can create a serializable comparator from a regular comparator through a
- * method reference by appending <code>::compare</code>. For example
- * <code>SerializableComparator&lt;Employee&gt;
- * comparator = Comparator.comparing(Employee::getFirstName)::compare</code>.
- * The resulting comparator will in most cases cause exceptions if it is
- * actually being serialized, but this construct will enable using the
- * shorthands in {@link Comparator} in applications where session will not be
- * serialized.
+ * You can create a serializable comparator from a regular comparator through a method reference by appending
+ * <code>::compare</code>. For example <code>SerializableComparator&lt;Employee&gt;
+ * comparator = Comparator.comparing(Employee::getFirstName)::compare</code>. The resulting comparator will in most
+ * cases cause exceptions if it is actually being serialized, but this construct will enable using the shorthands in
+ * {@link Comparator} in applications where session will not be serialized.
  *
  * @author Vaadin Ltd
  * @since 1.0

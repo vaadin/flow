@@ -37,8 +37,7 @@ public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
     }
 
     protected String getAttachId() {
-        return findElement(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER))
-                .getText();
+        return findElement(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
     }
 
     protected void waitForLiveReload() {

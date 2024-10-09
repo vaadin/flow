@@ -62,16 +62,14 @@ public class RequestUtil {
     /**
      * Checks whether the request is an internal request.
      *
-     * An internal request is one that is needed for all Vaadin applications to
-     * function, e.g. UIDL or init requests.
+     * An internal request is one that is needed for all Vaadin applications to function, e.g. UIDL or init requests.
      *
-     * Note that bootstrap requests for any route or static resource requests
-     * are not internal, neither are resource requests for the JS bundle.
+     * Note that bootstrap requests for any route or static resource requests are not internal, neither are resource
+     * requests for the JS bundle.
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is Vaadin internal, {@code false}
-     *         otherwise
+     * @return {@code true} if the request is Vaadin internal, {@code false} otherwise
      */
     public boolean isFrameworkInternalRequest(HttpServletRequest request) {
         String vaadinMapping = configurationProperties.getUrlMapping();
@@ -83,8 +81,7 @@ public class RequestUtil {
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting an enpoint,
-     *         {@code false} otherwise
+     * @return {@code true} if the request is targeting an enpoint, {@code false} otherwise
      */
     public boolean isEndpointRequest(HttpServletRequest request) {
         if (endpointRequestUtil != null) {
@@ -94,13 +91,11 @@ public class RequestUtil {
     }
 
     /**
-     * Checks whether the request targets an endpoint that is public, i.e.
-     * marked as @{@link AnonymousAllowed}.
+     * Checks whether the request targets an endpoint that is public, i.e. marked as @{@link AnonymousAllowed}.
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting an anonymous endpoint,
-     *         {@code false} otherwise
+     * @return {@code true} if the request is targeting an anonymous endpoint, {@code false} otherwise
      */
     public boolean isAnonymousEndpoint(HttpServletRequest request) {
         if (endpointRequestUtil != null) {
@@ -110,13 +105,11 @@ public class RequestUtil {
     }
 
     /**
-     * Checks if the request targets a Hilla view that is allowed according to
-     * its configuration and the current user.
+     * Checks if the request targets a Hilla view that is allowed according to its configuration and the current user.
      *
      * @param request
      *            the HTTP request to check
-     * @return {@code true} if the request corresponds to an accessible Hilla
-     *         view, {@code false} otherwise
+     * @return {@code true} if the request corresponds to an accessible Hilla view, {@code false} otherwise
      */
     public boolean isAllowedHillaView(HttpServletRequest request) {
         if (fileRouterRequestUtil != null) {
@@ -126,13 +119,11 @@ public class RequestUtil {
     }
 
     /**
-     * Checks whether the request targets a Flow route that is public, i.e.
-     * marked as @{@link AnonymousAllowed}.
+     * Checks whether the request targets a Flow route that is public, i.e. marked as @{@link AnonymousAllowed}.
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting an anonymous route,
-     *         {@code false} otherwise
+     * @return {@code true} if the request is targeting an anonymous route, {@code false} otherwise
      */
     public boolean isAnonymousRoute(HttpServletRequest request) {
         if (ROUTE_PATH_MATCHER_RUNNING.get() == null) {
@@ -154,19 +145,18 @@ public class RequestUtil {
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting a custom PWA icon or a
-     *         custom favicon path, {@code false} otherwise
+     * @return {@code true} if the request is targeting a custom PWA icon or a custom favicon path, {@code false}
+     *         otherwise
      */
     public boolean isCustomWebIcon(HttpServletRequest request) {
         if (webIconsRequestMatcher == null) {
-            VaadinServletService vaadinService = springServletRegistration
-                    .getServlet().getService();
+            VaadinServletService vaadinService = springServletRegistration.getServlet().getService();
             if (vaadinService != null) {
-                webIconsRequestMatcher = new WebIconsRequestMatcher(
-                        vaadinService, configurationProperties.getUrlMapping());
+                webIconsRequestMatcher = new WebIconsRequestMatcher(vaadinService,
+                        configurationProperties.getUrlMapping());
             } else {
-                getLogger().debug(
-                        "WebIconsRequestMatcher cannot be created because VaadinService is not yet available. "
+                getLogger()
+                        .debug("WebIconsRequestMatcher cannot be created because VaadinService is not yet available. "
                                 + "This may happen after a hot-reload, and can cause requests for icons to be blocked by Spring Security.");
                 return false;
             }
@@ -179,35 +169,28 @@ public class RequestUtil {
      *
      * @param patterns
      *            and patterns
-     * @return an array or {@link RequestMatcher} instances for the given
-     *         patterns.
+     * @return an array or {@link RequestMatcher} instances for the given patterns.
      */
     public static RequestMatcher[] antMatchers(String... patterns) {
-        return Stream.of(patterns).map(AntPathRequestMatcher::new)
-                .toArray(RequestMatcher[]::new);
+        return Stream.of(patterns).map(AntPathRequestMatcher::new).toArray(RequestMatcher[]::new);
     }
 
     /**
-     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
-     * patterns and HTTP get method.
+     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant patterns and HTTP get method.
      *
      * @param patterns
      *            and patterns
-     * @return an array or {@link RequestMatcher} instances for the given
-     *         patterns.
+     * @return an array or {@link RequestMatcher} instances for the given patterns.
      */
     public static RequestMatcher[] routeMatchers(String... patterns) {
-        return Stream.of(patterns)
-                .map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))
+        return Stream.of(patterns).map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))
                 .toArray(RequestMatcher[]::new);
     }
 
     private boolean isAnonymousRouteInternal(HttpServletRequest request) {
         String vaadinMapping = configurationProperties.getUrlMapping();
-        String requestedPath = HandlerHelper
-                .getRequestPathInsideContext(request);
-        Optional<String> maybePath = HandlerHelper
-                .getPathIfInsideServlet(vaadinMapping, requestedPath);
+        String requestedPath = HandlerHelper.getRequestPathInsideContext(request);
+        Optional<String> maybePath = HandlerHelper.getPathIfInsideServlet(vaadinMapping, requestedPath);
         if (maybePath.isEmpty()) {
             return false;
         }
@@ -228,8 +211,7 @@ public class RequestUtil {
         Router router = service.getRouter();
         RouteRegistry routeRegistry = router.getRegistry();
 
-        NavigationRouteTarget target = routeRegistry
-                .getNavigationRouteTarget(path);
+        NavigationRouteTarget target = routeRegistry.getNavigationRouteTarget(path);
         if (target == null) {
             return false;
         }
@@ -237,16 +219,13 @@ public class RequestUtil {
         if (routeTarget == null) {
             return false;
         }
-        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
-                .getTarget();
+        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget.getTarget();
         if (targetView == null) {
             return false;
         }
 
-        boolean productionMode = service.getDeploymentConfiguration()
-                .isProductionMode();
-        NavigationAccessControl navigationAccessControl = accessControl
-                .getObject();
+        boolean productionMode = service.getDeploymentConfiguration().isProductionMode();
+        NavigationAccessControl navigationAccessControl = accessControl.getObject();
         if (!navigationAccessControl.isEnabled()) {
             String message = "Navigation Access Control is disabled. Cannot determine if {} refers to a public view, thus access is denied. Please add an explicit request matcher rule for this URL.";
             if (productionMode) {
@@ -257,21 +236,16 @@ public class RequestUtil {
             return false;
         }
 
-        NavigationContext navigationContext = new NavigationContext(router,
-                targetView,
-                new Location(path,
-                        QueryParameters.full(request.getParameterMap())),
-                target.getRouteParameters(), null, role -> false, false);
+        NavigationContext navigationContext = new NavigationContext(router, targetView,
+                new Location(path, QueryParameters.full(request.getParameterMap())), target.getRouteParameters(), null,
+                role -> false, false);
 
-        AccessCheckResult result = navigationAccessControl
-                .checkAccess(navigationContext, productionMode);
+        AccessCheckResult result = navigationAccessControl.checkAccess(navigationContext, productionMode);
         boolean isAllowed = result.decision() == AccessCheckDecision.ALLOW;
         if (isAllowed) {
             getLogger().debug("{} refers to a public view", path);
         } else {
-            getLogger().debug(
-                    "Access to {} denied by Flow navigation access control. {}",
-                    path, result.reason());
+            getLogger().debug("Access to {} denied by Flow navigation access control. {}", path, result.reason());
         }
         return isAllowed;
     }
@@ -283,8 +257,7 @@ public class RequestUtil {
     /**
      * Prepends to the given {@code path} with the configured url mapping.
      *
-     * A {@literal null} path is treated as empty string; the same applies for
-     * url mapping.
+     * A {@literal null} path is treated as empty string; the same applies for url mapping.
      *
      * @return the path with prepended url mapping.
      * @see VaadinConfigurationProperties#getUrlMapping()
@@ -294,11 +267,9 @@ public class RequestUtil {
     }
 
     /**
-     * Prepends to the given {@code path} with the servlet path prefix from
-     * input url mapping.
+     * Prepends to the given {@code path} with the servlet path prefix from input url mapping.
      *
-     * A {@literal null} path is treated as empty string; the same applies for
-     * url mapping.
+     * A {@literal null} path is treated as empty string; the same applies for url mapping.
      *
      * @return the path with prepended url mapping.
      * @see VaadinConfigurationProperties#getUrlMapping()

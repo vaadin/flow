@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * Handler for static files. The handler should be responsible in identifying
- * and serving the static files, based on the servlet request.
+ * Handler for static files. The handler should be responsible in identifying and serving the static files, based on the
+ * servlet request.
  *
  * @author Vaadin Ltd.
  * @since 1.3
@@ -33,19 +33,16 @@ import java.io.Serializable;
 public interface StaticFileHandler extends Serializable {
 
     /**
-     * Serves a static resource for the requested path if a resource can be
-     * found.
+     * Serves a static resource for the requested path if a resource can be found.
      *
      * @param request
      *            the request object to read from
      * @param response
      *            the response object to write to
-     * @return <code>true</code> if a file was served and the request has been
-     *         handled, <code>false</code> otherwise.
+     * @return <code>true</code> if a file was served and the request has been handled, <code>false</code> otherwise.
      * @throws IOException
      *             if the underlying servlet container reports an exception
      */
-    boolean serveStaticResource(HttpServletRequest request,
-            HttpServletResponse response) throws IOException;
+    boolean serveStaticResource(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
 }

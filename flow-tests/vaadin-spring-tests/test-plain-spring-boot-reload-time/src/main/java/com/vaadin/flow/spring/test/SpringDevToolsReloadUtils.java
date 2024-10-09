@@ -24,20 +24,15 @@ import java.util.stream.IntStream;
 
 public class SpringDevToolsReloadUtils {
 
-    public static String runAndCalculateAverageResult(
-            int numberOfTimesToRunTest, Supplier<String> test) {
+    public static String runAndCalculateAverageResult(int numberOfTimesToRunTest, Supplier<String> test) {
         var allResults = new ArrayList<BigDecimal>();
-        IntStream.range(0, numberOfTimesToRunTest).forEach(index -> allResults
-                .add(BigDecimal.valueOf(Double.parseDouble(test.get()))));
-        System.out.printf("Test run %s times. All results: [%s]%n",
-                numberOfTimesToRunTest,
-                allResults.stream().map(BigDecimal::toString)
-                        .collect(Collectors.joining(",")));
+        IntStream.range(0, numberOfTimesToRunTest)
+                .forEach(index -> allResults.add(BigDecimal.valueOf(Double.parseDouble(test.get()))));
+        System.out.printf("Test run %s times. All results: [%s]%n", numberOfTimesToRunTest,
+                allResults.stream().map(BigDecimal::toString).collect(Collectors.joining(",")));
 
-        var result = allResults.stream().reduce(BigDecimal::add)
-                .orElse(BigDecimal.ZERO)
-                .divide(BigDecimal.valueOf(allResults.size()),
-                        RoundingMode.UNNECESSARY);
+        var result = allResults.stream().reduce(BigDecimal::add).orElse(BigDecimal.ZERO)
+                .divide(BigDecimal.valueOf(allResults.size()), RoundingMode.UNNECESSARY);
 
         return result.toString();
     }

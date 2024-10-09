@@ -39,9 +39,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         waitForServiceWorkerReady();
 
         boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())
-                .executeAsyncScript(
-                        "const resolve = arguments[arguments.length - 1];"
-                                + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
+                .executeAsyncScript("const resolve = arguments[arguments.length - 1];"
+                        + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
         Assert.assertTrue("service worker not installed", serviceWorkerActive);
     }
 
@@ -50,34 +49,28 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         openPageAndPreCacheWhenDevelopmentMode("/");
 
         // Confirm that app shell is loaded
-        Assert.assertNotNull("Should have outlet when loaded online",
-                findElement(By.id("outlet")));
+        Assert.assertNotNull("Should have outlet when loaded online", findElement(By.id("outlet")));
 
         // Confirm that client side view is loaded
-        Assert.assertNotNull(
-                "Should have <about-view> in DOM when loaded online",
+        Assert.assertNotNull("Should have <about-view> in DOM when loaded online",
                 findElement(By.tagName("about-view")));
 
         // Set offline network conditions in ChromeDriver
         getDevTools().setOfflineEnabled(true);
 
         try {
-            Assert.assertEquals("navigator.onLine should be false", false,
-                    executeScript("return navigator.onLine"));
+            Assert.assertEquals("navigator.onLine should be false", false, executeScript("return navigator.onLine"));
 
             // Reload the page in offline mode
             executeScript("window.location.reload();");
-            waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                    .executeScript("return document.readyState")
+            waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                     .equals("complete"));
 
             // Confirm that app shell is loaded
-            Assert.assertNotNull("Should have outlet when loaded offline",
-                    findElement(By.id("outlet")));
+            Assert.assertNotNull("Should have outlet when loaded offline", findElement(By.id("outlet")));
 
             // Confirm that client side view is loaded
-            Assert.assertNotNull(
-                    "Should have <about-view> in DOM when loaded offline",
+            Assert.assertNotNull("Should have <about-view> in DOM when loaded offline",
                     findElement(By.tagName("about-view")));
         } finally {
             // Reset network conditions back
@@ -92,8 +85,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div")
-                    .id("another-content").isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div").id("another-content").isDisplayed());
         };
         openPageAndPreCacheWhenDevelopmentMode("/", navigate);
 
@@ -104,15 +96,12 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             navigate.run();
             // Reload the page in offline mode
             executeScript("window.location.reload();");
-            waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                    .executeScript("return document.readyState")
+            waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                     .equals("complete"));
 
-            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
-                    CoreMatchers.endsWith("/another"));
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/another"));
             TestBenchElement anotherView = $("another-view").first();
-            Assert.assertTrue(
-                    anotherView.$("*").id("another-content").isDisplayed());
+            Assert.assertTrue(anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
             getDevTools().setOfflineEnabled(false);
@@ -126,8 +115,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div")
-                    .id("another-content").isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div").id("another-content").isDisplayed());
         };
         openPageAndPreCacheWhenDevelopmentMode("/", navigate);
 
@@ -139,24 +127,18 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Reload the page in offline mode
             executeScript("window.location.reload();");
-            waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                    .executeScript("return document.readyState")
+            waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                     .equals("complete"));
 
-            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
-                    CoreMatchers.endsWith("/another"));
-            TestBenchElement anotherView = waitUntil(
-                    driver -> $("another-view").first());
-            Assert.assertTrue(
-                    anotherView.$("*").id("another-content").isDisplayed());
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/another"));
+            TestBenchElement anotherView = waitUntil(driver -> $("another-view").first());
+            Assert.assertTrue(anotherView.$("*").id("another-content").isDisplayed());
 
             // Verify <base href> by navigating with a relative link
             $("main-view").first().$("a").id("menu-about").click();
 
-            WebElement aboutView = waitUntil(
-                    driver -> findElement(By.tagName("about-view")));
-            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
-                    CoreMatchers.endsWith("/about"));
+            WebElement aboutView = waitUntil(driver -> findElement(By.tagName("about-view")));
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/about"));
             Assert.assertNotNull("Should have <about-view> in DOM", aboutView);
         } finally {
             // Reset network conditions back
@@ -171,13 +153,11 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div")
-                    .id("another-content").isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div").id("another-content").isDisplayed());
         };
         openPageAndPreCacheWhenDevelopmentMode("/about", navigate);
 
-        MatcherAssert.assertThat(getDriver().getCurrentUrl(),
-                CoreMatchers.endsWith("/about"));
+        MatcherAssert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/about"));
 
         // Set offline network conditions in ChromeDriver
         getDevTools().setOfflineEnabled(true);
@@ -185,11 +165,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         try {
 
             navigate.run();
-            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
-                    CoreMatchers.endsWith("/another"));
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/another"));
             TestBenchElement anotherView = $("another-view").first();
-            Assert.assertTrue(
-                    anotherView.$("*").id("another-content").isDisplayed());
+            Assert.assertTrue(anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
             getDevTools().setOfflineEnabled(false);
@@ -203,8 +181,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
-            waitUntil(input -> $("another-view").first().$("div")
-                    .id("another-content").isDisplayed());
+            waitUntil(input -> $("another-view").first().$("div").id("another-content").isDisplayed());
         };
         openPageAndPreCacheWhenDevelopmentMode("/hello", navigate);
 
@@ -214,11 +191,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         try {
             navigate.run();
 
-            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
-                    CoreMatchers.endsWith("/another"));
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/another"));
             TestBenchElement anotherView = $("another-view").first();
-            Assert.assertTrue(
-                    anotherView.$("*").id("another-content").isDisplayed());
+            Assert.assertTrue(anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
             getDevTools().setOfflineEnabled(false);
@@ -248,8 +223,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
         getDevTools().setOfflineEnabled(true);
         try {
-            waitUntil(driver -> $("main-view").first().$("a").id("menu-hello"))
-                    .click();
+            waitUntil(driver -> $("main-view").first().$("a").id("menu-hello")).click();
 
             waitForElementPresent(By.tagName("iframe"));
             WebElement offlineStub = findElement(By.tagName("iframe"));
@@ -303,8 +277,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         });
     }
 
-    private void openPageAndPreCacheWhenDevelopmentMode(String targetView,
-            Runnable activateViews) {
+    private void openPageAndPreCacheWhenDevelopmentMode(String targetView, Runnable activateViews) {
         getDriver().get(getRootURL() + targetView);
         waitForDevServer();
         waitForServiceWorkerReady();

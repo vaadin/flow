@@ -60,8 +60,7 @@ public class ErrorHandlerUtilTest {
     ApplicationRouteRegistry registry;
 
     @Tag("div")
-    protected static class ErrorView extends Component
-            implements HasErrorParameter<NullPointerException> {
+    protected static class ErrorView extends Component implements HasErrorParameter<NullPointerException> {
 
         public static boolean setError = false;
         public static boolean initialized = false;
@@ -72,8 +71,7 @@ public class ErrorHandlerUtilTest {
         }
 
         @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter<NullPointerException> parameter) {
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NullPointerException> parameter) {
             getElement().setText("Nope!");
             setError = true;
             return 0;
@@ -82,8 +80,7 @@ public class ErrorHandlerUtilTest {
 
     @Tag("div")
     @ParentLayout(ParentView.class)
-    protected static class ErrorWithParentView extends Component
-            implements HasErrorParameter<NullPointerException> {
+    protected static class ErrorWithParentView extends Component implements HasErrorParameter<NullPointerException> {
 
         public static boolean setError = false;
         public static boolean initialized = false;
@@ -94,8 +91,7 @@ public class ErrorHandlerUtilTest {
         }
 
         @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter<NullPointerException> parameter) {
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NullPointerException> parameter) {
             getElement().setText("Nope!");
             setError = true;
             return 0;
@@ -103,8 +99,7 @@ public class ErrorHandlerUtilTest {
     }
 
     @Tag("div")
-    protected static class ParentView extends Component
-            implements RouterLayout {
+    protected static class ParentView extends Component implements RouterLayout {
 
         public static boolean initialized = false;
 
@@ -132,23 +127,18 @@ public class ErrorHandlerUtilTest {
         session = new AlwaysLockedVaadinSession(vaadinService);
         VaadinContext context = new MockVaadinContext();
         Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(vaadinService.getInstantiator())
-                .thenReturn(new DefaultInstantiator(vaadinService));
+        Mockito.when(vaadinService.getInstantiator()).thenReturn(new DefaultInstantiator(vaadinService));
         internals.setSession(session);
         session.setConfiguration(Mockito.mock(DeploymentConfiguration.class));
-        Mockito.when(vaadinService.getRouter())
-                .thenReturn(Mockito.mock(Router.class));
+        Mockito.when(vaadinService.getRouter()).thenReturn(Mockito.mock(Router.class));
 
         Mockito.when(ui.getSession()).thenReturn(session);
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(config);
+        Mockito.when(vaadinService.getDeploymentConfiguration()).thenReturn(config);
 
-        Mockito.when(vaadinService.accessSession(
-                Mockito.any(VaadinSession.class), Mockito.any(Command.class)))
+        Mockito.when(vaadinService.accessSession(Mockito.any(VaadinSession.class), Mockito.any(Command.class)))
                 .thenCallRealMethod();
-        Mockito.when(ui.access(Mockito.any(Command.class)))
-                .thenCallRealMethod();
+        Mockito.when(ui.access(Mockito.any(Command.class))).thenCallRealMethod();
 
         registry = ApplicationRouteRegistry.getInstance(context);
 
@@ -164,16 +154,15 @@ public class ErrorHandlerUtilTest {
 
     @Test
     public void nullPointerException_executesErrorView() {
-        registry.setErrorNavigationTargets(
-                Collections.singleton(ErrorView.class));
+        registry.setErrorNavigationTargets(Collections.singleton(ErrorView.class));
 
         Assert.assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
 
-        session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
-                .handleError(new NullPointerException("NPE")));
+        session.getPendingAccessQueue()
+                .forEach(futureAccess -> futureAccess.handleError(new NullPointerException("NPE")));
 
         Assert.assertTrue(ErrorView.initialized);
         Assert.assertTrue(ErrorView.setError);
@@ -182,16 +171,15 @@ public class ErrorHandlerUtilTest {
 
     @Test
     public void illegalArgumentException_doesNotExecuteErrorView() {
-        registry.setErrorNavigationTargets(
-                Collections.singleton(ErrorView.class));
+        registry.setErrorNavigationTargets(Collections.singleton(ErrorView.class));
 
         Assert.assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
 
-        session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
-                .handleError(new IllegalArgumentException("IAE")));
+        session.getPendingAccessQueue()
+                .forEach(futureAccess -> futureAccess.handleError(new IllegalArgumentException("IAE")));
 
         Assert.assertFalse(ErrorView.initialized);
         Assert.assertFalse(ErrorView.setError);
@@ -200,16 +188,15 @@ public class ErrorHandlerUtilTest {
 
     @Test
     public void redrawnExceptionView_alsoInitializesParent() {
-        registry.setErrorNavigationTargets(
-                Collections.singleton(ErrorWithParentView.class));
+        registry.setErrorNavigationTargets(Collections.singleton(ErrorWithParentView.class));
 
         Assert.assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
 
-        session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
-                .handleError(new NullPointerException("NPE")));
+        session.getPendingAccessQueue()
+                .forEach(futureAccess -> futureAccess.handleError(new NullPointerException("NPE")));
 
         Assert.assertTrue(ErrorWithParentView.initialized);
         Assert.assertTrue(ErrorWithParentView.setError);

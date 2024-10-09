@@ -28,12 +28,10 @@ import java.util.Comparator;
 public class BigIntegerRangeValidator extends RangeValidator<BigInteger> {
 
     /**
-     * Creates a validator for checking that an BigInteger is within a given
-     * range.
+     * Creates a validator for checking that an BigInteger is within a given range.
      *
-     * By default the range is inclusive i.e. both minValue and maxValue are
-     * valid values. Use {@link #setMinValueIncluded(boolean)} or
-     * {@link #setMaxValueIncluded(boolean)} to change it.
+     * By default the range is inclusive i.e. both minValue and maxValue are valid values. Use
+     * {@link #setMinValueIncluded(boolean)} or {@link #setMaxValueIncluded(boolean)} to change it.
      *
      *
      * @param errorMessage
@@ -43,8 +41,7 @@ public class BigIntegerRangeValidator extends RangeValidator<BigInteger> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public BigIntegerRangeValidator(String errorMessage, BigInteger minValue,
-            BigInteger maxValue) {
+    public BigIntegerRangeValidator(String errorMessage, BigInteger minValue, BigInteger maxValue) {
         super(errorMessage, Comparator.naturalOrder(), minValue, maxValue);
     }
 

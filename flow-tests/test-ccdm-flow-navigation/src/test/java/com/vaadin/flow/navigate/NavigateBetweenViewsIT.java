@@ -39,19 +39,15 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/hello");
         waitForDevServer();
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
-                CoreMatchers.endsWith("/hello"));
+        Assert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/hello"));
 
-        waitUntil(driver -> $(NativeButtonElement.class).id(NAVIGATE_ABOUT))
-                .click();
+        waitUntil(driver -> $(NativeButtonElement.class).id(NAVIGATE_ABOUT)).click();
 
         // Wait for component inside shadowroot as there is no vaadin
         // to wait for as with server-side
-        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
-                .isDisplayed());
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello").isDisplayed());
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
-                CoreMatchers.endsWith("/about"));
+        Assert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/about"));
         TestBenchElement aboutView = $("about-view").first();
 
         Assert.assertTrue(aboutView.$("*").id("navigate-hello").isDisplayed());
@@ -64,16 +60,14 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
         // Wait for component inside shadowroot as there is no vaadin
         // to wait for as with server-side
-        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
-                .isDisplayed());
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello").isDisplayed());
 
         TestBenchElement aboutView = $("about-view").first();
         aboutView.$("*").id("navigate-hello").click();
 
         getCommandExecutor().waitForVaadin();
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
-                CoreMatchers.endsWith("/hello"));
+        Assert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/hello"));
 
         Assert.assertTrue("Missing expected native button on page",
                 $(NativeButtonElement.class).id(NAVIGATE_ABOUT).isDisplayed());
@@ -84,15 +78,13 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/hello");
         waitForDevServer();
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
-                CoreMatchers.endsWith("/hello"));
+        Assert.assertThat(getDriver().getCurrentUrl(), CoreMatchers.endsWith("/hello"));
 
         assertIsConnected();
 
         // Navigate away and back
         $(NativeButtonElement.class).id(NAVIGATE_ABOUT).click();
-        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
-                .isDisplayed());
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello").isDisplayed());
 
         TestBenchElement aboutView = $("about-view").first();
 
@@ -106,8 +98,7 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/");
         waitForDevServer();
 
-        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
-                .isDisplayed());
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello").isDisplayed());
 
         TestBenchElement aboutView = $("about-view").first();
         aboutView.$("*").id("navigate-hello").click();
@@ -119,20 +110,17 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
     @Test
     public void openViewWithSpecialCharactersInRoute() {
-        getDriver().get(getRootURL() + "/"
-                + UrlUtil.encodeURI(ROUTE_SPECIAL_CHARACTERS));
+        getDriver().get(getRootURL() + "/" + UrlUtil.encodeURI(ROUTE_SPECIAL_CHARACTERS));
         waitForDevServer();
         assertSpecialViewShown();
     }
 
     @Test
     public void openViewWithSpecialCharactersInQueryParameters() {
-        getDriver().get(getRootURL() + "/hello?value="
-                + UrlUtil.encodeURIComponent(PARAM_VALUE_SPECIAL_CHARACTERS));
+        getDriver().get(getRootURL() + "/hello?value=" + UrlUtil.encodeURIComponent(PARAM_VALUE_SPECIAL_CHARACTERS));
         waitForDevServer();
         assertHelloViewShown();
-        Assert.assertEquals("value: " + PARAM_VALUE_SPECIAL_CHARACTERS,
-                $("*").id("params").getText());
+        Assert.assertEquals("value: " + PARAM_VALUE_SPECIAL_CHARACTERS, $("*").id("params").getText());
     }
 
     @Test
@@ -150,8 +138,7 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
     @Test
     public void navigateFromViewWithSpecialCharactersInRoute() {
-        getDriver().get(getRootURL() + "/"
-                + UrlUtil.encodeURI(ROUTE_SPECIAL_CHARACTERS));
+        getDriver().get(getRootURL() + "/" + UrlUtil.encodeURI(ROUTE_SPECIAL_CHARACTERS));
         waitForDevServer();
 
         waitUntil(input -> {
@@ -166,16 +153,14 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         TestBenchElement specialView = waitUntil(driver -> {
             return $("*").id("special-view");
         });
-        Assert.assertEquals("This is the special view",
-                specialView.$("*").id("title").getText());
+        Assert.assertEquals("This is the special view", specialView.$("*").id("title").getText());
     }
 
     private void assertHelloViewShown() {
         TestBenchElement helloView = waitUntil(driver -> {
             return $("*").id("hello-world-view");
         });
-        Assert.assertEquals("Say hello",
-                helloView.$("*").id("navigate-about").getText());
+        Assert.assertEquals("Say hello", helloView.$("*").id("navigate-about").getText());
     }
 
     @Override
@@ -189,7 +174,6 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
     }
 
     private void assertIsConnectedById(String id) {
-        Assert.assertTrue(Boolean.parseBoolean(
-                waitUntil(driver -> $(SpanElement.class).id(id)).getText()));
+        Assert.assertTrue(Boolean.parseBoolean(waitUntil(driver -> $(SpanElement.class).id(id)).getText()));
     }
 }

@@ -12,7 +12,6 @@ public class PushLargeDataLongPollingView extends PushLargeData {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        attachEvent.getUI().getPushConfiguration().setParameter(
-                PushConfigurationMap.FALLBACK_TRANSPORT_KEY, "none");
+        attachEvent.getUI().getPushConfiguration().setParameter(PushConfigurationMap.FALLBACK_TRANSPORT_KEY, "none");
     }
 }

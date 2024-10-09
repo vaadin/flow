@@ -63,8 +63,7 @@ public class SystemErrorHandler {
      *            message details or null if there are no details
      */
     public void handleSessionExpiredError(String details) {
-        handleUnrecoverableError(details, registry.getApplicationConfiguration()
-                .getSessionExpiredError());
+        handleUnrecoverableError(details, registry.getApplicationConfiguration().getSessionExpiredError());
     }
 
     /**
@@ -75,15 +74,12 @@ public class SystemErrorHandler {
      * @param message
      *            an ErrorMessage describing the error
      */
-    protected void handleUnrecoverableError(String details,
-            ErrorMessage message) {
-        handleUnrecoverableError(message.getCaption(), message.getMessage(),
-                details, message.getUrl(), null);
+    protected void handleUnrecoverableError(String details, ErrorMessage message) {
+        handleUnrecoverableError(message.getCaption(), message.getMessage(), details, message.getUrl(), null);
     }
 
     /**
-     * Shows an error notification for an error which is unrecoverable, using
-     * the given parameters.
+     * Shows an error notification for an error which is unrecoverable, using the given parameters.
      *
      * @param caption
      *            the caption of the message
@@ -92,17 +88,14 @@ public class SystemErrorHandler {
      * @param details
      *            message details or {@code null} if there are no details
      * @param url
-     *            a URL to redirect to when the user clicks the message or
-     *            {@code null} to refresh on click
+     *            a URL to redirect to when the user clicks the message or {@code null} to refresh on click
      */
-    public void handleUnrecoverableError(String caption, String message,
-            String details, String url) {
+    public void handleUnrecoverableError(String caption, String message, String details, String url) {
         handleUnrecoverableError(caption, message, details, url, null);
     }
 
     /**
-     * Shows an error notification for an error which is unrecoverable, using
-     * the given parameters.
+     * Shows an error notification for an error which is unrecoverable, using the given parameters.
      *
      * @param caption
      *            the caption of the message
@@ -111,15 +104,13 @@ public class SystemErrorHandler {
      * @param details
      *            message details or {@code null} if there are no details
      * @param url
-     *            a URL to redirect to when the user clicks the message or
-     *            {@code null} to refresh on click
+     *            a URL to redirect to when the user clicks the message or {@code null} to refresh on click
      * @param querySelector
-     *            query selector to find the element under which the error will
-     *            be added . If element is not found or the selector is
-     *            {@code null}, body will be used
+     *            query selector to find the element under which the error will be added . If element is not found or
+     *            the selector is {@code null}, body will be used
      */
-    public void handleUnrecoverableError(String caption, String message,
-            String details, String url, String querySelector) {
+    public void handleUnrecoverableError(String caption, String message, String details, String url,
+            String querySelector) {
         if (caption == null && message == null && details == null) {
             if (!isWebComponentMode()) {
                 WidgetUtil.redirect(url);
@@ -129,11 +120,9 @@ public class SystemErrorHandler {
             return;
         }
 
-        Element systemErrorContainer = handleError(caption, message, details,
-                querySelector);
+        Element systemErrorContainer = handleError(caption, message, details, querySelector);
         if (!isWebComponentMode()) {
-            systemErrorContainer.addEventListener("click",
-                    e -> WidgetUtil.redirect(url), false);
+            systemErrorContainer.addEventListener("click", e -> WidgetUtil.redirect(url), false);
             Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
                 int keyCode = ((KeyboardEvent) e).getKeyCode();
                 if (keyCode == KeyCode.ESC) {
@@ -145,14 +134,13 @@ public class SystemErrorHandler {
     }
 
     /**
-     * Send GET async request to acquire new JSESSIONID, browser will set cookie
-     * automatically based on Set-Cookie response header.
+     * Send GET async request to acquire new JSESSIONID, browser will set cookie automatically based on Set-Cookie
+     * response header.
      */
     private void resynchronizeSession() {
-        String serviceUrl = registry.getApplicationConfiguration()
-                .getServiceUrl() + "web-component/web-component-bootstrap.js";
-        String sessionResyncUri = SharedUtil.addGetParameter(serviceUrl,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+        String serviceUrl = registry.getApplicationConfiguration().getServiceUrl()
+                + "web-component/web-component-bootstrap.js";
+        String sessionResyncUri = SharedUtil.addGetParameter(serviceUrl, ApplicationConstants.REQUEST_TYPE_PARAMETER,
                 ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC);
 
         Xhr.get(sessionResyncUri, new Xhr.Callback() {
@@ -164,23 +152,18 @@ public class SystemErrorHandler {
             @Override
             public void onSuccess(XMLHttpRequest xhr) {
 
-                Console.log(
-                        "Received xhr HTTP session resynchronization message: "
-                                + xhr.getResponseText());
+                Console.log("Received xhr HTTP session resynchronization message: " + xhr.getResponseText());
 
                 registry.reset();
                 registry.getUILifecycle().setState(UILifecycle.UIState.RUNNING);
 
-                ValueMap json = MessageHandler
-                        .parseWrappedJson(xhr.getResponseText());
+                ValueMap json = MessageHandler.parseWrappedJson(xhr.getResponseText());
                 registry.getMessageHandler().handleMessage(json);
-                registry.getApplicationConfiguration()
-                        .setUIId(json.getInt(ApplicationConstants.UI_ID));
+                registry.getApplicationConfiguration().setUIId(json.getInt(ApplicationConstants.UI_ID));
 
-                Scheduler.get().scheduleDeferred(() -> Arrays
-                        .stream(registry.getApplicationConfiguration()
-                                .getExportedWebComponents())
-                        .forEach(SystemErrorHandler.this::recreateNodes));
+                Scheduler.get().scheduleDeferred(
+                        () -> Arrays.stream(registry.getApplicationConfiguration().getExportedWebComponents())
+                                .forEach(SystemErrorHandler.this::recreateNodes));
             }
         });
     }
@@ -196,8 +179,8 @@ public class SystemErrorHandler {
     }-*/;
 
     /**
-     * Shows the given error message if not running in production mode and logs
-     * it to the console if running in production mode.
+     * Shows the given error message if not running in production mode and logs it to the console if running in
+     * production mode.
      *
      * @param errorMessage
      *            the error message to show
@@ -207,8 +190,8 @@ public class SystemErrorHandler {
     }
 
     /**
-     * Shows an error message if not running in production mode and logs it to
-     * the console if running in production mode.
+     * Shows an error message if not running in production mode and logs it to the console if running in production
+     * mode.
      *
      * @param throwable
      *            the throwable which occurred
@@ -222,8 +205,7 @@ public class SystemErrorHandler {
         }
     }
 
-    private Element handleError(String caption, String message, String details,
-            String querySelector) {
+    private Element handleError(String caption, String message, String details, String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");
@@ -256,8 +238,7 @@ public class SystemErrorHandler {
             if (baseElement != null) {
                 // if the baseElement has a shadow root, add the warning to
                 // the shadow - otherwise add it to the baseElement
-                findShadowRoot(baseElement).orElse(baseElement)
-                        .appendChild(systemErrorContainer);
+                findShadowRoot(baseElement).orElse(baseElement).appendChild(systemErrorContainer);
             }
         } else {
             document.getBody().appendChild(systemErrorContainer);

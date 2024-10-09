@@ -28,24 +28,22 @@ public class CustomUIClassLoaderTest {
     }
 
     /**
-     * Dummy ClassLoader that just saves the name of the requested class before
-     * delegating to the default implementation.
+     * Dummy ClassLoader that just saves the name of the requested class before delegating to the default
+     * implementation.
      */
     public class LoggingClassLoader extends ClassLoader {
 
         private List<String> requestedClasses = new ArrayList<>();
 
         @Override
-        protected synchronized Class<?> loadClass(String name, boolean resolve)
-                throws ClassNotFoundException {
+        protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             requestedClasses.add(name);
             return super.loadClass(name, resolve);
         }
     }
 
     /**
-     * Tests that a UI class can be loaded even if no classloader has been
-     * provided.
+     * Tests that a UI class can be loaded even if no classloader has been provided.
      *
      * @throws Exception
      *             if thrown
@@ -55,8 +53,7 @@ public class CustomUIClassLoaderTest {
         VaadinSession application = createStubApplication();
         application.setConfiguration(createConfigurationMock());
 
-        Class<? extends UI> uiClass = BootstrapHandler
-                .getUIClass(createRequestMock(getClass().getClassLoader()));
+        Class<? extends UI> uiClass = BootstrapHandler.getUIClass(createRequestMock(getClass().getClassLoader()));
 
         assertEquals(MyUI.class, uiClass);
     }
@@ -65,24 +62,19 @@ public class CustomUIClassLoaderTest {
         Properties properties = new Properties();
         properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
+        ApplicationConfiguration config = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(config.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
         Mockito.when(config.getBuildFolder()).thenReturn(".");
         Mockito.when(config.getContext()).thenReturn(context);
-        return new DefaultDeploymentConfiguration(config,
-                CustomUIClassLoaderTest.class, properties);
+        return new DefaultDeploymentConfiguration(config, CustomUIClassLoaderTest.class, properties);
     }
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {
         // Mock a VaadinService to give the passed classloader
         VaadinService configurationMock = Mockito.mock(VaadinService.class);
         DeploymentConfiguration deploymentConfiguration = createConfigurationMock();
-        Mockito.when(configurationMock.getDeploymentConfiguration())
-                .thenReturn(deploymentConfiguration);
-        Mockito.when(configurationMock.getClassLoader())
-                .thenReturn(classloader);
+        Mockito.when(configurationMock.getDeploymentConfiguration()).thenReturn(deploymentConfiguration);
+        Mockito.when(configurationMock.getClassLoader()).thenReturn(classloader);
 
         // Mock a VaadinRequest to give the mocked vaadin service
         VaadinRequest requestMock = Mockito.mock(VaadinRequest.class);
@@ -94,8 +86,7 @@ public class CustomUIClassLoaderTest {
     }
 
     /**
-     * Tests that the ClassLoader passed in the ApplicationStartEvent is used to
-     * load UI classes.
+     * Tests that the ClassLoader passed in the ApplicationStartEvent is used to load UI classes.
      *
      * @throws Exception
      *             if thrown
@@ -104,13 +95,11 @@ public class CustomUIClassLoaderTest {
     public void testWithClassLoader() throws Exception {
         LoggingClassLoader loggingClassLoader = new LoggingClassLoader();
 
-        Class<? extends UI> uiClass = BootstrapHandler
-                .getUIClass(createRequestMock(loggingClassLoader));
+        Class<? extends UI> uiClass = BootstrapHandler.getUIClass(createRequestMock(loggingClassLoader));
 
         assertEquals(MyUI.class, uiClass);
         assertEquals(1, loggingClassLoader.requestedClasses.size());
-        assertEquals(MyUI.class.getName(),
-                loggingClassLoader.requestedClasses.get(0));
+        assertEquals(MyUI.class.getName(), loggingClassLoader.requestedClasses.get(0));
 
     }
 

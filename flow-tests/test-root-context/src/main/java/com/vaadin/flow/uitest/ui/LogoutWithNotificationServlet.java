@@ -54,11 +54,10 @@ public class LogoutWithNotificationServlet extends VaadinServlet {
     @Override
     protected void servletInitialized() throws ServletException {
         super.servletInitialized();
-        getService().setSystemMessagesProvider(
-                (SystemMessagesProvider) systemMessagesInfo -> {
-                    final CustomizedSystemMessages systemMessages = new CustomizedSystemMessages();
-                    systemMessages.setSessionExpiredNotificationEnabled(true);
-                    return systemMessages;
-                });
+        getService().setSystemMessagesProvider((SystemMessagesProvider) systemMessagesInfo -> {
+            final CustomizedSystemMessages systemMessages = new CustomizedSystemMessages();
+            systemMessages.setSessionExpiredNotificationEnabled(true);
+            return systemMessages;
+        });
     }
 }

@@ -44,14 +44,12 @@ public interface PluginAdapterBase {
      * Creates a {@link Lookup} for the {@link ClassFinder}.
      *
      * @param classFinder
-     *            implementation that will be registered for the serviceTxpe
-     *            `ClassFinder`.
+     *            implementation that will be registered for the serviceTxpe `ClassFinder`.
      * @return {@link Lookup}
      */
     default Lookup createLookup(ClassFinder classFinder) {
 
-        return Lookup.compose(Lookup.of(classFinder, ClassFinder.class),
-                new LookupImpl(classFinder));
+        return Lookup.compose(Lookup.of(classFinder, ClassFinder.class), new LookupImpl(classFinder));
     }
 
     /**
@@ -180,9 +178,8 @@ public interface PluginAdapterBase {
     void logError(CharSequence warning, Throwable e);
 
     /**
-     * Download node.js from this URL. Handy in heavily firewalled corporate
-     * environments where the node.js download can be provided from an intranet
-     * mirror. Defaults to null which will cause the downloader to use
+     * Download node.js from this URL. Handy in heavily firewalled corporate environments where the node.js download can
+     * be provided from an intranet mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
@@ -201,17 +198,15 @@ public interface PluginAdapterBase {
     boolean nodeAutoUpdate();
 
     /**
-     * The node.js version to be used when node.js is installed automatically by
-     * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
-     * Vaadin-default node version - see {@link FrontendTools} for details.
+     * The node.js version to be used when node.js is installed automatically by Vaadin, for example `"v12.18.3"`.
+     * Defaults to null which uses the Vaadin-default node version - see {@link FrontendTools} for details.
      *
      * @return node version as a string
      */
     String nodeVersion();
 
     /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
+     * The folder where `package.json` file is located. Default is project root dir.
      *
      * @return boolean
      */
@@ -241,8 +236,7 @@ public interface PluginAdapterBase {
     boolean bunEnable();
 
     /**
-     * Instructs to use globally installed pnpm tool or the default supported
-     * pnpm version.
+     * Instructs to use globally installed pnpm tool or the default supported pnpm version.
      *
      * @return boolean
      */
@@ -256,26 +250,23 @@ public interface PluginAdapterBase {
     Path projectBaseDirectory();
 
     /**
-     * Whether vaadin home node executable usage is forced. If it's set to
-     * {@code true} then vaadin home 'node' is checked and installed if it's
-     * absent. Then it will be used instead of globally 'node' or locally
-     * installed 'node'.
+     * Whether vaadin home node executable usage is forced. If it's set to {@code true} then vaadin home 'node' is
+     * checked and installed if it's absent. Then it will be used instead of globally 'node' or locally installed
+     * 'node'.
      *
      * @return boolean
      */
     boolean requireHomeNodeExec();
 
     /**
-     * Defines the output directory for generated non-served resources, such as
-     * the token file.
+     * Defines the output directory for generated non-served resources, such as the token file.
      *
      * @return {@link File}
      */
     File servletResourceOutputDirectory();
 
     /**
-     * The folder where webpack should output index.js and other generated
-     * files.
+     * The folder where webpack should output index.js and other generated files.
      *
      * @return {@link File}
      */
@@ -305,36 +296,32 @@ public interface PluginAdapterBase {
     boolean skipDevBundleBuild();
 
     /**
-     * Prevents tracking state of the `vaadinPrepareFrontend` task in Gradle
-     * builds, so that it will re-run every time it is called.
+     * Prevents tracking state of the `vaadinPrepareFrontend` task in Gradle builds, so that it will re-run every time
+     * it is called.
      * <p>
      * Returns `true` if Gradle should always execute `vaadinPrepareFrontend`.
      * <p>
-     * Defaults to `false`, meaning that the task execution is skipped when its
-     * outcomes are up-to-date, improving the overall build time.
+     * Defaults to `false`, meaning that the task execution is skipped when its outcomes are up-to-date, improving the
+     * overall build time.
      * <p>
-     * For Maven builds this is always `false`, because no caching of
-     * `prepare-frontend` goal is supported.
+     * For Maven builds this is always `false`, because no caching of `prepare-frontend` goal is supported.
      */
     boolean isPrepareFrontendCacheDisabled();
 
     /**
      * Set React enabled or disabled.
      *
-     * @return {@code true} for enable React and {@code false} for using Vaadin
-     *         router and excluding React dependencies
+     * @return {@code true} for enable React and {@code false} for using Vaadin router and excluding React dependencies
      */
     boolean isReactEnabled();
 
     /**
      * Gets the application identifier.
      * <p>
-     * The application identifier is usually computed against project unique
-     * information, such as hashed {@literal groupId} and {@literal artifactId},
-     * but it can be any kind of not blank string.
+     * The application identifier is usually computed against project unique information, such as hashed
+     * {@literal groupId} and {@literal artifactId}, but it can be any kind of not blank string.
      *
-     * @return application identifier, never {@literal null} nor
-     *         {@literal blank}.
+     * @return application identifier, never {@literal null} nor {@literal blank}.
      */
     String applicationIdentifier();
 }

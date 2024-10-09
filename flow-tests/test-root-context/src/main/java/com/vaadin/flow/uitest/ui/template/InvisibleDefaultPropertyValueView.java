@@ -32,11 +32,9 @@ public class InvisibleDefaultPropertyValueView extends AbstractDivView {
         div.setId("email-value");
         add(div);
 
-        add(createButton("Show email value", "show-email",
-                event -> div.setText(template.getEmail())));
+        add(createButton("Show email value", "show-email", event -> div.setText(template.getEmail())));
 
-        add(createButton("Make template visible", "set-visible",
-                event -> template.setVisible(true)));
+        add(createButton("Make template visible", "set-visible", event -> template.setVisible(true)));
     }
 
 }

@@ -24,8 +24,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-sub-template")
 @JsModule("./JsSubTemplate.js")
-public class JsSubTemplate
-        extends PolymerTemplate<JsSubTemplate.JsSubTemplateModel> {
+public class JsSubTemplate extends PolymerTemplate<JsSubTemplate.JsSubTemplateModel> {
 
     @Id("js-grand-child")
     private JsInjectedGrandChild component;

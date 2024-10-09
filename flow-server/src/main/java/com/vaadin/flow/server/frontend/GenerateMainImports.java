@@ -32,11 +32,9 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
- * Collect generated-flow-imports content for project to use to determine if
- * dev-bundle contains all required imports.
+ * Collect generated-flow-imports content for project to use to determine if dev-bundle contains all required imports.
  * <p>
- * Only used when checking if dev bundle need to be rebuild in dev mode without
- * a dev server.
+ * Only used when checking if dev bundle need to be rebuild in dev mode without a dev server.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -44,8 +42,7 @@ public class GenerateMainImports extends AbstractUpdateImports {
     private JsonObject statsJson;
     private Map<File, List<String>> output;
 
-    public GenerateMainImports(FrontendDependenciesScanner frontendDepScanner,
-            Options options, JsonObject statsJson) {
+    public GenerateMainImports(FrontendDependenciesScanner frontendDepScanner, Options options, JsonObject statsJson) {
         super(options, frontendDepScanner);
         this.statsJson = statsJson;
     }
@@ -63,8 +60,7 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     @Override
-    protected boolean addCssLines(Collection<String> lines, CssData cssData,
-            int i) {
+    protected boolean addCssLines(Collection<String> lines, CssData cssData, int i) {
         super.addCssLines(lines, cssData, i);
         // CSS files in 'generated/jar-resources' are not generated at this
         // moment, so not let the application interrupt and continue with
@@ -97,14 +93,12 @@ public class GenerateMainImports extends AbstractUpdateImports {
         // Basically it means theme file import path like:
         // "@vaadin/accordion/theme/lumo/accordion.js" instead of
         // "@vaadin/accordion/src/accordion.js"
-        JsonArray statsBundle = statsJson.hasKey("bundleImports")
-                ? statsJson.getArray("bundleImports")
+        JsonArray statsBundle = statsJson.hasKey("bundleImports") ? statsJson.getArray("bundleImports")
                 : Json.createArray();
         importName = importName.replace("Frontend/", "./");
 
         for (int i = 0; i < statsBundle.length(); i++) {
-            if (importName.equals(
-                    statsBundle.getString(i).replace("Frontend/", "./"))) {
+            if (importName.equals(statsBundle.getString(i).replace("Frontend/", "./"))) {
                 return true;
             }
         }

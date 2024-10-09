@@ -36,20 +36,16 @@ public class EnabledView extends AbstractDivView {
         label.setId("nested-label");
         div.add(label);
 
-        NativeButton updateStyle = createButton(
-                "Update target element property", "updateProperty", event -> {
-                    div.setClassName("foo");
-                    label.setClassName("bar");
-                });
+        NativeButton updateStyle = createButton("Update target element property", "updateProperty", event -> {
+            div.setClassName("foo");
+            label.setClassName("bar");
+        });
         updateStyle.getElement().setEnabled(false);
 
-        NativeButton updateEnableButton = createButton(
-                "Change enable state for buttons", "enableButton", event -> {
-                    updateStyle.getElement()
-                            .setEnabled(!updateStyle.getElement().isEnabled());
-                    updateStyle.setClassName("disabled",
-                            !updateStyle.getElement().isEnabled());
-                });
+        NativeButton updateEnableButton = createButton("Change enable state for buttons", "enableButton", event -> {
+            updateStyle.getElement().setEnabled(!updateStyle.getElement().isEnabled());
+            updateStyle.setClassName("disabled", !updateStyle.getElement().isEnabled());
+        });
 
         add(div, updateStyle, updateEnableButton);
     }

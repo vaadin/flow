@@ -19,10 +19,8 @@ public class ModalDialogIT extends ChromeBrowserTest {
     protected void open(String... parameters) {
         super.open(parameters);
         eventLog = $(DivElement.class).id(ModalDialogView.EVENT_LOG);
-        modalDialogButton = $(NativeButtonElement.class)
-                .id(ModalDialogView.OPEN_MODAL_BUTTON);
-        modelessDialogButton = $(NativeButtonElement.class)
-                .id(ModalDialogView.OPEN_MODELESS_BUTTON);
+        modalDialogButton = $(NativeButtonElement.class).id(ModalDialogView.OPEN_MODAL_BUTTON);
+        modelessDialogButton = $(NativeButtonElement.class).id(ModalDialogView.OPEN_MODELESS_BUTTON);
     }
 
     // #7799
@@ -30,8 +28,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
     public void modalDialogOpened_sameShortcutsListeningOnUi_noShortcutTriggered() {
         open();
 
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
 
         openDialog(modalDialogButton);
@@ -45,8 +42,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(1, ModalDialogView.DIALOG_BUTTON);
 
         closeDialog();
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(2, ModalDialogView.UI_BUTTON);
     }
 
@@ -55,16 +51,13 @@ public class ModalDialogIT extends ChromeBrowserTest {
         open("open_dialog=modal");
 
         // shortcuts on view should not trigger while dialog is open
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
-        Assert.assertTrue("No event should be logged",
-                eventLog.$(DivElement.class).all().isEmpty());
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        Assert.assertTrue("No event should be logged", eventLog.$(DivElement.class).all().isEmpty());
 
         closeDialog();
 
         // shortcuts on view should trigger when dialog has been closed
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
     }
 
@@ -72,8 +65,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
     public void modalDialogOpened_sameShortcutListeningOnUiAndDialog_onlyDialogShortcutExecuted() {
         open();
 
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
 
         openDialog(modalDialogButton);
@@ -86,8 +78,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(1, ModalDialogView.DIALOG_BUTTON);
 
         closeDialog();
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(2, ModalDialogView.UI_BUTTON);
     }
 
@@ -95,8 +86,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
     public void modelessDialogOpened_sharesShortcutWithUI_bothExecuted() {
         open();
 
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
 
         openDialog(modelessDialogButton);
@@ -107,8 +97,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(2, ModalDialogView.DIALOG_BUTTON);
 
         closeDialog();
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(3, ModalDialogView.UI_BUTTON);
     }
 
@@ -116,8 +105,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
     public void modelessDialogOpened_sameShortcutListeningOnUiAndDialog_bothExecuted() {
         open();
 
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
 
         openDialog(modelessDialogButton);
@@ -129,8 +117,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(2, ModalDialogView.DIALOG_BUTTON);
 
         closeDialog();
-        pressShortcutKey(
-                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        pressShortcutKey($(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(3, ModalDialogView.UI_BUTTON);
     }
 
@@ -139,21 +126,17 @@ public class ModalDialogIT extends ChromeBrowserTest {
     }
 
     private void closeDialog() {
-        $(NativeButtonElement.class).id(ModalDialogView.DIALOG_CLOSE_BUTTON)
-                .click();
+        $(NativeButtonElement.class).id(ModalDialogView.DIALOG_CLOSE_BUTTON).click();
     }
 
-    private void validateLatestShortcutEvent(int eventCounter,
-            String eventSourceId) {
+    private void validateLatestShortcutEvent(int eventCounter, String eventSourceId) {
         validateShortcutEvent(0, eventCounter, eventSourceId);
     }
 
-    private void validateShortcutEvent(int indexFromTop, int eventCounter,
-            String eventSourceId) {
-        final WebElement latestEvent = waitUntil(driver -> eventLog.findElement(
-                By.xpath(String.format("div[%d]", indexFromTop + 1))));
-        Assert.assertEquals("Invalid latest event",
-                eventCounter + "-" + eventSourceId, latestEvent.getText());
+    private void validateShortcutEvent(int indexFromTop, int eventCounter, String eventSourceId) {
+        final WebElement latestEvent = waitUntil(
+                driver -> eventLog.findElement(By.xpath(String.format("div[%d]", indexFromTop + 1))));
+        Assert.assertEquals("Invalid latest event", eventCounter + "-" + eventSourceId, latestEvent.getText());
     }
 
     private void pressShortcutKey(TestBenchElement elementToFocus) {
@@ -162,17 +145,14 @@ public class ModalDialogIT extends ChromeBrowserTest {
     }
 
     private TestBenchElement getDialogInput() {
-        return $(DivElement.class).id(ModalDialogView.DIALOG).$("input")
-                .first();
+        return $(DivElement.class).id(ModalDialogView.DIALOG).$("input").first();
     }
 
     private void listenToButtonShortcutOnUI() {
-        $(NativeButtonElement.class).id(ModalDialogView.LISTEN_ON_UI_BUTTON)
-                .click();
+        $(NativeButtonElement.class).id(ModalDialogView.LISTEN_ON_UI_BUTTON).click();
     }
 
     private void listenToButtonShortcutOnDialog() {
-        $(NativeButtonElement.class).id(ModalDialogView.LISTEN_ON_DIALOG_BUTTON)
-                .click();
+        $(NativeButtonElement.class).id(ModalDialogView.LISTEN_ON_DIALOG_BUTTON).click();
     }
 }

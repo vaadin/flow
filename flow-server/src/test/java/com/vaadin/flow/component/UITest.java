@@ -117,15 +117,13 @@ public class UITest {
 
     @RoutePrefix("foo/:fooParam")
     @Tag(Tag.DIV)
-    public static class FooBarParamParentNavigationTarget extends Component
-            implements RouterLayout {
+    public static class FooBarParamParentNavigationTarget extends Component implements RouterLayout {
 
     }
 
     @Route("foo-bar")
     @Tag(Tag.DIV)
-    public static class Parameterized extends Component
-            implements HasUrlParameter<String> {
+    public static class Parameterized extends Component implements HasUrlParameter<String> {
 
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
@@ -134,8 +132,7 @@ public class UITest {
     }
 
     @Tag(Tag.DIV)
-    public static class ParameterizedNotRoute extends Component
-            implements HasUrlParameter<Integer> {
+    public static class ParameterizedNotRoute extends Component implements HasUrlParameter<Integer> {
 
         @Override
         public void setParameter(BeforeEvent event, Integer parameter) {
@@ -149,8 +146,7 @@ public class UITest {
         }
     }
 
-    private static class AttachedElementStateProvider
-            extends AbstractTextElementStateProvider {
+    private static class AttachedElementStateProvider extends AbstractTextElementStateProvider {
 
         @Override
         public boolean supports(StateNode node) {
@@ -207,16 +203,14 @@ public class UITest {
 
     private static MockUI createAccessableTestUI() {
         // Needs a service to be able to do service.accessSession
-        MockVaadinSession session = new MockVaadinSession(
-                new MockVaadinServletService());
+        MockVaadinSession session = new MockVaadinSession(new MockVaadinServletService());
         session.lock();
         MockUI ui = new MockUI(session);
         session.unlock();
         return ui;
     }
 
-    private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor)
+    private static void initUI(UI ui, String initialLocation, ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
@@ -240,8 +234,7 @@ public class UITest {
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
         Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
 
@@ -255,15 +248,12 @@ public class UITest {
 
         routeConfiguration.update(() -> {
             routeConfiguration.getHandledRegistry().clean();
-            Arrays.asList(RootNavigationTarget.class,
-                    FooBarNavigationTarget.class, Parameterized.class,
-                    FooBarParamNavigationTarget.class)
-                    .forEach(routeConfiguration::setAnnotatedRoute);
+            Arrays.asList(RootNavigationTarget.class, FooBarNavigationTarget.class, Parameterized.class,
+                    FooBarParamNavigationTarget.class).forEach(routeConfiguration::setAnnotatedRoute);
         });
 
         ui.doInit(request, 0);
-        ui.getInternals().getRouter().initializeUI(ui,
-                requestToLocation(request));
+        ui.getInternals().getRouter().initializeUI(ui, requestToLocation(request));
 
         session.unlock();
 
@@ -273,22 +263,18 @@ public class UITest {
     }
 
     public static Location requestToLocation(VaadinRequest request) {
-        return new Location(request.getPathInfo(),
-                QueryParameters.full(request.getParameterMap()));
+        return new Location(request.getPathInfo(), QueryParameters.full(request.getParameterMap()));
     }
 
     @Test
     public void scrollAttribute() {
         UI ui = new UI();
-        Assert.assertNull(
-                "'scroll' attribute shouldn't be set for the "
-                        + "UI element which represents 'body' tag",
+        Assert.assertNull("'scroll' attribute shouldn't be set for the " + "UI element which represents 'body' tag",
                 ui.getElement().getAttribute("scroll"));
     }
 
     @Test
-    public void testInitialLocation()
-            throws InvalidRouteConfigurationException {
+    public void testInitialLocation() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -296,21 +282,17 @@ public class UITest {
     }
 
     @Test
-    public void locationAfterServerNavigation()
-            throws InvalidRouteConfigurationException {
+    public void locationAfterServerNavigation() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
         ui.navigate("foo/bar");
 
-        assertEquals("foo/bar",
-                ui.getInternals().getActiveViewLocation().getPath());
-        List<HasElement> chain = ui.getInternals()
-                .getActiveRouterTargetsChain();
+        assertEquals("foo/bar", ui.getInternals().getActiveViewLocation().getPath());
+        List<HasElement> chain = ui.getInternals().getActiveRouterTargetsChain();
         Assert.assertEquals(1, chain.size());
         Component currentRoute = ui.getCurrentView();
-        MatcherAssert.assertThat(currentRoute,
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        MatcherAssert.assertThat(currentRoute, CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test
@@ -320,16 +302,13 @@ public class UITest {
         Router router = Mockito.mock(Router.class);
         UI ui = new MockUI(router);
 
-        QueryParameters params = QueryParameters
-                .simple(Collections.singletonMap("test", "indeed"));
+        QueryParameters params = QueryParameters.simple(Collections.singletonMap("test", "indeed"));
 
-        ArgumentCaptor<Location> location = ArgumentCaptor
-                .forClass(Location.class);
+        ArgumentCaptor<Location> location = ArgumentCaptor.forClass(Location.class);
 
         ui.navigate(route, params);
 
-        Mockito.verify(router).navigate(ArgumentMatchers.eq(ui),
-                location.capture(),
+        Mockito.verify(router).navigate(ArgumentMatchers.eq(ui), location.capture(),
                 ArgumentMatchers.eq(NavigationTrigger.UI_NAVIGATE));
 
         Location value = location.getValue();
@@ -338,54 +317,39 @@ public class UITest {
     }
 
     @Test
-    public void navigateWithParameters_afterServerNavigation()
-            throws InvalidRouteConfigurationException {
+    public void navigateWithParameters_afterServerNavigation() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
-        Optional<FooBarParamNavigationTarget> newView = ui.navigate(
-                FooBarParamNavigationTarget.class,
-                new RouteParameters(new RouteParam("fooParam", "flu"),
-                        new RouteParam("barParam", "beer")));
+        Optional<FooBarParamNavigationTarget> newView = ui.navigate(FooBarParamNavigationTarget.class,
+                new RouteParameters(new RouteParam("fooParam", "flu"), new RouteParam("barParam", "beer")));
 
-        assertEquals(FooBarParamNavigationTarget.class,
-                newView.get().getClass());
+        assertEquals(FooBarParamNavigationTarget.class, newView.get().getClass());
 
-        assertEquals("foo/flu/beer/bar",
-                ui.getInternals().getActiveViewLocation().getPath());
-        List<HasElement> chain = ui.getInternals()
-                .getActiveRouterTargetsChain();
+        assertEquals("foo/flu/beer/bar", ui.getInternals().getActiveViewLocation().getPath());
+        List<HasElement> chain = ui.getInternals().getActiveRouterTargetsChain();
         Assert.assertEquals(2, chain.size());
-        MatcherAssert.assertThat(chain.get(0),
-                CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
-        MatcherAssert.assertThat(chain.get(1), CoreMatchers
-                .instanceOf(FooBarParamParentNavigationTarget.class));
+        MatcherAssert.assertThat(chain.get(0), CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
+        MatcherAssert.assertThat(chain.get(1), CoreMatchers.instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
     @Test
-    public void navigateWithQueryAndRouteParameters_afterServerNavigation()
-            throws InvalidRouteConfigurationException {
+    public void navigateWithQueryAndRouteParameters_afterServerNavigation() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
-        Optional<FooBarParamNavigationTarget> newView = ui.navigate(
-                FooBarParamNavigationTarget.class,
-                new RouteParameters(new RouteParam("fooParam", "flu"),
-                        new RouteParam("barParam", "beer")),
+        Optional<FooBarParamNavigationTarget> newView = ui.navigate(FooBarParamNavigationTarget.class,
+                new RouteParameters(new RouteParam("fooParam", "flu"), new RouteParam("barParam", "beer")),
                 QueryParameters.of("bigBeer", "forMePlease"));
 
-        assertEquals(FooBarParamNavigationTarget.class,
-                newView.get().getClass());
+        assertEquals(FooBarParamNavigationTarget.class, newView.get().getClass());
 
-        assertEquals("foo/flu/beer/bar?bigBeer=forMePlease", ui.getInternals()
-                .getActiveViewLocation().getPathWithQueryParameters());
-        List<HasElement> chain = ui.getInternals()
-                .getActiveRouterTargetsChain();
+        assertEquals("foo/flu/beer/bar?bigBeer=forMePlease",
+                ui.getInternals().getActiveViewLocation().getPathWithQueryParameters());
+        List<HasElement> chain = ui.getInternals().getActiveRouterTargetsChain();
         Assert.assertEquals(2, chain.size());
-        MatcherAssert.assertThat(chain.get(0),
-                CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
-        MatcherAssert.assertThat(chain.get(1), CoreMatchers
-                .instanceOf(FooBarParamParentNavigationTarget.class));
+        MatcherAssert.assertThat(chain.get(0), CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
+        MatcherAssert.assertThat(chain.get(1), CoreMatchers.instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
     @Test
@@ -396,44 +360,36 @@ public class UITest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
-                .dumpPendingJsInvocations();
+        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui.dumpPendingJsInvocations();
 
         Assert.assertEquals(1, pendingJavaScriptInvocations.size());
-        Assert.assertEquals("rtl", pendingJavaScriptInvocations.get(0)
-                .getInvocation().getParameters().get(0));
+        Assert.assertEquals("rtl", pendingJavaScriptInvocations.get(0).getInvocation().getParameters().get(0));
     }
 
     @Test
-    public void locationAfterClientNavigation()
-            throws InvalidRouteConfigurationException {
+    public void locationAfterClientNavigation() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
         History history = ui.getPage().getHistory();
 
-        history.getHistoryStateChangeHandler()
-                .onHistoryStateChange(new HistoryStateChangeEvent(history, null,
-                        new Location("foo/bar"), NavigationTrigger.HISTORY));
+        history.getHistoryStateChangeHandler().onHistoryStateChange(
+                new HistoryStateChangeEvent(history, null, new Location("foo/bar"), NavigationTrigger.HISTORY));
 
-        assertEquals("foo/bar",
-                ui.getInternals().getActiveViewLocation().getPath());
+        assertEquals("foo/bar", ui.getInternals().getActiveViewLocation().getPath());
     }
 
     @Test
-    public void noRouteMatches_404ViewAndCodeReturned()
-            throws InvalidRouteConfigurationException {
+    public void noRouteMatches_404ViewAndCodeReturned() throws InvalidRouteConfigurationException {
         UI ui = new UI();
 
-        ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
-                .forClass(Integer.class);
+        ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor.forClass(Integer.class);
 
         initUI(ui, "baz", statusCodeCaptor);
 
         Assert.assertEquals(1, ui.getChildren().count());
         Optional<Component> errorComponent = ui.getChildren().findFirst();
-        MatcherAssert.assertThat(errorComponent.get(),
-                CoreMatchers.instanceOf(RouteNotFoundError.class));
+        MatcherAssert.assertThat(errorComponent.get(), CoreMatchers.instanceOf(RouteNotFoundError.class));
         assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }
 
@@ -513,14 +469,11 @@ public class UITest {
         assertEquals("Listener should have been run once", 1, runCount.get());
 
         ui.getInternals().setLastHeartbeatTimestamp(System.currentTimeMillis());
-        assertEquals(
-                "Listener should not have been run again since it was removed",
-                1, runCount.get());
+        assertEquals("Listener should not have been run again since it was removed", 1, runCount.get());
     }
 
     @Test
-    public void setSession_attachEventIsFired()
-            throws InvalidRouteConfigurationException {
+    public void setSession_attachEventIsFired() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         List<AttachEvent> events = new ArrayList<>();
         ui.addAttachListener(events::add);
@@ -531,8 +484,7 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_detachEventIsFired()
-            throws InvalidRouteConfigurationException {
+    public void unsetSession_detachEventIsFired() throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         List<DetachEvent> events = new ArrayList<>();
         ui.addDetachListener(events::add);
@@ -548,8 +500,7 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_detachEventIsFiredForUIChildren()
-            throws InvalidRouteConfigurationException {
+    public void unsetSession_detachEventIsFiredForUIChildren() throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         List<DetachEvent> events = new ArrayList<>();
         initUI(ui, "", null);
@@ -606,13 +557,9 @@ public class UITest {
         String logOutput = ((MockLogger) ui.getLogger()).getLogs();
         String logOutputNoDebug = logOutput.replaceAll("^\\[Debug\\].*", "");
 
-        Assert.assertFalse(
-                "No NullPointerException should be logged but got: "
-                        + logOutput,
+        Assert.assertFalse("No NullPointerException should be logged but got: " + logOutput,
                 logOutput.contains("NullPointerException"));
-        Assert.assertFalse(
-                "No UIDetachedException should be logged but got: "
-                        + logOutputNoDebug,
+        Assert.assertFalse("No UIDetachedException should be logged but got: " + logOutputNoDebug,
                 logOutputNoDebug.contains("UIDetachedException"));
     }
 
@@ -650,13 +597,10 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 3 results in the list",
-                results.size() == 3);
+        Assert.assertTrue("There should be 3 results in the list", results.size() == 3);
 
         for (int i = 0; i < results.size(); i++) {
-            Assert.assertEquals(
-                    "The result at index '" + i + "' should be " + i, i,
-                    results.get(i).intValue());
+            Assert.assertEquals("The result at index '" + i + "' should be " + i, i, results.get(i).intValue());
         }
     }
 
@@ -677,13 +621,10 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 5 results in the list",
-                results.size() == 5);
+        Assert.assertTrue("There should be 5 results in the list", results.size() == 5);
 
         for (int i = 0; i < results.size(); i++) {
-            Assert.assertEquals(
-                    "The result at index '" + i + "' should be " + i, i,
-                    results.get(i).intValue());
+            Assert.assertEquals("The result at index '" + i + "' should be " + i, i, results.get(i).intValue());
         }
     }
 
@@ -702,13 +643,10 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 2 results in the list",
-                results.size() == 2);
+        Assert.assertTrue("There should be 2 results in the list", results.size() == 2);
 
-        Assert.assertEquals("The result at index '0' should be " + 1, 1,
-                results.get(0).intValue());
-        Assert.assertEquals("The result at index '1' should be " + 3, 3,
-                results.get(1).intValue());
+        Assert.assertEquals("The result at index '0' should be " + 1, 1, results.get(0).intValue());
+        Assert.assertEquals("The result at index '1' should be " + 3, 3, results.get(1).intValue());
     }
 
     @Test
@@ -733,17 +671,12 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 4 results in the list",
-                results.size() == 4);
+        Assert.assertTrue("There should be 4 results in the list", results.size() == 4);
 
-        Assert.assertEquals("The result at index '0' should be 1", 1,
-                results.get(0).intValue());
-        Assert.assertEquals("The result at index '1' should be 3", 3,
-                results.get(1).intValue());
-        Assert.assertEquals("The result at index '2' should be 0", 0,
-                results.get(2).intValue());
-        Assert.assertEquals("The result at index '3' should be 2", 2,
-                results.get(3).intValue());
+        Assert.assertEquals("The result at index '0' should be 1", 1, results.get(0).intValue());
+        Assert.assertEquals("The result at index '1' should be 3", 3, results.get(1).intValue());
+        Assert.assertEquals("The result at index '2' should be 0", 0, results.get(2).intValue());
+        Assert.assertEquals("The result at index '3' should be 2", 2, results.get(3).intValue());
     }
 
     @Test
@@ -759,15 +692,13 @@ public class UITest {
         AtomicInteger callCounter = new AtomicInteger();
 
         ui.beforeClientResponse(root, context -> {
-            Assert.assertTrue(
-                    "Root component should be marked as 'clientSideInitialized'",
+            Assert.assertTrue("Root component should be marked as 'clientSideInitialized'",
                     context.isClientSideInitialized());
             callCounter.incrementAndGet();
 
         });
         ui.beforeClientResponse(leaf, context -> {
-            Assert.assertFalse(
-                    "Leaf component should NOT be marked as 'clientSideInitialized'",
+            Assert.assertFalse("Leaf component should NOT be marked as 'clientSideInitialized'",
                     context.isClientSideInitialized());
             callCounter.incrementAndGet();
         });
@@ -795,8 +726,7 @@ public class UITest {
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assert.assertEquals("There should be 4 invocations", 4,
-                callCounter.get());
+        Assert.assertEquals("There should be 4 invocations", 4, callCounter.get());
     }
 
     @Test
@@ -814,42 +744,36 @@ public class UITest {
         Component component = new AttachableComponent();
         anotherUI.add(component);
 
-        IllegalArgumentException exception = Assert.assertThrows(
-                IllegalArgumentException.class,
+        IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
                 () -> firstUI.beforeClientResponse(component, context -> {
                 }));
 
-        Assert.assertEquals(
-                "The given component doesn't belong to the UI the task to be executed on",
+        Assert.assertEquals("The given component doesn't belong to the UI the task to be executed on",
                 exception.getMessage());
     }
 
     @ListenerPriority(5)
-    private static class BeforeEnterListenerFirst
-            implements BeforeEnterListener {
+    private static class BeforeEnterListenerFirst implements BeforeEnterListener {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
         }
     }
 
-    private static class BeforeEnterListenerSecond
-            implements BeforeEnterListener {
+    private static class BeforeEnterListenerSecond implements BeforeEnterListener {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
         }
     }
 
     @ListenerPriority(-5)
-    private static class BeforeEnterListenerThird
-            implements BeforeEnterListener {
+    private static class BeforeEnterListenerThird implements BeforeEnterListener {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
         }
     }
 
     @Test
-    public void before_enter_listener_priority_should_dictate_sort_order()
-            throws InvalidRouteConfigurationException {
+    public void before_enter_listener_priority_should_dictate_sort_order() throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         initUI(ui, "", null);
 
@@ -858,47 +782,38 @@ public class UITest {
         ui.addBeforeEnterListener(new BeforeEnterListenerFirst());
         ui.addBeforeEnterListener(new BeforeEnterListenerSecond());
 
-        final List<BeforeEnterHandler> beforeEnterListeners = ui
-                .getNavigationListeners(BeforeEnterHandler.class);
+        final List<BeforeEnterHandler> beforeEnterListeners = ui.getNavigationListeners(BeforeEnterHandler.class);
 
         assertEquals(4, beforeEnterListeners.size());
 
-        assertTrue(beforeEnterListeners
-                .get(0) instanceof BeforeEnterListenerFirst);
-        assertTrue(beforeEnterListeners
-                .get(1) instanceof BeforeEnterListenerSecond);
-        assertTrue(beforeEnterListeners
-                .get(2) instanceof BeforeEnterListenerThird);
-        assertTrue(beforeEnterListeners
-                .get(3) instanceof BeforeEnterListenerThird);
+        assertTrue(beforeEnterListeners.get(0) instanceof BeforeEnterListenerFirst);
+        assertTrue(beforeEnterListeners.get(1) instanceof BeforeEnterListenerSecond);
+        assertTrue(beforeEnterListeners.get(2) instanceof BeforeEnterListenerThird);
+        assertTrue(beforeEnterListeners.get(3) instanceof BeforeEnterListenerThird);
     }
 
     @ListenerPriority(5)
-    private static class BeforeLeaveListenerFirst
-            implements BeforeLeaveListener {
+    private static class BeforeLeaveListenerFirst implements BeforeLeaveListener {
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
         }
     }
 
-    private static class BeforeLeaveListenerSecond
-            implements BeforeLeaveListener {
+    private static class BeforeLeaveListenerSecond implements BeforeLeaveListener {
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
         }
     }
 
     @ListenerPriority(-5)
-    private static class BeforeLeaveListenerThird
-            implements BeforeLeaveListener {
+    private static class BeforeLeaveListenerThird implements BeforeLeaveListener {
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
         }
     }
 
     @Test
-    public void before_Leave_listener_priority_should_dictate_sort_order()
-            throws InvalidRouteConfigurationException {
+    public void before_Leave_listener_priority_should_dictate_sort_order() throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         initUI(ui, "", null);
 
@@ -907,39 +822,31 @@ public class UITest {
         ui.addBeforeLeaveListener(new BeforeLeaveListenerSecond());
         ui.addBeforeLeaveListener(new BeforeLeaveListenerThird());
 
-        final List<BeforeLeaveHandler> beforeLeaveListeners = ui
-                .getNavigationListeners(BeforeLeaveHandler.class);
+        final List<BeforeLeaveHandler> beforeLeaveListeners = ui.getNavigationListeners(BeforeLeaveHandler.class);
 
         assertEquals(4, beforeLeaveListeners.size());
 
-        assertTrue(beforeLeaveListeners
-                .get(0) instanceof BeforeLeaveListenerFirst);
-        assertTrue(beforeLeaveListeners
-                .get(1) instanceof BeforeLeaveListenerSecond);
-        assertTrue(beforeLeaveListeners
-                .get(2) instanceof BeforeLeaveListenerThird);
-        assertTrue(beforeLeaveListeners
-                .get(3) instanceof BeforeLeaveListenerThird);
+        assertTrue(beforeLeaveListeners.get(0) instanceof BeforeLeaveListenerFirst);
+        assertTrue(beforeLeaveListeners.get(1) instanceof BeforeLeaveListenerSecond);
+        assertTrue(beforeLeaveListeners.get(2) instanceof BeforeLeaveListenerThird);
+        assertTrue(beforeLeaveListeners.get(3) instanceof BeforeLeaveListenerThird);
     }
 
     @ListenerPriority(5)
-    private static class AfterNavigationListenerFirst
-            implements AfterNavigationListener {
+    private static class AfterNavigationListenerFirst implements AfterNavigationListener {
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
         }
     }
 
-    private static class AfterNavigationListenerSecond
-            implements AfterNavigationListener {
+    private static class AfterNavigationListenerSecond implements AfterNavigationListener {
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
         }
     }
 
     @ListenerPriority(-5)
-    private static class AfterNavigationListenerThird
-            implements AfterNavigationListener {
+    private static class AfterNavigationListenerThird implements AfterNavigationListener {
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
         }
@@ -961,14 +868,10 @@ public class UITest {
 
         assertEquals(4, AfterNavigationListeners.size());
 
-        assertTrue(AfterNavigationListeners
-                .get(0) instanceof AfterNavigationListenerFirst);
-        assertTrue(AfterNavigationListeners
-                .get(1) instanceof AfterNavigationListenerSecond);
-        assertTrue(AfterNavigationListeners
-                .get(2) instanceof AfterNavigationListenerThird);
-        assertTrue(AfterNavigationListeners
-                .get(3) instanceof AfterNavigationListenerThird);
+        assertTrue(AfterNavigationListeners.get(0) instanceof AfterNavigationListenerFirst);
+        assertTrue(AfterNavigationListeners.get(1) instanceof AfterNavigationListenerSecond);
+        assertTrue(AfterNavigationListeners.get(2) instanceof AfterNavigationListenerThird);
+        assertTrue(AfterNavigationListeners.get(3) instanceof AfterNavigationListenerThird);
     }
 
     @Test(expected = NullPointerException.class)
@@ -991,14 +894,12 @@ public class UITest {
             runCount.incrementAndGet();
         }, null);
 
-        assertNull("Should not have a current UI outside the caller",
-                UI.getCurrent());
+        assertNull("Should not have a current UI outside the caller", UI.getCurrent());
         assertEquals("Task should not yet have run", 0, runCount.get());
 
         wrapped.run();
 
-        assertNull("Should not have a current UI outside the caller",
-                UI.getCurrent());
+        assertNull("Should not have a current UI outside the caller", UI.getCurrent());
         assertEquals("Task should have run once", 1, runCount.get());
     }
 
@@ -1006,8 +907,7 @@ public class UITest {
     public void accessLaterRunnable_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
-        SerializableRunnable wrapped = ui.accessLater(
-                () -> Assert.fail("Action should never run"), null);
+        SerializableRunnable wrapped = ui.accessLater(() -> Assert.fail("Action should never run"), null);
         wrapped.run();
     }
 
@@ -1017,8 +917,7 @@ public class UITest {
 
         UI ui = createTestUI();
 
-        SerializableRunnable wrapped = ui.accessLater(
-                () -> Assert.fail("Action should never run"),
+        SerializableRunnable wrapped = ui.accessLater(() -> Assert.fail("Action should never run"),
                 runCount::incrementAndGet);
 
         assertEquals("Handler should not yet have run", 0, runCount.get());
@@ -1033,8 +932,7 @@ public class UITest {
         String token1 = new UI().getCsrfToken();
         String token2 = new UI().getCsrfToken();
 
-        Assert.assertNotEquals("Each UI should have a unique CSRF token",
-                token1, token2);
+        Assert.assertNotEquals("Each UI should have a unique CSRF token", token1, token2);
     }
 
     @Test
@@ -1043,9 +941,7 @@ public class UITest {
         String token1 = ui.getCsrfToken();
         String token2 = ui.getCsrfToken();
 
-        Assert.assertEquals(
-                "getCsrfToken() should always return the same value for the same UI",
-                token1, token2);
+        Assert.assertEquals("getCsrfToken() should always return the same value for the same UI", token1, token2);
     }
 
     @Test(expected = NullPointerException.class)
@@ -1068,14 +964,12 @@ public class UITest {
             sum.addAndGet(value.intValue());
         }, null);
 
-        assertNull("Should not have a current UI outside the caller",
-                UI.getCurrent());
+        assertNull("Should not have a current UI outside the caller", UI.getCurrent());
         assertEquals("Task should not yet have run", 0, sum.get());
 
         wrapped.accept(Integer.valueOf(5));
 
-        assertNull("Should not have a current UI outside the caller",
-                UI.getCurrent());
+        assertNull("Should not have a current UI outside the caller", UI.getCurrent());
         assertEquals("Task should have run once", 5, sum.get());
     }
 
@@ -1083,8 +977,7 @@ public class UITest {
     public void accessLaterConsumer_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
-        SerializableConsumer<Object> wrapped = ui.accessLater(
-                value -> Assert.fail("Action should never run"), null);
+        SerializableConsumer<Object> wrapped = ui.accessLater(value -> Assert.fail("Action should never run"), null);
         wrapped.accept(null);
     }
 
@@ -1094,8 +987,7 @@ public class UITest {
 
         UI ui = createTestUI();
 
-        SerializableConsumer<Object> wrapped = ui.accessLater(
-                value -> Assert.fail("Action should never run"),
+        SerializableConsumer<Object> wrapped = ui.accessLater(value -> Assert.fail("Action should never run"),
                 runCount::incrementAndGet);
 
         assertEquals("Handler should not yet have run", 0, runCount.get());
@@ -1147,8 +1039,7 @@ public class UITest {
         }
 
         try {
-            ui.navigate(Parameterized.class,
-                    new RouteParameters("some", "value"));
+            ui.navigate(Parameterized.class, new RouteParameters("some", "value"));
             Assert.fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
@@ -1178,8 +1069,7 @@ public class UITest {
             ui.navigate("foo-bar", null);
             Assert.fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assert.assertEquals("Query parameters must not be null",
-                    e.getMessage());
+            Assert.assertEquals("Query parameters must not be null", e.getMessage());
         }
     }
 
@@ -1201,8 +1091,7 @@ public class UITest {
         }
 
         try {
-            ui.navigate(FooBarParamNavigationTarget.class,
-                    new RouteParameters("fooParam", "123"));
+            ui.navigate(FooBarParamNavigationTarget.class, new RouteParameters("fooParam", "123"));
             Assert.fail("NotFoundException expected.");
         } catch (NotFoundException e) {
         }
@@ -1211,36 +1100,29 @@ public class UITest {
     @Test
     public void modalComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
         final TestFixture fixture = new TestFixture();
-        Assert.assertTrue("Fixture should have set a modal component",
-                fixture.ui.hasModalComponent());
+        Assert.assertTrue("Fixture should have set a modal component", fixture.ui.hasModalComponent());
 
         fixture.ui.setChildComponentModal(fixture.modalComponent, false);
 
-        Assert.assertFalse(
-                "Setting modal to false should have removed all modality",
-                fixture.ui.hasModalComponent());
+        Assert.assertFalse("Setting modal to false should have removed all modality", fixture.ui.hasModalComponent());
     }
 
     @Test
     public void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
         final TestFixture fixture = new TestFixture();
-        Assert.assertEquals("modalComponent should be modal",
-                fixture.modalComponent,
+        Assert.assertEquals("modalComponent should be modal", fixture.modalComponent,
                 fixture.ui.getInternals().getActiveModalComponent());
 
         fixture.ui.setChildComponentModal(fixture.routingComponent, true);
 
-        Assert.assertEquals(
-                "routingComponent should override modalComponent as active modal component",
-                fixture.routingComponent,
-                fixture.ui.getInternals().getActiveModalComponent());
+        Assert.assertEquals("routingComponent should override modalComponent as active modal component",
+                fixture.routingComponent, fixture.ui.getInternals().getActiveModalComponent());
 
         fixture.ui.setChildComponentModal(fixture.routingComponent, false);
 
         Assert.assertEquals(
                 "modalComponent should return to active modal component when routingComponent made non modal",
-                fixture.modalComponent,
-                fixture.ui.getInternals().getActiveModalComponent());
+                fixture.modalComponent, fixture.ui.getInternals().getActiveModalComponent());
 
     }
 
@@ -1251,12 +1133,9 @@ public class UITest {
         fixture.ui.addToModalComponent(test);
 
         final Optional<Component> testComponentParent = test.getParent();
-        Assert.assertTrue("test component was not attached",
-                testComponentParent.isPresent());
-        Assert.assertEquals(
-                "test component should have been attached to modalComponent",
-                fixture.ui.getInternals().getActiveModalComponent(),
-                testComponentParent.get());
+        Assert.assertTrue("test component was not attached", testComponentParent.isPresent());
+        Assert.assertEquals("test component should have been attached to modalComponent",
+                fixture.ui.getInternals().getActiveModalComponent(), testComponentParent.get());
     }
 
     @Test
@@ -1553,25 +1432,21 @@ public class UITest {
         UI ui = new UI();
         initUI(ui, "", null);
         Component currentRoute = ui.getCurrentView();
-        MatcherAssert.assertThat(currentRoute,
-                CoreMatchers.instanceOf(RootNavigationTarget.class));
+        MatcherAssert.assertThat(currentRoute, CoreMatchers.instanceOf(RootNavigationTarget.class));
 
         ui.navigate("foo/bar");
         currentRoute = ui.getCurrentView();
-        MatcherAssert.assertThat(currentRoute,
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        MatcherAssert.assertThat(currentRoute, CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test
-    public void getCurrentView_routingNotInitialized_throws()
-            throws InvalidRouteConfigurationException {
+    public void getCurrentView_routingNotInitialized_throws() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         Assert.assertThrows(IllegalStateException.class, ui::getCurrentView);
     }
 
     private void verifyInert(Component component, boolean inert) {
-        Assert.assertEquals("Invalid inert state", inert,
-                component.getElement().getNode().isInert());
+        Assert.assertEquals("Invalid inert state", inert, component.getElement().getNode().isInert());
     }
 
     private static class TestFixture {

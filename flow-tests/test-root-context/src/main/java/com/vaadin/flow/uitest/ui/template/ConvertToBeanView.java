@@ -34,8 +34,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.ConvertToBeanView", layout = ViewTestLayout.class)
 @Tag("convert-to-bean")
 @JsModule("./ConvertToBean.js")
-public class ConvertToBeanView
-        extends PolymerTemplate<ConvertToBeanView.ConvertToBeanModel> {
+public class ConvertToBeanView extends PolymerTemplate<ConvertToBeanView.ConvertToBeanModel> {
 
     public interface ConvertToBeanModel extends TemplateModel {
         @AllowClientUpdates(ClientUpdateMode.ALLOW)
@@ -81,8 +80,7 @@ public class ConvertToBeanView
 
     }
 
-    public static class DateToBeanConverter
-            implements ModelEncoder<Date, DateBean> {
+    public static class DateToBeanConverter implements ModelEncoder<Date, DateBean> {
 
         @Override
         public DateBean encode(Date modelValue) {
@@ -101,15 +99,13 @@ public class ConvertToBeanView
             if (presentationValue == null) {
                 return null;
             }
-            if (presentationValue.getYear() == null
-                    || presentationValue.getDay() == null
+            if (presentationValue.getYear() == null || presentationValue.getDay() == null
                     || presentationValue.getMonth() == null) {
                 return null;
             }
 
             return new Date(Integer.valueOf(presentationValue.getYear()) - 1900,
-                    Integer.valueOf(presentationValue.getMonth()) - 1,
-                    Integer.valueOf(presentationValue.getDay()));
+                    Integer.valueOf(presentationValue.getMonth()) - 1, Integer.valueOf(presentationValue.getDay()));
         }
 
     }

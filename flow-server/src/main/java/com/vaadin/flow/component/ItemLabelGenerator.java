@@ -18,8 +18,7 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * {@link ItemLabelGenerator} can be used to customize the string shown to the
- * user for an item.
+ * {@link ItemLabelGenerator} can be used to customize the string shown to the user for an item.
  *
  * @param <T>
  *            item type

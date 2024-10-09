@@ -71,8 +71,7 @@ public class NodeListTest {
         Assert.assertSame(list, addEvent.getSource());
         Assert.assertEquals(0, addEvent.getIndex());
         Assert.assertEquals(0, addEvent.getRemove().length());
-        Assert.assertEquals(Arrays.asList("1", "2", "3"),
-                JreJsArray.asList(addEvent.getAdd()));
+        Assert.assertEquals(Arrays.asList("1", "2", "3"), JreJsArray.asList(addEvent.getAdd()));
 
         lastEvent.set(null);
 
@@ -89,14 +88,12 @@ public class NodeListTest {
         remover.remove();
 
         list.splice(0, 0, JsCollections.array("1", "2", "3"));
-        Assert.assertSame("No new event should have been fired", removeEvent,
-                lastEvent.get());
+        Assert.assertSame("No new event should have been fired", removeEvent, lastEvent.get());
     }
 
     @Test
     public void testReactive() {
-        CountingComputation computation = new CountingComputation(
-                () -> list.length());
+        CountingComputation computation = new CountingComputation(() -> list.length());
 
         Reactive.flush();
 
@@ -112,8 +109,7 @@ public class NodeListTest {
         list.get(0);
 
         Reactive.flush();
-        Assert.assertEquals("Get should not trigger recompute", 2,
-                computation.getCount());
+        Assert.assertEquals("Get should not trigger recompute", 2, computation.getCount());
     }
 
     @Test
@@ -127,7 +123,6 @@ public class NodeListTest {
             forEachList.add((String) item);
         });
 
-        Assert.assertArrayEquals(new String[] { "baz", "foo", "bar" },
-                forEachList.toArray());
+        Assert.assertArrayEquals(new String[] { "baz", "foo", "bar" }, forEachList.toArray());
     }
 }

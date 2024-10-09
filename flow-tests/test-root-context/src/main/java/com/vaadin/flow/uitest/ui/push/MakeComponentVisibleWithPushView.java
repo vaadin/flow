@@ -19,8 +19,8 @@ public class MakeComponentVisibleWithPushView extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         /*
-         * Read push settings from the UI instead of the the navigation target /
-         * router layout to preserve the structure of these legacy testing UIs
+         * Read push settings from the UI instead of the the navigation target / router layout to preserve the structure
+         * of these legacy testing UIs
          */
         CustomPush push = getClass().getAnnotation(CustomPush.class);
         UI ui = attachEvent.getUI();
@@ -36,8 +36,7 @@ public class MakeComponentVisibleWithPushView extends Div {
         input.setId("input");
         rootLayout.add(input);
 
-        NativeButton doUpdateButton = new NativeButton("Do Update",
-                event -> doUpdate());
+        NativeButton doUpdateButton = new NativeButton("Do Update", event -> doUpdate());
         doUpdateButton.setId("update");
 
         rootLayout.add(doUpdateButton);

@@ -18,8 +18,7 @@ public class FlowDauIntegrationTest {
 
     @Test
     public void generateNewCookie_setsUpExpectedParameters() {
-        try (MockedStatic<DauIntegration> key = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> key = Mockito.mockStatic(DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");
             VaadinRequest request = Mockito.mock(VaadinRequest.class);
             Mockito.when(request.isSecure()).thenReturn(true);
@@ -30,16 +29,14 @@ public class FlowDauIntegrationTest {
             Assert.assertEquals(DAUUtils.DAU_COOKIE_NAME, cookie.getName());
             Assert.assertTrue(cookie.isHttpOnly());
             Assert.assertTrue(cookie.getSecure());
-            Assert.assertEquals(DAUUtils.DAU_COOKIE_MAX_AGE_IN_SECONDS,
-                    cookie.getMaxAge());
+            Assert.assertEquals(DAUUtils.DAU_COOKIE_MAX_AGE_IN_SECONDS, cookie.getMaxAge());
             Assert.assertEquals("/", cookie.getPath());
         }
     }
 
     @Test
     public void generateNewCookie_notSecureRequest_cookieNotSecure() {
-        try (MockedStatic<DauIntegration> key = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> key = Mockito.mockStatic(DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");
             VaadinRequest request = Mockito.mock(VaadinRequest.class);
             Mockito.when(request.isSecure()).thenReturn(false);

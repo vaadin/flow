@@ -19,11 +19,9 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 /**
- * Creates input stream instances that provides the actual data of a
- * {@link StreamResource}.
+ * Creates input stream instances that provides the actual data of a {@link StreamResource}.
  * <p>
- * The instance of this class should generate {@link InputStream} for the
- * resource.
+ * The instance of this class should generate {@link InputStream} for the resource.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -34,12 +32,10 @@ public interface InputStreamFactory extends Serializable {
     /**
      * Produce {@link InputStream} instance to read resource data.
      * <p>
-     * This method is called under the Vaadin session lock. So it's safe to
-     * access the application/session data which is required to produce the
-     * {@link InputStream} data. The presence of the lock on subsequent access
-     * to the {@link InputStream} is controlled by {@link #requiresLock()}
-     * method. So {@link #createInputStream()} method is the best place to do
-     * your {@link InputStream} initialization.
+     * This method is called under the Vaadin session lock. So it's safe to access the application/session data which is
+     * required to produce the {@link InputStream} data. The presence of the lock on subsequent access to the
+     * {@link InputStream} is controlled by {@link #requiresLock()} method. So {@link #createInputStream()} method is
+     * the best place to do your {@link InputStream} initialization.
      * <p>
      * Return value may not be null.
      *
@@ -48,21 +44,17 @@ public interface InputStreamFactory extends Serializable {
     InputStream createInputStream();
 
     /**
-     * If this method returns {@code true} (by default) then reading data from
-     * input stream (via {@link #createInputStream()} will be done under session
-     * lock and it's safe to access application data within {@link InputStream}
-     * read methods. Otherwise session lock won't be acquired. In the latter
-     * case one must not try to access application data.
+     * If this method returns {@code true} (by default) then reading data from input stream (via
+     * {@link #createInputStream()} will be done under session lock and it's safe to access application data within
+     * {@link InputStream} read methods. Otherwise session lock won't be acquired. In the latter case one must not try
+     * to access application data.
      * <p>
-     * {@link #createInputStream()} is called under the session lock. Normally
-     * it should be enough to get all required data from the application at this
-     * point and use it to produce the data via {@link InputStream}. In this
-     * case one should override {@link #requiresLock()} method to return
-     * {@code false}. E.g. if {@link InputStream} instance is remote URL input
-     * stream then you don't want to lock session on reading data from it.
+     * {@link #createInputStream()} is called under the session lock. Normally it should be enough to get all required
+     * data from the application at this point and use it to produce the data via {@link InputStream}. In this case one
+     * should override {@link #requiresLock()} method to return {@code false}. E.g. if {@link InputStream} instance is
+     * remote URL input stream then you don't want to lock session on reading data from it.
      *
-     * @return {@code true} if data from the input stream should be read under
-     *         the session lock, {@code false} otherwise
+     * @return {@code true} if data from the input stream should be read under the session lock, {@code false} otherwise
      */
     default boolean requiresLock() {
         return true;

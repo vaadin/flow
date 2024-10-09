@@ -25,8 +25,8 @@ public class RangeInputTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
-    public void setup() throws IntrospectionException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+    public void setup()
+            throws IntrospectionException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
         whitelistProperty("enabled");
@@ -41,9 +41,8 @@ public class RangeInputTest extends ComponentTest {
         addProperty("min", double.class, 0.0, 4.0, false, false);
         addProperty("max", double.class, 100.0, 1000.0, false, false);
         addProperty("step", Double.class, 1.0, 0.5, false, false);
-        final ComponentProperty orientationProperty = addProperty("orientation",
-                RangeInput.Orientation.class, RangeInput.Orientation.HORIZONTAL,
-                RangeInput.Orientation.VERTICAL, false, true);
+        final ComponentProperty orientationProperty = addProperty("orientation", RangeInput.Orientation.class,
+                RangeInput.Orientation.HORIZONTAL, RangeInput.Orientation.VERTICAL, false, true);
         orientationProperty.propertyOrAttributeTag = "orient";
     }
 
@@ -59,21 +58,16 @@ public class RangeInputTest extends ComponentTest {
         Assert.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
         Assert.assertNull(rangeInput.getStyle().get("appearance"));
         Assert.assertNull(rangeInput.getStyle().get("writing-mode"));
-        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL,
-                rangeInput.getOrientation());
+        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL, rangeInput.getOrientation());
         rangeInput.setOrientation(RangeInput.Orientation.VERTICAL);
-        Assert.assertEquals("slider-vertical",
-                rangeInput.getStyle().get("-webkit-appearance"));
-        Assert.assertEquals("slider-vertical",
-                rangeInput.getStyle().get("appearance"));
+        Assert.assertEquals("slider-vertical", rangeInput.getStyle().get("-webkit-appearance"));
+        Assert.assertEquals("slider-vertical", rangeInput.getStyle().get("appearance"));
         Assert.assertEquals("bt-lr", rangeInput.getStyle().get("writing-mode"));
-        Assert.assertEquals(RangeInput.Orientation.VERTICAL,
-                rangeInput.getOrientation());
+        Assert.assertEquals(RangeInput.Orientation.VERTICAL, rangeInput.getOrientation());
         rangeInput.setOrientation(RangeInput.Orientation.HORIZONTAL);
         Assert.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
         Assert.assertNull(rangeInput.getStyle().get("appearance"));
         Assert.assertNull(rangeInput.getStyle().get("writing-mode"));
-        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL,
-                rangeInput.getOrientation());
+        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL, rangeInput.getOrientation());
     }
 }

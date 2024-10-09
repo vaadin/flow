@@ -21,8 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
 @SpringBootTest()
-@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class })
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class, SpringSecurityAutoConfiguration.class })
 public abstract class AbstractDevModeBrowserLauncherTest {
 
     @Autowired

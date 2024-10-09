@@ -41,53 +41,39 @@ public class TaskGenerateIndexHtmlTest {
     @Before
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
-        Options options = new Options(Mockito.mock(Lookup.class), null)
-                .withFrontendDirectory(frontendFolder);
+        Options options = new Options(Mockito.mock(Lookup.class), null).withFrontendDirectory(frontendFolder);
         taskGenerateIndexHtml = new TaskGenerateIndexHtml(options);
     }
 
     @Test
     public void should_loadCorrectContentOfDefaultFile() throws Exception {
-        String defaultContent = IOUtils.toString(
-                getClass().getResourceAsStream(INDEX_HTML),
-                StandardCharsets.UTF_8);
+        String defaultContent = IOUtils.toString(getClass().getResourceAsStream(INDEX_HTML), StandardCharsets.UTF_8);
 
-        Assert.assertEquals(
-                "Should load correct default content from index.html",
-                defaultContent, taskGenerateIndexHtml.getFileContent());
+        Assert.assertEquals("Should load correct default content from index.html", defaultContent,
+                taskGenerateIndexHtml.getFileContent());
     }
 
     @Test
-    public void should_notOverwriteIndexHtml_IndexHtmlExists()
-            throws Exception {
+    public void should_notOverwriteIndexHtml_IndexHtmlExists() throws Exception {
         File indexhtml = new File(frontendFolder, "index.html");
         Files.createFile(indexhtml.toPath());
         taskGenerateIndexHtml.execute();
-        Assert.assertFalse(
-                "Should not generate index.html while it exists in the frontend folder",
+        Assert.assertFalse("Should not generate index.html while it exists in the frontend folder",
                 taskGenerateIndexHtml.shouldGenerate());
-        Assert.assertEquals("",
-                IOUtils.toString(indexhtml.toURI(), StandardCharsets.UTF_8));
+        Assert.assertEquals("", IOUtils.toString(indexhtml.toURI(), StandardCharsets.UTF_8));
     }
 
     @Test
     public void should_generateIndexHtml_IndexHtmlNotExist() throws Exception {
-        String defaultContent = IOUtils.toString(
-                getClass().getResourceAsStream(INDEX_HTML),
-                StandardCharsets.UTF_8);
-        Assert.assertTrue(
-                "Should generate index.html when it doesn't exists in the frontend folder",
+        String defaultContent = IOUtils.toString(getClass().getResourceAsStream(INDEX_HTML), StandardCharsets.UTF_8);
+        Assert.assertTrue("Should generate index.html when it doesn't exists in the frontend folder",
                 taskGenerateIndexHtml.shouldGenerate());
 
         taskGenerateIndexHtml.execute();
 
-        Assert.assertTrue("The generated file should exists",
-                taskGenerateIndexHtml.getGeneratedFile().exists());
+        Assert.assertTrue("The generated file should exists", taskGenerateIndexHtml.getGeneratedFile().exists());
 
-        Assert.assertEquals("Should have default content of index.html",
-                defaultContent,
-                IOUtils.toString(
-                        taskGenerateIndexHtml.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8));
+        Assert.assertEquals("Should have default content of index.html", defaultContent,
+                IOUtils.toString(taskGenerateIndexHtml.getGeneratedFile().toURI(), StandardCharsets.UTF_8));
     }
 }

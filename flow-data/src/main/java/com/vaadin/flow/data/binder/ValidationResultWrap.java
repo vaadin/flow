@@ -24,9 +24,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * Internal implementation of a {@code Result} that collects all possible
- * ValidationResults into one list. This class intercepts the normal chaining of
- * Converters and Validators, catching and collecting results.
+ * Internal implementation of a {@code Result} that collects all possible ValidationResults into one list. This class
+ * intercepts the normal chaining of Converters and Validators, catching and collecting results.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -73,13 +72,11 @@ class ValidationResultWrap<R> implements Result<R> {
         ValidationResultWrap<S> resultWrap = (ValidationResultWrap<S>) result;
         currentResults.addAll(resultWrap.getValidationResults());
 
-        return new ValidationResultWrap<>(resultWrap.getWrappedResult(),
-                currentResults);
+        return new ValidationResultWrap<>(resultWrap.getWrappedResult(), currentResults);
     }
 
     @Override
-    public void handle(SerializableConsumer<R> ifOk,
-            SerializableConsumer<String> ifError) {
+    public void handle(SerializableConsumer<R> ifOk, SerializableConsumer<String> ifError) {
         wrappedResult.handle(ifOk, ifError);
     }
 
@@ -94,9 +91,7 @@ class ValidationResultWrap<R> implements Result<R> {
     }
 
     @Override
-    public <X extends Throwable> R getOrThrow(
-            SerializableFunction<String, ? extends X> exceptionProvider)
-            throws X {
+    public <X extends Throwable> R getOrThrow(SerializableFunction<String, ? extends X> exceptionProvider) throws X {
         return wrappedResult.getOrThrow(exceptionProvider);
     }
 

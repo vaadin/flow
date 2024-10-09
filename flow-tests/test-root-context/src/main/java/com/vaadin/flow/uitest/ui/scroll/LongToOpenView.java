@@ -33,11 +33,10 @@ public class LongToOpenView extends AbstractDivView {
         Div div = new Div();
         div.setText("I am the long to open view");
 
-        NativeButton back = createButton("Back", BACK_BUTTON_ID,
-                event -> getPage().getHistory().back());
+        NativeButton back = createButton("Back", BACK_BUTTON_ID, event -> getPage().getHistory().back());
 
-        add(div, back, ScrollView.createAnchorUrl(true, ANCHOR_LINK_ID,
-                ScrollView.ANCHOR_URL, "Anchor url to other view"));
+        add(div, back,
+                ScrollView.createAnchorUrl(true, ANCHOR_LINK_ID, ScrollView.ANCHOR_URL, "Anchor url to other view"));
     }
 
     @Override
@@ -49,8 +48,7 @@ public class LongToOpenView extends AbstractDivView {
             // loaded.
             Thread.sleep(TimeUnit.SECONDS.toMillis(3L));
         } catch (InterruptedException e) {
-            throw new IllegalStateException("Not supposed to be interrupted",
-                    e);
+            throw new IllegalStateException("Not supposed to be interrupted", e);
         }
     }
 }

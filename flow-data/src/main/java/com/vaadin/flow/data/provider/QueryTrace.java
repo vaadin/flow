@@ -19,8 +19,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Allows to trace {@link Query#getOffset()}, {@link Query#getLimit()},
- * {@link Query#getPage()} and {@link Query#getPageSize()} method calls.
+ * Allows to trace {@link Query#getOffset()}, {@link Query#getLimit()}, {@link Query#getPage()} and
+ * {@link Query#getPageSize()} method calls.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -35,8 +35,7 @@ class QueryTrace<T, F> extends Query<T, F> {
     /**
      * {@inheritDoc}
      */
-    QueryTrace(int offset, int limit, List<QuerySortOrder> sortOrders,
-            Comparator<T> inMemorySorting, F filter) {
+    QueryTrace(int offset, int limit, List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting, F filter) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
     }
 

@@ -34,19 +34,16 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Keeps track of various current instances for the current thread. All the
- * instances are automatically cleared after handling a request from the client
- * to avoid leaking memory.
+ * Keeps track of various current instances for the current thread. All the instances are automatically cleared after
+ * handling a request from the client to avoid leaking memory.
  * <p>
- * Please note that the instances are stored using {@link WeakReference}. This
- * means that the a current instance value may suddenly disappear if there a no
- * other references to the object.
+ * Please note that the instances are stored using {@link WeakReference}. This means that the a current instance value
+ * may suddenly disappear if there a no other references to the object.
  * <p>
  * Currently the framework uses the following instances:
  * </p>
  * <p>
- * {@link VaadinRequest}, {@link VaadinResponse}, {@link UI},
- * {@link VaadinService}, {@link VaadinSession}.
+ * {@link VaadinRequest}, {@link VaadinResponse}, {@link UI}, {@link VaadinService}, {@link VaadinSession}.
  * </p>
  *
  * <p>
@@ -57,8 +54,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class CurrentInstance implements Serializable {
     private static final Object NULL_OBJECT = new Object();
-    private static final CurrentInstance CURRENT_INSTANCE_NULL = new CurrentInstance(
-            NULL_OBJECT);
+    private static final CurrentInstance CURRENT_INSTANCE_NULL = new CurrentInstance(NULL_OBJECT);
 
     private final WeakReference<Object> instance;
 
@@ -75,8 +71,7 @@ public class CurrentInstance implements Serializable {
      *            the instance type
      * @param type
      *            the class to get an instance of
-     * @return the current instance or the provided type, or <code>null</code>
-     *         if there is no current instance.
+     * @return the current instance or the provided type, or <code>null</code> if there is no current instance.
      */
     public static <T> T get(Class<T> type) {
         Map<Class<?>, CurrentInstance> map = instances.get();
@@ -88,16 +83,13 @@ public class CurrentInstance implements Serializable {
             Object value = currentInstance.instance.get();
             if (value == null) {
                 /*
-                 * This is believed to never actually happen since the
-                 * ThreadLocal should only outlive the referenced object on
-                 * threads that are not doing anything related to Vaadin, which
-                 * should thus never invoke CurrentInstance.get().
+                 * This is believed to never actually happen since the ThreadLocal should only outlive the referenced
+                 * object on threads that are not doing anything related to Vaadin, which should thus never invoke
+                 * CurrentInstance.get().
                  *
-                 * At this point, there might also be other values that have
-                 * been collected, so we'll scan the entire map and remove stale
-                 * CurrentInstance objects. Using a ReferenceQueue could make
-                 * this assumingly rare case slightly more efficient, but would
-                 * significantly increase the complexity of the code for
+                 * At this point, there might also be other values that have been collected, so we'll scan the entire
+                 * map and remove stale CurrentInstance objects. Using a ReferenceQueue could make this assumingly rare
+                 * case slightly more efficient, but would significantly increase the complexity of the code for
                  * maintaining a separate ReferenceQueue for each Thread.
                  */
                 removeStaleInstances(map);
@@ -114,17 +106,13 @@ public class CurrentInstance implements Serializable {
         }
     }
 
-    private static void removeStaleInstances(
-            Map<Class<?>, CurrentInstance> map) {
-        for (Iterator<Entry<Class<?>, CurrentInstance>> iterator = map
-                .entrySet().iterator(); iterator.hasNext();) {
+    private static void removeStaleInstances(Map<Class<?>, CurrentInstance> map) {
+        for (Iterator<Entry<Class<?>, CurrentInstance>> iterator = map.entrySet().iterator(); iterator.hasNext();) {
             Entry<Class<?>, CurrentInstance> entry = iterator.next();
             Object instance = entry.getValue().instance.get();
             if (instance == null) {
                 iterator.remove();
-                getLogger().debug(
-                        "CurrentInstance for {} has been garbage collected.",
-                        entry.getKey());
+                getLogger().debug("CurrentInstance for {} has been garbage collected.", entry.getKey());
             }
         }
     }
@@ -137,8 +125,7 @@ public class CurrentInstance implements Serializable {
      * @param <T>
      *            the instance type
      * @param type
-     *            the class that should be used when getting the current
-     *            instance back
+     *            the class that should be used when getting the current instance back
      * @param instance
      *            the actual instance
      */
@@ -152,8 +139,7 @@ public class CurrentInstance implements Serializable {
      * @see ThreadLocal
      *
      * @param type
-     *            the class that should be used when getting the current
-     *            instance back
+     *            the class that should be used when getting the current instance back
      * @param instance
      *            the actual instance
      * @return previous CurrentInstance wrapper
@@ -193,8 +179,8 @@ public class CurrentInstance implements Serializable {
     }
 
     /**
-     * Restores the given instances to the given values. Note that this should
-     * only be used internally to restore Vaadin classes.
+     * Restores the given instances to the given values. Note that this should only be used internally to restore Vaadin
+     * classes.
      *
      *
      * @param old
@@ -211,20 +197,15 @@ public class CurrentInstance implements Serializable {
                 removeStale = true;
             } else if (v == NULL_OBJECT) {
                 /*
-                 * NULL_OBJECT is used to identify objects that are null when
-                 * #setCurrent(UI) or #setCurrent(VaadinSession) are called on a
-                 * CurrentInstance. Without this a reference to an already
-                 * collected instance may be left in the CurrentInstance when it
-                 * really should be restored to null.
+                 * NULL_OBJECT is used to identify objects that are null when #setCurrent(UI) or
+                 * #setCurrent(VaadinSession) are called on a CurrentInstance. Without this a reference to an already
+                 * collected instance may be left in the CurrentInstance when it really should be restored to null.
                  *
-                 * One example case that this fixes:
-                 * VaadinService.runPendingAccessTasks() clears all current
-                 * instances and then sets everything but the UI. This makes
-                 * UI.accessSynchronously() save these values before calling
-                 * setCurrent(UI), which stores UI=null in the map it returns.
-                 * This map will be restored after UI.accessSync(), which,
-                 * unless it respects null values, will just leave the wrong UI
-                 * instance registered.
+                 * One example case that this fixes: VaadinService.runPendingAccessTasks() clears all current instances
+                 * and then sets everything but the UI. This makes UI.accessSynchronously() save these values before
+                 * calling setCurrent(UI), which stores UI=null in the map it returns. This map will be restored after
+                 * UI.accessSync(), which, unless it respects null values, will just leave the wrong UI instance
+                 * registered.
                  */
                 v = null;
             }
@@ -237,8 +218,7 @@ public class CurrentInstance implements Serializable {
     }
 
     /**
-     * Gets the currently set instances so that they can later be restored using
-     * {@link #restoreInstances(Map)}.
+     * Gets the currently set instances so that they can later be restored using {@link #restoreInstances(Map)}.
      *
      * @return a map containing the current instances
      */
@@ -269,15 +249,13 @@ public class CurrentInstance implements Serializable {
     }
 
     /**
-     * Sets current instances for the UI and all related classes. The previously
-     * defined values can be restored by passing the returned map to
-     * {@link #restoreInstances(Map)}.
+     * Sets current instances for the UI and all related classes. The previously defined values can be restored by
+     * passing the returned map to {@link #restoreInstances(Map)}.
      *
      *
      * @param ui
      *            The UI
-     * @return A map containing the old values of the instances that this method
-     *         updated.
+     * @return A map containing the old values of the instances that this method updated.
      */
     public static Map<Class<?>, CurrentInstance> setCurrent(UI ui) {
         Map<Class<?>, CurrentInstance> old = setCurrent(ui.getSession());
@@ -286,18 +264,15 @@ public class CurrentInstance implements Serializable {
     }
 
     /**
-     * Sets current instances for the {@link VaadinSession} and all related
-     * classes. The previously defined values can be restored by passing the
-     * returned map to {@link #restoreInstances(Map)}.
+     * Sets current instances for the {@link VaadinSession} and all related classes. The previously defined values can
+     * be restored by passing the returned map to {@link #restoreInstances(Map)}.
      *
      *
      * @param session
      *            The VaadinSession
-     * @return A map containing the old values of the instances this method
-     *         updated.
+     * @return A map containing the old values of the instances this method updated.
      */
-    public static Map<Class<?>, CurrentInstance> setCurrent(
-            VaadinSession session) {
+    public static Map<Class<?>, CurrentInstance> setCurrent(VaadinSession session) {
         Map<Class<?>, CurrentInstance> old = new HashMap<>();
         old.put(VaadinSession.class, doSet(VaadinSession.class, session));
         VaadinService service = null;

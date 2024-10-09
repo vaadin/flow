@@ -36,10 +36,8 @@ public class MappedToDomEvent extends ComponentEvent<Component> {
         moreData = "Two arg constructor";
     }
 
-    public MappedToDomEvent(Component source, boolean fromClient,
-            @EventData("event.someData") int someData,
-            @EventData("event.moreData") String moreData,
-            @EventData("event.primitiveBoolean") boolean primitiveBoolean,
+    public MappedToDomEvent(Component source, boolean fromClient, @EventData("event.someData") int someData,
+            @EventData("event.moreData") String moreData, @EventData("event.primitiveBoolean") boolean primitiveBoolean,
             @EventData("event.objectBoolean") Boolean objectBoolean) {
         super(source, fromClient);
         this.someData = someData;

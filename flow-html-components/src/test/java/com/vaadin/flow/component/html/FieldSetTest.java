@@ -35,9 +35,7 @@ public class FieldSetTest extends ComponentTest {
 
         fieldset = new FieldSet(new Paragraph("sample-content"));
         Assert.assertNull(fieldset.getLegend());
-        Assert.assertEquals("sample-content",
-                ((Paragraph) fieldset.getContent().findFirst().get())
-                        .getText());
+        Assert.assertEquals("sample-content", ((Paragraph) fieldset.getContent().findFirst().get()).getText());
 
         Paragraph content = new Paragraph("content");
         fieldset = new FieldSet("sample-legend", content);
@@ -75,7 +73,6 @@ public class FieldSetTest extends ComponentTest {
     public void testFieldSetLegendTextSetting() {
         String expectedText = "Test Legend";
         FieldSet fieldSet = new FieldSet(expectedText);
-        Assert.assertEquals("The legend text should be set correctly.",
-                expectedText, fieldSet.getLegend().getText());
+        Assert.assertEquals("The legend text should be set correctly.", expectedText, fieldSet.getLegend().getText());
     }
 }

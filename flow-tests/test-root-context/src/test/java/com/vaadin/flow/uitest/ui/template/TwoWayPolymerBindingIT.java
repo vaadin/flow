@@ -55,8 +55,7 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
     }
 
     private Object getValueProperty(WebElement input) {
-        return ((JavascriptExecutor) getDriver())
-                .executeScript("return arguments[0].value", input);
+        return ((JavascriptExecutor) getDriver()).executeScript("return arguments[0].value", input);
     }
 
     private String getStatusMessage() {

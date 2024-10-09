@@ -31,8 +31,7 @@ public class RegistrationTest {
         Command action = () -> {
             boolean calledPreviously = invoked.getAndSet(true);
 
-            Assert.assertFalse("Command should not invoked previously",
-                    calledPreviously);
+            Assert.assertFalse("Command should not invoked previously", calledPreviously);
         };
 
         Registration registration = Registration.once(action);
@@ -52,8 +51,7 @@ public class RegistrationTest {
         AtomicBoolean firstRemoved = new AtomicBoolean();
         AtomicBoolean secondRemoved = new AtomicBoolean();
 
-        Registration registration = Registration.combine(
-                () -> firstRemoved.set(true), () -> secondRemoved.set(true));
+        Registration registration = Registration.combine(() -> firstRemoved.set(true), () -> secondRemoved.set(true));
 
         Assert.assertFalse("Should not be removed yet", firstRemoved.get());
         Assert.assertFalse("Should not be removed yet", secondRemoved.get());

@@ -50,8 +50,7 @@ public class BeansWithNoOwnerView extends Div {
         button.setId("switch-content");
         add(button);
 
-        RouterLink link = new RouterLink("another-view",
-                AnotherBeanNopOwnerView.class);
+        RouterLink link = new RouterLink("another-view", AnotherBeanNopOwnerView.class);
         link.getElement().getStyle().set("display", "block");
         link.setId("navigate-another");
         add(link);

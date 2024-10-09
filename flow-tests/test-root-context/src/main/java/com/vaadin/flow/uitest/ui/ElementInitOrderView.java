@@ -28,8 +28,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @JsModule("./ElementInitOrder.js")
 public class ElementInitOrderView extends AbstractDivView {
     public ElementInitOrderView() {
-        NativeButton reattach = createButton("Reattach components", "reattach",
-                event -> reattachElements());
+        NativeButton reattach = createButton("Reattach components", "reattach", event -> reattachElements());
 
         add(reattach, new Html("<br />"));
 
@@ -39,12 +38,10 @@ public class ElementInitOrderView extends AbstractDivView {
     private void reattachElements() {
         Stream.of("init-order-polymer", "init-order-nopolymer")
                 // Remove old child if present
-                .peek(name -> getElement().getChildren()
-                        .filter(child -> child.getTag().equals(name))
-                        .findFirst().ifPresent(Element::removeFromParent))
+                .peek(name -> getElement().getChildren().filter(child -> child.getTag().equals(name)).findFirst()
+                        .ifPresent(Element::removeFromParent))
                 // Create and attach new child
-                .map(ElementInitOrderView::createElement)
-                .forEach(getElement()::appendChild);
+                .map(ElementInitOrderView::createElement).forEach(getElement()::appendChild);
     }
 
     private static Element createElement(String tag) {

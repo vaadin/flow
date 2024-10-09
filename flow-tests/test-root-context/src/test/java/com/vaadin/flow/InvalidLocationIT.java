@@ -27,8 +27,7 @@ public class InvalidLocationIT extends ChromeBrowserTest {
     public void invalidCharactersOnPath_UiNotServed() {
         open();
 
-        checkLogsForErrors(msg -> msg
-                .contains("the server responded with a status of 400"));
+        checkLogsForErrors(msg -> msg.contains("the server responded with a status of 400"));
     }
 
     @Override

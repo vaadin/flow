@@ -43,11 +43,9 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void setup() {
         service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         handler = new PolymerPublishedEventRpcHandler();
     }
@@ -83,8 +81,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         json.put("nodeId", 0);
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                String.class);
+        boolean isModelValue = handler.isTemplateModelValue(instance, json, String.class);
 
         Assert.assertTrue(isModelValue);
     }
@@ -96,8 +93,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         JsonObject json = Json.createObject();
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                String.class);
+        boolean isModelValue = handler.isTemplateModelValue(instance, json, String.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -109,8 +105,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         JsonObject json = Json.createObject();
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                Boolean.class);
+        boolean isModelValue = handler.isTemplateModelValue(instance, json, Boolean.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -119,8 +114,7 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void templateWithModel_faultyPayloadAsNoJsonObject_returnsFalse() {
         TestModule instance = new TestModule();
 
-        boolean isModelValue = handler.isTemplateModelValue(instance,
-                Json.createArray(), String.class);
+        boolean isModelValue = handler.isTemplateModelValue(instance, Json.createArray(), String.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -133,26 +127,21 @@ public class PolymerPublishedEventRpcHandlerTest {
         json.put("nodeId", 0);
         json.put("message", "bar");
 
-        boolean isModelValue = handler.isTemplateModelValue(instance, json,
-                String.class);
+        boolean isModelValue = handler.isTemplateModelValue(instance, json, String.class);
 
         Assert.assertFalse(isModelValue);
     }
 
-    public static Object getTemplateItem(Component template,
-            JsonObject argValue, Type convertedType) {
+    public static Object getTemplateItem(Component template, JsonObject argValue, Type convertedType) {
         final Optional<UI> ui = template.getUI();
         if (ui.isPresent()) {
-            StateNode node = ui.get().getInternals().getStateTree()
-                    .getNodeById((int) argValue.getNumber("nodeId"));
+            StateNode node = ui.get().getInternals().getStateTree().getNodeById((int) argValue.getNumber("nodeId"));
 
-            ModelType propertyType = ((PolymerTemplate<?>) template)
-                    .getModelType(convertedType);
+            ModelType propertyType = ((PolymerTemplate<?>) template).getModelType(convertedType);
 
             return propertyType.modelToApplication(node);
         }
-        throw new IllegalStateException(
-                "Event sent for a non attached template component");
+        throw new IllegalStateException("Event sent for a non attached template component");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -162,9 +151,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         JsonObject json = Json.createObject();
         json.put("nodeId", 0);
         json.put("message", "bar");
-        final Type messageType = ModelClass.class
-                .getMethod("setMessage", String.class)
-                .getGenericParameterTypes()[0];
+        final Type messageType = ModelClass.class.getMethod("setMessage", String.class).getGenericParameterTypes()[0];
 
         handler.getTemplateItem(instance, json, messageType);
     }

@@ -21,9 +21,8 @@ import com.vaadin.client.flow.collection.JsSet;
 import elemental.events.EventRemover;
 
 /**
- * Event router providing integration with reactive features in {@link Reactive}
- * and {@link Computation}. Listeners can be added both for a specific event
- * type and for the generic value change. All events are fired to both types of
+ * Event router providing integration with reactive features in {@link Reactive} and {@link Computation}. Listeners can
+ * be added both for a specific event type and for the generic value change. All events are fired to both types of
  * listeners, as well as to event collectors registered using
  * {@link Reactive#addEventCollector(ReactiveValueChangeListener)}.
  *
@@ -79,17 +78,14 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent>
      *            the change listener to add, not <code>null</code>
      * @return an event remover that can be used for removing the added listener
      */
-    public EventRemover addReactiveListener(
-            ReactiveValueChangeListener reactiveValueChangeListener) {
+    public EventRemover addReactiveListener(ReactiveValueChangeListener reactiveValueChangeListener) {
         assert reactiveValueChangeListener != null;
         return addListener(wrap(reactiveValueChangeListener));
     }
 
     /**
-     * Fires an event to all listeners added to this router using
-     * {@link #addListener(Object)} or
-     * {@link #addReactiveListener(ReactiveValueChangeListener)} as well as all
-     * global event collectors added using
+     * Fires an event to all listeners added to this router using {@link #addListener(Object)} or
+     * {@link #addReactiveListener(ReactiveValueChangeListener)} as well as all global event collectors added using
      * {@link Reactive#addEventCollector(ReactiveValueChangeListener)}.
      *
      * @param event
@@ -106,9 +102,8 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent>
     }
 
     /**
-     * Registers access to the data for which this event router fires event.
-     * This registers the event source of this event router to be set as a
-     * dependency of the current computation if there is one.
+     * Registers access to the data for which this event router fires event. This registers the event source of this
+     * event router to be set as a dependency of the current computation if there is one.
      */
     public void registerRead() {
         Computation computation = Reactive.getCurrentComputation();
@@ -127,15 +122,14 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent>
     }
 
     /**
-     * Callback for wrapping a generic reactive change listener to an instance
-     * of the listener type natively supported by this event router.
+     * Callback for wrapping a generic reactive change listener to an instance of the listener type natively supported
+     * by this event router.
      *
      * @param reactiveValueChangeListener
      *            the reactive change listener
      * @return an event listener wrapping the provided listener
      */
-    protected abstract L wrap(
-            ReactiveValueChangeListener reactiveValueChangeListener);
+    protected abstract L wrap(ReactiveValueChangeListener reactiveValueChangeListener);
 
     /**
      * Callback for dispatching an event to a listener.

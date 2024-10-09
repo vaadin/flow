@@ -22,25 +22,20 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 
 import elemental.json.Json;
 
-public class FireEventExporter
-        extends WebComponentExporter<FireEventComponent> {
+public class FireEventExporter extends WebComponentExporter<FireEventComponent> {
 
     public FireEventExporter() {
         super("fire-event");
     }
 
     @Override
-    public void configureInstance(WebComponent<FireEventComponent> webComponent,
-            FireEventComponent component) {
-        component.setSumConsumer(number -> webComponent
-                .fireEvent("sum-calculated", Json.create(number)));
-        component.setErrorConsumer(err -> webComponent
-                .fireEvent("sum" + "-error", Json.create(err)));
+    public void configureInstance(WebComponent<FireEventComponent> webComponent, FireEventComponent component) {
+        component.setSumConsumer(number -> webComponent.fireEvent("sum-calculated", Json.create(number)));
+        component.setErrorConsumer(err -> webComponent.fireEvent("sum" + "-error", Json.create(err)));
 
         component.setButtonConsumer(optionsType -> {
             EventOptions options = createEventOptions(optionsType);
-            webComponent.fireEvent("button-event",
-                    Json.create(optionsType.name()), options);
+            webComponent.fireEvent("button-event", Json.create(optionsType.name()), options);
         });
     }
 

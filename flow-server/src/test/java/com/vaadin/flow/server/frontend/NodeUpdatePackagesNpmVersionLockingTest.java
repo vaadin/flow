@@ -44,8 +44,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.TARGET;
 
 @Category(SlowTests.class)
-public class NodeUpdatePackagesNpmVersionLockingTest
-        extends NodeUpdateTestUtil {
+public class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
 
     private static final String TEST_DEPENDENCY = "@vaadin/vaadin-overlay";
     private static final String DEPENDENCIES = "dependencies";
@@ -69,62 +68,49 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         classFinder = Mockito.spy(getClassFinder());
         File versions = temporaryFolder.newFile();
         FileUtils.write(versions,
-                String.format(
-                        "{" + "\"vaadin-overlay\": {"
-                                + "\"npmName\": \"@vaadin/vaadin-overlay\","
-                                + "\"jsVersion\": \"%s\"" + "}" + "}",
-                        PLATFORM_PINNED_DEPENDENCY_VERSION),
+                String.format("{" + "\"vaadin-overlay\": {" + "\"npmName\": \"@vaadin/vaadin-overlay\","
+                        + "\"jsVersion\": \"%s\"" + "}" + "}", PLATFORM_PINNED_DEPENDENCY_VERSION),
                 StandardCharsets.UTF_8);
         // @formatter:on
 
-        Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+        Mockito.when(classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON)).thenReturn(versions.toURI().toURL());
     }
 
     @Test
-    public void shouldLockPinnedVersion_whenExistsInDependencies()
-            throws IOException {
+    public void shouldLockPinnedVersion_whenExistsInDependencies() throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();
-        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY, PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
-        Assert.assertEquals("$" + TEST_DEPENDENCY,
-                packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
+        Assert.assertEquals("$" + TEST_DEPENDENCY, packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
     }
 
     @Test
-    public void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
-            throws IOException {
+    public void shouldNotLockPinnedVersion_whenNotExistsInDependencies() throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();
 
         Assert.assertNull(packageJson.getObject(OVERRIDES));
-        Assert.assertNull(
-                packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
+        Assert.assertNull(packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
 
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
-        Assert.assertNull(
-                packageJson.getObject(OVERRIDES).get(TEST_DEPENDENCY));
+        Assert.assertNull(packageJson.getObject(OVERRIDES).get(TEST_DEPENDENCY));
     }
 
     @Test
-    public void shouldNotUpdatesOverrides_whenHasUserModification()
-            throws IOException {
+    public void shouldNotUpdatesOverrides_whenHasUserModification() throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();
         JsonObject overridesSection = Json.createObject();
         packageJson.put(OVERRIDES, overridesSection);
 
-        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
-                USER_PINNED_DEPENDENCY_VERSION);
+        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
         packageUpdater.generateVersionsJson(packageJson);
@@ -137,34 +123,28 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     @Test
     public void shouldRemoveUnusedLocking() throws IOException {
         // Test when there is no vaadin-version-core.json available
-        Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON)).thenReturn(null);
 
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
         JsonObject packageJson = packageUpdater.getPackageJson();
-        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY, PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
-        Assert.assertTrue(
-                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
+        Assert.assertTrue(packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
 
         packageJson.getObject(DEPENDENCIES).remove(TEST_DEPENDENCY);
 
         packageUpdater.versionsJson = null;
         packageUpdater.generateVersionsJson(packageJson);
-        Assert.assertFalse(
-                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
+        Assert.assertFalse(packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
 
     }
 
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
-        FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Options options = new MockOptions(baseDir).withEnablePnpm(enablePnpm)
-                .withBuildDirectory(TARGET).withProductionMode(true);
+        FrontendDependenciesScanner scanner = Mockito.mock(FrontendDependenciesScanner.class);
+        Options options = new MockOptions(baseDir).withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
+                .withProductionMode(true);
 
         return new TaskUpdatePackages(scanner, options);
     }

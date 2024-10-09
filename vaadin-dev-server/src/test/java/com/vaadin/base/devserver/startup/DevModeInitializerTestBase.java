@@ -37,8 +37,8 @@ import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
 import static org.mockito.ArgumentMatchers.any;
 
 /**
- * Base class for DevModeInitializer tests. It is an independent class so as it
- * can be created and executed with custom classloaders.
+ * Base class for DevModeInitializer tests. It is an independent class so as it can be created and executed with custom
+ * classloaders.
  */
 public class DevModeInitializerTestBase extends AbstractDevModeTest {
 
@@ -71,22 +71,15 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-        ServletRegistration vaadinServletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration vaadinServletRegistration = Mockito.mock(ServletRegistration.class);
 
-        Mockito.when(vaadinServletRegistration.getClassName())
-                .thenReturn(VaadinServletSubClass.class.getName());
-        endpointGeneratorTaskFactory = Mockito
-                .mock(EndpointGeneratorTaskFactory.class);
+        Mockito.when(vaadinServletRegistration.getClassName()).thenReturn(VaadinServletSubClass.class.getName());
+        endpointGeneratorTaskFactory = Mockito.mock(EndpointGeneratorTaskFactory.class);
         taskGenerateEndpoint = Mockito.mock(TaskGenerateEndpoint.class);
         taskGenerateOpenAPI = Mockito.mock(TaskGenerateOpenAPI.class);
-        Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
-                .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doReturn(taskGenerateEndpoint)
-                .when(endpointGeneratorTaskFactory)
-                .createTaskGenerateEndpoint(any());
-        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateOpenAPI(any());
+        Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(taskGenerateEndpoint).when(endpointGeneratorTaskFactory).createTaskGenerateEndpoint(any());
+        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory).createTaskGenerateOpenAPI(any());
 
         classes = new HashSet<>();
         classes.add(this.getClass());
@@ -94,26 +87,22 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         Map registry = new HashMap();
 
         /*
-         * Adding extra registrations to make sure that DevModeInitializer picks
-         * the correct registration which is a VaadinServlet registration.
+         * Adding extra registrations to make sure that DevModeInitializer picks the correct registration which is a
+         * VaadinServlet registration.
          */
         registry.put("extra1", Mockito.mock(ServletRegistration.class));
         registry.put("foo", vaadinServletRegistration);
         registry.put("extra2", Mockito.mock(ServletRegistration.class));
-        Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn(registry);
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(servletContext.getClassLoader())
-                .thenReturn(this.getClass().getClassLoader());
+        Mockito.when(servletContext.getServletRegistrations()).thenReturn(registry);
+        Mockito.when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getClassLoader()).thenReturn(this.getClass().getClassLoader());
 
         mainPackageFile = new File(baseDir, PACKAGE_JSON);
 
         // Not this needs to update according to dependencies in
         // NodeUpdater.getDefaultDependencies and
         // NodeUpdater.getDefaultDevDependencies
-        FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(),
-                "UTF-8");
+        FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(), "UTF-8");
         devServerConfigFile.createNewFile();
         FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
 
@@ -174,15 +163,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     }
 
     static List<URL> getClasspathURLs() {
-        return Arrays.stream(
-                System.getProperty("java.class.path").split(File.pathSeparator))
-                .map(s -> {
-                    try {
-                        return new File(s).toURI().toURL();
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toList());
+        return Arrays.stream(System.getProperty("java.class.path").split(File.pathSeparator)).map(s -> {
+            try {
+                return new File(s).toURI().toURL();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
     }
 
 }

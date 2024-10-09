@@ -32,20 +32,16 @@ public class ElementInnerHtmlIT extends ChromeBrowserTest {
         Assert.assertEquals("", innerHtml.getPropertyString("innerHTML"));
 
         $(NativeButtonElement.class).id("set-foo").click();
-        Assert.assertEquals("<p>Foo</p>",
-                innerHtml.getPropertyString("innerHTML"));
+        Assert.assertEquals("<p>Foo</p>", innerHtml.getPropertyString("innerHTML"));
 
         $(NativeButtonElement.class).id("set-foo").click();
-        Assert.assertEquals("<p>Foo</p>",
-                innerHtml.getPropertyString("innerHTML"));
+        Assert.assertEquals("<p>Foo</p>", innerHtml.getPropertyString("innerHTML"));
 
         $(NativeButtonElement.class).id("set-boo").click();
-        Assert.assertEquals("<p>Boo</p>",
-                innerHtml.getPropertyString("innerHTML"));
+        Assert.assertEquals("<p>Boo</p>", innerHtml.getPropertyString("innerHTML"));
 
         $(NativeButtonElement.class).id("set-boo").click();
-        Assert.assertEquals("<p>Boo</p>",
-                innerHtml.getPropertyString("innerHTML"));
+        Assert.assertEquals("<p>Boo</p>", innerHtml.getPropertyString("innerHTML"));
 
         $(NativeButtonElement.class).id("set-null").click();
         Assert.assertEquals("", innerHtml.getPropertyString("innerHTML"));
@@ -57,8 +53,7 @@ public class ElementInnerHtmlIT extends ChromeBrowserTest {
         DivElement innerHtml = $(DivElement.class).id("inner-html-field");
 
         $(NativeButtonElement.class).id("set-foo").click();
-        Assert.assertEquals("<p>Foo</p>",
-                innerHtml.getPropertyString("innerHTML"));
+        Assert.assertEquals("<p>Foo</p>", innerHtml.getPropertyString("innerHTML"));
 
         $(NativeButtonElement.class).id("toggle-visibility").click();
 
@@ -66,7 +61,6 @@ public class ElementInnerHtmlIT extends ChromeBrowserTest {
         $(NativeButtonElement.class).id("set-foo").click();
 
         $(NativeButtonElement.class).id("toggle-visibility").click();
-        Assert.assertEquals("<p>Foo</p>",
-                innerHtml.getPropertyString("innerHTML"));
+        Assert.assertEquals("<p>Foo</p>", innerHtml.getPropertyString("innerHTML"));
     }
 }

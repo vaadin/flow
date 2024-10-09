@@ -29,8 +29,8 @@ public interface HasMax extends HasElement {
 
     class Descriptors {
         // Hides descriptors
-        static final PropertyDescriptor<Integer, Integer> maxProperty = PropertyDescriptors
-                .propertyWithDefault("max", 100);
+        static final PropertyDescriptor<Integer, Integer> maxProperty = PropertyDescriptors.propertyWithDefault("max",
+                100);
     }
 
     /**

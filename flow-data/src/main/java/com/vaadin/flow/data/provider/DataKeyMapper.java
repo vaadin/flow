@@ -29,8 +29,7 @@ import com.vaadin.flow.function.ValueProvider;
 public interface DataKeyMapper<T> extends Serializable {
 
     /**
-     * Gets the key for data object. If no key exists beforehand, a new key is
-     * created.
+     * Gets the key for data object. If no key exists beforehand, a new key is created.
      *
      * @param dataObject
      *            data object for key mapping
@@ -43,8 +42,7 @@ public interface DataKeyMapper<T> extends Serializable {
      *
      * @param dataObject
      *            the data object to check
-     * @return {@code true} if the given data object is contained in this key
-     *         mapper, {@code false} otherwise
+     * @return {@code true} if the given data object is contained in this key mapper, {@code false} otherwise
      */
     boolean has(T dataObject);
 
@@ -58,8 +56,7 @@ public interface DataKeyMapper<T> extends Serializable {
     T get(String key);
 
     /**
-     * Removes a data object from the key mapping. The key is also dropped.
-     * Dropped keys are not reused.
+     * Removes a data object from the key mapping. The key is also dropped. Dropped keys are not reused.
      *
      * @param dataObject
      *            dropped data object
@@ -67,15 +64,13 @@ public interface DataKeyMapper<T> extends Serializable {
     void remove(T dataObject);
 
     /**
-     * Removes all data objects from the key mapping. The keys are also dropped.
-     * Dropped keys are not reused.
+     * Removes all data objects from the key mapping. The keys are also dropped. Dropped keys are not reused.
      */
     void removeAll();
 
     /**
-     * Updates any existing mappings of given data object. The equality of two
-     * data objects is determined by the equality of their identifiers provided
-     * by the given value provider.
+     * Updates any existing mappings of given data object. The equality of two data objects is determined by the
+     * equality of their identifiers provided by the given value provider.
      *
      * @param dataObject
      *            the data object to update
@@ -86,10 +81,8 @@ public interface DataKeyMapper<T> extends Serializable {
      * Takes identifier getter into use and updates existing mappings
      *
      * @param identifierGetter
-     *            has to return a unique key for every bean, and the returned
-     *            key has to follow general {@code hashCode()} and
-     *            {@code equals()} contract, see {@link Object#hashCode()} for
-     *            details.
+     *            has to return a unique key for every bean, and the returned key has to follow general
+     *            {@code hashCode()} and {@code equals()} contract, see {@link Object#hashCode()} for details.
      */
     void setIdentifierGetter(ValueProvider<T, Object> identifierGetter);
 }

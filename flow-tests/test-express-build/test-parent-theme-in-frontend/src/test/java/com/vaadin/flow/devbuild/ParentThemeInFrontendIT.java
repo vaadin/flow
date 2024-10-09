@@ -63,8 +63,7 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
             try {
                 final WebElement p = findElement(By.tagName("p"));
                 final WebElement span = findElement(By.tagName("span"));
-                return RED_COLOR.equals(p.getCssValue("color"))
-                        && GREEN_COLOR.equals(span.getCssValue("color"));
+                return RED_COLOR.equals(p.getCssValue("color")) && GREEN_COLOR.equals(span.getCssValue("color"));
             } catch (StaleElementReferenceException e) {
                 return false;
             }

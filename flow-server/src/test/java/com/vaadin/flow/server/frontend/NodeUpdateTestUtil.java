@@ -40,10 +40,8 @@ public class NodeUpdateTestUtil {
                 NodeTestComponents.class.getDeclaredClasses());
     }
 
-    static ClassFinder getClassFinder(Class<?>... classes)
-            throws MalformedURLException {
-        return new DefaultClassFinder(new URLClassLoader(getClassPath()),
-                classes);
+    static ClassFinder getClassFinder(Class<?>... classes) throws MalformedURLException {
+        return new DefaultClassFinder(new URLClassLoader(getClassPath()), classes);
     }
 
     static URL[] getClassPath() throws MalformedURLException {
@@ -58,8 +56,7 @@ public class NodeUpdateTestUtil {
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        URL[] urls = URLClassLoader.newInstance(new URL[] {}, classLoader)
-                .getURLs();
+        URL[] urls = URLClassLoader.newInstance(new URL[] {}, classLoader).getURLs();
         for (URL url : urls) {
             classPaths.add(url);
         }
@@ -67,10 +64,8 @@ public class NodeUpdateTestUtil {
     }
 
     static URL getTestResource(String resourceName) {
-        URL resourceUrl = NodeUpdateTestUtil.class.getClassLoader()
-                .getResource(resourceName);
-        assertNotNull(String.format(
-                "Expect the test resource to be present in test resource folder with name = '%s'",
+        URL resourceUrl = NodeUpdateTestUtil.class.getClassLoader().getResource(resourceName);
+        assertNotNull(String.format("Expect the test resource to be present in test resource folder with name = '%s'",
                 resourceName), resourceUrl);
         return resourceUrl;
     }
@@ -80,60 +75,44 @@ public class NodeUpdateTestUtil {
     }
 
     List<String> getExpectedImports() {
-        return Arrays.asList("@polymer/iron-icon/iron-icon.js",
-                "@vaadin/vaadin-lumo-styles/spacing.js",
-                "@vaadin/vaadin-lumo-styles/icons.js",
-                "@vaadin/vaadin-lumo-styles/style.js",
-                "@vaadin/vaadin-lumo-styles/typography.js",
-                "@vaadin/vaadin-lumo-styles/typography-global.js",
-                "@vaadin/vaadin-lumo-styles/color.js",
-                "@vaadin/vaadin-lumo-styles/color-global.js",
-                "@vaadin/vaadin-lumo-styles/sizing.js",
-                "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
+        return Arrays.asList("@polymer/iron-icon/iron-icon.js", "@vaadin/vaadin-lumo-styles/spacing.js",
+                "@vaadin/vaadin-lumo-styles/icons.js", "@vaadin/vaadin-lumo-styles/style.js",
+                "@vaadin/vaadin-lumo-styles/typography.js", "@vaadin/vaadin-lumo-styles/typography-global.js",
+                "@vaadin/vaadin-lumo-styles/color.js", "@vaadin/vaadin-lumo-styles/color-global.js",
+                "@vaadin/vaadin-lumo-styles/sizing.js", "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
                 "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
                 "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "./theme/lumo/vaadin-custom-themed-component.js",
-                "./generated/jar-resources/ExampleConnector.js",
+                "./theme/lumo/vaadin-custom-themed-component.js", "./generated/jar-resources/ExampleConnector.js",
                 "3rdparty/component.js", "./local-p3-template.js", "./foo.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-template.js", "./foo-dir/vaadin-npm-component.js",
-                "./foo.css", "@vaadin/vaadin-mixed-component/bar.css",
-                "./common-js-file.js",
-                "@vaadin/example-flag/experimental-module-1.js",
-                "@vaadin/example-flag/experimental-module-2.js",
-                "experimental-Connector.js");
+                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js", "./local-template.js",
+                "./foo-dir/vaadin-npm-component.js", "./foo.css", "@vaadin/vaadin-mixed-component/bar.css",
+                "./common-js-file.js", "@vaadin/example-flag/experimental-module-1.js",
+                "@vaadin/example-flag/experimental-module-2.js", "experimental-Connector.js");
     }
 
-    void createExpectedImports(File directoryWithImportsJs,
-            File nodeModulesPath) throws IOException {
+    void createExpectedImports(File directoryWithImportsJs, File nodeModulesPath) throws IOException {
         for (String expectedImport : getExpectedImports()) {
-            createExpectedImport(directoryWithImportsJs, nodeModulesPath,
-                    expectedImport);
+            createExpectedImport(directoryWithImportsJs, nodeModulesPath, expectedImport);
         }
     }
 
-    void createExpectedImport(File directoryWithImportsJs, File nodeModulesPath,
-            String expectedImport) throws IOException {
-        File newFile = resolveImportFile(directoryWithImportsJs,
-                nodeModulesPath, expectedImport);
+    void createExpectedImport(File directoryWithImportsJs, File nodeModulesPath, String expectedImport)
+            throws IOException {
+        File newFile = resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport);
         newFile.getParentFile().mkdirs();
         Assert.assertTrue(newFile.createNewFile());
     }
 
-    void deleteExpectedImports(File directoryWithImportsJs,
-            File nodeModulesPath) {
+    void deleteExpectedImports(File directoryWithImportsJs, File nodeModulesPath) {
         for (String expectedImport : getExpectedImports()) {
-            Assert.assertTrue(resolveImportFile(directoryWithImportsJs,
-                    nodeModulesPath, expectedImport).delete());
+            Assert.assertTrue(resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport).delete());
         }
     }
 
-    File resolveImportFile(File directoryWithImportsJs, File nodeModulesPath,
-            String jsImport) {
-        File root = jsImport.startsWith("./") ? directoryWithImportsJs
-                : nodeModulesPath;
+    File resolveImportFile(File directoryWithImportsJs, File nodeModulesPath, String jsImport) {
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
         return new File(root, jsImport);
     }
 

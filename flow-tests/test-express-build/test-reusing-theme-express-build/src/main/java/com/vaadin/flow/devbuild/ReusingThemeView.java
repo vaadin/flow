@@ -25,9 +25,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class ReusingThemeView extends Div {
 
     public ReusingThemeView() {
-        Image snowFlake = new Image(
-                "themes/reusable-theme/fortawesome/icons/snowflake.svg",
-                "snowflake");
+        Image snowFlake = new Image("themes/reusable-theme/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("5em");
         snowFlake.setId("snowflake");
         add(snowFlake);

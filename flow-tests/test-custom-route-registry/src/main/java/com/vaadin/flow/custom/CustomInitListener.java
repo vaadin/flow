@@ -21,18 +21,15 @@ import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
 /**
- * Customized VaadinServiceInitListener that registers the CustomRoute to
- * CustomRouteRegistry.
+ * Customized VaadinServiceInitListener that registers the CustomRoute to CustomRouteRegistry.
  */
 public class CustomInitListener implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        final CustomRouteRegistry registry = CustomRouteRegistry
-                .getInstance(event.getSource().getContext());
+        final CustomRouteRegistry registry = CustomRouteRegistry.getInstance(event.getSource().getContext());
 
-        RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(registry);
+        RouteConfiguration configuration = RouteConfiguration.forRegistry(registry);
 
         configuration.setRoute("", CustomRoute.class);
     }

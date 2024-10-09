@@ -21,8 +21,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "server.port = 1235" })
-public class DevModeBrowserLauncherServletMappingTest
-        extends AbstractDevModeBrowserLauncherTest {
+public class DevModeBrowserLauncherServletMappingTest extends AbstractDevModeBrowserLauncherTest {
 
     @Test
     public void getUrl_withContextPath_givesUrlWithContextPathAndNoUrlMapping() {

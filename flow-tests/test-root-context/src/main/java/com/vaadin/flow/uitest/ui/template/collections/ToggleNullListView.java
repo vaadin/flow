@@ -20,21 +20,19 @@ public class ToggleNullListView extends AbstractDivView {
         Div container = new Div();
 
         ServerModelNullListTemplate template = new ServerModelNullListTemplate();
-        NativeButton button = createButton("Toggle template", TOGGLE_BUTTON_ID,
-                event -> {
-                    if (template.getParent().isPresent()) {
-                        container.remove(template);
-                    } else {
-                        container.add(template);
-                    }
-                });
+        NativeButton button = createButton("Toggle template", TOGGLE_BUTTON_ID, event -> {
+            if (template.getParent().isPresent()) {
+                container.remove(template);
+            } else {
+                container.add(template);
+            }
+        });
         add(button, container);
     }
 
     @Tag("server-model-null-list")
     @JsModule("./ServerModelNullList.js")
-    public static class ServerModelNullListTemplate
-            extends PolymerTemplate<ServerModelNullListTemplate.Model> {
+    public static class ServerModelNullListTemplate extends PolymerTemplate<ServerModelNullListTemplate.Model> {
         public interface Model extends TemplateModel {
             List<String> getNullList();
 

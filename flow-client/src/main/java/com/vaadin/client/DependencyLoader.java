@@ -49,8 +49,7 @@ public class DependencyLoader {
 
         @Override
         public void onError(ResourceLoadEvent event) {
-            Console.error(
-                    "'" + event.getResourceData() + "' could not be loaded.");
+            Console.error("'" + event.getResourceData() + "' could not be loaded.");
             // The show must go on
             onLoad(event);
         }
@@ -84,23 +83,19 @@ public class DependencyLoader {
         this.registry = registry;
     }
 
-    private void loadLazyDependency(String dependencyUrl,
-            final BiConsumer<String, ResourceLoadListener> loader) {
+    private void loadLazyDependency(String dependencyUrl, final BiConsumer<String, ResourceLoadListener> loader) {
         loader.accept(dependencyUrl, LAZY_RESOURCE_LOAD_LISTENER);
     }
 
-    private void loadDependencyEagerly(String data,
-            final BiConsumer<String, ResourceLoadListener> loader) {
+    private void loadDependencyEagerly(String data, final BiConsumer<String, ResourceLoadListener> loader) {
         startEagerDependencyLoading();
         loader.accept(data, EAGER_RESOURCE_LOAD_LISTENER);
     }
 
     /**
-     * Adds a command to be run when all eager dependencies have finished
-     * loading.
+     * Adds a command to be run when all eager dependencies have finished loading.
      * <p>
-     * If no eager dependencies are currently being loaded, runs the command
-     * immediately.
+     * If no eager dependencies are currently being loaded, runs the command immediately.
      *
      * @see #startEagerDependencyLoading()
      * @see #endEagerDependencyLoading()
@@ -128,8 +123,8 @@ public class DependencyLoader {
     /**
      * Marks that loading of a dependency has ended.
      * <p>
-     * If all pending dependencies have been loaded, calls any callback
-     * registered using {@link #runWhenEagerDependenciesLoaded(Command)}.
+     * If all pending dependencies have been loaded, calls any callback registered using
+     * {@link #runWhenEagerDependenciesLoaded(Command)}.
      */
     private static void endEagerDependencyLoading() {
         eagerDependenciesLoading--;
@@ -149,19 +144,16 @@ public class DependencyLoader {
      * Triggers loading of the given dependencies.
      *
      * @param clientDependencies
-     *            the map of the dependencies to load, divided into groups by
-     *            load mode, not {@code null}.
+     *            the map of the dependencies to load, divided into groups by load mode, not {@code null}.
      */
-    public void loadDependencies(
-            JsMap<LoadMode, JsonArray> clientDependencies) {
+    public void loadDependencies(JsMap<LoadMode, JsonArray> clientDependencies) {
         assert clientDependencies != null;
 
-        JsMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = JsCollections
-                .map();
+        JsMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = JsCollections.map();
 
         clientDependencies.forEach((dependencies, mode) -> {
-            extractLazyDependenciesAndLoadOthers(mode, dependencies).forEach(
-                    (loader, url) -> lazyDependencies.set(url, loader));
+            extractLazyDependenciesAndLoadOthers(mode, dependencies)
+                    .forEach((loader, url) -> lazyDependencies.set(url, loader));
         });
 
         // postpone load dependencies execution after the browser event
@@ -169,49 +161,36 @@ public class DependencyLoader {
         // run after the eager dependencies so that lazy dependencies
         // don't block those commands
         if (!lazyDependencies.isEmpty()) {
-            runWhenEagerDependenciesLoaded(
-                    () -> Scheduler.get().scheduleDeferred(() -> {
-                        Console.log(
-                                "Finished loading eager dependencies, loading lazy.");
-                        lazyDependencies.forEach((loader,
-                                url) -> loadLazyDependency(url, loader));
-                    }));
+            runWhenEagerDependenciesLoaded(() -> Scheduler.get().scheduleDeferred(() -> {
+                Console.log("Finished loading eager dependencies, loading lazy.");
+                lazyDependencies.forEach((loader, url) -> loadLazyDependency(url, loader));
+            }));
         }
     }
 
     private JsMap<String, BiConsumer<String, ResourceLoadListener>> extractLazyDependenciesAndLoadOthers(
             LoadMode loadMode, JsonArray dependencies) {
-        JsMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = JsCollections
-                .map();
+        JsMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = JsCollections.map();
         for (int i = 0; i < dependencies.length(); i++) {
             JsonObject dependencyJson = dependencies.getObject(i);
-            Dependency.Type type = Dependency.Type
-                    .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
-            BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
-                    type, loadMode);
+            Dependency.Type type = Dependency.Type.valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+            BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(type, loadMode);
 
             if (type == Dependency.Type.DYNAMIC_IMPORT) {
-                loadDependencyEagerly(
-                        dependencyJson.getString(Dependency.KEY_URL),
-                        resourceLoader);
+                loadDependencyEagerly(dependencyJson.getString(Dependency.KEY_URL), resourceLoader);
             } else {
                 switch (loadMode) {
                 case EAGER:
-                    loadDependencyEagerly(getDependencyUrl(dependencyJson),
-                            resourceLoader);
+                    loadDependencyEagerly(getDependencyUrl(dependencyJson), resourceLoader);
                     break;
                 case LAZY:
-                    lazyDependencies.set(getDependencyUrl(dependencyJson),
-                            resourceLoader);
+                    lazyDependencies.set(getDependencyUrl(dependencyJson), resourceLoader);
                     break;
                 case INLINE:
-                    loadDependencyEagerly(
-                            dependencyJson.getString(Dependency.KEY_CONTENTS),
-                            resourceLoader);
+                    loadDependencyEagerly(dependencyJson.getString(Dependency.KEY_CONTENTS), resourceLoader);
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                            "Unknown load mode = " + loadMode);
+                    throw new IllegalArgumentException("Unknown load mode = " + loadMode);
                 }
             }
         }
@@ -219,12 +198,11 @@ public class DependencyLoader {
     }
 
     private String getDependencyUrl(JsonObject dependencyJson) {
-        return registry.getURIResolver()
-                .resolveVaadinUri(dependencyJson.getString(Dependency.KEY_URL));
+        return registry.getURIResolver().resolveVaadinUri(dependencyJson.getString(Dependency.KEY_URL));
     }
 
-    private BiConsumer<String, ResourceLoadListener> getResourceLoader(
-            Dependency.Type resourceType, LoadMode loadMode) {
+    private BiConsumer<String, ResourceLoadListener> getResourceLoader(Dependency.Type resourceType,
+            LoadMode loadMode) {
         ResourceLoader resourceLoader = registry.getResourceLoader();
         boolean inline = loadMode == LoadMode.INLINE;
 
@@ -238,30 +216,27 @@ public class DependencyLoader {
             if (inline) {
                 return resourceLoader::inlineScript;
             }
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadScript(scriptUrl, resourceLoadListener, false, true);
+            return (scriptUrl, resourceLoadListener) -> resourceLoader.loadScript(scriptUrl, resourceLoadListener,
+                    false, true);
         case JS_MODULE:
             if (inline) {
-                throw new IllegalArgumentException(
-                        "Inline load mode is not supported for JsModule.");
+                throw new IllegalArgumentException("Inline load mode is not supported for JsModule.");
             }
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadJsModule(scriptUrl, resourceLoadListener, false, true);
+            return (scriptUrl, resourceLoadListener) -> resourceLoader.loadJsModule(scriptUrl, resourceLoadListener,
+                    false, true);
         case DYNAMIC_IMPORT:
             return resourceLoader::loadDynamicImport;
         default:
-            throw new IllegalArgumentException(
-                    "Unknown dependency type " + resourceType);
+            throw new IllegalArgumentException("Unknown dependency type " + resourceType);
         }
     }
 
     /**
-     * Prevents eager dependencies from being considered as loaded until
-     * <code>HTMLImports.whenReady</code> has been run.
+     * Prevents eager dependencies from being considered as loaded until <code>HTMLImports.whenReady</code> has been
+     * run.
      */
     public void requireHtmlImportsReady() {
         startEagerDependencyLoading();
-        registry.getResourceLoader().runWhenHtmlImportsReady(
-                DependencyLoader::endEagerDependencyLoading);
+        registry.getResourceLoader().runWhenHtmlImportsReady(DependencyLoader::endEagerDependencyLoading);
     }
 }

@@ -20,8 +20,7 @@ import com.vaadin.flow.component.internal.AbstractAttachDetachEvent;
 /**
  * Event fired before a {@link Component} is detached from the UI.
  * <p>
- * When a hierarchy of components is being detached, this event is fired
- * child-first.
+ * When a hierarchy of components is being detached, this event is fired child-first.
  *
  * @since 1.0
  */

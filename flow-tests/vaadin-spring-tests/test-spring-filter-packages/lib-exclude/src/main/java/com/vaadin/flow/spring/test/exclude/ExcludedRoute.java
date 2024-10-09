@@ -18,8 +18,7 @@ package com.vaadin.flow.spring.test.exclude;
 import com.vaadin.flow.router.Route;
 
 /**
- * Test class in a jar that is blocked from scanning via vaadin.blocked-jar=true
- * in package.properties.
+ * Test class in a jar that is blocked from scanning via vaadin.blocked-jar=true in package.properties.
  */
 @Route("excluded-route")
 public class ExcludedRoute {

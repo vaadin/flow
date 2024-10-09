@@ -48,11 +48,9 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
     @Override
     protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         return service;
     }
@@ -70,11 +68,10 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         Assert.assertFalse(m1.equals("foobar"));
         Assert.assertFalse(m1.equals(m2));
 
-        ModelDescriptor<EmptyModel> realModelType = ModelDescriptor
-                .get(EmptyModel.class);
+        ModelDescriptor<EmptyModel> realModelType = ModelDescriptor.get(EmptyModel.class);
 
-        Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                emptyModelTemplate1.getElement().getNode(), realModelType)));
+        Assert.assertTrue(m1.equals(
+                TemplateModelProxyHandler.createModelProxy(emptyModelTemplate1.getElement().getNode(), realModelType)));
 
         class TestTemplateModelType extends BeanModelType<TemplateModel> {
 
@@ -85,8 +82,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         }
 
         BeanModelType<TemplateModel> wrongModelType = new TestTemplateModelType();
-        Assert.assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                emptyModelTemplate1.getElement().getNode(), wrongModelType)));
+        Assert.assertFalse(m1.equals(TemplateModelProxyHandler
+                .createModelProxy(emptyModelTemplate1.getElement().getNode(), wrongModelType)));
 
         Assert.assertTrue(m2.equals(m2));
     }
@@ -120,8 +117,7 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
     public void objectMethodIsNotIntercepted() {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
-        Model proxy = TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(), new TestModelType());
+        Model proxy = TemplateModelProxyHandler.createModelProxy(template.getElement().getNode(), new TestModelType());
         Assert.assertEquals(System.identityHashCode(proxy), proxy.hashCode());
     }
 
@@ -129,8 +125,7 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
     public void notAccessorIsNotIntercepted() {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
-        Model proxy = TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(), new TestModelType());
+        Model proxy = TemplateModelProxyHandler.createModelProxy(template.getElement().getNode(), new TestModelType());
         Assert.assertEquals("foo", proxy.toString());
     }
 
@@ -138,9 +133,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
     public void noDefaultConstructor_throwsException() {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
-        TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(), new BeanModelType<>(
-                        BadModel.class, PropertyFilter.ACCEPT_ALL, false));
+        TemplateModelProxyHandler.createModelProxy(template.getElement().getNode(),
+                new BeanModelType<>(BadModel.class, PropertyFilter.ACCEPT_ALL, false));
     }
 
     // https://github.com/vaadin/flow/issues/1205
@@ -151,10 +145,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
     public void nonStaticNestedClass_throwsException() {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
-        TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(),
-                new BeanModelType<>(NotStaticModel.class,
-                        PropertyFilter.ACCEPT_ALL, false));
+        TemplateModelProxyHandler.createModelProxy(template.getElement().getNode(),
+                new BeanModelType<>(NotStaticModel.class, PropertyFilter.ACCEPT_ALL, false));
     }
 
     @Test
@@ -162,8 +154,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         EmptyModelTemplate emptyModelTemplate1 = new EmptyModelTemplate();
         TemplateModelTest.EmptyModel model = emptyModelTemplate1.getModel();
 
-        Assert.assertTrue(model.getClass().getCanonicalName().startsWith(
-                TemplateModelTest.EmptyModel.class.getCanonicalName()));
+        Assert.assertTrue(
+                model.getClass().getCanonicalName().startsWith(TemplateModelTest.EmptyModel.class.getCanonicalName()));
     }
 
     @Test(expected = IllegalArgumentException.class)

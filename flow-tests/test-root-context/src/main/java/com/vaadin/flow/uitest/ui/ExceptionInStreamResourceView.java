@@ -24,11 +24,9 @@ import com.vaadin.flow.server.StreamResource;
 public class ExceptionInStreamResourceView extends Div {
 
     public ExceptionInStreamResourceView() {
-        StreamResource faulty = new StreamResource(
-                "you-should-not-see-this-download.pdf", () -> {
-                    throw new IllegalStateException(
-                            "Oops we cannot generate the stream");
-                });
+        StreamResource faulty = new StreamResource("you-should-not-see-this-download.pdf", () -> {
+            throw new IllegalStateException("Oops we cannot generate the stream");
+        });
         Anchor anchor = new Anchor(faulty, "Click Here");
         anchor.getElement().setAttribute("download", true);
         anchor.setId("link");

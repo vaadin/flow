@@ -29,8 +29,7 @@ public class BasicComponentIT extends AbstractBasicElementComponentIT {
 
         // Selenium does not support text nodes...
         Assert.assertEquals(
-                BasicComponentView.TEXT + "\n" + BasicComponentView.DIV_TEXT
-                        + "\n" + BasicComponentView.BUTTON_TEXT,
+                BasicComponentView.TEXT + "\n" + BasicComponentView.DIV_TEXT + "\n" + BasicComponentView.BUTTON_TEXT,
                 root.getText());
     }
 }

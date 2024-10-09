@@ -31,7 +31,6 @@ public class WhiteSpaceTest {
     @Test
     public void forString_enumIsReturned() {
         Assert.assertEquals(WhiteSpace.NORMAL, WhiteSpace.forString("normal"));
-        Assert.assertEquals(WhiteSpace.PRE_WRAP,
-                WhiteSpace.forString("pre-wrap"));
+        Assert.assertEquals(WhiteSpace.PRE_WRAP, WhiteSpace.forString("pre-wrap"));
     }
 }

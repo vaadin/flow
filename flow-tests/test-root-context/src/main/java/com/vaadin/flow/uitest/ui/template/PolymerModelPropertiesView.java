@@ -32,10 +32,8 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
 
     @DomEvent("text-changed")
-    public static class ValueChangeEvent
-            extends ComponentEvent<PolymerModelPropertiesView> {
-        public ValueChangeEvent(PolymerModelPropertiesView source,
-                boolean fromClient) {
+    public static class ValueChangeEvent extends ComponentEvent<PolymerModelPropertiesView> {
+        public ValueChangeEvent(PolymerModelPropertiesView source, boolean fromClient) {
             super(source, fromClient);
         }
     }
@@ -44,9 +42,8 @@ public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
         setId("template");
         getModel().setText("foo");
 
-        getElement().addPropertyChangeListener("text", "text-changed",
-                event -> {
-                });
+        getElement().addPropertyChangeListener("text", "text-changed", event -> {
+        });
 
         addListener(ValueChangeEvent.class, event -> {
             getUI().get().add(addUpdateElement("property-update-event"));
@@ -65,8 +62,7 @@ public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
 
     private Div addUpdateElement(String id) {
         Div div = new Div();
-        div.setText("Property value:" + getElement().getProperty("text")
-                + ", model value: " + getModel().getText());
+        div.setText("Property value:" + getElement().getProperty("text") + ", model value: " + getModel().getText());
         div.setId(id);
         return div;
     }

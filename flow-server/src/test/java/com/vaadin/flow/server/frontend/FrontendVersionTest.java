@@ -40,20 +40,16 @@ public class FrontendVersionTest {
         FrontendVersion fromString = new FrontendVersion("1.1.0");
         FrontendVersion fromConstructor = new FrontendVersion(1, 1);
 
-        assertTrue("Parsed string didn't equal constructor",
-                fromString.equals(fromConstructor));
-        assertTrue("Constructor didn't equal parsed string",
-                fromConstructor.equals(fromString));
+        assertTrue("Parsed string didn't equal constructor", fromString.equals(fromConstructor));
+        assertTrue("Constructor didn't equal parsed string", fromConstructor.equals(fromString));
 
         fromString = new FrontendVersion("1.1.alpha12");
         fromConstructor = new FrontendVersion(1, 1, 0, "alpha12");
-        assertTrue("Major-Minor version with build identifier didn't match",
-                fromConstructor.equals(fromString));
+        assertTrue("Major-Minor version with build identifier didn't match", fromConstructor.equals(fromString));
 
         fromString = new FrontendVersion("12.3.5.alpha12");
         fromConstructor = new FrontendVersion(12, 3, 5, "alpha12");
-        assertTrue("Full version with build identifier didn't match",
-                fromString.equals(fromConstructor));
+        assertTrue("Full version with build identifier didn't match", fromString.equals(fromConstructor));
     }
 
     @Test
@@ -61,20 +57,16 @@ public class FrontendVersionTest {
         FrontendVersion fromString = new FrontendVersion("1.1.0");
         FrontendVersion fromConstructor = new FrontendVersion(1, 1);
 
-        assertTrue("Parsed string didn't equal constructor",
-                fromString.isEqualTo(fromConstructor));
-        assertTrue("Constructor didn't equal parsed string",
-                fromConstructor.isEqualTo(fromString));
+        assertTrue("Parsed string didn't equal constructor", fromString.isEqualTo(fromConstructor));
+        assertTrue("Constructor didn't equal parsed string", fromConstructor.isEqualTo(fromString));
 
         fromString = new FrontendVersion("1.1.alpha12");
         fromConstructor = new FrontendVersion(1, 1, 0, "alpha12");
-        assertTrue("Major-Minor version with build identifier didn't match",
-                fromConstructor.isEqualTo(fromString));
+        assertTrue("Major-Minor version with build identifier didn't match", fromConstructor.isEqualTo(fromString));
 
         fromString = new FrontendVersion("12.3.5.alpha12");
         fromConstructor = new FrontendVersion(12, 3, 5, "alpha12");
-        assertTrue("Full version with build identifier didn't match",
-                fromString.isEqualTo(fromConstructor));
+        assertTrue("Full version with build identifier didn't match", fromString.isEqualTo(fromConstructor));
     }
 
     @Test // #12041
@@ -84,8 +76,7 @@ public class FrontendVersionTest {
 
         assertTrue("Versions be the same", version.isEqualTo(equals));
         assertFalse("Version should not be older", version.isOlderThan(equals));
-        assertEquals("Versions should not have a difference", 0,
-                version.compareTo(equals));
+        assertEquals("Versions should not have a difference", 0, version.compareTo(equals));
         assertFalse("Version should not be newer", version.isNewerThan(equals));
     }
 
@@ -120,24 +111,17 @@ public class FrontendVersionTest {
     public void olderVersionIsCalculatedCorrectly() {
         FrontendVersion test = new FrontendVersion("2.2.0");
 
-        assertTrue("Should be older due to revision",
-                test.isOlderThan(new FrontendVersion("2.2.1")));
-        assertTrue("Should be older due to minor",
-                test.isOlderThan(new FrontendVersion("2.3.0")));
-        assertTrue("Should be older due to major",
-                test.isOlderThan(new FrontendVersion("3.2.0")));
+        assertTrue("Should be older due to revision", test.isOlderThan(new FrontendVersion("2.2.1")));
+        assertTrue("Should be older due to minor", test.isOlderThan(new FrontendVersion("2.3.0")));
+        assertTrue("Should be older due to major", test.isOlderThan(new FrontendVersion("3.2.0")));
 
         assertFalse("Should be newer as target has buildIdentifier",
                 test.isOlderThan(new FrontendVersion("2.2.0-alpha1")));
 
-        assertFalse("Should be newer due to major",
-                test.isOlderThan(new FrontendVersion("1.2.0")));
-        assertFalse("Should be newer due to minor",
-                test.isOlderThan(new FrontendVersion("2.1.0")));
-        assertFalse("Should be newer due to minor",
-                test.isOlderThan(new FrontendVersion("2.1.2")));
-        assertFalse("Should be newer due to minor",
-                test.isOlderThan(new FrontendVersion("1.5.2")));
+        assertFalse("Should be newer due to major", test.isOlderThan(new FrontendVersion("1.2.0")));
+        assertFalse("Should be newer due to minor", test.isOlderThan(new FrontendVersion("2.1.0")));
+        assertFalse("Should be newer due to minor", test.isOlderThan(new FrontendVersion("2.1.2")));
+        assertFalse("Should be newer due to minor", test.isOlderThan(new FrontendVersion("1.5.2")));
 
         assertFalse("Should be newer by major even with buildIdentifier",
                 test.isOlderThan(new FrontendVersion("1.2.0-alpha1")));
@@ -147,20 +131,15 @@ public class FrontendVersionTest {
     public void newerVersionIsCalculatedCorrectly() {
         FrontendVersion test = new FrontendVersion("2.2.2");
 
-        assertTrue("Should be newer due to revision",
-                test.isNewerThan(new FrontendVersion("2.2.1")));
-        assertTrue("Should be newer due to minor",
-                test.isNewerThan(new FrontendVersion("2.1.2")));
-        assertTrue("Should be newer due to major",
-                test.isNewerThan(new FrontendVersion("1.2.2")));
+        assertTrue("Should be newer due to revision", test.isNewerThan(new FrontendVersion("2.2.1")));
+        assertTrue("Should be newer due to minor", test.isNewerThan(new FrontendVersion("2.1.2")));
+        assertTrue("Should be newer due to major", test.isNewerThan(new FrontendVersion("1.2.2")));
 
         assertTrue("Should be newer as target has buildIdentifier",
                 test.isNewerThan(new FrontendVersion("2.2.2-alpha1")));
 
-        assertFalse("Should be older due to major",
-                test.isNewerThan(new FrontendVersion("3.2.2")));
-        assertFalse("Should be older due to minor",
-                test.isNewerThan(new FrontendVersion("2.3.2")));
+        assertFalse("Should be older due to major", test.isNewerThan(new FrontendVersion("3.2.2")));
+        assertFalse("Should be older due to minor", test.isNewerThan(new FrontendVersion("2.3.2")));
     }
 
     @Test
@@ -168,23 +147,16 @@ public class FrontendVersionTest {
 
         FrontendVersion test = new FrontendVersion("2.0.0-RC1");
 
-        assertTrue("2.0.0 should be newer that RC1",
-                test.isOlderThan(new FrontendVersion("2.0.0")));
-        assertTrue("RC2 should be newer that RC1",
-                test.isOlderThan(new FrontendVersion("2.0.0-RC2")));
-        assertFalse("beta5 should be older than RC1",
-                test.isOlderThan(new FrontendVersion("2.0.0-beta5")));
-        assertFalse("alpha4 should be older than RC1",
-                test.isOlderThan(new FrontendVersion("2.0.0-alpha4")));
+        assertTrue("2.0.0 should be newer that RC1", test.isOlderThan(new FrontendVersion("2.0.0")));
+        assertTrue("RC2 should be newer that RC1", test.isOlderThan(new FrontendVersion("2.0.0-RC2")));
+        assertFalse("beta5 should be older than RC1", test.isOlderThan(new FrontendVersion("2.0.0-beta5")));
+        assertFalse("alpha4 should be older than RC1", test.isOlderThan(new FrontendVersion("2.0.0-alpha4")));
 
         test = new FrontendVersion("2.0.0");
 
-        assertFalse("RC2 should be older that 2.0.0",
-                test.isOlderThan(new FrontendVersion("2.0.0-RC2")));
-        assertFalse("beta5 should be older than 2.0.0",
-                test.isOlderThan(new FrontendVersion("2.0.0-beta5")));
-        assertFalse("alpha4 should be older than 2.0.0",
-                test.isOlderThan(new FrontendVersion("2.0.0-alpha4")));
+        assertFalse("RC2 should be older that 2.0.0", test.isOlderThan(new FrontendVersion("2.0.0-RC2")));
+        assertFalse("beta5 should be older than 2.0.0", test.isOlderThan(new FrontendVersion("2.0.0-beta5")));
+        assertFalse("alpha4 should be older than 2.0.0", test.isOlderThan(new FrontendVersion("2.0.0-alpha4")));
     }
 
     @Test
@@ -192,23 +164,16 @@ public class FrontendVersionTest {
 
         FrontendVersion test = new FrontendVersion("2.0.0-alpha2");
 
-        assertTrue("alpha2 should be newer than alpha1",
-                test.isNewerThan(new FrontendVersion("2.0.0-alpha1")));
-        assertFalse("alpha2 should be older than 2.0.0",
-                test.isNewerThan(new FrontendVersion("2.0.0")));
-        assertFalse("alpha2 should be older than beta1",
-                test.isNewerThan(new FrontendVersion("2.0.0-beta1")));
-        assertFalse("alpha2 should be older than RC1",
-                test.isNewerThan(new FrontendVersion("2.0.0-RC1")));
+        assertTrue("alpha2 should be newer than alpha1", test.isNewerThan(new FrontendVersion("2.0.0-alpha1")));
+        assertFalse("alpha2 should be older than 2.0.0", test.isNewerThan(new FrontendVersion("2.0.0")));
+        assertFalse("alpha2 should be older than beta1", test.isNewerThan(new FrontendVersion("2.0.0-beta1")));
+        assertFalse("alpha2 should be older than RC1", test.isNewerThan(new FrontendVersion("2.0.0-RC1")));
 
         test = new FrontendVersion("2.0.0");
 
-        assertTrue("2.0.0 should be newer than alpha1",
-                test.isNewerThan(new FrontendVersion("2.0.0-alpha1")));
-        assertTrue("2.0.0 should be older than beta1",
-                test.isNewerThan(new FrontendVersion("2.0.0-beta1")));
-        assertTrue("2.0.0 should be older than RC1",
-                test.isNewerThan(new FrontendVersion("2.0.0-RC1")));
+        assertTrue("2.0.0 should be newer than alpha1", test.isNewerThan(new FrontendVersion("2.0.0-alpha1")));
+        assertTrue("2.0.0 should be older than beta1", test.isNewerThan(new FrontendVersion("2.0.0-beta1")));
+        assertTrue("2.0.0 should be older than RC1", test.isNewerThan(new FrontendVersion("2.0.0-RC1")));
     }
 
     @Test
@@ -229,8 +194,7 @@ public class FrontendVersionTest {
         assertFalse("2.0.0-alpha13 should not be older than 2.0.0-alpha20",
                 new FrontendVersion("2.0.0-alpha13").isNewerThan(test));
 
-        assertTrue("same versions should equal",
-                test.isEqualTo(new FrontendVersion("2.0.0.alpha20")));
+        assertTrue("same versions should equal", test.isEqualTo(new FrontendVersion("2.0.0.alpha20")));
     }
 
     @Test
@@ -239,38 +203,24 @@ public class FrontendVersionTest {
         FrontendVersion five = new FrontendVersion("2.0.0.5");
         FrontendVersion fifteen = new FrontendVersion("2.0.0.15");
 
-        assertTrue("2.0.0-alpha3 should be older than 2.0.0.5",
-                alpha3.isOlderThan(five));
-        assertFalse("2.0.0-alpha3 should be older than 2.0.0.5",
-                alpha3.isNewerThan(five));
+        assertTrue("2.0.0-alpha3 should be older than 2.0.0.5", alpha3.isOlderThan(five));
+        assertFalse("2.0.0-alpha3 should be older than 2.0.0.5", alpha3.isNewerThan(five));
 
-        assertTrue("2.0.0.5 should be newer than 2.0.0-alpha3",
-                five.isNewerThan(alpha3));
-        assertFalse("2.0.0.5 should be newer than 2.0.0-alpha3",
-                five.isOlderThan(alpha3));
+        assertTrue("2.0.0.5 should be newer than 2.0.0-alpha3", five.isNewerThan(alpha3));
+        assertFalse("2.0.0.5 should be newer than 2.0.0-alpha3", five.isOlderThan(alpha3));
 
-        assertTrue("2.0.0.5 should be older than 2.0.0.15",
-                five.isOlderThan(fifteen));
-        assertFalse("2.0.0.5 should be older than 2.0.0.15",
-                five.isNewerThan(fifteen));
+        assertTrue("2.0.0.5 should be older than 2.0.0.15", five.isOlderThan(fifteen));
+        assertFalse("2.0.0.5 should be older than 2.0.0.15", five.isNewerThan(fifteen));
 
-        assertTrue("2.0.0.15 should be newer than 2.0.0.5",
-                fifteen.isNewerThan(five));
-        assertFalse("2.0.0.15 should be newer than 2.0.0.5",
-                fifteen.isOlderThan(five));
+        assertTrue("2.0.0.15 should be newer than 2.0.0.5", fifteen.isNewerThan(five));
+        assertFalse("2.0.0.15 should be newer than 2.0.0.5", fifteen.isOlderThan(five));
 
     }
 
-    private void assertVersion(FrontendVersion version, int major, int minor,
-            int revision, String build) {
-        assertEquals("Major version was wrong for " + version.getFullVersion(),
-                version.getMajorVersion(), major);
-        assertEquals("Minor version was wrong for " + version.getFullVersion(),
-                version.getMinorVersion(), minor);
-        assertEquals("Revision was wrong for " + version.getFullVersion(),
-                version.getRevision(), revision);
-        assertEquals(
-                "Build identifier was wrong for " + version.getFullVersion(),
-                version.getBuildIdentifier(), build);
+    private void assertVersion(FrontendVersion version, int major, int minor, int revision, String build) {
+        assertEquals("Major version was wrong for " + version.getFullVersion(), version.getMajorVersion(), major);
+        assertEquals("Minor version was wrong for " + version.getFullVersion(), version.getMinorVersion(), minor);
+        assertEquals("Revision was wrong for " + version.getFullVersion(), version.getRevision(), revision);
+        assertEquals("Build identifier was wrong for " + version.getFullVersion(), version.getBuildIdentifier(), build);
     }
 }

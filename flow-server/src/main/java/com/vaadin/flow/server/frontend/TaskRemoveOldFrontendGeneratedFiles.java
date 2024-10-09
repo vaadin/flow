@@ -39,10 +39,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
  * Deletes old files from frontend generated folder.
  * <p>
  * </p>
- * This task must be performed last, because it will delete all files in
- * frontend generated folder that have not been tracked by the
- * {@link GeneratedFilesSupport} instance provided by the current
- * {@link NodeTasks} execution.
+ * This task must be performed last, because it will delete all files in frontend generated folder that have not been
+ * tracked by the {@link GeneratedFilesSupport} instance provided by the current {@link NodeTasks} execution.
  * <p>
  * </p>
  * For internal use only. May be renamed or removed in a future release.
@@ -52,8 +50,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
  */
 public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(TaskRemoveOldFrontendGeneratedFiles.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskRemoveOldFrontendGeneratedFiles.class);
     private final Path frontendGeneratedFolder;
     private final File frontendFolder;
 
@@ -65,8 +62,7 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
         frontendGeneratedFolder = options.getFrontendGeneratedFolder().toPath();
         if (frontendGeneratedFolder.toFile().exists()) {
             try (Stream<Path> files = Files.walk(frontendGeneratedFolder)) {
-                files.filter(Files::isRegularFile)
-                        .map(p -> p.normalize().toAbsolutePath())
+                files.filter(Files::isRegularFile).map(p -> p.normalize().toAbsolutePath())
                         .collect(Collectors.toCollection(() -> existingFiles));
             } catch (IOException ex) {
                 throw new UncheckedIOException(ex);
@@ -77,47 +73,38 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         if (generatedFilesSupport != null) {
-            Set<Path> generatedFiles = generatedFilesSupport
-                    .getFiles(frontendGeneratedFolder);
+            Set<Path> generatedFiles = generatedFilesSupport.getFiles(frontendGeneratedFolder);
             HashSet<Path> toDelete = new HashSet<>(existingFiles);
             toDelete.removeAll(generatedFiles);
             toDelete.removeIf(isKnownUnhandledFile());
-            LOGGER.debug("Cleaning generated frontend files from {}: {}",
-                    frontendGeneratedFolder, toDelete);
+            LOGGER.debug("Cleaning generated frontend files from {}: {}", frontendGeneratedFolder, toDelete);
             for (Path path : toDelete) {
                 try {
                     Files.deleteIfExists(path);
                 } catch (IOException ex) {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Cannot delete old generated file {}",
-                                path, ex);
+                        LOGGER.debug("Cannot delete old generated file {}", path, ex);
                     } else {
-                        LOGGER.warn("Cannot delete old generated file {}",
-                                path);
+                        LOGGER.warn("Cannot delete old generated file {}", path);
                     }
                 }
             }
             // Remove empty directories
             try {
-                Files.walkFileTree(frontendGeneratedFolder,
-                        new SimpleFileVisitor<>() {
-                            @Override
-                            public FileVisitResult postVisitDirectory(Path dir,
-                                    IOException exc) throws IOException {
-                                if (PathUtils.isEmptyDirectory(dir)) {
-                                    Files.deleteIfExists(dir);
-                                }
-                                return FileVisitResult.CONTINUE;
-                            }
-                        });
+                Files.walkFileTree(frontendGeneratedFolder, new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        if (PathUtils.isEmptyDirectory(dir)) {
+                            Files.deleteIfExists(dir);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
             } catch (IOException ex) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                            "Cannot delete empty folder generated under {}",
-                            frontendGeneratedFolder, ex);
+                    LOGGER.debug("Cannot delete empty folder generated under {}", frontendGeneratedFolder, ex);
                 } else {
-                    LOGGER.warn("Cannot delete empty folder generated under {}",
-                            frontendGeneratedFolder);
+                    LOGGER.warn("Cannot delete empty folder generated under {}", frontendGeneratedFolder);
                 }
 
             }
@@ -125,44 +112,32 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
     }
 
     private Predicate<Path> isKnownUnhandledFile() {
-        Path flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendFolder).toPath()
-                .toAbsolutePath();
-        Path flowGeneratedWebComponentImports = FrontendUtils
-                .getFlowGeneratedWebComponentsImports(frontendFolder).toPath()
-                .toAbsolutePath();
+        Path flowGeneratedImports = FrontendUtils.getFlowGeneratedImports(frontendFolder).toPath().toAbsolutePath();
+        Path flowGeneratedWebComponentImports = FrontendUtils.getFlowGeneratedWebComponentsImports(frontendFolder)
+                .toPath().toAbsolutePath();
         Set<Path> knownFiles = new HashSet<>();
         knownFiles.add(flowGeneratedImports);
         knownFiles.add(flowGeneratedWebComponentImports);
-        knownFiles.add(flowGeneratedImports
-                .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME));
-        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(
-                new File(TaskGenerateReactFiles.FLOW_FLOW_TSX).toPath())));
+        knownFiles.add(flowGeneratedImports.resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME));
         knownFiles.add(normalizePath(
-                frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TSX)));
-        knownFiles.add(normalizePath(
-                frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TS)));
-        knownFiles.add(normalizePath(
-                frontendGeneratedFolder.resolve("file-routes.ts")));
-        knownFiles.add(normalizePath(
-                frontendGeneratedFolder.resolve("file-routes.json")));
+                frontendGeneratedFolder.resolve(new File(TaskGenerateReactFiles.FLOW_FLOW_TSX).toPath())));
+        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TSX)));
+        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TS)));
+        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve("file-routes.ts")));
+        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve("file-routes.json")));
         knownFiles.addAll(hillaGeneratedFiles());
-        return path -> knownFiles.contains(path) || path.getFileName()
-                .toString().matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");
+        return path -> knownFiles.contains(path)
+                || path.getFileName().toString().matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");
     }
 
     private Set<Path> hillaGeneratedFiles() {
         Set<Path> generatedFiles = new HashSet<>();
-        Path hillaGeneratedFilesList = frontendGeneratedFolder
-                .resolve("generated-file-list.txt");
+        Path hillaGeneratedFilesList = frontendGeneratedFolder.resolve("generated-file-list.txt");
         generatedFiles.add(normalizePath(hillaGeneratedFilesList));
         if (Files.exists(hillaGeneratedFilesList)) {
             try {
-                Files.readAllLines(hillaGeneratedFilesList).stream()
-                        .map(file -> new File(file).toPath())
-                        .map(file -> normalizePath(
-                                frontendGeneratedFolder.resolve(file)))
-                        .forEach(generatedFiles::add);
+                Files.readAllLines(hillaGeneratedFilesList).stream().map(file -> new File(file).toPath())
+                        .map(file -> normalizePath(frontendGeneratedFolder.resolve(file))).forEach(generatedFiles::add);
             } catch (IOException e) {
                 LOGGER.debug("Cannot read generated-file-list.txt files");
             }

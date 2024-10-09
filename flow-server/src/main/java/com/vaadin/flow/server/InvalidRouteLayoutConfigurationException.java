@@ -23,12 +23,11 @@ package com.vaadin.flow.server;
 public class InvalidRouteLayoutConfigurationException extends RuntimeException {
 
     /**
-     * Constructs a new invalid Route parent layout configuration runtime
-     * exception with the specified detail message.
+     * Constructs a new invalid Route parent layout configuration runtime exception with the specified detail message.
      *
      * @param message
-     *            the detail message. The detail message is saved for later
-     *            retrieval by the {@link #getMessage()} method.
+     *            the detail message. The detail message is saved for later retrieval by the {@link #getMessage()}
+     *            method.
      */
     public InvalidRouteLayoutConfigurationException(String message) {
         super(message);

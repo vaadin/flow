@@ -45,8 +45,7 @@ public class StateTreeTest {
         }
 
         @Override
-        public void sendNodeSyncMessage(StateNode node, int feature, String key,
-                Object value) {
+        public void sendNodeSyncMessage(StateNode node, int feature, String key, Object value) {
             this.node = node;
             this.key = key;
             this.value = value;
@@ -65,8 +64,7 @@ public class StateTreeTest {
         }
     }
 
-    private InitialPropertiesHandler propertyHandler = Mockito
-            .mock(InitialPropertiesHandler.class);
+    private InitialPropertiesHandler propertyHandler = Mockito.mock(InitialPropertiesHandler.class);
 
     private StateTree tree = new StateTree(new Registry() {
         {
@@ -76,8 +74,7 @@ public class StateTreeTest {
     });
     private StateNode node = new StateNode(5, tree);
 
-    private TestServerConnector connector = (TestServerConnector) tree
-            .getRegistry().getServerConnector();
+    private TestServerConnector connector = (TestServerConnector) tree.getRegistry().getServerConnector();
 
     private static class TestVisibilityTree extends StateTree {
 
@@ -141,8 +138,7 @@ public class StateTreeTest {
     public void testRemoveUnregisterListener() {
         tree.registerNode(node);
 
-        EventRemover remove = node
-                .addUnregisterListener(e -> Assert.fail("Should never run"));
+        EventRemover remove = node.addUnregisterListener(e -> Assert.fail("Should never run"));
 
         remove.remove();
 
@@ -209,8 +205,7 @@ public class StateTreeTest {
         MapProperty property = new MapProperty("foo", map);
         property.setValue("bar");
 
-        Mockito.when(propertyHandler.handlePropertyUpdate(property))
-                .thenReturn(true);
+        Mockito.when(propertyHandler.handlePropertyUpdate(property)).thenReturn(true);
 
         connector.clear();
 
@@ -227,8 +222,7 @@ public class StateTreeTest {
 
         tree.setUpdateInProgress(false);
 
-        Mockito.verify(propertyHandler, Mockito.times(2))
-                .flushPropertyUpdates();
+        Mockito.verify(propertyHandler, Mockito.times(2)).flushPropertyUpdates();
     }
 
     @Test
@@ -253,8 +247,7 @@ public class StateTreeTest {
 
     @Test
     public void isVisible_nodeHasFeatureAndVisibleValue_nodeIsVisible() {
-        node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.VISIBLE).setValue(true);
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBLE).setValue(true);
         Assert.assertTrue(tree.isVisible(node));
     }
 
@@ -267,8 +260,7 @@ public class StateTreeTest {
 
     @Test
     public void isVisible_nodeHasFeatureAndNotVisibleValue_nodeIsNotVisible() {
-        node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.VISIBLE).setValue(false);
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBLE).setValue(false);
         Assert.assertFalse(tree.isVisible(node));
     }
 

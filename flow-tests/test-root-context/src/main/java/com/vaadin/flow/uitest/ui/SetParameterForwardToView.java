@@ -10,8 +10,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.SetParameterForwardToView", layout = ViewTestLayout.class)
-public class SetParameterForwardToView extends Div
-        implements HasUrlParameter<String>, AfterNavigationObserver {
+public class SetParameterForwardToView extends Div implements HasUrlParameter<String>, AfterNavigationObserver {
 
     static final String LOCATION_ID = "location";
 
@@ -23,12 +22,9 @@ public class SetParameterForwardToView extends Div
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         if (parameter != null && parameter.equals("one")) {
-            event.forwardTo(
-                    "com.vaadin.flow.uitest.ui.SetParameterForwardToView",
-                    "two");
+            event.forwardTo("com.vaadin.flow.uitest.ui.SetParameterForwardToView", "two");
         }
     }
 

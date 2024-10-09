@@ -45,24 +45,20 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     }
 
     @EventHandler
-    private void sendData(@EventData("event.button") int button,
-            @EventData("event.type") String type,
+    private void sendData(@EventData("event.button") int button, @EventData("event.type") String type,
             @EventData("event.srcElement.tagName") String tag) {
         Element container = ElementFactory.createDiv();
-        container.appendChild(ElementFactory
-                .createDiv("Received event from the client with the data:"));
+        container.appendChild(ElementFactory.createDiv("Received event from the client with the data:"));
         container.appendChild(ElementFactory.createDiv("button: " + button));
         container.appendChild(ElementFactory.createDiv("type: " + type));
-        container.appendChild(ElementFactory
-                .createDiv("tag: " + tag.toLowerCase(Locale.ENGLISH)));
+        container.appendChild(ElementFactory.createDiv("tag: " + tag.toLowerCase(Locale.ENGLISH)));
         container.setAttribute("id", "event-data");
         getParent().get().getElement().appendChild(container);
     }
 
     @EventHandler
     private void overriddenClick(@EventData("event.result") String result) {
-        Element label = ElementFactory.createLabel(
-                "Overridden server event was invoked with result: " + result);
+        Element label = ElementFactory.createLabel("Overridden server event was invoked with result: " + result);
         label.setAttribute("id", "overridden-event-handler-result");
         getParent().get().getElement().appendChild(label);
     }
@@ -72,8 +68,7 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
         if (!enabled) {
             throw new RuntimeException("Method is not enabled");
         }
-        Element div = ElementFactory.createDiv(
-                "Call from client, message: " + msg + ", " + enabled);
+        Element div = ElementFactory.createDiv("Call from client, message: " + msg + ", " + enabled);
         div.setAttribute("id", "client-call");
         getParent().get().getElement().appendChild(div);
 

@@ -48,9 +48,8 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
- * A MessageHandler is responsible for handling all incoming messages (JSON)
- * from the server (state changes, RPCs and other updates) and ensuring that the
- * connectors are updated accordingly.
+ * A MessageHandler is responsible for handling all incoming messages (JSON) from the server (state changes, RPCs and
+ * other updates) and ensuring that the connectors are updated accordingly.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -63,22 +62,20 @@ public class MessageHandler {
     /**
      * The value of an undefined sync id.
      * <p>
-     * This must be <code>-1</code>, because of the contract in
-     * {@link #getLastSeenServerSyncId()}
+     * This must be <code>-1</code>, because of the contract in {@link #getLastSeenServerSyncId()}
      */
     private static final int UNDEFINED_SYNC_ID = -1;
 
     /**
-     * If responseHandlingLocks contains any objects, response handling is
-     * suspended until the collection is empty or a timeout has occurred.
+     * If responseHandlingLocks contains any objects, response handling is suspended until the collection is empty or a
+     * timeout has occurred.
      */
     private JsSet<Object> responseHandlingLocks = JsCollections.set();
 
     /**
      * Contains all UIDL messages received while response handling is suspended.
      */
-    private JsArray<PendingUIDLMessage> pendingUIDLMessages = JsCollections
-            .array();
+    private JsArray<PendingUIDLMessage> pendingUIDLMessages = JsCollections.array();
 
     // will hold the CSRF token once received
     private String csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
@@ -92,42 +89,36 @@ public class MessageHandler {
     protected int lastProcessingTime;
 
     /**
-     * Holds the total time spent rendering requests during the lifetime of the
-     * session.
+     * Holds the total time spent rendering requests during the lifetime of the session.
      */
     protected int totalProcessingTime;
 
     /**
-     * Holds the time it took to load the page and render the first view. -2
-     * means that this value has not yet been calculated because the first view
-     * has not yet been rendered (or that your browser is very fast). -1 means
-     * that the browser does not support the performance.timing feature used to
-     * get this measurement.
+     * Holds the time it took to load the page and render the first view. -2 means that this value has not yet been
+     * calculated because the first view has not yet been rendered (or that your browser is very fast). -1 means that
+     * the browser does not support the performance.timing feature used to get this measurement.
      *
      * Note: also used for tracking whether the first UIDL has been handled
      */
     private int bootstrapTime;
 
     /**
-     * Holds the timing information from the server-side. How much time was
-     * spent servicing the last request and how much time has been spent
-     * servicing the session so far. These values are always one request behind,
-     * since they cannot be measured before the request is finished.
+     * Holds the timing information from the server-side. How much time was spent servicing the last request and how
+     * much time has been spent servicing the session so far. These values are always one request behind, since they
+     * cannot be measured before the request is finished.
      */
     private ValueMap serverTimingInfo;
 
     /**
      * Holds the last seen response id given by the server.
      * <p>
-     * The server generates a strictly increasing id for each response to each
-     * request from the client. This ID is then replayed back to the server on
-     * each request. This helps the server in knowing in what state the client
-     * is, and compare it to its own state. In short, it helps with concurrent
-     * changes between the client and server.
+     * The server generates a strictly increasing id for each response to each request from the client. This ID is then
+     * replayed back to the server on each request. This helps the server in knowing in what state the client is, and
+     * compare it to its own state. In short, it helps with concurrent changes between the client and server.
      * <p>
-     * Initial value, i.e. no responses received from the server, is
-     * {@link #UNDEFINED_SYNC_ID} ({@value #UNDEFINED_SYNC_ID}). This happens
-     * between the bootstrap HTML being loaded and the first UI being rendered;
+     * Initial value, i.e. no responses received from the server, is {@link #UNDEFINED_SYNC_ID}
+     * ({@value #UNDEFINED_SYNC_ID}). This happens between the bootstrap HTML being loaded and the first UI being
+     * rendered;
      */
     private int lastSeenServerSyncId = UNDEFINED_SYNC_ID;
     private final Registry registry;
@@ -135,8 +126,7 @@ public class MessageHandler {
     private boolean initialMessageHandled;
 
     /**
-     * Timer used to make sure that no misbehaving components can delay response
-     * handling forever.
+     * Timer used to make sure that no misbehaving components can delay response handling forever.
      */
     private Timer forceHandleMessage = new Timer() {
         @Override
@@ -178,24 +168,22 @@ public class MessageHandler {
     }
 
     /**
-     * Handles a received UIDL JSON text, parsing it, and passing it on to the
-     * appropriate handlers, while logging timing information.
+     * Handles a received UIDL JSON text, parsing it, and passing it on to the appropriate handlers, while logging
+     * timing information.
      *
      * @param json
      *            The JSON to handle
      */
     public void handleMessage(final ValueMap json) {
         if (json == null) {
-            throw new IllegalArgumentException(
-                    "The json to handle cannot be null");
+            throw new IllegalArgumentException("The json to handle cannot be null");
         }
         if (getServerId(json) == -1) {
 
             ValueMap meta = json.getValueMap("meta");
 
             // Log the error only if session didn't expire.
-            if (meta == null
-                    || !meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
+            if (meta == null || !meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
                 Console.error("Response didn't contain a server id. "
                         + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
             }
@@ -211,8 +199,7 @@ public class MessageHandler {
         if (state == UIState.RUNNING) {
             handleJSON(json);
         } else {
-            Console.warn(
-                    "Ignored received message because application has already been stopped");
+            Console.warn("Ignored received message because application has already been stopped");
         }
     }
 
@@ -226,22 +213,18 @@ public class MessageHandler {
 
             JsonObject json = valueMap.cast();
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
-                JsonArray commands = json
-                        .getArray(JsonConstants.UIDL_KEY_EXECUTE);
+                JsonArray commands = json.getArray(JsonConstants.UIDL_KEY_EXECUTE);
                 for (int i = 0; i < commands.length(); i++) {
                     JsonArray command = commands.getArray(i);
-                    if (command.length() > 0 && "window.location.reload();"
-                            .equals(command.getString(0))) {
-                        Console.warn(
-                                "Executing forced page reload while a resync request is ongoing.");
+                    if (command.length() > 0 && "window.location.reload();".equals(command.getString(0))) {
+                        Console.warn("Executing forced page reload while a resync request is ongoing.");
                         Browser.getWindow().getLocation().reload();
                         return;
                     }
                 }
             }
 
-            Console.warn(
-                    "Ignoring message from the server as a resync request is ongoing.");
+            Console.warn("Ignoring message from the server as a resync request is ongoing.");
             return;
         }
 
@@ -252,8 +235,7 @@ public class MessageHandler {
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
             // is triggered by forceHandleMessage)
-            Console.log("Received resync message with id " + serverId
-                    + " while waiting for " + getExpectedServerId());
+            Console.log("Received resync message with id " + serverId + " while waiting for " + getExpectedServerId());
             lastSeenServerSyncId = serverId - 1;
             removeOldPendingMessages();
         }
@@ -273,37 +255,31 @@ public class MessageHandler {
                 // Unexpected server id
                 if (serverId <= lastSeenServerSyncId) {
                     // Why is the server re-sending an old package? Ignore it
-                    Console.warn("Received message with server id " + serverId
-                            + " but have already seen " + lastSeenServerSyncId
-                            + ". Ignoring it");
+                    Console.warn("Received message with server id " + serverId + " but have already seen "
+                            + lastSeenServerSyncId + ". Ignoring it");
                     endRequestIfResponse(valueMap);
                     return;
                 }
 
                 // We are waiting for an earlier message...
-                Console.log("Received message with server id " + serverId
-                        + " but expected " + getExpectedServerId()
+                Console.log("Received message with server id " + serverId + " but expected " + getExpectedServerId()
                         + ". Postponing handling until the missing message(s) have been received");
             }
             pendingUIDLMessages.push(new PendingUIDLMessage(valueMap));
             if (!forceHandleMessage.isRunning()) {
-                int timeout = registry.getApplicationConfiguration()
-                        .getMaxMessageSuspendTimeout();
+                int timeout = registry.getApplicationConfiguration().getMaxMessageSuspendTimeout();
                 forceHandleMessage.schedule(timeout);
             }
             return;
         }
 
         /**
-         * Should only prepare resync after the if (locked ||
-         * !isNextExpectedMessage(serverId)) {...} since
-         * stateTree.repareForResync() will remove the nodes, and if locked is
-         * true, it will return without handling the message, thus won't adding
-         * nodes back.
+         * Should only prepare resync after the if (locked || !isNextExpectedMessage(serverId)) {...} since
+         * stateTree.repareForResync() will remove the nodes, and if locked is true, it will return without handling the
+         * message, thus won't adding nodes back.
          *
-         * This is related to https://github.com/vaadin/flow/issues/8699 It
-         * seems that the reason is that `connectClient` is removed from the
-         * rootNode(<body> element) during a resync and not added back.
+         * This is related to https://github.com/vaadin/flow/issues/8699 It seems that the reason is that
+         * `connectClient` is removed from the rootNode(<body> element) during a resync and not added back.
          */
         if (isResynchronize(valueMap)) {
             // Unregister all nodes and rebuild the state tree
@@ -312,29 +288,24 @@ public class MessageHandler {
 
         double start = Duration.currentTimeMillis();
         /*
-         * Lock response handling to avoid a situation where something pushed
-         * from the server gets processed while waiting for e.g. lazily loaded
-         * connectors that are needed for processing the current message.
+         * Lock response handling to avoid a situation where something pushed from the server gets processed while
+         * waiting for e.g. lazily loaded connectors that are needed for processing the current message.
          */
         final Object lock = new Object();
         suspendReponseHandling(lock);
 
         Console.log("Handling message from server");
-        registry.getRequestResponseTracker()
-                .fireEvent(new ResponseHandlingStartedEvent());
+        registry.getRequestResponseTracker().fireEvent(new ResponseHandlingStartedEvent());
         // Client id must be updated before server id, as server id update can
         // cause a resync (which must use the updated id)
         if (valueMap.containsKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
-            int serverNextExpected = valueMap
-                    .getInt(ApplicationConstants.CLIENT_TO_SERVER_ID);
-            registry.getMessageSender().setClientToServerMessageId(
-                    serverNextExpected, isResynchronize(valueMap));
+            int serverNextExpected = valueMap.getInt(ApplicationConstants.CLIENT_TO_SERVER_ID);
+            registry.getMessageSender().setClientToServerMessageId(serverNextExpected, isResynchronize(valueMap));
         }
 
         if (serverId != -1) {
             /*
-             * Use sync id unless explicitly set as undefined, as is done by
-             * e.g. critical server-side notifications
+             * Use sync id unless explicitly set as undefined, as is done by e.g. critical server-side notifications
              */
             lastSeenServerSyncId = serverId;
         }
@@ -349,8 +320,7 @@ public class MessageHandler {
 
         // Get security key
         if (valueMap.containsKey(ApplicationConstants.UIDL_SECURITY_TOKEN_ID)) {
-            csrfToken = valueMap
-                    .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
+            csrfToken = valueMap.getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
 
         // Get push id if present
@@ -362,12 +332,10 @@ public class MessageHandler {
 
         if (!initialMessageHandled) {
             /*
-             * When handling the initial JSON message, dependencies are embedded
-             * in the HTML document instead of being injected by
-             * DependencyLoader. We must still explicitly wait for all HTML
-             * imports from the HTML document to be loaded. It's not necessary
-             * to explicitly wait for JavaScript dependencies since the browser
-             * already takes care of that for us.
+             * When handling the initial JSON message, dependencies are embedded in the HTML document instead of being
+             * injected by DependencyLoader. We must still explicitly wait for all HTML imports from the HTML document
+             * to be loaded. It's not necessary to explicitly wait for JavaScript dependencies since the browser already
+             * takes care of that for us.
              */
             registry.getDependencyLoader().requireHtmlImportsReady();
         }
@@ -379,10 +347,8 @@ public class MessageHandler {
             serverTimingInfo = valueMap.getValueMap("timings");
         }
 
-        DependencyLoader.runWhenEagerDependenciesLoaded(
-                DomApi::updateApiImplementation);
-        DependencyLoader.runWhenEagerDependenciesLoaded(
-                () -> processMessage(valueMap, lock, start));
+        DependencyLoader.runWhenEagerDependenciesLoaded(DomApi::updateApiImplementation);
+        DependencyLoader.runWhenEagerDependenciesLoaded(() -> processMessage(valueMap, lock, start));
     }
 
     private void handleDependencies(JsonObject inputJson) {
@@ -400,8 +366,7 @@ public class MessageHandler {
     }
 
     /**
-     * Performs the actual processing of a server message when all dependencies
-     * have been loaded.
+     * Performs the actual processing of a server message when all dependencies have been loaded.
      *
      * @param valueMap
      *            the message payload
@@ -411,8 +376,7 @@ public class MessageHandler {
      *            the time stamp when processing started
      */
     private void processMessage(ValueMap valueMap, Object lock, double start) {
-        assert getServerId(valueMap) == -1
-                || getServerId(valueMap) == lastSeenServerSyncId;
+        assert getServerId(valueMap) == -1 || getServerId(valueMap) == lastSeenServerSyncId;
 
         try {
             double processUidlStart = Duration.currentTimeMillis();
@@ -434,16 +398,11 @@ public class MessageHandler {
                 // propagated and after post flush listeners added during
                 // message processing (so add one more post flush listener which
                 // is called after all added post listeners).
-                Reactive.addPostFlushListener(
-                        () -> Reactive.addPostFlushListener(() -> registry
-                                .getExecuteJavaScriptProcessor()
-                                .execute(json.getArray(
-                                        JsonConstants.UIDL_KEY_EXECUTE))));
+                Reactive.addPostFlushListener(() -> Reactive.addPostFlushListener(() -> registry
+                        .getExecuteJavaScriptProcessor().execute(json.getArray(JsonConstants.UIDL_KEY_EXECUTE))));
             }
 
-            Console.log("handleUIDLMessage: "
-                    + (Duration.currentTimeMillis() - processUidlStart)
-                    + " ms");
+            Console.log("handleUIDLMessage: " + (Duration.currentTimeMillis() - processUidlStart) + " ms");
 
             Reactive.flush();
 
@@ -456,18 +415,14 @@ public class MessageHandler {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
                     } else if (uiState != UIState.TERMINATED) {
-                        registry.getSystemErrorHandler()
-                                .handleSessionExpiredError(null);
+                        registry.getSystemErrorHandler().handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
-                } else if (meta.containsKey("appError")
-                        && uiState != UIState.TERMINATED) {
+                } else if (meta.containsKey("appError") && uiState != UIState.TERMINATED) {
                     ValueMap error = meta.getValueMap("appError");
 
-                    registry.getSystemErrorHandler().handleUnrecoverableError(
-                            error.getString("caption"),
-                            error.getString("message"),
-                            error.getString("details"), error.getString("url"),
+                    registry.getSystemErrorHandler().handleUnrecoverableError(error.getString("caption"),
+                            error.getString("message"), error.getString("details"), error.getString("url"),
                             error.getString("querySelector"));
 
                     registry.getUILifecycle().setState(UIState.TERMINATED);
@@ -483,10 +438,8 @@ public class MessageHandler {
 
                 double fetchStart = getFetchStartTime();
                 if (fetchStart != 0) {
-                    int time = (int) (Duration.currentTimeMillis()
-                            - fetchStart);
-                    Console.log("First response processed " + time
-                            + " ms after fetchStart");
+                    int time = (int) (Duration.currentTimeMillis() - fetchStart);
+                    Console.log("First response processed " + time + " ms after fetchStart");
                 }
 
                 bootstrapTime = calculateBootstrapTime();
@@ -496,8 +449,7 @@ public class MessageHandler {
             }
 
         } finally {
-            Console.log(" Processing time was "
-                    + String.valueOf(lastProcessingTime) + "ms");
+            Console.log(" Processing time was " + String.valueOf(lastProcessingTime) + "ms");
 
             endRequestIfResponse(valueMap);
             resumeResponseHandling(lock);
@@ -514,8 +466,7 @@ public class MessageHandler {
 
     private void processChanges(JsonObject json) {
         StateTree tree = registry.getStateTree();
-        JsSet<StateNode> updatedNodes = TreeChangeProcessor.processChanges(tree,
-                json.getArray("changes"));
+        JsSet<StateNode> updatedNodes = TreeChangeProcessor.processChanges(tree, json.getArray("changes"));
 
         if (!registry.getApplicationConfiguration().isProductionMode()) {
             try {
@@ -528,8 +479,8 @@ public class MessageHandler {
             }
         }
 
-        Reactive.addPostFlushListener(() -> Scheduler.get().scheduleDeferred(
-                () -> updatedNodes.forEach(this::afterServerUpdates)));
+        Reactive.addPostFlushListener(
+                () -> Scheduler.get().scheduleDeferred(() -> updatedNodes.forEach(this::afterServerUpdates)));
     }
 
     private void afterServerUpdates(StateNode node) {
@@ -566,8 +517,7 @@ public class MessageHandler {
     }
 
     /**
-     * Checks if the given serverId is the one we are currently waiting for from
-     * the server.
+     * Checks if the given serverId is the one we are currently waiting for from the server.
      */
     private boolean isNextExpectedMessage(int serverId) {
         if (serverId == -1) {
@@ -599,16 +549,14 @@ public class MessageHandler {
         if (!responseHandlingLocks.isEmpty()) {
             // Lock which was never release -> bug in locker or things just
             // too slow
-            Console.warn(
-                    "WARNING: reponse handling was never resumed, forcibly removing locks...");
+            Console.warn("WARNING: reponse handling was never resumed, forcibly removing locks...");
             responseHandlingLocks.clear();
         } else {
             // Waited for out-of-order message which never arrived
             // Do one final check and resynchronize if the message is not
             // there. The final check is only a precaution as this timer
             // should have been cancelled if the message has arrived
-            Console.warn("Gave up waiting for message " + getExpectedServerId()
-                    + " from the server");
+            Console.warn("Gave up waiting for message " + getExpectedServerId() + " from the server");
 
         }
         if (!handlePendingMessages() && !pendingUIDLMessages.isEmpty()) {
@@ -634,8 +582,8 @@ public class MessageHandler {
     }
 
     /**
-     * This method can be used to postpone rendering of a response for a short
-     * period of time (e.g. to avoid the rendering process during animation).
+     * This method can be used to postpone rendering of a response for a short period of time (e.g. to avoid the
+     * rendering process during animation).
      *
      * @param lock
      *            the lock
@@ -657,8 +605,7 @@ public class MessageHandler {
             forceHandleMessage.cancel();
 
             if (!pendingUIDLMessages.isEmpty()) {
-                Console.log(
-                        "No more response handling locks, handling pending requests.");
+                Console.log("No more response handling locks, handling pending requests.");
                 handlePendingMessages();
             }
         }
@@ -675,8 +622,7 @@ public class MessageHandler {
     }-*/;
 
     /**
-     * Finds the next pending UIDL message and handles it (next pending is
-     * decided based on the server id).
+     * Finds the next pending UIDL message and handles it (next pending is decided based on the server id).
      *
      * @return true if a message was handled, false otherwise
      */
@@ -696,8 +642,7 @@ public class MessageHandler {
         }
 
         if (toHandle != -1) {
-            PendingUIDLMessage messageToHandle = pendingUIDLMessages
-                    .remove(toHandle);
+            PendingUIDLMessage messageToHandle = pendingUIDLMessages.remove(toHandle);
             handleJSON(messageToHandle.getJson());
             // Any remaining messages will be handled when this is called
             // again at the end of handleJSON
@@ -724,13 +669,11 @@ public class MessageHandler {
     /**
      * Gets the server id included in the last received response.
      * <p>
-     * This id can be used by connectors to determine whether new data has been
-     * received from the server to avoid doing the same calculations multiple
-     * times.
+     * This id can be used by connectors to determine whether new data has been received from the server to avoid doing
+     * the same calculations multiple times.
      * <p>
-     * No guarantees are made for the structure of the id other than that there
-     * will be a new unique value every time a new response with data from the
-     * server is received.
+     * No guarantees are made for the structure of the id other than that there will be a new unique value every time a
+     * new response with data from the server is received.
      * <p>
      * The initial id when no request has yet been processed is -1.
      *
@@ -741,8 +684,8 @@ public class MessageHandler {
     }
 
     /**
-     * Gets the token (synchronizer token pattern) that the server uses to
-     * protect against CSRF (Cross Site Request Forgery) attacks.
+     * Gets the token (synchronizer token pattern) that the server uses to protect against CSRF (Cross Site Request
+     * Forgery) attacks.
      *
      * @return the CSRF token string
      */
@@ -751,8 +694,7 @@ public class MessageHandler {
     }
 
     /**
-     * Gets the push connection identifier for this session. Used when
-     * establishing a push connection with the client.
+     * Gets the push connection identifier for this session. Used when establishing a push connection with the client.
      *
      * @return the push connection identifier string
      */
@@ -763,8 +705,7 @@ public class MessageHandler {
     /**
      * Checks if the first UIDL has been handled.
      *
-     * @return true if the initial UIDL has already been processed, false
-     *         otherwise
+     * @return true if the initial UIDL has already been processed, false otherwise
      */
     public boolean isInitialUidlHandled() {
         return bootstrapTime != 0;
@@ -777,8 +718,7 @@ public class MessageHandler {
      *
      * @param jsonWithWrapping
      *            the JSON received from the server
-     * @return an unwrapped JSON string or null if the given string was not
-     *         wrapped
+     * @return an unwrapped JSON string or null if the given string was not wrapped
      */
     public static String stripJSONWrapping(String jsonWithWrapping) {
         if (jsonWithWrapping == null) {
@@ -798,8 +738,7 @@ public class MessageHandler {
      *
      * @param jsonText
      *            the json from the server
-     * @return A parsed ValueMap or null if the input could not be parsed (or
-     *         was null)
+     * @return A parsed ValueMap or null if the input could not be parsed (or was null)
      */
     public static ValueMap parseJson(String jsonText) {
         if (jsonText == null) {
@@ -808,8 +747,7 @@ public class MessageHandler {
         final double start = Profiler.getRelativeTimeMillis();
         try {
             ValueMap json = parseJSONResponse(jsonText);
-            Console.log("JSON parsing took "
-                    + Profiler.getRelativeTimeString(start) + "ms");
+            Console.log("JSON parsing took " + Profiler.getRelativeTimeString(start) + "ms");
             return json;
         } catch (final Exception e) {
             Console.error("Unable to parse JSON: " + jsonText);
@@ -827,8 +765,7 @@ public class MessageHandler {
      *
      * @param wrappedJsonText
      *            the json, wrapped as done by the server
-     * @return a ValueMap, or null if the wrapping was incorrect or json could
-     *         not be parsed
+     * @return a ValueMap, or null if the wrapping was incorrect or json could not be parsed
      */
     public static ValueMap parseWrappedJson(String wrappedJsonText) {
         return parseJson(stripJSONWrapping(wrappedJsonText));
@@ -844,15 +781,13 @@ public class MessageHandler {
     }-*/;
 
     /**
-     * Sets a temporary handler for session expiration. This handler will be
-     * triggered if and only if the next server message tells that the session
-     * has expired.
+     * Sets a temporary handler for session expiration. This handler will be triggered if and only if the next server
+     * message tells that the session has expired.
      *
      * @param nextResponseSessionExpiredHandler
      *            the handler to use or null to remove a previously set handler
      */
-    public void setNextResponseSessionExpiredHandler(
-            Command nextResponseSessionExpiredHandler) {
+    public void setNextResponseSessionExpiredHandler(Command nextResponseSessionExpiredHandler) {
         this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
     }
 }

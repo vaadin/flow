@@ -28,8 +28,7 @@ import com.vaadin.flow.router.Route;
 
 @PreserveOnRefresh
 @Route("preserve")
-public class PreserveOnRefreshView extends Div
-        implements AfterNavigationObserver {
+public class PreserveOnRefreshView extends Div implements AfterNavigationObserver {
 
     private final Div uiId;
 
@@ -37,8 +36,7 @@ public class PreserveOnRefreshView extends Div
 
         uiId = new Div();
         uiId.setId("uiId");
-        NativeButton reloadButton = new NativeButton("Reload page",
-                ev -> UI.getCurrent().getPage().reload());
+        NativeButton reloadButton = new NativeButton("Reload page", ev -> UI.getCurrent().getPage().reload());
         reloadButton.setId("reload");
         add(new H1("This view is preserved on refresh"));
         add(new H3("Initial UI: " + UI.getCurrent().getUIId()));

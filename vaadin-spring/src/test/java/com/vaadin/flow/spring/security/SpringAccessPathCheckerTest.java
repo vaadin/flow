@@ -49,22 +49,14 @@ class SpringAccessPathCheckerTest {
     @Test
     @WithAnonymousUser
     void checkAccess_anonymous() {
-        assertFalse(checkAccess("admin"),
-                "Access to admin only path should not be allowed to anonymous user");
-        assertFalse(checkAccess("guest"),
-                "Access to guest only path should not be allowed to anonymous user");
-        assertFalse(checkAccess("protected"),
-                "Access to protected path should not be allowed to anonymous user");
-        assertFalse(checkAccess("forbidden"),
-                "Access to deny all path should not be allowed to anonymous user");
-        assertTrue(checkAccess("anon"),
-                "Access to anonymous only path should be allowed to anonymous user");
-        assertTrue(checkAccess(""),
-                "Access to anonymous only root path should be allowed to anonymous user");
-        assertTrue(checkAccess("/"),
-                "Access to anonymous only root path ('/') should be allowed to anonymous user");
-        assertTrue(checkAccess("public"),
-                "Access to public path should be allowed to anonymous user");
+        assertFalse(checkAccess("admin"), "Access to admin only path should not be allowed to anonymous user");
+        assertFalse(checkAccess("guest"), "Access to guest only path should not be allowed to anonymous user");
+        assertFalse(checkAccess("protected"), "Access to protected path should not be allowed to anonymous user");
+        assertFalse(checkAccess("forbidden"), "Access to deny all path should not be allowed to anonymous user");
+        assertTrue(checkAccess("anon"), "Access to anonymous only path should be allowed to anonymous user");
+        assertTrue(checkAccess(""), "Access to anonymous only root path should be allowed to anonymous user");
+        assertTrue(checkAccess("/"), "Access to anonymous only root path ('/') should be allowed to anonymous user");
+        assertTrue(checkAccess("public"), "Access to public path should be allowed to anonymous user");
         assertFalse(checkAccess("not-defined-path"),
                 "Access to not defined path should not be allowed to anonymous user");
     }
@@ -72,47 +64,29 @@ class SpringAccessPathCheckerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void checkAccess_adminOnly() {
-        assertTrue(checkAccess("admin"),
-                "Access to admin only path should be allowed to admin user");
-        assertFalse(checkAccess("guest"),
-                "Access to guest only path should not be allowed to admin user");
-        assertTrue(checkAccess("protected"),
-                "Access to protected path should be allowed to admin user");
-        assertFalse(checkAccess("forbidden"),
-                "Access to deny all path should not be allowed to admin user");
-        assertFalse(checkAccess("anon"),
-                "Access to anonymous only path should not be allowed to admin user");
-        assertFalse(checkAccess(""),
-                "Access to anonymous only root path should not be allowed to admin user");
-        assertFalse(checkAccess("/"),
-                "Access to anonymous only root path ('/') should not be allowed to admin user");
-        assertTrue(checkAccess("public"),
-                "Access to public path should be allowed to admin user");
-        assertFalse(checkAccess("not-defined-path"),
-                "Access to not defined path should not be allowed to admin user");
+        assertTrue(checkAccess("admin"), "Access to admin only path should be allowed to admin user");
+        assertFalse(checkAccess("guest"), "Access to guest only path should not be allowed to admin user");
+        assertTrue(checkAccess("protected"), "Access to protected path should be allowed to admin user");
+        assertFalse(checkAccess("forbidden"), "Access to deny all path should not be allowed to admin user");
+        assertFalse(checkAccess("anon"), "Access to anonymous only path should not be allowed to admin user");
+        assertFalse(checkAccess(""), "Access to anonymous only root path should not be allowed to admin user");
+        assertFalse(checkAccess("/"), "Access to anonymous only root path ('/') should not be allowed to admin user");
+        assertTrue(checkAccess("public"), "Access to public path should be allowed to admin user");
+        assertFalse(checkAccess("not-defined-path"), "Access to not defined path should not be allowed to admin user");
     }
 
     @Test
     @WithMockUser(roles = "GUEST")
     void checkAccess_guestOnly() {
-        assertFalse(checkAccess("admin"),
-                "Access to admin only path should not be allowed to guest user");
-        assertTrue(checkAccess("guest"),
-                "Access to guest only path should be allowed to guest user");
-        assertTrue(checkAccess("protected"),
-                "Access to protected path should be allowed to guest user");
-        assertFalse(checkAccess("forbidden"),
-                "Access to deny all path should not be allowed to guest user");
-        assertFalse(checkAccess("anon"),
-                "Access to anonymous only path should not be allowed to guest user");
-        assertFalse(checkAccess(""),
-                "Access to anonymous only root path should not be allowed to guest user");
-        assertFalse(checkAccess("/"),
-                "Access to anonymous only root path ('/') should not be allowed to guest user");
-        assertTrue(checkAccess("public"),
-                "Access to public path should be allowed to guest user");
-        assertFalse(checkAccess("not-defined-path"),
-                "Access to not defined path should not be allowed to guest user");
+        assertFalse(checkAccess("admin"), "Access to admin only path should not be allowed to guest user");
+        assertTrue(checkAccess("guest"), "Access to guest only path should be allowed to guest user");
+        assertTrue(checkAccess("protected"), "Access to protected path should be allowed to guest user");
+        assertFalse(checkAccess("forbidden"), "Access to deny all path should not be allowed to guest user");
+        assertFalse(checkAccess("anon"), "Access to anonymous only path should not be allowed to guest user");
+        assertFalse(checkAccess(""), "Access to anonymous only root path should not be allowed to guest user");
+        assertFalse(checkAccess("/"), "Access to anonymous only root path ('/') should not be allowed to guest user");
+        assertTrue(checkAccess("public"), "Access to public path should be allowed to guest user");
+        assertFalse(checkAccess("not-defined-path"), "Access to not defined path should not be allowed to guest user");
     }
 
     @Test
@@ -132,19 +106,15 @@ class SpringAccessPathCheckerTest {
                 "Access to anonymous only root path should not be allowed to user with ADMIN and GUEST roles");
         assertFalse(checkAccess("/"),
                 "Access to anonymous only root path ('/') should not be allowed to user with ADMIN and GUEST roles");
-        assertTrue(checkAccess("public"),
-                "Access to public path should be allowed to user with ADMIN and GUEST roles");
+        assertTrue(checkAccess("public"), "Access to public path should be allowed to user with ADMIN and GUEST roles");
         assertFalse(checkAccess("not-defined-path"),
                 "Access to not defined path should not be allowed to user with ADMIN and GUEST roles");
     }
 
     private boolean checkAccess(String admin) {
-        Principal principal = SecurityContextHolder.getContext()
-                .getAuthentication();
-        Function<String, Boolean> roleChecker = AuthenticationUtil
-                .getSecurityHolderRoleChecker();
-        return accessPathChecker.hasAccess(admin, principal,
-                roleChecker::apply);
+        Principal principal = SecurityContextHolder.getContext().getAuthentication();
+        Function<String, Boolean> roleChecker = AuthenticationUtil.getSecurityHolderRoleChecker();
+        return accessPathChecker.hasAccess(admin, principal, roleChecker::apply);
     }
 
     @Configuration
@@ -152,14 +122,12 @@ class SpringAccessPathCheckerTest {
     public static class TestConfig {
 
         @Bean
-        SpringAccessPathChecker rootPathAccessChecker(
-                WebInvocationPrivilegeEvaluator evaluator) {
+        SpringAccessPathChecker rootPathAccessChecker(WebInvocationPrivilegeEvaluator evaluator) {
             return new SpringAccessPathChecker(evaluator);
         }
 
         @Bean
-        public SecurityFilterChain testingFilterChain(HttpSecurity http)
-                throws Exception {
+        public SecurityFilterChain testingFilterChain(HttpSecurity http) throws Exception {
             // @formatter:off
             http.authorizeHttpRequests(cfg -> cfg
                     .requestMatchers(new AntPathRequestMatcher("/")).anonymous()

@@ -36,10 +36,9 @@ public class LocationUtil {
     }
 
     /**
-     * Throws {@link InvalidLocationException} if the provided path is not
-     * parseable as a relative path. A relative path should be parseable as a
-     * URI without a scheme or host, it should not contain any <code>..</code>
-     * segments and it shouldn't start with <code>/</code>.
+     * Throws {@link InvalidLocationException} if the provided path is not parseable as a relative path. A relative path
+     * should be parseable as a URI without a scheme or host, it should not contain any <code>..</code> segments and it
+     * shouldn't start with <code>/</code>.
      *
      * @param path
      *            the (decoded) path to check, not null
@@ -57,14 +56,11 @@ public class LocationUtil {
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
-                throw new InvalidLocationException(
-                        "Relative path cannot contain an URI scheme");
+                throw new InvalidLocationException("Relative path cannot contain an URI scheme");
             } else if (uri.getPath().startsWith("/")) {
-                throw new InvalidLocationException(
-                        "Relative path cannot start with /");
+                throw new InvalidLocationException("Relative path cannot start with /");
             } else if (hasIncorrectParentSegments(uri.getRawPath())) {
-                throw new InvalidLocationException(
-                        "Relative path cannot contain .. segments");
+                throw new InvalidLocationException("Relative path cannot contain .. segments");
             }
         } catch (URISyntaxException e) {
             throw new InvalidLocationException("Cannot parse path: " + path, e);
@@ -74,9 +70,8 @@ public class LocationUtil {
     }
 
     /**
-     * Parses the given path to parts split by the path separator, ignoring the
-     * query string and fragment if either present. The path is verified with
-     * {@link #verifyRelativePath(String)}.
+     * Parses the given path to parts split by the path separator, ignoring the query string and fragment if either
+     * present. The path is verified with {@link #verifyRelativePath(String)}.
      *
      * @param path
      *            the path to parse
@@ -91,19 +86,16 @@ public class LocationUtil {
     /**
      * Parses the given path to parts split by the path separator.
      * <p>
-     * Ignores the query string and fragment if either is present and
-     * removeExtraParts is true. The path is verified with
-     * {@link #verifyRelativePath(String)}.
+     * Ignores the query string and fragment if either is present and removeExtraParts is true. The path is verified
+     * with {@link #verifyRelativePath(String)}.
      *
      * @param path
      *            the path to parse
      * @param removeExtraParts
-     *            true to remove a potential query string and a URI fragment,
-     *            false to use the path as is
+     *            true to remove a potential query string and a URI fragment, false to use the path as is
      * @return tha path split into parts
      */
-    public static List<String> parsePathToSegments(String path,
-            boolean removeExtraParts) {
+    public static List<String> parsePathToSegments(String path, boolean removeExtraParts) {
         final String basePath;
         int endIndex = path.indexOf(Location.QUERY_SEPARATOR);
         if (removeExtraParts && endIndex >= 0) {
@@ -116,8 +108,7 @@ public class LocationUtil {
 
         verifyRelativePath(basePath);
 
-        List<String> splitList = Arrays
-                .asList(basePath.split(Location.PATH_SEPARATOR));
+        List<String> splitList = Arrays.asList(basePath.split(Location.PATH_SEPARATOR));
         if (basePath.endsWith(Location.PATH_SEPARATOR)) {
             // Explicitly add "" to the end even though it's ignored by
             // String.split

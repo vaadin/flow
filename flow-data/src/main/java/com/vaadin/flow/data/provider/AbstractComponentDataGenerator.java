@@ -26,8 +26,8 @@ import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateTree;
 
 /**
- * Abstract class used as base for DataGenerators that need to manage the
- * lifecycle of components, according to what items are requested or destroyed.
+ * Abstract class used as base for DataGenerators that need to manage the lifecycle of components, according to what
+ * items are requested or destroyed.
  *
  *
  * @author Vaadin Ltd
@@ -36,8 +36,7 @@ import com.vaadin.flow.internal.StateTree;
  * @param <T>
  *            the data type
  */
-public abstract class AbstractComponentDataGenerator<T>
-        implements DataGenerator<T> {
+public abstract class AbstractComponentDataGenerator<T> implements DataGenerator<T> {
 
     private final Map<String, Component> renderedComponents = new HashMap<>();
 
@@ -68,8 +67,7 @@ public abstract class AbstractComponentDataGenerator<T>
 
     @Override
     public void destroyAllData() {
-        renderedComponents.values().forEach(
-                component -> component.getElement().removeFromParent());
+        renderedComponents.values().forEach(component -> component.getElement().removeFromParent());
         renderedComponents.clear();
     }
 
@@ -90,25 +88,21 @@ public abstract class AbstractComponentDataGenerator<T>
     protected abstract Component createComponent(T item);
 
     /**
-     * Updates an existing component after the item has been updated. By
-     * default, it creates a new component instance via
-     * {@link #createComponent(Object)}.
+     * Updates an existing component after the item has been updated. By default, it creates a new component instance
+     * via {@link #createComponent(Object)}.
      *
      * @param currentComponent
-     *            the current component used to represent the item, not
-     *            <code>null</code>
+     *            the current component used to represent the item, not <code>null</code>
      * @param item
      *            the updated item
-     * @return the component that should represent the updated item, not
-     *         <code>null</code>
+     * @return the component that should represent the updated item, not <code>null</code>
      */
     protected Component updateComponent(Component currentComponent, T item) {
         return createComponent(item);
     }
 
     /**
-     * Gets a unique key for a given item. Items with the same keys are
-     * considered equal.
+     * Gets a unique key for a given item. Items with the same keys are considered equal.
      *
      * @param item
      *            the model item
@@ -117,16 +111,14 @@ public abstract class AbstractComponentDataGenerator<T>
     protected abstract String getItemKey(T item);
 
     /**
-     * Appends the component to the container and registers it for future use
-     * during the lifecycle of the generator.
+     * Appends the component to the container and registers it for future use during the lifecycle of the generator.
      *
      * @param itemKey
      *            the key of the model item
      * @param component
      *            the component to be attached to the container
      */
-    protected void registerRenderedComponent(String itemKey,
-            Component component) {
+    protected void registerRenderedComponent(String itemKey, Component component) {
 
         Element element = component.getElement();
         getContainer().appendChild(element);
@@ -136,10 +128,8 @@ public abstract class AbstractComponentDataGenerator<T>
             containerUi = ((StateTree) owner).getUI();
         }
         Optional<UI> componentUi = component.getUI();
-        if (containerUi != null && componentUi.isPresent()
-                && containerUi != componentUi.get()) {
-            throw new IllegalStateException("The component '"
-                    + component.getClass()
+        if (containerUi != null && componentUi.isPresent() && containerUi != componentUi.get()) {
+            throw new IllegalStateException("The component '" + component.getClass()
                     + "' is already attached to a UI instance which differs "
                     + "from the conainer's UI instance. It means that the component instance is "
                     + "reused instead being produced every time on 'createComponent' call."

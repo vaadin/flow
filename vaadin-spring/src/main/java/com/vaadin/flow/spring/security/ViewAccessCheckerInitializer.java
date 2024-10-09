@@ -24,8 +24,7 @@ import com.vaadin.flow.server.auth.ViewAccessChecker;
 /**
  * Helper for checking access to views.
  *
- * @deprecated ViewAccessChecker has been replaced by
- *             {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
+ * @deprecated ViewAccessChecker has been replaced by {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
  */
 @Deprecated(forRemoval = true, since = "24.3")
 public class ViewAccessCheckerInitializer implements VaadinServiceInitListener {
@@ -36,8 +35,7 @@ public class ViewAccessCheckerInitializer implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent serviceInitEvent) {
         serviceInitEvent.getSource()
-                .addUIInitListener(uiInitEvent -> uiInitEvent.getUI()
-                        .addBeforeEnterListener(viewAccessChecker));
+                .addUIInitListener(uiInitEvent -> uiInitEvent.getUI().addBeforeEnterListener(viewAccessChecker));
     }
 
 }

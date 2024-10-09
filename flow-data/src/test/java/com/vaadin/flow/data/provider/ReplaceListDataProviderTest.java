@@ -22,8 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Test class that verifies that ReplaceListDataProvider functions the way it's
- * meant to.
+ * Test class that verifies that ReplaceListDataProvider functions the way it's meant to.
  *
  */
 public class ReplaceListDataProviderTest {
@@ -34,30 +33,23 @@ public class ReplaceListDataProviderTest {
 
     @Test
     public void testGetIdOfItem() {
-        Object id = dataProvider.fetch(new Query<>()).findFirst()
-                .map(dataProvider::getId).get();
-        Assert.assertEquals("DataProvider not using correct identifier getter",
-                TEST_OBJECT.getId(), id);
+        Object id = dataProvider.fetch(new Query<>()).findFirst().map(dataProvider::getId).get();
+        Assert.assertEquals("DataProvider not using correct identifier getter", TEST_OBJECT.getId(), id);
     }
 
     @Test
     public void testGetIdOfReplacementItem() {
-        Assert.assertFalse("Test object was stale before making any changes.",
-                dataProvider.isStale(TEST_OBJECT));
+        Assert.assertFalse("Test object was stale before making any changes.", dataProvider.isStale(TEST_OBJECT));
 
         dataProvider.refreshItem(new StrBean("Replacement TestObject", 10, -2));
 
-        StrBean fromDataProvider = dataProvider.fetch(new Query<>()).findFirst()
-                .get();
+        StrBean fromDataProvider = dataProvider.fetch(new Query<>()).findFirst().get();
         Object id = dataProvider.getId(fromDataProvider);
 
-        Assert.assertNotEquals("DataProvider did not return the replacement",
-                TEST_OBJECT, fromDataProvider);
+        Assert.assertNotEquals("DataProvider did not return the replacement", TEST_OBJECT, fromDataProvider);
 
-        Assert.assertEquals("DataProvider not using correct identifier getter",
-                TEST_OBJECT.getId(), id);
+        Assert.assertEquals("DataProvider not using correct identifier getter", TEST_OBJECT.getId(), id);
 
-        Assert.assertTrue("Old test object should be stale",
-                dataProvider.isStale(TEST_OBJECT));
+        Assert.assertTrue("Old test object should be stale", dataProvider.isStale(TEST_OBJECT));
     }
 }

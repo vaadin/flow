@@ -3,8 +3,7 @@ package com.vaadin.flow.internal.nodefeature;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class PollConfigurationMapTest
-        extends AbstractMapFeatureTest<PollConfigurationMap> {
+public class PollConfigurationMapTest extends AbstractMapFeatureTest<PollConfigurationMap> {
 
     private final PollConfigurationMap map = createFeature();
 
@@ -15,7 +14,6 @@ public class PollConfigurationMapTest
 
     @Test
     public void setGetPollInterval() {
-        super.testInt(map, PollConfigurationMap.POLL_INTERVAL_KEY,
-                map::setPollInterval, map::getPollInterval);
+        super.testInt(map, PollConfigurationMap.POLL_INTERVAL_KEY, map::setPollInterval, map::getPollInterval);
     }
 }

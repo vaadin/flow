@@ -24,8 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.mockito.Mockito.when;
 
 /**
- * Test class for testing es6 resolution by browser capability. This is valid
- * only for bower mode where we need to decide ourselves.
+ * Test class for testing es6 resolution by browser capability. This is valid only for bower mode where we need to
+ * decide ourselves.
  */
 public class VaadinServletServiceTest {
 
@@ -85,21 +85,18 @@ public class VaadinServletServiceTest {
     }
 
     @Test
-    public void getContextRootRelativePath_useVariousContextPathAndServletPathsAndPathInfo()
-            throws Exception {
+    public void getContextRootRelativePath_useVariousContextPathAndServletPathsAndPathInfo() throws Exception {
         String location;
 
         /* SERVLETS */
         // http://dummy.host:8080/contextpath/servlet
         // should return . (relative url resolving to /contextpath)
-        location = testLocation("http://dummy.host:8080", "/contextpath",
-                "/servlet", "");
+        location = testLocation("http://dummy.host:8080", "/contextpath", "/servlet", "");
         Assert.assertEquals("./../", location);
 
         // http://dummy.host:8080/contextpath/servlet/
         // should return ./.. (relative url resolving to /contextpath)
-        location = testLocation("http://dummy.host:8080", "/contextpath",
-                "/servlet", "/");
+        location = testLocation("http://dummy.host:8080", "/contextpath", "/servlet", "/");
         Assert.assertEquals("./../", location);
 
         // http://dummy.host:8080/servlet
@@ -109,21 +106,18 @@ public class VaadinServletServiceTest {
 
         // http://dummy.host/contextpath/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /contextpath)
-        location = testLocation("http://dummy.host", "/contextpath", "/servlet",
-                "/extra/stuff");
+        location = testLocation("http://dummy.host", "/contextpath", "/servlet", "/extra/stuff");
         Assert.assertEquals("./../", location);
 
         // http://dummy.host/context/path/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /context/path)
-        location = testLocation("http://dummy.host", "/context/path",
-                "/servlet", "/extra/stuff");
+        location = testLocation("http://dummy.host", "/context/path", "/servlet", "/extra/stuff");
         Assert.assertEquals("./../", location);
 
     }
 
     @Test
-    public void init_classLoaderIsSetUsingServletContext()
-            throws ServiceException {
+    public void init_classLoaderIsSetUsingServletContext() throws ServiceException {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
         ServletContext context = Mockito.mock(ServletContext.class);
         when(servlet.getServletContext()).thenReturn(context);
@@ -131,17 +125,14 @@ public class VaadinServletServiceTest {
         ClassLoader loader = Mockito.mock(ClassLoader.class);
         when(context.getClassLoader()).thenReturn(loader);
 
-        VaadinServletService service = new VaadinServletService(servlet,
-                mocks.getDeploymentConfiguration()) {
+        VaadinServletService service = new VaadinServletService(servlet, mocks.getDeploymentConfiguration()) {
             @Override
-            protected Instantiator createInstantiator()
-                    throws ServiceException {
+            protected Instantiator createInstantiator() throws ServiceException {
                 return Mockito.mock(Instantiator.class);
             }
 
             @Override
-            protected List<RequestHandler> createRequestHandlers()
-                    throws ServiceException {
+            protected List<RequestHandler> createRequestHandlers() throws ServiceException {
                 return Collections.emptyList();
             }
         };
@@ -153,52 +144,38 @@ public class VaadinServletServiceTest {
 
     @Test
     public void getPwaRegistry_servletInitialized_getsRegistry() {
-        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
-                .spy(mocks.getServlet());
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito.spy(mocks.getServlet());
         // Restore original behavior of getServletContext
-        when(vaadinServlet.getServletContext()).thenAnswer(
-                i -> vaadinServlet.getServletConfig().getServletContext());
-        VaadinServletService service = new VaadinServletService(vaadinServlet,
-                mocks.getDeploymentConfiguration());
+        when(vaadinServlet.getServletContext()).thenAnswer(i -> vaadinServlet.getServletConfig().getServletContext());
+        VaadinServletService service = new VaadinServletService(vaadinServlet, mocks.getDeploymentConfiguration());
         Assert.assertNotNull(service.getPwaRegistry());
     }
 
     @Test
     public void getPwaRegistry_servletNotInitialized_getsNull() {
-        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
-                .spy(mocks.getServlet());
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito.spy(mocks.getServlet());
         // Restore original behavior of getServletContext
-        when(vaadinServlet.getServletContext()).thenAnswer(
-                i -> vaadinServlet.getServletConfig().getServletContext());
-        VaadinServletService service = new VaadinServletService(vaadinServlet,
-                mocks.getDeploymentConfiguration());
+        when(vaadinServlet.getServletContext()).thenAnswer(i -> vaadinServlet.getServletConfig().getServletContext());
+        VaadinServletService service = new VaadinServletService(vaadinServlet, mocks.getDeploymentConfiguration());
         vaadinServlet.destroy();
         Assert.assertNull(service.getPwaRegistry());
     }
 
-    private String testLocation(String base, String contextPath,
-            String servletPath, String pathInfo) throws Exception {
+    private String testLocation(String base, String contextPath, String servletPath, String pathInfo) throws Exception {
 
-        HttpServletRequest request = createNonIncludeRequest(base, contextPath,
-                servletPath, pathInfo);
+        HttpServletRequest request = createNonIncludeRequest(base, contextPath, servletPath, pathInfo);
 
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
-        Mockito.doCallRealMethod().when(service)
-                .getContextRootRelativePath(Mockito.any());
-        String location = service.getContextRootRelativePath(
-                servlet.createVaadinRequest(request));
+        Mockito.doCallRealMethod().when(service).getContextRootRelativePath(Mockito.any());
+        String location = service.getContextRootRelativePath(servlet.createVaadinRequest(request));
         return location;
     }
 
-    private HttpServletRequest createNonIncludeRequest(String base,
-            String realContextPath, String realServletPath, String pathInfo)
-            throws Exception {
-        HttpServletRequest request = createRequest(base, realContextPath,
-                realServletPath, pathInfo);
-        when(request.getAttribute("jakarta.servlet.include.context_path"))
-                .thenReturn(null);
-        when(request.getAttribute("jakarta.servlet.include.servlet_path"))
-                .thenReturn(null);
+    private HttpServletRequest createNonIncludeRequest(String base, String realContextPath, String realServletPath,
+            String pathInfo) throws Exception {
+        HttpServletRequest request = createRequest(base, realContextPath, realServletPath, pathInfo);
+        when(request.getAttribute("jakarta.servlet.include.context_path")).thenReturn(null);
+        when(request.getAttribute("jakarta.servlet.include.servlet_path")).thenReturn(null);
 
         return request;
     }
@@ -209,18 +186,16 @@ public class VaadinServletServiceTest {
      * @param base
      *            The base url, e.g. http://localhost:8080
      * @param contextPath
-     *            The context path where the application is deployed, e.g.
-     *            /mycontext
+     *            The context path where the application is deployed, e.g. /mycontext
      * @param servletPath
      *            The servlet path to the servlet we are testing, e.g. /myapp
      * @param pathInfo
-     *            Any text following the servlet path in the request, not
-     *            including query parameters, e.g. /UIDL/
+     *            Any text following the servlet path in the request, not including query parameters, e.g. /UIDL/
      * @return A mock HttpServletRequest object useful for testing
      * @throws MalformedURLException
      */
-    private HttpServletRequest createRequest(String base, String contextPath,
-            String servletPath, String pathInfo) throws MalformedURLException {
+    private HttpServletRequest createRequest(String base, String contextPath, String servletPath, String pathInfo)
+            throws MalformedURLException {
         URL url = new URL(base + contextPath + pathInfo);
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Map<String, Object> attributes = new HashMap<>();
@@ -228,8 +203,7 @@ public class VaadinServletServiceTest {
         attributes.put("requestStartTime", System.currentTimeMillis()); // for
                                                                         // request
                                                                         // end
-        when(request.isSecure())
-                .thenReturn(url.getProtocol().equalsIgnoreCase("https"));
+        when(request.isSecure()).thenReturn(url.getProtocol().equalsIgnoreCase("https"));
         when(request.getServerName()).thenReturn(url.getHost());
         when(request.getServerPort()).thenReturn(url.getPort());
         when(request.getRequestURI()).thenReturn(url.getPath());
@@ -244,22 +218,18 @@ public class VaadinServletServiceTest {
         return request;
     }
 
-    private static void stubSessionAttributes(HttpSession session,
-            Map<String, Object> attributes) {
-        when(session.getAttribute(Mockito.anyString())).thenAnswer(
-                invocation -> attributes.get(invocation.getArgument(0)));
-        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
-                invocation.getArgument(1))).when(session)
-                .setAttribute(Mockito.anyString(), Mockito.anyString());
+    private static void stubSessionAttributes(HttpSession session, Map<String, Object> attributes) {
+        when(session.getAttribute(Mockito.anyString()))
+                .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1)))
+                .when(session).setAttribute(Mockito.anyString(), Mockito.anyString());
     }
 
-    private static void stubAttributes(HttpServletRequest request,
-            Map<String, Object> attributes) {
-        when(request.getAttribute(Mockito.anyString())).thenAnswer(
-                invocation -> attributes.get(invocation.getArgument(0)));
-        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
-                invocation.getArgument(1))).when(request)
-                .setAttribute(Mockito.anyString(), Mockito.anyString());
+    private static void stubAttributes(HttpServletRequest request, Map<String, Object> attributes) {
+        when(request.getAttribute(Mockito.anyString()))
+                .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1)))
+                .when(request).setAttribute(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
@@ -270,13 +240,11 @@ public class VaadinServletServiceTest {
                 return new TestVaadinServlet() {
                     @Override
                     public TestVaadinServletService createTestVaadinServletService() {
-                        return new TestVaadinServletService(this,
-                                getDeploymentConfiguration()) {
+                        return new TestVaadinServletService(this, getDeploymentConfiguration()) {
                             @Override
                             protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
                                     throws ServiceException {
-                                return Collections.singletonList(
-                                        new MyRequestInterceptor());
+                                return Collections.singletonList(new MyRequestInterceptor());
                             }
                         };
                     }
@@ -286,8 +254,8 @@ public class VaadinServletServiceTest {
         service = mocks.getService();
         servlet = mocks.getServlet();
 
-        VaadinRequest request = servlet.createVaadinRequest(createRequest(
-                "http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
+        VaadinRequest request = servlet
+                .createVaadinRequest(createRequest("http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         service.getRequestHandlers().clear();
         service.getRequestHandlers().add(new ExceptionThrowingRequestHandler());
@@ -295,24 +263,20 @@ public class VaadinServletServiceTest {
         try {
             service.handleRequest(request, response);
         } catch (ServiceException ex) {
-            Assert.assertTrue(
-                    "The exception was the one coming from RequestHandler",
+            Assert.assertTrue("The exception was the one coming from RequestHandler",
                     ex.getMessage().contains("BOOM!"));
         }
 
-        Assert.assertEquals("Filter was called on request start", "true",
-                request.getAttribute("started"));
+        Assert.assertEquals("Filter was called on request start", "true", request.getAttribute("started"));
         Assert.assertEquals("Filter was called on exception handling", "true",
                 request.getAttribute("exception handled"));
-        Assert.assertEquals("Filter was called in the finally block", "true",
-                request.getAttribute("ended"));
+        Assert.assertEquals("Filter was called in the finally block", "true", request.getAttribute("ended"));
     }
 
     static class ExceptionThrowingRequestHandler implements RequestHandler {
 
         @Override
-        public boolean handleRequest(VaadinSession session,
-                VaadinRequest request, VaadinResponse response)
+        public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
                 throws IOException {
             throw new IllegalStateException("BOOM!");
         }
@@ -321,16 +285,14 @@ public class VaadinServletServiceTest {
     static class MyRequestInterceptor implements VaadinRequestInterceptor {
 
         @Override
-        public void requestStart(VaadinRequest request,
-                VaadinResponse response) {
+        public void requestStart(VaadinRequest request, VaadinResponse response) {
             request.setAttribute("started", "true");
             // An exception thrown here will not be caught by other methods of
             // the filter!
         }
 
         @Override
-        public void handleException(VaadinRequest request,
-                VaadinResponse response, VaadinSession vaadinSession,
+        public void handleException(VaadinRequest request, VaadinResponse response, VaadinSession vaadinSession,
                 Exception t) {
             if (t instanceof IllegalStateException ex) {
                 Assert.assertEquals("BOOM!", ex.getMessage());
@@ -338,14 +300,11 @@ public class VaadinServletServiceTest {
                 return;
             }
             throw new AssertionError(
-                    "Invalid exception thrown. Wanted <IllegalStateException> got <"
-                            + t.getClass() + ">",
-                    t);
+                    "Invalid exception thrown. Wanted <IllegalStateException> got <" + t.getClass() + ">", t);
         }
 
         @Override
-        public void requestEnd(VaadinRequest request, VaadinResponse response,
-                VaadinSession session) {
+        public void requestEnd(VaadinRequest request, VaadinResponse response, VaadinSession session) {
             request.setAttribute("ended", "true");
         }
     }

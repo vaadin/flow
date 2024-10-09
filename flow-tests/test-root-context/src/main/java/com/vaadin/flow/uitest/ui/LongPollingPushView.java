@@ -38,7 +38,6 @@ public class LongPollingPushView extends AbstractDivView {
         add(parent);
         parent.setVisible(false);
 
-        add(createButton("Toggle visibility", "visibility",
-                e -> parent.setVisible(!parent.isVisible())));
+        add(createButton("Toggle visibility", "visibility", e -> parent.setVisible(!parent.isVisible())));
     }
 }

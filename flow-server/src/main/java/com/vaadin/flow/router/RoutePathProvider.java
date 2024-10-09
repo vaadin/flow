@@ -16,8 +16,8 @@
 package com.vaadin.flow.router;
 
 /**
- * Allows to implement a custom navigation target path generation logic for
- * components annotated with {@code @Route(Route.NAMING_CONVENTION)}.
+ * Allows to implement a custom navigation target path generation logic for components annotated with
+ * {@code @Route(Route.NAMING_CONVENTION)}.
  *
  * @author Vaadin Ltd
  * @since
@@ -31,8 +31,8 @@ public interface RoutePathProvider {
      *
      * @param navigationTarget
      *            a navigation target class
-     * @return a route path for the navigation target, may be {@code null} if
-     *         the provided class is not a navigation target
+     * @return a route path for the navigation target, may be {@code null} if the provided class is not a navigation
+     *         target
      */
     String getRoutePath(Class<?> navigationTarget);
 

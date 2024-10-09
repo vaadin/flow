@@ -36,8 +36,7 @@ import elemental.json.JsonValue;
  * <li>{@link String}
  * <li>{@link Boolean} and <code>boolean</code>
  * <li>{@link Integer} and <code>int</code>
- * <li>{@link Double} and <code>double</code> (<code>NaN</code> and infinity not
- * supported)
+ * <li>{@link Double} and <code>double</code> (<code>NaN</code> and infinity not supported)
  * <li>{@link JsonValue} and all its sub types
  * <li>{@link Element} (encoded as a reference to the element)
  * <li>{@link Component} (encoded as a reference to the root element)
@@ -61,8 +60,7 @@ public class JsonCodec {
     public static final int ARRAY_TYPE = 1;
 
     /**
-     * Type id for a complex type array identifying a
-     * {@link ReturnChannelRegistration} reference.
+     * Type id for a complex type array identifying a {@link ReturnChannelRegistration} reference.
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
@@ -71,12 +69,10 @@ public class JsonCodec {
     }
 
     /**
-     * Helper for encoding values that might not have a native representation in
-     * JSON. Such types are encoded as an JSON array starting with an id
-     * defining the actual type and followed by the actual data. Supported value
-     * types are any native JSON type supported by
-     * {@link #encodeWithoutTypeInfo(Object)}, {@link Element} and
-     * {@link Component} (encoded as its root element).
+     * Helper for encoding values that might not have a native representation in JSON. Such types are encoded as an JSON
+     * array starting with an id defining the actual type and followed by the actual data. Supported value types are any
+     * native JSON type supported by {@link #encodeWithoutTypeInfo(Object)}, {@link Element} and {@link Component}
+     * (encoded as its root element).
      *
      * @param value
      *            the value to encode
@@ -101,10 +97,8 @@ public class JsonCodec {
         }
     }
 
-    private static JsonValue encodeReturnChannel(
-            ReturnChannelRegistration value) {
-        return wrapComplexValue(RETURN_CHANNEL_TYPE,
-                Json.create(value.getStateNodeId()),
+    private static JsonValue encodeReturnChannel(ReturnChannelRegistration value) {
+        return wrapComplexValue(RETURN_CHANNEL_TYPE, Json.create(value.getStateNodeId()),
                 Json.create(value.getChannelId()));
     }
 
@@ -118,15 +112,12 @@ public class JsonCodec {
     }
 
     private static JsonArray wrapComplexValue(int typeId, JsonValue... values) {
-        return Stream.concat(Stream.of(Json.create(typeId)), Stream.of(values))
-                .collect(JsonUtils.asArray());
+        return Stream.concat(Stream.of(Json.create(typeId)), Stream.of(values)).collect(JsonUtils.asArray());
     }
 
     /**
-     * Helper for checking whether the type is supported by
-     * {@link #encodeWithoutTypeInfo(Object)}. Supported value types are
-     * {@link String}, {@link Integer}, {@link Double}, {@link Boolean},
-     * {@link JsonValue}.
+     * Helper for checking whether the type is supported by {@link #encodeWithoutTypeInfo(Object)}. Supported value
+     * types are {@link String}, {@link Integer}, {@link Double}, {@link Boolean}, {@link JsonValue}.
      *
      * @param type
      *            the type to check
@@ -134,32 +125,27 @@ public class JsonCodec {
      */
     public static boolean canEncodeWithoutTypeInfo(Class<?> type) {
         assert type != null;
-        return String.class.equals(type) || Integer.class.equals(type)
-                || Double.class.equals(type) || Boolean.class.equals(type)
-                || JsonValue.class.isAssignableFrom(type);
+        return String.class.equals(type) || Integer.class.equals(type) || Double.class.equals(type)
+                || Boolean.class.equals(type) || JsonValue.class.isAssignableFrom(type);
     }
 
     /**
-     * Helper for checking whether the type is supported by
-     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
+     * Helper for checking whether the type is supported by {@link #encodeWithTypeInfo(Object)}. Supported values types
+     * are {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and anything accepted by
+     * {@link #canEncodeWithoutTypeInfo(Class)}.
      *
      * @param type
      *            the type to check
      * @return whether the type can be encoded
      */
     public static boolean canEncodeWithTypeInfo(Class<?> type) {
-        return canEncodeWithoutTypeInfo(type)
-                || Node.class.isAssignableFrom(type)
-                || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type);
+        return canEncodeWithoutTypeInfo(type) || Node.class.isAssignableFrom(type)
+                || Component.class.isAssignableFrom(type) || ReturnChannelRegistration.class.isAssignableFrom(type);
     }
 
     /**
-     * Encodes a "primitive" value or a constant pool reference to JSON. This
-     * methods supports {@link ConstantPoolKey} in addition to the types
-     * supported by {@link #encodeWithoutTypeInfo(Object)}.
+     * Encodes a "primitive" value or a constant pool reference to JSON. This methods supports {@link ConstantPoolKey}
+     * in addition to the types supported by {@link #encodeWithoutTypeInfo(Object)}.
      *
      * @param value
      *            the value to encode
@@ -167,8 +153,7 @@ public class JsonCodec {
      *            the constant pool to use for encoding constant pool references
      * @return the value encoded as JSON
      */
-    public static JsonValue encodeWithConstantPool(Object value,
-            ConstantPool constantPool) {
+    public static JsonValue encodeWithConstantPool(Object value, ConstantPool constantPool) {
         if (value instanceof ConstantPoolKey) {
             ConstantPoolKey reference = (ConstantPoolKey) value;
             return Json.create(constantPool.getConstantId(reference));
@@ -178,9 +163,8 @@ public class JsonCodec {
     }
 
     /**
-     * Helper for encoding any "primitive" value that is directly supported in
-     * JSON. Supported values types are {@link String}, {@link Number},
-     * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
+     * Helper for encoding any "primitive" value that is directly supported in JSON. Supported values types are
+     * {@link String}, {@link Number}, {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
      *
      * @param value
      *            the value to encode
@@ -204,14 +188,12 @@ public class JsonCodec {
             return (JsonValue) value;
         }
         assert !canEncodeWithoutTypeInfo(type);
-        throw new IllegalArgumentException(
-                "Can't encode " + value.getClass() + " to json");
+        throw new IllegalArgumentException("Can't encode " + value.getClass() + " to json");
     }
 
     /**
-     * Helper for decoding any "primitive" value that is directly supported in
-     * JSON. Supported values types are {@link String}, {@link Number},
-     * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
+     * Helper for decoding any "primitive" value that is directly supported in JSON. Supported values types are
+     * {@link String}, {@link Number}, {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
      *
      * @param json
      *            the JSON value to decode
@@ -237,8 +219,8 @@ public class JsonCodec {
     /**
      * Decodes the given JSON value as the given type.
      * <p>
-     * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double} and primitives boolean, int, double
+     * Supported types are {@link String}, {@link Boolean}, {@link Integer}, {@link Double} and primitives boolean, int,
+     * double
      *
      * @param <T>
      *            the decoded type
@@ -263,14 +245,12 @@ public class JsonCodec {
         } else if (convertedType == Double.class) {
             return (T) convertedType.cast(Double.valueOf(json.asNumber()));
         } else if (convertedType == Integer.class) {
-            return (T) convertedType
-                    .cast(Integer.valueOf((int) json.asNumber()));
+            return (T) convertedType.cast(Integer.valueOf((int) json.asNumber()));
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
             assert !canEncodeWithoutTypeInfo(type);
-            throw new IllegalArgumentException(
-                    "Unknown type " + type.getName());
+            throw new IllegalArgumentException("Unknown type " + type.getName());
         }
 
     }

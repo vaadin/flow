@@ -12,8 +12,7 @@ public class PropertiesUpdatedBeforeChangeEventsView extends AbstractDivView {
 
     @Tag("properties-updated-before-change-events")
     @JsModule("./PropertiesUpdatedBeforeChangeEvents.js")
-    public static class PropertiesUpdatedBeforeChangeEvents
-            extends PolymerTemplate<Message> {
+    public static class PropertiesUpdatedBeforeChangeEvents extends PolymerTemplate<Message> {
 
         @Override
         protected Message getModel() {
@@ -23,10 +22,9 @@ public class PropertiesUpdatedBeforeChangeEventsView extends AbstractDivView {
 
     public PropertiesUpdatedBeforeChangeEventsView() {
         PropertiesUpdatedBeforeChangeEvents template = new PropertiesUpdatedBeforeChangeEvents();
-        template.getElement().addPropertyChangeListener("firstProp",
-                "first-prop-changed",
-                event -> template.getModel().setText(
-                        template.getElement().getProperty("secondProp")))
+        template.getElement()
+                .addPropertyChangeListener("firstProp", "first-prop-changed",
+                        event -> template.getModel().setText(template.getElement().getProperty("secondProp")))
                 .synchronizeProperty("secondProp");
         add(template);
     }

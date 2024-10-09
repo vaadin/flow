@@ -19,9 +19,8 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * An interface for components that accept setting items in-memory and returns a
- * {@link ListDataView} that provides information and allows operations on the
- * items.
+ * An interface for components that accept setting items in-memory and returns a {@link ListDataView} that provides
+ * information and allows operations on the items.
  *
  * @param <T>
  *            item type
@@ -29,12 +28,10 @@ import java.util.Collection;
  *            DataView type
  * @since
  */
-public interface HasListDataView<T, V extends ListDataView<T, ?>>
-        extends Serializable {
+public interface HasListDataView<T, V extends ListDataView<T, ?>> extends Serializable {
     /**
-     * Sets a ListDataProvider for the component to use and returns a
-     * {@link ListDataView} that provides information and allows operations on
-     * the items.
+     * Sets a ListDataProvider for the component to use and returns a {@link ListDataView} that provides information and
+     * allows operations on the items.
      *
      * @param dataProvider
      *            ListDataProvider providing items to the component.
@@ -43,9 +40,8 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>>
     V setItems(ListDataProvider<T> dataProvider);
 
     /**
-     * Sets the items from the given Collection and returns a
-     * {@link ListDataView} that provides information and allows operations on
-     * the items.
+     * Sets the items from the given Collection and returns a {@link ListDataView} that provides information and allows
+     * operations on the items.
      *
      * @param items
      *            the items to display, not {@code null}
@@ -67,14 +63,12 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>>
     }
 
     /**
-     * Get the ListDataView for the component. Throws if the items are not
-     * in-memory and should use another data view type like
-     * {@code getLazyDataView()}.
+     * Get the ListDataView for the component. Throws if the items are not in-memory and should use another data view
+     * type like {@code getLazyDataView()}.
      *
      * @return ListDataView providing access to the items
      * @throws IllegalStateException
-     *             when list data view is not applicable and
-     *             {@code getLazyDataView()} should be used instead
+     *             when list data view is not applicable and {@code getLazyDataView()} should be used instead
      */
     V getListDataView();
 }

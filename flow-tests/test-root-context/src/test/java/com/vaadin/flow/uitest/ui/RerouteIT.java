@@ -27,14 +27,12 @@ public class RerouteIT extends ChromeBrowserTest {
     @Test
     public void testReroutingToErrorView() {
         open();
-        WebElement checkbox = findElement(By.id("check"))
-                .findElement(By.tagName("input"));
+        WebElement checkbox = findElement(By.id("check")).findElement(By.tagName("input"));
         checkbox.click();
 
         findElement(By.id("navigate")).click();
 
-        Assert.assertTrue(
-                getDriver().getPageSource().contains("Could not navigate to "));
+        Assert.assertTrue(getDriver().getPageSource().contains("Could not navigate to "));
     }
 
     @Test
@@ -42,7 +40,6 @@ public class RerouteIT extends ChromeBrowserTest {
         open();
         findElement(By.id("navigate")).click();
 
-        Assert.assertNotNull("Navigate button was not found",
-                findElement(By.id("navigate")));
+        Assert.assertNotNull("Navigate button was not found", findElement(By.id("navigate")));
     }
 }

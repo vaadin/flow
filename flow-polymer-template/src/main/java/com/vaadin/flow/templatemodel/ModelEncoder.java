@@ -14,8 +14,8 @@ import java.lang.reflect.Type;
 import com.googlecode.gentyref.GenericTypeReflector;
 
 /**
- * Template models encoder. Used for enabling the use of types in template model
- * methods that are not natively supported by the framework.
+ * Template models encoder. Used for enabling the use of types in template model methods that are not natively supported
+ * by the framework.
  *
  * @see Encode
  *
@@ -27,14 +27,10 @@ import com.googlecode.gentyref.GenericTypeReflector;
  * @param <E>
  *            the encoded type
  *
- * @deprecated This functionality is bound to template model which is not
- *             supported for lit template. You can use {@code @Id} mapping and
- *             the component API or the element API with property
- *             synchronization instead. Polymer template support is deprecated -
- *             we recommend you to use {@code LitTemplate} instead. Read more
- *             details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated This functionality is bound to template model which is not supported for lit template. You can use
+ *             {@code @Id} mapping and the component API or the element API with property synchronization instead.
+ *             Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 public interface ModelEncoder<D, E extends Serializable> extends Serializable {
@@ -46,8 +42,7 @@ public interface ModelEncoder<D, E extends Serializable> extends Serializable {
      */
     @SuppressWarnings("unchecked")
     default Class<D> getDecodedType() {
-        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
-                ModelEncoder.class.getTypeParameters()[0]);
+        Type type = GenericTypeReflector.getTypeParameter(this.getClass(), ModelEncoder.class.getTypeParameters()[0]);
         if (type instanceof Class<?>) {
             return (Class<D>) GenericTypeReflector.erase(type);
         }
@@ -64,8 +59,7 @@ public interface ModelEncoder<D, E extends Serializable> extends Serializable {
      */
     @SuppressWarnings("unchecked")
     default Class<E> getEncodedType() {
-        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
-                ModelEncoder.class.getTypeParameters()[1]);
+        Type type = GenericTypeReflector.getTypeParameter(this.getClass(), ModelEncoder.class.getTypeParameters()[1]);
         if (type instanceof Class<?>) {
             return (Class<E>) GenericTypeReflector.erase(type);
         }

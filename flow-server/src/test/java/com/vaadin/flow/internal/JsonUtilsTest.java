@@ -44,44 +44,27 @@ public class JsonUtilsTest {
     @Test
     public void testEquals() {
         // Equal
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(Json.create(true), Json.create(true)));
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(Json.create("foo"), Json.create("foo")));
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(Json.create(3.14), Json.create(3.14)));
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(Json.createNull(), Json.createNull()));
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(createTestObject1(), createTestObject1()));
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(createTestArray1(), createTestArray1()));
+        Assert.assertTrue(JsonUtils.jsonEquals(Json.create(true), Json.create(true)));
+        Assert.assertTrue(JsonUtils.jsonEquals(Json.create("foo"), Json.create("foo")));
+        Assert.assertTrue(JsonUtils.jsonEquals(Json.create(3.14), Json.create(3.14)));
+        Assert.assertTrue(JsonUtils.jsonEquals(Json.createNull(), Json.createNull()));
+        Assert.assertTrue(JsonUtils.jsonEquals(createTestObject1(), createTestObject1()));
+        Assert.assertTrue(JsonUtils.jsonEquals(createTestArray1(), createTestArray1()));
 
         // Non-equal with matching types
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.create(true), Json.create(false)));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.create("foo"), Json.create("oof")));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.create(3.14), Json.create(3.142)));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(createTestObject1(), createTestObject2()));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(createTestArray1(), createTestArray2()));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.create(true), Json.create(false)));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.create("foo"), Json.create("oof")));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.create(3.14), Json.create(3.142)));
+        Assert.assertFalse(JsonUtils.jsonEquals(createTestObject1(), createTestObject2()));
+        Assert.assertFalse(JsonUtils.jsonEquals(createTestArray1(), createTestArray2()));
 
         // Non-equal with different types
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.create(true), Json.create("true")));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.create(3.14), Json.create("3.14")));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.createNull(), Json.create("null")));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.createObject(), Json.create("{}")));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(Json.createArray(), Json.create(0)));
-        Assert.assertFalse(
-                JsonUtils.jsonEquals(createTestArray1(), createTestObject1()));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.create(true), Json.create("true")));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.create(3.14), Json.create("3.14")));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.createNull(), Json.create("null")));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.createObject(), Json.create("{}")));
+        Assert.assertFalse(JsonUtils.jsonEquals(Json.createArray(), Json.create(0)));
+        Assert.assertFalse(JsonUtils.jsonEquals(createTestArray1(), createTestObject1()));
     }
 
     @Test(expected = AssertionError.class)
@@ -115,18 +98,15 @@ public class JsonUtilsTest {
     }
 
     private static JsonArray createTestArray1() {
-        return Stream.of(Json.create("foo"), Json.createObject())
-                .collect(JsonUtils.asArray());
+        return Stream.of(Json.create("foo"), Json.createObject()).collect(JsonUtils.asArray());
     }
 
     private static JsonArray createTestArray2() {
-        return Stream.of(Json.create("bar"), Json.createArray())
-                .collect(JsonUtils.asArray());
+        return Stream.of(Json.create("bar"), Json.createArray()).collect(JsonUtils.asArray());
     }
 
     private static JsonArray createNumberArray(double... items) {
-        return DoubleStream.of(items).mapToObj(Json::create)
-                .collect(JsonUtils.asArray());
+        return DoubleStream.of(items).mapToObj(Json::create).collect(JsonUtils.asArray());
     }
 
     @Test
@@ -151,38 +131,31 @@ public class JsonUtilsTest {
     @Test
     public void testStream() {
         JsonArray array = createTestArray1();
-        List<JsonValue> list = JsonUtils.stream(array)
-                .collect(Collectors.toList());
+        List<JsonValue> list = JsonUtils.stream(array).collect(Collectors.toList());
 
         Assert.assertEquals(2, list.size());
         Assert.assertEquals("foo", list.get(0).asString());
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(list.get(1), Json.createObject()));
+        Assert.assertTrue(JsonUtils.jsonEquals(list.get(1), Json.createObject()));
     }
 
     @Test
     public void testObjectStream() {
-        JsonArray array = Stream.of(Json.createObject(), createTestObject1(),
-                createTestObject2()).collect(JsonUtils.asArray());
+        JsonArray array = Stream.of(Json.createObject(), createTestObject1(), createTestObject2())
+                .collect(JsonUtils.asArray());
 
-        List<JsonObject> objects = JsonUtils.objectStream(array)
-                .collect(Collectors.toList());
+        List<JsonObject> objects = JsonUtils.objectStream(array).collect(Collectors.toList());
 
         Assert.assertEquals(3, objects.size());
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(Json.createObject(), objects.get(0)));
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(createTestObject1(), objects.get(1)));
-        Assert.assertTrue(
-                JsonUtils.jsonEquals(createTestObject2(), objects.get(2)));
+        Assert.assertTrue(JsonUtils.jsonEquals(Json.createObject(), objects.get(0)));
+        Assert.assertTrue(JsonUtils.jsonEquals(createTestObject1(), objects.get(1)));
+        Assert.assertTrue(JsonUtils.jsonEquals(createTestObject2(), objects.get(2)));
     }
 
     @Test
     public void testNumberStream() {
         double[] values = new double[] { 3.14, 42, Double.MAX_VALUE };
 
-        JsonArray array = DoubleStream.of(values).mapToObj(Json::create)
-                .collect(JsonUtils.asArray());
+        JsonArray array = DoubleStream.of(values).mapToObj(Json::create).collect(JsonUtils.asArray());
 
         DoubleStream numberStream = JsonUtils.numberStream(array);
 
@@ -200,8 +173,7 @@ public class JsonUtilsTest {
 
     @Test
     public void testCreateArray() {
-        JsonArray array = JsonUtils.createArray(Json.create("string"),
-                Json.createNull());
+        JsonArray array = JsonUtils.createArray(Json.create("string"), Json.createNull());
 
         Assert.assertEquals(2, array.length());
         Assert.assertEquals("string", array.getString(0));
@@ -236,10 +208,9 @@ public class JsonUtilsTest {
 
     @Test
     public void testCreateEmptyObject() {
-        JsonObject object = JsonUtils.createObject(Collections.emptyMap(),
-                item -> {
-                    throw new AssertionError("Callback should not be called");
-                });
+        JsonObject object = JsonUtils.createObject(Collections.emptyMap(), item -> {
+            throw new AssertionError("Callback should not be called");
+        });
 
         Assert.assertEquals(0, object.keys().length);
     }
@@ -300,8 +271,7 @@ public class JsonUtilsTest {
 
         public Date date = new Date(sqlDate.getTime());
 
-        public ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime,
-                ZoneId.of("Europe/Rome"));
+        public ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Rome"));
 
         public Duration duration = Duration.ofSeconds(10);
     }
@@ -371,21 +341,16 @@ public class JsonUtilsTest {
         JsonObject json = JsonUtils.beanToJson(bean);
 
         Assert.assertTrue("LocalTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(10, 23, 55),
-                        json.getArray("localTime")));
+                JsonUtils.jsonEquals(createNumberArray(10, 23, 55), json.getArray("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26),
-                        json.getArray("localDate")));
+                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26), json.getArray("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26, 10, 23, 55),
-                        json.getArray("localDateTime")));
-        Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.zonedDateTime.toEpochSecond(),
+                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26, 10, 23, 55), json.getArray("localDateTime")));
+        Assert.assertEquals("ZonedDateTime not serialized as expected", bean.zonedDateTime.toEpochSecond(),
                 json.getNumber("zonedDateTime"), 0);
-        Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.getNumber("sqlDate"), 0);
-        Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.getNumber("date"), 0);
+        Assert.assertEquals("ZonedDateTime not serialized as expected", bean.sqlDate.getTime(),
+                json.getNumber("sqlDate"), 0);
+        Assert.assertEquals("ZonedDateTime not serialized as expected", bean.date.getTime(), json.getNumber("date"), 0);
         Assert.assertEquals(10.0, json.getNumber("duration"), 0);
     }
 
@@ -410,11 +375,9 @@ public class JsonUtilsTest {
 
         JsonObject childBeanMap = json.getObject("childBeanMap");
         JsonObject firstChild = childBeanMap.getObject("First");
-        Assert.assertEquals("firstChildValue",
-                firstChild.getString("childValue"));
+        Assert.assertEquals("firstChildValue", firstChild.getString("childValue"));
         JsonObject secondChild = childBeanMap.getObject("Second");
-        Assert.assertEquals("secondChildValue",
-                secondChild.getString("childValue"));
+        Assert.assertEquals("secondChildValue", secondChild.getString("childValue"));
 
         JsonArray integerList = json.getArray("integerList");
         Assert.assertEquals(3, integerList.get(0).asNumber(), 0);
@@ -422,10 +385,8 @@ public class JsonUtilsTest {
         Assert.assertEquals(1, integerList.get(2).asNumber(), 0);
 
         JsonArray childBeanList = json.getArray("childBeanList");
-        Assert.assertEquals("firstChildValue",
-                ((JsonObject) childBeanList.get(0)).getString("childValue"));
-        Assert.assertEquals("secondChildValue",
-                ((JsonObject) childBeanList.get(1)).getString("childValue"));
+        Assert.assertEquals("firstChildValue", ((JsonObject) childBeanList.get(0)).getString("childValue"));
+        Assert.assertEquals("secondChildValue", ((JsonObject) childBeanList.get(1)).getString("childValue"));
     }
 
     @Test

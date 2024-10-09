@@ -63,13 +63,12 @@ public class SecurityConfig {
 
     @Bean
     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
-        return new NavigationAccessControlConfigurer()
-                .withRoutePathAccessChecker().withLoginView(LoginView.class);
+        return new NavigationAccessControlConfigurer().withRoutePathAccessChecker().withLoginView(LoginView.class);
     }
 
     @Bean
-    public SecurityFilterChain webFilterChain(HttpSecurity http,
-            AuthenticationContext authenticationContext) throws Exception {
+    public SecurityFilterChain webFilterChain(HttpSecurity http, AuthenticationContext authenticationContext)
+            throws Exception {
         // Setup
         http.csrf(AbstractHttpConfigurer::disable); // simple for testing
                                                     // purpose
@@ -113,14 +112,12 @@ public class SecurityConfig {
         http.logout(cfg -> {
             SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
             logoutSuccessHandler.setDefaultTargetUrl(getLogoutSuccessUrl());
-            logoutSuccessHandler
-                    .setRedirectStrategy(new UidlRedirectStrategy());
+            logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
             cfg.logoutSuccessHandler(logoutSuccessHandler);
             cfg.addLogoutHandler((request, response, authentication) -> {
                 UI ui = UI.getCurrent();
-                ui.accessSynchronously(() -> ui.getPage().setLocation(
-                        UrlUtil.getServletPathRelative(getLogoutSuccessUrl(),
-                                request)));
+                ui.accessSynchronously(
+                        () -> ui.getPage().setLocation(UrlUtil.getServletPathRelative(getLogoutSuccessUrl(), request)));
             });
         });
         // Custom login page with form authentication
@@ -129,8 +126,7 @@ public class SecurityConfig {
 
         // Test application uses AuthenticationContext, configure it with
         // the logout handlers
-        AuthenticationContext.applySecurityConfiguration(http,
-                authenticationContext);
+        AuthenticationContext.applySecurityConfiguration(http, authenticationContext);
 
         return filterChain;
     }
@@ -154,19 +150,13 @@ public class SecurityConfig {
     public InMemoryUserDetailsManager userDetailsService() {
         return new InMemoryUserDetailsManager() {
             @Override
-            public UserDetails loadUserByUsername(String username)
-                    throws UsernameNotFoundException {
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                 UserInfo userInfo = userInfoService.findByUsername(username);
                 if (userInfo == null) {
-                    throw new UsernameNotFoundException(
-                            "No user present with username: " + username);
+                    throw new UsernameNotFoundException("No user present with username: " + username);
                 } else {
-                    return new User(userInfo.getUsername(),
-                            userInfo.getEncodedPassword(),
-                            userInfo.getRoles().stream()
-                                    .map(role -> new SimpleGrantedAuthority(
-                                            "ROLE_" + role))
-                                    .collect(Collectors.toList()));
+                    return new User(userInfo.getUsername(), userInfo.getEncodedPassword(), userInfo.getRoles().stream()
+                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role)).collect(Collectors.toList()));
                 }
             }
         };

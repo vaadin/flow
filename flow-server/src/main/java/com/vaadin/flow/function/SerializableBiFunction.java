@@ -34,7 +34,6 @@ import java.util.function.Function;
  *            the type of the result of the function
  */
 @FunctionalInterface
-public interface SerializableBiFunction<T, U, R>
-        extends BiFunction<T, U, R>, Serializable {
+public interface SerializableBiFunction<T, U, R> extends BiFunction<T, U, R>, Serializable {
     // Only method inherited from BiFunction
 }

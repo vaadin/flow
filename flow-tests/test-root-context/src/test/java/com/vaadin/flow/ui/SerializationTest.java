@@ -37,8 +37,8 @@ public class SerializationTest {
         UI ui = new UI();
         UI.setCurrent(ui);
         try {
-            Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(
-                    getClass().getClassLoader()).getAllViewClasses();
+            Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(getClass().getClassLoader())
+                    .getAllViewClasses();
             for (Class<? extends Component> viewClass : viewClasses) {
                 Component view = viewClass.newInstance();
                 // view.onLocationChange(new LocationChangeEvent(new Router(),
@@ -48,8 +48,7 @@ public class SerializationTest {
                 try {
                     Assert.assertNotNull(serializeDeserialize(view));
                 } catch (Exception e) {
-                    throw new AssertionError(
-                            "Can't serialize view " + viewClass.getName(), e);
+                    throw new AssertionError("Can't serialize view " + viewClass.getName(), e);
                 }
             }
         } finally {
@@ -58,14 +57,12 @@ public class SerializationTest {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Serializable> T serializeDeserialize(T t)
-            throws IOException, ClassNotFoundException {
+    public static <T extends Serializable> T serializeDeserialize(T t) throws IOException, ClassNotFoundException {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(t);
         byte[] data = bs.toByteArray();
-        ObjectInputStream in = new ObjectInputStream(
-                new ByteArrayInputStream(data));
+        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
 
         return (T) in.readObject();
     }

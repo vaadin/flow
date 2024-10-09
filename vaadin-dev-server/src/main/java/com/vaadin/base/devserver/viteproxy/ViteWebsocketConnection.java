@@ -48,8 +48,7 @@ public class ViteWebsocketConnection implements Listener {
     }
 
     /**
-     * Established a connection with a Vite server running on the given port,
-     * using the given sub protocol.
+     * Established a connection with a Vite server running on the given port, using the given sub protocol.
      *
      * @param port
      *            the port Vite is running on
@@ -63,20 +62,17 @@ public class ViteWebsocketConnection implements Listener {
      *            a callback to invoke if the connection to Vite is closed
      *
      */
-    public ViteWebsocketConnection(int port, String path, String subProtocol,
-            Consumer<String> onMessage, Runnable onClose,
-            Consumer<Throwable> onConnectionFailure) {
+    public ViteWebsocketConnection(int port, String path, String subProtocol, Consumer<String> onMessage,
+            Runnable onClose, Consumer<Throwable> onConnectionFailure) {
         this.onMessage = onMessage;
         this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + path);
-        clientWebsocket = HttpClient.newHttpClient().newWebSocketBuilder()
-                .subprotocols(subProtocol).buildAsync(uri, this)
-                .whenComplete(((webSocket, failure) -> {
+        clientWebsocket = HttpClient.newHttpClient().newWebSocketBuilder().subprotocols(subProtocol)
+                .buildAsync(uri, this).whenComplete(((webSocket, failure) -> {
                     if (failure == null) {
-                        getLogger().debug(
-                                "Connection to {} using the {} protocol established",
-                                uri, webSocket.getSubprotocol());
+                        getLogger().debug("Connection to {} using the {} protocol established", uri,
+                                webSocket.getSubprotocol());
                     } else {
                         getLogger().debug("Failed to connect to {}", uri);
                         onConnectionFailure.accept(failure);
@@ -86,21 +82,18 @@ public class ViteWebsocketConnection implements Listener {
 
     @Override
     public void onOpen(WebSocket webSocket) {
-        getLogger().debug("Connected using the {} protocol",
-                webSocket.getSubprotocol());
+        getLogger().debug("Connected using the {} protocol", webSocket.getSubprotocol());
         Listener.super.onOpen(webSocket);
     }
 
     @Override
-    public CompletionStage<?> onClose(WebSocket webSocket, int statusCode,
-            String reason) {
+    public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
         onClose.run();
         return Listener.super.onClose(webSocket, statusCode, reason);
     }
 
     @Override
-    public CompletionStage<?> onText(WebSocket webSocket, CharSequence data,
-            boolean last) {
+    public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         // Message from Vite
         if (!last) {
             getLogger().debug("Partial message from Vite: {}", data);
@@ -127,10 +120,8 @@ public class ViteWebsocketConnection implements Listener {
      * @throws ExecutionException
      *             if there is a problem with the connection
      */
-    public void send(String message)
-            throws InterruptedException, ExecutionException {
-        CompletableFuture<WebSocket> send = clientWebsocket.get()
-                .sendText(message, false);
+    public void send(String message) throws InterruptedException, ExecutionException {
+        CompletableFuture<WebSocket> send = clientWebsocket.get().sendText(message, false);
         send.get();
     }
 
@@ -144,8 +135,8 @@ public class ViteWebsocketConnection implements Listener {
      */
     public void close() throws InterruptedException, ExecutionException {
         getLogger().debug("Closing the connection");
-        CompletableFuture<WebSocket> closeRequest = clientWebsocket.get()
-                .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
+        CompletableFuture<WebSocket> closeRequest = clientWebsocket.get().sendClose(CloseCodes.NORMAL_CLOSURE.getCode(),
+                "");
         closeRequest.get();
     }
 

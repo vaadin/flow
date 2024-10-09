@@ -33,8 +33,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * Copies template files to the target folder so as to be available for parsing
- * at runtime in production mode.
+ * Copies template files to the target folder so as to be available for parsing at runtime in production mode.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -50,40 +49,31 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        Set<Class<?>> classes = new HashSet<>(
-                classFinder.getSubTypesOf(Template.class));
+        Set<Class<?>> classes = new HashSet<>(classFinder.getSubTypesOf(Template.class));
         Class<? extends Annotation> jsModuleAnnotationClass;
         try {
-            jsModuleAnnotationClass = classFinder
-                    .loadClass(JsModule.class.getName());
+            jsModuleAnnotationClass = classFinder.loadClass(JsModule.class.getName());
         } catch (ClassNotFoundException e) {
             throw new ExecutionFailedException(e);
         }
 
         for (Class<?> clazz : classes) {
-            for (Annotation jsmAnnotation : clazz
-                    .getAnnotationsByType(jsModuleAnnotationClass)) {
+            for (Annotation jsmAnnotation : clazz.getAnnotationsByType(jsModuleAnnotationClass)) {
                 String path = getJsModuleAnnotationValue(jsmAnnotation);
-                File source = FrontendUtils.resolveFrontendPath(
-                        options.getNpmFolder(), path,
+                File source = FrontendUtils.resolveFrontendPath(options.getNpmFolder(), path,
                         options.getFrontendDirectory());
                 if (source == null) {
-                    throw new ExecutionFailedException(
-                            "Unable to locate file " + path);
+                    throw new ExecutionFailedException("Unable to locate file " + path);
                 }
 
                 File templateDirectory;
                 if (options.isDevBundleBuild()) {
                     templateDirectory = new File(
-                            DevBundleUtils.getDevBundleFolder(
-                                    options.getNpmFolder(),
-                                    options.getBuildDirectoryName()),
+                            DevBundleUtils.getDevBundleFolder(options.getNpmFolder(), options.getBuildDirectoryName()),
                             Constants.TEMPLATE_DIRECTORY);
                 } else {
 
-                    templateDirectory = new File(
-                            options.getResourceOutputDirectory(),
-                            Constants.TEMPLATE_DIRECTORY);
+                    templateDirectory = new File(options.getResourceOutputDirectory(), Constants.TEMPLATE_DIRECTORY);
                 }
                 File target = new File(templateDirectory, path).getParentFile();
                 target.mkdirs();
@@ -96,14 +86,11 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
         }
     }
 
-    private String getJsModuleAnnotationValue(Annotation jsmAnnotation)
-            throws ExecutionFailedException {
+    private String getJsModuleAnnotationValue(Annotation jsmAnnotation) throws ExecutionFailedException {
         try {
-            Object value = jsmAnnotation.getClass().getDeclaredMethod("value")
-                    .invoke(jsmAnnotation);
+            Object value = jsmAnnotation.getClass().getDeclaredMethod("value").invoke(jsmAnnotation);
             return (String) value;
-        } catch (IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException e) {
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new ExecutionFailedException(e);
         }
     }

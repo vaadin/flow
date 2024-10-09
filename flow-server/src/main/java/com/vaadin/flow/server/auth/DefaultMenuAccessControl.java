@@ -26,8 +26,7 @@ public class DefaultMenuAccessControl implements MenuAccessControl {
     private PopulateClientMenu populateClientSideMenu = PopulateClientMenu.AUTOMATIC;
 
     @Override
-    public void setPopulateClientSideMenu(
-            PopulateClientMenu populateClientSideMenu) {
+    public void setPopulateClientSideMenu(PopulateClientMenu populateClientSideMenu) {
         this.populateClientSideMenu = populateClientSideMenu;
     }
 

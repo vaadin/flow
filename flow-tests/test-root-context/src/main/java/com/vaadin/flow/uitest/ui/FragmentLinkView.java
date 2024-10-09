@@ -15,36 +15,28 @@ public class FragmentLinkView extends AbstractDivView {
         Element bodyElement = getElement();
         bodyElement.getStyle().set("margin", "1em");
 
-        Element scrollLocator = ElementFactory.createDiv()
-                .setAttribute("id", "scrollLocator").setText("Scroll locator");
-        scrollLocator.getStyle().set("position", "fixed").set("top", "0")
-                .set("right", "0");
+        Element scrollLocator = ElementFactory.createDiv().setAttribute("id", "scrollLocator")
+                .setText("Scroll locator");
+        scrollLocator.getStyle().set("position", "fixed").set("top", "0").set("right", "0");
 
-        Element placeholder = ElementFactory.createDiv("Hash Change Events")
-                .setAttribute("id", "placeholder");
+        Element placeholder = ElementFactory.createDiv("Hash Change Events").setAttribute("id", "placeholder");
 
         bodyElement.appendChild(scrollLocator, placeholder, new Element("p"));
 
-        Element scrollToLink = ElementFactory.createRouterLink(
-                "/view/com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target",
-                "Scroller link");
-        Element scrollToLink2 = ElementFactory.createRouterLink(
-                "/view/com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target2",
-                "Scroller link 2");
+        Element scrollToLink = ElementFactory
+                .createRouterLink("/view/com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target", "Scroller link");
+        Element scrollToLink2 = ElementFactory
+                .createRouterLink("/view/com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target2", "Scroller link 2");
         Element scrollToLinkAnotherView = ElementFactory.createRouterLink(
-                "/view/com.vaadin.flow.uitest.ui.FragmentLinkView2#Scroll_Target",
-                "Scroller link with different view");
-        Element linkThatIsOverridden = ElementFactory.createRouterLink(
-                "./override#Scroll_Target", "Link that server overrides");
+                "/view/com.vaadin.flow.uitest.ui.FragmentLinkView2#Scroll_Target", "Scroller link with different view");
+        Element linkThatIsOverridden = ElementFactory.createRouterLink("./override#Scroll_Target",
+                "Link that server overrides");
 
-        Element scrollTarget = ElementFactory.createHeading1("Scroll Target")
-                .setAttribute("id", "Scroll_Target");
-        Element scrollTarget2 = ElementFactory.createHeading2("Scroll Target 2")
-                .setAttribute("id", "Scroll_Target2");
+        Element scrollTarget = ElementFactory.createHeading1("Scroll Target").setAttribute("id", "Scroll_Target");
+        Element scrollTarget2 = ElementFactory.createHeading2("Scroll Target 2").setAttribute("id", "Scroll_Target2");
 
-        bodyElement.appendChild(scrollToLink, new Element("p"), scrollToLink2,
-                new Element("p"), scrollToLinkAnotherView, new Element("p"),
-                linkThatIsOverridden, new Element("p"), createSpacer(),
+        bodyElement.appendChild(scrollToLink, new Element("p"), scrollToLink2, new Element("p"),
+                scrollToLinkAnotherView, new Element("p"), linkThatIsOverridden, new Element("p"), createSpacer(),
                 scrollTarget, createSpacer(), scrollTarget2, createSpacer());
 
     }
@@ -52,20 +44,14 @@ public class FragmentLinkView extends AbstractDivView {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         Page page = attachEvent.getUI().getPage();
-        page.executeJs("var i = 0;"
-                + "window.addEventListener('hashchange', function(event) {"
-                + "var x = document.createElement('span');"
-                + "x.textContent = ' ' + i;" + "i++;"
-                + "x.class = 'hashchange';"
-                + "document.getElementById('placeholder').appendChild(x);},"
-                + " false);");
+        page.executeJs("var i = 0;" + "window.addEventListener('hashchange', function(event) {"
+                + "var x = document.createElement('span');" + "x.textContent = ' ' + i;" + "i++;"
+                + "x.class = 'hashchange';" + "document.getElementById('placeholder').appendChild(x);}," + " false);");
 
-        HistoryStateChangeHandler current = page.getHistory()
-                .getHistoryStateChangeHandler();
+        HistoryStateChangeHandler current = page.getHistory().getHistoryStateChangeHandler();
         page.getHistory().setHistoryStateChangeHandler(event -> {
             if (event.getLocation().getPath().equals("override")) {
-                event.getSource().replaceState(null,
-                        "overridden#Scroll_Target2");
+                event.getSource().replaceState(null, "overridden#Scroll_Target2");
             } else {
                 current.onHistoryStateChange(event);
             }

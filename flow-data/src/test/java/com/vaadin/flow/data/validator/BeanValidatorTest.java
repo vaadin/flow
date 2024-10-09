@@ -21,8 +21,7 @@ public class BeanValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testFirstNameTooShortFails() {
-        assertFails("x", "size must be between 3 and 16",
-                validator("firstname"));
+        assertFails("x", "size must be between 3 and 16", validator("firstname"));
     }
 
     @Test
@@ -63,8 +62,7 @@ public class BeanValidatorTest extends ValidatorTestBase {
     public void testInvalidDecimalsFailsInFrench() {
         setLocale(Locale.FRENCH);
         BeanValidator v = validator("decimals");
-        assertFails("1234.567", "valeur numérique hors limites "
-                + "(<3 chiffres>.<2 chiffres> attendu)", v);
+        assertFails("1234.567", "valeur numérique hors limites " + "(<3 chiffres>.<2 chiffres> attendu)", v);
     }
 
     @Test

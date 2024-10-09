@@ -25,26 +25,20 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-public class UpdateImportsWithFullCPScannerTest
-        extends AbstractUpdateImportsTest {
+public class UpdateImportsWithFullCPScannerTest extends AbstractUpdateImportsTest {
 
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
-        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(true, finder, true);
+        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory().createScanner(true, finder, true);
     }
 
     @Test
     public void assertFullSortOrder() throws MalformedURLException {
         List<String> expectedJsModuleImports = new ArrayList<>();
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js';");
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else.js';");
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
-        expectedJsModuleImports.add(
-                "import '@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-something-else.js';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
+        expectedJsModuleImports.add("import '@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js';");
         expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
         expectedJsModuleImports.add("import 'jsmodule/h.js';");
         expectedJsModuleImports.add("import 'jsmodule/g.js';");

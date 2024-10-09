@@ -14,20 +14,15 @@ public class BackButtonServerRoundTripIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + baseLoc + "/1?query=foo");
         waitForDevServer();
 
-        WebElement button = findElement(
-                By.id(BackButtonServerRoundTripView.BUTTON_ID));
+        WebElement button = findElement(By.id(BackButtonServerRoundTripView.BUTTON_ID));
         button.click();
 
-        final String queryValue0 = findElement(
-                By.id(BackButtonServerRoundTripView.QUERY_LABEL_ID)).getText();
-        Assert.assertTrue("should have received query parameter value 'bar'",
-                queryValue0.equals("query=bar"));
+        final String queryValue0 = findElement(By.id(BackButtonServerRoundTripView.QUERY_LABEL_ID)).getText();
+        Assert.assertTrue("should have received query parameter value 'bar'", queryValue0.equals("query=bar"));
 
         getDriver().navigate().back();
 
-        final String queryValue1 = findElement(
-                By.id(BackButtonServerRoundTripView.QUERY_LABEL_ID)).getText();
-        Assert.assertTrue("should have received query parameter value 'foo'",
-                queryValue1.equals("query=foo"));
+        final String queryValue1 = findElement(By.id(BackButtonServerRoundTripView.QUERY_LABEL_ID)).getText();
+        Assert.assertTrue("should have received query parameter value 'foo'", queryValue1.equals("query=foo"));
     }
 }

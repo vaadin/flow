@@ -20,17 +20,14 @@ import java.io.Serializable;
 import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
- * A URI resolver which resolves paths for loading through VaadinService
- * resource methods.
+ * A URI resolver which resolves paths for loading through VaadinService resource methods.
  *
  * @since 1.0
  */
-public class ServiceContextUriResolver extends VaadinUriResolver
-        implements Serializable {
+public class ServiceContextUriResolver extends VaadinUriResolver implements Serializable {
 
     /**
-     * Resolves the given uri to a path which can be used with
-     * {@link VaadinService#getResource(String)} and
+     * Resolves the given uri to a path which can be used with {@link VaadinService#getResource(String)} and
      * {@link VaadinService#getResourceAsStream(String)}.
      *
      * @param uri

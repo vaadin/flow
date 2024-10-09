@@ -29,20 +29,16 @@ public class BundleParserTest {
     @Before
     public void init() {
         configuration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getServiceInitListeners())
-                .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
-                .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
-                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getServiceInitListeners()).thenReturn(Stream.empty());
+        Mockito.when(instantiator.getDependencyFilters(Mockito.any())).thenReturn(Stream.empty());
+        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any())).thenReturn(Stream.empty());
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
     }
@@ -54,12 +50,10 @@ public class BundleParserTest {
 
         Element natsElement = element.getElementById("natsUrlTxt");
         Assert.assertNotNull("Found element by Id", natsElement);
-        Assert.assertEquals("Invalid tag for element", "vaadin-text-field",
-                natsElement.tagName());
+        Assert.assertEquals("Invalid tag for element", "vaadin-text-field", natsElement.tagName());
 
-        Assert.assertEquals(
-                "Parsed value for attribute 'placeholder' was wrong.",
-                "nats://server:port", natsElement.attr("placeholder"));
+        Assert.assertEquals("Parsed value for attribute 'placeholder' was wrong.", "nats://server:port",
+                natsElement.attr("placeholder"));
 
     }
 

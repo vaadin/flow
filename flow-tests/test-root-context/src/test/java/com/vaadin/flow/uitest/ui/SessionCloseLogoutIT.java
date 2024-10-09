@@ -42,16 +42,13 @@ public class SessionCloseLogoutIT extends ChromeBrowserTest {
 
         waitUntil(driver -> !findElements(By.tagName("a")).isEmpty());
         String sessionExpiredText = $("a").first().getText();
-        Assert.assertEquals(
-                "Unexpected view after navigation with closed session",
-                "My link", sessionExpiredText);
+        Assert.assertEquals("Unexpected view after navigation with closed session", "My link", sessionExpiredText);
 
         asserNoErrors();
     }
 
     private void asserNoErrors() {
-        checkLogsForErrors(msg -> msg
-                .matches("^.*((VAADIN/static/client|FlowClient.js).*|\"\")$"));
+        checkLogsForErrors(msg -> msg.matches("^.*((VAADIN/static/client|FlowClient.js).*|\"\")$"));
     }
 
 }

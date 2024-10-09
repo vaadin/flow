@@ -36,13 +36,11 @@ public class PushStateScrollView extends AbstractDivView {
 
         History history = UI.getCurrent().getPage().getHistory();
 
-        getElement().appendChild(filler,
-                createButton("push", history::pushState),
+        getElement().appendChild(filler, createButton("push", history::pushState),
                 createButton("replace", history::replaceState));
     }
 
-    private static Element createButton(String name,
-            BiConsumer<JsonValue, String> action) {
+    private static Element createButton(String name, BiConsumer<JsonValue, String> action) {
         String location = PushStateScrollView.class.getName() + "/" + name;
 
         Element button = ElementFactory.createButton(name);

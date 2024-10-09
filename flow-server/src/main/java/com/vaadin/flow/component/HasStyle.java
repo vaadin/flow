@@ -24,10 +24,8 @@ import com.vaadin.flow.dom.Style;
 /**
  * Represents {@link Component} which has class attribute and inline styles.
  * <p>
- * Implementation of {@link #getElement()} should return HTML element or web
- * component that supports <a href=
- * "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style">inline
- * style attribute</a>.
+ * Implementation of {@link #getElement()} should return HTML element or web component that supports
+ * <a href= "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style">inline style attribute</a>.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -50,21 +48,18 @@ public interface HasStyle extends HasElement {
      *
      * @param className
      *            the CSS class name to remove, not <code>null</code>
-     * @return <code>true</code> if the class name was removed,
-     *         <code>false</code> if the class list didn't contain the class
-     *         name
+     * @return <code>true</code> if the class name was removed, <code>false</code> if the class list didn't contain the
+     *         class name
      */
     default boolean removeClassName(String className) {
         return getClassNames().remove(className);
     }
 
     /**
-     * Sets the CSS class names of this component. This method overwrites any
-     * previous set class names.
+     * Sets the CSS class names of this component. This method overwrites any previous set class names.
      *
      * @param className
-     *            a space-separated string of class names to set, or
-     *            <code>null</code> to remove all class names
+     *            a space-separated string of class names to set, or <code>null</code> to remove all class names
      */
     default void setClassName(String className) {
         if (className == null) {
@@ -77,21 +72,18 @@ public interface HasStyle extends HasElement {
     /**
      * Gets the CSS class names for this component.
      *
-     * @return a space-separated string of class names, or <code>null</code> if
-     *         there are no class names
+     * @return a space-separated string of class names, or <code>null</code> if there are no class names
      */
     default String getClassName() {
         return getElement().getAttribute("class");
     }
 
     /**
-     * Gets the set of CSS class names used for this element. The returned set
-     * can be modified to add or remove class names. The contents of the set is
-     * also reflected in the value of the <code>class</code> attribute.
+     * Gets the set of CSS class names used for this element. The returned set can be modified to add or remove class
+     * names. The contents of the set is also reflected in the value of the <code>class</code> attribute.
      * <p>
-     * Despite the name implying a list being returned, the return type is
-     * actually a {@link Set} since the in-browser return value behaves like a
-     * <code>Set</code> in Java.
+     * Despite the name implying a list being returned, the return type is actually a {@link Set} since the in-browser
+     * return value behaves like a <code>Set</code> in Java.
      *
      * @see Element#getClassList()
      *
@@ -107,8 +99,7 @@ public interface HasStyle extends HasElement {
      * @param className
      *            the class name to set or remove, not <code>null</code>
      * @param set
-     *            <code>true</code> to set the class name, <code>false</code> to
-     *            remove it
+     *            <code>true</code> to set the class name, <code>false</code> to remove it
      */
     default void setClassName(String className, boolean set) {
         getClassNames().set(className, set);
@@ -119,16 +110,14 @@ public interface HasStyle extends HasElement {
      *
      * @param className
      *            the class name to check for
-     * @return <code>true</code> if the component has the given class name,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the component has the given class name, <code>false</code> otherwise
      */
     default boolean hasClassName(String className) {
         return getClassNames().contains(className);
     }
 
     /**
-     * Gets the style instance for managing inline styles for the element of
-     * this component.
+     * Gets the style instance for managing inline styles for the element of this component.
      *
      * @return the style object for the element, not <code>null</code>
      */
@@ -137,8 +126,8 @@ public interface HasStyle extends HasElement {
     }
 
     /**
-     * Adds one or more CSS class names to this component. Multiple class names
-     * can be specified by using spaces or by giving multiple parameters.
+     * Adds one or more CSS class names to this component. Multiple class names can be specified by using spaces or by
+     * giving multiple parameters.
      *
      * @param classNames
      *            the CSS class name or class names to be added to the component
@@ -146,13 +135,11 @@ public interface HasStyle extends HasElement {
     default void addClassNames(String... classNames) {
         for (String rawClassName : classNames) {
             if (rawClassName == null) {
-                throw new IllegalArgumentException(
-                        "CSS class names cannot include a null element");
+                throw new IllegalArgumentException("CSS class names cannot include a null element");
             }
             rawClassName = rawClassName.trim();
             if (rawClassName.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "CSS class names cannot include an empty class name");
+                throw new IllegalArgumentException("CSS class names cannot include an empty class name");
             }
             String[] parts = rawClassName.split(" +");
             for (String part : parts) {
@@ -162,23 +149,20 @@ public interface HasStyle extends HasElement {
     }
 
     /**
-     * Removes one or more CSS class names from component. Multiple class names
-     * can be specified by using spaces or by giving multiple parameters.
+     * Removes one or more CSS class names from component. Multiple class names can be specified by using spaces or by
+     * giving multiple parameters.
      *
      * @param classNames
-     *            the CSS class name or class names to be removed from the
-     *            component
+     *            the CSS class name or class names to be removed from the component
      */
     default void removeClassNames(String... classNames) {
         for (String rawClassName : classNames) {
             if (rawClassName == null) {
-                throw new IllegalArgumentException(
-                        "CSS class names cannot include a null element");
+                throw new IllegalArgumentException("CSS class names cannot include a null element");
             }
             rawClassName = rawClassName.trim();
             if (rawClassName.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "CSS class names cannot include an empty class name");
+                throw new IllegalArgumentException("CSS class names cannot include an empty class name");
             }
             String[] parts = rawClassName.split(" +");
             for (String part : parts) {

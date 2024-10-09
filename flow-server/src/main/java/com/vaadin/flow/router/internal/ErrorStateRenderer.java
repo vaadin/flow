@@ -60,11 +60,8 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
         @Override
         public String getMessage() {
-            return "Exceptions handled by "
-                    + HasErrorParameter.class.getSimpleName() + " views are :"
-                    + trace.stream().filter(
-                            clazz -> !clazz.equals(ExceptionsTrace.class))
-                            .map(Class::getName)
+            return "Exceptions handled by " + HasErrorParameter.class.getSimpleName() + " views are :"
+                    + trace.stream().filter(clazz -> !clazz.equals(ExceptionsTrace.class)).map(Class::getName)
                             .collect(Collectors.joining(", "));
         }
     }
@@ -81,23 +78,18 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
     @Override
     public int handle(NavigationEvent event) {
-        assert event instanceof ErrorNavigationEvent
-                : "Error handling needs ErrorNavigationEvent";
+        assert event instanceof ErrorNavigationEvent : "Error handling needs ErrorNavigationEvent";
 
-        ExceptionsTrace trace = ComponentUtil.getData(event.getUI(),
-                ExceptionsTrace.class);
+        ExceptionsTrace trace = ComponentUtil.getData(event.getUI(), ExceptionsTrace.class);
         boolean isFirstCall = trace == null;
-        Exception exception = ((ErrorNavigationEvent) event).getErrorParameter()
-                .getCaughtException();
+        Exception exception = ((ErrorNavigationEvent) event).getErrorParameter().getCaughtException();
         if (isFirstCall) {
             trace = new ExceptionsTrace(exception);
             ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);
         } else if (trace.hasException(exception)) {
             LoggerFactory.getLogger(ErrorStateRenderer.class)
-                    .error("The same exception {} "
-                            + "has been thrown several times during navigation. "
-                            + "Can't use any {} view for this error.",
-                            exception.getClass().getName(),
+                    .error("The same exception {} " + "has been thrown several times during navigation. "
+                            + "Can't use any {} view for this error.", exception.getClass().getName(),
                             HasErrorParameter.class.getSimpleName(), trace);
             throw trace;
         }
@@ -106,39 +98,33 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
             return super.handle(event);
         } finally {
             if (isFirstCall) {
-                ComponentUtil.setData(event.getUI(), ExceptionsTrace.class,
-                        null);
+                ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, null);
             }
         }
     }
 
     @Override
-    protected void notifyNavigationTarget(Component componentInstance,
-            NavigationEvent navigationEvent, BeforeEnterEvent beforeEnterEvent,
-            LocationChangeEvent locationChangeEvent) {
+    protected void notifyNavigationTarget(Component componentInstance, NavigationEvent navigationEvent,
+            BeforeEnterEvent beforeEnterEvent, LocationChangeEvent locationChangeEvent) {
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        int statusCode = ((HasErrorParameter) componentInstance)
-                .setErrorParameter(beforeEnterEvent,
-                        ((ErrorNavigationEvent) navigationEvent)
-                                .getErrorParameter());
+        int statusCode = ((HasErrorParameter) componentInstance).setErrorParameter(beforeEnterEvent,
+                ((ErrorNavigationEvent) navigationEvent).getErrorParameter());
 
         locationChangeEvent.setStatusCode(statusCode);
     }
 
     /**
-     * Gets the router layout types to show for the given route target type,
-     * starting from the parent layout immediately wrapping the route target
-     * type.
+     * Gets the router layout types to show for the given route target type, starting from the parent layout immediately
+     * wrapping the route target type.
      *
      * @param targetType
      *            component type to show
      *
-     * @return a list of parent {@link RouterLayout} types, not
-     *         <code>null</code>
+     * @return a list of parent {@link RouterLayout} types, not <code>null</code>
      */
     @Override
-    public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            Class<? extends Component> targetType, Router router) {
+    public List<Class<? extends RouterLayout>> getRouterLayoutTypes(Class<? extends Component> targetType,
+            Router router) {
         assert targetType == getNavigationState().getNavigationTarget();
 
         return RouteUtil.getParentLayoutsForNonRouteTarget(targetType);

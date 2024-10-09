@@ -13,8 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A map for items that are looked up by hierarchical keys made up of period
- * separated strings.
+ * A map for items that are looked up by hierarchical keys made up of period separated strings.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -22,12 +21,9 @@ import java.util.Optional;
  * @since 1.0
  * @param <T>
  *            the item type
- * @deprecated This functionality is internal and bound to template model which
- *             is not supported for lit template. Polymer template support is
- *             deprecated - we recommend you to use {@code LitTemplate} instead.
- *             Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated This functionality is internal and bound to template model which is not supported for lit template.
+ *             Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 public class PathLookup<T> {
@@ -40,8 +36,7 @@ public class PathLookup<T> {
         pathPrefix = "";
     }
 
-    private PathLookup(PathLookup<T> parentLookup, Map<String, T> newItems,
-            String pathPrefix) {
+    private PathLookup(PathLookup<T> parentLookup, Map<String, T> newItems, String pathPrefix) {
         this.items = new HashMap<>(parentLookup.items);
         this.pathPrefix = pathPrefix;
 
@@ -58,8 +53,8 @@ public class PathLookup<T> {
     }
 
     /**
-     * Composes a new path lookup that contains all items of this path lookup
-     * and all provided items supplemented with the provided path prefix.
+     * Composes a new path lookup that contains all items of this path lookup and all provided items supplemented with
+     * the provided path prefix.
      *
      * @param newItems
      *            new items to include in the composition
@@ -87,8 +82,7 @@ public class PathLookup<T> {
      *
      * @param fullPath
      *            the fully qualified path for which to find an item
-     * @return the item corresponding to the path, or an empty optional if there
-     *         is no item
+     * @return the item corresponding to the path, or an empty optional if there is no item
      */
     public Optional<T> getItem(String fullPath) {
         return Optional.ofNullable(items.get(fullPath));

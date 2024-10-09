@@ -21,19 +21,17 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * A {@link DataGenerator} that sends all the fields of the objects in the model
- * to the client, using the field names as property names.
+ * A {@link DataGenerator} that sends all the fields of the objects in the model to the client, using the field names as
+ * property names.
  * <p>
- * This class is useful for the cases when the properties in the template of the
- * columns have the same name as the fields of the model object in the server
- * side.
+ * This class is useful for the cases when the properties in the template of the columns have the same name as the
+ * fields of the model object in the server side.
  * <p>
- * Note: this generator sends the entire bean to the client, even if the
- * template in the client doesn't use all the properties.
+ * Note: this generator sends the entire bean to the client, even if the template in the client doesn't use all the
+ * properties.
  * <p>
- * For objects without inner properties, like Strings, a property called
- * {@code value} is created in the model, so it can be accessed via
- * {@code [[item.value]]} in the template.
+ * For objects without inner properties, like Strings, a property called {@code value} is created in the model, so it
+ * can be accessed via {@code [[item.value]]} in the template.
  *
  * @author Vaadin Ltd.
  * @since 1.2

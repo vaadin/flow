@@ -17,15 +17,14 @@ package com.vaadin.client.flow.reactive;
 
 import elemental.events.EventRemover;
 
-public class TestReactiveEventRouter extends
-        ReactiveEventRouter<ReactiveValueChangeListener, ReactiveValueChangeEvent> {
+public class TestReactiveEventRouter
+        extends ReactiveEventRouter<ReactiveValueChangeListener, ReactiveValueChangeEvent> {
 
     private static final class TestEventSource implements ReactiveValue {
         private ReactiveEventRouter<ReactiveValueChangeListener, ReactiveValueChangeEvent> router;
 
         @Override
-        public EventRemover addReactiveValueChangeListener(
-                ReactiveValueChangeListener reactiveValueChangeListener) {
+        public EventRemover addReactiveValueChangeListener(ReactiveValueChangeListener reactiveValueChangeListener) {
             return router.addReactiveListener(reactiveValueChangeListener);
         }
     }
@@ -41,8 +40,7 @@ public class TestReactiveEventRouter extends
     }
 
     @Override
-    protected void dispatchEvent(
-            ReactiveValueChangeListener reactiveValueChangeListener,
+    protected void dispatchEvent(ReactiveValueChangeListener reactiveValueChangeListener,
             ReactiveValueChangeEvent event) {
         reactiveValueChangeListener.onValueChange(event);
     }

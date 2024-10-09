@@ -24,9 +24,8 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from {@link String} to {@link Float} and back. Uses
- * the given locale and a {@link NumberFormat} instance for formatting and
- * parsing.
+ * A converter that converts from {@link String} to {@link Float} and back. Uses the given locale and a
+ * {@link NumberFormat} instance for formatting and parsing.
  * <p>
  * Leading and trailing white spaces are ignored when converting from a String.
  * <p>
@@ -35,12 +34,10 @@ import com.vaadin.flow.data.binder.ValueContext;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class StringToFloatConverter
-        extends AbstractStringToNumberConverter<Float> {
+public class StringToFloatConverter extends AbstractStringToNumberConverter<Float> {
 
     /**
-     * Creates a new converter instance with the given error message. Empty
-     * strings are converted to <code>null</code>.
+     * Creates a new converter instance with the given error message. Empty strings are converted to <code>null</code>.
      *
      * @param errorMessage
      *            the error message to use if conversion fails
@@ -50,12 +47,10 @@ public class StringToFloatConverter
     }
 
     /**
-     * Creates a new converter instance with the given presentation value for
-     * empty string and error message.
+     * Creates a new converter instance with the given presentation value for empty string and error message.
      *
      * @param emptyValue
-     *            the presentation value to return when converting an empty
-     *            string, may be <code>null</code>
+     *            the presentation value to return when converting an empty string, may be <code>null</code>
      * @param errorMessage
      *            the error message to use if conversion fails
      */
@@ -64,8 +59,8 @@ public class StringToFloatConverter
     }
 
     /**
-     * Creates a new converter instance with the given error message provider.
-     * Empty strings are converted to <code>null</code>.
+     * Creates a new converter instance with the given error message provider. Empty strings are converted to
+     * <code>null</code>.
      *
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
@@ -75,17 +70,14 @@ public class StringToFloatConverter
     }
 
     /**
-     * Creates a new converter instance with the given presentation value for
-     * empty string and error message provider.
+     * Creates a new converter instance with the given presentation value for empty string and error message provider.
      *
      * @param emptyValue
-     *            the presentation value to return when converting an empty
-     *            string, may be <code>null</code>
+     *            the presentation value to return when converting an empty string, may be <code>null</code>
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    public StringToFloatConverter(Float emptyValue,
-            ErrorMessageProvider errorMessageProvider) {
+    public StringToFloatConverter(Float emptyValue, ErrorMessageProvider errorMessageProvider) {
         super(emptyValue, errorMessageProvider);
     }
 

@@ -23,8 +23,8 @@ import java.util.List;
 /**
  * Holds the configuration from the {@link PWA} annotation.
  *
- * Takes {@link PWA} in constructor to fill properties. Sanitizes the input and
- * falls back to default values if {@link PWA} is unavailable ({@code null}).
+ * Takes {@link PWA} in constructor to fill properties. Sanitizes the input and falls back to default values if
+ * {@link PWA} is unavailable ({@code null}).
  *
  * @since 1.2
  */
@@ -57,10 +57,8 @@ public class PwaConfiguration implements Serializable {
      * Creates the configuration using default PWA parameters.
      */
     public PwaConfiguration() {
-        this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
-                DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
-                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL,
-                new String[] {}, false);
+        this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR, DEFAULT_THEME_COLOR, DEFAULT_ICON,
+                DEFAULT_PATH, DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL, new String[] {}, false);
     }
 
     /**
@@ -70,10 +68,9 @@ public class PwaConfiguration implements Serializable {
      *            the annotation to use for configuration
      */
     public PwaConfiguration(PWA pwa) {
-        this(true, pwa.name(), pwa.shortName(), pwa.description(),
-                pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
-                pwa.manifestPath(), pwa.offlinePath(), pwa.display(),
-                pwa.startPath(), pwa.offlineResources(), pwa.offline());
+        this(true, pwa.name(), pwa.shortName(), pwa.description(), pwa.backgroundColor(), pwa.themeColor(),
+                pwa.iconPath(), pwa.manifestPath(), pwa.offlinePath(), pwa.display(), pwa.startPath(),
+                pwa.offlineResources(), pwa.offline());
     }
 
     /**
@@ -106,14 +103,11 @@ public class PwaConfiguration implements Serializable {
      * @param offlineEnabled
      *            is offline enabled.
      */
-    public PwaConfiguration(boolean enabled, String name, String shortName,
-            String description, String backgroundColor, String themeColor,
-            String iconPath, String manifestPath, String offlinePath,
-            String display, String startPath, String[] offlineResources,
-            boolean offlineEnabled) {
+    public PwaConfiguration(boolean enabled, String name, String shortName, String description, String backgroundColor,
+            String themeColor, String iconPath, String manifestPath, String offlinePath, String display,
+            String startPath, String[] offlineResources, boolean offlineEnabled) {
         this.appName = name;
-        this.shortName = shortName.substring(0,
-                Math.min(shortName.length(), 12));
+        this.shortName = shortName.substring(0, Math.min(shortName.length(), 12));
         this.description = description;
         this.backgroundColor = backgroundColor;
         this.themeColor = themeColor;
@@ -159,8 +153,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Gets the background color of the application.
      *
-     * The background color property is used on the splash screen when the
-     * application is first launched.
+     * The background color property is used on the splash screen when the application is first launched.
      *
      * @return background color of the application
      */
@@ -171,8 +164,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Gets the theme color of the application.
      *
-     * The theme color sets the color of the application's tool bar and
-     * application's color in the task switcher.
+     * The theme color sets the color of the application's tool bar and application's color in the task switcher.
      *
      * @return theme color of the application
      */
@@ -307,8 +299,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Is static offline HTML used for offline mode.
      *
-     * Disabled by default, meaning that application shell (`index.html`) and
-     * client-side views are served offline.
+     * Disabled by default, meaning that application shell (`index.html`) and client-side views are served offline.
      *
      * Set {@link PWA#offlinePath()} value in PWA annotation to enable.
      *

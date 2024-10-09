@@ -24,8 +24,8 @@ import com.vaadin.testbench.TestBenchElement;
 /**
  * Test CSS loading order from different sources.
  *
- * The expected priority is: Lumo styles < @CssImport < page.addStylesheet
- * < @Stylehseet < parent theme < current theme (app theme)
+ * The expected priority is: Lumo styles < @CssImport < page.addStylesheet < @Stylehseet < parent theme < current theme
+ * (app theme)
  */
 public class CssLoadingIT extends ChromeBrowserTest {
 
@@ -48,8 +48,7 @@ public class CssLoadingIT extends ChromeBrowserTest {
 
     private void assertColor(String id) {
         TestBenchElement element = $("*").id(id);
-        String elementBackground = (String) executeScript(
-                "return getComputedStyle(arguments[0]).backgroundColor",
+        String elementBackground = (String) executeScript("return getComputedStyle(arguments[0]).backgroundColor",
                 element);
         String expected = CssLoadingView.idToExpectedColor.get(id);
         String expectedBrowserColorName = getBrowserColorName(expected);

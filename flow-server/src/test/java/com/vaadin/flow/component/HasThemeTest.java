@@ -26,8 +26,7 @@ import org.junit.Test;
 public class HasThemeTest {
 
     @Tag("div")
-    public static class HasThemeComponent extends Component
-            implements HasTheme {
+    public static class HasThemeComponent extends Component implements HasTheme {
 
     }
 
@@ -135,8 +134,7 @@ public class HasThemeTest {
     public void getThemeList_elementThemeList() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
 
-        Assert.assertEquals(component.getElement().getThemeList().isEmpty(),
-                component.getThemeNames().isEmpty());
+        Assert.assertEquals(component.getElement().getThemeList().isEmpty(), component.getThemeNames().isEmpty());
     }
 
     @Test
@@ -165,8 +163,7 @@ public class HasThemeTest {
         assertThemes(component, "baz1", "bar1");
     }
 
-    private void assertThemes(HasThemeTest.HasThemeComponent c,
-            String... expectedThemes) {
+    private void assertThemes(HasThemeTest.HasThemeComponent c, String... expectedThemes) {
         Set<String> actual = c.getThemeNames();
         Set<String> expected = new HashSet<>(Arrays.asList(expectedThemes));
         Assert.assertEquals(expected, actual);

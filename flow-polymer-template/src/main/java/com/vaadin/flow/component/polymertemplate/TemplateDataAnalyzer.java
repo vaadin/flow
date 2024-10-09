@@ -38,27 +38,23 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 
 /**
- * Template data analyzer which produces immutable data required for template
- * initializer using provided template class and a parser.
+ * Template data analyzer which produces immutable data required for template initializer using provided template class
+ * and a parser.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use {@code LitTemplateDataAnalyzer} for {@code LitTemplate}
- *             components. Polymer template support is deprecated - we recommend
- *             you to use {@code LitTemplate} instead. Read more details from
- *             <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Use {@code LitTemplateDataAnalyzer} for {@code LitTemplate} components. Polymer template support is
+ *             deprecated - we recommend you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  *
  */
 @Deprecated
 public class TemplateDataAnalyzer {
 
     // {{propertyName}} or {{propertyName::event}}
-    private static final Pattern TWO_WAY_BINDING_PATTERN = Pattern
-            .compile("\\s*\\{\\{([^}:]*)(::[^}]*)?\\}\\}\\s*");
+    private static final Pattern TWO_WAY_BINDING_PATTERN = Pattern.compile("\\s*\\{\\{([^}:]*)(::[^}]*)?\\}\\}\\s*");
 
     private final Class<? extends PolymerTemplate<?>> templateClass;
     private final TemplateParser parser;
@@ -84,9 +80,8 @@ public class TemplateDataAnalyzer {
         /**
          * Performs this operation on the given arguments.
          * <p>
-         * The arguments are: the field declared in a template class, the
-         * identifier of the element inside the HTML template file, the element
-         * tag.
+         * The arguments are: the field declared in a template class, the identifier of the element inside the HTML
+         * template file, the element tag.
          *
          * @param field
          *            the field declared in a template class
@@ -125,15 +120,12 @@ public class TemplateDataAnalyzer {
          * @param subTemplates
          *            data for sub templates
          */
-        public PolymerParserData(Map<Field, String> fields,
-                Map<String, String> tags,
-                Map<String, Map<String, String>> attributes,
-                Set<String> twoWayBindings,
+        public PolymerParserData(Map<Field, String> fields, Map<String, String> tags,
+                Map<String, Map<String, String>> attributes, Set<String> twoWayBindings,
                 Collection<SubTemplateData> subTemplates) {
             super(fields, tags, attributes);
             twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
-            this.subTemplates = Collections
-                    .unmodifiableCollection(subTemplates);
+            this.subTemplates = Collections.unmodifiableCollection(subTemplates);
         }
 
         /**
@@ -143,8 +135,7 @@ public class TemplateDataAnalyzer {
          *            the consumer to call for each mapped field
          */
         public void forEachInjectedField(InjectableFieldCunsumer consumer) {
-            InjectableFieldConsumer delegate = (field, id, tag) -> consumer
-                    .apply(field, id, tag);
+            InjectableFieldConsumer delegate = (field, id, tag) -> consumer.apply(field, id, tag);
             forEachInjectedField(delegate);
         }
 
@@ -183,8 +174,7 @@ public class TemplateDataAnalyzer {
     }
 
     /**
-     * Create an instance of the analyzer using the {@code templateClass} and
-     * the template {@code parser}.
+     * Create an instance of the analyzer using the {@code templateClass} and the template {@code parser}.
      *
      * @param templateClass
      *            a template type
@@ -193,8 +183,8 @@ public class TemplateDataAnalyzer {
      * @param service
      *            the related service instance
      */
-    TemplateDataAnalyzer(Class<? extends PolymerTemplate<?>> templateClass,
-            TemplateParser parser, VaadinService service) {
+    TemplateDataAnalyzer(Class<? extends PolymerTemplate<?>> templateClass, TemplateParser parser,
+            VaadinService service) {
         this.templateClass = templateClass;
         this.parser = parser;
         this.service = service;
@@ -207,8 +197,7 @@ public class TemplateDataAnalyzer {
      * @return the template data
      */
     PolymerParserData parseTemplate() {
-        TemplateData templateData = parser.getTemplateContent(templateClass,
-                tag, service);
+        TemplateData templateData = parser.getTemplateContent(templateClass, tag, service);
         Element templateRoot = templateData.getTemplateElement();
         modulePath = templateData.getModulePath();
         Elements templates = templateRoot.getElementsByTag("template");
@@ -220,8 +209,7 @@ public class TemplateDataAnalyzer {
                 inspectTwoWayBindings(element);
             }
         }
-        IdCollector idExtractor = new IdCollector(templateClass, modulePath,
-                templateRoot);
+        IdCollector idExtractor = new IdCollector(templateClass, modulePath, templateRoot);
         idExtractor.collectInjectedIds(notInjectableElementIds);
         return readData(idExtractor);
     }
@@ -263,31 +251,26 @@ public class TemplateDataAnalyzer {
     }
 
     private PolymerParserData readData(IdCollector idExtractor) {
-        return new PolymerParserData(idExtractor.getIdByField(),
-                idExtractor.getTagById(), idExtractor.getAttributes(),
+        return new PolymerParserData(idExtractor.getIdByField(), idExtractor.getTagById(), idExtractor.getAttributes(),
                 twoWayBindingPaths, subTemplates);
     }
 
     private String getTag(Class<? extends PolymerTemplate<?>> clazz) {
-        Optional<String> tagNameAnnotation = AnnotationReader
-                .getAnnotationFor(clazz, Tag.class).map(Tag::value);
+        Optional<String> tagNameAnnotation = AnnotationReader.getAnnotationFor(clazz, Tag.class).map(Tag::value);
         assert tagNameAnnotation.isPresent();
         return tagNameAnnotation.get();
     }
 
-    private void inspectCustomElements(org.jsoup.nodes.Element childElement,
-            org.jsoup.nodes.Element templateRoot) {
+    private void inspectCustomElements(org.jsoup.nodes.Element childElement, org.jsoup.nodes.Element templateRoot) {
         if (isInsideTemplate(childElement, templateRoot)) {
             storeNotInjectableElementId(childElement);
         }
 
         collectCustomElement(childElement, templateRoot);
-        childElement.children()
-                .forEach(child -> inspectCustomElements(child, templateRoot));
+        childElement.children().forEach(child -> inspectCustomElements(child, templateRoot));
     }
 
-    private void collectCustomElement(org.jsoup.nodes.Element element,
-            org.jsoup.nodes.Element templateRoot) {
+    private void collectCustomElement(org.jsoup.nodes.Element element, org.jsoup.nodes.Element templateRoot) {
         String tag = element.tagName();
 
         if (TemplateInitializer.getUsesClass(templateClass, tag).isPresent()) {
@@ -304,8 +287,7 @@ public class TemplateDataAnalyzer {
         }
     }
 
-    private JsonArray getPath(org.jsoup.nodes.Element element,
-            org.jsoup.nodes.Element templateRoot) {
+    private JsonArray getPath(org.jsoup.nodes.Element element, org.jsoup.nodes.Element templateRoot) {
         List<Integer> path = new ArrayList<>();
         org.jsoup.nodes.Element current = element;
         while (!current.equals(templateRoot)) {
@@ -321,12 +303,11 @@ public class TemplateDataAnalyzer {
     }
 
     /**
-     * Returns the index of the {@code child} in the collection of
-     * {@link org.jsoup.nodes.Element} children of the {@code parent} ignoring
-     * "style" elements.
+     * Returns the index of the {@code child} in the collection of {@link org.jsoup.nodes.Element} children of the
+     * {@code parent} ignoring "style" elements.
      * <p>
-     * "style" tag can be moved on the top in the resulting client side DOM
-     * regardless of its initial position (e.g. Chrome does this).
+     * "style" tag can be moved on the top in the resulting client side DOM regardless of its initial position (e.g.
+     * Chrome does this).
      *
      * @param parent
      *            the parent of the {@code child}
@@ -334,8 +315,7 @@ public class TemplateDataAnalyzer {
      *            the child element whose index is calculated
      * @return the index of the {@code child} in the {@code parent}
      */
-    private static int indexOf(org.jsoup.nodes.Element parent,
-            org.jsoup.nodes.Element child) {
+    private static int indexOf(org.jsoup.nodes.Element parent, org.jsoup.nodes.Element child) {
         Elements children = parent.children();
         int index = -1;
         for (org.jsoup.nodes.Element nextChild : children) {
@@ -356,8 +336,7 @@ public class TemplateDataAnalyzer {
         }
     }
 
-    private boolean isInsideTemplate(org.jsoup.nodes.Element element,
-            org.jsoup.nodes.Element templateRoot) {
+    private boolean isInsideTemplate(org.jsoup.nodes.Element element, org.jsoup.nodes.Element templateRoot) {
         if (element == templateRoot) {
             return false;
         }

@@ -55,14 +55,12 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     /*
      * Attribute key for storing Dev Mode Handler startup flag.
      *
-     * If presented in Servlet Context, shows the Dev Mode Handler already
-     * started / become starting. This attribute helps to avoid Dev Mode running
-     * twice.
+     * If presented in Servlet Context, shows the Dev Mode Handler already started / become starting. This attribute
+     * helps to avoid Dev Mode running twice.
      *
      * Addresses the issue https://github.com/vaadin/spring/issues/502
      */
-    private static final class DevModeHandlerAlreadyStartedAttribute
-            implements Serializable {
+    private static final class DevModeHandlerAlreadyStartedAttribute implements Serializable {
     }
 
     private DevModeHandler devModeHandler;
@@ -74,16 +72,14 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     @Override
     public Class<?>[] getHandlesTypes() {
-        return DevModeStartupListener.class.getAnnotation(HandlesTypes.class)
-                .value();
+        return DevModeStartupListener.class.getAnnotation(HandlesTypes.class).value();
     }
 
     @Override
     public void setDevModeHandler(DevModeHandler devModeHandler) {
         if (this.devModeHandler != null) {
             throw new IllegalStateException(
-                    "Unable to initialize dev mode handler. A handler is already present: "
-                            + this.devModeHandler);
+                    "Unable to initialize dev mode handler. A handler is already present: " + this.devModeHandler);
         }
         this.devModeHandler = devModeHandler;
     }
@@ -94,10 +90,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     @Override
-    public void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
-            throws VaadinInitializerException {
-        setDevModeHandler(
-                DevModeInitializer.initDevModeHandler(classes, context));
+    public void initDevModeHandler(Set<Class<?>> classes, VaadinContext context) throws VaadinInitializerException {
+        setDevModeHandler(DevModeInitializer.initDevModeHandler(classes, context));
         CompletableFuture.runAsync(() -> {
             DevModeHandler devModeHandler = getDevModeHandler();
             if (devModeHandler instanceof AbstractDevServerRunner) {
@@ -106,8 +100,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
                 devBundleBuilder.waitForDevBundle();
             }
 
-            ApplicationConfiguration config = ApplicationConfiguration
-                    .get(context);
+            ApplicationConfiguration config = ApplicationConfiguration.get(context);
             startWatchingThemeFolder(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
@@ -116,18 +109,14 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         this.browserLauncher = new BrowserLauncher(context);
     }
 
-    private void watchExternalDependencies(VaadinContext context,
-            ApplicationConfiguration config) {
+    private void watchExternalDependencies(VaadinContext context, ApplicationConfiguration config) {
         File frontendFolder = FrontendUtils.getProjectFrontendDir(config);
-        File jarFrontendResourcesFolder = FrontendUtils
-                .getJarResourcesFolder(frontendFolder);
-        registerWatcherShutdownCommand(new ExternalDependencyWatcher(context,
-                jarFrontendResourcesFolder));
+        File jarFrontendResourcesFolder = FrontendUtils.getJarResourcesFolder(frontendFolder);
+        registerWatcherShutdownCommand(new ExternalDependencyWatcher(context, jarFrontendResourcesFolder));
 
     }
 
-    private void startWatchingThemeFolder(VaadinContext context,
-            ApplicationConfiguration config) {
+    private void startWatchingThemeFolder(VaadinContext context, ApplicationConfiguration config) {
 
         if (config.getMode() != Mode.DEVELOPMENT_BUNDLE) {
             // Theme files are watched by Vite or app runs in prod mode
@@ -138,16 +127,13 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             Optional<String> maybeThemeName = ThemeUtils.getThemeName(context);
 
             if (maybeThemeName.isEmpty()) {
-                getLogger().debug("Found no custom theme in the project. "
-                        + "Skipping watching the theme files");
+                getLogger().debug("Found no custom theme in the project. " + "Skipping watching the theme files");
                 return;
             }
             List<String> activeThemes = ThemeUtils.getActiveThemes(context);
             for (String themeName : activeThemes) {
-                File themeFolder = ThemeUtils.getThemeFolder(
-                        FrontendUtils.getProjectFrontendDir(config), themeName);
-                registerWatcherShutdownCommand(
-                        new ThemeLiveUpdater(themeFolder, context));
+                File themeFolder = ThemeUtils.getThemeFolder(FrontendUtils.getProjectFrontendDir(config), themeName);
+                registerWatcherShutdownCommand(new ThemeLiveUpdater(themeFolder, context));
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
@@ -163,8 +149,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             try {
                 shutdownCommand.execute();
             } catch (Exception e) {
-                getLogger().error("Failed to execute shut down command {}",
-                        shutdownCommand.getClass().getName(), e);
+                getLogger().error("Failed to execute shut down command {}", shutdownCommand.getClass().getName(), e);
             }
         }
         shutdownCommands.clear();
@@ -194,8 +179,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     private void setDevModeStarted(VaadinContext context) {
-        context.setAttribute(DevModeHandlerAlreadyStartedAttribute.class,
-                new DevModeHandlerAlreadyStartedAttribute());
+        context.setAttribute(DevModeHandlerAlreadyStartedAttribute.class, new DevModeHandlerAlreadyStartedAttribute());
     }
 
     private void registerWatcherShutdownCommand(Closeable watcher) {
@@ -203,8 +187,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             try {
                 watcher.close();
             } catch (Exception e) {
-                getLogger().error("Failed to stop watcher {}",
-                        watcher.getClass().getName(), e);
+                getLogger().error("Failed to stop watcher {}", watcher.getClass().getName(), e);
             }
         });
     }
@@ -219,13 +202,11 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
      *
      * @param context
      *            The {@link VaadinContext}, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandler} has already been
-     *         started, <code>false</code> - otherwise
+     * @return <code>true</code> if {@link DevModeHandler} has already been started, <code>false</code> - otherwise
      */
     public static boolean isDevModeAlreadyStarted(VaadinContext context) {
         assert context != null;
-        return context.getAttribute(
-                DevModeHandlerAlreadyStartedAttribute.class) != null;
+        return context.getAttribute(DevModeHandlerAlreadyStartedAttribute.class) != null;
     }
 
     private static Logger getLogger() {

@@ -41,8 +41,8 @@ import elemental.json.JsonObject;
 public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     /**
-     * Keeps track of whether a warning update has already been logged. This is
-     * used to avoid spamming the log with the same message.
+     * Keeps track of whether a warning update has already been logged. This is used to avoid spamming the log with the
+     * same message.
      */
     protected static boolean warningEmitted = false;
 
@@ -54,9 +54,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private static final String VERSION = "_version";
     private static final String ES_TARGET_VERSION = "target";
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-%s.json";
-    private static final String[] tsconfigVersions = { "latest", "v23.3.0.1",
-            "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4",
-            "v23.3.4-hilla" };
+    private static final String[] tsconfigVersions = { "latest", "v23.3.0.1", "v23.3.0", "v23.2", "v23.1", "v22", "v14",
+            "osgi", "v23.3.4", "v23.3.4-hilla" };
 
     static final String ERROR_MESSAGE = """
 
@@ -87,23 +86,18 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         return getFileContentForVersion("latest");
     }
 
-    private String getFileContentForVersion(String vaadinVersion)
-            throws IOException {
+    private String getFileContentForVersion(String vaadinVersion) throws IOException {
         String fileName;
         if ("latest".equals(vaadinVersion)) {
             fileName = TSCONFIG_JSON;
         } else {
-            fileName = String.format(TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE,
-                    vaadinVersion);
+            fileName = String.format(TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE, vaadinVersion);
         }
-        try (InputStream tsConfStream = getClass()
-                .getResourceAsStream(fileName)) {
+        try (InputStream tsConfStream = getClass().getResourceAsStream(fileName)) {
             String config = IOUtils.toString(tsConfStream, UTF_8);
 
-            config = config.replaceAll("%FRONTEND%",
-                    options.getNpmFolder().toPath()
-                            .relativize(options.getFrontendDirectory().toPath())
-                            .toString().replaceAll("\\\\", "/"));
+            config = config.replaceAll("%FRONTEND%", options.getNpmFolder().toPath()
+                    .relativize(options.getFrontendDirectory().toPath()).toString().replaceAll("\\\\", "/"));
             return config;
         }
     }
@@ -120,10 +114,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private void ensureTarget(String esVersion) {
         try {
-            File projectTsconfig = new File(options.getNpmFolder(),
-                    TSCONFIG_JSON);
-            String current = FileUtils.readFileToString(projectTsconfig,
-                    StandardCharsets.UTF_8);
+            File projectTsconfig = new File(options.getNpmFolder(), TSCONFIG_JSON);
+            String current = FileUtils.readFileToString(projectTsconfig, StandardCharsets.UTF_8);
             String currentEsVersion = getEsTargetVersion(current);
             if (isOlder(currentEsVersion, esVersion)) {
                 current = current.replace(currentEsVersion, esVersion);
@@ -147,8 +139,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             String defaultTsConfig = getFileContent();
             return getEsTargetVersion(defaultTsConfig);
         } catch (Exception e) {
-            throw new ExecutionFailedException(
-                    "Error finding default es target value", e);
+            throw new ExecutionFailedException("Error finding default es target value", e);
         }
 
     }
@@ -177,10 +168,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private void overrideIfObsolete() throws ExecutionFailedException {
         try {
             // Project's TS config
-            File projectTsConfigFile = new File(
-                    options.getNpmFolder().getPath(), TSCONFIG_JSON);
-            String projectTsConfigAsString = FileUtils
-                    .readFileToString(projectTsConfigFile, UTF_8);
+            File projectTsConfigFile = new File(options.getNpmFolder().getPath(), TSCONFIG_JSON);
+            String projectTsConfigAsString = FileUtils.readFileToString(projectTsConfigFile, UTF_8);
 
             JsonObject projectTsConfigContent;
             try {
@@ -193,14 +182,11 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
             // Newest TS config template in Flow
             String latestTsConfigTemplate = getFileContent();
-            JsonObject latestTsConfigTemplateJson = parseTsConfig(
-                    latestTsConfigTemplate);
+            JsonObject latestTsConfigTemplateJson = parseTsConfig(latestTsConfigTemplate);
 
-            String projectTsConfigVersion = getConfigVersion(
-                    projectTsConfigContent);
+            String projectTsConfigVersion = getConfigVersion(projectTsConfigContent);
             if (projectTsConfigVersion != null) {
-                String templateVersion = getConfigVersion(
-                        latestTsConfigTemplateJson);
+                String templateVersion = getConfigVersion(latestTsConfigTemplateJson);
 
                 // If the project has a newest version of TS config - do nothing
                 if (templateVersion.equals(projectTsConfigVersion)) {
@@ -210,28 +196,22 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
             // TS config is of an old version
             for (String tsconfigVersion : tsconfigVersions) {
-                String oldTsConfigContent = getFileContentForVersion(
-                        tsconfigVersion);
-                JsonObject tsConfigTemplateJson = parseTsConfig(
-                        oldTsConfigContent);
-                if (tsConfigsEqual(tsConfigTemplateJson,
-                        projectTsConfigContent)) {
+                String oldTsConfigContent = getFileContentForVersion(tsconfigVersion);
+                JsonObject tsConfigTemplateJson = parseTsConfig(oldTsConfigContent);
+                if (tsConfigsEqual(tsConfigTemplateJson, projectTsConfigContent)) {
                     // Found exact match with the one of templates -
                     // just rewrite silently
-                    FileIOUtils.writeIfChanged(projectTsConfigFile,
-                            latestTsConfigTemplate);
+                    FileIOUtils.writeIfChanged(projectTsConfigFile, latestTsConfigTemplate);
                     return;
                 }
             }
 
-            File backupFile = File.createTempFile(
-                    projectTsConfigFile.getName() + ".", ".bak",
+            File backupFile = File.createTempFile(projectTsConfigFile.getName() + ".", ".bak",
                     projectTsConfigFile.getParentFile());
             FileIOUtils.writeIfChanged(backupFile, projectTsConfigAsString);
             // Project's TS config has a custom content -
             // rewrite and throw an exception with explanations
-            FileIOUtils.writeIfChanged(projectTsConfigFile,
-                    latestTsConfigTemplate);
+            FileIOUtils.writeIfChanged(projectTsConfigFile, latestTsConfigTemplate);
             if (!warningEmitted) {
                 log().warn(ERROR_MESSAGE);
                 warningEmitted = true;
@@ -251,23 +231,20 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         return null;
     }
 
-    private boolean tsConfigsEqual(JsonObject template,
-            JsonObject projectTsConfig) {
+    private boolean tsConfigsEqual(JsonObject template, JsonObject projectTsConfig) {
         // exclude ES version from comparison, because it
         // might be different for webpack and vite
         if (template.hasKey(COMPILER_OPTIONS)) {
             template.getObject(COMPILER_OPTIONS).remove(ES_TARGET_VERSION);
         }
         if (projectTsConfig.hasKey(COMPILER_OPTIONS)) {
-            projectTsConfig.getObject(COMPILER_OPTIONS)
-                    .remove(ES_TARGET_VERSION);
+            projectTsConfig.getObject(COMPILER_OPTIONS).remove(ES_TARGET_VERSION);
         }
 
         // exclude tsconfig version, because it's already compared
         template.remove(VERSION);
         projectTsConfig.remove(VERSION);
-        return removeWhiteSpaces(template.toJson())
-                .equals(removeWhiteSpaces(projectTsConfig.toJson()));
+        return removeWhiteSpaces(template.toJson()).equals(removeWhiteSpaces(projectTsConfig.toJson()));
     }
 
     private String removeWhiteSpaces(String content) {

@@ -21,8 +21,7 @@ import java.util.stream.Stream;
 /**
  * A dummy data provider for testing item replacement and stale elements.
  */
-public class ReplaceListDataProvider
-        extends AbstractDataProvider<StrBean, Void> {
+public class ReplaceListDataProvider extends AbstractDataProvider<StrBean, Void> {
 
     private final List<StrBean> backend;
 
@@ -69,8 +68,7 @@ public class ReplaceListDataProvider
     public boolean isStale(StrBean item) {
         Object id = getId(item);
         boolean itemExistsInBackEnd = backend.contains(item);
-        boolean backEndHasInstanceWithSameId = backend.stream().map(this::getId)
-                .filter(i -> id.equals(i)).count() == 1;
+        boolean backEndHasInstanceWithSameId = backend.stream().map(this::getId).filter(i -> id.equals(i)).count() == 1;
         return !itemExistsInBackEnd && backEndHasInstanceWithSameId;
     }
 

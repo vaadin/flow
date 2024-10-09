@@ -35,11 +35,9 @@ public class Attributes implements Serializable {
      * @see #getAttribute(String)
      *
      * @param name
-     *            the name to associate the value with, can not be
-     *            <code>null</code>
+     *            the name to associate the value with, can not be <code>null</code>
      * @param value
-     *            the value to associate with the name, or <code>null</code> to
-     *            remove a previous association.
+     *            the value to associate with the name, or <code>null</code> to remove a previous association.
      */
     public void setAttribute(String name, Object value) {
         if (name == null) {
@@ -53,11 +51,10 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Stores a value in this set. Setting the value to <code>null</code> clears
-     * the stored value.
+     * Stores a value in this set. Setting the value to <code>null</code> clears the stored value.
      * <p>
-     * The fully qualified name of the type is used as the name when storing the
-     * value. The outcome of calling this method is thus the same as if calling
+     * The fully qualified name of the type is used as the name when storing the value. The outcome of calling this
+     * method is thus the same as if calling
      * <p>
      * <code>setAttribute(type.getName(), value);</code>
      *
@@ -69,30 +66,27 @@ public class Attributes implements Serializable {
      * @param type
      *            the type that the stored value represents, can not be null
      * @param value
-     *            the value to associate with the type, or <code>null</code> to
-     *            remove a previous association.
+     *            the value to associate with the type, or <code>null</code> to remove a previous association.
      */
     public <T> void setAttribute(Class<T> type, T value) {
         if (type == null) {
             throw new IllegalArgumentException("type can not be null");
         }
         if (value != null && !type.isInstance(value)) {
-            throw new IllegalArgumentException("value of type " + type.getName()
-                    + " expected but got " + value.getClass().getName());
+            throw new IllegalArgumentException(
+                    "value of type " + type.getName() + " expected but got " + value.getClass().getName());
         }
         setAttribute(type.getName(), value);
     }
 
     /**
-     * Gets a stored attribute value. If no value is stored for the name,
-     * <code>null</code> is returned.
+     * Gets a stored attribute value. If no value is stored for the name, <code>null</code> is returned.
      *
      * @see #setAttribute(String, Object)
      *
      * @param name
      *            the name of the value to get, can not be <code>null</code>.
-     * @return the value, or <code>null</code> if no value has been stored or if
-     *         it has been set to null.
+     * @return the value, or <code>null</code> if no value has been stored or if it has been set to null.
      */
     public Object getAttribute(String name) {
         if (name == null) {
@@ -102,12 +96,10 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Gets a stored attribute value. If no value is stored for the name,
-     * <code>null</code> is returned.
+     * Gets a stored attribute value. If no value is stored for the name, <code>null</code> is returned.
      * <p>
-     * The fully qualified name of the type is used as the name when getting the
-     * value. The outcome of calling this method is thus the same as if calling
-     * <br>
+     * The fully qualified name of the type is used as the name when getting the value. The outcome of calling this
+     * method is thus the same as if calling <br>
      * <br>
      * <code>getAttribute(type.getName());</code>
      *
@@ -118,8 +110,7 @@ public class Attributes implements Serializable {
      *            the attribute type
      * @param type
      *            the type of the value to get, can not be <code>null</code>.
-     * @return the value, or <code>null</code> if no value has been stored or if
-     *         it has been set to null.
+     * @return the value, or <code>null</code> if no value has been stored or if it has been set to null.
      */
     public <T> T getAttribute(Class<T> type) {
         if (type == null) {

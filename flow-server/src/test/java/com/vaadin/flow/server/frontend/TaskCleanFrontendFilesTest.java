@@ -37,18 +37,12 @@ public class TaskCleanFrontendFilesTest {
     }
 
     @Test
-    public void createdFileAreRemoved()
-            throws IOException, ExecutionFailedException {
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory, classFinder);
+    public void createdFileAreRemoved() throws IOException, ExecutionFailedException {
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory, classFinder);
 
-        final Set<String> generatedFiles = Stream
-                .of(FrontendUtils.VITE_CONFIG,
-                        FrontendUtils.VITE_GENERATED_CONFIG, "node_modules",
-                        Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
-                        TaskGenerateTsConfig.TSCONFIG_JSON,
-                        TaskGenerateTsDefinitions.TS_DEFINITIONS, ".npmrc")
-                .collect(Collectors.toSet());
+        final Set<String> generatedFiles = Stream.of(FrontendUtils.VITE_CONFIG, FrontendUtils.VITE_GENERATED_CONFIG,
+                "node_modules", Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON, TaskGenerateTsConfig.TSCONFIG_JSON,
+                TaskGenerateTsDefinitions.TS_DEFINITIONS, ".npmrc").collect(Collectors.toSet());
         createFiles(generatedFiles);
 
         clean.execute();
@@ -57,21 +51,16 @@ public class TaskCleanFrontendFilesTest {
     }
 
     @Test
-    public void existingFrontendFiles_onlyCreatedFileAreRemoved()
-            throws IOException, ExecutionFailedException {
+    public void existingFrontendFiles_onlyCreatedFileAreRemoved() throws IOException, ExecutionFailedException {
         final Set<String> existingfiles = Stream
-                .of(FrontendUtils.VITE_CONFIG, Constants.PACKAGE_JSON,
-                        "node_modules", Constants.PACKAGE_LOCK_JSON)
+                .of(FrontendUtils.VITE_CONFIG, Constants.PACKAGE_JSON, "node_modules", Constants.PACKAGE_LOCK_JSON)
                 .collect(Collectors.toSet());
         createFiles(existingfiles);
 
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory, classFinder);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory, classFinder);
 
-        final Set<String> generatedFiles = Stream
-                .of(FrontendUtils.VITE_GENERATED_CONFIG,
-                        TaskGenerateTsConfig.TSCONFIG_JSON,
-                        TaskGenerateTsDefinitions.TS_DEFINITIONS, ".npmrc")
+        final Set<String> generatedFiles = Stream.of(FrontendUtils.VITE_GENERATED_CONFIG,
+                TaskGenerateTsConfig.TSCONFIG_JSON, TaskGenerateTsDefinitions.TS_DEFINITIONS, ".npmrc")
                 .collect(Collectors.toSet());
         createFiles(generatedFiles);
 
@@ -82,10 +71,8 @@ public class TaskCleanFrontendFilesTest {
     }
 
     @Test
-    public void nodeModulesFolderIsCleared()
-            throws IOException, ExecutionFailedException {
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory, classFinder);
+    public void nodeModulesFolderIsCleared() throws IOException, ExecutionFailedException {
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory, classFinder);
 
         final File nodeModules = rootFolder.newFolder("node_modules");
         new File(nodeModules, "file").createNewFile();
@@ -99,11 +86,9 @@ public class TaskCleanFrontendFilesTest {
     }
 
     @Test
-    public void packageJsonExists_nodeModulesFolderIsKept()
-            throws IOException, ExecutionFailedException {
+    public void packageJsonExists_nodeModulesFolderIsKept() throws IOException, ExecutionFailedException {
         createFiles(Collections.singleton(Constants.PACKAGE_JSON));
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory, classFinder);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory, classFinder);
 
         final File nodeModules = rootFolder.newFolder("node_modules");
         new File(nodeModules, "file").createNewFile();
@@ -117,15 +102,11 @@ public class TaskCleanFrontendFilesTest {
     }
 
     @Test
-    public void hillaIsUsed_nodeModulesFolderIsKept()
-            throws IOException, ExecutionFailedException {
+    public void hillaIsUsed_nodeModulesFolderIsKept() throws IOException, ExecutionFailedException {
         TaskCleanFrontendFiles clean;
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
-            clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory,
-                    classFinder);
+        try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(FrontendUtils.class)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(), Mockito.any(ClassFinder.class))).thenReturn(true);
+            clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory, classFinder);
         }
 
         final File nodeModules = rootFolder.newFolder("node_modules");
@@ -156,9 +137,7 @@ public class TaskCleanFrontendFilesTest {
         if (!existingFiles.isEmpty()) {
             StringBuilder fileList = new StringBuilder();
             existingFiles.forEach(file -> fileList.append(file).append("\n"));
-            Assert.fail(String.format(
-                    "Found files that should have been removed: %s\n",
-                    fileList));
+            Assert.fail(String.format("Found files that should have been removed: %s\n", fileList));
         }
     }
 
@@ -173,8 +152,7 @@ public class TaskCleanFrontendFilesTest {
         if (!existingFiles.isEmpty()) {
             StringBuilder fileList = new StringBuilder();
             existingFiles.forEach(file -> fileList.append(file).append("\n"));
-            Assert.fail(String.format("Missing files that should exist: %s\n",
-                    fileList));
+            Assert.fail(String.format("Missing files that should exist: %s\n", fileList));
         }
     }
 }

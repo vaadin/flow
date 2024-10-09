@@ -20,12 +20,10 @@ public class PushToggleComponentVisibilityIT extends ChromeBrowserTest {
         open();
 
         $(TestBenchElement.class).id(HIDE).click();
-        Assert.assertEquals("Please wait",
-                $(TestBenchElement.class).id("label").getText());
+        Assert.assertEquals("Please wait", $(TestBenchElement.class).id("label").getText());
 
         waitUntil(driver -> isElementPresent(By.id(HIDE)));
         $(TestBenchElement.class).id(HIDE).click();
-        Assert.assertEquals("Please wait",
-                $(TestBenchElement.class).id("label").getText());
+        Assert.assertEquals("Please wait", $(TestBenchElement.class).id("label").getText());
     }
 }

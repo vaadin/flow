@@ -40,8 +40,7 @@ public class TestResourceProvider implements ResourceProvider {
     }
 
     @Override
-    public InputStream getClientResourceAsStream(String path)
-            throws IOException {
+    public InputStream getClientResourceAsStream(String path) throws IOException {
         return null;
     }
 

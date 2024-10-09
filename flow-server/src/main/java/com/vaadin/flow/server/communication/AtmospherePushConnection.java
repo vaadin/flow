@@ -39,16 +39,14 @@ import com.vaadin.flow.shared.communication.PushConstants;
 import elemental.json.JsonObject;
 
 /**
- * A {@link PushConnection} implementation using the Atmosphere push support
- * that is by default included in Vaadin.
+ * A {@link PushConnection} implementation using the Atmosphere push support that is by default included in Vaadin.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class AtmospherePushConnection
-        implements PushConnection, FragmentedMessageHolder {
+public class AtmospherePushConnection implements PushConnection, FragmentedMessageHolder {
 
     private UI ui;
     private transient State state = State.DISCONNECTED;
@@ -69,8 +67,8 @@ public class AtmospherePushConnection
         /**
          * Creates a message by reading from the given reader.
          * <p>
-         * Immediately reads the length of the message (up until
-         * {@value PushConstants#MESSAGE_DELIMITER}) from the reader.
+         * Immediately reads the length of the message (up until {@value PushConstants#MESSAGE_DELIMITER}) from the
+         * reader.
          */
         public FragmentedMessage() {
         }
@@ -80,8 +78,7 @@ public class AtmospherePushConnection
             // delimiter
             String length = "";
             int c;
-            while ((c = reader.read()) != -1
-                    && c != PushConstants.MESSAGE_DELIMITER) {
+            while ((c = reader.read()) != -1 && c != PushConstants.MESSAGE_DELIMITER) {
                 length += (char) c;
             }
             try {
@@ -92,8 +89,7 @@ public class AtmospherePushConnection
         }
 
         /**
-         * Appends all the data from the given Reader to this message and
-         * returns whether the message was completed.
+         * Appends all the data from the given Reader to this message and returns whether the message was completed.
          *
          * @param reader
          *            The Reader from which to read.
@@ -110,8 +106,8 @@ public class AtmospherePushConnection
             int read;
             while ((read = reader.read(buffer)) != -1) {
                 message.append(buffer, 0, read);
-                assert message.length() <= messageLength : "Received message "
-                        + message.length() + "chars, expected " + messageLength;
+                assert message.length() <= messageLength
+                        : "Received message " + message.length() + "chars, expected " + messageLength;
             }
             return message.length() == messageLength;
         }
@@ -123,21 +119,18 @@ public class AtmospherePushConnection
 
     protected enum State {
         /**
-         * Not connected. Trying to push will set the connection state to
-         * PUSH_PENDING or RESPONSE_PENDING and defer sending the message until
-         * a connection is established.
+         * Not connected. Trying to push will set the connection state to PUSH_PENDING or RESPONSE_PENDING and defer
+         * sending the message until a connection is established.
          */
         DISCONNECTED,
 
         /**
-         * Not connected. An asynchronous push is pending the opening of the
-         * connection.
+         * Not connected. An asynchronous push is pending the opening of the connection.
          */
         PUSH_PENDING,
 
         /**
-         * Not connected. A response to a client request is pending the opening
-         * of the connection.
+         * Not connected. A response to a client request is pending the opening of the connection.
          */
         RESPONSE_PENDING,
 
@@ -156,13 +149,11 @@ public class AtmospherePushConnection
     public AtmospherePushConnection(UI ui) {
         this.ui = ui;
 
-        UsageStatistics.markAsUsed("flow/AtmospherePushConnection",
-                getAtmosphereVersion());
+        UsageStatistics.markAsUsed("flow/AtmospherePushConnection", getAtmosphereVersion());
     }
 
     /**
-     * Gets the Atmosphere version in use, as reported by
-     * {@link Version#getRawVersion()}.
+     * Gets the Atmosphere version in use, as reported by {@link Version#getRawVersion()}.
      *
      * @return the Atmosphere version in use or null if Atmosphere was not found
      */
@@ -182,19 +173,17 @@ public class AtmospherePushConnection
     }
 
     /**
-     * Pushes pending state changes and client RPC calls to the client. If
-     * {@code isConnected()} is false, defers the push until a connection is
-     * established.
+     * Pushes pending state changes and client RPC calls to the client. If {@code isConnected()} is false, defers the
+     * push until a connection is established.
      *
      * @param async
-     *            True if this push asynchronously originates from the server,
-     *            false if it is a response to a client request.
+     *            True if this push asynchronously originates from the server, false if it is a response to a client
+     *            request.
      */
     public void push(boolean async) {
         if (disconnecting || !isConnected()) {
             if (disconnecting) {
-                getLogger().debug(
-                        "Disconnection in progress, ignoring push request");
+                getLogger().debug("Disconnection in progress, ignoring push request");
             }
             if (async && state != State.RESPONSE_PENDING) {
                 state = State.PUSH_PENDING;
@@ -204,8 +193,7 @@ public class AtmospherePushConnection
         } else {
             synchronized (lock) {
                 try {
-                    JsonObject response = new UidlWriter().createUidl(getUI(),
-                            async);
+                    JsonObject response = new UidlWriter().createUidl(getUI(), async);
                     sendMessage("for(;;);[" + response.toJson() + "]");
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
@@ -215,8 +203,7 @@ public class AtmospherePushConnection
     }
 
     /**
-     * Sends the given message to the current client. Cannot be called if
-     * {@link #isConnected()} returns false.
+     * Sends the given message to the current client. Cannot be called if {@link #isConnected()} returns false.
      *
      * @param message
      *            The message to send
@@ -224,16 +211,13 @@ public class AtmospherePushConnection
     protected void sendMessage(String message) {
         assert (isConnected());
         // "Broadcast" the changes to the single client only
-        outgoingMessage = getResource().getBroadcaster().broadcast(
-                new PushMessage(ui.getInternals().getServerSyncId() - 1,
-                        message),
-                getResource());
+        outgoingMessage = getResource().getBroadcaster()
+                .broadcast(new PushMessage(ui.getInternals().getServerSyncId() - 1, message), getResource());
     }
 
     /**
-     * Reads and buffers a (possibly partial) message. If a complete message was
-     * received, or if the call resulted in the completion of a partially
-     * received message, returns a {@link Reader} yielding the complete message.
+     * Reads and buffers a (possibly partial) message. If a complete message was received, or if the call resulted in
+     * the completion of a partially received message, returns a {@link Reader} yielding the complete message.
      * Otherwise, returns null.
      *
      * @param resource
@@ -242,15 +226,13 @@ public class AtmospherePushConnection
      *            The request body reader
      * @param holder
      *            A holder for a previously received partial message
-     * @return A Reader yielding a complete message or null if the message is
-     *         not yet complete.
+     * @return A Reader yielding a complete message or null if the message is not yet complete.
      * @throws IOException
      *             if an IO error occurred
-     * @return a Reader yielding the complete message, or {@code null} if the
-     *         received message was a partial message
+     * @return a Reader yielding the complete message, or {@code null} if the received message was a partial message
      */
-    protected static Reader receiveMessage(AtmosphereResource resource,
-            Reader reader, FragmentedMessageHolder holder) throws IOException {
+    protected static Reader receiveMessage(AtmosphereResource resource, Reader reader, FragmentedMessageHolder holder)
+            throws IOException {
 
         if (resource == null || resource.transport() != TRANSPORT.WEBSOCKET) {
             return reader;
@@ -275,10 +257,9 @@ public class AtmospherePushConnection
     }
 
     /**
-     * Associates this {@code AtmospherePushConnection} with the given
-     * {@link AtmosphereResource} representing an established push connection.
-     * If already connected, calls {@link #disconnect()} first. If there is a
-     * deferred push, carries it out via the new connection.
+     * Associates this {@code AtmospherePushConnection} with the given {@link AtmosphereResource} representing an
+     * established push connection. If already connected, calls {@link #disconnect()} first. If there is a deferred
+     * push, carries it out via the new connection.
      *
      * @param resource
      *            the resource to associate this connection with
@@ -296,8 +277,7 @@ public class AtmospherePushConnection
         State oldState = state;
         state = State.CONNECTED;
 
-        if (oldState == State.PUSH_PENDING
-                || oldState == State.RESPONSE_PENDING) {
+        if (oldState == State.PUSH_PENDING || oldState == State.RESPONSE_PENDING) {
             // Sending a "response" message (async=false) also takes care of a
             // pending push, but not vice versa
             push(oldState == State.PUSH_PENDING);
@@ -312,8 +292,7 @@ public class AtmospherePushConnection
     }
 
     /**
-     * @return The AtmosphereResource associated with this connection or null if
-     *         connection not open.
+     * @return The AtmosphereResource associated with this connection or null if connection not open.
      */
     protected AtmosphereResource getResource() {
         return resource;
@@ -326,8 +305,7 @@ public class AtmospherePushConnection
         // container acquires locks during operations on HTTP session, as
         // closing the AtmosphereResource may cause HTTP session access
         if (disconnecting) {
-            getLogger().debug(
-                    "Disconnection already in progress, ignoring request");
+            getLogger().debug("Disconnection already in progress, ignoring request");
             return;
         }
 
@@ -335,8 +313,7 @@ public class AtmospherePushConnection
             if (!isConnected() || resource == null) {
                 // Already disconnected. Should not happen but if it does,
                 // we don't want to cause NPEs
-                getLogger().debug(
-                        "Disconnection already happened, ignoring request");
+                getLogger().debug("Disconnection already happened, ignoring request");
                 return;
             }
             try {
@@ -358,14 +335,10 @@ public class AtmospherePushConnection
                             getLogger().debug(
                                     "Something was not sent to client on an UI that was already closed by beacon request or similar. This seems to happen with Safari occassionally when navigating away from a UI.");
                         } else {
-                            getLogger().info(
-                                    "Timeout waiting for messages to be sent to client before disconnect",
-                                    e);
+                            getLogger().info("Timeout waiting for messages to be sent to client before disconnect", e);
                         }
                     } catch (Exception e) {
-                        getLogger().info(
-                                "Error waiting for messages to be sent to client before disconnect",
-                                e);
+                        getLogger().info("Error waiting for messages to be sent to client before disconnect", e);
                     }
                     outgoingMessage = null;
                 }
@@ -397,8 +370,7 @@ public class AtmospherePushConnection
     }
 
     @Override
-    public FragmentedMessage getOrCreateFragmentedMessage(
-            AtmosphereResource resource) {
+    public FragmentedMessage getOrCreateFragmentedMessage(AtmosphereResource resource) {
         if (incomingMessage == null) {
             incomingMessage = new FragmentedMessage();
         }
@@ -420,9 +392,8 @@ public class AtmospherePushConnection
     }
 
     /**
-     * Reinitializes this PushConnection after deserialization. The connection
-     * is initially in disconnected state; the client will handle the
-     * reconnecting.
+     * Reinitializes this PushConnection after deserialization. The connection is initially in disconnected state; the
+     * client will handle the reconnecting.
      *
      * @param stream
      *            the object to read
@@ -431,8 +402,7 @@ public class AtmospherePushConnection
      * @throws ClassNotFoundException
      *             if the class of the stream object could not be found
      */
-    private void readObject(ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
         disconnecting = false;
@@ -440,19 +410,16 @@ public class AtmospherePushConnection
     }
 
     private static Logger getLogger() {
-        return LoggerFactory
-                .getLogger(AtmospherePushConnection.class.getName());
+        return LoggerFactory.getLogger(AtmospherePushConnection.class.getName());
     }
 
     /**
-     * Internal method used for reconfiguring loggers to show all Atmosphere log
-     * messages in the console.
+     * Internal method used for reconfiguring loggers to show all Atmosphere log messages in the console.
      *
      */
     public static void enableAtmosphereDebugLogging() {
-        getLogger().warn(
-                "Enable logging of 'org.atmosphere' through your slf4j implementation"
-                        + " instead (i.e.: logback, log4j, etc)");
+        getLogger().warn("Enable logging of 'org.atmosphere' through your slf4j implementation"
+                + " instead (i.e.: logback, log4j, etc)");
     }
 
     static final class PushMessage implements Serializable {
@@ -470,14 +437,13 @@ public class AtmospherePushConnection
     }
 
     /**
-     * A {@link org.atmosphere.cpr.BroadcastFilter} that unwraps the message to
-     * be sent to the client from a {@link PushMessage} instance.
+     * A {@link org.atmosphere.cpr.BroadcastFilter} that unwraps the message to be sent to the client from a
+     * {@link PushMessage} instance.
      */
-    static final class PushMessageUnwrapFilter extends BroadcastFilterAdapter
-            implements Serializable {
+    static final class PushMessageUnwrapFilter extends BroadcastFilterAdapter implements Serializable {
         @Override
-        public BroadcastAction filter(String broadcasterId,
-                AtmosphereResource r, Object originalMessage, Object message) {
+        public BroadcastAction filter(String broadcasterId, AtmosphereResource r, Object originalMessage,
+                Object message) {
             if (message instanceof AtmospherePushConnection.PushMessage) {
                 message = ((PushMessage) message).message;
             }

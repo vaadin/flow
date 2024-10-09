@@ -53,15 +53,13 @@ public class DefaultInstantiatorI18NTest {
     private ClassLoader urlClassLoader;
 
     @Before
-    public void init()
-            throws IOException, NoSuchFieldException, IllegalAccessException {
+    public void init() throws IOException, NoSuchFieldException, IllegalAccessException {
         File resources = temporaryFolder.newFolder();
 
         translations = new File(resources, DefaultI18NProvider.BUNDLE_FOLDER);
         translations.mkdirs();
 
-        urlClassLoader = new URLClassLoader(
-                new URL[] { resources.toURI().toURL() });
+        urlClassLoader = new URLClassLoader(new URL[] { resources.toURI().toURL() });
         I18NProviderTest.clearI18NProviderField();
     }
 
@@ -73,8 +71,7 @@ public class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void translationFileOnClasspath_instantiateDefaultI18N()
-            throws IOException {
+    public void translationFileOnClasspath_instantiateDefaultI18N() throws IOException {
 
         createTranslationFiles(translations);
 
@@ -82,8 +79,7 @@ public class DefaultInstantiatorI18NTest {
         mockLookup(service);
         VaadinService.setCurrent(service);
 
-        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
-                service) {
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(service) {
             @Override
             protected ClassLoader getClassLoader() {
                 return urlClassLoader;
@@ -94,51 +90,37 @@ public class DefaultInstantiatorI18NTest {
         Assert.assertNotNull(i18NProvider);
         Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
-        Assert.assertEquals("Suomi",
-                i18NProvider.getTranslation("title", new Locale("fi", "FI")));
-        Assert.assertEquals("Suomi",
-                I18NProvider.translate(new Locale("fi", "FI"), "title"));
+        Assert.assertEquals("Suomi", i18NProvider.getTranslation("title", new Locale("fi", "FI")));
+        Assert.assertEquals("Suomi", I18NProvider.translate(new Locale("fi", "FI"), "title"));
 
-        Assert.assertEquals("deutsch",
-                i18NProvider.getTranslation("title", new Locale("de")));
-        Assert.assertEquals("deutsch",
-                I18NProvider.translate(new Locale("de"), "title"));
+        Assert.assertEquals("deutsch", i18NProvider.getTranslation("title", new Locale("de")));
+        Assert.assertEquals("deutsch", I18NProvider.translate(new Locale("de"), "title"));
 
-        Assert.assertEquals(
-                "non existing country should select language bundle", "deutsch",
+        Assert.assertEquals("non existing country should select language bundle", "deutsch",
                 i18NProvider.getTranslation("title", new Locale("de", "AT")));
-        Assert.assertEquals(
-                "non existing country should select language bundle", "deutsch",
+        Assert.assertEquals("non existing country should select language bundle", "deutsch",
                 I18NProvider.translate(new Locale("de", "AT"), "title"));
 
-        Assert.assertEquals("Korean",
-                i18NProvider.getTranslation("title", new Locale("ko", "KR")));
-        Assert.assertEquals("Korean",
-                I18NProvider.translate(new Locale("ko", "KR"), "title"));
+        Assert.assertEquals("Korean", i18NProvider.getTranslation("title", new Locale("ko", "KR")));
+        Assert.assertEquals("Korean", I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
         // Note!
         // default translations.properties will be used if
         // the locale AND system default locale is not found
-        Assert.assertEquals("Default lang",
-                i18NProvider.getTranslation("title", new Locale("en", "GB")));
-        Assert.assertEquals("Default lang",
-                I18NProvider.translate(new Locale("en", "GB"), "title"));
+        Assert.assertEquals("Default lang", i18NProvider.getTranslation("title", new Locale("en", "GB")));
+        Assert.assertEquals("Default lang", I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
     @Test
-    public void onlyDefaultTranslation_instantiateDefaultI18N()
-            throws IOException {
-        File file = new File(translations,
-                DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
-        Files.writeString(file.toPath(), "title=Default lang",
-                StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+    public void onlyDefaultTranslation_instantiateDefaultI18N() throws IOException {
+        File file = new File(translations, DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
+        Files.writeString(file.toPath(), "title=Default lang", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
 
-        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
-                service) {
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(service) {
             @Override
             protected ClassLoader getClassLoader() {
                 return urlClassLoader;
@@ -149,44 +131,32 @@ public class DefaultInstantiatorI18NTest {
         Assert.assertNotNull(i18NProvider);
         Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
-        Assert.assertEquals("Default lang",
-                i18NProvider.getTranslation("title", new Locale("fi", "FI")));
-        Assert.assertEquals("Default lang",
-                I18NProvider.translate(new Locale("fi", "FI"), "title"));
+        Assert.assertEquals("Default lang", i18NProvider.getTranslation("title", new Locale("fi", "FI")));
+        Assert.assertEquals("Default lang", I18NProvider.translate(new Locale("fi", "FI"), "title"));
 
-        Assert.assertEquals("Default lang",
-                i18NProvider.getTranslation("title", new Locale("de")));
-        Assert.assertEquals("Default lang",
-                I18NProvider.translate(new Locale("de"), "title"));
+        Assert.assertEquals("Default lang", i18NProvider.getTranslation("title", new Locale("de")));
+        Assert.assertEquals("Default lang", I18NProvider.translate(new Locale("de"), "title"));
 
-        Assert.assertEquals("Default lang",
-                i18NProvider.getTranslation("title", new Locale("ko", "KR")));
-        Assert.assertEquals("Default lang",
-                I18NProvider.translate(new Locale("ko", "KR"), "title"));
+        Assert.assertEquals("Default lang", i18NProvider.getTranslation("title", new Locale("ko", "KR")));
+        Assert.assertEquals("Default lang", I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
         // Note!
         // default translations.properties will be used if
         // the locale AND system default locale is not found
-        Assert.assertEquals("Default lang",
-                i18NProvider.getTranslation("title", new Locale("en", "GB")));
-        Assert.assertEquals("Default lang",
-                I18NProvider.translate(new Locale("en", "GB"), "title"));
+        Assert.assertEquals("Default lang", i18NProvider.getTranslation("title", new Locale("en", "GB")));
+        Assert.assertEquals("Default lang", I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
     @Test
-    public void onlyLangTransalation_nonExistingLangReturnsKey()
-            throws IOException {
-        File file = new File(translations,
-                DefaultI18NProvider.BUNDLE_FILENAME + "_ja.properties");
-        Files.writeString(file.toPath(), "title=No Default",
-                StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+    public void onlyLangTransalation_nonExistingLangReturnsKey() throws IOException {
+        File file = new File(translations, DefaultI18NProvider.BUNDLE_FILENAME + "_ja.properties");
+        Files.writeString(file.toPath(), "title=No Default", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
 
-        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
-                service) {
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(service) {
             @Override
             protected ClassLoader getClassLoader() {
                 return urlClassLoader;
@@ -197,15 +167,11 @@ public class DefaultInstantiatorI18NTest {
         Assert.assertNotNull(i18NProvider);
         Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
-        Assert.assertEquals("No Default",
-                i18NProvider.getTranslation("title", new Locale("ja")));
-        Assert.assertEquals("No Default",
-                I18NProvider.translate(new Locale("ja"), "title"));
+        Assert.assertEquals("No Default", i18NProvider.getTranslation("title", new Locale("ja")));
+        Assert.assertEquals("No Default", I18NProvider.translate(new Locale("ja"), "title"));
 
-        Assert.assertEquals("title",
-                i18NProvider.getTranslation("title", new Locale("en", "GB")));
-        Assert.assertEquals("title",
-                I18NProvider.translate(new Locale("en", "GB"), "title"));
+        Assert.assertEquals("title", i18NProvider.getTranslation("title", new Locale("en", "GB")));
+        Assert.assertEquals("title", I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
     @Test
@@ -213,72 +179,52 @@ public class DefaultInstantiatorI18NTest {
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
 
-        Assert.assertThrows(
-                "Should throw exception without Instantiator in VaadinService",
-                IllegalStateException.class,
+        Assert.assertThrows("Should throw exception without Instantiator in VaadinService", IllegalStateException.class,
                 () -> I18NProvider.translate("foo.bar"));
     }
 
     @Test
-    public void translationFilesOnClassPath_getI18NProvider_usesThreadContextClassLoader()
-            throws IOException {
+    public void translationFilesOnClassPath_getI18NProvider_usesThreadContextClassLoader() throws IOException {
         createTranslationFiles(translations);
 
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
 
-        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
-                service);
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(service);
         Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
 
-        ClassLoader threadContextClassLoader = Thread.currentThread()
-                .getContextClassLoader();
+        ClassLoader threadContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(urlClassLoader);
 
             try (MockedConstruction<DefaultI18NProvider> mockedConstruction = Mockito
-                    .mockConstruction(DefaultI18NProvider.class,
-                            (mock, context) -> {
-                                ClassLoader classLoaderArgument = (ClassLoader) context
-                                        .arguments().get(1);
-                                Assert.assertEquals(urlClassLoader,
-                                        classLoaderArgument);
-                            })) {
-                I18NProvider i18NProvider = defaultInstantiator
-                        .getI18NProvider();
+                    .mockConstruction(DefaultI18NProvider.class, (mock, context) -> {
+                        ClassLoader classLoaderArgument = (ClassLoader) context.arguments().get(1);
+                        Assert.assertEquals(urlClassLoader, classLoaderArgument);
+                    })) {
+                I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
 
                 Assert.assertNotNull(i18NProvider);
-                Assert.assertEquals(i18NProvider,
-                        mockedConstruction.constructed().get(0));
+                Assert.assertEquals(i18NProvider, mockedConstruction.constructed().get(0));
             }
         } finally {
-            Thread.currentThread()
-                    .setContextClassLoader(threadContextClassLoader);
+            Thread.currentThread().setContextClassLoader(threadContextClassLoader);
         }
     }
 
-    private static void createTranslationFiles(File translationsFolder)
-            throws IOException {
-        File file = new File(translationsFolder,
-                DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
-        Files.writeString(file.toPath(), "title=Default lang",
-                StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+    private static void createTranslationFiles(File translationsFolder) throws IOException {
+        File file = new File(translationsFolder, DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
+        Files.writeString(file.toPath(), "title=Default lang", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        file = new File(translationsFolder,
-                DefaultI18NProvider.BUNDLE_FILENAME + "_ko_KR.properties");
-        Files.writeString(file.toPath(), "title=Korean", StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE);
+        file = new File(translationsFolder, DefaultI18NProvider.BUNDLE_FILENAME + "_ko_KR.properties");
+        Files.writeString(file.toPath(), "title=Korean", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        file = new File(translationsFolder,
-                DefaultI18NProvider.BUNDLE_FILENAME + "_fi_FI.properties");
-        Files.writeString(file.toPath(), "title=Suomi", StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE);
+        file = new File(translationsFolder, DefaultI18NProvider.BUNDLE_FILENAME + "_fi_FI.properties");
+        Files.writeString(file.toPath(), "title=Suomi", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        file = new File(translationsFolder,
-                DefaultI18NProvider.BUNDLE_FILENAME + "_de.properties");
-        Files.writeString(file.toPath(), "title=deutsch",
-                StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+        file = new File(translationsFolder, DefaultI18NProvider.BUNDLE_FILENAME + "_de.properties");
+        Files.writeString(file.toPath(), "title=deutsch", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
     }
 
     private Lookup mockLookup(VaadinService service) {

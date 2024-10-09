@@ -35,11 +35,9 @@ public class ProdBundleUtilsTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void compressProdBundle_decompressProdBundle_filesHasSameHash()
-            throws IOException {
+    public void compressProdBundle_decompressProdBundle_filesHasSameHash() throws IOException {
         File projectBase = temporaryFolder.getRoot();
-        File prodFolder = new File(projectBase,
-                "target/classes/META-INF/VAADIN");
+        File prodFolder = new File(projectBase, "target/classes/META-INF/VAADIN");
         prodFolder.mkdirs();
         File configFolder = new File(prodFolder, "config");
         configFolder.mkdir();
@@ -67,9 +65,7 @@ public class ProdBundleUtilsTest {
         Assert.assertTrue("stats file not created!", stats.exists());
         Assert.assertTrue("packages file not created!", index.exists());
 
-        Assert.assertEquals(statsHash,
-                StringUtil.getHash(Files.readString(stats.toPath())));
-        Assert.assertEquals(indexHash,
-                StringUtil.getHash(Files.readString(index.toPath())));
+        Assert.assertEquals(statsHash, StringUtil.getHash(Files.readString(stats.toPath())));
+        Assert.assertEquals(indexHash, StringUtil.getHash(Files.readString(index.toPath())));
     }
 }

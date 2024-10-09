@@ -148,12 +148,9 @@ public class HierarchicalCommunicatorDataTest {
         treeData.addItems(ROOT, FOLDER);
         treeData.addItems(FOLDER, LEAF);
         dataProvider = new TreeDataProvider<>(treeData);
-        communicator = new HierarchicalDataCommunicator<>(
-                Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
+        communicator = new HierarchicalDataCommunicator<>(Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
                 json -> {
-                }, element.getNode(),
-                () -> (ValueProvider<Item, String>) item -> String
-                        .valueOf(item.id));
+                }, element.getNode(), () -> (ValueProvider<Item, String>) item -> String.valueOf(item.id));
         communicator.setDataProvider(dataProvider, null);
     }
 
@@ -184,8 +181,7 @@ public class HierarchicalCommunicatorDataTest {
 
     @Test
     public void uniqueKeyProviderIsSet_keysGeneratedByProvider() {
-        communicator = new HierarchicalDataCommunicator<Item>(
-                Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
+        communicator = new HierarchicalDataCommunicator<Item>(Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
                 json -> {
                 }, element.getNode(), () -> item -> item.value);
         communicator.setDataProvider(dataProvider, null);
@@ -197,15 +193,14 @@ public class HierarchicalCommunicatorDataTest {
         fakeClientCommunication();
 
         Arrays.asList("ROOT", "FOLDER", "LEAF")
-                .forEach(key -> Assert.assertNotNull("Expected key '" + key
-                        + "' to be generated when unique key provider used",
+                .forEach(key -> Assert.assertNotNull(
+                        "Expected key '" + key + "' to be generated when unique key provider used",
                         communicator.getKeyMapper().get(key)));
     }
 
     @Test
     public void uniqueKeyProviderIsNotSet_keysGeneratedByKeyMapper() {
-        communicator = new HierarchicalDataCommunicator<Item>(
-                Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
+        communicator = new HierarchicalDataCommunicator<Item>(Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
                 json -> {
                 }, element.getNode(), () -> null);
         communicator.setDataProvider(dataProvider, null);
@@ -218,8 +213,8 @@ public class HierarchicalCommunicatorDataTest {
 
         // key mapper should generate keys 1,2,3
         IntStream.range(1, 4).mapToObj(String::valueOf)
-                .forEach(i -> Assert.assertNotNull("Expected key '" + i
-                        + "' to be generated when unique key provider is not set",
+                .forEach(i -> Assert.assertNotNull(
+                        "Expected key '" + i + "' to be generated when unique key provider is not set",
                         communicator.getKeyMapper().get(i)));
     }
 
@@ -230,10 +225,8 @@ public class HierarchicalCommunicatorDataTest {
         dataProvider = new TreeDataProvider<>(treeData) {
 
             @Override
-            public Stream<Item> fetchChildren(
-                    HierarchicalQuery<Item, SerializablePredicate<Item>> query) {
-                return super.fetchChildren(query)
-                        .onClose(() -> streamIsClosed.set(true));
+            public Stream<Item> fetchChildren(HierarchicalQuery<Item, SerializablePredicate<Item>> query) {
+                return super.fetchChildren(query).onClose(() -> streamIsClosed.set(true));
             }
         };
 
@@ -284,8 +277,7 @@ public class HierarchicalCommunicatorDataTest {
             treeData.addItems(null, new Item(id, "Item " + id));
         }
         Item itemToTest = treeData.getRootItems().get(indexToTest);
-        treeData.addItems(itemToTest, new Item(treeData.getRootItems().size(),
-                "Item " + indexToTest + "_" + 0));
+        treeData.addItems(itemToTest, new Item(treeData.getRootItems().size(), "Item " + indexToTest + "_" + 0));
         dataProvider = new TreeDataProvider<>(treeData);
         communicator.setDataProvider(dataProvider, null);
 
@@ -295,8 +287,7 @@ public class HierarchicalCommunicatorDataTest {
         String initialKey = communicator.getKeyMapper().key(itemToTest);
 
         communicator.expand(itemToTest);
-        communicator.setRequestedRange(requestedRangeLength * 2,
-                requestedRangeLength);
+        communicator.setRequestedRange(requestedRangeLength * 2, requestedRangeLength);
         fakeClientCommunication();
         assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
 
@@ -314,8 +305,8 @@ public class HierarchicalCommunicatorDataTest {
         int maxAllowedItems = 500;
         treeData.clear();
         treeData.addItems(null, ROOT);
-        treeData.addItems(ROOT, IntStream.range(0, children).mapToObj(
-                i -> new Item(startingChildId + i, "ROOT CHILD " + i)));
+        treeData.addItems(ROOT,
+                IntStream.range(0, children).mapToObj(i -> new Item(startingChildId + i, "ROOT CHILD " + i)));
 
         communicator.expand(ROOT);
         fakeClientCommunication();
@@ -326,13 +317,12 @@ public class HierarchicalCommunicatorDataTest {
         IntStream.range(0, children).forEach(i -> {
             String treeItemId = Integer.toString(startingChildId + i);
             if (i < maxAllowedItems) {
-                Assert.assertNotNull(
-                        "Expecting item " + treeItemId
-                                + " to be fetched, but was not",
+                Assert.assertNotNull("Expecting item " + treeItemId + " to be fetched, but was not",
                         communicator.getKeyMapper().get(treeItemId));
             } else {
-                Assert.assertNull("Expecting item " + treeItemId
-                        + " not to be fetched because of max allowed items rule, but it was fetched",
+                Assert.assertNull(
+                        "Expecting item " + treeItemId
+                                + " not to be fetched because of max allowed items rule, but it was fetched",
                         communicator.getKeyMapper().get(treeItemId));
             }
         });
@@ -368,16 +358,14 @@ public class HierarchicalCommunicatorDataTest {
         private static VaadinSession findOrCreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new DataCommunicatorTest.AlwaysLockedVaadinSession(
-                        null);
+                session = new DataCommunicatorTest.AlwaysLockedVaadinSession(null);
                 VaadinSession.setCurrent(session);
             }
             return session;
         }
     }
 
-    public static class AlwaysLockedVaadinSession
-            extends DataCommunicatorTest.MockVaadinSession {
+    public static class AlwaysLockedVaadinSession extends DataCommunicatorTest.MockVaadinSession {
 
         public AlwaysLockedVaadinSession(VaadinService service) {
             super(service);

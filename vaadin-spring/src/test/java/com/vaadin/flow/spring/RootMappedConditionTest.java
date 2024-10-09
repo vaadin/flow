@@ -18,7 +18,6 @@ public class RootMappedConditionTest {
     private void assertUrlMapping(String key) {
         MockEnvironment environment = new MockEnvironment();
         environment.setProperty("vaadin." + key, "abc");
-        Assert.assertEquals("abc",
-                RootMappedCondition.getUrlMapping(environment));
+        Assert.assertEquals("abc", RootMappedCondition.getUrlMapping(environment));
     }
 }

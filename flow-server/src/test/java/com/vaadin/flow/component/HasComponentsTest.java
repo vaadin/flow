@@ -21,8 +21,7 @@ import org.junit.Test;
 public class HasComponentsTest {
 
     @Tag("div")
-    private static class TestComponent extends Component
-            implements HasComponents {
+    private static class TestComponent extends Component implements HasComponents {
 
     }
 
@@ -42,8 +41,7 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-first");
         component.addComponentAsFirst(innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(),
-                component.getChildren().findFirst().get().getId());
+        Assert.assertEquals(innerComponent.getId(), component.getChildren().findFirst().get().getId());
     }
 
     @Test
@@ -53,8 +51,7 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-index");
         component.addComponentAtIndex(2, innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(), component.getElement()
-                .getChild(2).getComponent().get().getId());
+        Assert.assertEquals(innerComponent.getId(), component.getElement().getChild(2).getComponent().get().getId());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -112,8 +109,7 @@ public class HasComponentsTest {
 
         component.remove(notAChild, child);
         Assert.assertFalse(child.getParent().isPresent());
-        Assert.assertFalse(component.getChildren()
-                .filter(comp -> comp.equals(child)).findAny().isPresent());
+        Assert.assertFalse(component.getChildren().filter(comp -> comp.equals(child)).findAny().isPresent());
     }
 
     @Test
@@ -145,8 +141,7 @@ public class HasComponentsTest {
     private TestComponent createTestStructure() {
         TestComponent component = new TestComponent();
         checkChildren(0, component);
-        component.add(new TestComponent(), new TestComponent(),
-                new TestComponent());
+        component.add(new TestComponent(), new TestComponent(), new TestComponent());
         checkChildren(3, component);
         return component;
     }

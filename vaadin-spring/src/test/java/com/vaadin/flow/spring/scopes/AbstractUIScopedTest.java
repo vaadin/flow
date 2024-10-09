@@ -63,21 +63,16 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
         when(service.getRouter()).thenReturn(router);
 
         Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
-        when(service.getMainDivId(Mockito.any(), Mockito.any()))
-                .thenReturn("abc");
+        ApplicationConfiguration appConfig = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
+        when(service.getMainDivId(Mockito.any(), Mockito.any())).thenReturn("abc");
 
         final Map<String, Object> attributeMap = new HashMap<>();
 
         ServletContext servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-                .then(invocationOnMock -> attributeMap
-                        .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
-                invocationOnMock.getArguments()[0].toString(),
+                .then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
+        Mockito.doAnswer(invocationOnMock -> attributeMap.put(invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
                 .setAttribute(Mockito.anyString(), Mockito.any());
 
@@ -87,8 +82,8 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         Mockito.when(appConfig.getContext()).thenReturn(context);
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                appConfig, getClass(), initParameters);
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(appConfig, getClass(),
+                initParameters);
         when(service.getDeploymentConfiguration()).thenReturn(config);
 
         ui = new UI();

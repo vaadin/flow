@@ -24,13 +24,12 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 
 /**
- * This event listener is notified when the Single Page Application's HTML page
- * is about to be generated and sent to the client. The Index HTML response is
- * first constructed as an in-memory DOM representation which registered
- * listeners can modify before the final HTML is generated.
+ * This event listener is notified when the Single Page Application's HTML page is about to be generated and sent to the
+ * client. The Index HTML response is first constructed as an in-memory DOM representation which registered listeners
+ * can modify before the final HTML is generated.
  * <p>
- * Index HTML request listeners are registered using the
- * {@link ServiceInitEvent} during the initialization of the application.
+ * Index HTML request listeners are registered using the {@link ServiceInitEvent} during the initialization of the
+ * application.
  *
  * @see ServiceInitEvent#addIndexHtmlRequestListener(IndexHtmlRequestListener)
  * @see IndexHtmlRequestHandler
@@ -38,12 +37,11 @@ import com.vaadin.flow.server.VaadinResponse;
 @FunctionalInterface
 public interface IndexHtmlRequestListener extends EventListener, Serializable {
     /**
-     * The method allows to modify the Index HTML response before it is sent to
-     * browser.
+     * The method allows to modify the Index HTML response before it is sent to browser.
      *
      * @param indexHtmlResponse
-     *            the response object which includes the {@link VaadinRequest},
-     *            {@link VaadinResponse}, and {@link org.jsoup.nodes.Document}
+     *            the response object which includes the {@link VaadinRequest}, {@link VaadinResponse}, and
+     *            {@link org.jsoup.nodes.Document}
      */
     void modifyIndexHtmlResponse(IndexHtmlResponse indexHtmlResponse);
 }

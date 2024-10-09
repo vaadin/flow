@@ -47,92 +47,71 @@ public class SpringCsrfTokenUtil {
 
     }
 
-    public static Optional<SpringCsrfToken> getSpringCsrfToken(
-            VaadinRequest request) {
-        Object springCsrfToken = request
-                .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_REQUEST);
+    public static Optional<SpringCsrfToken> getSpringCsrfToken(VaadinRequest request) {
+        Object springCsrfToken = request.getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_REQUEST);
         return extractTokenFromBean(springCsrfToken);
     }
 
-    public static Optional<SpringCsrfToken> getSpringCsrfToken(
-            ServletRequest request) {
-        Object springCsrfToken = request
-                .getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_REQUEST);
+    public static Optional<SpringCsrfToken> getSpringCsrfToken(ServletRequest request) {
+        Object springCsrfToken = request.getAttribute(SPRING_CSRF_TOKEN_ATTRIBUTE_IN_REQUEST);
         return extractTokenFromBean(springCsrfToken);
     }
 
-    private static Optional<SpringCsrfToken> extractTokenFromBean(
-            Object springCsrfToken) {
+    private static Optional<SpringCsrfToken> extractTokenFromBean(Object springCsrfToken) {
         if (springCsrfToken != null) {
-            JsonObject springCsrfTokenJson = JsonUtils
-                    .beanToJson(springCsrfToken);
-            if (springCsrfTokenJson != null
-                    && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
-                    && springCsrfTokenJson
-                            .hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
-                String token = springCsrfTokenJson
-                        .getString(SPRING_CSRF_TOKEN_PROPERTY);
-                String headerName = springCsrfTokenJson
-                        .getString(SPRING_CSRF_HEADER_PROPERTY);
-                String parameterName = springCsrfTokenJson
-                        .getString(SPRING_CSRF_PARAMETER_PROPERTY);
+            JsonObject springCsrfTokenJson = JsonUtils.beanToJson(springCsrfToken);
+            if (springCsrfTokenJson != null && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
+                    && springCsrfTokenJson.hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
+                String token = springCsrfTokenJson.getString(SPRING_CSRF_TOKEN_PROPERTY);
+                String headerName = springCsrfTokenJson.getString(SPRING_CSRF_HEADER_PROPERTY);
+                String parameterName = springCsrfTokenJson.getString(SPRING_CSRF_PARAMETER_PROPERTY);
 
-                return Optional.of(
-                        new SpringCsrfToken(headerName, parameterName, token));
+                return Optional.of(new SpringCsrfToken(headerName, parameterName, token));
             }
         }
         return Optional.empty();
     }
 
-    public static void addTokenAsMetaTagsToHeadIfPresentInRequest(Element head,
-            VaadinRequest request) {
+    public static void addTokenAsMetaTagsToHeadIfPresentInRequest(Element head, VaadinRequest request) {
         Optional<SpringCsrfToken> springCsrfToken = getSpringCsrfToken(request);
         springCsrfToken.ifPresent(csrfToken -> {
-            addFormDataHandlerScriptToHead(head, csrfToken.getParameterName(),
-                    SPRING_CSRF_COOKIE_NAME);
-            addMetaTagToHead(head, SPRING_CSRF_TOKEN_ATTRIBUTE,
-                    csrfToken.getToken());
-            addMetaTagToHead(head, SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
-                    csrfToken.getHeaderName());
-            addMetaTagToHead(head, SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE,
-                    csrfToken.getParameterName());
+            addFormDataHandlerScriptToHead(head, csrfToken.getParameterName(), SPRING_CSRF_COOKIE_NAME);
+            addMetaTagToHead(head, SPRING_CSRF_TOKEN_ATTRIBUTE, csrfToken.getToken());
+            addMetaTagToHead(head, SPRING_CSRF_HEADER_NAME_ATTRIBUTE, csrfToken.getHeaderName());
+            addMetaTagToHead(head, SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE, csrfToken.getParameterName());
         });
     }
 
-    private static void addMetaTagToHead(Element head, String name,
-            String value) {
+    private static void addMetaTagToHead(Element head, String name, String value) {
         Element meta = new Element(META_TAG);
         meta.attr(NAME_ATTRIBUTE, name);
         meta.attr(CONTENT_ATTRIBUTE, value);
         head.insertChildren(0, meta);
     }
 
-    private static void addFormDataHandlerScriptToHead(Element head,
-            String parameterName, String cookieName) {
+    private static void addFormDataHandlerScriptToHead(Element head, String parameterName, String cookieName) {
         // Replace the CSRF form data parameter with the value from cookies for
         // compatibility with `CookieCsrfTokenRepository` in Spring Security.
         // Essential for the login form to work with stateless authentication.
         // See: https://github.com/vaadin/hilla/issues/910
         Element script = new Element("script");
         script.attr("type", "module");
-        script.appendChild(new DataNode(
-                """
-                        const csrfParameterName = '%s';
-                        const csrfCookieName = '%s';
-                        window.addEventListener('formdata', (e) => {
-                          if (!e.formData.has(csrfParameterName)) {
-                            return;
-                          }
+        script.appendChild(new DataNode("""
+                const csrfParameterName = '%s';
+                const csrfCookieName = '%s';
+                window.addEventListener('formdata', (e) => {
+                  if (!e.formData.has(csrfParameterName)) {
+                    return;
+                  }
 
-                          const cookies = new URLSearchParams(document.cookie.replace(/;\\s*/, '&'));
-                          if (!cookies.has(csrfCookieName)) {
-                            return;
-                          }
+                  const cookies = new URLSearchParams(document.cookie.replace(/;\\s*/, '&'));
+                  if (!cookies.has(csrfCookieName)) {
+                    return;
+                  }
 
-                          e.formData.set(csrfParameterName, cookies.get(csrfCookieName));
-                        });
-                        """
-                        .formatted(parameterName, cookieName)));
+                  e.formData.set(csrfParameterName, cookies.get(csrfCookieName));
+                });
+                """.formatted(parameterName, cookieName)));
         head.insertChildren(0, script);
     }
 }

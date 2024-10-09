@@ -36,8 +36,7 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class BasicComponentIT extends ChromeDeviceTest {
 
-    private static final String HOTDEPLOY_PROPERTY = "vaadin."
-            + InitParameters.FRONTEND_HOTDEPLOY;
+    private static final String HOTDEPLOY_PROPERTY = "vaadin." + InitParameters.FRONTEND_HOTDEPLOY;
 
     private Server server;
 
@@ -60,8 +59,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
         waitForWebComponent("login-form");
         // check if web component works
         clickButton();
-        Assert.assertEquals("Authentication failure",
-                getAuthenticationResult());
+        Assert.assertEquals("Authentication failure", getAuthenticationResult());
 
         // simulate expired session by invalidating current session
         session.invalidate();
@@ -81,8 +79,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
         setUsername("admin");
         setPassword("admin");
         clickButton();
-        Assert.assertEquals("Authentication success",
-                getAuthenticationResult());
+        Assert.assertEquals("Authentication success", getAuthenticationResult());
     }
 
     private void clickButton() {
@@ -116,8 +113,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
         }
 
         File[] warDirs = new File("target")
-                .listFiles(file -> file.getName().matches(
-                        "vite-embedded-webcomponent-resync-.*-SNAPSHOT\\.war"));
+                .listFiles(file -> file.getName().matches("vite-embedded-webcomponent-resync-.*-SNAPSHOT\\.war"));
         String warfile = "target/" + warDirs[0].getName();
 
         context = new WebAppContext(warfile, "/");

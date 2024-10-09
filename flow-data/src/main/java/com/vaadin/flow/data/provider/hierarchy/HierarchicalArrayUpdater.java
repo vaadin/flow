@@ -41,8 +41,7 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
     public interface HierarchicalUpdate extends Update {
 
         /**
-         * Clears {@code length} elements in array from the {@code start}
-         * position.
+         * Clears {@code length} elements in array from the {@code start} position.
          *
          * @param start
          *            the start index
@@ -66,8 +65,7 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
         void set(int start, List<JsonValue> items, String parentKey);
 
         /**
-         * Commits enqueued function calls added via
-         * {@link #enqueue(String, Serializable...)}.
+         * Commits enqueued function calls added via {@link #enqueue(String, Serializable...)}.
          */
         void commit();
 
@@ -76,12 +74,10 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
          *
          * @see JsonCodec JsonCodec for supported argument types
          * @param name
-         *            the name of the function to call, may contain dots to
-         *            indicate a function on a property.
+         *            the name of the function to call, may contain dots to indicate a function on a property.
          * @param arguments
-         *            the arguments to pass to the function. Must be of a type
-         *            supported by the communication mechanism, as defined by
-         *            {@link JsonCodec}
+         *            the arguments to pass to the function. Must be of a type supported by the communication mechanism,
+         *            as defined by {@link JsonCodec}
          */
         void enqueue(String name, Serializable... arguments);
 
@@ -89,13 +85,11 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
          * Commits changes for the given {@code updateId} and parent key.
          *
          * @param updateId
-         *            the update identifier of the commit for the target
-         *            parentKey
+         *            the update identifier of the commit for the target parentKey
          * @param parentKey
          *            target parent key
          * @param levelSize
-         *            Total number of direct child items for the given parent
-         *            key
+         *            Total number of direct child items for the given parent key
          */
         void commit(int updateId, String parentKey, int levelSize);
 

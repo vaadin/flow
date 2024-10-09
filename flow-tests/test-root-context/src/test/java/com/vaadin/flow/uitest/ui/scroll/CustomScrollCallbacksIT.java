@@ -39,8 +39,7 @@ public class CustomScrollCallbacksIT extends AbstractScrollIT {
 
         assertLog("[0,0]");
         /*
-         * Scroll position should not be reset, but might have changed slightly
-         * because of more log rows
+         * Scroll position should not be reset, but might have changed slightly because of more log rows
          */
         checkPageScroll(0, bottom, 50);
 
@@ -49,8 +48,7 @@ public class CustomScrollCallbacksIT extends AbstractScrollIT {
         assertView("null");
         assertLog("[0,0]\n[42,-" + bottom + "]");
         /*
-         * Scroll position should not be reset, but might have changed slightly
-         * because of more log rows
+         * Scroll position should not be reset, but might have changed slightly because of more log rows
          */
         checkPageScroll(0, bottom, 50);
     }

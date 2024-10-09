@@ -30,9 +30,9 @@ public class FrontendStubs {
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
     public static final String VITE_TEST_OUT_FILE = "vite-out.test";
 
-    private static final String NPM_BIN_PATH = System.getProperty("os.name")
-            .startsWith("Windows") ? "node/node_modules/npm/bin/"
-                    : "node/lib/node_modules/npm/bin/";
+    private static final String NPM_BIN_PATH = System.getProperty("os.name").startsWith("Windows")
+            ? "node/node_modules/npm/bin/"
+            : "node/lib/node_modules/npm/bin/";
     private static final String NPM_CACHE_PATH_STUB = "cache";
 
     /**
@@ -42,25 +42,20 @@ public class FrontendStubs {
     }
 
     /**
-     * Creates stub versions of `node` and `npm` in the ./node folder as
-     * frontend-maven-plugin does.
+     * Creates stub versions of `node` and `npm` in the ./node folder as frontend-maven-plugin does.
      *
      * @param stubNode
-     *            node stub information, including whether `node/node`
-     *            (`node/node.exe`) stub should be created, and what version
-     *            should it output if '-v' || '--version' flag are set.
+     *            node stub information, including whether `node/node` (`node/node.exe`) stub should be created, and
+     *            what version should it output if '-v' || '--version' flag are set.
      * @param stubNpm
-     *            npm stub information, including whether
-     *            `node/node_modules/npm/bin/npm-cli` and `npx-cli` should be
-     *            created, and what version should it output if '-v' ||
-     *            '--version' flag are set.
+     *            npm stub information, including whether `node/node_modules/npm/bin/npm-cli` and `npx-cli` should be
+     *            created, and what version should it output if '-v' || '--version' flag are set.
      * @param baseDir
      *            parent to create `node` dir in
      * @throws IOException
      *             when a file operation fails
      */
-    public static void createStubNode(ToolStubInfo stubNode,
-            ToolStubInfo stubNpm, String baseDir) throws IOException {
+    public static void createStubNode(ToolStubInfo stubNode, ToolStubInfo stubNpm, String baseDir) throws IOException {
 
         Objects.requireNonNull(stubNode);
         Objects.requireNonNull(stubNpm);
@@ -69,18 +64,15 @@ public class FrontendStubs {
             File binDir = new File(baseDir, NPM_BIN_PATH);
             FileUtils.forceMkdir(binDir);
             String stub = stubNpm.getScript().replace("\\", "\\\\");
-            FileUtils.writeStringToFile(new File(binDir, "npm-cli.js"), stub,
-                    StandardCharsets.UTF_8);
-            FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub,
-                    StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(new File(binDir, "npm-cli.js"), stub, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub, StandardCharsets.UTF_8);
         }
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 
         if (stubNode.isStubbed()) {
             File nodeDir = new File(baseDir, "node");
             FileUtils.forceMkdir(nodeDir);
-            File node = new File(baseDir,
-                    isWindows ? "node/node.exe" : "node/node");
+            File node = new File(baseDir, isWindows ? "node/node.exe" : "node/node");
             node.createNewFile();
             node.setExecutable(true);
             if (isWindows) {
@@ -96,38 +88,34 @@ public class FrontendStubs {
     }
 
     /**
-     * Creates stub versions of `node` and `npm` in the ./node folder as
-     * frontend-maven-plugin does. This method creates a default stubs for
-     * tool's versions.
+     * Creates stub versions of `node` and `npm` in the ./node folder as frontend-maven-plugin does. This method creates
+     * a default stubs for tool's versions.
      *
      * @param stubNode
      *            whether `node/node` (`node/node.exe`) stub should be created
      * @param stubNpm
-     *            whether `node/node_modules/npm/bin/npm-cli` and `npx-cli`
-     *            should be created
+     *            whether `node/node_modules/npm/bin/npm-cli` and `npx-cli` should be created
      * @param baseDir
      *            parent to create `node` dir in
      * @throws IOException
      *             when a file operation fails
      */
-    public static void createStubNode(boolean stubNode, boolean stubNpm,
-            String baseDir) throws IOException {
-        final File defaultNpmCacheDirStub = new File(
-                new File(baseDir, NPM_BIN_PATH), NPM_CACHE_PATH_STUB);
+    public static void createStubNode(boolean stubNode, boolean stubNpm, String baseDir) throws IOException {
+        final File defaultNpmCacheDirStub = new File(new File(baseDir, NPM_BIN_PATH), NPM_CACHE_PATH_STUB);
         FileUtils.forceMkdir(defaultNpmCacheDirStub);
 
-        ToolStubInfo nodeStubInfo = stubNode ? ToolStubInfo.builder(Tool.NODE)
-                .withCacheDir(defaultNpmCacheDirStub.getAbsolutePath()).build()
+        ToolStubInfo nodeStubInfo = stubNode
+                ? ToolStubInfo.builder(Tool.NODE).withCacheDir(defaultNpmCacheDirStub.getAbsolutePath()).build()
                 : ToolStubInfo.none();
-        ToolStubInfo npmStubInfo = stubNpm ? ToolStubInfo.builder(Tool.NPM)
-                .withCacheDir(defaultNpmCacheDirStub.getAbsolutePath()).build()
+        ToolStubInfo npmStubInfo = stubNpm
+                ? ToolStubInfo.builder(Tool.NPM).withCacheDir(defaultNpmCacheDirStub.getAbsolutePath()).build()
                 : ToolStubInfo.none();
         createStubNode(nodeStubInfo, npmStubInfo, baseDir);
     }
 
     /**
-     * Creates a stub vite-dev-server able to output a ready string, sleep for a
-     * while and output arguments passed to a file, so as tests can check it.
+     * Creates a stub vite-dev-server able to output a ready string, sleep for a while and output arguments passed to a
+     * file, so as tests can check it.
      *
      * @param readyString
      *            string to output
@@ -140,16 +128,15 @@ public class FrontendStubs {
      * @throws IOException
      *             when a file operation fails
      */
-    public static void createStubViteServer(String readyString,
-            int milliSecondsToRun, String baseDir, boolean enableListening)
-            throws IOException {
-        createStubDevServer(new File(baseDir, VITE_SERVER), VITE_TEST_OUT_FILE,
-                readyString, milliSecondsToRun, enableListening);
+    public static void createStubViteServer(String readyString, int milliSecondsToRun, String baseDir,
+            boolean enableListening) throws IOException {
+        createStubDevServer(new File(baseDir, VITE_SERVER), VITE_TEST_OUT_FILE, readyString, milliSecondsToRun,
+                enableListening);
     }
 
     /**
-     * Creates a stub vite-dev-server able to output a ready string, sleep for a
-     * while and output arguments passed to a file, so as tests can check it.
+     * Creates a stub vite-dev-server able to output a ready string, sleep for a while and output arguments passed to a
+     * file, so as tests can check it.
      *
      * @param readyString
      *            string to output
@@ -160,14 +147,13 @@ public class FrontendStubs {
      * @throws IOException
      *             when a file operation fails
      */
-    public static void createStubViteServer(String readyString,
-            int milliSecondsToRun, String baseDir) throws IOException {
+    public static void createStubViteServer(String readyString, int milliSecondsToRun, String baseDir)
+            throws IOException {
         createStubViteServer(readyString, milliSecondsToRun, baseDir, false);
     }
 
-    private static void createStubDevServer(File serverFile,
-            String serverOutputFile, String readyString, int milliSecondsToRun,
-            boolean enableListening) throws IOException {
+    private static void createStubDevServer(File serverFile, String serverOutputFile, String readyString,
+            int milliSecondsToRun, boolean enableListening) throws IOException {
         FileUtils.forceMkdirParent(serverFile);
 
         serverFile.createNewFile();
@@ -178,25 +164,19 @@ public class FrontendStubs {
         sb.append("const args = String(process.argv);\n");
         sb.append("const fs = require('fs');\n");
         sb.append("const http = require('http');\n");
-        sb.append("fs.writeFileSync('").append(serverOutputFile)
-                .append("', args);\n");
+        sb.append("fs.writeFileSync('").append(serverOutputFile).append("', args);\n");
         if (enableListening) {
-            sb.append("const port = Number.parseInt(process.argv[")
-                    .append("process.argv.indexOf('--port') + 1")
+            sb.append("const port = Number.parseInt(process.argv[").append("process.argv.indexOf('--port') + 1")
                     .append("]);\n");
             sb.append("const server = new http.Server((req, res) => {\n");
-            sb.append("  res.writeHead(200, {")
-                    .append("'Content-Type': 'application/json',")
-                    .append("});\n");
+            sb.append("  res.writeHead(200, {").append("'Content-Type': 'application/json',").append("});\n");
             sb.append("  res.write('{}');\n");
             sb.append("  res.end();\n");
             sb.append("});\n");
             sb.append("server.listen(port);\n");
-            sb.append("setTimeout(() => server.close(), ")
-                    .append(milliSecondsToRun).append(");\n");
+            sb.append("setTimeout(() => server.close(), ").append(milliSecondsToRun).append(");\n");
         } else {
-            sb.append("setTimeout(() => {}, ").append(milliSecondsToRun)
-                    .append(");\n");
+            sb.append("setTimeout(() => {}, ").append(milliSecondsToRun).append(");\n");
         }
         sb.append("console.log(args);\n");
         sb.append("console.log('[wps]: ").append(readyString).append(".');\n");
@@ -212,14 +192,12 @@ public class FrontendStubs {
 
         private ToolStubInfo(boolean stubbed, String script) {
             this.stubbed = stubbed;
-            assert !stubbed || (script != null && !script.isEmpty())
-                    : "Script may not be empty for stubbed tool";
+            assert !stubbed || (script != null && !script.isEmpty()) : "Script may not be empty for stubbed tool";
             this.script = script;
         }
 
         /**
-         * Creates a new builder for constructing a new instance of tool stub
-         * info.
+         * Creates a new builder for constructing a new instance of tool stub info.
          *
          * @param tool
          *            the build tool to create a stub for.
@@ -266,9 +244,8 @@ public class FrontendStubs {
         }
 
         /**
-         * Adds a stub for tool version. The version will be returned if a tool
-         * executable is called with '-v' or '--version' argument. If no value
-         * is set, the default one is used.
+         * Adds a stub for tool version. The version will be returned if a tool executable is called with '-v' or
+         * '--version' argument. If no value is set, the default one is used.
          *
          * @param version
          *            a tool version to stub.
@@ -280,9 +257,8 @@ public class FrontendStubs {
         }
 
         /**
-         * Adds a stub for npm cache directory. The path to cache will be
-         * returned if a tool executable is called with 'cache' argument. If no
-         * value is set, the default one is used.
+         * Adds a stub for npm cache directory. The path to cache will be returned if a tool executable is called with
+         * 'cache' argument. If no value is set, the default one is used.
          *
          * @param cacheDir
          *            a npm cache dir to stub.
@@ -320,14 +296,11 @@ public class FrontendStubs {
             String script;
             // default version used in tests
             version = version == null ? DEFAULT_NODE_VERSION : version;
-            scriptBuilder.append(
-                    "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
-                    .append("    echo ").append(version).append("\n")
-                    .append("    break\n").append("  fi\n");
+            scriptBuilder.append("  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
+                    .append("    echo ").append(version).append("\n").append("    break\n").append("  fi\n");
             if (cacheDir != null) {
-                scriptBuilder.append("  if [ \"$arg\" = \"cache\" ]; then\n")
-                        .append("    echo ").append(cacheDir).append("\n")
-                        .append("    break\n").append("  fi\n");
+                scriptBuilder.append("  if [ \"$arg\" = \"cache\" ]; then\n").append("    echo ").append(cacheDir)
+                        .append("\n").append("    break\n").append("  fi\n");
             }
             // @formatter:off
             script = String.format(
@@ -345,13 +318,10 @@ public class FrontendStubs {
             String script;
             // default version used in tests
             version = version == null ? DEFAULT_NPM_VERSION : version;
-            scriptBuilder.append(
-                    "process.argv.includes('--version') && console.log('")
-                    .append(version).append("');\n");
+            scriptBuilder.append("process.argv.includes('--version') && console.log('").append(version).append("');\n");
             if (cacheDir != null) {
-                scriptBuilder.append(
-                        "process.argv.includes('cache') && console.log('")
-                        .append(cacheDir).append("');\n");
+                scriptBuilder.append("process.argv.includes('cache') && console.log('").append(cacheDir)
+                        .append("');\n");
             }
             script = scriptBuilder.toString();
             return script;

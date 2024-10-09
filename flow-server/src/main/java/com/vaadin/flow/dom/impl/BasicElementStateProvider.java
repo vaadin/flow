@@ -59,14 +59,13 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Implementation which stores data for basic elements, i.e. elements which are
- * not bound to any template and have no special functionality.
+ * Implementation which stores data for basic elements, i.e. elements which are not bound to any template and have no
+ * special functionality.
  * <p>
- * This should be considered a low level class focusing on performance and
- * leaving most sanity checks to the caller.
+ * This should be considered a low level class focusing on performance and leaving most sanity checks to the caller.
  * <p>
- * The data is stored directly in the state node but this should be considered
- * an implementation detail which can change.
+ * The data is stored directly in the state node but this should be considered an implementation detail which can
+ * change.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -78,15 +77,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     private static BasicElementStateProvider instance = new BasicElementStateProvider();
 
     @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] features = new Class[] {
-            ElementData.class, ElementAttributeMap.class,
-            ElementChildrenList.class, ElementPropertyMap.class,
-            ElementListenerMap.class, ElementClassList.class,
-            ElementStylePropertyMap.class, ComponentMapping.class,
-            PolymerServerEventHandlers.class, ClientCallableHandlers.class,
-            PolymerEventListenerMap.class, ShadowRootData.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class, InertData.class };
+    private static Class<? extends NodeFeature>[] features = new Class[] { ElementData.class, ElementAttributeMap.class,
+            ElementChildrenList.class, ElementPropertyMap.class, ElementListenerMap.class, ElementClassList.class,
+            ElementStylePropertyMap.class, ComponentMapping.class, PolymerServerEventHandlers.class,
+            ClientCallableHandlers.class, PolymerEventListenerMap.class, ShadowRootData.class,
+            AttachExistingElementFeature.class, VirtualChildrenList.class, ReturnChannelMap.class, InertData.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -110,8 +105,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
      */
     public static StateNode createStateNode(String tag) {
         assert ElementUtil.isValidTagName(tag) : "Invalid tag name " + tag;
-        StateNode node = new StateNode(
-                Collections.singletonList(ElementData.class), features);
+        StateNode node = new StateNode(Collections.singletonList(ElementData.class), features);
 
         node.getFeature(ElementData.class).setTag(tag);
 
@@ -132,8 +126,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     /**
-     * Gets the element data feature for the given node and asserts it is
-     * non-null.
+     * Gets the element data feature for the given node and asserts it is non-null.
      *
      * @param node
      *            the node
@@ -144,8 +137,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     /**
-     * Gets the element attribute feature for the given node and asserts it is
-     * non-null.
+     * Gets the element attribute feature for the given node and asserts it is non-null.
      *
      * @param node
      *            the node
@@ -155,8 +147,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return node.getFeature(ElementAttributeMap.class);
     }
 
-    private static Optional<ElementAttributeMap> getAttributeFeatureIfInitialized(
-            StateNode node) {
+    private static Optional<ElementAttributeMap> getAttributeFeatureIfInitialized(StateNode node) {
         return node.getFeatureIfInitialized(ElementAttributeMap.class);
     }
 
@@ -171,8 +162,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return node.getFeature(ElementPropertyMap.class);
     }
 
-    private static Optional<ElementPropertyMap> getPropertyFeatureIfInitialized(
-            StateNode node) {
+    private static Optional<ElementPropertyMap> getPropertyFeatureIfInitialized(StateNode node) {
         return node.getFeatureIfInitialized(ElementPropertyMap.class);
     }
 
@@ -190,8 +180,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        return getAttributeFeatureIfInitialized(node)
-                .map(feature -> feature.get(attribute)).orElse(null);
+        return getAttributeFeatureIfInitialized(node).map(feature -> feature.get(attribute)).orElse(null);
     }
 
     @Override
@@ -199,8 +188,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        Optional<ElementAttributeMap> maybeFeature = getAttributeFeatureIfInitialized(
-                node);
+        Optional<ElementAttributeMap> maybeFeature = getAttributeFeatureIfInitialized(node);
         return maybeFeature.isPresent() && maybeFeature.get().has(attribute);
     }
 
@@ -209,14 +197,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeFeatureIfInitialized(node)
-                .map(feature -> feature.remove(attribute));
+        getAttributeFeatureIfInitialized(node).map(feature -> feature.remove(attribute));
     }
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        return getAttributeFeatureIfInitialized(node)
-                .map(ElementAttributeMap::attributes).orElseGet(Stream::empty);
+        return getAttributeFeatureIfInitialized(node).map(ElementAttributeMap::attributes).orElseGet(Stream::empty);
     }
 
     @Override
@@ -230,10 +216,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public DomListenerRegistration addEventListener(StateNode node,
-            String eventType, DomEventListener listener) {
-        ElementListenerMap listeners = node
-                .getFeature(ElementListenerMap.class);
+    public DomListenerRegistration addEventListener(StateNode node, String eventType, DomEventListener listener) {
+        ElementListenerMap listeners = node.getFeature(ElementListenerMap.class);
 
         return listeners.add(eventType, listener);
     }
@@ -244,8 +228,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
      * @return an unmodifiable collection of feature classes
      */
     public static Collection<Class<? extends NodeFeature>> getFeatures() {
-        return Collections.unmodifiableCollection(Arrays
-                .asList(BasicElementStateProvider.get().getProviderFeatures()));
+        return Collections.unmodifiableCollection(Arrays.asList(BasicElementStateProvider.get().getProviderFeatures()));
     }
 
     @Override
@@ -253,13 +236,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        return getPropertyFeatureIfInitialized(node)
-                .map(feature -> feature.getProperty(name)).orElse(null);
+        return getPropertyFeatureIfInitialized(node).map(feature -> feature.getProperty(name)).orElse(null);
     }
 
     @Override
-    public void setProperty(StateNode node, String name, Serializable value,
-            boolean emitChange) {
+    public void setProperty(StateNode node, String name, Serializable value, boolean emitChange) {
         assert node != null;
         assert name != null;
 
@@ -271,8 +252,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeatureIfInitialized(node)
-                .ifPresent(feature -> feature.removeProperty(name));
+        getPropertyFeatureIfInitialized(node).ifPresent(feature -> feature.removeProperty(name));
     }
 
     @Override
@@ -280,8 +260,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        Optional<ElementPropertyMap> maybeFeature = getPropertyFeatureIfInitialized(
-                node);
+        Optional<ElementPropertyMap> maybeFeature = getPropertyFeatureIfInitialized(node);
         if (maybeFeature.isPresent()) {
             return maybeFeature.get().hasProperty(name);
         } else {
@@ -293,9 +272,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     public Stream<String> getPropertyNames(StateNode node) {
         assert node != null;
 
-        return getPropertyFeatureIfInitialized(node)
-                .map(ElementPropertyMap::getPropertyNames)
-                .orElseGet(Stream::empty);
+        return getPropertyFeatureIfInitialized(node).map(ElementPropertyMap::getPropertyNames).orElseGet(Stream::empty);
     }
 
     @Override
@@ -324,8 +301,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void setAttribute(StateNode node, String attribute,
-            AbstractStreamResource receiver) {
+    public void setAttribute(StateNode node, String attribute, AbstractStreamResource receiver) {
         assert node != null;
         assert attribute != null;
         assert receiver != null;
@@ -333,16 +309,13 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addPropertyChangeListener(StateNode node, String name,
-            PropertyChangeListener listener) {
-        return getPropertyFeature(node).addPropertyChangeListener(name,
-                listener);
+    public Registration addPropertyChangeListener(StateNode node, String name, PropertyChangeListener listener) {
+        return getPropertyFeature(node).addPropertyChangeListener(name, listener);
     }
 
     @Override
     public StateNode getShadowRoot(StateNode node) {
-        return node.getFeatureIfInitialized(ShadowRootData.class)
-                .map(ShadowRootData::getShadowRoot).orElse(null);
+        return node.getFeatureIfInitialized(ShadowRootData.class).map(ShadowRootData::getShadowRoot).orElse(null);
     }
 
     @Override
@@ -362,23 +335,17 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             JsonObject object = (JsonObject) payload;
             String type = object.getString(NodeProperties.TYPE);
             if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
-                visitDescendants = visitor
-                        .visit(NodeVisitor.ElementType.VIRTUAL, element);
-            } else if (NodeProperties.INJECT_BY_ID.equals(type)
-                    || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)
+                visitDescendants = visitor.visit(NodeVisitor.ElementType.VIRTUAL, element);
+            } else if (NodeProperties.INJECT_BY_ID.equals(type) || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)
                     || NodeProperties.INJECT_BY_NAME.equals(type)) {
-                visitDescendants = visitor.visit(
-                        NodeVisitor.ElementType.VIRTUAL_ATTACHED, element);
+                visitDescendants = visitor.visit(NodeVisitor.ElementType.VIRTUAL_ATTACHED, element);
             } else {
-                throw new IllegalStateException(
-                        "Unexpected payload type : " + type);
+                throw new IllegalStateException("Unexpected payload type : " + type);
             }
         } else if (payload == null) {
-            visitDescendants = visitor.visit(NodeVisitor.ElementType.REGULAR,
-                    element);
+            visitDescendants = visitor.visit(NodeVisitor.ElementType.REGULAR, element);
         } else {
-            throw new IllegalStateException(
-                    "Unexpected payload in element data : " + payload.toJson());
+            throw new IllegalStateException("Unexpected payload in element data : " + payload.toJson());
         }
 
         if (visitDescendants) {

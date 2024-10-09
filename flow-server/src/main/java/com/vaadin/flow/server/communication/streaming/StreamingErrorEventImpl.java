@@ -22,8 +22,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingErrorEvent;
  *
  * @since 1.0
  */
-public final class StreamingErrorEventImpl extends AbstractStreamingEvent
-        implements StreamingErrorEvent {
+public final class StreamingErrorEventImpl extends AbstractStreamingEvent implements StreamingErrorEvent {
 
     private final Exception exception;
 
@@ -41,8 +40,8 @@ public final class StreamingErrorEventImpl extends AbstractStreamingEvent
      * @param exception
      *            exception for stream failure
      */
-    public StreamingErrorEventImpl(final String filename, final String type,
-            long contentLength, long bytesReceived, final Exception exception) {
+    public StreamingErrorEventImpl(final String filename, final String type, long contentLength, long bytesReceived,
+            final Exception exception) {
         super(filename, type, contentLength, bytesReceived);
         this.exception = exception;
     }

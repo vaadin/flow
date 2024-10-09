@@ -23,9 +23,8 @@ import com.vaadin.flow.router.Route;
 @Route(value = "com.vaadin.flow.uitest.ui.ScriptInjectView", layout = ViewTestLayout.class)
 public class ScriptInjectView extends AbstractDivView {
 
-    static String[] values = new String[] { "</script foo>", "</Script>",
-            "</SCRIPT >", "</SCRIPT>", "< / SCRIPT>", "</ SCRIPT>",
-            "< / SCRIPT >", "</SCRIpT>" };
+    static String[] values = new String[] { "</script foo>", "</Script>", "</SCRIPT >", "</SCRIPT>", "< / SCRIPT>",
+            "</ SCRIPT>", "< / SCRIPT >", "</SCRIpT>" };
 
     public ScriptInjectView() {
         for (String value : values) {

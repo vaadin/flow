@@ -26,8 +26,7 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TH)
-public class NativeTableHeaderCell extends HtmlContainer
-        implements ClickNotifier<NativeTableHeaderCell> {
+public class NativeTableHeaderCell extends HtmlContainer implements ClickNotifier<NativeTableHeaderCell> {
 
     /**
      * Creates a new empty header cell component.

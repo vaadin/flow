@@ -32,30 +32,26 @@ import com.vaadin.flow.uitest.ui.template.HiddenTemplateView;
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.UsageStatisticsView", layout = ViewTestLayout.class)
 public class UsageStatisticsView extends Div {
     public UsageStatisticsView() {
-        NativeButton print = new NativeButton(
-                "Print usage statistics to the console", e -> {
-                    getUI().get().getPage().executeJs(
-                            "var basket = localStorage.getItem('vaadin.statistics.basket'); if (basket) basket = JSON.parse(basket); console.log(basket)");
-                });
-        NativeButton clear = new NativeButton("Clear usage statistics", e -> {
+        NativeButton print = new NativeButton("Print usage statistics to the console", e -> {
             getUI().get().getPage().executeJs(
-                    "localStorage.removeItem('vaadin.statistics.basket')");
+                    "var basket = localStorage.getItem('vaadin.statistics.basket'); if (basket) basket = JSON.parse(basket); console.log(basket)");
         });
-        NativeButton push = new NativeButton("Enable push", e -> getUI().get()
-                .getPushConfiguration().setPushMode(PushMode.AUTOMATIC));
+        NativeButton clear = new NativeButton("Clear usage statistics", e -> {
+            getUI().get().getPage().executeJs("localStorage.removeItem('vaadin.statistics.basket')");
+        });
+        NativeButton push = new NativeButton("Enable push",
+                e -> getUI().get().getPushConfiguration().setPushMode(PushMode.AUTOMATIC));
         NativeButton template = new NativeButton("Use PolymerTemplate", e -> {
             add(new HiddenTemplateView());
         });
 
-        add(new Text(
-                "View for manually testing usage statistics gathering for Flow features."
-                        + " After a feature has been used, the page should be reloaded before verifying that usage info has been gathered."),
+        add(new Text("View for manually testing usage statistics gathering for Flow features."
+                + " After a feature has been used, the page should be reloaded before verifying that usage info has been gathered."),
                 new Div(print, clear, push, template));
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        attachEvent.getUI().getPage().executeJs(
-                "window.Vaadin.runIfDevelopmentMode('vaadin-usage-statistics');");
+        attachEvent.getUI().getPage().executeJs("window.Vaadin.runIfDevelopmentMode('vaadin-usage-statistics');");
     }
 }

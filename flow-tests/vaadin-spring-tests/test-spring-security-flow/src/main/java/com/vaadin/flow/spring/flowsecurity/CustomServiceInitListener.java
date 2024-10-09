@@ -25,11 +25,10 @@ public class CustomServiceInitListener implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        event.getSource().setSystemMessagesProvider(
-                (SystemMessagesProvider) systemMessagesInfo -> {
-                    CustomizedSystemMessages messages = new CustomizedSystemMessages();
-                    messages.setSessionExpiredURL("/timeout");
-                    return messages;
-                });
+        event.getSource().setSystemMessagesProvider((SystemMessagesProvider) systemMessagesInfo -> {
+            CustomizedSystemMessages messages = new CustomizedSystemMessages();
+            messages.setSessionExpiredURL("/timeout");
+            return messages;
+        });
     }
 }

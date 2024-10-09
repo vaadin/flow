@@ -49,17 +49,13 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
 
     @Test
     public void execute_shouldDeleteNotGenerateFrontedFiles() throws Exception {
-        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
-                options);
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(options);
 
         GeneratedFilesSupport support = new GeneratedFilesSupport();
         File file1 = new File(generatedFolder, "test.txt");
-        File file2 = generatedFolder.toPath()
-                .resolve(Path.of("a", "b", "c.txt")).toFile();
-        File file3 = generatedFolder.toPath()
-                .resolve(Path.of("a", "z", "n.txt")).toFile();
-        File file4 = generatedFolder.toPath()
-                .resolve(Path.of("a", "z", "y.txt")).toFile();
+        File file2 = generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt")).toFile();
+        File file3 = generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt")).toFile();
+        File file4 = generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt")).toFile();
 
         support.writeIfChanged(file1, "TEST");
         support.writeIfChanged(file2, "TEST");
@@ -80,42 +76,31 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
     }
 
     @Test
-    public void execute_existingFiles_nothingTracked_deleteAll()
-            throws Exception {
+    public void execute_existingFiles_nothingTracked_deleteAll() throws Exception {
         for (File file : Set.of(new File(generatedFolder, "test.txt"),
-                generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt"))
-                        .toFile(),
-                generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt"))
-                        .toFile(),
-                generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt"))
-                        .toFile())) {
+                generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt")).toFile())) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
         }
 
-        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
-                options);
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(options);
         task.setGeneratedFileSupport(new GeneratedFilesSupport());
         task.execute();
-        Assert.assertFalse("Generated folder has not been deleted",
-                generatedFolder.exists());
+        Assert.assertFalse("Generated folder has not been deleted", generatedFolder.exists());
     }
 
     @Test
-    public void execute_frontendGeneratedFolderNotExistsAtTaskCreation_nothingIsDeleted()
-            throws Exception {
+    public void execute_frontendGeneratedFolderNotExistsAtTaskCreation_nothingIsDeleted() throws Exception {
         Files.deleteIfExists(generatedFolder.toPath());
-        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
-                options);
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(options);
 
         generatedFolder.mkdirs();
         Set<File> files = Set.of(new File(generatedFolder, "test.txt"),
-                generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt"))
-                        .toFile(),
-                generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt"))
-                        .toFile(),
-                generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt"))
-                        .toFile());
+                generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt")).toFile());
         for (File file : files) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
@@ -127,22 +112,17 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
     }
 
     @Test
-    public void execute_missingGeneratedFileSupport_nothingIsDeleted()
-            throws Exception {
+    public void execute_missingGeneratedFileSupport_nothingIsDeleted() throws Exception {
 
         Set<File> files = Set.of(new File(generatedFolder, "test.txt"),
-                generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt"))
-                        .toFile(),
-                generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt"))
-                        .toFile(),
-                generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt"))
-                        .toFile());
+                generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt")).toFile());
         for (File file : files) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
         }
-        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
-                options);
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(options);
         task.setGeneratedFileSupport(null);
         task.execute();
         assertOnlyExpectedGeneratedFilesExists(files.toArray(File[]::new));
@@ -151,17 +131,15 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
 
     @Test
     public void execute_knownFiles_notDeleted() throws Exception {
-        Set<File> knownFiles = Set.of(new File(generatedFolder, "routes.tsx"),
-                new File(generatedFolder, "routes.ts"), generatedFolder.toPath()
-                        .resolve(Path.of("flow", "Flow.tsx")).toFile(),
+        Set<File> knownFiles = Set.of(new File(generatedFolder, "routes.tsx"), new File(generatedFolder, "routes.ts"),
+                generatedFolder.toPath().resolve(Path.of("flow", "Flow.tsx")).toFile(),
                 new File(generatedFolder, "file-routes.ts"));
         for (File file : knownFiles) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
         }
 
-        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
-                options);
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(options);
         task.setGeneratedFileSupport(new GeneratedFilesSupport());
         task.execute();
 
@@ -169,48 +147,35 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
     }
 
     @Test
-    public void execute_entriesInGeneratedFileList_notDeleted()
-            throws Exception {
-        Set<File> generatedFiles = new HashSet<>(
-                Set.of(new File(generatedFolder, "test.txt"),
-                        generatedFolder.toPath()
-                                .resolve(Path.of("a", "b", "c.txt")).toFile(),
-                        generatedFolder.toPath()
-                                .resolve(Path.of("a", "z", "n.txt")).toFile(),
-                        generatedFolder.toPath()
-                                .resolve(Path.of("a", "z", "y.txt")).toFile()));
+    public void execute_entriesInGeneratedFileList_notDeleted() throws Exception {
+        Set<File> generatedFiles = new HashSet<>(Set.of(new File(generatedFolder, "test.txt"),
+                generatedFolder.toPath().resolve(Path.of("a", "b", "c.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "n.txt")).toFile(),
+                generatedFolder.toPath().resolve(Path.of("a", "z", "y.txt")).toFile()));
         for (File file : generatedFiles) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
         }
-        File generatedFilesList = new File(generatedFolder,
-                "generated-file-list.txt");
-        Files.writeString(generatedFilesList.toPath(), generatedFiles.stream()
-                .map(file -> generatedFolder.toPath().relativize(file.toPath()))
-                .map(Path::toString)
-                .collect(Collectors.joining(System.lineSeparator())));
+        File generatedFilesList = new File(generatedFolder, "generated-file-list.txt");
+        Files.writeString(generatedFilesList.toPath(),
+                generatedFiles.stream().map(file -> generatedFolder.toPath().relativize(file.toPath()))
+                        .map(Path::toString).collect(Collectors.joining(System.lineSeparator())));
         generatedFiles.add(generatedFilesList);
 
-        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
-                options);
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(options);
         task.setGeneratedFileSupport(new GeneratedFilesSupport());
         task.execute();
 
-        assertOnlyExpectedGeneratedFilesExists(
-                generatedFiles.toArray(File[]::new));
+        assertOnlyExpectedGeneratedFilesExists(generatedFiles.toArray(File[]::new));
     }
 
-    private void assertOnlyExpectedGeneratedFilesExists(File... expectedFiles)
-            throws IOException {
+    private void assertOnlyExpectedGeneratedFilesExists(File... expectedFiles) throws IOException {
         AccumulatorPathVisitor visitor = new AccumulatorPathVisitor();
         Files.walkFileTree(generatedFolder.toPath(), visitor);
-        Assert.assertEquals(
-                "Expect exactly currently generated files to exists",
-                Stream.of(expectedFiles).map(
-                        f -> generatedFolder.toPath().relativize(f.toPath()))
+        Assert.assertEquals("Expect exactly currently generated files to exists",
+                Stream.of(expectedFiles).map(f -> generatedFolder.toPath().relativize(f.toPath()))
                         .collect(Collectors.toSet()),
-                Set.copyOf(visitor.relativizeFiles(generatedFolder.toPath(),
-                        false, null)));
+                Set.copyOf(visitor.relativizeFiles(generatedFolder.toPath(), false, null)));
     }
 
 }

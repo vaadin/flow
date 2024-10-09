@@ -49,13 +49,11 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * Creates a new pending invocation for the given owner node and invocation.
      *
      * @param owner
-     *            the state node that this invocation is related to, not
-     *            <code>null</code>
+     *            the state node that this invocation is related to, not <code>null</code>
      * @param invocation
      *            the JavaScript invocation to send, not <code>null</code>
      */
-    public PendingJavaScriptInvocation(StateNode owner,
-            JavaScriptInvocation invocation) {
+    public PendingJavaScriptInvocation(StateNode owner, JavaScriptInvocation invocation) {
         assert owner != null;
         assert invocation != null;
 
@@ -73,19 +71,18 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     }
 
     /**
-     * Checks if there are any subscribers for the return value of this
-     * expression.
+     * Checks if there are any subscribers for the return value of this expression.
      *
-     * @return <code>true</code> if the return value should be passed back from
-     *         the client, <code>false</code> if the return value can be ignored
+     * @return <code>true</code> if the return value should be passed back from the client, <code>false</code> if the
+     *         return value can be ignored
      */
     public boolean isSubscribed() {
         return successHandler != null;
     }
 
     /**
-     * Completes this invocation with the given return value from the client.
-     * Should only be used if there return value subscribers.
+     * Completes this invocation with the given return value from the client. Should only be used if there return value
+     * subscribers.
      *
      * @param value
      *            the JSON return value from the client
@@ -97,8 +94,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     }
 
     /**
-     * Completes this invocation with the given exception value from the client.
-     * Should only be used if there return value subscribers.
+     * Completes this invocation with the given exception value from the client. Should only be used if there return
+     * value subscribers.
      *
      * @param value
      *            the JSON exception value from the client
@@ -141,11 +138,9 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     }
 
     @Override
-    public void then(SerializableConsumer<JsonValue> successHandler,
-            SerializableConsumer<String> errorHandler) {
+    public void then(SerializableConsumer<JsonValue> successHandler, SerializableConsumer<String> errorHandler) {
         if (successHandler == null) {
-            throw new IllegalArgumentException(
-                    "Success handler cannot be null");
+            throw new IllegalArgumentException("Success handler cannot be null");
         }
 
         if (sentToBrowser) {
@@ -161,13 +156,12 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
             return;
         }
 
-        this.successHandler = combineHandlers(this.successHandler,
-                successHandler);
+        this.successHandler = combineHandlers(this.successHandler, successHandler);
         this.errorHandler = combineHandlers(this.errorHandler, errorHandler);
     }
 
-    private static <T> SerializableConsumer<T> combineHandlers(
-            SerializableConsumer<T> first, SerializableConsumer<T> second) {
+    private static <T> SerializableConsumer<T> combineHandlers(SerializableConsumer<T> first,
+            SerializableConsumer<T> second) {
         if (first == null) {
             return second;
         } else if (second == null) {
@@ -183,16 +177,14 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     /**
      * Checks whether this invocation has been canceled.
      *
-     * @return <code>true</code> if the invocation has been canceled, otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if the invocation has been canceled, otherwise <code>false</code>
      */
     public boolean isCanceled() {
         return canceled;
     }
 
     /**
-     * Gets the underlying JavaScript invocation that this pending invocation is
-     * based on.
+     * Gets the underlying JavaScript invocation that this pending invocation is based on.
      *
      * @return the JavaScript invocation, not <code>null</code>
      */
@@ -201,8 +193,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory
-                .getLogger(PendingJavaScriptInvocation.class.getName());
+        return LoggerFactory.getLogger(PendingJavaScriptInvocation.class.getName());
     }
 
 }

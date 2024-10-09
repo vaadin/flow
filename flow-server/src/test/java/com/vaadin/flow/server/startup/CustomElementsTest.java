@@ -45,54 +45,45 @@ public class CustomElementsTest {
 
     @Test
     public void addSingleElement() {
-        addElementsAndCheckResults(
-                Collections.singletonList(CustomElement.class),
+        addElementsAndCheckResults(Collections.singletonList(CustomElement.class),
                 Collections.singletonList(CustomElement.class));
     }
 
     @Test(expected = IllegalStateException.class)
     public void addDifferentElements() {
-        addElementsAndCheckResults(
-                Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class),
+        addElementsAndCheckResults(Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class),
                 Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class));
     }
 
     @Test
     public void addExtendingElements_superclassFirst() {
         addElementsAndCheckResults(
-                Arrays.asList(CustomElement.class, Tag1_Extend1.class,
-                        Tag1_Extend2.class, Tag1_Extend3.class),
+                Arrays.asList(CustomElement.class, Tag1_Extend1.class, Tag1_Extend2.class, Tag1_Extend3.class),
                 Collections.singletonList(CustomElement.class));
     }
 
     @Test
     public void addExtendingElements_superclassLast() {
         addElementsAndCheckResults(
-                Arrays.asList(Tag1_Extend1.class, Tag1_Extend2.class,
-                        Tag1_Extend3.class, CustomElement.class),
+                Arrays.asList(Tag1_Extend1.class, Tag1_Extend2.class, Tag1_Extend3.class, CustomElement.class),
                 Collections.singletonList(CustomElement.class));
     }
 
     @Test
     public void addTwoExtendingWithDifferentTag() {
-        addElementsAndCheckResults(
-                Arrays.asList(Tag1_Extend1.class, Tag2_Extend.class),
+        addElementsAndCheckResults(Arrays.asList(Tag1_Extend1.class, Tag2_Extend.class),
                 Arrays.asList(Tag1_Extend1.class, Tag2_Extend.class));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    private void addElementsAndCheckResults(
-            List<Class<? extends Component>> elementsToAdd,
+    private void addElementsAndCheckResults(List<Class<? extends Component>> elementsToAdd,
             List<Class<? extends Component>> expectedClasses) {
-        elementsToAdd.forEach(
-                element -> customElements.addElement(getTag(element), element));
+        elementsToAdd.forEach(element -> customElements.addElement(getTag(element), element));
 
-        MatcherAssert.assertThat(
-                "Custom elements should contain only one class that we put into",
-                customElements.computeTagToElementRelation(),
-                is(expectedClasses.stream().collect(Collectors.toMap(
-                        CustomElementsTest::getTag, Function.identity()))));
+        MatcherAssert.assertThat("Custom elements should contain only one class that we put into",
+                customElements.computeTagToElementRelation(), is(expectedClasses.stream()
+                        .collect(Collectors.toMap(CustomElementsTest::getTag, Function.identity()))));
     }
 
     private static String getTag(Class<?> clazz) {

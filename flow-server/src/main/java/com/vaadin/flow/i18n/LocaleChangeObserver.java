@@ -18,8 +18,8 @@ package com.vaadin.flow.i18n;
 import java.io.Serializable;
 
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when the UI locale is changed and on attach.
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when the UI locale is changed and on
+ * attach.
  *
  * @author Vaadin Ltd
  * @since 1.0

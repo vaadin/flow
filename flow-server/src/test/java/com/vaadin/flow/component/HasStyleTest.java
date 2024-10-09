@@ -25,8 +25,7 @@ import org.junit.Test;
 public class HasStyleTest {
 
     @Tag("div")
-    public static class HasStyleComponent extends Component
-            implements HasStyle {
+    public static class HasStyleComponent extends Component implements HasStyle {
 
     }
 
@@ -137,8 +136,7 @@ public class HasStyleTest {
     public void getClassList_elementClassList() {
         HasStyleComponent component = new HasStyleComponent();
 
-        Assert.assertEquals(component.getElement().getClassList(),
-                component.getClassNames());
+        Assert.assertEquals(component.getElement().getClassList(), component.getClassNames());
     }
 
     @Test
@@ -179,9 +177,8 @@ public class HasStyleTest {
         HasStyleComponent component = new HasStyleComponent();
         component.addClassNames("   foo  bar    baz");
 
-        Assert.assertEquals(
-                "Unexpected component's class names count after adding 3 class names",
-                3, component.getClassNames().size());
+        Assert.assertEquals("Unexpected component's class names count after adding 3 class names", 3,
+                component.getClassNames().size());
 
         Assert.assertTrue(component.getClassNames().contains("foo"));
         Assert.assertTrue(component.getClassNames().contains("bar"));
@@ -194,9 +191,8 @@ public class HasStyleTest {
         component.addClassNames("foo", "bar", "baz");
         component.removeClassNames("   foo  bar    baz");
 
-        Assert.assertEquals(
-                "Unexpected component's class names count after removing all class names",
-                0, component.getClassNames().size());
+        Assert.assertEquals("Unexpected component's class names count after removing all class names", 0,
+                component.getClassNames().size());
     }
 
     @Test(expected = IllegalArgumentException.class)

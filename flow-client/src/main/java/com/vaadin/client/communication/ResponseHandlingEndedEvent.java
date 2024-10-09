@@ -24,8 +24,7 @@ import com.google.web.bindery.event.shared.Event;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ResponseHandlingEndedEvent
-        extends Event<ResponseHandlingEndedEvent.Handler> {
+public class ResponseHandlingEndedEvent extends Event<ResponseHandlingEndedEvent.Handler> {
 
     /**
      * Handler for {@link ResponseHandlingEndedEvent}s.
@@ -38,8 +37,7 @@ public class ResponseHandlingEndedEvent
          * @param responseHandlingEndedEvent
          *            the event object
          */
-        void onResponseHandlingEnded(
-                ResponseHandlingEndedEvent responseHandlingEndedEvent);
+        void onResponseHandlingEnded(ResponseHandlingEndedEvent responseHandlingEndedEvent);
     }
 
     private static Type<Handler> type;

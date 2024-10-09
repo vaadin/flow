@@ -40,17 +40,13 @@ public class TestServletInitializer {
     }
 
     @Bean
-    public VaadinServletContextInitializer vaadinServletContextInitializer(
-            ApplicationContext context) {
+    public VaadinServletContextInitializer vaadinServletContextInitializer(ApplicationContext context) {
 
         return new VaadinServletContextInitializer(context) {
             @Override
-            protected Set<Class<?>> findClassesForDevMode(
-                    Set<String> basePackages,
-                    List<Class<? extends Annotation>> annotations,
-                    List<Class<?>> superTypes) {
-                ClassScannerView.classes = super.findClassesForDevMode(
-                        basePackages, annotations, superTypes);
+            protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
+                    List<Class<? extends Annotation>> annotations, List<Class<?>> superTypes) {
+                ClassScannerView.classes = super.findClassesForDevMode(basePackages, annotations, superTypes);
                 return ClassScannerView.classes;
             }
         };

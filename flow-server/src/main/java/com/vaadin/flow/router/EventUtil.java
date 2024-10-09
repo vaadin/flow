@@ -47,8 +47,7 @@ public final class EventUtil {
         private final Collection<Element> collector;
         private Predicate<Element> filter;
 
-        DescendantsVisitor(Collection<Element> collector,
-                Predicate<Element> filter) {
+        DescendantsVisitor(Collection<Element> collector, Predicate<Element> filter) {
             this.collector = collector;
             this.filter = filter;
         }
@@ -74,11 +73,9 @@ public final class EventUtil {
     }
 
     /**
-     * Collect before enter observer instances based on what will be attached
-     * when a new view chain is applied. Because components in the new chain
-     * might still have children that will yet be detached, the old chain is
-     * also needed in order to exclude anything that is only in the old chain
-     * but missing from the new chain.
+     * Collect before enter observer instances based on what will be attached when a new view chain is applied. Because
+     * components in the new chain might still have children that will yet be detached, the old chain is also needed in
+     * order to exclude anything that is only in the old chain but missing from the new chain.
      *
      * @param oldChain
      *            the view chain prior to the navigation
@@ -87,179 +84,149 @@ public final class EventUtil {
      *
      * @return list of found BeforeEnterObservers
      */
-    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
-            Collection<? extends HasElement> oldChain,
+    public static List<BeforeEnterObserver> collectBeforeEnterObservers(Collection<? extends HasElement> oldChain,
             Collection<? extends HasElement> newChain) {
 
-        Set<Element> chainRootElements = Stream
-                .concat(oldChain.stream(), newChain.stream())
-                .map(HasElement::getElement).collect(Collectors.toSet());
+        Set<Element> chainRootElements = Stream.concat(oldChain.stream(), newChain.stream()).map(HasElement::getElement)
+                .collect(Collectors.toSet());
 
         return newChain.stream().flatMap(chainRoot -> {
             Element chainRootElement = chainRoot.getElement();
 
             Predicate<Element> currentRootAndNonRoots = element -> {
-                return element.equals(chainRootElement)
-                        || !chainRootElements.contains(element);
+                return element.equals(chainRootElement) || !chainRootElements.contains(element);
             };
 
-            return getImplementingComponents(
-                    flattenDescendants(chainRootElement,
-                            currentRootAndNonRoots),
+            return getImplementingComponents(flattenDescendants(chainRootElement, currentRootAndNonRoots),
                     BeforeEnterObserver.class);
         }).collect(Collectors.toList());
     }
 
     /**
-     * Collect before enter observer instances based on what will be attached
-     * when a new view chain is applied.
+     * Collect before enter observer instances based on what will be attached when a new view chain is applied.
      *
      * @param chain
      *            the view chain after the navigation
      * @param childrenExclusions
-     *            any children of any element in the chain input that is found
-     *            in this collection will be excluded from the result
+     *            any children of any element in the chain input that is found in this collection will be excluded from
+     *            the result
      *
      * @return list of found BeforeEnterObservers in the chain tree.
      */
-    public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChain(
-            Collection<? extends HasElement> chain,
+    public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChain(Collection<? extends HasElement> chain,
             Collection<? extends HasElement> childrenExclusions) {
 
-        final Collection<Element> childrenExclusionElements = getElements(
-                childrenExclusions);
+        final Collection<Element> childrenExclusionElements = getElements(childrenExclusions);
 
-        return chain.stream()
-                .flatMap(chainRoot -> collectBeforeEnterObserversStream(
-                        chainRoot.getElement(), childrenExclusionElements))
+        return chain.stream().flatMap(
+                chainRoot -> collectBeforeEnterObserversStream(chainRoot.getElement(), childrenExclusionElements))
                 .distinct().collect(Collectors.toList());
     }
 
     /**
-     * Collect before enter observer instances in the <code>element</code>'s
-     * hierarchy.
+     * Collect before enter observer instances in the <code>element</code>'s hierarchy.
      *
      * @param element
      *            an element
      * @param childrenExclusions
-     *            any children of the element input that is found in this
-     *            collection will be excluded from the result
+     *            any children of the element input that is found in this collection will be excluded from the result
      *
      * @return list of found BeforeEnterObservers in the element hierarchy tree.
      */
-    public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChainElement(
-            HasElement element,
+    public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChainElement(HasElement element,
             Collection<? extends HasElement> childrenExclusions) {
 
-        return collectBeforeEnterObserversStream(element.getElement(),
-                getElements(childrenExclusions)).collect(Collectors.toList());
+        return collectBeforeEnterObserversStream(element.getElement(), getElements(childrenExclusions))
+                .collect(Collectors.toList());
     }
 
-    private static Stream<? extends BeforeEnterObserver> collectBeforeEnterObserversStream(
-            Element element, Collection<Element> childrenExclusions) {
+    private static Stream<? extends BeforeEnterObserver> collectBeforeEnterObserversStream(Element element,
+            Collection<Element> childrenExclusions) {
 
-        Predicate<Element> currentRootAndNonRoots = input -> input
-                .equals(element) || !childrenExclusions.contains(input);
+        Predicate<Element> currentRootAndNonRoots = input -> input.equals(element)
+                || !childrenExclusions.contains(input);
 
-        return getImplementingComponents(
-                flattenDescendants(element, currentRootAndNonRoots),
+        return getImplementingComponents(flattenDescendants(element, currentRootAndNonRoots),
                 BeforeEnterObserver.class);
     }
 
-    private static Collection<Element> getElements(
-            Collection<? extends HasElement> components) {
-        return components.stream().map(HasElement::getElement)
-                .collect(Collectors.toSet());
+    private static Collection<Element> getElements(Collection<? extends HasElement> components) {
+        return components.stream().map(HasElement::getElement).collect(Collectors.toSet());
     }
 
     /**
-     * Collect all Components implementing {@link BeforeLeaveObserver} connected
-     * to the given UI.
+     * Collect all Components implementing {@link BeforeLeaveObserver} connected to the given UI.
      *
      * @param ui
      *            UI to search from
      * @return navigation listeners
      */
     public static List<BeforeLeaveObserver> collectBeforeLeaveObservers(UI ui) {
-        return getImplementingComponents(flattenDescendants(ui.getElement()),
-                BeforeLeaveObserver.class).collect(Collectors.toList());
+        return getImplementingComponents(flattenDescendants(ui.getElement()), BeforeLeaveObserver.class)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing {@link AfterNavigationObserver} that
-     * are found in the given UI.
+     * Collect all Components implementing {@link AfterNavigationObserver} that are found in the given UI.
      *
      * @param ui
      *            UI to search from
      * @return after navigation listeners
      */
-    public static List<AfterNavigationObserver> collectAfterNavigationObservers(
-            UI ui) {
-        return getImplementingComponents(flattenDescendants(ui.getElement()),
-                AfterNavigationObserver.class).collect(Collectors.toList());
+    public static List<AfterNavigationObserver> collectAfterNavigationObservers(UI ui) {
+        return getImplementingComponents(flattenDescendants(ui.getElement()), AfterNavigationObserver.class)
+                .collect(Collectors.toList());
 
     }
 
     /**
-     * Collect all Components implementing {@link LocaleChangeObserver}
-     * connected to the given element tree.
+     * Collect all Components implementing {@link LocaleChangeObserver} connected to the given element tree.
      *
      * @param element
      *            element to search from
      * @return navigation listeners
      */
-    public static List<LocaleChangeObserver> collectLocaleChangeObservers(
-            Element element) {
-        return getImplementingComponents(flattenDescendants(element),
-                LocaleChangeObserver.class).collect(Collectors.toList());
+    public static List<LocaleChangeObserver> collectLocaleChangeObservers(Element element) {
+        return getImplementingComponents(flattenDescendants(element), LocaleChangeObserver.class)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing {@link LocaleChangeObserver}
-     * connected to the tree of all given Components in list.
+     * Collect all Components implementing {@link LocaleChangeObserver} connected to the tree of all given Components in
+     * list.
      *
      * @param components
      *            components to search
      * @return navigation listeners
      */
-    public static List<LocaleChangeObserver> collectLocaleChangeObservers(
-            List<HasElement> components) {
-        Stream<Element> elements = components.stream().flatMap(
-                component -> flattenDescendants(component.getElement()));
+    public static List<LocaleChangeObserver> collectLocaleChangeObservers(List<HasElement> components) {
+        Stream<Element> elements = components.stream().flatMap(component -> flattenDescendants(component.getElement()));
 
-        return getImplementingComponents(elements, LocaleChangeObserver.class)
-                .collect(Collectors.toList());
+        return getImplementingComponents(elements, LocaleChangeObserver.class).collect(Collectors.toList());
     }
 
     /**
-     * Inform components connected to the given ui that implement
-     * {@link LocaleChangeObserver} about locale change.
+     * Inform components connected to the given ui that implement {@link LocaleChangeObserver} about locale change.
      *
      * @param ui
      *            UI for locale change
      */
     public static void informLocaleChangeObservers(UI ui) {
-        LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui,
-                ui.getLocale());
-        collectLocaleChangeObservers(ui.getElement())
-                .forEach(observer -> observer.localeChange(localeChangeEvent));
+        LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui, ui.getLocale());
+        collectLocaleChangeObservers(ui.getElement()).forEach(observer -> observer.localeChange(localeChangeEvent));
     }
 
     /**
-     * Inform components implementing {@link LocaleChangeObserver} about locale
-     * change.
+     * Inform components implementing {@link LocaleChangeObserver} about locale change.
      *
      * @param ui
      *            UI for locale change
      * @param components
      *            components to search
      */
-    public static void informLocaleChangeObservers(UI ui,
-            List<HasElement> components) {
-        LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui,
-                ui.getLocale());
-        collectLocaleChangeObservers(components)
-                .forEach(observer -> observer.localeChange(localeChangeEvent));
+    public static void informLocaleChangeObservers(UI ui, List<HasElement> components) {
+        LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui, ui.getLocale());
+        collectLocaleChangeObservers(components).forEach(observer -> observer.localeChange(localeChangeEvent));
     }
 
     /**
@@ -273,13 +240,9 @@ public final class EventUtil {
      *            type that is used in filtering
      * @return stream of components implementing T
      */
-    public static <T> Stream<T> getImplementingComponents(
-            Stream<Element> elementStream, Class<T> type) {
-        return elementStream
-                .flatMap(element -> element.getComponent().map(Stream::of)
-                        .orElseGet(Stream::empty))
-                .map(component -> getComponent(component, type))
-                .filter(Objects::nonNull);
+    public static <T> Stream<T> getImplementingComponents(Stream<Element> elementStream, Class<T> type) {
+        return elementStream.flatMap(element -> element.getComponent().map(Stream::of).orElseGet(Stream::empty))
+                .map(component -> getComponent(component, type)).filter(Objects::nonNull);
     }
 
     /**
@@ -290,11 +253,9 @@ public final class EventUtil {
      * @param descendants
      *            a collector of descendants to fill
      * @param filter
-     *            predicate to check whether a given element and its descendants
-     *            should be included
+     *            predicate to check whether a given element and its descendants should be included
      */
-    public static void inspectHierarchy(Element node,
-            Collection<Element> descendants, Predicate<Element> filter) {
+    public static void inspectHierarchy(Element node, Collection<Element> descendants, Predicate<Element> filter) {
         node.accept(new DescendantsVisitor(descendants, filter));
     }
 
@@ -302,8 +263,7 @@ public final class EventUtil {
         return flattenDescendants(element, item -> true);
     }
 
-    private static Stream<Element> flattenDescendants(Element element,
-            Predicate<Element> recursionPredicate) {
+    private static Stream<Element> flattenDescendants(Element element, Predicate<Element> recursionPredicate) {
         Collection<Element> descendants = new ArrayList<>();
         inspectHierarchy(element, descendants, recursionPredicate);
         return descendants.stream();
@@ -314,8 +274,7 @@ public final class EventUtil {
             return type.cast(component);
         }
         if (component instanceof Composite<?>) {
-            return type.cast(getComponent(
-                    ((Composite<?>) component).getContent(), type));
+            return type.cast(getComponent(((Composite<?>) component).getContent(), type));
         }
         return null;
     }

@@ -18,8 +18,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 
 /**
- * A hierarchical data provider that supports programmatically setting a filter
- * that will be applied to all queries.
+ * A hierarchical data provider that supports programmatically setting a filter that will be applied to all queries.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -34,7 +33,6 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
  * @see ConfigurableFilterDataProvider
  */
 public interface HierarchicalConfigurableFilterDataProvider<T, Q, C>
-        extends ConfigurableFilterDataProvider<T, Q, C>,
-        HierarchicalDataProvider<T, Q> {
+        extends ConfigurableFilterDataProvider<T, Q, C>, HierarchicalDataProvider<T, Q> {
 
 }

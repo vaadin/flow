@@ -32,8 +32,7 @@ public class RouterLayoutTest {
         testRouterLayout.showRouterLayoutContent(newContent);
 
         Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
-        Assert.assertSame(NEW_ID,
-                testRouterLayout.getElement().getChild(0).getAttribute("id"));
+        Assert.assertSame(NEW_ID, testRouterLayout.getElement().getChild(0).getAttribute("id"));
     }
 
     @Test

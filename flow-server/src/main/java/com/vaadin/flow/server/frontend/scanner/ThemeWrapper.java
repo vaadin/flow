@@ -24,9 +24,8 @@ import java.util.Map;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
- * A wrapper for the Theme instance that use reflection for executing its
- * methods. This is needed because updaters can be executed from maven plugins
- * that use different classloaders for the running process and for the project
+ * A wrapper for the Theme instance that use reflection for executing its methods. This is needed because updaters can
+ * be executed from maven plugins that use different classloaders for the running process and for the project
  * configuration.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -36,8 +35,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 class ThemeWrapper implements AbstractTheme, Serializable {
     private final Serializable instance;
 
-    public ThemeWrapper(Class<? extends AbstractTheme> theme)
-            throws InstantiationException, IllegalAccessException {
+    public ThemeWrapper(Class<? extends AbstractTheme> theme) throws InstantiationException, IllegalAccessException {
         instance = theme.newInstance();
     }
 
@@ -67,8 +65,7 @@ class ThemeWrapper implements AbstractTheme, Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T invoke(Object instance, String methodName,
-            Object... arguments) {
+    private <T> T invoke(Object instance, String methodName, Object... arguments) {
         try {
             for (Method m : instance.getClass().getMethods()) {
                 if (m.getName().equals(methodName)) {

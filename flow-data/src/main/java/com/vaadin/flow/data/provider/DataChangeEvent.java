@@ -36,8 +36,7 @@ public class DataChangeEvent<T> extends EventObject {
     private Command unregisterListenerCommand = null;
 
     /**
-     * An event fired when a single item of a {@code DataProvider} has been
-     * updated.
+     * An event fired when a single item of a {@code DataProvider} has been updated.
      *
      * @param <T>
      *            the data type
@@ -48,8 +47,7 @@ public class DataChangeEvent<T> extends EventObject {
         private boolean refreshChildren;
 
         /**
-         * Creates a new data refresh event originating from the given data
-         * provider.
+         * Creates a new data refresh event originating from the given data provider.
          *
          * @param source
          *            the data provider, not null
@@ -61,19 +59,16 @@ public class DataChangeEvent<T> extends EventObject {
         }
 
         /**
-         * Creates a new data refresh event originating from the given data
-         * provider.
+         * Creates a new data refresh event originating from the given data provider.
          *
          * @param source
          *            the data provider, not null
          * @param item
          *            the updated item, not null
          * @param refreshChildren
-         *            whether, in hierarchical providers, subelements should be
-         *            refreshed as well
+         *            whether, in hierarchical providers, subelements should be refreshed as well
          */
-        public DataRefreshEvent(DataProvider<T, ?> source, T item,
-                boolean refreshChildren) {
+        public DataRefreshEvent(DataProvider<T, ?> source, T item, boolean refreshChildren) {
             super(source);
             Objects.requireNonNull(item, "Refreshed item can't be null");
             this.item = item;
@@ -90,11 +85,9 @@ public class DataChangeEvent<T> extends EventObject {
         }
 
         /**
-         * Gets the a boolean whether the refresh is supposed to be
-         * refreshChildren (in hierarchical data providers).
+         * Gets the a boolean whether the refresh is supposed to be refreshChildren (in hierarchical data providers).
          *
-         * @return whether, in hierarchical providers, subelements should be
-         *         refreshed as well
+         * @return whether, in hierarchical providers, subelements should be refreshed as well
          */
         public boolean isRefreshChildren() {
             return refreshChildren;
@@ -102,8 +95,7 @@ public class DataChangeEvent<T> extends EventObject {
     }
 
     /**
-     * Creates a new {@code DataChangeEvent} event originating from the given
-     * data provider.
+     * Creates a new {@code DataChangeEvent} event originating from the given data provider.
      *
      * @param source
      *            the data provider, not null
@@ -132,17 +124,16 @@ public class DataChangeEvent<T> extends EventObject {
     /**
      * Unregisters the event listener currently being invoked.
      * <p>
-     * This method can only be called from within an event listener otherwise it
-     * throws an {@link IllegalStateException}. Calling it will remove the
-     * current event listener so no further events are passed to it.
+     * This method can only be called from within an event listener otherwise it throws an
+     * {@link IllegalStateException}. Calling it will remove the current event listener so no further events are passed
+     * to it.
      *
      * @throws IllegalStateException
      *             if the method is called outside of the event listener.
      */
     public void unregisterListener() throws IllegalStateException {
         if (unregisterListenerCommand == null) {
-            throw new IllegalStateException(
-                    "unregisterListener can only be called inside the event listener");
+            throw new IllegalStateException("unregisterListener can only be called inside the event listener");
         }
         unregisterListenerCommand.execute();
     }

@@ -28,8 +28,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 /**
- * Normal tests with @Before are not implemented because each @Test starts new
- * Chrome process.
+ * Normal tests with @Before are not implemented because each @Test starts new Chrome process.
  */
 public class ListBindingIT extends ChromeBrowserTest {
 
@@ -48,38 +47,30 @@ public class ListBindingIT extends ChromeBrowserTest {
 
         assertMethodWorksCorrectly("addElement", template, "1", "2", "3", "4");
 
-        assertMethodWorksCorrectly("addElementByIndex", template, "4", "1", "2",
-                "3");
+        assertMethodWorksCorrectly("addElementByIndex", template, "4", "1", "2", "3");
 
-        assertMethodWorksCorrectly("addNumerousElements", template, "1", "2",
-                "3", "4", "5");
+        assertMethodWorksCorrectly("addNumerousElements", template, "1", "2", "3", "4", "5");
 
-        assertMethodWorksCorrectly("addNumerousElementsByIndex", template, "4",
-                "5", "1", "2", "3");
+        assertMethodWorksCorrectly("addNumerousElementsByIndex", template, "4", "5", "1", "2", "3");
 
         assertMethodWorksCorrectly("clearList", template);
 
-        assertMethodWorksCorrectly("removeSecondElementByIndex", template, "1",
-                "3");
+        assertMethodWorksCorrectly("removeSecondElementByIndex", template, "1", "3");
 
-        assertMethodWorksCorrectly("removeFirstElementWithIterator", template,
-                "2", "3");
+        assertMethodWorksCorrectly("removeFirstElementWithIterator", template, "2", "3");
 
-        assertMethodWorksCorrectly("swapFirstAndSecond", template, "2", "1",
-                "3");
+        assertMethodWorksCorrectly("swapFirstAndSecond", template, "2", "1", "3");
 
         assertMethodWorksCorrectly("sortDescending", template, "3", "2", "1");
 
-        assertMethodWorksCorrectly("setInitialStateToEachMessage", template,
-                ListBindingView.INITIAL_STATE, ListBindingView.INITIAL_STATE,
-                ListBindingView.INITIAL_STATE);
+        assertMethodWorksCorrectly("setInitialStateToEachMessage", template, ListBindingView.INITIAL_STATE,
+                ListBindingView.INITIAL_STATE, ListBindingView.INITIAL_STATE);
     }
 
     private void checkModelItemWorks(TestBenchElement template) {
         resetState(template);
 
-        List<TestBenchElement> msgs = template.$(TestBenchElement.class)
-                .attribute("class", "msg").all();
+        List<TestBenchElement> msgs = template.$(TestBenchElement.class).attribute("class", "msg").all();
 
         // Click b message
         msgs.get(1).click();
@@ -91,18 +82,14 @@ public class ListBindingIT extends ChromeBrowserTest {
     }
 
     private void checkInitialState(TestBenchElement template) {
-        Assert.assertEquals(
-                Collections.singletonList(ListBindingView.INITIAL_STATE),
-                getMessages(template));
+        Assert.assertEquals(Collections.singletonList(ListBindingView.INITIAL_STATE), getMessages(template));
     }
 
-    private void assertMethodWorksCorrectly(String handlerName,
-            TestBenchElement template, String... expectedMessages) {
+    private void assertMethodWorksCorrectly(String handlerName, TestBenchElement template, String... expectedMessages) {
         resetState(template);
         template.$(TestBenchElement.class).id(handlerName).click();
 
-        Assert.assertEquals(Arrays.asList(expectedMessages),
-                getMessages(template));
+        Assert.assertEquals(Arrays.asList(expectedMessages), getMessages(template));
     }
 
     private void resetState(TestBenchElement template) {
@@ -111,8 +98,7 @@ public class ListBindingIT extends ChromeBrowserTest {
     }
 
     private List<String> getMessages(TestBenchElement template) {
-        return template.$(TestBenchElement.class).attribute("class", "msg")
-                .all().stream().map(WebElement::getText)
+        return template.$(TestBenchElement.class).attribute("class", "msg").all().stream().map(WebElement::getText)
                 .collect(Collectors.toList());
     }
 }

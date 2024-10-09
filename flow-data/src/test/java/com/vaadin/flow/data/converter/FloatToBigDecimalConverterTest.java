@@ -46,8 +46,7 @@ public class FloatToBigDecimalConverterTest {
 
     @Test
     public void testConvertToPresentation() {
-        Float value = converter.convertToPresentation(BigDecimal.valueOf(42.0f),
-                null);
+        Float value = converter.convertToPresentation(BigDecimal.valueOf(42.0f), null);
         assertEquals(Float.valueOf(42.0f), value);
     }
 }

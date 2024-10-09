@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Indicates validation errors in a {@link Binder} when a field value is
- * validated.
+ * Indicates validation errors in a {@link Binder} when a field value is validated.
  *
  * @see Binder#writeBean(Object)
  * @see Binder#writeBeanIfValid(Object)
@@ -44,14 +43,11 @@ public class ValidationException extends Exception {
      * @param beanValidationErrors
      *            binder validation errors list
      */
-    public ValidationException(
-            List<BindingValidationStatus<?>> fieldValidationErrors,
+    public ValidationException(List<BindingValidationStatus<?>> fieldValidationErrors,
             List<ValidationResult> beanValidationErrors) {
         super("Validation has failed for some fields");
-        this.fieldValidationErrors = Collections
-                .unmodifiableList(fieldValidationErrors);
-        this.beanValidationErrors = Collections
-                .unmodifiableList(beanValidationErrors);
+        this.fieldValidationErrors = Collections.unmodifiableList(fieldValidationErrors);
+        this.beanValidationErrors = Collections.unmodifiableList(beanValidationErrors);
     }
 
     /**
@@ -61,17 +57,14 @@ public class ValidationException extends Exception {
      */
     public List<ValidationResult> getValidationErrors() {
         List<ValidationResult> errors = new ArrayList<>(
-                getFieldValidationErrors().stream()
-                        .map(s -> s.getResult().get())
-                        .collect(Collectors.toList()));
+                getFieldValidationErrors().stream().map(s -> s.getResult().get()).collect(Collectors.toList()));
         errors.addAll(getBeanValidationErrors());
         return errors;
     }
 
     /**
-     * Returns a list of the field level validation errors which caused the
-     * exception, or an empty list if the exception was caused by
-     * {@link #getBeanValidationErrors() bean level validation errors}.
+     * Returns a list of the field level validation errors which caused the exception, or an empty list if the exception
+     * was caused by {@link #getBeanValidationErrors() bean level validation errors}.
      *
      * @return binding validation errors list
      */
@@ -80,9 +73,8 @@ public class ValidationException extends Exception {
     }
 
     /**
-     * Returns a list of the bean level validation errors which caused the
-     * exception, or an empty list if the exception was caused by
-     * {@link #getFieldValidationErrors() field level validation errors}.
+     * Returns a list of the bean level validation errors which caused the exception, or an empty list if the exception
+     * was caused by {@link #getFieldValidationErrors() field level validation errors}.
      *
      * @return binder validation errors list
      */

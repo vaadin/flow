@@ -40,19 +40,15 @@ public class DefaultInstantiatorTest {
 
     @Test
     public void createComponent_dontDependOnGetOrCreate() {
-        DefaultInstantiator instantiator = Mockito
-                .mock(DefaultInstantiator.class);
+        DefaultInstantiator instantiator = Mockito.mock(DefaultInstantiator.class);
 
-        Mockito.when(instantiator.createComponent(Mockito.any()))
-                .thenCallRealMethod();
+        Mockito.when(instantiator.createComponent(Mockito.any())).thenCallRealMethod();
 
-        TestComponent component = instantiator
-                .createComponent(TestComponent.class);
+        TestComponent component = instantiator.createComponent(TestComponent.class);
 
         Assert.assertNotNull(component);
 
-        Mockito.verify(instantiator, Mockito.times(0))
-                .getOrCreate(Mockito.any());
+        Mockito.verify(instantiator, Mockito.times(0)).getOrCreate(Mockito.any());
     }
 
     @Test
@@ -87,33 +83,24 @@ public class DefaultInstantiatorTest {
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
         TestComponent instance = instantiator.getOrCreate(TestComponent.class);
-        Assert.assertSame(TestComponent.class,
-                instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestComponent.class,
-                instantiator.getApplicationClass(instance.getClass()));
+        Assert.assertSame(TestComponent.class, instantiator.getApplicationClass(instance));
+        Assert.assertSame(TestComponent.class, instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_syntheticClass_getsApplicationClass()
-            throws Exception {
+    public void getApplicationClass_syntheticClass_getsApplicationClass() throws Exception {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
-        Class<? extends TestComponent> syntheticClass = new ByteBuddy()
-                .subclass(TestComponent.class)
+        Class<? extends TestComponent> syntheticClass = new ByteBuddy().subclass(TestComponent.class)
                 .modifiers(Visibility.PUBLIC, SyntheticState.SYNTHETIC).make()
-                .load(getClass().getClassLoader(),
-                        ClassLoadingStrategy.Default.WRAPPER)
-                .getLoaded();
-        TestComponent instance = syntheticClass.getDeclaredConstructor()
-                .newInstance();
+                .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER).getLoaded();
+        TestComponent instance = syntheticClass.getDeclaredConstructor().newInstance();
 
         Assert.assertNotSame(TestComponent.class, instance.getClass());
-        Assert.assertSame(TestComponent.class,
-                instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestComponent.class,
-                instantiator.getApplicationClass(instance.getClass()));
+        Assert.assertSame(TestComponent.class, instantiator.getApplicationClass(instance));
+        Assert.assertSame(TestComponent.class, instantiator.getApplicationClass(instance.getClass()));
     }
 
     private Lookup mockLookup(VaadinService service) {

@@ -82,14 +82,11 @@ public class MenuConfigurationTest {
 
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
         Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getInstantiator())
-                .thenReturn(new DefaultInstantiator(vaadinService));
+        Mockito.when(vaadinService.getInstantiator()).thenReturn(new DefaultInstantiator(vaadinService));
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(deploymentConfiguration);
+        Mockito.when(vaadinService.getDeploymentConfiguration()).thenReturn(deploymentConfiguration);
 
-        Mockito.when(deploymentConfiguration.getFrontendFolder())
-                .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getFrontendFolder()).thenReturn(tmpDir.getRoot());
 
         VaadinService.setCurrent(vaadinService);
 
@@ -114,45 +111,34 @@ public class MenuConfigurationTest {
 
     @Test
     public void testWithLoggedInUser_userHasRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(true);
+        Mockito.when(request.getUserPrincipal()).thenReturn(Mockito.mock(Principal.class));
+        Mockito.when(request.isUserInRole(Mockito.anyString())).thenReturn(true);
 
         File generated = tmpDir.newFolder(GENERATED);
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
-        Files.writeString(clientFiles.toPath(),
-                MenuRegistryTest.testClientRouteFile);
+        Files.writeString(clientFiles.toPath(), MenuRegistryTest.testClientRouteFile);
 
         List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
-        Assert.assertEquals(
-                "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
-                4, menuEntries.size());
-        assertOrder(menuEntries,
-                new String[] { "", "/about", "/hilla", "/hilla/sub" });
+        Assert.assertEquals("List of menu items has incorrect size. Excluded menu item like /login is not expected.", 4,
+                menuEntries.size());
+        assertOrder(menuEntries, new String[] { "", "/about", "/hilla", "/hilla/sub" });
     }
 
     @Test
     public void getMenuItemsList_returnsCorrectPaths() throws IOException {
         File generated = tmpDir.newFolder(GENERATED);
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
-        Files.writeString(clientFiles.toPath(),
-                MenuRegistryTest.testClientRouteFile);
+        Files.writeString(clientFiles.toPath(), MenuRegistryTest.testClientRouteFile);
 
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(registry);
-        Arrays.asList(MenuRegistryTest.MyRoute.class,
-                MenuRegistryTest.MyInfo.class,
-                MenuRegistryTest.MyRequiredParamRoute.class,
-                MenuRegistryTest.MyRequiredAndOptionalParamRoute.class,
-                MenuRegistryTest.MyOptionalParamRoute.class,
-                MenuRegistryTest.MyVarargsParamRoute.class)
+        RouteConfiguration routeConfiguration = RouteConfiguration.forRegistry(registry);
+        Arrays.asList(MenuRegistryTest.MyRoute.class, MenuRegistryTest.MyInfo.class,
+                MenuRegistryTest.MyRequiredParamRoute.class, MenuRegistryTest.MyRequiredAndOptionalParamRoute.class,
+                MenuRegistryTest.MyOptionalParamRoute.class, MenuRegistryTest.MyVarargsParamRoute.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
         Assert.assertEquals(5, menuEntries.size());
-        assertOrder(menuEntries, new String[] { "", "/home", "/info", "/param",
-                "/param/varargs" });
+        assertOrder(menuEntries, new String[] { "", "/home", "/info", "/param", "/param/varargs" });
 
         Map<String, MenuEntry> mapMenuItems = menuEntries.stream()
                 .collect(Collectors.toMap(MenuEntry::path, item -> item));
@@ -163,99 +149,73 @@ public class MenuConfigurationTest {
 
     @Test
     public void getMenuItemsList_assertOrder() {
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(registry);
-        Arrays.asList(MenuRegistryTest.TestRouteA.class,
-                MenuRegistryTest.TestRouteB.class,
-                MenuRegistryTest.TestRouteC.class,
-                MenuRegistryTest.TestRouteD.class,
-                MenuRegistryTest.TestRouteDA.class,
-                MenuRegistryTest.TestRouteDB.class)
+        RouteConfiguration routeConfiguration = RouteConfiguration.forRegistry(registry);
+        Arrays.asList(MenuRegistryTest.TestRouteA.class, MenuRegistryTest.TestRouteB.class,
+                MenuRegistryTest.TestRouteC.class, MenuRegistryTest.TestRouteD.class,
+                MenuRegistryTest.TestRouteDA.class, MenuRegistryTest.TestRouteDB.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
         ;
         Assert.assertEquals(4, menuEntries.size());
-        assertOrder(menuEntries,
-                new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
+        assertOrder(menuEntries, new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
     }
 
-    private void assertOrder(List<MenuEntry> menuEntries,
-            String[] expectedOrder) {
+    private void assertOrder(List<MenuEntry> menuEntries, String[] expectedOrder) {
         for (int i = 0; i < menuEntries.size(); i++) {
             Assert.assertEquals(expectedOrder[i], menuEntries.get(i).path());
         }
     }
 
-    private void assertClientRoutes(Map<String, MenuEntry> menuOptions,
-            boolean authenticated, boolean hasRole) {
-        Assert.assertTrue("Client route '' missing",
-                menuOptions.containsKey(""));
+    private void assertClientRoutes(Map<String, MenuEntry> menuOptions, boolean authenticated, boolean hasRole) {
+        Assert.assertTrue("Client route '' missing", menuOptions.containsKey(""));
         Assert.assertEquals("Public", menuOptions.get("").title());
 
         if (authenticated) {
-            Assert.assertTrue("Client route 'about' missing",
-                    menuOptions.containsKey("/about"));
+            Assert.assertTrue("Client route 'about' missing", menuOptions.containsKey("/about"));
             Assert.assertEquals("About", menuOptions.get("/about").title());
 
             if (hasRole) {
-                Assert.assertTrue("Client route 'hilla' missing",
-                        menuOptions.containsKey("/hilla"));
+                Assert.assertTrue("Client route 'hilla' missing", menuOptions.containsKey("/hilla"));
                 Assert.assertEquals("Hilla", menuOptions.get("/hilla").title());
 
-                Assert.assertTrue("Client child route 'hilla/sub' missing",
-                        menuOptions.containsKey("/hilla/sub"));
-                Assert.assertEquals("Hilla Sub",
-                        menuOptions.get("/hilla/sub").title());
+                Assert.assertTrue("Client child route 'hilla/sub' missing", menuOptions.containsKey("/hilla/sub"));
+                Assert.assertEquals("Hilla Sub", menuOptions.get("/hilla/sub").title());
             } else {
-                Assert.assertFalse(
-                        "Roles do not match no hilla should be available",
+                Assert.assertFalse("Roles do not match no hilla should be available",
                         menuOptions.containsKey("/hilla"));
             }
         } else {
-            Assert.assertFalse(
-                    "Not authenticated about view should not be available",
+            Assert.assertFalse("Not authenticated about view should not be available",
                     menuOptions.containsKey("/about"));
-            Assert.assertFalse(
-                    "Not authenticated hilla view should not be available",
+            Assert.assertFalse("Not authenticated hilla view should not be available",
                     menuOptions.containsKey("/hilla"));
         }
 
-        Assert.assertFalse("Client route 'login' should be excluded",
-                menuOptions.containsKey("/login"));
+        Assert.assertFalse("Client route 'login' should be excluded", menuOptions.containsKey("/login"));
     }
 
     private void assertServerRoutes(Map<String, MenuEntry> menuItems) {
-        Assert.assertTrue("Server route 'home' missing",
-                menuItems.containsKey("/home"));
+        Assert.assertTrue("Server route 'home' missing", menuItems.containsKey("/home"));
         Assert.assertEquals("Home", menuItems.get("/home").title());
-        Assert.assertEquals(MenuRegistryTest.MyRoute.class,
-                menuItems.get("/home").menuClass());
+        Assert.assertEquals(MenuRegistryTest.MyRoute.class, menuItems.get("/home").menuClass());
 
-        Assert.assertTrue("Server route 'info' missing",
-                menuItems.containsKey("/info"));
+        Assert.assertTrue("Server route 'info' missing", menuItems.containsKey("/info"));
         Assert.assertEquals("MyInfo", menuItems.get("/info").title());
-        Assert.assertEquals(MenuRegistryTest.MyInfo.class,
-                menuItems.get("/info").menuClass());
+        Assert.assertEquals(MenuRegistryTest.MyInfo.class, menuItems.get("/info").menuClass());
     }
 
-    private void assertServerRoutesWithParameters(
-            Map<String, MenuEntry> menuItems, boolean excludeExpected) {
+    private void assertServerRoutesWithParameters(Map<String, MenuEntry> menuItems, boolean excludeExpected) {
         if (excludeExpected) {
-            Assert.assertFalse(
-                    "Server route '/param/:param' should be excluded",
+            Assert.assertFalse("Server route '/param/:param' should be excluded",
                     menuItems.containsKey("/param/:param"));
-            Assert.assertFalse(
-                    "Server route '/param/:param1' should be excluded",
+            Assert.assertFalse("Server route '/param/:param1' should be excluded",
                     menuItems.containsKey("/param/:param1"));
         }
 
-        Assert.assertTrue(
-                "Server route with optional parameters '/param' missing",
-                menuItems.containsKey("/param"));
+        Assert.assertTrue("Server route with optional parameters '/param' missing", menuItems.containsKey("/param"));
 
-        Assert.assertTrue(
-                "Server route with optional parameters '/param/varargs' missing",
+        Assert.assertTrue("Server route with optional parameters '/param/varargs' missing",
                 menuItems.containsKey("/param/varargs"));
     }
 }

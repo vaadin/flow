@@ -28,8 +28,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.RouteAndQueryParametersView", layout = ViewTestLayout.class)
-public class RouteAndQueryParametersView extends Div
-        implements HasUrlParameter<Integer> {
+public class RouteAndQueryParametersView extends Div implements HasUrlParameter<Integer> {
     static final String REQUEST_PARAM_NAME = "testRequestParam";
 
     private final Paragraph paramView;
@@ -42,29 +41,23 @@ public class RouteAndQueryParametersView extends Div
         NativeButton nativeButton = new NativeButton("Navigate with both");
         nativeButton.setId("both");
         nativeButton.addClickListener(e -> {
-            UI.getCurrent().navigate(RouteAndQueryParametersView.class, 5,
-                    QueryParameters.of("foo", "bar"));
+            UI.getCurrent().navigate(RouteAndQueryParametersView.class, 5, QueryParameters.of("foo", "bar"));
         });
         add(nativeButton);
 
-        NativeButton withQueryParametersOnly = new NativeButton(
-                "Navigate with qp");
+        NativeButton withQueryParametersOnly = new NativeButton("Navigate with qp");
         withQueryParametersOnly.setId("qponly");
         withQueryParametersOnly.addClickListener(e -> {
-            UI.getCurrent().navigate(RouteAndQueryParametersView.class,
-                    QueryParameters.of("foo", "bar"));
+            UI.getCurrent().navigate(RouteAndQueryParametersView.class, QueryParameters.of("foo", "bar"));
         });
         add(withQueryParametersOnly);
 
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter Integer parameter) {
-        String queryString = event.getLocation().getQueryParameters()
-                .getQueryString();
-        paramView.setText("route parameter: " + parameter + ", query string:"
-                + queryString);
+    public void setParameter(BeforeEvent event, @OptionalParameter Integer parameter) {
+        String queryString = event.getLocation().getQueryParameters().getQueryString();
+        paramView.setText("route parameter: " + parameter + ", query string:" + queryString);
 
     }
 }

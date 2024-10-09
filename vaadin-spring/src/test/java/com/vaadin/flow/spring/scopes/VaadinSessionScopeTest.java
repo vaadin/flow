@@ -73,8 +73,7 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
         VaadinSession session = mockSession();
         SpringVaadinSession springSession = (SpringVaadinSession) session;
 
-        doCallRealMethod().when(springSession)
-                .addDestroyListener(Mockito.any());
+        doCallRealMethod().when(springSession).addDestroyListener(Mockito.any());
 
         doCallRealMethod().when(springSession).fireSessionDestroy();
 

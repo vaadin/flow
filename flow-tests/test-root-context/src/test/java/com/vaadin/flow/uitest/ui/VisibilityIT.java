@@ -54,8 +54,7 @@ public class VisibilityIT extends ChromeBrowserTest {
         // switch the visibility of the parent off and on
         scrollIntoViewAndClick(visibilityButton);
 
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                div.getAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(), div.getAttribute("hidden"));
 
         scrollIntoViewAndClick(visibilityButton);
 
@@ -66,8 +65,7 @@ public class VisibilityIT extends ChromeBrowserTest {
     public void checkChildVisibility() {
         open();
 
-        WebElement visibilityButton = findElement(
-                By.id("updateLabelVisibiity"));
+        WebElement visibilityButton = findElement(By.id("updateLabelVisibiity"));
         scrollIntoViewAndClick(visibilityButton);
 
         // The element is initially hidden. It shouldn't be bound.
@@ -97,7 +95,6 @@ public class VisibilityIT extends ChromeBrowserTest {
         // make it invisible
         scrollIntoViewAndClick(visibilityButton);
 
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                label.getAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(), label.getAttribute("hidden"));
     }
 }

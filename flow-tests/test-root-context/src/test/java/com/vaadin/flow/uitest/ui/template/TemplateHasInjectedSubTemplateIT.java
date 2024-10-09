@@ -24,8 +24,7 @@ import com.vaadin.testbench.TestBenchElement;
 public class TemplateHasInjectedSubTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void injectedSubTemplate_injectedInstanceWorks()
-            throws InterruptedException {
+    public void injectedSubTemplate_injectedInstanceWorks() throws InterruptedException {
         open();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");

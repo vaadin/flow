@@ -119,8 +119,7 @@ public abstract class AbstractScopeTest {
 
     }
 
-    protected void registerDestructionCallback_currentScopeIsSet_objectIsStored(
-            AbstractScope scope) {
+    protected void registerDestructionCallback_currentScopeIsSet_objectIsStored(AbstractScope scope) {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
 
@@ -131,13 +130,10 @@ public abstract class AbstractScopeTest {
 
     @SuppressWarnings("unchecked")
     protected VaadinSession mockSession() {
-        SpringVaadinSession session = Mockito.mock(TestSession.class,
-                Mockito.withSettings().useConstructor());
-        doCallRealMethod().when(session).setAttribute(Mockito.any(Class.class),
-                Mockito.any());
+        SpringVaadinSession session = Mockito.mock(TestSession.class, Mockito.withSettings().useConstructor());
+        doCallRealMethod().when(session).setAttribute(Mockito.any(Class.class), Mockito.any());
         doCallRealMethod().when(session).getAttribute(Mockito.any(Class.class));
-        doCallRealMethod().when(session)
-                .getAttribute(Mockito.any(String.class));
+        doCallRealMethod().when(session).getAttribute(Mockito.any(String.class));
 
         doCallRealMethod().when(session).addUI(Mockito.any());
         doCallRealMethod().when(session).removeUI(Mockito.any());
@@ -148,20 +144,17 @@ public abstract class AbstractScopeTest {
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         final Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
+        ApplicationConfiguration appConfig = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
-                ArgumentMatchers.any(Supplier.class)))
+        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class), ArgumentMatchers.any(Supplier.class)))
                 .then(i -> i.getArgument(1, Supplier.class).get());
 
         Mockito.when(appConfig.getContext()).thenReturn(context);
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                appConfig, getClass(), initParameters);
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(appConfig, getClass(),
+                initParameters);
         when(session.getConfiguration()).thenReturn(config);
 
         VaadinSession.setCurrent(session);

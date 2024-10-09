@@ -46,13 +46,11 @@ public class ProdBundleUtils {
      * @return the bundle directory
      */
     public static File getProdBundle(File projectDir) {
-        return new File(projectDir,
-                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
+        return new File(projectDir, Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
     }
 
     /**
-     * Get the stats.json for the application specific production bundle or from
-     * the default bundle if it exists.
+     * Get the stats.json for the application specific production bundle or from the default bundle if it exists.
      *
      * @param projectDir
      *            the project base directory
@@ -62,27 +60,22 @@ public class ProdBundleUtils {
      * @throws IOException
      *             if an I/O exception occurs.
      */
-    public static String findBundleStatsJson(File projectDir,
-            ClassFinder finder) throws IOException {
+    public static String findBundleStatsJson(File projectDir, ClassFinder finder) throws IOException {
         String statsFile = "config/stats.json";
         File prodBundleFile = getProdBundle(projectDir);
         if (prodBundleFile.exists()) {
             // Has a production bundle
             try {
-                String stats = CompressUtil
-                        .readFileContentFromZip(prodBundleFile, statsFile);
+                String stats = CompressUtil.readFileContentFromZip(prodBundleFile, statsFile);
                 if (stats != null) {
                     return stats;
                 }
             } catch (IOException e) {
-                getLogger().error(
-                        "Failed to read stats.json from the production bundle",
-                        e);
+                getLogger().error("Failed to read stats.json from the production bundle", e);
             }
         }
 
-        URL statsJson = finder
-                .getResource(Constants.PROD_BUNDLE_JAR_PATH + statsFile);
+        URL statsJson = finder.getResource(Constants.PROD_BUNDLE_JAR_PATH + statsFile);
         if (statsJson == null) {
             getLogger().warn(
                     "There is no prod-bundle in the project or on the classpath nor is there a default production bundle included.");
@@ -105,8 +98,7 @@ public class ProdBundleUtils {
      *            prod bundle location
      */
     public static void compressBundle(File projectDir, File prodBundleFolder) {
-        File bundleFile = new File(projectDir,
-                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
+        File bundleFile = new File(projectDir, Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (bundleFile.exists()) {
             bundleFile.delete();
         } else {
@@ -116,8 +108,7 @@ public class ProdBundleUtils {
     }
 
     /**
-     * Unpack the compressed prod bundle from src/main/bundles if it exists into
-     * the given location.
+     * Unpack the compressed prod bundle from src/main/bundles if it exists into the given location.
      *
      * @param projectDir
      *            current project root directory
@@ -125,8 +116,7 @@ public class ProdBundleUtils {
      *            unpacked prod bundle location
      */
     public static void unpackBundle(File projectDir, File prodBundleFolder) {
-        File bundleFile = new File(projectDir,
-                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
+        File bundleFile = new File(projectDir, Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
         CompressUtil.uncompressFile(bundleFile, prodBundleFolder);
     }
 

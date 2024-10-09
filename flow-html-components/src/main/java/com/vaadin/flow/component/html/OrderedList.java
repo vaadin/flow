@@ -30,8 +30,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.OL)
-public class OrderedList extends HtmlContainer
-        implements ClickNotifier<OrderedList> {
+public class OrderedList extends HtmlContainer implements ClickNotifier<OrderedList> {
 
     /**
      * Defines the numbering type of the list items.
@@ -70,8 +69,8 @@ public class OrderedList extends HtmlContainer
         }
 
         private static NumberingType fromAttributeValue(String value) {
-            return Stream.of(values()).filter(type -> type.value.equals(value))
-                    .findFirst().orElseThrow(IllegalArgumentException::new);
+            return Stream.of(values()).filter(type -> type.value.equals(value)).findFirst()
+                    .orElseThrow(IllegalArgumentException::new);
         }
     }
 
@@ -86,8 +85,7 @@ public class OrderedList extends HtmlContainer
     }
 
     /**
-     * Creates a new empty ordered list with the specified
-     * {@link NumberingType}.
+     * Creates a new empty ordered list with the specified {@link NumberingType}.
      *
      * @param type
      *            the numbering type of the list items
@@ -112,8 +110,7 @@ public class OrderedList extends HtmlContainer
         try {
             return NumberingType.fromAttributeValue(value);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(
-                    "The attribute type has an illegal value: " + value, e);
+            throw new IllegalStateException("The attribute type has an illegal value: " + value, e);
         }
     }
 

@@ -95,8 +95,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
     /**
-     * The live configuration for this route registry. This can only be updated
-     * through {@link #configure(Configuration)} for concurrency reasons.
+     * The live configuration for this route registry. This can only be updated through
+     * {@link #configure(Configuration)} for concurrency reasons.
      */
     private volatile ConfiguredRoutes configuredRoutes = new ConfiguredRoutes();
     private volatile ConfigureRoutes editing = null;
@@ -147,19 +147,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 configuredRoutes = new ConfiguredRoutes(editing);
 
                 if (!routesChangedListeners.isEmpty()) {
-                    List<RouteBaseData<?>> oldRoutes = flattenRoutes(
-                            getRegisteredRoutes(oldConfiguration));
-                    List<RouteBaseData<?>> newRoutes = flattenRoutes(
-                            getRegisteredRoutes(configuredRoutes));
+                    List<RouteBaseData<?>> oldRoutes = flattenRoutes(getRegisteredRoutes(oldConfiguration));
+                    List<RouteBaseData<?>> newRoutes = flattenRoutes(getRegisteredRoutes(configuredRoutes));
                     List<RouteBaseData<?>> added = new ArrayList<>();
                     List<RouteBaseData<?>> removed = new ArrayList<>();
 
-                    oldRoutes.stream()
-                            .filter(route -> !newRoutes.contains(route))
-                            .forEach(removed::add);
-                    newRoutes.stream()
-                            .filter(route -> !oldRoutes.contains(route))
-                            .forEach(added::add);
+                    oldRoutes.stream().filter(route -> !newRoutes.contains(route)).forEach(removed::add);
+                    newRoutes.stream().filter(route -> !oldRoutes.contains(route)).forEach(added::add);
 
                     fireEvent(new RoutesChangedEvent(this, added, removed));
                 }
@@ -179,13 +173,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *            event containing changes
      */
     protected void fireEvent(RoutesChangedEvent routeChangedEvent) {
-        routesChangedListeners
-                .forEach(listener -> listener.routesChanged(routeChangedEvent));
+        routesChangedListeners.forEach(listener -> listener.routesChanged(routeChangedEvent));
     }
 
     @Override
-    public Registration addRoutesChangeListener(
-            RoutesChangedListener listener) {
+    public Registration addRoutesChangeListener(RoutesChangedListener listener) {
         return Registration.addAndRemove(routesChangedListeners, listener);
     }
 
@@ -196,9 +188,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     /**
      * Get the current valid configuration.
      * <p>
-     * Note! there may exist a possibility that someone updates this while it's
-     * being read, but the given configuration is valid at the given point in
-     * time.
+     * Note! there may exist a possibility that someone updates this while it's being read, but the given configuration
+     * is valid at the given point in time.
      *
      * @return current state of the registry as a value object
      */
@@ -215,8 +206,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public List<RouteData> getRegisteredAccessibleMenuRoutes(
-            VaadinRequest vaadinRequest,
+    public List<RouteData> getRegisteredAccessibleMenuRoutes(VaadinRequest vaadinRequest,
             Collection<BeforeEnterListener> accessControls) {
         if (vaadinRequest == null) {
             return Collections.emptyList();
@@ -225,118 +215,79 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (vaadinService == null) {
             return Collections.emptyList();
         }
-        MenuAccessControl.PopulateClientMenu populateClientSideMenu = vaadinService
-                .getInstantiator().getMenuAccessControl()
-                .getPopulateClientSideMenu();
+        MenuAccessControl.PopulateClientMenu populateClientSideMenu = vaadinService.getInstantiator()
+                .getMenuAccessControl().getPopulateClientSideMenu();
         if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.NEVER) {
             return Collections.emptyList();
         }
 
-        List<NavigationAccessControl> navigationAccessControls = findListOf(
-                NavigationAccessControl.class, accessControls);
-        List<ViewAccessChecker> legacyViewAccessCheckers = findListOf(
-                ViewAccessChecker.class, accessControls);
-        if (navigationAccessControls.isEmpty()
-                && legacyViewAccessCheckers.isEmpty()) {
+        List<NavigationAccessControl> navigationAccessControls = findListOf(NavigationAccessControl.class,
+                accessControls);
+        List<ViewAccessChecker> legacyViewAccessCheckers = findListOf(ViewAccessChecker.class, accessControls);
+        if (navigationAccessControls.isEmpty() && legacyViewAccessCheckers.isEmpty()) {
             return getMenuRouteCandidates().toList();
         }
-        return getMenuRouteCandidates().filter(route -> navigationAccessControls
-                .stream().allMatch(accessControl -> {
-                    NavigationContext navigationContext = accessControl
-                            .createNavigationContext(
-                                    route.getNavigationTarget(),
-                                    route.getTemplate(), vaadinService,
-                                    vaadinRequest);
-                    return accessControl.checkAccess(navigationContext, true)
-                            .decision() == AccessCheckDecision.ALLOW;
-                })).filter(route -> legacyViewAccessCheckers.stream()
-                        .allMatch(legacyAccessChecker -> {
-                            NavigationContext navigationContext = legacyAccessChecker
-                                    .createNavigationContext(
-                                            route.getNavigationTarget(),
-                                            route.getTemplate(), vaadinService,
-                                            vaadinRequest);
-                            return legacyAccessChecker
-                                    .checkAccess(navigationContext)
-                                    .decision() == AccessCheckDecision.ALLOW;
-                        }))
-                .toList();
+        return getMenuRouteCandidates().filter(route -> navigationAccessControls.stream().allMatch(accessControl -> {
+            NavigationContext navigationContext = accessControl.createNavigationContext(route.getNavigationTarget(),
+                    route.getTemplate(), vaadinService, vaadinRequest);
+            return accessControl.checkAccess(navigationContext, true).decision() == AccessCheckDecision.ALLOW;
+        })).filter(route -> legacyViewAccessCheckers.stream().allMatch(legacyAccessChecker -> {
+            NavigationContext navigationContext = legacyAccessChecker.createNavigationContext(
+                    route.getNavigationTarget(), route.getTemplate(), vaadinService, vaadinRequest);
+            return legacyAccessChecker.checkAccess(navigationContext).decision() == AccessCheckDecision.ALLOW;
+        })).toList();
     }
 
     private Stream<RouteData> getMenuRouteCandidates() {
-        return getRegisteredRoutes().stream()
-                .filter(route -> route.getMenuData() != null);
+        return getRegisteredRoutes().stream().filter(route -> route.getMenuData() != null);
     }
 
     private <T> List<T> findListOf(Class<T> targetType, Collection<?> objects) {
         return Stream.ofNullable(objects).flatMap(Collection::stream)
-                .filter(event -> targetType.isAssignableFrom(event.getClass()))
-                .map(targetType::cast).toList();
+                .filter(event -> targetType.isAssignableFrom(event.getClass())).map(targetType::cast).toList();
     }
 
-    private List<RouteData> getRegisteredRoutes(
-            ConfiguredRoutes configuration) {
+    private List<RouteData> getRegisteredRoutes(ConfiguredRoutes configuration) {
         var routePathMap = new HashMap<>(configuration.getRoutesMap());
         List<RouteData> registeredRoutes = new ArrayList<>();
-        configuration.getTargetRoutes()
-                .forEach((target, template) -> populateRegisteredRoutes(
-                        configuration, registeredRoutes, routePathMap, target,
-                        template));
+        configuration.getTargetRoutes().forEach((target, template) -> populateRegisteredRoutes(configuration,
+                registeredRoutes, routePathMap, target, template));
 
         Collections.sort(registeredRoutes);
 
         return Collections.unmodifiableList(registeredRoutes);
     }
 
-    private void populateRegisteredRoutes(ConfiguredRoutes configuration,
-            List<RouteData> registeredRoutes,
-            Map<String, RouteTarget> routePathMap,
-            Class<? extends Component> target, String template) {
+    private void populateRegisteredRoutes(ConfiguredRoutes configuration, List<RouteData> registeredRoutes,
+            Map<String, RouteTarget> routePathMap, Class<? extends Component> target, String template) {
         List<RouteAliasData> routeAliases = new ArrayList<>();
 
-        routePathMap.entrySet().stream()
-                .filter(entry -> entry.getValue().containsTarget(target))
-                .map(Map.Entry::getKey).collect(toList()).stream()
-                .peek(routePathMap::remove)
-                .filter(routePathTemplate -> !routePathTemplate
-                        .equals(template))
-                .forEach(aliasRoutePathTemplate -> {
-                    routeAliases.add(new RouteAliasData(
-                            getParentLayouts(configuration,
-                                    aliasRoutePathTemplate),
-                            aliasRoutePathTemplate,
-                            configuration.getParameters(aliasRoutePathTemplate),
-                            target));
+        routePathMap.entrySet().stream().filter(entry -> entry.getValue().containsTarget(target)).map(Map.Entry::getKey)
+                .collect(toList()).stream().peek(routePathMap::remove)
+                .filter(routePathTemplate -> !routePathTemplate.equals(template)).forEach(aliasRoutePathTemplate -> {
+                    routeAliases.add(new RouteAliasData(getParentLayouts(configuration, aliasRoutePathTemplate),
+                            aliasRoutePathTemplate, configuration.getParameters(aliasRoutePathTemplate), target));
                 });
-        List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
-                configuration, template);
+        List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(configuration, template);
 
         var parameters = configuration.getParameters(template);
         // exclude route from the menu if it has any required parameters
         boolean excludeFromMenu = parameters != null && !parameters.isEmpty()
-                && parameters.values().stream().anyMatch(
-                        param -> !param.isOptional() && !param.isVarargs());
-        MenuData menuData = AnnotationReader
-                .getAnnotationFor(target, Menu.class)
+                && parameters.values().stream().anyMatch(param -> !param.isOptional() && !param.isVarargs());
+        MenuData menuData = AnnotationReader.getAnnotationFor(target, Menu.class)
                 .map(menu -> new MenuData(
-                        (menu.title() == null || menu.title().isBlank())
-                                ? MenuRegistry.getTitle(target)
-                                : menu.title(),
-                        (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
-                                : menu.order(),
-                        excludeFromMenu,
+                        (menu.title() == null || menu.title().isBlank()) ? MenuRegistry.getTitle(target) : menu.title(),
+                        (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null : menu.order(), excludeFromMenu,
                         (menu.icon().isBlank() ? null : menu.icon()), target))
                 .orElse(null);
 
-        RouteData route = new RouteData(parentLayouts, template, parameters,
-                target, routeAliases, menuData);
+        RouteData route = new RouteData(parentLayouts, template, parameters, target, routeAliases, menuData);
         registeredRoutes.add(route);
     }
 
     /**
-     * Flatten route data so that all route aliases are also as their own
-     * entries in the list. Removes any route aliases as the route is the same
-     * even if aliases change.
+     * Flatten route data so that all route aliases are also as their own entries in the list. Removes any route aliases
+     * as the route is the same even if aliases change.
      *
      * @param routeData
      *            route data to flatten.
@@ -345,10 +296,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private List<RouteBaseData<?>> flattenRoutes(List<RouteData> routeData) {
         List<RouteBaseData<?>> flatRoutes = new ArrayList<>();
         for (RouteData route : routeData) {
-            RouteData nonAliasCollection = new RouteData(
-                    route.getParentLayouts(), route.getTemplate(),
-                    route.getRouteParameters(), route.getNavigationTarget(),
-                    Collections.emptyList(), route.getMenuData());
+            RouteData nonAliasCollection = new RouteData(route.getParentLayouts(), route.getTemplate(),
+                    route.getRouteParameters(), route.getNavigationTarget(), Collections.emptyList(),
+                    route.getMenuData());
 
             flatRoutes.add(nonAliasCollection);
             route.getRouteAliases().forEach(flatRoutes::add);
@@ -357,8 +307,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return flatRoutes;
     }
 
-    private List<Class<? extends RouterLayout>> getParentLayouts(
-            ConfiguredRoutes configuration, String template) {
+    private List<Class<? extends RouterLayout>> getParentLayouts(ConfiguredRoutes configuration, String template) {
         RouteTarget routeTarget = configuration.getRouteTarget(template);
         if (routeTarget != null) {
             return routeTarget.getParentLayouts();
@@ -367,45 +316,35 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public Optional<String> getTargetUrl(
-            Class<? extends Component> navigationTarget) {
+    public Optional<String> getTargetUrl(Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget, null);
 
-        return Optional
-                .ofNullable(getConfiguration().getTargetUrl(navigationTarget));
+        return Optional.ofNullable(getConfiguration().getTargetUrl(navigationTarget));
     }
 
     @Override
-    public Optional<String> getTargetUrl(
-            Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+    public Optional<String> getTargetUrl(Class<? extends Component> navigationTarget, RouteParameters parameters) {
         Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
-        HasUrlParameterFormat.checkMandatoryParameter(navigationTarget,
-                parameters);
+        HasUrlParameterFormat.checkMandatoryParameter(navigationTarget, parameters);
 
-        return Optional.ofNullable(
-                getConfiguration().getTargetUrl(navigationTarget, parameters));
+        return Optional.ofNullable(getConfiguration().getTargetUrl(navigationTarget, parameters));
     }
 
     @Override
-    public Optional<String> getTemplate(
-            Class<? extends Component> navigationTarget) {
+    public Optional<String> getTemplate(Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
-        return Optional
-                .ofNullable(getConfiguration().getTemplate(navigationTarget));
+        return Optional.ofNullable(getConfiguration().getTemplate(navigationTarget));
     }
 
     @Override
-    public void setRoute(String path,
-            Class<? extends Component> navigationTarget,
+    public void setRoute(String path, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
         configureWithFullTemplate(path, navigationTarget,
-                (configuration, fullTemplate) -> configuration
-                        .setRoute(fullTemplate, navigationTarget, parentChain));
+                (configuration, fullTemplate) -> configuration.setRoute(fullTemplate, navigationTarget, parentChain));
     }
 
     @Override
@@ -425,14 +364,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void removeRoute(String path,
-            Class<? extends Component> navigationTarget) {
+    public void removeRoute(String path, Class<? extends Component> navigationTarget) {
         if (!getConfiguration().hasTemplate(path)) {
             return;
         }
         configureWithFullTemplate(path, navigationTarget,
-                (configuration, fullTemplate) -> configuration
-                        .removeRoute(fullTemplate, navigationTarget));
+                (configuration, fullTemplate) -> configuration.removeRoute(fullTemplate, navigationTarget));
     }
 
     @Override
@@ -441,23 +378,18 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public boolean hasMandatoryParameter(
-            Class<? extends Component> navigationTarget) {
+    public boolean hasMandatoryParameter(Class<? extends Component> navigationTarget) {
         String template = getTemplate(navigationTarget)
-                .orElseThrow(() -> new NotFoundException(
-                        "Requested navigation target is not registered."));
+                .orElseThrow(() -> new NotFoundException("Requested navigation target is not registered."));
         return (HasUrlParameterFormat.hasUrlParameter(navigationTarget)
-                && HasUrlParameterFormat
-                        .hasMandatoryParameter(navigationTarget))
+                && HasUrlParameterFormat.hasMandatoryParameter(navigationTarget))
                 || RouteFormat.hasRequiredParameter(template);
     }
 
-    private void configureWithFullTemplate(String path,
-            Class<? extends Component> navigationTarget,
+    private void configureWithFullTemplate(String path, Class<? extends Component> navigationTarget,
             SerializableBiConsumer<ConfigureRoutes, String> templateConfiguration) {
         configure(configuration -> {
-            templateConfiguration.accept(configuration,
-                    HasUrlParameterFormat.getTemplate(path, navigationTarget));
+            templateConfiguration.accept(configuration, HasUrlParameterFormat.getTemplate(path, navigationTarget));
         });
     }
 
@@ -467,59 +399,49 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters) {
+    public RouteTarget getRouteTarget(Class<? extends Component> target, RouteParameters parameters) {
         return getConfiguration().getRouteTarget(target, parameters);
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String url) {
+    public Optional<Class<? extends Component>> getNavigationTarget(String url) {
         Objects.requireNonNull(url, "url must not be null.");
         return getConfiguration().getTarget(url);
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(String url,
-            List<String> segments) {
+    public Optional<Class<? extends Component>> getNavigationTarget(String url, List<String> segments) {
         return getNavigationTarget(PathUtil.getPath(url, segments));
     }
 
     /**
-     * Add the given error target to the exceptionTargetMap. This will handle
-     * existing overlapping exception types by assigning the correct error
-     * target according to inheritance or throw if existing and new are not
-     * related.
+     * Add the given error target to the exceptionTargetMap. This will handle existing overlapping exception types by
+     * assigning the correct error target according to inheritance or throw if existing and new are not related.
      *
      * @param target
      *            error handler target
      * @param exceptionTargetsMap
      *            map of existing error handlers
      * @throws InvalidRouteConfigurationException
-     *             if trying to add a non related exception handler for which a
-     *             handler already exists
+     *             if trying to add a non related exception handler for which a handler already exists
      */
     protected void addErrorTarget(Class<? extends Component> target,
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
-        Class<? extends Exception> exceptionType = ReflectTools
-                .getGenericInterfaceType(target, HasErrorParameter.class)
+        Class<? extends Exception> exceptionType = ReflectTools.getGenericInterfaceType(target, HasErrorParameter.class)
                 .asSubclass(Exception.class);
 
         if (exceptionTargetsMap.containsKey(exceptionType)) {
-            handleRegisteredExceptionType(exceptionTargetsMap, target,
-                    exceptionType);
+            handleRegisteredExceptionType(exceptionTargetsMap, target, exceptionType);
         } else {
             exceptionTargetsMap.put(exceptionType, target);
         }
     }
 
     /**
-     * Register a child handler if parent registered or leave as is if child
-     * registered.
+     * Register a child handler if parent registered or leave as is if child registered.
      * <p>
-     * If the target is not related to the registered handler and neither
-     * handler is annotated as {@link DefaultErrorHandler} then throw
-     * configuration exception as only one handler for each exception type is
+     * If the target is not related to the registered handler and neither handler is annotated as
+     * {@link DefaultErrorHandler} then throw configuration exception as only one handler for each exception type is
      * allowed.
      *
      * @param target
@@ -527,16 +449,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * @param exceptionType
      *            type of the handled exception
      * @throws InvalidRouteConfigurationException
-     *             thrown if multiple exception handlers are registered for the
-     *             same exception without relation or the other being a default
-     *             handler
+     *             thrown if multiple exception handlers are registered for the same exception without relation or the
+     *             other being a default handler
      */
     private void handleRegisteredExceptionType(
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
-            Class<? extends Component> target,
-            Class<? extends Exception> exceptionType) {
-        Class<? extends Component> registered = exceptionTargetsMap
-                .get(exceptionType);
+            Class<? extends Component> target, Class<? extends Exception> exceptionType) {
+        Class<? extends Component> registered = exceptionTargetsMap.get(exceptionType);
 
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
@@ -546,28 +465,25 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             } else if (!target.isAnnotationPresent(DefaultErrorHandler.class)) {
                 String msg = String.format(
                         "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                        target.getName(), registered.getName(),
-                        exceptionType.getName());
+                        target.getName(), registered.getName(), exceptionType.getName());
                 throw new InvalidRouteConfigurationException(msg);
             }
         }
     }
 
     /**
-     * Get the exception handler for given exception or recurse by exception
-     * cause until possible exception with handler found.
+     * Get the exception handler for given exception or recurse by exception cause until possible exception with handler
+     * found.
      *
      * @param exception
      *            exception to get handler for
      * @return Optional containing found handler or empty if none found
      */
     protected Optional<ErrorTargetEntry> searchByCause(Exception exception) {
-        Class<? extends Component> targetClass = getConfiguration()
-                .getExceptionHandlerByClass(exception.getClass());
+        Class<? extends Component> targetClass = getConfiguration().getExceptionHandlerByClass(exception.getClass());
 
         if (targetClass != null) {
-            return Optional.of(
-                    new ErrorTargetEntry(targetClass, exception.getClass()));
+            return Optional.of(new ErrorTargetEntry(targetClass, exception.getClass()));
         }
 
         Throwable cause = exception.getCause();
@@ -578,23 +494,18 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     /**
-     * Search given exception super classes to get exception handler for if any
-     * exist.
+     * Search given exception super classes to get exception handler for if any exist.
      *
      * @param exception
      *            exception to get handler for
      * @return Optional containing found handler or empty if none found
      */
-    protected Optional<ErrorTargetEntry> searchBySuperType(
-            Throwable exception) {
+    protected Optional<ErrorTargetEntry> searchBySuperType(Throwable exception) {
         Class<?> superClass = exception.getClass().getSuperclass();
-        while (superClass != null
-                && Exception.class.isAssignableFrom(superClass)) {
-            Class<? extends Component> targetClass = getConfiguration()
-                    .getExceptionHandlerByClass(superClass);
+        while (superClass != null && Exception.class.isAssignableFrom(superClass)) {
+            Class<? extends Component> targetClass = getConfiguration().getExceptionHandlerByClass(superClass);
             if (targetClass != null) {
-                return Optional.of(new ErrorTargetEntry(targetClass,
-                        superClass.asSubclass(Exception.class)));
+                return Optional.of(new ErrorTargetEntry(targetClass, superClass.asSubclass(Exception.class)));
             }
             superClass = superClass.getSuperclass();
         }
@@ -617,8 +528,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             return;
         }
         synchronized (layouts) {
-            layouts.entrySet()
-                    .removeIf(entry -> layout.equals(entry.getValue()));
+            layouts.entrySet().removeIf(entry -> layout.equals(entry.getValue()));
             if (layout.isAnnotationPresent(Layout.class)) {
                 layouts.put(layout.getAnnotation(Layout.class).value(), layout);
             }
@@ -631,21 +541,18 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     @Override
     public Class<? extends RouterLayout> getLayout(String path) {
-        Optional<String> first = layouts.keySet().stream()
-                .sorted(pathSortComparator())
+        Optional<String> first = layouts.keySet().stream().sorted(pathSortComparator())
                 .filter(key -> pathMatches(path, key)).findFirst();
         return first.map(layouts::get).orElse(null);
     }
 
     @Override
     public boolean hasLayout(String path) {
-        return layouts.keySet().stream()
-                .anyMatch(key -> pathMatches(path, key));
+        return layouts.keySet().stream().anyMatch(key -> pathMatches(path, key));
     }
 
     private Comparator<String> pathSortComparator() {
-        return (o1, o2) -> removeStartSlash(o2).split("/").length
-                - removeStartSlash(o1).split("/").length;
+        return (o1, o2) -> removeStartSlash(o2).split("/").length - removeStartSlash(o1).split("/").length;
     }
 
     private boolean pathMatches(String path, String layoutPath) {

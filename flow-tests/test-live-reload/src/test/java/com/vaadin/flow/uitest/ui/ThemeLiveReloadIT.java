@@ -47,13 +47,11 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
 
         TestBenchElement div1 = $("*").id("div1");
 
-        Assert.assertEquals(ORIGINAL_COLOR,
-                div1.getCssValue("backgroundColor"));
+        Assert.assertEquals(ORIGINAL_COLOR, div1.getCssValue("backgroundColor"));
 
         // Modify CSS
         File f = new File(stylesCssLocation);
-        String stylesCss = FileUtils.readFileToString(f,
-                StandardCharsets.UTF_8);
+        String stylesCss = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
         stylesCss = stylesCss.replace(ORIGINAL_COLOR, NEW_COLOR);
         FileUtils.writeStringToFile(f, stylesCss, StandardCharsets.UTF_8);
 
@@ -69,8 +67,7 @@ public class ThemeLiveReloadIT extends AbstractLiveReloadIT {
     @After
     public void resetCss() throws IOException {
         if (stylesCssLocation != null) {
-            File originalStylesCss = new File(stylesCssLocation
-                    .replace("styles.css", "styles.css.original"));
+            File originalStylesCss = new File(stylesCssLocation.replace("styles.css", "styles.css.original"));
             File stylesCss = new File(stylesCssLocation);
             FileUtils.copyFile(originalStylesCss, stylesCss);
         }

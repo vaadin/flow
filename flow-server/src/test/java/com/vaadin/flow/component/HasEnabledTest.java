@@ -21,8 +21,7 @@ import org.junit.Test;
 public class HasEnabledTest {
 
     @Tag(Tag.DIV)
-    private static class TestComponent extends Component
-            implements HasComponents {
+    private static class TestComponent extends Component implements HasComponents {
 
     }
 

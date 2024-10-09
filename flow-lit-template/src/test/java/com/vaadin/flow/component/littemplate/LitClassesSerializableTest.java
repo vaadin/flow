@@ -23,13 +23,13 @@ public class LitClassesSerializableTest extends ClassesSerializableTest {
 
     @Override
     protected Stream<String> getExcludedPatterns() {
-        return Stream.concat(Stream.of(
-                "com\\.vaadin\\.flow\\.component\\.littemplate\\.BundleLitParser(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.littemplate\\.internal\\.LitTemplateParserImpl",
-                "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParser(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateInitializer(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.littemplate\\.InjectableLitElementInitializer",
-                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry(\\$.*)?"),
+        return Stream.concat(
+                Stream.of("com\\.vaadin\\.flow\\.component\\.littemplate\\.BundleLitParser(\\$.*)?",
+                        "com\\.vaadin\\.flow\\.component\\.littemplate\\.internal\\.LitTemplateParserImpl",
+                        "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParser(\\$.*)?",
+                        "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateInitializer(\\$.*)?",
+                        "com\\.vaadin\\.flow\\.component\\.littemplate\\.InjectableLitElementInitializer",
+                        "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry(\\$.*)?"),
                 super.getExcludedPatterns());
     }
 }

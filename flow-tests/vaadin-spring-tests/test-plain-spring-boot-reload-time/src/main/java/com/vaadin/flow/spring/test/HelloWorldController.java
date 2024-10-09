@@ -24,10 +24,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Controller for page.html to measure reload time of Hello world Spring boot
- * app. page.html uses benchmark.js to do the actual measuring. Page is mapped
- * to '/' path. POST to '/start' will trigger reload by touching Application
- * Java file.
+ * Controller for page.html to measure reload time of Hello world Spring boot app. page.html uses benchmark.js to do the
+ * actual measuring. Page is mapped to '/' path. POST to '/start' will trigger reload by touching Application Java file.
  */
 @Controller
 public class HelloWorldController {
@@ -44,10 +42,9 @@ public class HelloWorldController {
     }
 
     /**
-     * Triggers reload by touching Application Java file. As browser is not
-     * reloading itself, this method marks {@link ReadyStatusController} ready
-     * state to false. Client starts polling '/isready' until bean is reloaded
-     * and returns true and then client reloads itself.
+     * Triggers reload by touching Application Java file. As browser is not reloading itself, this method marks
+     * {@link ReadyStatusController} ready state to false. Client starts polling '/isready' until bean is reloaded and
+     * returns true and then client reloads itself.
      */
     @PostMapping("/start")
     @ResponseStatus(HttpStatus.OK)

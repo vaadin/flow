@@ -49,8 +49,7 @@ public class UIScopeTarget extends Div {
         }
     }
 
-    public UIScopeTarget(@Autowired UIScopedBean bean,
-            @Autowired InnerComponent component,
+    public UIScopeTarget(@Autowired UIScopedBean bean, @Autowired InnerComponent component,
             @Autowired ApplicationContext ctx) {
         NativeLabel label = new NativeLabel(String.valueOf(bean.getUid()));
         label.setId("main");
@@ -94,8 +93,7 @@ public class UIScopeTarget extends Div {
                 attachedText.setId("ui-was-attached");
                 add(attachedText);
             }
-            label.setText(
-                    String.valueOf(ctx.getBean(UIScopedBean.class).getUid()));
+            label.setText(String.valueOf(ctx.getBean(UIScopedBean.class).getUid()));
 
         });
         checkStatus.setId("status-check");

@@ -47,12 +47,9 @@ class WebIconsRequestMatcherTest {
     void setup() {
         ServletContext servletContext = new MockServletContext();
         vaadinService = Mockito.mock(VaadinService.class);
-        Mockito.when(vaadinService.getContext())
-                .thenReturn(new VaadinServletContext(servletContext));
-        Mockito.when(vaadinService.getInstantiator())
-                .thenReturn(new DefaultInstantiator(vaadinService));
-        shellRegistry = AppShellRegistry
-                .getInstance(vaadinService.getContext());
+        Mockito.when(vaadinService.getContext()).thenReturn(new VaadinServletContext(servletContext));
+        Mockito.when(vaadinService.getInstantiator()).thenReturn(new DefaultInstantiator(vaadinService));
+        shellRegistry = AppShellRegistry.getInstance(vaadinService.getContext());
         shellRegistry.setShell(CustomIcons.class);
     }
 
@@ -96,29 +93,27 @@ class WebIconsRequestMatcherTest {
     @ValueSource(strings = { "/*", "/ui/*" })
     void customPWAIcon_matched(String urlMapping) {
         // base icon is served from context root
-        assertAbsolutePathRequestMatching("/" + CustomIcons.ICON_PATH,
-                urlMapping);
+        assertAbsolutePathRequestMatching("/" + CustomIcons.ICON_PATH, urlMapping);
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "/*", "/ui/*" })
     void customPWAIcon_variants_matched(String urlMapping) {
-        HandlerHelper.getIconVariants(CustomIcons.ICON_PATH).forEach(
-                iconPath -> assertRequestMatching(iconPath, urlMapping));
+        HandlerHelper.getIconVariants(CustomIcons.ICON_PATH)
+                .forEach(iconPath -> assertRequestMatching(iconPath, urlMapping));
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "/*", "/ui/*" })
     void customPWAIcon_defaultIcon_notMatched(String urlMapping) {
-        assertRequestNotMatching("/" + PwaConfiguration.DEFAULT_ICON,
-                urlMapping);
+        assertRequestNotMatching("/" + PwaConfiguration.DEFAULT_ICON, urlMapping);
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "/*", "/ui/*" })
     void customPWAIcon_defaultIconVariants_notMatched(String urlMapping) {
-        HandlerHelper.getIconVariants(PwaConfiguration.DEFAULT_ICON).forEach(
-                iconPath -> assertRequestNotMatching(iconPath, urlMapping));
+        HandlerHelper.getIconVariants(PwaConfiguration.DEFAULT_ICON)
+                .forEach(iconPath -> assertRequestNotMatching(iconPath, urlMapping));
     }
 
     @ParameterizedTest
@@ -126,43 +121,32 @@ class WebIconsRequestMatcherTest {
     void npPWA_defaultIcon_notMatched(String urlMapping) {
         shellRegistry.reset();
         shellRegistry.setShell(NoIcons.class);
-        assertRequestNotMatching("/" + PwaConfiguration.DEFAULT_ICON,
-                urlMapping);
-        HandlerHelper.getIconVariants(PwaConfiguration.DEFAULT_ICON).forEach(
-                iconPath -> assertRequestNotMatching(iconPath, urlMapping));
+        assertRequestNotMatching("/" + PwaConfiguration.DEFAULT_ICON, urlMapping);
+        HandlerHelper.getIconVariants(PwaConfiguration.DEFAULT_ICON)
+                .forEach(iconPath -> assertRequestNotMatching(iconPath, urlMapping));
     }
 
-    private void assertAbsolutePathRequestMatching(String requestPath,
-            String urlMapping) {
-        WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(
-                vaadinService, urlMapping);
-        Assertions.assertTrue(
-                matcher.matches(createRequest(requestPath, urlMapping, true)),
+    private void assertAbsolutePathRequestMatching(String requestPath, String urlMapping) {
+        WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(vaadinService, urlMapping);
+        Assertions.assertTrue(matcher.matches(createRequest(requestPath, urlMapping, true)),
                 "Expecting '" + requestPath + "' to be matched, but was not");
     }
 
     private void assertRequestMatching(String requestPath, String urlMapping) {
-        WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(
-                vaadinService, urlMapping);
-        Assertions.assertTrue(
-                matcher.matches(createRequest(requestPath, urlMapping, false)),
+        WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(vaadinService, urlMapping);
+        Assertions.assertTrue(matcher.matches(createRequest(requestPath, urlMapping, false)),
                 "Expecting '" + requestPath + "' to be matched, but was not");
     }
 
-    private void assertRequestNotMatching(String requestPath,
-            String urlMapping) {
-        WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(
-                vaadinService, urlMapping);
-        Assertions.assertFalse(
-                matcher.matches(createRequest(requestPath, urlMapping, false)),
+    private void assertRequestNotMatching(String requestPath, String urlMapping) {
+        WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(vaadinService, urlMapping);
+        Assertions.assertFalse(matcher.matches(createRequest(requestPath, urlMapping, false)),
                 "Expecting '" + requestPath + "' not to be matched, but was");
     }
 
-    private static HttpServletRequest createRequest(String path,
-            String urlMapping, boolean absolutePath) {
+    private static HttpServletRequest createRequest(String path, String urlMapping, boolean absolutePath) {
         MockHttpServletRequest request = new MockHttpServletRequest("GET",
-                absolutePath ? path
-                        : RequestUtil.applyUrlMapping(urlMapping, path));
+                absolutePath ? path : RequestUtil.applyUrlMapping(urlMapping, path));
         request.setPathInfo(path);
         if (!absolutePath) {
             request.setServletPath(urlMapping.replaceFirst("/\\*?$", ""));

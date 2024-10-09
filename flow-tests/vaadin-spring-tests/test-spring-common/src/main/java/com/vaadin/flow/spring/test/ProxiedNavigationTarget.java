@@ -33,8 +33,7 @@ import com.vaadin.flow.router.RouterLink;
 import static com.vaadin.flow.spring.scopes.VaadinUIScope.VAADIN_UI_SCOPE_NAME;
 
 @Route("proxied")
-public class ProxiedNavigationTarget extends Div
-        implements HasUrlParameter<Integer> {
+public class ProxiedNavigationTarget extends Div implements HasUrlParameter<Integer> {
 
     private final String uuid = UUID.randomUUID().toString();
     private final AtomicInteger counter = new AtomicInteger();
@@ -51,8 +50,7 @@ public class ProxiedNavigationTarget extends Div
         add(clickCounter);
 
         // Self navigation should use the same view instance
-        routerLink = new RouterLink("Self Link", ProxiedNavigationTarget.class,
-                counter.incrementAndGet());
+        routerLink = new RouterLink("Self Link", ProxiedNavigationTarget.class, counter.incrementAndGet());
         add(routerLink);
     }
 
@@ -64,12 +62,10 @@ public class ProxiedNavigationTarget extends Div
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter Integer parameter) {
+    public void setParameter(BeforeEvent event, @OptionalParameter Integer parameter) {
         if (parameter != null) {
             clickCounter.setText("P:" + parameter + ", C:" + counter.get());
-            routerLink.setRoute(ProxiedNavigationTarget.class,
-                    counter.incrementAndGet());
+            routerLink.setRoute(ProxiedNavigationTarget.class, counter.incrementAndGet());
         }
     }
 }

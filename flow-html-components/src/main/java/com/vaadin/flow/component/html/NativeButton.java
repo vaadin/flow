@@ -30,8 +30,8 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.BUTTON)
-public class NativeButton extends HtmlContainer implements
-        ClickNotifier<NativeButton>, Focusable<NativeButton>, HasAriaLabel {
+public class NativeButton extends HtmlContainer
+        implements ClickNotifier<NativeButton>, Focusable<NativeButton>, HasAriaLabel {
     /**
      * Creates a new empty button.
      */
@@ -57,8 +57,7 @@ public class NativeButton extends HtmlContainer implements
      * @param clickListener
      *            the click listener
      */
-    public NativeButton(String text,
-            ComponentEventListener<ClickEvent<NativeButton>> clickListener) {
+    public NativeButton(String text, ComponentEventListener<ClickEvent<NativeButton>> clickListener) {
         this(text);
         addClickListener(clickListener);
     }

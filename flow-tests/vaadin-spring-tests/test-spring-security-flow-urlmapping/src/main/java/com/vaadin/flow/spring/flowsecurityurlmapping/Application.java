@@ -15,8 +15,7 @@ import org.springframework.core.Ordered;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @SpringBootApplication
-public class Application
-        extends com.vaadin.flow.spring.flowsecurity.Application {
+public class Application extends com.vaadin.flow.spring.flowsecurity.Application {
 
     protected static final String URL_MAPPING = "/urlmapping";
 
@@ -36,17 +35,13 @@ public class Application
                 new OncePerRequestFilter() {
 
                     @Override
-                    protected void doFilterInternal(HttpServletRequest request,
-                            HttpServletResponse response,
-                            FilterChain filterChain)
-                            throws ServletException, IOException {
-                        request.getRequestDispatcher(request.getRequestURI()
-                                .substring(URL_MAPPING.length()))
+                    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                            FilterChain filterChain) throws ServletException, IOException {
+                        request.getRequestDispatcher(request.getRequestURI().substring(URL_MAPPING.length()))
                                 .forward(request, response);
                     }
                 });
-        registrationBean.addUrlPatterns(URL_MAPPING + "/public/images/*",
-                URL_MAPPING + "/public/profiles/*");
+        registrationBean.addUrlPatterns(URL_MAPPING + "/public/images/*", URL_MAPPING + "/public/profiles/*");
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registrationBean;
     }

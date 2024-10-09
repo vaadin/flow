@@ -25,8 +25,7 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * A mixin interface for in-memory data providers. Contains methods for
- * configuring sorting and filtering.
+ * A mixin interface for in-memory data providers. Contains methods for configuring sorting and filtering.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -34,8 +33,8 @@ import com.vaadin.flow.function.ValueProvider;
  * @param <T>
  *            data type
  */
-public interface InMemoryDataProvider<T> extends
-        ConfigurableFilterDataProvider<T, SerializablePredicate<T>, SerializablePredicate<T>> {
+public interface InMemoryDataProvider<T>
+        extends ConfigurableFilterDataProvider<T, SerializablePredicate<T>, SerializablePredicate<T>> {
 
     @Override
     default boolean isInMemory() {
@@ -50,45 +49,39 @@ public interface InMemoryDataProvider<T> extends
     SerializablePredicate<T> getFilter();
 
     /**
-     * Sets a filter to be applied to all queries. The filter replaces any
-     * filter that has been set or added previously.
+     * Sets a filter to be applied to all queries. The filter replaces any filter that has been set or added previously.
      *
      * @see #setFilter(ValueProvider, SerializablePredicate)
      * @see #setFilterByValue(ValueProvider, Object)
      * @see #addFilter(SerializablePredicate)
      *
      * @param filter
-     *            the filter to set, or <code>null</code> to remove any set
-     *            filters
+     *            the filter to set, or <code>null</code> to remove any set filters
      */
     @Override
     void setFilter(SerializablePredicate<T> filter);
 
     /**
-     * Sets a filter for an item property. The filter replaces any filter that
-     * has been set or added previously.
+     * Sets a filter for an item property. The filter replaces any filter that has been set or added previously.
      *
      * @see #setFilter(SerializablePredicate)
      * @see #setFilterByValue(ValueProvider, Object)
      * @see #addFilter(ValueProvider, SerializablePredicate)
      *
      * @param valueProvider
-     *            value provider that gets the property value, not
-     *            <code>null</code>
+     *            value provider that gets the property value, not <code>null</code>
      * @param valueFilter
      *            filter for testing the property value, not <code>null</code>
      * @param <V>
      *            the provided value type
      */
-    default <V> void setFilter(ValueProvider<T, V> valueProvider,
-            SerializablePredicate<V> valueFilter) {
-        setFilter(InMemoryDataProviderHelpers
-                .createValueProviderFilter(valueProvider, valueFilter));
+    default <V> void setFilter(ValueProvider<T, V> valueProvider, SerializablePredicate<V> valueFilter) {
+        setFilter(InMemoryDataProviderHelpers.createValueProviderFilter(valueProvider, valueFilter));
     }
 
     /**
-     * Adds a filter to be applied to all queries. The filter will be used in
-     * addition to any filter that has been set or added previously.
+     * Adds a filter to be applied to all queries. The filter will be used in addition to any filter that has been set
+     * or added previously.
      *
      * @see #addFilter(ValueProvider, SerializablePredicate)
      * @see #addFilterByValue(ValueProvider, Object)
@@ -109,76 +102,65 @@ public interface InMemoryDataProvider<T> extends
     }
 
     /**
-     * Adds a filter for an item property. The filter will be used in addition
-     * to any filter that has been set or added previously.
+     * Adds a filter for an item property. The filter will be used in addition to any filter that has been set or added
+     * previously.
      *
      * @see #addFilter(SerializablePredicate)
      * @see #addFilterByValue(ValueProvider, Object)
      * @see #setFilter(ValueProvider, SerializablePredicate)
      *
      * @param valueProvider
-     *            value provider that gets the property value, not
-     *            <code>null</code>
+     *            value provider that gets the property value, not <code>null</code>
      * @param valueFilter
      *            filter for testing the property value, not <code>null</code>
      * @param <V>
      *            the provided value type
      */
-    default <V> void addFilter(ValueProvider<T, V> valueProvider,
-            SerializablePredicate<V> valueFilter) {
+    default <V> void addFilter(ValueProvider<T, V> valueProvider, SerializablePredicate<V> valueFilter) {
         Objects.requireNonNull(valueProvider, "Value provider cannot be null");
         Objects.requireNonNull(valueFilter, "Value filter cannot be null");
 
-        addFilter(InMemoryDataProviderHelpers
-                .createValueProviderFilter(valueProvider, valueFilter));
+        addFilter(InMemoryDataProviderHelpers.createValueProviderFilter(valueProvider, valueFilter));
     }
 
     /**
-     * Sets a filter that requires an item property to have a specific value.
-     * The property value and the provided value are compared using
-     * {@link Object#equals(Object)}. The filter replaces any filter that has
-     * been set or added previously.
+     * Sets a filter that requires an item property to have a specific value. The property value and the provided value
+     * are compared using {@link Object#equals(Object)}. The filter replaces any filter that has been set or added
+     * previously.
      *
      * @see #setFilter(SerializablePredicate)
      * @see #setFilter(ValueProvider, SerializablePredicate)
      * @see #addFilterByValue(ValueProvider, Object)
      *
      * @param valueProvider
-     *            value provider that gets the property value, not
-     *            <code>null</code>
+     *            value provider that gets the property value, not <code>null</code>
      * @param requiredValue
      *            the value that the property must have for the filter to pass
      * @param <V>
      *            the provided value type
      */
-    default <V> void setFilterByValue(ValueProvider<T, V> valueProvider,
-            V requiredValue) {
-        setFilter(InMemoryDataProviderHelpers.createEqualsFilter(valueProvider,
-                requiredValue));
+    default <V> void setFilterByValue(ValueProvider<T, V> valueProvider, V requiredValue) {
+        setFilter(InMemoryDataProviderHelpers.createEqualsFilter(valueProvider, requiredValue));
     }
 
     /**
-     * Adds a filter that requires an item property to have a specific value.
-     * The property value and the provided value are compared using
-     * {@link Object#equals(Object)}.The filter will be used in addition to any
-     * filter that has been set or added previously.
+     * Adds a filter that requires an item property to have a specific value. The property value and the provided value
+     * are compared using {@link Object#equals(Object)}.The filter will be used in addition to any filter that has been
+     * set or added previously.
      *
      * @see #setFilterByValue(ValueProvider, Object)
      * @see #addFilter(SerializablePredicate)
      * @see #addFilter(ValueProvider, SerializablePredicate)
      *
      * @param valueProvider
-     *            value provider that gets the property value, not
-     *            <code>null</code>
+     *            value provider that gets the property value, not <code>null</code>
      * @param requiredValue
      *            the value that the property must have for the filter to pass
      * @param <V>
      *            the provided value type
      */
-    default <V> void addFilterByValue(ValueProvider<T, V> valueProvider,
-            V requiredValue) {
-        addFilter(InMemoryDataProviderHelpers.createEqualsFilter(valueProvider,
-                requiredValue));
+    default <V> void addFilterByValue(ValueProvider<T, V> valueProvider, V requiredValue) {
+        addFilter(InMemoryDataProviderHelpers.createEqualsFilter(valueProvider, requiredValue));
     }
 
     /**
@@ -198,33 +180,28 @@ public interface InMemoryDataProvider<T> extends
     SerializableComparator<T> getSortComparator();
 
     /**
-     * Sets the comparator to use as the default sorting for this data provider.
-     * This overrides the sorting set by any other method that manipulates the
-     * default sorting of this data provider.
+     * Sets the comparator to use as the default sorting for this data provider. This overrides the sorting set by any
+     * other method that manipulates the default sorting of this data provider.
      * <p>
-     * The default sorting is used if the query defines no sorting. The default
-     * sorting is also used to determine the ordering of items that are
-     * considered equal by the sorting defined in the query.
+     * The default sorting is used if the query defines no sorting. The default sorting is also used to determine the
+     * ordering of items that are considered equal by the sorting defined in the query.
      *
      * @see #setSortOrder(ValueProvider, SortDirection)
      * @see #addSortComparator(SerializableComparator)
      *
      * @param comparator
-     *            a comparator to use, or <code>null</code> to clear any
-     *            previously set sort order
+     *            a comparator to use, or <code>null</code> to clear any previously set sort order
      */
     void setSortComparator(SerializableComparator<T> comparator);
 
     /**
-     * Adds a comparator to the default sorting for this data provider. If no
-     * default sorting has been defined, then the provided comparator will be
-     * used as the default sorting. If a default sorting has been defined, then
-     * the provided comparator will be used to determine the ordering of items
-     * that are considered equal by the previously defined default sorting.
+     * Adds a comparator to the default sorting for this data provider. If no default sorting has been defined, then the
+     * provided comparator will be used as the default sorting. If a default sorting has been defined, then the provided
+     * comparator will be used to determine the ordering of items that are considered equal by the previously defined
+     * default sorting.
      * <p>
-     * The default sorting is used if the query defines no sorting. The default
-     * sorting is also used to determine the ordering of items that are
-     * considered equal by the sorting defined in the query.
+     * The default sorting is used if the query defines no sorting. The default sorting is also used to determine the
+     * ordering of items that are considered equal by the sorting defined in the query.
      *
      * @see #setSortComparator(SerializableComparator)
      * @see #addSortOrder(ValueProvider, SortDirection)
@@ -249,103 +226,85 @@ public interface InMemoryDataProvider<T> extends
     }
 
     /**
-     * Sets the property and direction to use as the default sorting for this
-     * data provider. This overrides the sorting set by any other method that
-     * manipulates the default sorting of this data provider.
+     * Sets the property and direction to use as the default sorting for this data provider. This overrides the sorting
+     * set by any other method that manipulates the default sorting of this data provider.
      * <p>
-     * The default sorting is used if the query defines no sorting. The default
-     * sorting is also used to determine the ordering of items that are
-     * considered equal by the sorting defined in the query.
+     * The default sorting is used if the query defines no sorting. The default sorting is also used to determine the
+     * ordering of items that are considered equal by the sorting defined in the query.
      *
      * @see #setSortComparator(SerializableComparator)
      * @see #addSortOrder(ValueProvider, SortDirection)
      *
      * @param valueProvider
-     *            the value provider that defines the property do sort by, not
-     *            <code>null</code>
+     *            the value provider that defines the property do sort by, not <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
      * @param <V>
      *            the provided value type
      */
-    default <V extends Comparable<? super V>> void setSortOrder(
-            ValueProvider<T, V> valueProvider, SortDirection sortDirection) {
-        setSortComparator(InMemoryDataProviderHelpers
-                .propertyComparator(valueProvider, sortDirection));
+    default <V extends Comparable<? super V>> void setSortOrder(ValueProvider<T, V> valueProvider,
+            SortDirection sortDirection) {
+        setSortComparator(InMemoryDataProviderHelpers.propertyComparator(valueProvider, sortDirection));
     }
 
     /**
-     * Adds a property and direction to the default sorting for this data
-     * provider. If no default sorting has been defined, then the provided sort
-     * order will be used as the default sorting. If a default sorting has been
-     * defined, then the provided sort order will be used to determine the
-     * ordering of items that are considered equal by the previously defined
-     * default sorting.
+     * Adds a property and direction to the default sorting for this data provider. If no default sorting has been
+     * defined, then the provided sort order will be used as the default sorting. If a default sorting has been defined,
+     * then the provided sort order will be used to determine the ordering of items that are considered equal by the
+     * previously defined default sorting.
      * <p>
-     * The default sorting is used if the query defines no sorting. The default
-     * sorting is also used to determine the ordering of items that are
-     * considered equal by the sorting defined in the query.
+     * The default sorting is used if the query defines no sorting. The default sorting is also used to determine the
+     * ordering of items that are considered equal by the sorting defined in the query.
      *
      * @see #setSortOrder(ValueProvider, SortDirection)
      * @see #addSortComparator(SerializableComparator)
      *
      * @param valueProvider
-     *            the value provider that defines the property do sort by, not
-     *            <code>null</code>
+     *            the value provider that defines the property do sort by, not <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
      * @param <V>
      *            the provided value type
      */
-    default <V extends Comparable<? super V>> void addSortOrder(
-            ValueProvider<T, V> valueProvider, SortDirection sortDirection) {
-        addSortComparator(InMemoryDataProviderHelpers
-                .propertyComparator(valueProvider, sortDirection));
+    default <V extends Comparable<? super V>> void addSortOrder(ValueProvider<T, V> valueProvider,
+            SortDirection sortDirection) {
+        addSortComparator(InMemoryDataProviderHelpers.propertyComparator(valueProvider, sortDirection));
     }
 
     /**
-     * Wraps this data provider to create a new data provider that is filtered
-     * by comparing an item to the filter value provided in the query.
+     * Wraps this data provider to create a new data provider that is filtered by comparing an item to the filter value
+     * provided in the query.
      * <p>
-     * The predicate receives the item as the first parameter and the query
-     * filter value as the second parameter, and should return <code>true</code>
-     * if the corresponding item should be included. The query filter value is
-     * never <code>null</code> – all items are included without running the
-     * predicate if the query doesn't define any filter.
+     * The predicate receives the item as the first parameter and the query filter value as the second parameter, and
+     * should return <code>true</code> if the corresponding item should be included. The query filter value is never
+     * <code>null</code> – all items are included without running the predicate if the query doesn't define any filter.
      *
      * @param predicate
-     *            a predicate to use for comparing the item to the query filter,
-     *            not <code>null</code>
+     *            a predicate to use for comparing the item to the query filter, not <code>null</code>
      * @param <Q>
      *            the filter type
      *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    default <Q> DataProvider<T, Q> filteringBy(
-            SerializableBiPredicate<T, Q> predicate) {
+    default <Q> DataProvider<T, Q> filteringBy(SerializableBiPredicate<T, Q> predicate) {
         Objects.requireNonNull(predicate, "Predicate cannot be null");
 
-        return withConvertedFilter(
-                filterValue -> item -> predicate.test(item, filterValue));
+        return withConvertedFilter(filterValue -> item -> predicate.test(item, filterValue));
     }
 
     /**
-     * Wraps this data provider to create a new data provider that is filtered
-     * by comparing an item property value to the filter value provided in the
-     * query.
+     * Wraps this data provider to create a new data provider that is filtered by comparing an item property value to
+     * the filter value provided in the query.
      * <p>
-     * The predicate receives the property value as the first parameter and the
-     * query filter value as the second parameter, and should return
-     * <code>true</code> if the corresponding item should be included. The query
-     * filter value is never <code>null</code> – all items are included without
-     * running either callback if the query doesn't define any filter.
+     * The predicate receives the property value as the first parameter and the query filter value as the second
+     * parameter, and should return <code>true</code> if the corresponding item should be included. The query filter
+     * value is never <code>null</code> – all items are included without running either callback if the query doesn't
+     * define any filter.
      *
      * @param valueProvider
-     *            a value provider that gets the property value, not
-     *            <code>null</code>
+     *            a value provider that gets the property value, not <code>null</code>
      * @param predicate
-     *            a predicate to use for comparing the property value to the
-     *            query filter, not <code>null</code>
+     *            a predicate to use for comparing the property value to the query filter, not <code>null</code>
      * @param <V>
      *            the provided value type
      * @param <Q>
@@ -353,117 +312,92 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    default <V, Q> DataProvider<T, Q> filteringBy(
-            ValueProvider<T, V> valueProvider,
+    default <V, Q> DataProvider<T, Q> filteringBy(ValueProvider<T, V> valueProvider,
             SerializableBiPredicate<V, Q> predicate) {
         Objects.requireNonNull(valueProvider, "Value provider cannot be null");
         Objects.requireNonNull(predicate, "Predicate cannot be null");
 
-        return filteringBy((item, filterValue) -> predicate
-                .test(valueProvider.apply(item), filterValue));
+        return filteringBy((item, filterValue) -> predicate.test(valueProvider.apply(item), filterValue));
     }
 
     /**
-     * Wraps this data provider to create a new data provider that is filtered
-     * by testing whether the value of a property is equals to the filter value
-     * provided in the query. Equality is tested using
+     * Wraps this data provider to create a new data provider that is filtered by testing whether the value of a
+     * property is equals to the filter value provided in the query. Equality is tested using
      * {@link Objects#equals(Object, Object)}.
      *
      * @param valueProvider
-     *            a value provider that gets the property value, not
-     *            <code>null</code>
+     *            a value provider that gets the property value, not <code>null</code>
      * @param <V>
      *            the provided value type
      *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    default <V> DataProvider<T, V> filteringByEquals(
-            ValueProvider<T, V> valueProvider) {
+    default <V> DataProvider<T, V> filteringByEquals(ValueProvider<T, V> valueProvider) {
         return filteringBy(valueProvider, Objects::equals);
     }
 
     /**
-     * Wraps this data provider to create a new data provider that is filtered
-     * by a string by checking whether the lower case representation of the
-     * filter value provided in the query is a substring of the lower case
-     * representation of an item property value. The filter never passes if the
-     * item property value is <code>null</code>.
+     * Wraps this data provider to create a new data provider that is filtered by a string by checking whether the lower
+     * case representation of the filter value provided in the query is a substring of the lower case representation of
+     * an item property value. The filter never passes if the item property value is <code>null</code>.
      *
      * @param valueProvider
-     *            a value provider that gets the string property value, not
-     *            <code>null</code>
+     *            a value provider that gets the string property value, not <code>null</code>
      * @param locale
-     *            the locale to use for converting the strings to lower case,
-     *            not <code>null</code>
+     *            the locale to use for converting the strings to lower case, not <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    default DataProvider<T, String> filteringBySubstring(
-            ValueProvider<T, String> valueProvider, Locale locale) {
+    default DataProvider<T, String> filteringBySubstring(ValueProvider<T, String> valueProvider, Locale locale) {
         Objects.requireNonNull(locale, "Locale cannot be null");
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
-                this, valueProvider, String::contains, () -> locale);
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider, String::contains,
+                () -> locale);
     }
 
     /**
-     * Wraps this data provider to create a new data provider that is filtered
-     * by a string by checking whether the lower case representation of the
-     * filter value provided in the query is a substring of the lower case
-     * representation of an item property value. Conversion to lower case is
-     * done using the locale of the {@link UI#getCurrent() current UI} if
-     * available, or otherwise {@link Locale#getDefault() the default locale}.
-     * The filter never passes if the item property value is <code>null</code>.
+     * Wraps this data provider to create a new data provider that is filtered by a string by checking whether the lower
+     * case representation of the filter value provided in the query is a substring of the lower case representation of
+     * an item property value. Conversion to lower case is done using the locale of the {@link UI#getCurrent() current
+     * UI} if available, or otherwise {@link Locale#getDefault() the default locale}. The filter never passes if the
+     * item property value is <code>null</code>.
      *
      * @param valueProvider
-     *            a value provider that gets the string property value, not
-     *            <code>null</code>
+     *            a value provider that gets the string property value, not <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    default DataProvider<T, String> filteringBySubstring(
-            ValueProvider<T, String> valueProvider) {
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
-                this, valueProvider, String::contains,
+    default DataProvider<T, String> filteringBySubstring(ValueProvider<T, String> valueProvider) {
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider, String::contains,
                 InMemoryDataProviderHelpers.CURRENT_LOCALE_SUPPLIER);
     }
 
     /**
-     * Wraps this data provider to create a new data provider that is filtered
-     * by a string by checking whether the lower case representation of an item
-     * property value starts with the lower case representation of the filter
-     * value provided in the query. The filter never passes if the item property
-     * value is <code>null</code>.
+     * Wraps this data provider to create a new data provider that is filtered by a string by checking whether the lower
+     * case representation of an item property value starts with the lower case representation of the filter value
+     * provided in the query. The filter never passes if the item property value is <code>null</code>.
      *
      * @param valueProvider
-     *            a value provider that gets the string property value, not
-     *            <code>null</code>
+     *            a value provider that gets the string property value, not <code>null</code>
      * @param locale
-     *            the locale to use for converting the strings to lower case,
-     *            not <code>null</code>
+     *            the locale to use for converting the strings to lower case, not <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    default DataProvider<T, String> filteringByPrefix(
-            ValueProvider<T, String> valueProvider, Locale locale) {
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
-                this, valueProvider, String::startsWith, () -> locale);
+    default DataProvider<T, String> filteringByPrefix(ValueProvider<T, String> valueProvider, Locale locale) {
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider, String::startsWith,
+                () -> locale);
     }
 
     /**
-     * Wraps this data provider to create a new data provider that is filtered
-     * by a string by checking whether the lower case representation of an item
-     * property value starts with the lower case representation of the filter
-     * value provided in the query. Conversion to lower case is done using the
-     * locale of the {@link UI#getCurrent() current UI} if available, or
-     * otherwise {@link Locale#getDefault() the default locale}. The filter
-     * never passes if the item property value is <code>null</code>.
+     * Wraps this data provider to create a new data provider that is filtered by a string by checking whether the lower
+     * case representation of an item property value starts with the lower case representation of the filter value
+     * provided in the query. Conversion to lower case is done using the locale of the {@link UI#getCurrent() current
+     * UI} if available, or otherwise {@link Locale#getDefault() the default locale}. The filter never passes if the
+     * item property value is <code>null</code>.
      *
      * @param valueProvider
-     *            a value provider that gets the string property value, not
-     *            <code>null</code>
+     *            a value provider that gets the string property value, not <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    default DataProvider<T, String> filteringByPrefix(
-            ValueProvider<T, String> valueProvider) {
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
-                this, valueProvider, String::startsWith,
+    default DataProvider<T, String> filteringByPrefix(ValueProvider<T, String> valueProvider) {
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider, String::startsWith,
                 InMemoryDataProviderHelpers.CURRENT_LOCALE_SUPPLIER);
     }
 }

@@ -37,8 +37,7 @@ public class AnchorInsideTemplateView extends LitTemplate {
     public AnchorInsideTemplateView() {
         setId("template-with-anchor");
         StreamResource streamResource = new StreamResource("test.txt",
-                () -> new ByteArrayInputStream(
-                        "this is a test".getBytes(StandardCharsets.UTF_8)));
+                () -> new ByteArrayInputStream("this is a test".getBytes(StandardCharsets.UTF_8)));
         anchor.setHref(streamResource);
     }
 }

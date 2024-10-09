@@ -31,17 +31,13 @@ public class ExceptionInStreamResourceIT extends ChromeBrowserTest {
 
         WebElement link = findElement(By.id("link"));
         String url = link.getAttribute("href");
-        String script = "var url = arguments[0];"
-                + "var callback = arguments[arguments.length - 1];"
-                + "var xhr = new XMLHttpRequest();"
-                + "xhr.open('GET', url, true);"
+        String script = "var url = arguments[0];" + "var callback = arguments[arguments.length - 1];"
+                + "var xhr = new XMLHttpRequest();" + "xhr.open('GET', url, true);"
                 + "xhr.responseType = \"arraybuffer\";" +
                 // force the HTTP response, response-type header to be array
                 // buffer
-                "xhr.onload = function() { callback(xhr.status);};"
-                + "xhr.send();";
-        Object response = ((JavascriptExecutor) getDriver())
-                .executeAsyncScript(script, url);
+                "xhr.onload = function() { callback(xhr.status);};" + "xhr.send();";
+        Object response = ((JavascriptExecutor) getDriver()).executeAsyncScript(script, url);
         Assert.assertNotNull(response);
         Assert.assertEquals(500, Integer.parseInt(response.toString()));
     }

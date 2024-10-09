@@ -27,8 +27,7 @@ import elemental.json.JsonObject;
 
 public class AbstractComponentDataGeneratorTest {
 
-    private static class TestComponentDataGenerator
-            extends AbstractComponentDataGenerator<String> {
+    private static class TestComponentDataGenerator extends AbstractComponentDataGenerator<String> {
 
         @Override
         public void generateData(String item, JsonObject jsonObject) {

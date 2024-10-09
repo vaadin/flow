@@ -80,8 +80,7 @@ public class AbstractLazyDataViewTest {
             }
         };
 
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(update);
+        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt())).thenReturn(update);
 
         badProvider = DataProvider.ofItems("foo", "bar");
         dataProvider = DataProvider.fromCallbacks(query -> {
@@ -94,8 +93,7 @@ public class AbstractLazyDataViewTest {
         }, arrayUpdater, null, component.getElement().getNode());
         // need to set a lazy data provider to communicator or type check fails
         dataCommunicator.setDataProvider(dataProvider, null);
-        dataView = new AbstractLazyDataView<String>(dataCommunicator,
-                component) {
+        dataView = new AbstractLazyDataView<String>(dataCommunicator, component) {
         };
     }
 
@@ -103,8 +101,7 @@ public class AbstractLazyDataViewTest {
     public void defaults_withCorrectDataProvider_noErrors() {
         dataCommunicator.setDataProvider(dataProvider, null);
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
-        Assert.assertEquals(BackEndDataProvider.class,
-                dataView.getSupportedDataProviderType());
+        Assert.assertEquals(BackEndDataProvider.class, dataView.getSupportedDataProviderType());
         Assert.assertEquals(3, dataView.getDataCommunicator().getItemCount());
         Assert.assertEquals(200, dataView.getItemCountEstimate());
         Assert.assertEquals(200, dataView.getItemCountEstimateIncrease());
@@ -131,9 +128,8 @@ public class AbstractLazyDataViewTest {
         // hasn't setup any data provider to a component. In the example
         // below, we just create a data communicator instance but don't call
         // 'setDataProvider' method.
-        new AbstractLazyDataView<String>(
-                new DataCommunicator<>((item, jsonObject) -> {
-                }, null, null, component.getElement().getNode()), component) {
+        new AbstractLazyDataView<String>(new DataCommunicator<>((item, jsonObject) -> {
+        }, null, null, component.getElement().getNode()), component) {
         };
     }
 
@@ -172,8 +168,7 @@ public class AbstractLazyDataViewTest {
     @Test
     public void itemCount_definedItemCount() {
         final AtomicInteger itemCount = new AtomicInteger(0);
-        dataView.addItemCountChangeListener(
-                event -> itemCount.set(event.getItemCount()));
+        dataView.addItemCountChangeListener(event -> itemCount.set(event.getItemCount()));
         dataCommunicator.setRequestedRange(0, 50);
 
         Assert.assertEquals("Invalid item count reported", 0, itemCount.get());
@@ -186,8 +181,7 @@ public class AbstractLazyDataViewTest {
     @Test
     public void itemCount_undefinedItemCount() {
         final AtomicInteger itemCount = new AtomicInteger(0);
-        dataView.addItemCountChangeListener(
-                event -> itemCount.set(event.getItemCount()));
+        dataView.addItemCountChangeListener(event -> itemCount.set(event.getItemCount()));
         dataCommunicator.setRequestedRange(0, 50);
         dataView.setItemCountUnknown();
 
@@ -224,8 +218,7 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 300,
-                itemCount.get());
+        Assert.assertEquals("Invalid item count reported", 300, itemCount.get());
     }
 
     @Test
@@ -238,8 +231,7 @@ public class AbstractLazyDataViewTest {
         }, query -> 99), null);
 
         Stream<String> items = dataView.getItems();
-        Assert.assertEquals("Invalid amount of items returned", 99,
-                items.count());
+        Assert.assertEquals("Invalid amount of items returned", 99, items.count());
     }
 
     @Test
@@ -257,15 +249,12 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
 
-        Assert.assertEquals(
-                itemCountEstimate
-                        + dataCommunicator.getItemCountEstimateIncrease(),
+        Assert.assertEquals(itemCountEstimate + dataCommunicator.getItemCountEstimateIncrease(),
                 dataCommunicator.getItemCount());
 
         limit.set(70);
         Stream<String> items = dataView.getItems();
-        Assert.assertEquals("Invalid amount of items returned", limit.get(),
-                items.count());
+        Assert.assertEquals("Invalid amount of items returned", limit.get(), items.count());
     }
 
     @Test
@@ -279,8 +268,7 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item on index 1", "bar",
-                dataView.getItem(1));
+        Assert.assertEquals("Invalid item on index 1", "bar", dataView.getItem(1));
     }
 
     @Test
@@ -316,8 +304,7 @@ public class AbstractLazyDataViewTest {
     @Test
     public void getItem_outsideOfRange_throws() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index 3 is outside of the accepted range '0 - 2'");
+        exceptionRule.expectMessage("Given index 3 is outside of the accepted range '0 - 2'");
         dataCommunicator.setRequestedRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -331,24 +318,19 @@ public class AbstractLazyDataViewTest {
 
     @Test
     public void getItemIndex_withoutItemIndexProvider_throwUnsupportedOperationException() {
-        Assert.assertThrows(UnsupportedOperationException.class,
-                () -> dataView.getItemIndex("bar"));
+        Assert.assertThrows(UnsupportedOperationException.class, () -> dataView.getItemIndex("bar"));
     }
 
     @Test
     public void getItemIndex_itemPresentedInDataSet_indexFound() {
-        dataView.setItemIndexProvider(
-                (item, query) -> "bar".equals(item) ? 1 : null);
-        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
-                dataView.getItemIndex("bar"));
+        dataView.setItemIndexProvider((item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1), dataView.getItemIndex("bar"));
     }
 
     @Test
     public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
-        dataView.setItemIndexProvider(
-                (item, query) -> "bar".equals(item) ? 1 : null);
-        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
-                dataView.getItemIndex("notPresent"));
+        dataView.setItemIndexProvider((item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(), dataView.getItemIndex("notPresent"));
     }
 
     @Test
@@ -356,21 +338,18 @@ public class AbstractLazyDataViewTest {
         Item item1 = new Item(0L, "value1");
         Item item2 = new Item(1L, "value2");
 
-        DataProvider<Item, Void> dataProvider = Mockito
-                .spy(DataProvider.fromCallbacks(query -> {
-                    query.getOffset();
-                    query.getLimit();
-                    return Stream.of(item1, item2);
-                }, query -> 2));
+        DataProvider<Item, Void> dataProvider = Mockito.spy(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of(item1, item2);
+        }, query -> 2));
 
-        DataCommunicator<Item> dataCommunicator = Mockito
-                .spy(new DataCommunicator<>((item, jsonObject) -> {
-                }, arrayUpdater, null, component.getElement().getNode()));
+        DataCommunicator<Item> dataCommunicator = Mockito.spy(new DataCommunicator<>((item, jsonObject) -> {
+        }, arrayUpdater, null, component.getElement().getNode()));
 
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(
-                dataCommunicator, component) {
+        AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(dataCommunicator, component) {
         };
 
         item1.setValue("updatedValue1");
@@ -397,21 +376,18 @@ public class AbstractLazyDataViewTest {
     public void refreshItem_itemNotPresent_itemNotRefreshed() {
         Item item1 = new Item(0L, "value1");
 
-        DataProvider<Item, Void> dataProvider = Mockito
-                .spy(DataProvider.fromCallbacks(query -> {
-                    query.getOffset();
-                    query.getLimit();
-                    return Stream.of(item1);
-                }, query -> 1));
+        DataProvider<Item, Void> dataProvider = Mockito.spy(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of(item1);
+        }, query -> 1));
 
-        DataCommunicator<Item> dataCommunicator = Mockito
-                .spy(new DataCommunicator<>((item, jsonObject) -> {
-                }, arrayUpdater, null, component.getElement().getNode()));
+        DataCommunicator<Item> dataCommunicator = Mockito.spy(new DataCommunicator<>((item, jsonObject) -> {
+        }, arrayUpdater, null, component.getElement().getNode()));
 
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(
-                dataCommunicator, component) {
+        AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(dataCommunicator, component) {
         };
 
         Item item2 = new Item(1L, "value1");

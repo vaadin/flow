@@ -44,8 +44,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
 
     public static final String VITE_HANDLER = "viteServer";
 
-    private final static Map<String, ViteWebsocketProxy> proxies = Collections
-            .synchronizedMap(new HashMap<>());
+    private final static Map<String, ViteWebsocketProxy> proxies = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Creates the websocket endpoint that Vite connects to.
@@ -56,44 +55,35 @@ public class ViteWebsocketEndpoint extends Endpoint {
      *            the Vite handler instance to connect to
      */
     public static void init(VaadinContext context, ViteHandler viteHandler) {
-        ServletContext servletContext = ((VaadinServletContext) context)
-                .getContext();
-        ServerContainer container = (ServerContainer) servletContext
-                .getAttribute(ServerContainer.class.getName());
+        ServletContext servletContext = ((VaadinServletContext) context).getContext();
+        ServerContainer container = (ServerContainer) servletContext.getAttribute(ServerContainer.class.getName());
         if (container == null) {
-            getLogger().error(
-                    "Unable to deploy Vite websocket endpoint, no container value is available");
+            getLogger().error("Unable to deploy Vite websocket endpoint, no container value is available");
             return;
         }
         try {
             List<String> subProtocols = Collections.singletonList("vite-hmr");
             ServerEndpointConfig endpointConfig = ServerEndpointConfig.Builder
-                    .create(ViteWebsocketEndpoint.class,
-                            viteHandler.getPathToVaadinInContext())
+                    .create(ViteWebsocketEndpoint.class, viteHandler.getPathToVaadinInContext())
                     .subprotocols(subProtocols).build();
-            endpointConfig.getUserProperties()
-                    .put(ViteWebsocketEndpoint.VITE_HANDLER, viteHandler);
+            endpointConfig.getUserProperties().put(ViteWebsocketEndpoint.VITE_HANDLER, viteHandler);
             container.addEndpoint(endpointConfig);
         } catch (DeploymentException e) {
-            getLogger().error("Error deploying Vite websocket proxy endpoint",
-                    e);
+            getLogger().error("Error deploying Vite websocket proxy endpoint", e);
         }
 
     }
 
     @Override
     public void onOpen(Session session, EndpointConfig config) {
-        getLogger().debug("Browser ({}) connected to Vite proxy",
-                session.getId());
+        getLogger().debug("Browser ({}) connected to Vite proxy", session.getId());
         session.setMaxIdleTimeout(60000); // Vite pings every 30s so this needs
                                           // to be larger
 
-        ViteHandler viteHandler = (ViteHandler) config.getUserProperties()
-                .get(VITE_HANDLER);
+        ViteHandler viteHandler = (ViteHandler) config.getUserProperties().get(VITE_HANDLER);
         ViteWebsocketProxy proxy;
         try {
-            proxy = new ViteWebsocketProxy(session, viteHandler.getPort(),
-                    viteHandler.getPathToVaadin());
+            proxy = new ViteWebsocketProxy(session, viteHandler.getPort(), viteHandler.getPathToVaadin());
             proxies.put(session.getId(), proxy);
             session.addMessageHandler(proxy);
         } catch (Exception e) {
@@ -108,8 +98,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
 
     @Override
     public void onClose(Session session, CloseReason closeReason) {
-        getLogger().debug("Browser ({}) closed the connection",
-                session.getId());
+        getLogger().debug("Browser ({}) closed the connection", session.getId());
         ViteWebsocketProxy proxy = proxies.remove(session.getId());
         if (proxy != null) {
             proxy.close();

@@ -32,8 +32,7 @@ public class EnableDisablePushIT extends ChromeBrowserTest {
 
         $(TestBenchElement.class).id("thread-re-enable-push").click();
         Thread.sleep(2500);
-        Assert.assertEquals("16. Polling disabled, push enabled",
-                getLogRow(15));
+        Assert.assertEquals("16. Polling disabled, push enabled", getLogRow(15));
 
         $(TestBenchElement.class).id("disable-push").click();
         Assert.assertEquals("18. Push disabled", getLogRow(17));

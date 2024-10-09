@@ -39,29 +39,23 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         // Callback to run an expression
         NativeRadioButtonGroup<Function<String, PendingJavaScriptResult>> methodSelect = new NativeRadioButtonGroup<>(
                 "Method to use");
-        methodSelect.addOption("Page.executeJavaScript",
-                UI.getCurrent().getPage()::executeJs).setId("execPage");
-        methodSelect
-                .addOption("Element.executeJavaScript",
-                        script -> getElement().executeJs(script))
+        methodSelect.addOption("Page.executeJavaScript", UI.getCurrent().getPage()::executeJs).setId("execPage");
+        methodSelect.addOption("Element.executeJavaScript", script -> getElement().executeJs(script))
                 .setId("execElement");
         methodSelect.addOption("Element.callFunction", script -> {
-            getElement().executeJs("this.scriptToRun = new Function($0)",
-                    script);
+            getElement().executeJs("this.scriptToRun = new Function($0)", script);
             return getElement().callJsFunction("scriptToRun");
         }).setId("callElement");
 
         // Value expression
-        NativeRadioButtonGroup<String> valueSelect = new NativeRadioButtonGroup<>(
-                "Value type");
+        NativeRadioButtonGroup<String> valueSelect = new NativeRadioButtonGroup<>("Value type");
         valueSelect.addOption("String", "'foo'");
         valueSelect.addOption("Number", "42");
         valueSelect.addOption("null", "null");
         valueSelect.addOption("Error", "new Error('message')", "error-value");
 
         // Promise semantics to use
-        NativeRadioButtonGroup<String> resolveRejectSelect = new NativeRadioButtonGroup<>(
-                "Outcome");
+        NativeRadioButtonGroup<String> resolveRejectSelect = new NativeRadioButtonGroup<>("Outcome");
         resolveRejectSelect.addOption("Success", "resolve");
         resolveRejectSelect.addOption("Failure", "reject");
 
@@ -76,31 +70,26 @@ public class JavaScriptReturnValueView extends AbstractDivView {
             }
         });
         executionSelect.addOption("Resolved promise",
-                (value, resolveOrReject) -> "return Promise." + resolveOrReject
-                        + "(" + value + ")");
-        executionSelect.addOption("Timeout", (value,
-                resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
+                (value, resolveOrReject) -> "return Promise." + resolveOrReject + "(" + value + ")");
+        executionSelect.addOption("Timeout",
+                (value, resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
                         + resolveOrReject + "(" + value + "), 1000)})");
 
         NativeButton runButton = createButton("Run", "run", event -> {
             statusLabel.setText("Running...");
 
-            String scriptToRun = executionSelect.selected
-                    .apply(valueSelect.selected, resolveRejectSelect.selected);
+            String scriptToRun = executionSelect.selected.apply(valueSelect.selected, resolveRejectSelect.selected);
 
-            PendingJavaScriptResult result = methodSelect.selected
-                    .apply(scriptToRun);
+            PendingJavaScriptResult result = methodSelect.selected.apply(scriptToRun);
 
-            result.then(String.class, statusLabel::setText,
-                    error -> statusLabel.setText("Error: " + error));
+            result.then(String.class, statusLabel::setText, error -> statusLabel.setText("Error: " + error));
         });
 
         NativeButton clearButton = createButton("Clear", "clear", event -> {
             statusLabel.setText("");
         });
 
-        add(methodSelect, valueSelect, resolveRejectSelect, executionSelect,
-                runButton, clearButton, statusLabel);
+        add(methodSelect, valueSelect, resolveRejectSelect, executionSelect, runButton, clearButton, statusLabel);
     }
 
     private static class NativeRadioButtonGroup<T> extends Composite<Div> {
@@ -128,9 +117,7 @@ public class JavaScriptReturnValueView extends AbstractDivView {
             input.getElement().setAttribute("type", "radio");
 
             // Last one to receive a change event is selected
-            input.getElement()
-                    .addEventListener("change", event -> selected = value)
-                    .setFilter("element.checked");
+            input.getElement().addEventListener("change", event -> selected = value).setFilter("element.checked");
 
             // Preselect first option
             if (selected == null) {

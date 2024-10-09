@@ -22,11 +22,9 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class FactoryExporter implements
-        WebComponentExporterFactory<FactoryExporter.InterfaceBasedComponent> {
+public class FactoryExporter implements WebComponentExporterFactory<FactoryExporter.InterfaceBasedComponent> {
 
-    private class NotEligibleExporter extends
-            WebComponentExporter<FactoryExporter.InterfaceBasedComponent> {
+    private class NotEligibleExporter extends WebComponentExporter<FactoryExporter.InterfaceBasedComponent> {
 
         private NotEligibleExporter() {
             super("interface-based");
@@ -38,8 +36,7 @@ public class FactoryExporter implements
         }
 
         @Override
-        protected void configureInstance(
-                WebComponent<InterfaceBasedComponent> webComponent,
+        protected void configureInstance(WebComponent<InterfaceBasedComponent> webComponent,
                 InterfaceBasedComponent component) {
         }
 

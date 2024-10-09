@@ -25,16 +25,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /**
- * Class for testing reload time of "larger" (size is configurable and test is
- * meant for large apps) Vaadin app triggered by spring-boot Dev Tool.
+ * Class for testing reload time of "larger" (size is configurable and test is meant for large apps) Vaadin app
+ * triggered by spring-boot Dev Tool.
  */
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
     public void testSpringBootReloadTime_withLargerApp() {
         optionalAssertByReloadThreshold(printTestResultToLog(
-                SpringDevToolsReloadUtils.runAndCalculateAverageResult(5,
-                        this::runTestReturnResult)));
+                SpringDevToolsReloadUtils.runAndCalculateAverageResult(5, this::runTestReturnResult)));
     }
 
     private String runTestReturnResult() {
@@ -44,12 +43,9 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
             open("/app");
         }
 
-        waitUntil(ExpectedConditions
-                .presenceOfElementLocated(By.id("start-button")), 20);
+        waitUntil(ExpectedConditions.presenceOfElementLocated(By.id("start-button")), 20);
         triggerReload();
-        waitUntil(
-                ExpectedConditions.visibilityOfElementLocated(By.id("result")),
-                20);
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(By.id("result")), 20);
 
         return assertAndGetReloadTimeResult();
     }
@@ -57,19 +53,12 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
     private String printTestResultToLog(String result) {
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,app%s%s,%s-routes,%s-services-per-route%s%s,spring-boot-devtools-reload-time' value='%s']%n",
-                getVaadinMajorMinorVersion(),
-                (hasRouteHierarchy() ? ",route-hierarchy-enabled" : ""),
-                (hasIncludeAddons() ? ",include-addons" : ""),
-                getNumberOfGeneratedRoutesProperty(),
+                getVaadinMajorMinorVersion(), (hasRouteHierarchy() ? ",route-hierarchy-enabled" : ""),
+                (hasIncludeAddons() ? ",include-addons" : ""), getNumberOfGeneratedRoutesProperty(),
                 getNumberOfGeneratedServicesPerRouteProperty(),
-                (hasCssImports()
-                        ? "," + getNumberOfGeneratedCssImportsPerRouteProperty()
-                                + "-css-imports-per-route"
+                (hasCssImports() ? "," + getNumberOfGeneratedCssImportsPerRouteProperty() + "-css-imports-per-route"
                         : ""),
-                (hasJsModules()
-                        ? "," + getNumberOfGeneratedJsModulesPerRouteProperty()
-                                + "-js-modules-per-route"
-                        : ""),
+                (hasJsModules() ? "," + getNumberOfGeneratedJsModulesPerRouteProperty() + "-js-modules-per-route" : ""),
                 result);
 
         return result;
@@ -88,8 +77,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         String reloadTimeInMsText = findElement(By.id("result")).getText();
         Assert.assertNotNull(reloadTimeInMsText);
 
-        return reloadTimeInMsText.substring(reloadTimeInMsText.indexOf("[") + 1,
-                reloadTimeInMsText.indexOf("]"));
+        return reloadTimeInMsText.substring(reloadTimeInMsText.indexOf("[") + 1, reloadTimeInMsText.indexOf("]"));
     }
 
     private void optionalAssertByReloadThreshold(String reloadTime) {
@@ -97,8 +85,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
             Assert.assertTrue(String.format(
                     "Reload time %sms was above the threshold %sms. It should stay within the threshold set to system property 'vaadin.test.reload-time-assert-threshold'.",
                     reloadTime, getReloadTimeAssertThreshold()),
-                    Double.parseDouble(
-                            reloadTime) <= getReloadTimeAssertThreshold());
+                    Double.parseDouble(reloadTime) <= getReloadTimeAssertThreshold());
         }
     }
 
@@ -107,23 +94,19 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
     }
 
     private String getNumberOfGeneratedRoutesProperty() {
-        return System.getProperty("vaadin.test.codegen.maven.plugin.routes",
-                "500");
+        return System.getProperty("vaadin.test.codegen.maven.plugin.routes", "500");
     }
 
     private String getNumberOfGeneratedServicesPerRouteProperty() {
-        return System.getProperty(
-                "vaadin.test.codegen.maven.plugin.services.per.route", "1");
+        return System.getProperty("vaadin.test.codegen.maven.plugin.services.per.route", "1");
     }
 
     private String getNumberOfGeneratedCssImportsPerRouteProperty() {
-        return System.getProperty(
-                "vaadin.test.codegen.maven.plugin.cssimports.per.route", "0");
+        return System.getProperty("vaadin.test.codegen.maven.plugin.cssimports.per.route", "0");
     }
 
     private String getNumberOfGeneratedJsModulesPerRouteProperty() {
-        return System.getProperty(
-                "vaadin.test.codegen.maven.plugin.jsmodules.per.route", "0");
+        return System.getProperty("vaadin.test.codegen.maven.plugin.jsmodules.per.route", "0");
     }
 
     private boolean hasCssImports() {
@@ -137,18 +120,15 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
     }
 
     private boolean hasRouteHierarchy() {
-        return "true".equalsIgnoreCase(
-                System.getProperty("route.hierarchy.enabled", "false"));
+        return "true".equalsIgnoreCase(System.getProperty("route.hierarchy.enabled", "false"));
     }
 
     private boolean hasIncludeAddons() {
-        return "true".equalsIgnoreCase(System.getProperty(
-                "vaadin.test.codegen.maven.plugin.include.addons", "false"));
+        return "true".equalsIgnoreCase(System.getProperty("vaadin.test.codegen.maven.plugin.include.addons", "false"));
     }
 
     private Double getReloadTimeAssertThreshold() {
-        String value = System
-                .getProperty("vaadin.test.reload-time-assert-threshold", null);
+        String value = System.getProperty("vaadin.test.reload-time-assert-threshold", null);
         if (value != null) {
             return Double.parseDouble(value);
         }

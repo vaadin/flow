@@ -33,8 +33,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Tag("updatable-model-properties")
 @Route(value = "com.vaadin.flow.uitest.ui.template.UpdatableModelPropertiesView", layout = ViewTestLayout.class)
 @JsModule("./UpdatableModelProperties.js")
-public class UpdatableModelPropertiesView extends
-        PolymerTemplate<UpdatableModelPropertiesView.UpdatablePropertiesModel>
+public class UpdatableModelPropertiesView extends PolymerTemplate<UpdatableModelPropertiesView.UpdatablePropertiesModel>
         implements HasComponents {
 
     public interface UpdatablePropertiesModel extends TemplateModel {
@@ -59,14 +58,10 @@ public class UpdatableModelPropertiesView extends
         label.setId("property-value");
         add(label);
 
-        getElement().addPropertyChangeListener("name",
-                event -> label.setText(getModel().getName()));
-        getElement().addPropertyChangeListener("email",
-                event -> label.setText(getModel().getEmail()));
-        getElement().addPropertyChangeListener("age",
-                event -> label.setText(getElement().getProperty("age")));
-        getElement().addPropertyChangeListener("text",
-                event -> label.setText(getElement().getProperty("text")));
+        getElement().addPropertyChangeListener("name", event -> label.setText(getModel().getName()));
+        getElement().addPropertyChangeListener("email", event -> label.setText(getModel().getEmail()));
+        getElement().addPropertyChangeListener("age", event -> label.setText(getElement().getProperty("age")));
+        getElement().addPropertyChangeListener("text", event -> label.setText(getElement().getProperty("text")));
     }
 
     @EventHandler
@@ -77,7 +72,6 @@ public class UpdatableModelPropertiesView extends
 
     @ClientCallable
     private void updateStatus() {
-        getElement().setProperty("updateStatus",
-                "Update Done " + UUID.randomUUID().toString());
+        getElement().setProperty("updateStatus", "Update Done " + UUID.randomUUID().toString());
     }
 }

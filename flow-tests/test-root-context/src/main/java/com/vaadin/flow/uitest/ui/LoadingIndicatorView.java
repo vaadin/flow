@@ -29,28 +29,20 @@ public class LoadingIndicatorView extends AbstractDivView {
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
 
-        NativeButton disableButton = new NativeButton(
-                "Disable default loading indicator theme and add custom");
+        NativeButton disableButton = new NativeButton("Disable default loading indicator theme and add custom");
         disableButton.setId("disable-theme");
         disableButton.addClickListener(clickEvent -> {
-            clickEvent.getSource().getUI().get()
-                    .getLoadingIndicatorConfiguration()
-                    .setApplyDefaultTheme(false);
-            clickEvent.getSource().getUI().get().getPage()
-                    .addStyleSheet("/loading-indicator.css");
+            clickEvent.getSource().getUI().get().getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
+            clickEvent.getSource().getUI().get().getPage().addStyleSheet("/loading-indicator.css");
         });
         add(disableButton);
-        add(divWithText("First delay: "
-                + getLoadingIndicatorConfiguration().getFirstDelay()));
-        add(divWithText("Second delay: "
-                + getLoadingIndicatorConfiguration().getSecondDelay()));
-        add(divWithText("Third delay: "
-                + getLoadingIndicatorConfiguration().getThirdDelay()));
+        add(divWithText("First delay: " + getLoadingIndicatorConfiguration().getFirstDelay()));
+        add(divWithText("Second delay: " + getLoadingIndicatorConfiguration().getSecondDelay()));
+        add(divWithText("Third delay: " + getLoadingIndicatorConfiguration().getThirdDelay()));
 
         int[] delays = new int[] { 100, 200, 500, 1000, 2000, 5000, 10000 };
         for (int delay : delays) {
-            add(createButton("Trigger event which takes " + delay + "ms",
-                    "wait" + delay, e -> delay(delay)));
+            add(createButton("Trigger event which takes " + delay + "ms", "wait" + delay, e -> delay(delay)));
         }
     }
 

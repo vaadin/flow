@@ -28,8 +28,7 @@ import com.vaadin.client.Registry;
 public interface PushConnectionFactory {
 
     /**
-     * Creates a new {@link PushConnection} instance for the given
-     * {@code registry}.
+     * Creates a new {@link PushConnection} instance for the given {@code registry}.
      *
      * @param registry
      *            the global registry

@@ -35,11 +35,8 @@ public class PaperInputIT extends ChromeBrowserTest {
         String originalValue = input.getAttribute("value");
         input.sendKeys(Keys.END + "bar");
 
-        List<WebElement> updateValueElements = findElements(
-                By.className("update-value"));
-        WebElement lastUpdateValue = updateValueElements
-                .get(updateValueElements.size() - 1);
-        org.junit.Assert.assertEquals(originalValue + "bar",
-                lastUpdateValue.getText());
+        List<WebElement> updateValueElements = findElements(By.className("update-value"));
+        WebElement lastUpdateValue = updateValueElements.get(updateValueElements.size() - 1);
+        org.junit.Assert.assertEquals(originalValue + "bar", lastUpdateValue.getText());
     }
 }

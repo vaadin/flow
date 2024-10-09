@@ -40,10 +40,8 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     public void inertData_defaults() {
         Element element = ElementFactory.createDiv();
         Assert.assertFalse("Elements should not have InertData by default",
-                element.getNode().getFeatureIfInitialized(InertData.class)
-                        .isPresent());
-        final InertData inertData = element.getNode()
-                .getFeature(InertData.class);
+                element.getNode().getFeatureIfInitialized(InertData.class).isPresent());
+        final InertData inertData = element.getNode().getFeature(InertData.class);
         Assert.assertFalse(inertData.isInertSelf());
         Assert.assertFalse(inertData.isIgnoreParentInert());
         Assert.assertTrue(inertData.allowsChanges());
@@ -52,8 +50,7 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     @Test
     public void inertData_hasShadowRoot_handlesInertCheck() {
         parent = createNode(null);
-        StateNode shadow = new StateNode(ElementChildrenList.class,
-                ShadowRootHost.class);
+        StateNode shadow = new StateNode(ElementChildrenList.class, ShadowRootHost.class);
         parent.getFeature(ElementChildrenList.class).add(0, shadow);
 
         grandchild = createNode(shadow);
@@ -63,8 +60,7 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
         parentFeature.generateChangesFromEmpty();
 
         Assert.assertTrue(parentFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
     }
 
     @Test
@@ -80,48 +76,42 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
 
         Assert.assertTrue(parentFeature.isInert());
         Assert.assertFalse(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
 
         childFeature.setIgnoreParentInert(false);
         childFeature.generateChangesFromEmpty();
 
         Assert.assertTrue(parentFeature.isInert());
         Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
 
         childFeature.setIgnoreParentInert(true);
         childFeature.generateChangesFromEmpty();
 
         Assert.assertTrue(parentFeature.isInert());
         Assert.assertFalse(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
 
         childFeature.setInertSelf(true);
         childFeature.generateChangesFromEmpty();
 
         Assert.assertTrue(parentFeature.isInert());
         Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
 
         parentFeature.setInertSelf(false);
         parentFeature.generateChangesFromEmpty();
 
         Assert.assertFalse(parentFeature.isInert());
         Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
 
         childFeature.setInertSelf(false);
         childFeature.generateChangesFromEmpty();
 
         Assert.assertFalse(parentFeature.isInert());
         Assert.assertFalse(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
 
         // both parent and child have inert data and it should cascade
         // top->down
@@ -131,16 +121,14 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
 
         Assert.assertTrue(parentFeature.isInert());
         Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
-                .isPresent());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class).isPresent());
     }
 
     @Test
     public void inertDataUpdates_hierarchyWithGaps_updatesCascaded() {
         StateNode greatgrandchild = createNode(grandchild);
 
-        final InertData greatgrandchildFeature = greatgrandchild
-                .getFeature(InertData.class);
+        final InertData greatgrandchildFeature = greatgrandchild.getFeature(InertData.class);
         greatgrandchildFeature.setInertSelf(false);
         greatgrandchildFeature.generateChangesFromEmpty();
 
@@ -155,8 +143,7 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
         Assert.assertTrue(grandchild.isInert());
         Assert.assertTrue(greatgrandchild.isInert());
 
-        final InertData grandchildFeature = grandchild
-                .getFeature(InertData.class);
+        final InertData grandchildFeature = grandchild.getFeature(InertData.class);
         grandchildFeature.setIgnoreParentInert(true);
         grandchildFeature.generateChangesFromEmpty();
 
@@ -210,8 +197,7 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     }
 
     private static StateNode createNode(StateNode parent) {
-        final StateNode stateNode = new StateNode(ElementChildrenList.class,
-                InertData.class);
+        final StateNode stateNode = new StateNode(ElementChildrenList.class, InertData.class);
         if (parent != null) {
             parent.getFeature(ElementChildrenList.class).add(0, stateNode);
         }

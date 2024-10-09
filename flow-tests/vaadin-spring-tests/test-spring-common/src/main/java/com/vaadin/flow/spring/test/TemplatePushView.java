@@ -44,8 +44,7 @@ public class TemplatePushView extends PolymerTemplate<TemplateModel> {
         execJsTest.addClickListener(e -> {
             new Thread(new ExecJS(ui)).start();
         });
-        ui.getPage().executeJs(
-                "$0.setText = function(text) {$0.innerText=text;}", label);
+        ui.getPage().executeJs("$0.setText = function(text) {$0.innerText=text;}", label);
         callFunctionTest.addClickListener(e -> {
             new Thread(new CallFunction(ui)).start();
         });

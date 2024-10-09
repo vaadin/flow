@@ -39,10 +39,8 @@ public class ThemeComponentsCssView extends Div {
     @Tag("vaadin-horizontal-layout")
     public static class MyComponent extends Component {
         public MyComponent() {
-            getElement()
-                    .appendChild(ElementFactory.createDiv("Specific Theme"));
-            getElement()
-                    .appendChild(ElementFactory.createDiv("Reusable Theme"));
+            getElement().appendChild(ElementFactory.createDiv("Specific Theme"));
+            getElement().appendChild(ElementFactory.createDiv("Reusable Theme"));
             getElement().appendChild(ElementFactory.createDiv("Other theme"));
         }
     }

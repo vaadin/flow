@@ -20,8 +20,7 @@ import java.util.EventObject;
 /**
  * Event fired after an element has been detached from the UI.
  * <p>
- * When a hierarchy of elements is being detached, this event is fired
- * child-first.
+ * When a hierarchy of elements is being detached, this event is fired child-first.
  *
  * @since 1.0
  */

@@ -29,9 +29,8 @@ public class ApplicationConfigurationTest {
     public void get_contextHasNoLookup_iseIsThrown() {
         VaadinContext context = Mockito.spy(VaadinContext.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(null);
-        Mockito.doAnswer(
-                invocation -> invocation.getArgument(1, Supplier.class).get())
-                .when(context).getAttribute(Mockito.any(), Mockito.any());
+        Mockito.doAnswer(invocation -> invocation.getArgument(1, Supplier.class).get()).when(context)
+                .getAttribute(Mockito.any(), Mockito.any());
         ApplicationConfiguration.get(context);
     }
 

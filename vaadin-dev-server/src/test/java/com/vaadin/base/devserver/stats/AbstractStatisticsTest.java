@@ -28,10 +28,8 @@ public abstract class AbstractStatisticsTest {
      *            Name of the test resource
      * @return Temporary file
      */
-    protected static File createTempStorage(String testResourceName)
-            throws IOException {
-        File original = new File(
-                TestUtils.getTestResource(testResourceName).getFile());
+    protected static File createTempStorage(String testResourceName) throws IOException {
+        File original = new File(TestUtils.getTestResource(testResourceName).getFile());
         File result = File.createTempFile("test", "json");
         result.deleteOnExit();
         FileUtils.copyFile(original, result);
@@ -41,13 +39,11 @@ public abstract class AbstractStatisticsTest {
     @Before
     public void setup() throws Exception {
         storage = Mockito.spy(new StatisticsStorage());
-        storage.usageStatisticsFile = File.createTempFile("test-storage",
-                "json");
+        storage.usageStatisticsFile = File.createTempFile("test-storage", "json");
         sender = Mockito.spy(new StatisticsSender(storage));
-        Mockito.doAnswer(answer -> null).when(sender)
-                .triggerSendIfNeeded(Mockito.any());
+        Mockito.doAnswer(answer -> null).when(sender).triggerSendIfNeeded(Mockito.any());
         // Change the file storage and reporting parameters for testing
-        Mockito.when(storage.getUsageStatisticsFile()).thenReturn(
-                createTempStorage("stats-data/usage-statistics-1.json"));
+        Mockito.when(storage.getUsageStatisticsFile())
+                .thenReturn(createTempStorage("stats-data/usage-statistics-1.json"));
     }
 }

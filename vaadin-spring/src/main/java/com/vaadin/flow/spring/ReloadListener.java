@@ -24,11 +24,9 @@ import org.springframework.context.ApplicationListener;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
- * Listens to {@link ClassPathChangedEvent} events and fires a Vaadin- specific
- * {@link ReloadEvent}.
+ * Listens to {@link ClassPathChangedEvent} events and fires a Vaadin- specific {@link ReloadEvent}.
  */
-class ReloadListener
-        implements ApplicationListener<ClassPathChangedEvent>, Serializable {
+class ReloadListener implements ApplicationListener<ClassPathChangedEvent>, Serializable {
 
     private final SerializableConsumer<ReloadEvent> callback;
 

@@ -38,20 +38,17 @@ import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * The RouteRegistry interface class that gives the out facing usage needs for a
- * route registry implementation.
+ * The RouteRegistry interface class that gives the out facing usage needs for a route registry implementation.
  * <p>
- * This is used by {@link Router} when resolving navigation and layout chain
- * population.
+ * This is used by {@link Router} when resolving navigation and layout chain population.
  *
  * @since 1.3
  */
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Register a navigation target with specified path and given parent layout
-     * chain. Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
-     * be ignored in route handling.
+     * Register a navigation target with specified path and given parent layout chain. Any {@link ParentLayout},
+     * {@link Route} or {@link RouteAlias} will be ignored in route handling.
      *
      * @param path
      *            path to register navigation target to
@@ -68,8 +65,7 @@ public interface RouteRegistry extends Serializable {
     /**
      * Remove the given navigation target route registration.
      * <p>
-     * Note! this will remove target route and if possible any
-     * {@link RouteAlias} route that can be found for the class.
+     * Note! this will remove target route and if possible any {@link RouteAlias} route that can be found for the class.
      *
      * @param navigationTarget
      *            navigation target class to remove
@@ -79,11 +75,9 @@ public interface RouteRegistry extends Serializable {
     /**
      * Remove the registration for given path.
      * <p>
-     * In case navigationTarget is a
-     * {@link com.vaadin.flow.router.HasUrlParameter}, path argument needs to
-     * include the parameter placeholder which is added automatically.
-     * Otherwise, using {@link #removeRoute(String, Class)} is preferred in such
-     * a case.
+     * In case navigationTarget is a {@link com.vaadin.flow.router.HasUrlParameter}, path argument needs to include the
+     * parameter placeholder which is added automatically. Otherwise, using {@link #removeRoute(String, Class)} is
+     * preferred in such a case.
      *
      * @param path
      *            path for which to remove the navigation target.
@@ -93,14 +87,11 @@ public interface RouteRegistry extends Serializable {
     /**
      * Remove navigationTarget for the path.
      * <p>
-     * This method will check if indeed navigationTarget is registered with
-     * path.
+     * This method will check if indeed navigationTarget is registered with path.
      * <p>
-     * In case navigationTarget is a
-     * {@link com.vaadin.flow.router.HasUrlParameter}, the path needs to be
-     * specified exactly as it is in the {@link Route} annotation or as it was
-     * registered using {@link #setRoute(String, Class, List)}, without the
-     * parameter placeholder which is automatically added.
+     * In case navigationTarget is a {@link com.vaadin.flow.router.HasUrlParameter}, the path needs to be specified
+     * exactly as it is in the {@link Route} annotation or as it was registered using
+     * {@link #setRoute(String, Class, List)}, without the parameter placeholder which is automatically added.
      *
      * @param path
      *            path to remove from registry
@@ -117,10 +108,9 @@ public interface RouteRegistry extends Serializable {
     List<RouteData> getRegisteredRoutes();
 
     /**
-     * Get the {@link RouteData} for all accessible registered navigation
-     * targets with a menu information. Access checking depends on the active
-     * {@link VaadinService} and {@link VaadinRequest} and the given collection
-     * of access controls.
+     * Get the {@link RouteData} for all accessible registered navigation targets with a menu information. Access
+     * checking depends on the active {@link VaadinService} and {@link VaadinRequest} and the given collection of access
+     * controls.
      *
      * @param vaadinRequest
      *            the request to check access for
@@ -128,40 +118,33 @@ public interface RouteRegistry extends Serializable {
      *            the access controls to use for checking access
      * @return list of accessible menu routes available for this registry
      */
-    List<RouteData> getRegisteredAccessibleMenuRoutes(
-            VaadinRequest vaadinRequest,
+    List<RouteData> getRegisteredAccessibleMenuRoutes(VaadinRequest vaadinRequest,
             Collection<BeforeEnterListener> accessControls);
 
     /**
-     * Search for a route target using given navigation <code>url</code>
-     * argument.
+     * Search for a route target using given navigation <code>url</code> argument.
      *
      * @param url
      *            the navigation url used to search a route target.
-     * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link RouteParameters} extracted from
-     *         the <code>url</code> argument according with the route
-     *         configuration.
+     * @return a {@link NavigationRouteTarget} instance containing the {@link RouteTarget} and {@link RouteParameters}
+     *         extracted from the <code>url</code> argument according with the route configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url);
 
     /**
-     * Gets the {@link RouteTarget} instance matching the given target component
-     * and route parameters.
+     * Gets the {@link RouteTarget} instance matching the given target component and route parameters.
      *
      * @param target
      *            a component class which is a navigation target.
      * @param parameters
      *            parameter values that may be used with given target.
-     * @return the {@link RouteTarget} instance matching the given target
-     *         component and route parameters.
+     * @return the {@link RouteTarget} instance matching the given target component and route parameters.
      */
-    RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters);
+    RouteTarget getRouteTarget(Class<? extends Component> target, RouteParameters parameters);
 
     /**
-     * Gets the optional navigation target class for a given path. Returns an
-     * empty optional if no navigation target corresponds to the given url.
+     * Gets the optional navigation target class for a given path. Returns an empty optional if no navigation target
+     * corresponds to the given url.
      *
      * @param url
      *            the path to get the navigation target for, not {@code null}
@@ -170,28 +153,25 @@ public interface RouteRegistry extends Serializable {
     Optional<Class<? extends Component>> getNavigationTarget(String url);
 
     /**
-     * Gets the optional navigation target class for a given Location matching
-     * with path segments.
+     * Gets the optional navigation target class for a given Location matching with path segments.
      *
      * @param url
      *            path to get navigation target for, not {@code null}
      * @param segments
      *            segments given for path
-     * @return optional navigation target corresponding to the given location
-     *         with given segments if any applicable targets found.
+     * @return optional navigation target corresponding to the given location with given segments if any applicable
+     *         targets found.
      * @see Location
      */
-    Optional<Class<? extends Component>> getNavigationTarget(String url,
-            List<String> segments);
+    Optional<Class<? extends Component>> getNavigationTarget(String url, List<String> segments);
 
     /**
      * Get the url string for given navigation target.
      *
      * @param navigationTarget
-     *            navigation target to get registered route for, not
-     *            {@code null}
-     * @return {@link Optional} navigation target url string or
-     *         {@link Optional#empty()} if navigation target was not found
+     *            navigation target to get registered route for, not {@code null}
+     * @return {@link Optional} navigation target url string or {@link Optional#empty()} if navigation target was not
+     *         found
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget);
 
@@ -199,39 +179,33 @@ public interface RouteRegistry extends Serializable {
      * Get the url string for given navigation target.
      *
      * @param navigationTarget
-     *            navigation target to get registered route for, not
-     *            {@code null}
+     *            navigation target to get registered route for, not {@code null}
      * @param parameters
      *            parameters for the target url.
-     * @return {@link Optional} navigation target url string or
-     *         {@link Optional#empty()} if navigation target was not found
+     * @return {@link Optional} navigation target url string or {@link Optional#empty()} if navigation target was not
+     *         found
      */
-    Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
-            RouteParameters parameters);
+    Optional<String> getTargetUrl(Class<? extends Component> navigationTarget, RouteParameters parameters);
 
     /**
      * Get the main template for given navigation target.
      * <p>
-     * In case of annotated target the main template is composed of the
-     * {@link Route} annotation value prefixed by all {@link RoutePrefix} values
-     * of the parent {@link RouterLayout}s chain.
+     * In case of annotated target the main template is composed of the {@link Route} annotation value prefixed by all
+     * {@link RoutePrefix} values of the parent {@link RouterLayout}s chain.
      *
      * @param navigationTarget
-     *            navigation target to get route definition for, not
-     *            {@code null}
-     * @return {@link Optional} navigation target template string or
-     *         {@link Optional#empty()} if navigation target was not found
+     *            navigation target to get route definition for, not {@code null}
+     * @return {@link Optional} navigation target template string or {@link Optional#empty()} if navigation target was
+     *         not found
      */
     Optional<String> getTemplate(Class<? extends Component> navigationTarget);
 
     /**
-     * Block updates to the registry configuration from other threads until
-     * update command has completed. This makes the command changes atomic for
-     * the registry as no one else can change the registry state during the
-     * command.
+     * Block updates to the registry configuration from other threads until update command has completed. This makes the
+     * command changes atomic for the registry as no one else can change the registry state during the command.
      * <p>
-     * Any other thread trying to configure current registry will be blocked
-     * until the update has released all the locks.
+     * Any other thread trying to configure current registry will be blocked until the update has released all the
+     * locks.
      *
      * @param command
      *            command to execute for the update

@@ -36,22 +36,19 @@ public class DefaultWebComponentExporterFactoryTest {
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
         }
 
     }
 
-    public static class NoSpecifiedTagClass
-            extends WebComponentExporter<Component> {
+    public static class NoSpecifiedTagClass extends WebComponentExporter<Component> {
 
         public NoSpecifiedTagClass() {
             super(null);
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
         }
 
     }
@@ -64,10 +61,8 @@ public class DefaultWebComponentExporterFactoryTest {
     @Test
     public void createInnerClass_throws() {
         exception.expect(RuntimeException.class);
-        exception.expectCause(
-                CoreMatchers.instanceOf(IllegalArgumentException.class));
-        exception.expectMessage(
-                CoreMatchers.containsString(InnerClass.class.getName()));
+        exception.expectCause(CoreMatchers.instanceOf(IllegalArgumentException.class));
+        exception.expectMessage(CoreMatchers.containsString(InnerClass.class.getName()));
         exception.expectMessage(CoreMatchers.containsString("inner"));
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 InnerClass.class);
@@ -78,10 +73,8 @@ public class DefaultWebComponentExporterFactoryTest {
     @Test
     public void create_exporterHasNoTag_throws() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers
-                .containsString(NoSpecifiedTagClass.class.getCanonicalName()));
-        exception.expectMessage(CoreMatchers
-                .containsString("give null value to super(String)"));
+        exception.expectMessage(CoreMatchers.containsString(NoSpecifiedTagClass.class.getCanonicalName()));
+        exception.expectMessage(CoreMatchers.containsString("give null value to super(String)"));
         DefaultWebComponentExporterFactory<Component> factory = new DefaultWebComponentExporterFactory<>(
                 NoSpecifiedTagClass.class);
         factory.create();

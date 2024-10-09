@@ -39,19 +39,17 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            the type of the items to select
  */
-public interface MultiSelect<C extends Component, T> extends
-        HasValueAndElement<ComponentValueChangeEvent<C, Set<T>>, Set<T>> {
+public interface MultiSelect<C extends Component, T>
+        extends HasValueAndElement<ComponentValueChangeEvent<C, Set<T>>, Set<T>> {
 
     /**
      * Adds the given items to the set of currently selected items.
      * <p>
-     * By default this does not clear any previous selection. To do that, use
-     * {@link #deselectAll()}.
+     * By default this does not clear any previous selection. To do that, use {@link #deselectAll()}.
      * <p>
      * If the all the items were already selected, this is a NO-OP.
      * <p>
-     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
-     * to deselect.
+     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing to deselect.
      *
      * @param items
      *            to add to selection, not {@code null}
@@ -60,8 +58,7 @@ public interface MultiSelect<C extends Component, T> extends
         Objects.requireNonNull(items);
         Stream.of(items).forEach(Objects::requireNonNull);
 
-        updateSelection(new LinkedHashSet<>(Arrays.asList(items)),
-                Collections.emptySet());
+        updateSelection(new LinkedHashSet<>(Arrays.asList(items)), Collections.emptySet());
     }
 
     /**
@@ -69,8 +66,7 @@ public interface MultiSelect<C extends Component, T> extends
      * <p>
      * If the none of the items were selected, this is a NO-OP.
      * <p>
-     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
-     * to select.
+     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing to select.
      *
      * @param items
      *            to remove from selection, not {@code null}
@@ -79,20 +75,17 @@ public interface MultiSelect<C extends Component, T> extends
         Objects.requireNonNull(items);
         Stream.of(items).forEach(Objects::requireNonNull);
 
-        updateSelection(Collections.emptySet(),
-                new LinkedHashSet<>(Arrays.asList(items)));
+        updateSelection(Collections.emptySet(), new LinkedHashSet<>(Arrays.asList(items)));
     }
 
     /**
      * Adds the given items to the set of currently selected items.
      * <p>
-     * By default this does not clear any previous selection. To do that, use
-     * {@link #deselectAll()}.
+     * By default this does not clear any previous selection. To do that, use {@link #deselectAll()}.
      * <p>
      * If the all the items were already selected, this is a NO-OP.
      * <p>
-     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
-     * to deselect.
+     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing to deselect.
      *
      * @param items
      *            to add to selection, not {@code null}
@@ -117,8 +110,7 @@ public interface MultiSelect<C extends Component, T> extends
      * <p>
      * If the none of the items were selected, this is a NO-OP.
      * <p>
-     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
-     * to select.
+     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing to select.
      *
      * @param items
      *            to remove from selection, not {@code null}
@@ -141,8 +133,7 @@ public interface MultiSelect<C extends Component, T> extends
     /**
      * Updates the selection by adding and removing the given items from it.
      * <p>
-     * If all the added items were already selected and the removed items were
-     * not selected, this is a NO-OP.
+     * If all the added items were already selected and the removed items were not selected, this is a NO-OP.
      * <p>
      * Duplicate items (in both add and remove sets) are ignored.
      *
@@ -154,12 +145,11 @@ public interface MultiSelect<C extends Component, T> extends
     void updateSelection(Set<T> addedItems, Set<T> removedItems);
 
     /**
-     * Returns an immutable set of the currently selected items. It is safe to
-     * invoke other {@code SelectionModel} methods while iterating over the set.
+     * Returns an immutable set of the currently selected items. It is safe to invoke other {@code SelectionModel}
+     * methods while iterating over the set.
      * <p>
-     * <em>Implementation note:</em> the iteration order of the items in the
-     * returned set should be well-defined and documented by the implementing
-     * class.
+     * <em>Implementation note:</em> the iteration order of the items in the returned set should be well-defined and
+     * documented by the implementing class.
      *
      * @return the items in the current selection, not {@code null}
      */
@@ -184,8 +174,8 @@ public interface MultiSelect<C extends Component, T> extends
     }
 
     /**
-     * Adds a selection listener that will be called when the selection is
-     * changed either by the user or programmatically.
+     * Adds a selection listener that will be called when the selection is changed either by the user or
+     * programmatically.
      *
      * @param listener
      *            the value change listener, not {@code null}
@@ -194,8 +184,7 @@ public interface MultiSelect<C extends Component, T> extends
     Registration addSelectionListener(MultiSelectionListener<C, T> listener);
 
     /**
-     * MultiSelect empty value should always be an empty set by default and not
-     * {@code null}.
+     * MultiSelect empty value should always be an empty set by default and not {@code null}.
      *
      * @return An empty set, not {@code null}
      */
@@ -212,8 +201,7 @@ public interface MultiSelect<C extends Component, T> extends
     @Override
     default void setValue(Set<T> value) {
         Objects.requireNonNull(value);
-        Set<T> copy = value.stream().map(Objects::requireNonNull)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<T> copy = value.stream().map(Objects::requireNonNull).collect(Collectors.toCollection(LinkedHashSet::new));
         updateSelection(copy, new LinkedHashSet<>(getSelectedItems()));
     }
 }

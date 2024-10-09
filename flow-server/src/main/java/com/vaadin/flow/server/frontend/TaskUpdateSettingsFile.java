@@ -37,8 +37,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
 import static elemental.json.impl.JsonUtil.stringify;
 
 /**
- * Creates a vaadin-dev-server-settings.json file for use with dev server
- * configuration.
+ * Creates a vaadin-dev-server-settings.json file for use with dev server configuration.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -53,12 +52,10 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     String themeName;
     PwaConfiguration pwaConfiguration;
 
-    TaskUpdateSettingsFile(Options builder, String themeName,
-            PwaConfiguration pwaConfiguration) {
+    TaskUpdateSettingsFile(Options builder, String themeName, PwaConfiguration pwaConfiguration) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
-        this.jarFrontendResourcesFolder = builder
-                .getJarFrontendResourcesFolder();
+        this.jarFrontendResourcesFolder = builder.getJarFrontendResourcesFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectoryName();
         this.themeName = themeName;
@@ -71,49 +68,32 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             return;
 
         JsonObject settings = Json.createObject();
-        settings.put("frontendFolder",
-                FrontendUtils.getUnixPath(frontendDirectory.toPath()));
+        settings.put("frontendFolder", FrontendUtils.getUnixPath(frontendDirectory.toPath()));
         settings.put("themeFolder", "themes");
-        settings.put("themeResourceFolder",
-                FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
+        settings.put("themeResourceFolder", FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
         String webappResources, statsOutput;
         if (webappResourcesDirectory == null) {
-            webappResources = FrontendUtils
-                    .getUnixPath(npmFolder.toPath()
-                            .resolve(Paths
-                                    .get(buildDirectory, "classes",
-                                            VAADIN_WEBAPP_RESOURCES)
-                                    .normalize()));
-            statsOutput = FrontendUtils
-                    .getUnixPath(npmFolder.toPath()
-                            .resolve(Paths.get(buildDirectory, "classes",
-                                    VAADIN_WEBAPP_RESOURCES, "..", "config")
-                                    .normalize()));
+            webappResources = FrontendUtils.getUnixPath(npmFolder.toPath()
+                    .resolve(Paths.get(buildDirectory, "classes", VAADIN_WEBAPP_RESOURCES).normalize()));
+            statsOutput = FrontendUtils.getUnixPath(npmFolder.toPath().resolve(
+                    Paths.get(buildDirectory, "classes", VAADIN_WEBAPP_RESOURCES, "..", "config").normalize()));
         } else {
             webappResources = webappResourcesDirectory.getPath();
-            statsOutput = new File(webappResourcesDirectory.getParentFile(),
-                    "config").getPath();
+            statsOutput = new File(webappResourcesDirectory.getParentFile(), "config").getPath();
         }
-        String staticOutput = combinePath(webappResources,
-                VAADIN_STATIC_FILES_PATH);
+        String staticOutput = combinePath(webappResources, VAADIN_STATIC_FILES_PATH);
 
-        File devBundleOutputFolder = new File(
-                DevBundleUtils.getDevBundleFolder(npmFolder, buildDirectory),
-                "webapp");
-        String devBundleOutputFolderString = FrontendUtils
-                .getUnixPath(devBundleOutputFolder.toPath());
-        String devBundleStatsFolderString = FrontendUtils.getUnixPath(new File(
-                DevBundleUtils.getDevBundleFolder(npmFolder, buildDirectory),
-                "config").toPath());
-        settings.put("staticOutput",
-                FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
+        File devBundleOutputFolder = new File(DevBundleUtils.getDevBundleFolder(npmFolder, buildDirectory), "webapp");
+        String devBundleOutputFolderString = FrontendUtils.getUnixPath(devBundleOutputFolder.toPath());
+        String devBundleStatsFolderString = FrontendUtils
+                .getUnixPath(new File(DevBundleUtils.getDevBundleFolder(npmFolder, buildDirectory), "config").toPath());
+        settings.put("staticOutput", FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
         settings.put("statsOutput", statsOutput);
         settings.put("frontendBundleOutput", webappResources);
         settings.put("devBundleOutput", devBundleOutputFolderString);
         settings.put("devBundleStatsOutput", devBundleStatsFolderString);
-        settings.put("jarResourcesFolder",
-                FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
+        settings.put("jarResourcesFolder", FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
 
         settings.put("themeName", themeName);
 
@@ -125,8 +105,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("offlinePath", getOfflinePath());
 
-        File settingsFile = new File(npmFolder,
-                buildDirectory + "/" + DEV_SETTINGS_FILE);
+        File settingsFile = new File(npmFolder, buildDirectory + "/" + DEV_SETTINGS_FILE);
 
         try {
             FileIOUtils.writeIfChanged(settingsFile, stringify(settings, 2));
@@ -147,8 +126,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     }
 
     private String getServiceWorkerFile() {
-        boolean exists = new File(frontendDirectory, SERVICE_WORKER_SRC)
-                .exists()
+        boolean exists = new File(frontendDirectory, SERVICE_WORKER_SRC).exists()
                 || new File(frontendDirectory, SERVICE_WORKER_SRC_JS).exists();
 
         String serviceWorkerFile = SERVICE_WORKER_SRC;
@@ -157,19 +135,16 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         }
 
         if (!exists) {
-            Path path = Paths.get(npmFolder.toString(), buildDirectory,
-                    serviceWorkerFile);
+            Path path = Paths.get(npmFolder.toString(), buildDirectory, serviceWorkerFile);
             return path.toString();
         } else {
-            return Paths.get(frontendDirectory.toString(), serviceWorkerFile)
-                    .toString();
+            return Paths.get(frontendDirectory.toString(), serviceWorkerFile).toString();
         }
     }
 
     private String getOfflinePath() {
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            return "'" + getEscapedRelativePath(
-                    Paths.get(pwaConfiguration.getOfflinePath())) + "'";
+            return "'" + getEscapedRelativePath(Paths.get(pwaConfiguration.getOfflinePath())) + "'";
         }
         return "'.'";
     }

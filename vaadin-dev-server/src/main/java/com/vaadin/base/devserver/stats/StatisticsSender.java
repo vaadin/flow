@@ -62,8 +62,7 @@ public class StatisticsSender {
      *
      * @param json
      *            The json returned by {@link StatisticsStorage#read()}
-     * @return The message string returned from server in last successful
-     *         requests.
+     * @return The message string returned from server in last successful requests.
      */
     String getLastServerMessage(ObjectNode json) {
         return json.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
@@ -94,21 +93,17 @@ public class StatisticsSender {
      *
      * @param json
      *            The json returned by {@link StatisticsStorage#read()}
-     * @return Time interval in seconds.
-     *         {@link StatisticsConstants#TIME_SEC_24H} in minumun and
+     * @return Time interval in seconds. {@link StatisticsConstants#TIME_SEC_24H} in minumun and
      *         {@link StatisticsConstants#TIME_SEC_30D} as maximum.
      * @see StatisticsConstants#FIELD_SEND_INTERVAL
      */
     long getInterval(ObjectNode json) {
         try {
-            long interval = json.get(StatisticsConstants.FIELD_SEND_INTERVAL)
-                    .asLong();
+            long interval = json.get(StatisticsConstants.FIELD_SEND_INTERVAL).asLong();
             return normalizeInterval(interval);
         } catch (Exception e) {
             // Just return the default value
-            getLogger().debug(
-                    FAILED_TO_READ + StatisticsConstants.FIELD_SEND_INTERVAL,
-                    e);
+            getLogger().debug(FAILED_TO_READ + StatisticsConstants.FIELD_SEND_INTERVAL, e);
         }
         return StatisticsConstants.TIME_SEC_24H;
     }
@@ -129,8 +124,7 @@ public class StatisticsSender {
     }
 
     /**
-     * Gets the last time the data was collected according to the statistics
-     * file.
+     * Gets the last time the data was collected according to the statistics file.
      *
      * @param json
      *            The json returned by {@link StatisticsStorage#read()}
@@ -142,15 +136,13 @@ public class StatisticsSender {
             return json.get(StatisticsConstants.FIELD_LAST_SENT).asLong();
         } catch (Exception e) {
             // Use default value in case of any problems
-            getLogger().debug(
-                    FAILED_TO_READ + StatisticsConstants.FIELD_LAST_SENT, e);
+            getLogger().debug(FAILED_TO_READ + StatisticsConstants.FIELD_LAST_SENT, e);
         }
         return -1; //
     }
 
     /**
-     * Gets the last time the data was collected according to the statistics
-     * file.
+     * Gets the last time the data was collected according to the statistics file.
      *
      * @param json
      *            The json returned by {@link StatisticsStorage#read()}
@@ -162,8 +154,7 @@ public class StatisticsSender {
             return json.get(StatisticsConstants.FIELD_LAST_STATUS).asText();
         } catch (Exception e) {
             // Use default value in case of any problems
-            getLogger().debug(
-                    FAILED_TO_READ + StatisticsConstants.FIELD_LAST_STATUS, e);
+            getLogger().debug(FAILED_TO_READ + StatisticsConstants.FIELD_LAST_STATUS, e);
         }
         return null; //
     }
@@ -192,8 +183,7 @@ public class StatisticsSender {
     /**
      * Send current statistics to given reporting URL.
      * <p>
-     * Reads the current data and posts it to given URL. Updates or replaces the
-     * local data according to the response.
+     * Reads the current data and posts it to given URL. Updates or replaces the local data according to the response.
      *
      * @param json
      *            The json returned by {@link StatisticsStorage#read()}
@@ -215,47 +205,35 @@ public class StatisticsSender {
 
         // Update the last sent time
         // If the last send was successful we clear the project data
-        if (response.isObject()
-                && response.has(StatisticsConstants.FIELD_LAST_STATUS)) {
+        if (response.isObject() && response.has(StatisticsConstants.FIELD_LAST_STATUS)) {
 
             storage.update((global, project) -> {
-                global.setValue(StatisticsConstants.FIELD_LAST_SENT,
-                        System.currentTimeMillis());
-                global.setValue(StatisticsConstants.FIELD_LAST_STATUS, response
-                        .get(StatisticsConstants.FIELD_LAST_STATUS).asText());
+                global.setValue(StatisticsConstants.FIELD_LAST_SENT, System.currentTimeMillis());
+                global.setValue(StatisticsConstants.FIELD_LAST_STATUS,
+                        response.get(StatisticsConstants.FIELD_LAST_STATUS).asText());
 
                 // Use different interval, if requested in response or default
                 // to 24H
                 if (response.has(StatisticsConstants.FIELD_SEND_INTERVAL)
-                        && response.get(StatisticsConstants.FIELD_SEND_INTERVAL)
-                                .isNumber()) {
+                        && response.get(StatisticsConstants.FIELD_SEND_INTERVAL).isNumber()) {
                     global.setValue(StatisticsConstants.FIELD_SEND_INTERVAL,
-                            normalizeInterval(response.get(
-                                    StatisticsConstants.FIELD_SEND_INTERVAL)
-                                    .asLong()));
+                            normalizeInterval(response.get(StatisticsConstants.FIELD_SEND_INTERVAL).asLong()));
                 } else {
-                    global.setValue(StatisticsConstants.FIELD_SEND_INTERVAL,
-                            StatisticsConstants.TIME_SEC_24H);
+                    global.setValue(StatisticsConstants.FIELD_SEND_INTERVAL, StatisticsConstants.TIME_SEC_24H);
                 }
 
                 // Update the server message
                 if (response.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                        && response
-                                .get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                                .isTextual()) {
-                    String msg = response
-                            .get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                            .asText();
-                    global.setValue(StatisticsConstants.FIELD_SERVER_MESSAGE,
-                            msg);
+                        && response.get(StatisticsConstants.FIELD_SERVER_MESSAGE).isTextual()) {
+                    String msg = response.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asText();
+                    global.setValue(StatisticsConstants.FIELD_SERVER_MESSAGE, msg);
                     message.set(msg);
                 }
 
             });
 
             // If data was sent ok, clear the existing project data
-            if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asText()
-                    .startsWith("200:")) {
+            if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asText().startsWith("200:")) {
                 storage.clearAllProjectData();
             }
         }
@@ -272,27 +250,22 @@ public class StatisticsSender {
      *            URL to post data to.
      * @param data
      *            Json data to send
-     * @return Response or <code>data</code> if the data was not successfully
-     *         sent.
+     * @return Response or <code>data</code> if the data was not successfully sent.
      */
     private static ObjectNode postData(String postUrl, String data) {
         ObjectNode result;
         try {
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(postUrl))
-                    .POST(HttpRequest.BodyPublishers.ofString(data))
-                    .header("Content-Type", "application/json").build();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(postUrl))
+                    .POST(HttpRequest.BodyPublishers.ofString(data)).header("Content-Type", "application/json").build();
 
-            HttpResponse<String> response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             int statusCode = response.statusCode();
 
             JsonNode jsonResponse = null;
             if (statusCode == 200) {
-                jsonResponse = JsonHelpers.getJsonMapper()
-                        .readTree(response.body());
+                jsonResponse = JsonHelpers.getJsonMapper().readTree(response.body());
             }
 
             if (jsonResponse != null && jsonResponse.isObject()) {
@@ -302,8 +275,7 @@ public class StatisticsSender {
                 result = JsonHelpers.getJsonMapper().createObjectNode();
             }
             // Update the status and return the results
-            result.put(StatisticsConstants.FIELD_LAST_STATUS,
-                    statusCode + ": "); // TODO is reason phrase needed here
+            result.put(StatisticsConstants.FIELD_LAST_STATUS, statusCode + ": "); // TODO is reason phrase needed here
             return result;
 
         } catch (IOException ex) {
@@ -315,8 +287,7 @@ public class StatisticsSender {
 
         // Fallback
         result = JsonHelpers.getJsonMapper().createObjectNode();
-        result.put(StatisticsConstants.FIELD_LAST_STATUS,
-                StatisticsConstants.INVALID_SERVER_RESPONSE);
+        result.put(StatisticsConstants.FIELD_LAST_STATUS, StatisticsConstants.INVALID_SERVER_RESPONSE);
         return result;
     }
 

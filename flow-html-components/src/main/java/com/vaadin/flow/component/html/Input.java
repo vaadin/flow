@@ -35,8 +35,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
  */
 @Tag(Tag.INPUT)
 public class Input extends AbstractSinglePropertyField<Input, String>
-        implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode,
-        HasAriaLabel, HasPlaceholder {
+        implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode, HasAriaLabel, HasPlaceholder {
 
     private static final PropertyDescriptor<String, String> placeholderDescriptor = PropertyDescriptors
             .attributeWithDefault("placeholder", "");
@@ -49,8 +48,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private ValueChangeMode currentMode;
 
     /**
-     * Creates a new input without any specific type, with
-     * {@link ValueChangeMode#ON_CHANGE ON_CHANGE} value change mode.
+     * Creates a new input without any specific type, with {@link ValueChangeMode#ON_CHANGE ON_CHANGE} value change
+     * mode.
      */
     public Input() {
         this(ValueChangeMode.ON_CHANGE);
@@ -60,8 +59,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * Creates a new input without any specific type.
      *
      * @param valueChangeMode
-     *            initial value change mode, or <code>null</code> to disable the
-     *            value synchronization
+     *            initial value change mode, or <code>null</code> to disable the value synchronization
      */
     public Input(ValueChangeMode valueChangeMode) {
         super("value", "", false);
@@ -79,9 +77,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     /**
      * Sets the type of this input.
      *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input">
-     *      Overview of supported type values</a>
+     * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input"> Overview of supported type
+     *      values</a>
      *
      * @param type
      *            the type, not <code>null</code>
@@ -107,8 +104,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     @Override
     public void setValueChangeMode(ValueChangeMode valueChangeMode) {
         currentMode = valueChangeMode;
-        setSynchronizedEvent(
-                ValueChangeMode.eventForMode(valueChangeMode, "input"));
+        setSynchronizedEvent(ValueChangeMode.eventForMode(valueChangeMode, "input"));
         applyChangeTimeout();
     }
 
@@ -129,7 +125,6 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     }
 
     private void applyChangeTimeout() {
-        ValueChangeMode.applyChangeTimeout(currentMode, valueChangeTimeout,
-                getSynchronizationRegistration());
+        ValueChangeMode.applyChangeTimeout(currentMode, valueChangeTimeout, getSynchronizationRegistration());
     }
 }

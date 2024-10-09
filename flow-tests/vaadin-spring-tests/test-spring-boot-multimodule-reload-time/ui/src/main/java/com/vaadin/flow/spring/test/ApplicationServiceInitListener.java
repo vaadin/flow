@@ -23,18 +23,15 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.test.store.ProductView;
 
 @Component
-public class ApplicationServiceInitListener
-        implements VaadinServiceInitListener {
+public class ApplicationServiceInitListener implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
 
-        if ("true".equalsIgnoreCase(
-                System.getProperty("route.hierarchy.enabled", "false"))) {
+        if ("true".equalsIgnoreCase(System.getProperty("route.hierarchy.enabled", "false"))) {
             System.out.println(
                     "Route hierarchy is enabled. Registering additional route with hierarchical structure like 'catalog/product/0'.");
-            RouteConfiguration.forApplicationScope()
-                    .setAnnotatedRoute(ProductView.class);
+            RouteConfiguration.forApplicationScope().setAnnotatedRoute(ProductView.class);
         }
     }
 }

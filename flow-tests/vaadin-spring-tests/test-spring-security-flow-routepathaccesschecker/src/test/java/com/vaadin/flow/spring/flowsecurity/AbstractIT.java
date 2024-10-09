@@ -43,24 +43,21 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     private void checkForBrowserErrors() {
-        checkLogsForErrors(msg -> msg.contains(
-                "admin-only/secret.txt - Failed to load resource: the server responded with a status of 403")
+        checkLogsForErrors(msg -> msg
+                .contains("admin-only/secret.txt - Failed to load resource: the server responded with a status of 403")
                 || msg.contains(
                         "admin-only/secret.txt?continue - Failed to load resource: the server responded with a status of 403")
                 || (msg.contains("X-Atmosphere-Transport=close")
-                        && msg.contains(
-                                "Failed to load resource: the server responded with a status of 403")));
+                        && msg.contains("Failed to load resource: the server responded with a status of 403")));
     }
 
     /**
-     * Base path for Vaadin Servlet URL mapping, as defined in
-     * {@literal vaadin.urlMapping} configuration property.
+     * Base path for Vaadin Servlet URL mapping, as defined in {@literal vaadin.urlMapping} configuration property.
      *
-     * For example, for {@code vaadin.urlMapping=/vaadin/*} return value should
-     * be {@code /vaadin}, without ending slash.
+     * For example, for {@code vaadin.urlMapping=/vaadin/*} return value should be {@code /vaadin}, without ending
+     * slash.
      *
-     * Default value is {@literal blank}, relative to the default {@code /*}
-     * mapping.
+     * Default value is {@literal blank}, relative to the default {@code /*} mapping.
      *
      * @return base path for Vaadin Servlet URL mapping.
      */
@@ -91,8 +88,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
     protected void login(String username, String password) {
         assertLoginViewShown();
 
-        LoginFormElement form = $(LoginOverlayElement.class).first()
-                .getLoginForm();
+        LoginFormElement form = $(LoginOverlayElement.class).first().getLoginForm();
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();
@@ -120,16 +116,14 @@ public abstract class AbstractIT extends AbstractSpringTest {
         assertPathShown("private");
         waitUntil(driver -> $("span").attribute("id", "balanceText").exists());
         String balance = $("span").id("balanceText").getText();
-        Assert.assertTrue(balance.startsWith(
-                "Hello " + fullName + ", your bank account balance is $"));
+        Assert.assertTrue(balance.startsWith("Hello " + fullName + ", your bank account balance is $"));
     }
 
     protected void assertAdminPageShown(String fullName) {
         assertPathShown("admin");
         TestBenchElement welcome = waitUntil(driver -> $("*").id("welcome"));
         String welcomeText = welcome.getText();
-        Assert.assertEquals("Welcome to the admin page, " + fullName,
-                welcomeText);
+        Assert.assertEquals("Welcome to the admin page, " + fullName, welcomeText);
     }
 
     protected void assertPathShown(String path) {
@@ -137,16 +131,14 @@ public abstract class AbstractIT extends AbstractSpringTest {
         waitUntil(driver -> {
             String url = driver.getCurrentUrl();
             if (!url.startsWith(getRootURL())) {
-                throw new IllegalStateException("URL should start with "
-                        + getRootURL() + " but is " + url);
+                throw new IllegalStateException("URL should start with " + getRootURL() + " but is " + url);
             }
             // HttpSessionRequestCache uses request parameter "continue",
             // see HttpSessionRequestCache::setMatchingRequestParameterName
             if (url.endsWith("continue")) {
                 url = url.substring(0, url.length() - 9);
             }
-            return url.equals(
-                    getRootURL() + getUrlMappingBasePath() + "/" + path);
+            return url.equals(getRootURL() + getUrlMappingBasePath() + "/" + path);
         });
     }
 

@@ -23,11 +23,9 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
- * A test class for miscelaneous tests checking features or fixes that do not
- * require their own IT module.
+ * A test class for miscelaneous tests checking features or fixes that do not require their own IT module.
  *
- * Adding new IT modules penalizes build time, otherwise appending tests to this
- * class run new tests faster.
+ * Adding new IT modules penalizes build time, otherwise appending tests to this class run new tests faster.
  */
 public class MiscelaneousIT extends ChromeBrowserTest {
     @Override
@@ -48,8 +46,8 @@ public class MiscelaneousIT extends ChromeBrowserTest {
     }
 
     /**
-     * Checks that a missing or incorrect icon is handled properly with an error
-     * log and does not halt the whole application startup.
+     * Checks that a missing or incorrect icon is handled properly with an error log and does not halt the whole
+     * application startup.
      */
     @Test
     public void handlesIncorrectIconProperly() {
@@ -57,8 +55,7 @@ public class MiscelaneousIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        Assert.assertTrue(
-                "Missing/invalid icons at startup should be handled with error log.",
+        Assert.assertTrue("Missing/invalid icons at startup should be handled with error log.",
                 isElementPresent(By.id(MiscelaneousView.TEST_VIEW_ID)));
     }
 }

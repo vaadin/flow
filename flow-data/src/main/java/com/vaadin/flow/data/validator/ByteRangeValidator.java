@@ -29,9 +29,8 @@ public class ByteRangeValidator extends RangeValidator<Byte> {
     /**
      * Creates a validator for checking that an Byte is within a given range.
      *
-     * By default the range is inclusive i.e. both minValue and maxValue are
-     * valid values. Use {@link #setMinValueIncluded(boolean)} or
-     * {@link #setMaxValueIncluded(boolean)} to change it.
+     * By default the range is inclusive i.e. both minValue and maxValue are valid values. Use
+     * {@link #setMinValueIncluded(boolean)} or {@link #setMaxValueIncluded(boolean)} to change it.
      *
      *
      * @param errorMessage
@@ -41,8 +40,7 @@ public class ByteRangeValidator extends RangeValidator<Byte> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public ByteRangeValidator(String errorMessage, Byte minValue,
-            Byte maxValue) {
+    public ByteRangeValidator(String errorMessage, Byte minValue, Byte maxValue) {
         super(errorMessage, Comparator.naturalOrder(), minValue, maxValue);
     }
 

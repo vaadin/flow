@@ -19,11 +19,9 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 
 /**
- * Contains the system messages used to notify the user about various critical
- * situations that can occur.
+ * Contains the system messages used to notify the user about various critical situations that can occur.
  * <p>
- * Use {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)}
- * to customize.
+ * Use {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)} to customize.
  * </p>
  * <p>
  * The defaults defined in this class are:
@@ -31,19 +29,17 @@ import java.io.Serializable;
  * <li><b>sessionExpiredURL</b> = null</li>
  * <li><b>sessionExpiredNotificationEnabled</b> = false</li>
  * <li><b>sessionExpiredCaption</b> = "Session Expired"</li>
- * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and click
- * here or press ESC key to continue."</li>
+ * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and click here or press ESC key to continue."</li>
  * <li><b>internalErrorURL</b> = null</li>
  * <li><b>internalErrorNotificationEnabled</b> = true</li>
  * <li><b>internalErrorCaption</b> = "Internal error"</li>
- * <li><b>internalErrorMessage</b> = "Please notify the administrator. Take note
- * of any unsaved data, and click here or press ESC to continue."</li>
+ * <li><b>internalErrorMessage</b> = "Please notify the administrator. Take note of any unsaved data, and click here or
+ * press ESC to continue."</li>
  * <li><b>cookiesDisabledURL</b> = null</li>
  * <li><b>cookiesDisabledNotificationEnabled</b> = true</li>
  * <li><b>cookiesDisabledCaption</b> = "Cookies disabled"</li>
- * <li><b>cookiesDisabledMessage</b> = "This application requires cookies to
- * function. Please enable cookies in your browser and click here or press ESC
- * to try again.</li>
+ * <li><b>cookiesDisabledMessage</b> = "This application requires cookies to function. Please enable cookies in your
+ * browser and click here or press ESC to try again.</li>
  * </ul>
  *
  * @since 1.0
@@ -72,8 +68,7 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Gets the URL the user will be redirected to after dismissing a session
-     * expired message.
+     * Gets the URL the user will be redirected to after dismissing a session expired message.
      *
      * Default value is {@literal null}.
      *
@@ -84,14 +79,12 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Checks if "session expired" notifications should be shown to the end
-     * user. If the notification is disabled the user will be immediately
-     * redirected to the URL returned by {@link #getSessionExpiredURL()}.
+     * Checks if "session expired" notifications should be shown to the end user. If the notification is disabled the
+     * user will be immediately redirected to the URL returned by {@link #getSessionExpiredURL()}.
      *
      * By default, the "session expired" notification is disabled.
      *
-     * @return {@code true} to show the notification to the end user,
-     *         {@code false} to redirect directly
+     * @return {@code true} to show the notification to the end user, {@code false} to redirect directly
      */
     public boolean isSessionExpiredNotificationEnabled() {
         return sessionExpiredNotificationEnabled;
@@ -100,32 +93,27 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in a "session expired" notification.
      *
-     * Returns {@literal null} if the "session expired" notification is
-     * disabled.
+     * Returns {@literal null} if the "session expired" notification is disabled.
      *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getSessionExpiredCaption() {
-        return (sessionExpiredNotificationEnabled ? sessionExpiredCaption
-                : null);
+        return (sessionExpiredNotificationEnabled ? sessionExpiredCaption : null);
     }
 
     /**
      * Gets the message to show in a "session expired" notification.
      *
-     * Returns {@literal null} if the "session expired" notification is
-     * disabled.
+     * Returns {@literal null} if the "session expired" notification is disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */
     public String getSessionExpiredMessage() {
-        return (sessionExpiredNotificationEnabled ? sessionExpiredMessage
-                : null);
+        return (sessionExpiredNotificationEnabled ? sessionExpiredMessage : null);
     }
 
     /**
-     * Gets the URL the user will be redirected to after dismissing an internal
-     * error message.
+     * Gets the URL the user will be redirected to after dismissing an internal error message.
      *
      * Default value is {@literal null}.
      *
@@ -136,14 +124,12 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Checks if "internal error" notifications should be shown to the end user.
-     * If the notification is disabled the user will be immediately redirected
-     * to the URL returned by {@link #getInternalErrorURL()}.
+     * Checks if "internal error" notifications should be shown to the end user. If the notification is disabled the
+     * user will be immediately redirected to the URL returned by {@link #getInternalErrorURL()}.
      *
      * By default, the "internal error" notification is enabled.
      *
-     * @return {@code true} to show the notification to the end user,
-     *         {@code false} to redirect directly
+     * @return {@code true} to show the notification to the end user, {@code false} to redirect directly
      */
     public boolean isInternalErrorNotificationEnabled() {
         return internalErrorNotificationEnabled;
@@ -172,8 +158,7 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Gets the URL the user will be redirected to after dismissing a "cookies
-     * disabled" message.
+     * Gets the URL the user will be redirected to after dismissing a "cookies disabled" message.
      *
      * Default value is {@literal null}.
      *
@@ -184,14 +169,12 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Checks if "cookies disabled" notifications should be shown to the end
-     * user. If the notification is disabled the user will be immediately
-     * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
+     * Checks if "cookies disabled" notifications should be shown to the end user. If the notification is disabled the
+     * user will be immediately redirected to the URL returned by {@link #getCookiesDisabledURL()}.
      *
      * By default, the "cookies disable" notification is disabled.
      *
-     * @return {@code true} to show the notification to the end user,
-     *         {@code false} to redirect directly
+     * @return {@code true} to show the notification to the end user, {@code false} to redirect directly
      */
     public boolean isCookiesDisabledNotificationEnabled() {
         return cookiesDisabledNotificationEnabled;
@@ -200,27 +183,23 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in a "cookies disabled" notification.
      *
-     * Returns {@literal null} if the "cookies disable" notification is
-     * disabled.
+     * Returns {@literal null} if the "cookies disable" notification is disabled.
      *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getCookiesDisabledCaption() {
-        return (cookiesDisabledNotificationEnabled ? cookiesDisabledCaption
-                : null);
+        return (cookiesDisabledNotificationEnabled ? cookiesDisabledCaption : null);
     }
 
     /**
      * Gets the message to show in a "cookies disabled" notification.
      *
-     * Returns {@literal null} if the "cookies disable" notification is
-     * disabled.
+     * Returns {@literal null} if the "cookies disable" notification is disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */
     public String getCookiesDisabledMessage() {
-        return (cookiesDisabledNotificationEnabled ? cookiesDisabledMessage
-                : null);
+        return (cookiesDisabledNotificationEnabled ? cookiesDisabledMessage : null);
     }
 
 }

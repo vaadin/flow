@@ -26,8 +26,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortOrder;
 
 /**
- * Abstract base class for implementing
- * {@link BackEndHierarchicalDataProvider}s.
+ * Abstract base class for implementing {@link BackEndHierarchicalDataProvider}s.
  *
  * @author Vaadin Ltd
  *
@@ -37,31 +36,26 @@ import com.vaadin.flow.data.provider.SortOrder;
  *            filter type
  * @since 1.2
  */
-public abstract class AbstractBackEndHierarchicalDataProvider<T, F>
-        extends AbstractHierarchicalDataProvider<T, F>
+public abstract class AbstractBackEndHierarchicalDataProvider<T, F> extends AbstractHierarchicalDataProvider<T, F>
         implements BackEndHierarchicalDataProvider<T, F> {
 
     private List<QuerySortOrder> sortOrders = new ArrayList<>();
 
-    private HierarchicalQuery<T, F> mixInSortOrders(
-            HierarchicalQuery<T, F> query) {
+    private HierarchicalQuery<T, F> mixInSortOrders(HierarchicalQuery<T, F> query) {
         if (sortOrders.isEmpty()) {
             return query;
         }
 
-        Set<String> sortedPropertyNames = query.getSortOrders().stream()
-                .map(SortOrder::getSorted).collect(Collectors.toSet());
+        Set<String> sortedPropertyNames = query.getSortOrders().stream().map(SortOrder::getSorted)
+                .collect(Collectors.toSet());
 
         List<QuerySortOrder> combinedSortOrders = Stream
                 .concat(query.getSortOrders().stream(),
-                        sortOrders.stream()
-                                .filter(order -> !sortedPropertyNames
-                                        .contains(order.getSorted())))
+                        sortOrders.stream().filter(order -> !sortedPropertyNames.contains(order.getSorted())))
                 .collect(Collectors.toList());
 
-        return new HierarchicalQuery<>(query.getOffset(), query.getLimit(),
-                combinedSortOrders, query.getInMemorySorting(),
-                query.getFilter().orElse(null), query.getParent());
+        return new HierarchicalQuery<>(query.getOffset(), query.getLimit(), combinedSortOrders,
+                query.getInMemorySorting(), query.getFilter().orElse(null), query.getParent());
     }
 
     @Override
@@ -76,8 +70,7 @@ public abstract class AbstractBackEndHierarchicalDataProvider<T, F>
 
     @Override
     public void setSortOrders(List<QuerySortOrder> sortOrders) {
-        this.sortOrders = Objects.requireNonNull(sortOrders,
-                "Sort orders cannot be null");
+        this.sortOrders = Objects.requireNonNull(sortOrders, "Sort orders cannot be null");
         refreshAll();
     }
 
@@ -87,10 +80,8 @@ public abstract class AbstractBackEndHierarchicalDataProvider<T, F>
      * @see HierarchicalQuery
      *
      * @param query
-     *            the query that defines sorting, filtering, paging and the
-     *            parent item to fetch children from
+     *            the query that defines sorting, filtering, paging and the parent item to fetch children from
      * @return a stream of items matching the query
      */
-    protected abstract Stream<T> fetchChildrenFromBackEnd(
-            HierarchicalQuery<T, F> query);
+    protected abstract Stream<T> fetchChildrenFromBackEnd(HierarchicalQuery<T, F> query);
 }

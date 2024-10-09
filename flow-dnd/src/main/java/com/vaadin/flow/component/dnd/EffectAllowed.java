@@ -77,31 +77,26 @@ public enum EffectAllowed {
     }
 
     /**
-     * Get the lower case string value that is accepted by the client side drag
-     * event.
+     * Get the lower case string value that is accepted by the client side drag event.
      *
-     * @return String clientPropertyValue accepted by the client side drag
-     *         event.
+     * @return String clientPropertyValue accepted by the client side drag event.
      */
     public String getClientPropertyValue() {
         return clientPropertyValue;
     }
 
     /**
-     * Parses effect allowed from the given non-null string or throws an illegal
-     * argument exception if fails to parse it.
+     * Parses effect allowed from the given non-null string or throws an illegal argument exception if fails to parse
+     * it.
      *
      * @param string
      *            the string to parse
      * @return the matching effect allowed
      */
     static EffectAllowed fromString(String string) {
-        Optional<EffectAllowed> effectAllowed = Stream
-                .of(EffectAllowed.values())
-                .filter(ea -> ea.getClientPropertyValue()
-                        .equalsIgnoreCase(string.replace("_", "")))
-                .findFirst();
-        return effectAllowed.orElseThrow(() -> new IllegalArgumentException(
-                "Could not parse effect allowed from string " + string));
+        Optional<EffectAllowed> effectAllowed = Stream.of(EffectAllowed.values())
+                .filter(ea -> ea.getClientPropertyValue().equalsIgnoreCase(string.replace("_", ""))).findFirst();
+        return effectAllowed.orElseThrow(
+                () -> new IllegalArgumentException("Could not parse effect allowed from string " + string));
     }
 }

@@ -13,8 +13,7 @@ import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.testbench.TestBenchElement;
 
 @Category(PushTests.class)
-public abstract class SendMultibyteCharactersTest
-        extends AbstractBrowserConsoleTest {
+public abstract class SendMultibyteCharactersTest extends AbstractBrowserConsoleTest {
 
     @Test
     public void transportSupportsMultibyteCharacters() {
@@ -37,18 +36,14 @@ public abstract class SendMultibyteCharactersTest
 
         findElement(By.id("label")).click();
         List<String> messages = new ArrayList<>();
-        waitUntil(driver -> getBrowserLogs(true).stream()
-                .filter(String.class::isInstance).anyMatch(msg -> {
-                    messages.add(msg.toString());
-                    return msg.equals("Handling message from server");
-                }), 15);
+        waitUntil(driver -> getBrowserLogs(true).stream().filter(String.class::isInstance).anyMatch(msg -> {
+            messages.add(msg.toString());
+            return msg.equals("Handling message from server");
+        }), 15);
 
-        checkLogsForErrors(
-                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
 
-        Assert.assertTrue(
-                messages.stream().anyMatch(msg -> msg.startsWith("Received ")
-                        && msg.contains("message:")));
+        Assert.assertTrue(messages.stream().anyMatch(msg -> msg.startsWith("Received ") && msg.contains("message:")));
     }
 
 }

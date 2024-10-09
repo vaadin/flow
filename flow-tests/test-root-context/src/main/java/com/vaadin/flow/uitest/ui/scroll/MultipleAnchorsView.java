@@ -27,8 +27,7 @@ public class MultipleAnchorsView extends AbstractDivView {
     static final int NUMBER_OF_ANCHORS = 6;
     static final String ANCHOR_URL_ID_BASE = "anchorUrlId";
     static final String ANCHOR_DIV_ID_BASE = "anchorDivId";
-    static final String ANCHOR_URL_BASE = MultipleAnchorsView.class
-            .getCanonicalName() + '#' + ANCHOR_DIV_ID_BASE;
+    static final String ANCHOR_URL_BASE = MultipleAnchorsView.class.getCanonicalName() + '#' + ANCHOR_DIV_ID_BASE;
 
     public MultipleAnchorsView() {
         boolean isRouterLink = true;
@@ -40,18 +39,14 @@ public class MultipleAnchorsView extends AbstractDivView {
             anchorDiv.setId(anchorDivId);
             anchorDiv.setText("I am an anchor div #" + i);
 
-            Anchor anchorUrl = ScrollView.createAnchorUrl(isRouterLink,
-                    ANCHOR_URL_ID_BASE + i,
-                    MultipleAnchorsView.class.getCanonicalName() + '#'
-                            + anchorDivId,
-                    "Anchor url #" + i);
+            Anchor anchorUrl = ScrollView.createAnchorUrl(isRouterLink, ANCHOR_URL_ID_BASE + i,
+                    MultipleAnchorsView.class.getCanonicalName() + '#' + anchorDivId, "Anchor url #" + i);
             isRouterLink = !isRouterLink;
 
             add(anchorUrl);
             anchorDivContainer.add(ScrollView.createSpacerDiv(200), anchorDiv);
         }
 
-        add(ScrollView.createSpacerDiv(1000), anchorDivContainer,
-                ScrollView.createSpacerDiv(1000));
+        add(ScrollView.createSpacerDiv(1000), anchorDivContainer, ScrollView.createSpacerDiv(1000));
     }
 }

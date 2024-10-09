@@ -21,8 +21,8 @@ import java.util.Objects;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
- * A container for Theme information when scanning the class path. It overrides
- * equals and hashCode in order to use HashSet to eliminate duplicates.
+ * A container for Theme information when scanning the class path. It overrides equals and hashCode in order to use
+ * HashSet to eliminate duplicates.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -75,8 +75,7 @@ final class ThemeData implements Serializable {
             return false;
         }
         ThemeData that = (ThemeData) other;
-        return notheme == that.notheme
-                && Objects.equals(themeClass, that.themeClass)
+        return notheme == that.notheme && Objects.equals(themeClass, that.themeClass)
                 && Objects.equals(themeName, that.themeName);
     }
 
@@ -90,7 +89,7 @@ final class ThemeData implements Serializable {
 
     @Override
     public String toString() {
-        return " notheme: " + notheme + "\n themeClass:" + themeClass
-                + "\n variant: " + variant + "\n themeName: " + themeName;
+        return " notheme: " + notheme + "\n themeClass:" + themeClass + "\n variant: " + variant + "\n themeName: "
+                + themeName;
     }
 }

@@ -29,8 +29,7 @@ public class CompositeNestedIT extends ChromeBrowserTest {
     public void testBasics() {
         open();
         WebElement name = findElement(By.id(CompositeNestedView.NAME_ID));
-        InputTextElement input = $(InputTextElement.class)
-                .id(CompositeNestedView.NAME_FIELD_ID);
+        InputTextElement input = $(InputTextElement.class).id(CompositeNestedView.NAME_FIELD_ID);
         Assert.assertEquals("Name on server:", name.getText());
         input.setValue("123");
         Assert.assertEquals("Name on server: 123", name.getText());

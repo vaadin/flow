@@ -51,12 +51,10 @@ public class ReconnectConfigurationTest extends AbstractConfigurationTest {
                 set(StateTree.class, stateTree);
                 // Binds to the root node
                 configuration = new ReconnectConfiguration(this);
-                ConnectionStateHandler connectionStateHandler = Mockito
-                        .mock(ConnectionStateHandler.class);
+                ConnectionStateHandler connectionStateHandler = Mockito.mock(ConnectionStateHandler.class);
                 Mockito.doAnswer(new Answer<Void>() {
                     @Override
-                    public Void answer(InvocationOnMock invocation)
-                            throws Throwable {
+                    public Void answer(InvocationOnMock invocation) throws Throwable {
                         // Read some values to be able to test that the
                         // reactive computation works properly
                         configuration.getDialogText();
@@ -76,17 +74,13 @@ public class ReconnectConfigurationTest extends AbstractConfigurationTest {
         // Defaults for dialog properties moved to ConnectionIndicator.ts
         Assert.assertEquals(null, configuration.getDialogText());
         Assert.assertEquals(null, configuration.getDialogTextGaveUp());
-        Assert.assertEquals(RECONNECT_ATTEMPTS_DEFAULT,
-                configuration.getReconnectAttempts());
-        Assert.assertEquals(RECONNECT_INTERVAL_DEFAULT,
-                configuration.getReconnectInterval());
+        Assert.assertEquals(RECONNECT_ATTEMPTS_DEFAULT, configuration.getReconnectAttempts());
+        Assert.assertEquals(RECONNECT_INTERVAL_DEFAULT, configuration.getReconnectInterval());
     }
 
     @Override
     protected MapProperty getProperty(String key) {
-        return stateTree.getRootNode()
-                .getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
-                .getProperty(key);
+        return stateTree.getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION).getProperty(key);
     }
 
     @Test

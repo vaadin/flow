@@ -49,14 +49,12 @@ import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
 /**
- * Processes a 'start' request type from the client to initialize server session
- * and UI. It returns a JSON response with everything needed to bootstrap flow
- * views.
+ * Processes a 'start' request type from the client to initialize server session and UI. It returns a JSON response with
+ * everything needed to bootstrap flow views.
  * <p>
- * The handler is for client driven projects where `index.html` does not contain
- * bootstrap data. Bootstrapping is the responsibility of the `@vaadin/flow`
- * client that is able to ask the server side to create the vaadin session and
- * do the bootstrapping lazily.
+ * The handler is for client driven projects where `index.html` does not contain bootstrap data. Bootstrapping is the
+ * responsibility of the `@vaadin/flow` client that is able to ask the server side to create the vaadin session and do
+ * the bootstrapping lazily.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -78,14 +76,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
          * @param ui
          *            the UI object
          * @param callback
-         *            a callback that is invoked to resolve the context root
-         *            from the request
+         *            a callback that is invoked to resolve the context root from the request
          */
-        public JavaScriptBootstrapContext(VaadinRequest request,
-                VaadinResponse response, UI ui,
+        public JavaScriptBootstrapContext(VaadinRequest request, VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
-            super(request, response, ui.getInternals().getSession(), ui,
-                    callback, JavaScriptBootstrapContext::initRoute);
+            super(request, response, ui.getInternals().getSession(), ui, callback,
+                    JavaScriptBootstrapContext::initRoute);
         }
 
         private static Location initRoute(VaadinRequest request) {
@@ -99,10 +95,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             // this case, the
             // location comes from the pathinfo + query parameters in the
             // request
-            String path = request.getParameter(
-                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-            String params = request
-                    .getParameter(ApplicationConstants.REQUEST_QUERY_PARAMETER);
+            String path = request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+            String params = request.getParameter(ApplicationConstants.REQUEST_QUERY_PARAMETER);
             if (path != null) {
                 return new Location(path, QueryParameters.fromString(params));
             }
@@ -110,12 +104,10 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             // Case 2, use the request
             Map<String, String[]> parameterMap = request.getParameterMap();
             if (parameterMap != null && !parameterMap.isEmpty()) {
-                return new Location(request.getPathInfo(),
-                        QueryParameters.full(parameterMap));
+                return new Location(request.getPathInfo(), QueryParameters.full(parameterMap));
 
             } else {
-                return new Location(request.getPathInfo(),
-                        QueryParameters.empty());
+                return new Location(request.getPathInfo(), QueryParameters.empty());
             }
         }
 
@@ -130,8 +122,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request, RequestType.INIT)
-                && isServletRootRequest(request);
+        return HandlerHelper.isRequestType(request, RequestType.INIT) && isServletRootRequest(request);
     }
 
     private boolean isServletRootRequest(VaadinRequest request) {
@@ -144,23 +135,18 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinResponse response,
-            VaadinSession session) {
+    protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass, VaadinRequest request,
+            VaadinResponse response, VaadinSession session) {
 
-        BootstrapContext context = super.createAndInitUI(UI.class, request,
-                response, session);
+        BootstrapContext context = super.createAndInitUI(UI.class, request, response, session);
         JsonObject config = context.getApplicationParameters();
 
         String requestURL = getRequestUrl(request);
 
-        PushConfiguration pushConfiguration = context.getUI()
-                .getPushConfiguration();
-        pushConfiguration.setPushServletMapping(
-                BootstrapHandlerHelper.determinePushServletMapping(session));
+        PushConfiguration pushConfiguration = context.getUI().getPushConfiguration();
+        pushConfiguration.setPushServletMapping(BootstrapHandlerHelper.determinePushServletMapping(session));
 
-        AppShellRegistry registry = AppShellRegistry
-                .getInstance(session.getService().getContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(session.getService().getContext());
         registry.modifyPushConfiguration(pushConfiguration);
 
         config.put("requestURL", requestURL);
@@ -173,34 +159,29 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected BootstrapContext createBootstrapContext(VaadinRequest request,
-            VaadinResponse response, UI ui,
+    protected BootstrapContext createBootstrapContext(VaadinRequest request, VaadinResponse response, UI ui,
             Function<VaadinRequest, String> callback) {
         return new JavaScriptBootstrapContext(request, response, ui, callback);
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         try {
             // #9443 Use error code 400 for bad location and don't create UI
             // Normally caught by IndexHtmlRequestHandler, but checking here too
             // for handcrafted requests
-            String pathAndParams = request.getParameter(
-                    ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+            String pathAndParams = request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
             if (pathAndParams == null) {
-                throw new InvalidLocationException(
-                        "Location parameter missing from bootstrap request to server.");
+                throw new InvalidLocationException("Location parameter missing from bootstrap request to server.");
             }
             LocationUtil.parsePathToSegments(pathAndParams, false);
         } catch (InvalidLocationException invalidLocationException) {
-            response.sendError(400, "Invalid location: "
-                    + invalidLocationException.getMessage());
+            response.sendError(400, "Invalid location: " + invalidLocationException.getMessage());
             return true;
         }
 
-        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
-                response::setDateHeader);
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader, response::setDateHeader);
 
         writeResponse(response, getInitialJson(request, response, session));
         return true;
@@ -235,8 +216,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     private JsonValue getErrors(VaadinService service) {
         JsonObject errors = Json.createObject();
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager.getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             String errorMsg = devModeHandler.get().getFailedOutput();
             if (errorMsg != null) {
@@ -246,17 +226,15 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return errors.keys().length > 0 ? errors : Json.createNull();
     }
 
-    private void writeResponse(VaadinResponse response, JsonObject json)
-            throws IOException {
+    private void writeResponse(VaadinResponse response, JsonObject json) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpURLConnection.HTTP_OK);
-        response.getOutputStream()
-                .write(JsonUtil.stringify(json).getBytes("UTF-8"));
+        response.getOutputStream().write(JsonUtil.stringify(json).getBytes("UTF-8"));
     }
 
     /**
-     * Returns the JSON object with the application config and UIDL info that
-     * can be used in the bootstrapper to embed that info in the initial page.
+     * Returns the JSON object with the application config and UIDL info that can be used in the bootstrapper to embed
+     * that info in the initial page.
      *
      * @param request
      *            the vaadin request.
@@ -266,16 +244,13 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
      *            the vaadin session.
      * @return the initial application JSON.
      */
-    protected JsonObject getInitialJson(VaadinRequest request,
-            VaadinResponse response, VaadinSession session) {
+    protected JsonObject getInitialJson(VaadinRequest request, VaadinResponse response, VaadinSession session) {
 
-        BootstrapContext context = createAndInitUI(UI.class, request, response,
-                session);
+        BootstrapContext context = createAndInitUI(UI.class, request, response, session);
 
         JsonObject initial = Json.createObject();
 
-        boolean productionMode = context.getSession().getConfiguration()
-                .isProductionMode();
+        boolean productionMode = context.getSession().getConfiguration().isProductionMode();
 
         JsonObject appConfig = context.getApplicationParameters();
 

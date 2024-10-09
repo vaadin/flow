@@ -28,32 +28,26 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DebounceSynchronizePropertyView", layout = ViewTestLayout.class)
-public class DebounceSynchronizePropertyView
-        extends AbstractDebounceSynchronizeView {
+public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronizeView {
     private final HtmlComponent input = new HtmlComponent("input");
     private final Element inputElement = input.getElement();
 
     public DebounceSynchronizePropertyView() {
         input.getElement().setAttribute("id", "input");
 
-        Component eagerToggle = createModeToggle("Eager (every keypress)",
-                "eager");
-        Component filteredToggle = createModeToggle("Filtered (even length)",
-                "filtered", registration -> registration
-                        .setFilter("element.value.length % 2 === 0"));
-        Component debounceToggle = createModeToggle(
-                "Debounce (when typing pauses)", "debounce",
+        Component eagerToggle = createModeToggle("Eager (every keypress)", "eager");
+        Component filteredToggle = createModeToggle("Filtered (even length)", "filtered",
+                registration -> registration.setFilter("element.value.length % 2 === 0"));
+        Component debounceToggle = createModeToggle("Debounce (when typing pauses)", "debounce",
                 registration -> registration.debounce(CHANGE_TIMEOUT));
-        Component throttleToggle = createModeToggle("Throttle (while typing)",
-                "throttle",
+        Component throttleToggle = createModeToggle("Throttle (while typing)", "throttle",
                 registration -> registration.throttle(CHANGE_TIMEOUT));
 
         add(eagerToggle, filteredToggle, debounceToggle, throttleToggle, input);
         addChangeMessagesDiv();
     }
 
-    private Component createModeToggle(String caption, String id,
-            Consumer<DomListenerRegistration> configurator) {
+    private Component createModeToggle(String caption, String id, Consumer<DomListenerRegistration> configurator) {
         Element checkbox = new Element("input");
         checkbox.setAttribute("type", "checkbox");
         checkbox.setAttribute("id", id);
@@ -66,10 +60,8 @@ public class DebounceSynchronizePropertyView
                 if (event.getEventData().getBoolean("element.checked")) {
                     assert registration == null;
 
-                    registration = inputElement.addPropertyChangeListener(
-                            "value", "input",
-                            propertyChange -> addChangeMessage(
-                                    propertyChange.getValue()));
+                    registration = inputElement.addPropertyChangeListener("value", "input",
+                            propertyChange -> addChangeMessage(propertyChange.getValue()));
 
                     configurator.accept(registration);
                 } else {

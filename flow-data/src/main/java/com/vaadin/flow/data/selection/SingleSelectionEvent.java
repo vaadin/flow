@@ -33,8 +33,8 @@ import com.vaadin.flow.component.Component;
  * @param <T>
  *            the type of the selected item
  */
-public class SingleSelectionEvent<C extends Component, T> extends
-        ComponentValueChangeEvent<C, T> implements SelectionEvent<C, T> {
+public class SingleSelectionEvent<C extends Component, T> extends ComponentValueChangeEvent<C, T>
+        implements SelectionEvent<C, T> {
 
     /**
      * Creates a new selection change event in a component.
@@ -46,17 +46,15 @@ public class SingleSelectionEvent<C extends Component, T> extends
      * @param oldSelection
      *            the item that was previously selected
      * @param userOriginated
-     *            {@code true} if this event originates from the client,
-     *            {@code false} otherwise.
+     *            {@code true} if this event originates from the client, {@code false} otherwise.
      */
-    public SingleSelectionEvent(C listing, SingleSelect<C, T> source,
-            T oldSelection, boolean userOriginated) {
+    public SingleSelectionEvent(C listing, SingleSelect<C, T> source, T oldSelection, boolean userOriginated) {
         super(listing, source, oldSelection, userOriginated);
     }
 
     /**
-     * Returns an optional of the item that was selected, or an empty optional
-     * if a previously selected item was deselected.
+     * Returns an optional of the item that was selected, or an empty optional if a previously selected item was
+     * deselected.
      *
      * @see #getValue()
      *

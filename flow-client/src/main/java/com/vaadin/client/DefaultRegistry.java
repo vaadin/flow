@@ -42,16 +42,14 @@ import com.vaadin.client.flow.StateTree;
 public class DefaultRegistry extends Registry {
 
     /**
-     * Constructs a registry based on the given application connection and
-     * configuration references.
+     * Constructs a registry based on the given application connection and configuration references.
      *
      * @param connection
      *            the application connection
      * @param applicationConfiguration
      *            the application configuration
      */
-    public DefaultRegistry(ApplicationConnection connection,
-            ApplicationConfiguration applicationConfiguration) {
+    public DefaultRegistry(ApplicationConnection connection, ApplicationConfiguration applicationConfiguration) {
         // Note that initialization order matters. Many constructors depend on
         // ApplicationConnection, ApplicationConfiguration and StateTree even
         // though this is not explicitly specified anywhere.
@@ -71,17 +69,14 @@ public class DefaultRegistry extends Registry {
         set(MessageSender.class, new MessageSender(this));
         set(ServerRpcQueue.class, new ServerRpcQueue(this));
         set(ServerConnector.class, new ServerConnector(this));
-        set(ExecuteJavaScriptProcessor.class,
-                new ExecuteJavaScriptProcessor(this));
+        set(ExecuteJavaScriptProcessor.class, new ExecuteJavaScriptProcessor(this));
         set(ConstantPool.class, (Supplier<ConstantPool>) ConstantPool::new);
-        set(ExistingElementMap.class,
-                (Supplier<ExistingElementMap>) ExistingElementMap::new);
+        set(ExistingElementMap.class, (Supplier<ExistingElementMap>) ExistingElementMap::new);
         set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));
 
         // Classes with dependencies, in correct order
         set(Heartbeat.class, new Heartbeat(this));
-        set(ConnectionStateHandler.class,
-                new DefaultConnectionStateHandler(this));
+        set(ConnectionStateHandler.class, new DefaultConnectionStateHandler(this));
         set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
         set(ReconnectConfiguration.class, new ReconnectConfiguration(this));

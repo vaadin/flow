@@ -7,8 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Account {
 
     private UserInfo owner;
-    private final AtomicReference<BigDecimal> balance = new AtomicReference<>(
-            BigDecimal.ZERO);
+    private final AtomicReference<BigDecimal> balance = new AtomicReference<>(BigDecimal.ZERO);
 
     public UserInfo getOwner() {
         return owner;
@@ -33,8 +32,7 @@ public class Account {
         if (o == null || getClass() != o.getClass())
             return false;
         Account account = (Account) o;
-        return owner.equals(account.owner)
-                && getBalance().equals(account.getBalance());
+        return owner.equals(account.owner) && getBalance().equals(account.getBalance());
     }
 
     @Override

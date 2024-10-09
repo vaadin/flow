@@ -16,9 +16,8 @@
 package com.vaadin.flow.data.provider;
 
 /**
- * A configurable data provider that wraps another data provider by combining
- * any filter from the component with the configured filter and passing that to
- * the wrapped provider through the query.
+ * A configurable data provider that wraps another data provider by combining any filter from the component with the
+ * configured filter and passing that to the wrapped provider through the query.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -32,21 +31,18 @@ package com.vaadin.flow.data.provider;
  * @param <F>
  *            the filter type of the wrapped data provider
  */
-public abstract class ConfigurableFilterDataProviderWrapper<T, Q, C, F>
-        extends DataProviderWrapper<T, Q, F>
+public abstract class ConfigurableFilterDataProviderWrapper<T, Q, C, F> extends DataProviderWrapper<T, Q, F>
         implements ConfigurableFilterDataProvider<T, Q, C> {
 
     private C configuredFilter;
 
     /**
-     * Creates a new configurable filter data provider by wrapping an existing
-     * data provider.
+     * Creates a new configurable filter data provider by wrapping an existing data provider.
      *
      * @param dataProvider
      *            the data provider to wrap, not <code>null</code>
      */
-    public ConfigurableFilterDataProviderWrapper(
-            DataProvider<T, F> dataProvider) {
+    public ConfigurableFilterDataProviderWrapper(DataProvider<T, F> dataProvider) {
         super(dataProvider);
     }
 
@@ -60,20 +56,17 @@ public abstract class ConfigurableFilterDataProviderWrapper<T, Q, C, F>
     }
 
     /**
-     * Combines the configured filter and the filter from the query into one
-     * filter instance that can be passed to the wrapped data provider. Will not
-     * be called if the configured filter is <code>null</code> and the query has
-     * no filter.
+     * Combines the configured filter and the filter from the query into one filter instance that can be passed to the
+     * wrapped data provider. Will not be called if the configured filter is <code>null</code> and the query has no
+     * filter.
      *
      * @param queryFilter
-     *            the filter received through the query, or <code>null</code> if
-     *            no filter was provided in the query
+     *            the filter received through the query, or <code>null</code> if no filter was provided in the query
      * @param configuredFilter
-     *            the filter that this data provider is configured to use, or
-     *            <code>null</code> if no filter has been configured
-     * @return a filter that combines the two provided queries, or
-     *         <code>null</code> to not pass any filter to the wrapped data
-     *         provider
+     *            the filter that this data provider is configured to use, or <code>null</code> if no filter has been
+     *            configured
+     * @return a filter that combines the two provided queries, or <code>null</code> to not pass any filter to the
+     *         wrapped data provider
      */
     protected abstract F combineFilters(Q queryFilter, C configuredFilter);
 

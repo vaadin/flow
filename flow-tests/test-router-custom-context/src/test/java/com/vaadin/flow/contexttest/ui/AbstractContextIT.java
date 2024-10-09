@@ -44,18 +44,14 @@ public abstract class AbstractContextIT extends ChromeBrowserTest {
         findElementById("loadBlue").click();
 
         // Wait as the framework will not stop until the stylesheet is loaded
-        waitUntil(input -> findElementById("hello").getCssValue("color")
-                .equals(BLUE));
+        waitUntil(input -> findElementById("hello").getCssValue("color").equals(BLUE));
     }
 
     private void scriptInjection() {
         // Initial JS registers a body click handler
         findElement(By.cssSelector("body")).click();
-        String addedBodyText = findElement(By.cssSelector(".body-click-added"))
-                .getText();
-        Assert.assertEquals(
-                "Click on body, reported by JavaScript click handler",
-                addedBodyText);
+        String addedBodyText = findElement(By.cssSelector(".body-click-added")).getText();
+        Assert.assertEquals("Click on body, reported by JavaScript click handler", addedBodyText);
 
         // Inject scripts
         findElementById("loadJs").click();

@@ -22,8 +22,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.util.WebUtils;
 
 /**
- * Persists the signed and serialized JWT using a pair of cookies:
- * "jwt.headerAndPayload" (JS-readable), and "jwt.signature" (HTTP-only).
+ * Persists the signed and serialized JWT using a pair of cookies: "jwt.headerAndPayload" (JS-readable), and
+ * "jwt.signature" (HTTP-only).
  */
 class SerializedJwtSplitCookieRepository {
     private static final String JWT_HEADER_AND_PAYLOAD_COOKIE_NAME = "jwt.headerAndPayload";
@@ -57,14 +57,12 @@ class SerializedJwtSplitCookieRepository {
             return null;
         }
 
-        Cookie jwtHeaderAndPayload = WebUtils.getCookie(request,
-                JWT_HEADER_AND_PAYLOAD_COOKIE_NAME);
+        Cookie jwtHeaderAndPayload = WebUtils.getCookie(request, JWT_HEADER_AND_PAYLOAD_COOKIE_NAME);
         if (jwtHeaderAndPayload == null) {
             return null;
         }
 
-        Cookie jwtSignature = WebUtils.getCookie(request,
-                JWT_SIGNATURE_COOKIE_NAME);
+        Cookie jwtSignature = WebUtils.getCookie(request, JWT_SIGNATURE_COOKIE_NAME);
         if (jwtSignature == null) {
             return null;
         }
@@ -73,8 +71,7 @@ class SerializedJwtSplitCookieRepository {
     }
 
     /**
-     * Saves the serialized JWT string using response cookies. If the serialized
-     * JWT is null, the cookies are removed.
+     * Saves the serialized JWT string using response cookies. If the serialized JWT is null, the cookies are removed.
      *
      * @param serializedJwt
      *            the serialized JWT
@@ -83,8 +80,7 @@ class SerializedJwtSplitCookieRepository {
      * @param response
      *            the response to send the cookies
      */
-    void saveSerializedJwt(String serializedJwt, HttpServletRequest request,
-            HttpServletResponse response) {
+    void saveSerializedJwt(String serializedJwt, HttpServletRequest request, HttpServletResponse response) {
         if (serializedJwt == null) {
             this.removeJwtSplitCookies(request, response);
         } else {
@@ -94,8 +90,7 @@ class SerializedJwtSplitCookieRepository {
 
     static boolean containsCookie(HttpServletResponse response) {
         return response.getHeaders("Set-Cookie").stream()
-                .anyMatch(cookie -> cookie
-                        .startsWith(JWT_HEADER_AND_PAYLOAD_COOKIE_NAME));
+                .anyMatch(cookie -> cookie.startsWith(JWT_HEADER_AND_PAYLOAD_COOKIE_NAME));
     }
 
     /**
@@ -106,21 +101,17 @@ class SerializedJwtSplitCookieRepository {
      * @return true when both the JWT cookies are present
      */
     boolean containsSerializedJwt(HttpServletRequest request) {
-        Cookie jwtHeaderAndPayload = WebUtils.getCookie(request,
-                JWT_HEADER_AND_PAYLOAD_COOKIE_NAME);
-        Cookie jwtSignature = WebUtils.getCookie(request,
-                JWT_SIGNATURE_COOKIE_NAME);
+        Cookie jwtHeaderAndPayload = WebUtils.getCookie(request, JWT_HEADER_AND_PAYLOAD_COOKIE_NAME);
+        Cookie jwtSignature = WebUtils.getCookie(request, JWT_SIGNATURE_COOKIE_NAME);
         return (jwtHeaderAndPayload != null) && (jwtSignature != null);
     }
 
-    private void setJwtSplitCookies(String serializedJwt,
-            HttpServletRequest request, HttpServletResponse response) {
+    private void setJwtSplitCookies(String serializedJwt, HttpServletRequest request, HttpServletResponse response) {
         final String[] parts = serializedJwt.split("\\.");
         final String jwtHeaderAndPayload = parts[0] + "." + parts[1];
         final String jwtSignature = parts[2];
 
-        Cookie headerAndPayload = new Cookie(JWT_HEADER_AND_PAYLOAD_COOKIE_NAME,
-                jwtHeaderAndPayload);
+        Cookie headerAndPayload = new Cookie(JWT_HEADER_AND_PAYLOAD_COOKIE_NAME, jwtHeaderAndPayload);
         headerAndPayload.setHttpOnly(false);
         headerAndPayload.setSecure(request.isSecure());
         headerAndPayload.setPath(getRequestContextPath(request));
@@ -135,22 +126,19 @@ class SerializedJwtSplitCookieRepository {
         response.addCookie(signature);
     }
 
-    private void removeJwtSplitCookies(HttpServletRequest request,
-            HttpServletResponse response) {
+    private void removeJwtSplitCookies(HttpServletRequest request, HttpServletResponse response) {
 
         // No need to send JWT cookies with max-age 0 if the current request
         // does not contain them
         if (containsSerializedJwt(request)) {
-            Cookie jwtHeaderAndPayloadRemove = new Cookie(
-                    JWT_HEADER_AND_PAYLOAD_COOKIE_NAME, null);
+            Cookie jwtHeaderAndPayloadRemove = new Cookie(JWT_HEADER_AND_PAYLOAD_COOKIE_NAME, null);
             jwtHeaderAndPayloadRemove.setPath(getRequestContextPath(request));
             jwtHeaderAndPayloadRemove.setMaxAge(0);
             jwtHeaderAndPayloadRemove.setSecure(request.isSecure());
             jwtHeaderAndPayloadRemove.setHttpOnly(false);
             response.addCookie(jwtHeaderAndPayloadRemove);
 
-            Cookie jwtSignatureRemove = new Cookie(JWT_SIGNATURE_COOKIE_NAME,
-                    null);
+            Cookie jwtSignatureRemove = new Cookie(JWT_SIGNATURE_COOKIE_NAME, null);
             jwtSignatureRemove.setPath(getRequestContextPath(request));
             jwtSignatureRemove.setMaxAge(0);
             jwtSignatureRemove.setSecure(request.isSecure());

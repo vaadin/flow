@@ -25,18 +25,15 @@ public class TogglePushIT extends ChromeBrowserTest {
 
         getDelayedCounterUpdateButton().click();
         Thread.sleep(2000);
-        Assert.assertEquals("Counter has been updated 0 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 0 times", getCounterText());
 
         // Open with push enabled
         open("push=enabled");
-        Assert.assertThat(getPushToggle().getText(),
-                CoreMatchers.containsString("Push enabled"));
+        Assert.assertThat(getPushToggle().getText(), CoreMatchers.containsString("Push enabled"));
 
         getDelayedCounterUpdateButton().click();
         Thread.sleep(2000);
-        Assert.assertEquals("Counter has been updated 1 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 1 times", getCounterText());
 
     }
 
@@ -47,21 +44,18 @@ public class TogglePushIT extends ChromeBrowserTest {
         Thread.sleep(2000);
 
         // Push is enabled, so text gets updated
-        Assert.assertEquals("Counter has been updated 1 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 1 times", getCounterText());
 
         // Disable push
         getPushToggle().click();
         getDelayedCounterUpdateButton().click();
         Thread.sleep(2000);
         // Push is disabled, so text is not updated
-        Assert.assertEquals("Counter has been updated 1 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 1 times", getCounterText());
 
         getDirectCounterUpdateButton().click();
         // Direct update is visible, and includes previous update
-        Assert.assertEquals("Counter has been updated 3 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 3 times", getCounterText());
 
         // Re-enable push
         getPushToggle().click();
@@ -69,8 +63,7 @@ public class TogglePushIT extends ChromeBrowserTest {
         Thread.sleep(2000);
 
         // Push is enabled again, so text gets updated
-        Assert.assertEquals("Counter has been updated 4 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 4 times", getCounterText());
     }
 
     private WebElement getDirectCounterUpdateButton() {

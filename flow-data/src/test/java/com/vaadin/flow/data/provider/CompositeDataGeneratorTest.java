@@ -142,14 +142,11 @@ public class CompositeDataGeneratorTest {
         composite.refreshData("item2");
         composite.destroyData("item1");
 
-        Assert.assertThat(mock1.getProcessed(),
-                CoreMatchers.not(CoreMatchers.hasItem("item1")));
+        Assert.assertThat(mock1.getProcessed(), CoreMatchers.not(CoreMatchers.hasItem("item1")));
         Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item2"));
-        Assert.assertThat(mock2.getProcessed(),
-                CoreMatchers.not(CoreMatchers.hasItem("item1")));
+        Assert.assertThat(mock2.getProcessed(), CoreMatchers.not(CoreMatchers.hasItem("item1")));
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item2"));
-        Assert.assertThat(mock3.getProcessed(),
-                CoreMatchers.not(CoreMatchers.hasItem("item1")));
+        Assert.assertThat(mock3.getProcessed(), CoreMatchers.not(CoreMatchers.hasItem("item1")));
         Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item2"));
     }
 
@@ -190,13 +187,11 @@ public class CompositeDataGeneratorTest {
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
         registration1.remove();
-        Assert.assertThat(mock1.getProcessed(),
-                CoreMatchers.not(CoreMatchers.hasItem("item1")));
+        Assert.assertThat(mock1.getProcessed(), CoreMatchers.not(CoreMatchers.hasItem("item1")));
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
         registration2.remove();
-        Assert.assertThat(mock2.getProcessed(),
-                CoreMatchers.not(CoreMatchers.hasItem("item1")));
+        Assert.assertThat(mock2.getProcessed(), CoreMatchers.not(CoreMatchers.hasItem("item1")));
     }
 
     @Test

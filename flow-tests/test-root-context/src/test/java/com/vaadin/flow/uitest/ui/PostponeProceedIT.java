@@ -30,13 +30,10 @@ public class PostponeProceedIT extends ChromeBrowserTest {
         findElement(By.id("link")).click();
 
         waitUntil(driver -> isElementPresent(By.id("target")));
-        Assert.assertTrue(String.format(
-                "After proceed, the URL in the address bar should ends with %s. But, it was %s",
-                PostponeProceedView.ProceedResultView.class.getSimpleName(),
-                getDriver().getCurrentUrl()),
-                getDriver().getCurrentUrl()
-                        .endsWith(PostponeProceedView.ProceedResultView.class
-                                .getSimpleName()));
+        Assert.assertTrue(
+                String.format("After proceed, the URL in the address bar should ends with %s. But, it was %s",
+                        PostponeProceedView.ProceedResultView.class.getSimpleName(), getDriver().getCurrentUrl()),
+                getDriver().getCurrentUrl().endsWith(PostponeProceedView.ProceedResultView.class.getSimpleName()));
     }
 
     @Test
@@ -54,14 +51,10 @@ public class PostponeProceedIT extends ChromeBrowserTest {
         findElement(By.id("proceedButton")).click();
 
         waitUntil(driver -> isElementPresent(By.id("target")));
-        Assert.assertTrue(String.format(
-                "After proceed, the URL in the address bar should ends with %s. But, it was %s",
-                PostponeProceedView.DelayedProceedTargetView.class
-                        .getSimpleName(),
-                getDriver().getCurrentUrl()),
-                getDriver().getCurrentUrl().endsWith(
-                        PostponeProceedView.DelayedProceedTargetView.class
-                                .getSimpleName()));
+        Assert.assertTrue(String.format("After proceed, the URL in the address bar should ends with %s. But, it was %s",
+                PostponeProceedView.DelayedProceedTargetView.class.getSimpleName(), getDriver().getCurrentUrl()),
+                getDriver().getCurrentUrl()
+                        .endsWith(PostponeProceedView.DelayedProceedTargetView.class.getSimpleName()));
     }
 
     @Test
@@ -79,13 +72,9 @@ public class PostponeProceedIT extends ChromeBrowserTest {
         findElement(By.id("proceedButton")).click();
 
         waitUntil(driver -> isElementPresent(By.id("target")));
-        Assert.assertTrue(String.format(
-                "After proceed, the URL in the address bar should ends with %s. But, it was %s",
-                PostponeProceedView.DelayedProceedTargetView.class
-                        .getSimpleName(),
-                getDriver().getCurrentUrl()),
-                getDriver().getCurrentUrl().endsWith(
-                        PostponeProceedView.DelayedProceedTargetView.class
-                                .getSimpleName()));
+        Assert.assertTrue(String.format("After proceed, the URL in the address bar should ends with %s. But, it was %s",
+                PostponeProceedView.DelayedProceedTargetView.class.getSimpleName(), getDriver().getCurrentUrl()),
+                getDriver().getCurrentUrl()
+                        .endsWith(PostponeProceedView.DelayedProceedTargetView.class.getSimpleName()));
     }
 }

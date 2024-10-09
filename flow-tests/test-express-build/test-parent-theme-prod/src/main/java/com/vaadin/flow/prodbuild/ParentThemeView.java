@@ -25,7 +25,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class ParentThemeView extends Div {
 
     public ParentThemeView() {
-        add(new Paragraph(
-                "This is a Paragraph to test the applied parent styles"));
+        add(new Paragraph("This is a Paragraph to test the applied parent styles"));
     }
 }

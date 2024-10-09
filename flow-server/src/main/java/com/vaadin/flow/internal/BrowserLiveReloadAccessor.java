@@ -23,8 +23,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
- * Provides API to access to the {@link BrowserLiveReload} instance by a
- * {@link VaadinService}.
+ * Provides API to access to the {@link BrowserLiveReload} instance by a {@link VaadinService}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -35,8 +34,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 public interface BrowserLiveReloadAccessor {
 
     /**
-     * Returns a {@link BrowserLiveReload} instance for the given
-     * {@code context}.
+     * Returns a {@link BrowserLiveReload} instance for the given {@code context}.
      *
      * @param context
      *            a Vaadin context
@@ -45,8 +43,7 @@ public interface BrowserLiveReloadAccessor {
     BrowserLiveReload getLiveReload(VaadinContext context);
 
     /**
-     * Returns a {@link BrowserLiveReload} instance for the given
-     * {@code service}.
+     * Returns a {@link BrowserLiveReload} instance for the given {@code service}.
      *
      * @param service
      *            a Vaadin service
@@ -61,11 +58,9 @@ public interface BrowserLiveReloadAccessor {
      *
      * @param service
      *            a Vaadin service
-     * @return an {@link Optional} containing a {@link BrowserLiveReload}
-     *         instance or <code>EMPTY</code> if disabled
+     * @return an {@link Optional} containing a {@link BrowserLiveReload} instance or <code>EMPTY</code> if disabled
      */
-    static Optional<BrowserLiveReload> getLiveReloadFromService(
-            VaadinService service) {
+    static Optional<BrowserLiveReload> getLiveReloadFromService(VaadinService service) {
         VaadinContext context = service.getContext();
         return getLiveReloadFromContext(context);
     }
@@ -75,18 +70,15 @@ public interface BrowserLiveReloadAccessor {
      *
      * @param context
      *            a Vaadin Context
-     * @return an {@link Optional} containing a {@link BrowserLiveReload}
-     *         instance or <code>EMPTY</code> if disabled or in production mode
+     * @return an {@link Optional} containing a {@link BrowserLiveReload} instance or <code>EMPTY</code> if disabled or
+     *         in production mode
      */
-    static Optional<BrowserLiveReload> getLiveReloadFromContext(
-            VaadinContext context) {
+    static Optional<BrowserLiveReload> getLiveReloadFromContext(VaadinContext context) {
         if (ApplicationConfiguration.get(context).isProductionMode()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(context)
-                .map(ctx -> ctx.getAttribute(Lookup.class))
+        return Optional.ofNullable(context).map(ctx -> ctx.getAttribute(Lookup.class))
                 .map(lu -> lu.lookup(BrowserLiveReloadAccessor.class))
-                .flatMap(blra -> Optional
-                        .ofNullable(blra.getLiveReload(context)));
+                .flatMap(blra -> Optional.ofNullable(blra.getLiveReload(context)));
     }
 }

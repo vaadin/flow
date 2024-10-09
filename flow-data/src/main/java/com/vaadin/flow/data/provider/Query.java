@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Immutable query object used to request data from a backend. Contains index
- * limits, sorting and filtering information.
+ * Immutable query object used to request data from a backend. Contains index limits, sorting and filtering information.
  *
  * @param <T>
  *            bean type
@@ -41,8 +40,7 @@ public class Query<T, F> implements Serializable {
     private Integer pageSize;
 
     /**
-     * Constructs a Query for all rows from 0 to {@link Integer#MAX_VALUE}
-     * without sorting and filtering.
+     * Constructs a Query for all rows from 0 to {@link Integer#MAX_VALUE} without sorting and filtering.
      */
     public Query() {
         offset = 0;
@@ -53,12 +51,10 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Constructs a Query for all rows from 0 to {@link Integer#MAX_VALUE} with
-     * filtering.
+     * Constructs a Query for all rows from 0 to {@link Integer#MAX_VALUE} with filtering.
      *
      * @param filter
-     *            back end filter of a suitable type for the data provider; can
-     *            be null
+     *            back end filter of a suitable type for the data provider; can be null
      */
     public Query(F filter) {
         offset = 0;
@@ -69,8 +65,7 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Constructs a new Query object with given offset, limit, sorting and
-     * filtering.
+     * Constructs a new Query object with given offset, limit, sorting and filtering.
      *
      * @param offset
      *            first index to fetch
@@ -83,8 +78,7 @@ public class Query<T, F> implements Serializable {
      * @param filter
      *            filtering for fetching; can be null
      */
-    public Query(int offset, int limit, List<QuerySortOrder> sortOrders,
-            Comparator<T> inMemorySorting, F filter) {
+    public Query(int offset, int limit, List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting, F filter) {
         this.offset = offset;
         this.limit = limit;
         this.sortOrders = sortOrders;
@@ -93,8 +87,8 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Gets the first index of items to fetch. The offset is only used when
-     * fetching items, but not when counting the number of available items.
+     * Gets the first index of items to fetch. The offset is only used when fetching items, but not when counting the
+     * number of available items.
      *
      * @return offset for data request
      */
@@ -103,11 +97,10 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Gets the number of items to fetch. The limit is only used when fetching
-     * items, but not when counting the number of available items.
+     * Gets the number of items to fetch. The limit is only used when fetching items, but not when counting the number
+     * of available items.
      * <p>
-     * <strong>Note: </strong>It is possible that
-     * {@code offset + limit > item count}
+     * <strong>Note: </strong>It is possible that {@code offset + limit > item count}
      *
      * @return number of items to fetch
      */
@@ -118,9 +111,8 @@ public class Query<T, F> implements Serializable {
     /**
      * Returns a zero-based page index to be retrieved.
      * <p>
-     * Vaadin asks data from the backend in paged manner. This shorthand
-     * calculates the page index for backends using paged data access, such as
-     * Spring Data repositories.
+     * Vaadin asks data from the backend in paged manner. This shorthand calculates the page index for backends using
+     * paged data access, such as Spring Data repositories.
      *
      * @return the zero-based page index
      */
@@ -144,14 +136,13 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Returns the page size that should be returned. The amount of items can be
-     * smaller if there is no more items available in the backend.
+     * Returns the page size that should be returned. The amount of items can be smaller if there is no more items
+     * available in the backend.
      * <p>
      * Vaadin asks data from the backend in paged manner.
      * <p>
-     * This is an alias for {@link #getLimit()} if the page offset can be evenly
-     * divided by the limit. Else the page size will be increased to evenly
-     * divide offset so the items skip for page will go to the correct item.
+     * This is an alias for {@link #getLimit()} if the page offset can be evenly divided by the limit. Else the page
+     * size will be increased to evenly divide offset so the items skip for page will go to the correct item.
      *
      * @return the page size used for data access
      */
@@ -163,13 +154,11 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Gets the sorting for items to fetch. This list of sort orders is used for
-     * sorting backends. The sort orders are only used when fetching items, but
-     * not when counting the number of available items.
+     * Gets the sorting for items to fetch. This list of sort orders is used for sorting backends. The sort orders are
+     * only used when fetching items, but not when counting the number of available items.
      * <p>
-     * <strong>Note: </strong> Sort orders and in-memory sorting are mutually
-     * exclusive. If the {@link DataProvider} handles one, it should ignore the
-     * other.
+     * <strong>Note: </strong> Sort orders and in-memory sorting are mutually exclusive. If the {@link DataProvider}
+     * handles one, it should ignore the other.
      *
      * @return list of sort orders
      */
@@ -187,13 +176,11 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Gets the comparator for sorting in-memory data. The comparator is only
-     * used when fetching items, but not when counting the number of available
-     * items.
+     * Gets the comparator for sorting in-memory data. The comparator is only used when fetching items, but not when
+     * counting the number of available items.
      * <p>
-     * <strong>Note: </strong> Sort orders and in-memory sorting are mutually
-     * exclusive. If the {@link DataProvider} handles one, it should ignore the
-     * other.
+     * <strong>Note: </strong> Sort orders and in-memory sorting are mutually exclusive. If the {@link DataProvider}
+     * handles one, it should ignore the other.
      *
      * @return sorting comparator
      */
@@ -202,13 +189,11 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Gets the optional comparator for sorting data. The comparator is only
-     * used when fetching items, but not when counting the number of available
-     * items.
+     * Gets the optional comparator for sorting data. The comparator is only used when fetching items, but not when
+     * counting the number of available items.
      * <p>
-     * <strong>Note: </strong> Sort orders and comparator sorting are mutually
-     * exclusive. If the {@link DataProvider} handles one, it should ignore the
-     * other.
+     * <strong>Note: </strong> Sort orders and comparator sorting are mutually exclusive. If the {@link DataProvider}
+     * handles one, it should ignore the other.
      *
      * @return optional sorting comparator
      */
@@ -217,8 +202,8 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Gets the requested range end. This is a shorthand for
-     * {@code getOffset() + getLimit()} where the end is exclusive.
+     * Gets the requested range end. This is a shorthand for {@code getOffset() + getLimit()} where the end is
+     * exclusive.
      *
      * @return the requested range end
      */

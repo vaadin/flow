@@ -44,7 +44,6 @@ public class ViteImportedCSSIT extends ChromeBrowserTest {
         open();
         WebElement body = $("body").first();
 
-        Assert.assertEquals("rgba(173, 216, 230, 1)",
-                body.getCssValue("background-color"));
+        Assert.assertEquals("rgba(173, 216, 230, 1)", body.getCssValue("background-color"));
     }
 }

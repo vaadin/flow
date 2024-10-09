@@ -32,20 +32,15 @@ public class ExecJavaScriptView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        NativeButton alertButton = createJsButton("Alert", "alertButton",
-                "window.alert($0)", "Hello world");
-        NativeButton focusButton = createJsButton("Focus Alert button",
-                "focusButton", "$0.focus()", alertButton);
-        NativeButton swapText = createJsButton("Swap button texts",
-                "swapButton",
+        NativeButton alertButton = createJsButton("Alert", "alertButton", "window.alert($0)", "Hello world");
+        NativeButton focusButton = createJsButton("Focus Alert button", "focusButton", "$0.focus()", alertButton);
+        NativeButton swapText = createJsButton("Swap button texts", "swapButton",
                 "(function() {var t = $0.textContent; $0.textContent = $1.textContent; $1.textContent = t;})()",
                 alertButton, focusButton);
-        NativeButton logButton = createJsButton("Log", "logButton",
-                "console.log($0)", JsonUtils.createArray(
-                        Json.create("Hello world"), Json.create(true)));
+        NativeButton logButton = createJsButton("Log", "logButton", "console.log($0)",
+                JsonUtils.createArray(Json.create("Hello world"), Json.create(true)));
 
-        NativeButton elementAwaitButton = createButton("Element await button",
-                "elementAwaitButton",
+        NativeButton elementAwaitButton = createButton("Element await button", "elementAwaitButton",
                 e -> e.getSource().getElement().executeJs("""
                         const result = new Promise((resolve) => {
                           setTimeout(() => resolve(42), 10);
@@ -63,8 +58,8 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(span);
                 }));
 
-        NativeButton pageAwaitButton = createButton("Page await button",
-                "pageAwaitButton", e -> UI.getCurrent().getPage().executeJs("""
+        NativeButton pageAwaitButton = createButton("Page await button", "pageAwaitButton",
+                e -> UI.getCurrent().getPage().executeJs("""
                         const result = new Promise((resolve) => {
                           setTimeout(() => resolve(72), 10);
                         });
@@ -81,22 +76,17 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(span);
                 }));
 
-        NativeButton createElementButton = createButton(
-                "Create and update element", "createButton", e -> {
-                    Input input = new Input();
-                    input.addClassName("newInput");
-                    input.getElement().executeJs("this.value=$0",
-                            "Value from js");
-                    add(input);
-                });
+        NativeButton createElementButton = createButton("Create and update element", "createButton", e -> {
+            Input input = new Input();
+            input.addClassName("newInput");
+            input.getElement().executeJs("this.value=$0", "Value from js");
+            add(input);
+        });
 
-        add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton);
+        add(alertButton, focusButton, swapText, logButton, createElementButton, elementAwaitButton, pageAwaitButton);
     }
 
-    private NativeButton createJsButton(String text, String id, String script,
-            Serializable... arguments) {
-        return createButton(text, id,
-                e -> UI.getCurrent().getPage().executeJs(script, arguments));
+    private NativeButton createJsButton(String text, String id, String script, Serializable... arguments) {
+        return createButton(text, id, e -> UI.getCurrent().getPage().executeJs(script, arguments));
     }
 }

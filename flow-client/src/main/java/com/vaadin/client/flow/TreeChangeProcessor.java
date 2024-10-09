@@ -49,10 +49,8 @@ public class TreeChangeProcessor {
      *            the JSON array of changes
      * @return a set of updated nodes addressed by the {@code changes}
      */
-    public static JsSet<StateNode> processChanges(StateTree tree,
-            JsonArray changes) {
-        assert !tree.isUpdateInProgress()
-                : "Previous tree change processing has not completed";
+    public static JsSet<StateNode> processChanges(StateTree tree, JsonArray changes) {
+        assert !tree.isUpdateInProgress() : "Previous tree change processing has not completed";
         try {
             tree.setUpdateInProgress(true);
 
@@ -77,8 +75,7 @@ public class TreeChangeProcessor {
         }
     }
 
-    private static JsSet<StateNode> processAttachChanges(StateTree tree,
-            JsonArray changes) {
+    private static JsSet<StateNode> processAttachChanges(StateTree tree, JsonArray changes) {
         JsSet<StateNode> nodes = JsCollections.set();
         int length = changes.length();
         for (int i = 0; i < length; i++) {
@@ -97,13 +94,11 @@ public class TreeChangeProcessor {
     }
 
     private static boolean isAttach(JsonObject change) {
-        return JsonConstants.CHANGE_TYPE_ATTACH
-                .equals(change.getString(JsonConstants.CHANGE_TYPE));
+        return JsonConstants.CHANGE_TYPE_ATTACH.equals(change.getString(JsonConstants.CHANGE_TYPE));
     }
 
     /**
-     * Update a state tree based on a JSON change. This method is public for
-     * testing purposes.
+     * Update a state tree based on a JSON change. This method is public for testing purposes.
      *
      * @param tree
      *            the tree to update
@@ -172,17 +167,14 @@ public class TreeChangeProcessor {
             Object value = ClientJsonCodec.decodeWithoutTypeInfo(jsonValue);
             property.setValue(value);
         } else if (change.hasKey(JsonConstants.CHANGE_PUT_NODE_VALUE)) {
-            int childId = (int) change
-                    .getNumber(JsonConstants.CHANGE_PUT_NODE_VALUE);
+            int childId = (int) change.getNumber(JsonConstants.CHANGE_PUT_NODE_VALUE);
             StateNode child = node.getTree().getNode(childId);
             assert child != null;
             child.setParent(node);
 
             property.setValue(child);
         } else {
-            assert false
-                    : "Change should have either value or nodeValue property: "
-                            + WidgetUtil.stringify(change);
+            assert false : "Change should have either value or nodeValue property: " + WidgetUtil.stringify(change);
         }
     }
 
@@ -214,15 +206,13 @@ public class TreeChangeProcessor {
         }
 
         if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD)) {
-            JsonArray addJson = change
-                    .getArray(JsonConstants.CHANGE_SPLICE_ADD);
+            JsonArray addJson = change.getArray(JsonConstants.CHANGE_SPLICE_ADD);
 
             JsArray<Object> add = ClientJsonCodec.jsonArrayAsJsArray(addJson);
 
             list.splice(index, remove, add);
         } else if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES)) {
-            JsonArray addNodes = change
-                    .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
+            JsonArray addNodes = change.getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
             int length = addNodes.length();
 
             JsArray<StateNode> add = JsCollections.array();

@@ -27,14 +27,11 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A strategy that uses an available VaadinSession for retrieving the security
- * context.
+ * A strategy that uses an available VaadinSession for retrieving the security context.
  * <p>
- * Falls back to the default thread specific security context when no
- * vaadinSession is available.
+ * Falls back to the default thread specific security context when no vaadinSession is available.
  */
-public final class VaadinAwareSecurityContextHolderStrategy
-        implements SecurityContextHolderStrategy {
+public final class VaadinAwareSecurityContextHolderStrategy implements SecurityContextHolderStrategy {
 
     private final ThreadLocal<SecurityContext> contextHolder = new ThreadLocal<>();
 
@@ -47,14 +44,11 @@ public final class VaadinAwareSecurityContextHolderStrategy
     @NonNull
     public SecurityContext getContext() {
         /*
-         * We prefer the vaadin session information over the threadlocal as it
-         * is more specific. It makes a huge difference if you for instance to
-         * `otherSessionUI.access` in a request thread. In this case the
-         * security context is expected to reflect the "otherSession" and not
-         * the current request.
+         * We prefer the vaadin session information over the threadlocal as it is more specific. It makes a huge
+         * difference if you for instance to `otherSessionUI.access` in a request thread. In this case the security
+         * context is expected to reflect the "otherSession" and not the current request.
          */
-        SecurityContext context = getFromVaadinSession()
-                .orElseGet(contextHolder::get);
+        SecurityContext context = getFromVaadinSession().orElseGet(contextHolder::get);
         if (context == null) {
             context = createEmptyContext();
             contextHolder.set(context);
@@ -68,8 +62,8 @@ public final class VaadinAwareSecurityContextHolderStrategy
         if (session == null || session.getSession() == null) {
             return Optional.empty();
         }
-        Object securityContext = session.getSession().getAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        Object securityContext = session.getSession()
+                .getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         if (securityContext instanceof SecurityContext) {
             return Optional.of((SecurityContext) securityContext);
         } else {

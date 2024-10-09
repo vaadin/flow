@@ -31,17 +31,14 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @since
  *
- * @deprecated Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
 
     /**
-     * Validate that the given Component instance is a PolymerTemplate and that
-     * the value can be converted.
+     * Validate that the given Component instance is a PolymerTemplate and that the value can be converted.
      *
      * @param instance
      *            Component to be validated
@@ -51,8 +48,7 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      *            target type that value should be converted to
      * @return true if valid template model value
      */
-    boolean isTemplateModelValue(Component instance, JsonValue argValue,
-            Class<?> convertedType);
+    boolean isTemplateModelValue(Component instance, JsonValue argValue, Class<?> convertedType);
 
     /**
      * Get the template model object and type.
@@ -67,6 +63,5 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      * @throws IllegalStateException
      *             if the component is not attached to the UI
      */
-    Object getTemplateItem(Component template, JsonObject argValue,
-            Type convertedType);
+    Object getTemplateItem(Component template, JsonObject argValue, Type convertedType);
 }

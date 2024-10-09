@@ -55,13 +55,11 @@ class ResourceProviderImpl implements ResourceProvider {
 
     @Override
     public URL getClientResource(String path) {
-        throw new UnsupportedOperationException(
-                "Client resources are not available in plugin");
+        throw new UnsupportedOperationException("Client resources are not available in plugin");
     }
 
     @Override
     public InputStream getClientResourceAsStream(String path) {
-        throw new UnsupportedOperationException(
-                "Client resources are not available in plugin");
+        throw new UnsupportedOperationException("Client resources are not available in plugin");
     }
 }

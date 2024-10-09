@@ -75,9 +75,8 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * This class is responsible for serving the <code>index.html</code> according
- * to the template provided in the frontend folder. The handler will calculate
- * and inject baseHref as well as the bundle scripts into the template.
+ * This class is responsible for serving the <code>index.html</code> according to the template provided in the frontend
+ * folder. The handler will calculate and inject baseHref as well as the bundle scripts into the template.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -88,8 +87,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         if (writeErrorCodeIfRequestLocationIsInvalid(request, response)) {
             return true;
         }
@@ -98,8 +97,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         IndexHtmlResponse indexHtmlResponse;
 
         VaadinService service = request.getService();
-        Document indexDocument = config.isProductionMode()
-                ? getCachedIndexHtmlDocument(service)
+        Document indexDocument = config.isProductionMode() ? getCachedIndexHtmlDocument(service)
                 : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
@@ -112,12 +110,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         JsonObject initialJson = Json.createObject();
 
-        if (service.getBootstrapInitialPredicate()
-                .includeInitialUidl(request)) {
+        if (service.getBootstrapInitialPredicate().includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
             UI ui = UI.getCurrent();
-            var flowContainerElement = new Element(
-                    ui.getInternals().getContainerTag());
+            var flowContainerElement = new Element(ui.getInternals().getContainerTag());
             flowContainerElement.attr("id", ui.getInternals().getAppId());
             Elements outlet = indexDocument.body().select("#outlet");
             if (!outlet.isEmpty()) {
@@ -125,11 +121,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             } else {
                 indexDocument.body().appendChild(flowContainerElement);
             }
-            indexHtmlResponse = new IndexHtmlResponse(request, response,
-                    indexDocument, ui);
+            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument, ui);
         } else {
-            indexHtmlResponse = new IndexHtmlResponse(request, response,
-                    indexDocument);
+            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
         }
 
         addInitialFlow(initialJson, indexDocument, request);
@@ -146,8 +140,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         if (!config.isProductionMode()) {
-            UsageStatisticsExporter
-                    .exportUsageStatisticsToDocument(indexDocument);
+            UsageStatisticsExporter.exportUsageStatisticsToDocument(indexDocument);
         }
 
         // modify the page based on the @PWA annotation
@@ -184,15 +177,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         } else if (!config.isProductionMode()) {
             // If a dev-tools plugin tries to register itself with disabled
             // dev-tools, the application completely breaks with a JS error
-            addScript(indexDocument,
-                    """
-                            window.Vaadin = window.Vaadin || {};
-                            window.Vaadin.devToolsPlugins = {
-                                push: function(plugin) {
-                                    window.console.debug("Vaadin Dev Tools disabled. Plugin cannot be registered.", plugin);
-                                }
-                            };
-                            """);
+            addScript(indexDocument, """
+                    window.Vaadin = window.Vaadin || {};
+                    window.Vaadin.devToolsPlugins = {
+                        push: function(plugin) {
+                            window.console.debug("Vaadin Dev Tools disabled. Plugin cannot be registered.", plugin);
+                        }
+                    };
+                    """);
         }
 
         // this invokes any custom listeners and should be run when the whole
@@ -200,8 +192,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         try {
-            response.getOutputStream()
-                    .write(indexDocument.html().getBytes(UTF_8));
+            response.getOutputStream().write(indexDocument.html().getBytes(UTF_8));
         } catch (IOException e) {
             getLogger().error("Error writing 'index.html' to response", e);
             return false;
@@ -209,24 +200,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
-    private static void addDevBundleTheme(Document document,
-            VaadinContext context) {
+    private static void addDevBundleTheme(Document document, VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
-        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
-                || (config.getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE)) {
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE || (config.getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE)) {
             try {
                 BootstrapHandler.getStylesheetTags(context, "styles.css")
                         .forEach(link -> document.head().appendChild(link));
             } catch (IOException e) {
-                throw new UncheckedIOException(
-                        "Failed to create a tag for 'styles.css' in the document",
-                        e);
+                throw new UncheckedIOException("Failed to create a tag for 'styles.css' in the document", e);
             }
         }
     }
 
-    private void applyThemeVariant(Document indexDocument,
-            VaadinContext context) throws IOException {
+    private void applyThemeVariant(Document indexDocument, VaadinContext context) throws IOException {
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
@@ -235,30 +221,26 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         });
     }
 
-    private void addStyleTagReferences(Document indexDocument,
-            boolean productionMode) {
+    private void addStyleTagReferences(Document indexDocument, boolean productionMode) {
         int insertLocation = -1; // At the end
         if (productionMode) {
             /*
-             * In production mode, the theme css is included by Vite in
-             * index.html. The CSS override order has been specified so that the
-             * theme should override all other CSS, so it must come last and we
-             * must insert before that.
+             * In production mode, the theme css is included by Vite in index.html. The CSS override order has been
+             * specified so that the theme should override all other CSS, so it must come last and we must insert before
+             * that.
              *
-             * We don't really know which link tag it is, if there are multiple,
-             * so we use the first. Then all link tags override css imports.
+             * We don't really know which link tag it is, if there are multiple, so we use the first. Then all link tags
+             * override css imports.
              */
             Elements links = indexDocument.head().getElementsByTag("link");
             if (!links.isEmpty()) {
-                insertLocation = indexDocument.head().childNodes()
-                        .indexOf(links.first());
+                insertLocation = indexDocument.head().childNodes().indexOf(links.first());
             }
         }
 
         Comment cssImportComment = new Comment("CSSImport end");
         Comment stylesheetComment = new Comment("Stylesheet end");
-        indexDocument.head().insertChildren(insertLocation, cssImportComment,
-                stylesheetComment);
+        indexDocument.head().insertChildren(insertLocation, cssImportComment, stylesheetComment);
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
@@ -272,19 +254,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void catchErrorsInDevMode(Document indexDocument) {
         addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];"
-                + //
-                "const browserConsoleError = window.console.error.bind(window.console);"
-                + //
+                "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];" + //
+                "const browserConsoleError = window.console.error.bind(window.console);" + //
                 "console.error = (...args) => {" + //
                 "    browserConsoleError(...args);" + //
                 "    window.Vaadin.ConsoleErrors.push(args);" + //
                 "};" + //
-                "window.onerror = (message, source, lineno, colno, error) => {"
-                + //
+                "window.onerror = (message, source, lineno, colno, error) => {" + //
                 "const location=source+':'+lineno+':'+colno;" + //
-                "window.Vaadin.ConsoleErrors.push([message, '('+location+')']);"
-                + //
+                "window.Vaadin.ConsoleErrors.push([message, '('+location+')']);" + //
                 "};" + //
                 "window.addEventListener('unhandledrejection', e => {" + //
                 "    window.Vaadin.ConsoleErrors.push([e.reason]);" + //
@@ -293,8 +271,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     /**
-     * Adds the needed overrides for the license checker to work when in
-     * development mode.
+     * Adds the needed overrides for the license checker to work when in development mode.
      */
     public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
@@ -307,12 +284,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "  }" + //
                 "};" + //
                 "window.Vaadin.devTools = window.Vaadin.devTools || {};"
-                + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
-                + //
+                + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];" + //
                 "window.Vaadin.originalCustomElementDefineFn = window.Vaadin.originalCustomElementDefineFn || window.customElements.define;"
                 + //
-                "window.customElements.define = function (tagName, constructor, ...args) {"
-                + //
+                "window.customElements.define = function (tagName, constructor, ...args) {" + //
                 "const { cvdlName, version } = constructor;" + //
                 "if (cvdlName && version) {" + //
                 "  const { connectedCallback } = constructor.prototype;" + //
@@ -324,8 +299,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "  }" + //
                 "}" + //
 
-                "window.Vaadin.originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
-                + //
+                "window.Vaadin.originalCustomElementDefineFn.call(this, tagName, constructor, ...args);" + //
                 "};");
 
     }
@@ -348,28 +322,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (UI.getCurrent() != null) {
             Element elm = indexDocument.head().selectFirst("title");
             if (elm != null) {
-                String appShellTitle = elm.text().isEmpty() ? elm.data()
-                        : elm.text();
+                String appShellTitle = elm.text().isEmpty() ? elm.data() : elm.text();
                 UI.getCurrent().getInternals().setAppShellTitle(appShellTitle);
             }
         }
     }
 
-    private void addDevTools(Document indexDocument,
-            DeploymentConfiguration config, VaadinSession session,
+    private void addDevTools(Document indexDocument, DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
 
-        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                .getLiveReloadFromService(service);
-        Optional<Backend> maybeBackend = liveReload
-                .map(BrowserLiveReload::getBackend);
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor.getLiveReloadFromService(service);
+        Optional<Backend> maybeBackend = liveReload.map(BrowserLiveReload::getBackend);
 
         int liveReloadPort = Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
         VaadinContext context = service.getContext();
         if (context instanceof VaadinServletContext vaadinServletContext) {
-            String customPort = (String) vaadinServletContext.getContext()
-                    .getAttribute(LIVE_RELOAD_PORT_ATTR);
+            String customPort = (String) vaadinServletContext.getContext().getAttribute(LIVE_RELOAD_PORT_ATTR);
             if (customPort != null) {
                 liveReloadPort = Integer.parseInt(customPort);
             }
@@ -377,10 +346,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         JsonObject devToolsConf = Json.createObject();
         devToolsConf.put("enable", config.isDevModeLiveReloadEnabled());
-        devToolsConf.put("url",
-                BootstrapHandlerHelper.getPushURL(session, request));
-        maybeBackend.ifPresent(
-                backend -> devToolsConf.put("backend", backend.toString()));
+        devToolsConf.put("url", BootstrapHandlerHelper.getPushURL(session, request));
+        maybeBackend.ifPresent(backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
         if (isAllowedDevToolsHost(config, request)) {
             devToolsConf.put("token", DevToolsToken.getToken());
@@ -397,30 +364,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addScriptSrc(indexDocument, pushUrl);
     }
 
-    static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
-            VaadinRequest request) {
+    static boolean isAllowedDevToolsHost(AbstractConfiguration configuration, VaadinRequest request) {
         String remoteAddress = request.getRemoteAddr();
-        String hostsAllowedFromCfg = configuration.getStringProperty(
-                SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
-        String hostsAllowed = (hostsAllowedFromCfg != null
-                && !hostsAllowedFromCfg.isBlank()) ? hostsAllowedFromCfg : null;
+        String hostsAllowedFromCfg = configuration.getStringProperty(SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
+        String hostsAllowed = (hostsAllowedFromCfg != null && !hostsAllowedFromCfg.isBlank()) ? hostsAllowedFromCfg
+                : null;
 
         if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed, true)) {
             return false;
         }
-        String remoteHeaderIp = configuration.getStringProperty(
-                SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER, null);
+        String remoteHeaderIp = configuration.getStringProperty(SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER, null);
         if (remoteHeaderIp != null) {
-            return isAllowedDevToolsHost(request.getHeader(remoteHeaderIp),
-                    hostsAllowed, false);
+            return isAllowedDevToolsHost(request.getHeader(remoteHeaderIp), hostsAllowed, false);
         }
 
-        Enumeration<String> allForwardedForHeaders = request
-                .getHeaders("X-Forwarded-For");
-        if (allForwardedForHeaders != null
-                && allForwardedForHeaders.hasMoreElements()) {
-            String forwardedFor = String.join(",",
-                    Collections.list(allForwardedForHeaders));
+        Enumeration<String> allForwardedForHeaders = request.getHeaders("X-Forwarded-For");
+        if (allForwardedForHeaders != null && allForwardedForHeaders.hasMoreElements()) {
+            String forwardedFor = String.join(",", Collections.list(allForwardedForHeaders));
 
             if (forwardedFor.contains(",")) {
                 // X-Forwarded-For: <client>, <proxy1>, <proxy2>
@@ -430,8 +390,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 String[] hops = forwardedFor.split(",");
                 if (hops.length > 0) {
                     return Stream.of(hops).map(String::trim)
-                            .allMatch(ip -> isAllowedDevToolsHost(ip,
-                                    hostsAllowed, false));
+                            .allMatch(ip -> isAllowedDevToolsHost(ip, hostsAllowed, false));
                 } else {
                     // Potential fake header with no addresses, e.g.
                     // 'X-Forwarded-For: ,,,'
@@ -439,8 +398,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 }
 
             } else {
-                return isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed,
-                        false);
+                return isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed, false);
             }
         }
 
@@ -448,10 +406,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     }
 
-    private static boolean isAllowedDevToolsHost(String remoteAddress,
-            String hostsAllowed, boolean allowLocal) {
-        if (remoteAddress == null || remoteAddress.isBlank()
-                || (hostsAllowed == null && !allowLocal)) {
+    private static boolean isAllowedDevToolsHost(String remoteAddress, String hostsAllowed, boolean allowLocal) {
+        if (remoteAddress == null || remoteAddress.isBlank() || (hostsAllowed == null && !allowLocal)) {
             // No check needed if the remote address is not available
             // or if local addresses must be rejected and there are no host
             // rules defined
@@ -463,8 +419,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 return allowLocal;
             }
         } catch (Exception e) {
-            getLogger().debug(
-                    "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
+            getLogger().debug("Unable to resolve remote address: '{}', so we are preventing the web socket connection",
                     remoteAddress, e);
             return false;
         }
@@ -474,8 +429,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             String[] allowedHosts = hostsAllowed.split(",");
 
             for (String allowedHost : allowedHosts) {
-                if (FilenameUtils.wildcardMatch(remoteAddress,
-                        allowedHost.trim())) {
+                if (FilenameUtils.wildcardMatch(remoteAddress, allowedHost.trim())) {
                     return true;
                 }
             }
@@ -484,20 +438,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return false;
     }
 
-    private void addInitialFlow(JsonObject initialJson, Document indexDocument,
-            VaadinRequest request) {
-        SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
-                indexDocument.head(), request);
+    private void addInitialFlow(JsonObject initialJson, Document indexDocument, VaadinRequest request) {
+        SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(indexDocument.head(), request);
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + JsonUtil.stringify(initialJson)
-                + ";"));
+                "window.Vaadin.TypeScript= " + JsonUtil.stringify(initialJson) + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 
-    private void includeInitialUidl(JsonObject initialJson,
-            VaadinSession session, VaadinRequest request,
+    private void includeInitialUidl(JsonObject initialJson, VaadinSession session, VaadinRequest request,
             VaadinResponse response) {
         JsonObject initial = getInitialJson(request, response, session);
         initialJson.put(SCRIPT_INITIAL, initial);
@@ -505,17 +455,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return isRequestForHtml(request)
-                && !BootstrapHandler.isFrameworkInternalRequest(request)
+        return isRequestForHtml(request) && !BootstrapHandler.isFrameworkInternalRequest(request)
                 && !BootstrapHandler.isVaadinStaticFileRequest(request)
-                && request.getService().getBootstrapUrlPredicate()
-                        .isValidUrl(request);
+                && request.getService().getBootstrapUrlPredicate().isValidUrl(request);
     }
 
     @Override
     protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
-        if (context.getService().getBootstrapInitialPredicate()
-                .includeInitialUidl(context.getRequest())) {
+        if (context.getService().getBootstrapInitialPredicate().includeInitialUidl(context.getRequest())) {
             ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
         }
     }
@@ -532,8 +479,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         setupHiddenElement(styles);
     }
 
-    private static void prependBaseHref(VaadinRequest request,
-            Document indexDocument) {
+    private static void prependBaseHref(VaadinRequest request, Document indexDocument) {
         Elements base = indexDocument.head().getElementsByTag("base");
         String baseHref = getServiceUrl(request);
         if (base.isEmpty()) {
@@ -544,12 +490,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static Document getCachedIndexHtmlDocument(VaadinService service) {
-        return service.getContext().getAttribute(IndexHtmlHolder.class,
-                () -> new IndexHtmlHolder(service)).getDocument();
+        return service.getContext().getAttribute(IndexHtmlHolder.class, () -> new IndexHtmlHolder(service))
+                .getDocument();
     }
 
-    private static Document getIndexHtmlDocument(VaadinService service)
-            throws IOException {
+    private static Document getIndexHtmlDocument(VaadinService service) throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         String index;
         try {
@@ -559,8 +504,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 throw new IOException(
                         "Unable to fetch index.html from the frontend development server, check the server logs that it is running");
             } else {
-                throw new IOException(
-                        "Unable to find index.html. It should be available on the classpath");
+                throw new IOException("Unable to find index.html. It should be available on the classpath");
             }
         }
         if (index == null) {
@@ -588,15 +532,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return indexHtmlDocument;
     }
 
-    protected static void addGeneratedIndexContent(Document targetDocument,
-            JsonObject statsJson) {
+    protected static void addGeneratedIndexContent(Document targetDocument, JsonObject statsJson) {
 
-        JsonArray indexHtmlGeneratedRows = statsJson
-                .getArray("indexHtmlGenerated");
+        JsonArray indexHtmlGeneratedRows = statsJson.getArray("indexHtmlGenerated");
         List<String> toAdd = new ArrayList<>();
 
-        toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows)
-                .map(value -> value.asString()).toList());
+        toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows).map(value -> value.asString()).toList());
 
         for (String row : toAdd) {
             targetDocument.head().append(row);

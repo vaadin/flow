@@ -26,8 +26,7 @@ public class ReactComponentsIT extends ChromeBrowserTest {
 
     @Test
     public void functionLocationsAvailable() {
-        List<TestBenchElement> elements = $("*").hasAttribute("data-expected")
-                .all();
+        List<TestBenchElement> elements = $("*").hasAttribute("data-expected").all();
         Assert.assertTrue(elements.size() > 5);
         for (TestBenchElement element : elements) {
             String expected = element.getAttribute("data-expected");
@@ -38,16 +37,13 @@ public class ReactComponentsIT extends ChromeBrowserTest {
                 filenameEnd = filenameEnd.replaceAll("/", "\\\\");
             }
 
-            Map<String, Object> result = (Map<String, Object>) executeScript(
-                    """
-                            const key = Object.keys(arguments[0]).filter(a => a.startsWith("__reactFiber"))[0];
-                            const fiber = arguments[0][key];
-                            return fiber.return.type.__debugSourceDefine;
-                            """,
-                    element);
+            Map<String, Object> result = (Map<String, Object>) executeScript("""
+                    const key = Object.keys(arguments[0]).filter(a => a.startsWith("__reactFiber"))[0];
+                    const fiber = arguments[0][key];
+                    return fiber.return.type.__debugSourceDefine;
+                    """, element);
 
-            Assert.assertTrue(
-                    result.get("fileName").toString().endsWith(filenameEnd));
+            Assert.assertTrue(result.get("fileName").toString().endsWith(filenameEnd));
             Assert.assertSame(line, result.get("lineNumber"));
             Assert.assertSame(column, result.get("columnNumber"));
         }

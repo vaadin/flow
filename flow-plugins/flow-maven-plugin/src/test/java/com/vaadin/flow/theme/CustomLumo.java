@@ -54,8 +54,7 @@ public class CustomLumo implements AbstractTheme {
     @Override
     public List<String> getHeaderInlineContents() {
         return Collections.singletonList("<custom-style>\n"
-                + "    <style include=\"lumo-color lumo-typography\"></style>\n"
-                + "</custom-style>");
+                + "    <style include=\"lumo-color lumo-typography\"></style>\n" + "</custom-style>");
     }
 
     @Override
@@ -69,9 +68,8 @@ public class CustomLumo implements AbstractTheme {
             attributes.put("theme", DARK);
             break;
         default:
-            LoggerFactory.getLogger(CustomLumo.class.getName()).warn(
-                    "Lumo theme variant not recognized: '{}'. Using no variant.",
-                    variant);
+            LoggerFactory.getLogger(CustomLumo.class.getName())
+                    .warn("Lumo theme variant not recognized: '{}'. Using no variant.", variant);
         }
         return attributes;
     }

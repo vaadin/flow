@@ -12,8 +12,8 @@ import org.junit.rules.ExpectedException;
 public class HasLazyDataViewTest {
 
     @Tag("test-component")
-    private static class TestComponent extends Component implements
-            HasLazyDataView<String, Void, AbstractLazyDataView<String>> {
+    private static class TestComponent extends Component
+            implements HasLazyDataView<String, Void, AbstractLazyDataView<String>> {
 
         private DataCommunicator<String> dataCommunicator;
 
@@ -23,8 +23,7 @@ public class HasLazyDataViewTest {
         }
 
         @Override
-        public AbstractLazyDataView<String> setItems(
-                BackEndDataProvider<String, Void> dataProvider) {
+        public AbstractLazyDataView<String> setItems(BackEndDataProvider<String, Void> dataProvider) {
             dataCommunicator.setDataProvider(dataProvider, null);
             return getLazyDataView();
         }
@@ -49,13 +48,11 @@ public class HasLazyDataViewTest {
         // uses a NOOP count callback that will throw when called
         testComponent.setItems(query -> Stream.of("foo", "bar", "baz"));
 
-        Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator()
-                .isDefinedSize());
+        Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
         testComponent.getLazyDataView().setItemCountFromDataProvider();
 
-        Assert.assertTrue(testComponent.getLazyDataView().getDataCommunicator()
-                .isDefinedSize());
+        Assert.assertTrue(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
         expectedException.expect(IllegalStateException.class);
         // to make things fail, just need to call size() which will trigger a

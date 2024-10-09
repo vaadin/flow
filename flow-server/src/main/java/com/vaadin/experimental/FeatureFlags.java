@@ -41,8 +41,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 /**
  * Tracks available feature flags and their status.
  *
- * Enabled feature flags are stored in
- * <code>vaadin-featureflags.properties</code> inside the resources folder
+ * Enabled feature flags are stored in <code>vaadin-featureflags.properties</code> inside the resources folder
  * (<code>src/main/resources</code>).
  */
 public class FeatureFlags implements Serializable {
@@ -58,36 +57,27 @@ public class FeatureFlags implements Serializable {
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
     public static final Feature EXAMPLE = new Feature(
-            "Example feature. Will be removed once the first real feature flag is added",
-            "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
-            false,
+            "Example feature. Will be removed once the first real feature flag is added", "exampleFeatureFlag",
+            "https://github.com/vaadin/flow/pull/12004", false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
-            "Collaboration Kit backend for clustering support",
-            "collaborationEngineBackend",
+            "Collaboration Kit backend for clustering support", "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
 
-    public static final Feature WEB_PUSH = new Feature(
-            "Server side WebPush API", "webPush",
-            "https://vaadin.com/docs/latest/configuration/setting-up-webpush",
-            true, "com.vaadin.flow.server.webpush.WebPush");
+    public static final Feature WEB_PUSH = new Feature("Server side WebPush API", "webPush",
+            "https://vaadin.com/docs/latest/configuration/setting-up-webpush", true,
+            "com.vaadin.flow.server.webpush.WebPush");
 
-    public static final Feature FORM_FILLER_ADDON = new Feature(
-            "Form Filler Add-on", "formFillerAddon",
-            "https://github.com/vaadin/form-filler-addon", true,
-            "com.vaadin.flow.ai.formfiller.FormFiller");
+    public static final Feature FORM_FILLER_ADDON = new Feature("Form Filler Add-on", "formFillerAddon",
+            "https://github.com/vaadin/form-filler-addon", true, "com.vaadin.flow.ai.formfiller.FormFiller");
 
-    public static final Feature HILLA_I18N = new Feature("Hilla I18n API",
-            "hillaI18n",
-            "https://github.com/vaadin/hilla/tree/main/packages/ts/react-i18n",
-            true, null);
+    public static final Feature HILLA_I18N = new Feature("Hilla I18n API", "hillaI18n",
+            "https://github.com/vaadin/hilla/tree/main/packages/ts/react-i18n", true, null);
 
-    public static final Feature COPILOT_EXPERIMENTAL = new Feature(
-            "Copilot experimental features", "copilotExperimentalFeatures",
-            "https://vaadin.com/docs/latest/tools", false, null);
+    public static final Feature COPILOT_EXPERIMENTAL = new Feature("Copilot experimental features",
+            "copilotExperimentalFeatures", "https://vaadin.com/docs/latest/tools", false, null);
 
-    public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
-            "Hilla Full-stack Signals", "fullstackSignals",
+    public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature("Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
 
     private List<Feature> features = new ArrayList<>();
@@ -147,34 +137,27 @@ public class FeatureFlags implements Serializable {
     }
 
     /**
-     * Gets the FeatureFlags for the given Vaadin context. If the Vaadin context
-     * has no FeatureFlags, a new instance is created and assigned to the
-     * context.
+     * Gets the FeatureFlags for the given Vaadin context. If the Vaadin context has no FeatureFlags, a new instance is
+     * created and assigned to the context.
      *
      * @param context
-     *            the vaadin context for which to get FeatureFlags from, not
-     *            <code>null</code>
-     * @return a feature flags instance for the given context, not
-     *         <code>null</code>
+     *            the vaadin context for which to get FeatureFlags from, not <code>null</code>
+     * @return a feature flags instance for the given context, not <code>null</code>
      */
     public static FeatureFlags get(final VaadinContext context) {
         assert context != null;
 
-        FeatureFlagsWrapper attribute = context
-                .getAttribute(FeatureFlagsWrapper.class, () -> {
-                    final FeatureFlags featureFlags = new FeatureFlags(
-                            context.getAttribute(Lookup.class));
-                    featureFlags.configuration = ApplicationConfiguration
-                            .get(context);
-                    featureFlags.loadProperties();
-                    return new FeatureFlagsWrapper(featureFlags);
-                });
+        FeatureFlagsWrapper attribute = context.getAttribute(FeatureFlagsWrapper.class, () -> {
+            final FeatureFlags featureFlags = new FeatureFlags(context.getAttribute(Lookup.class));
+            featureFlags.configuration = ApplicationConfiguration.get(context);
+            featureFlags.loadProperties();
+            return new FeatureFlagsWrapper(featureFlags);
+        });
         return attribute.getFeatureFlags();
     }
 
     /**
-     * Set by the Maven / Gradle plugin when running through that so the feature
-     * flags will be correctly detected.
+     * Set by the Maven / Gradle plugin when running through that so the feature flags will be correctly detected.
      */
     public void setPropertiesLocation(File propertiesFolder) {
         this.propertiesFolder = propertiesFolder;
@@ -182,24 +165,19 @@ public class FeatureFlags implements Serializable {
     }
 
     /**
-     * Read the feature flag properties files and updates the enable property of
-     * each feature object.
+     * Read the feature flag properties files and updates the enable property of each feature object.
      */
     public void loadProperties() {
-        final ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
+        final ResourceProvider resourceProvider = lookup.lookup(ResourceProvider.class);
         if (resourceProvider != null) {
-            final URL applicationResource = resourceProvider
-                    .getApplicationResource(PROPERTIES_FILENAME);
+            final URL applicationResource = resourceProvider.getApplicationResource(PROPERTIES_FILENAME);
             if (applicationResource != null) {
                 getLogger().debug("Properties loaded from classpath.");
-                try (InputStream propertiesStream = applicationResource
-                        .openStream()) {
+                try (InputStream propertiesStream = applicationResource.openStream()) {
                     loadProperties(propertiesStream);
                     return;
                 } catch (IOException e) {
-                    throw new UncheckedIOException(
-                            "Failed to read properties file from classpath", e);
+                    throw new UncheckedIOException("Failed to read properties file from classpath", e);
                 }
             }
         }
@@ -212,21 +190,15 @@ public class FeatureFlags implements Serializable {
 
             // Disable all features if no file exists
             for (Feature f : features) {
-                f.setEnabled(
-                        Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX + f.getId())
-                                || Boolean.getBoolean(
-                                        SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
-                                                + f.getId()));
+                f.setEnabled(Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX + f.getId())
+                        || Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL + f.getId()));
             }
         } else {
-            try (FileInputStream propertiesStream = new FileInputStream(
-                    featureFlagFile)) {
-                getLogger().debug("Loading properties from file '{}'",
-                        featureFlagFile);
+            try (FileInputStream propertiesStream = new FileInputStream(featureFlagFile)) {
+                getLogger().debug("Loading properties from file '{}'", featureFlagFile);
                 loadProperties(propertiesStream);
             } catch (IOException e) {
-                throw new UncheckedIOException(
-                        "Failed to read properties file from filesystem", e);
+                throw new UncheckedIOException("Failed to read properties file from filesystem", e);
             }
         }
     }
@@ -245,11 +217,9 @@ public class FeatureFlags implements Serializable {
             checkForUnsupportedSystemProperties();
             for (Feature f : features) {
                 // Allow users to override a feature flag with a system property
-                String propertyValue = System.getProperty(
-                        SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL + f.getId(),
+                String propertyValue = System.getProperty(SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL + f.getId(),
                         System.getProperty(SYSTEM_PROPERTY_PREFIX + f.getId(),
-                                props.getProperty(
-                                        getFilePropertyName(f.getId()))));
+                                props.getProperty(getFilePropertyName(f.getId()))));
                 f.setEnabled(Boolean.parseBoolean(propertyValue));
             }
 
@@ -261,8 +231,7 @@ public class FeatureFlags implements Serializable {
     private void saveProperties() {
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null) {
-            throw new IllegalStateException(
-                    "Unable to determine feature flag file location");
+            throw new IllegalStateException("Unable to determine feature flag file location");
         }
         StringBuilder properties = new StringBuilder();
         for (Feature feature : features) {
@@ -270,15 +239,13 @@ public class FeatureFlags implements Serializable {
                 continue;
             }
             properties.append("# ").append(feature.getTitle()).append("\n");
-            properties.append(getFilePropertyName(feature.getId()))
-                    .append("=true\n");
+            properties.append(getFilePropertyName(feature.getId())).append("=true\n");
         }
         if (!featureFlagFile.getParentFile().exists()) {
             featureFlagFile.getParentFile().mkdirs(); // NOSONAR
         }
         try {
-            FileUtils.write(featureFlagFile, properties.toString(),
-                    StandardCharsets.UTF_8);
+            FileUtils.write(featureFlagFile, properties.toString(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             getLogger().error("Unable to store feature flags", e);
         }
@@ -301,9 +268,7 @@ public class FeatureFlags implements Serializable {
      * @return <code>true</code> if enabled, <code>false</code> otherwise
      */
     public boolean isEnabled(Feature feature) {
-        return getFeature(feature.getId())
-                .orElseThrow(
-                        () -> new UnknownFeatureException(feature.getTitle()))
+        return getFeature(feature.getId()).orElseThrow(() -> new UnknownFeatureException(feature.getTitle()))
                 .isEnabled();
     }
 
@@ -319,9 +284,7 @@ public class FeatureFlags implements Serializable {
     }
 
     private Optional<Feature> getFeature(String featureId) {
-        return features.stream()
-                .filter(feature -> feature.getId().equals(featureId))
-                .findFirst();
+        return features.stream().filter(feature -> feature.getId().equals(featureId)).findFirst();
     }
 
     private String getFilePropertyName(String featureId) {
@@ -342,8 +305,7 @@ public class FeatureFlags implements Serializable {
      */
     public void setEnabled(String featureId, boolean enabled) {
         if (!isDevelopmentMode()) {
-            throw new IllegalStateException(
-                    "Feature flags can only be toggled when in development mode");
+            throw new IllegalStateException("Feature flags can only be toggled when in development mode");
         }
         Optional<Feature> maybeFeature = getFeature(featureId);
         if (!maybeFeature.isPresent()) {
@@ -376,10 +338,8 @@ public class FeatureFlags implements Serializable {
     }
 
     public String getEnableHelperMessage(Feature feature) {
-        return feature.getTitle()
-                + " is not enabled. Enable it in the debug window or by adding "
-                + getFilePropertyName(feature.getId())
-                + "=true to src/main/resources/" + PROPERTIES_FILENAME;
+        return feature.getTitle() + " is not enabled. Enable it in the debug window or by adding "
+                + getFilePropertyName(feature.getId()) + "=true to src/main/resources/" + PROPERTIES_FILENAME;
     }
 
     private Logger getLogger() {
@@ -388,8 +348,7 @@ public class FeatureFlags implements Serializable {
 
     private void checkForUnsupportedFileProperties(Properties fileProps) {
         if (!isPropertiesFileChecked) {
-            checkForUnsupportedFeatureFlags(fileProps,
-                    this::getFilePropertyName);
+            checkForUnsupportedFeatureFlags(fileProps, this::getFilePropertyName);
             isPropertiesFileChecked = true;
         }
     }
@@ -400,23 +359,17 @@ public class FeatureFlags implements Serializable {
             // prefix
             Properties filteredSystemProps = new Properties();
             System.getProperties().entrySet().stream()
-                    .filter(property -> property.getKey().toString()
-                            .startsWith(SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL))
-                    .forEach(property -> filteredSystemProps
-                            .put(property.getKey(), property.getValue()));
-            checkForUnsupportedFeatureFlags(filteredSystemProps,
-                    this::getSystemPropertyName);
+                    .filter(property -> property.getKey().toString().startsWith(SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL))
+                    .forEach(property -> filteredSystemProps.put(property.getKey(), property.getValue()));
+            checkForUnsupportedFeatureFlags(filteredSystemProps, this::getSystemPropertyName);
             isSystemPropertiesChecked = true;
         }
     }
 
-    private void checkForUnsupportedFeatureFlags(Properties props,
-            Function<String, String> propertyWithPrefix) {
+    private void checkForUnsupportedFeatureFlags(Properties props, Function<String, String> propertyWithPrefix) {
         for (Object property : props.keySet()) {
-            if (features.stream().noneMatch(feature -> propertyWithPrefix
-                    .apply(feature.getId()).equals(property))) {
-                getLogger().warn("Unsupported feature flag is present: {}",
-                        property);
+            if (features.stream().noneMatch(feature -> propertyWithPrefix.apply(feature.getId()).equals(property))) {
+                getLogger().warn("Unsupported feature flag is present: {}", property);
             }
         }
     }

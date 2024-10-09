@@ -16,21 +16,16 @@ public class DependencyFilterIT extends ChromeBrowserTest {
     public void dependenciesLoadedAsExpectedWithFiltering() {
         open();
 
-        waitUntil(input -> !input.findElements(By.className("dependenciesTest"))
-                .isEmpty());
+        waitUntil(input -> !input.findElements(By.className("dependenciesTest")).isEmpty());
 
-        List<String> testMessages = findElements(
-                By.className("dependenciesTest")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+        List<String> testMessages = findElements(By.className("dependenciesTest")).stream().map(WebElement::getText)
+                .collect(Collectors.toList());
 
-        boolean found = testMessages.stream()
-                .anyMatch(message -> message.equals("eager.js"));
+        boolean found = testMessages.stream().anyMatch(message -> message.equals("eager.js"));
         Assert.assertTrue("eager.js should be in the page", found);
 
-        found = testMessages.stream().anyMatch(message -> message
-                .equals(DependenciesLoadingBaseView.DOM_CHANGE_TEXT));
-        Assert.assertTrue("Attach a message via JS should be on the page",
-                found);
+        found = testMessages.stream().anyMatch(message -> message.equals(DependenciesLoadingBaseView.DOM_CHANGE_TEXT));
+        Assert.assertTrue("Attach a message via JS should be on the page", found);
 
         WebElement filteredElement = findElement(By.id("filtered-css"));
         String color = filteredElement.getCssValue("color");

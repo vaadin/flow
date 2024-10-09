@@ -26,9 +26,8 @@ public class ProxyFactory {
     static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
     /**
-     * Read list of configured proxies in order from system properties, .npmrc
-     * file in the project root folder, .npmrc file in user root folder and
-     * system environment variables.
+     * Read list of configured proxies in order from system properties, .npmrc file in the project root folder, .npmrc
+     * file in user root folder and system environment variables.
      *
      * @return list of configured proxies
      */
@@ -38,17 +37,14 @@ public class ProxyFactory {
         List<ProxyConfig.Proxy> proxyList = new ArrayList<>();
 
         proxyList.addAll(readProxySettingsFromSystemProperties());
-        proxyList.addAll(
-                readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc));
-        proxyList.addAll(
-                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
+        proxyList.addAll(readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc));
+        proxyList.addAll(readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
         proxyList.addAll(readProxySettingsFromEnvironmentVariables());
 
         return proxyList;
     }
 
-    private static List<ProxyConfig.Proxy> readProxySettingsFromNpmrcFile(
-            String fileDescription, File npmrc) {
+    private static List<ProxyConfig.Proxy> readProxySettingsFromNpmrcFile(String fileDescription, File npmrc) {
         if (!npmrc.exists()) {
             return Collections.emptyList();
         }
@@ -60,17 +56,13 @@ public class ProxyFactory {
             String noproxy = properties.getProperty(NPMRC_NOPROXY_PROPERTY_KEY);
             if (noproxy != null)
                 noproxy = noproxy.replaceAll(",", "|");
-            String httpsProxyUrl = properties
-                    .getProperty(NPMRC_HTTPS_PROXY_PROPERTY_KEY);
+            String httpsProxyUrl = properties.getProperty(NPMRC_HTTPS_PROXY_PROPERTY_KEY);
             if (httpsProxyUrl != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "https-proxy - " + fileDescription, httpsProxyUrl,
-                        noproxy));
+                proxyList.add(new ProxyConfig.Proxy("https-proxy - " + fileDescription, httpsProxyUrl, noproxy));
             }
             String proxyUrl = properties.getProperty(NPMRC_PROXY_PROPERTY_KEY);
             if (proxyUrl != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "proxy - " + fileDescription, proxyUrl, noproxy));
+                proxyList.add(new ProxyConfig.Proxy("proxy - " + fileDescription, proxyUrl, noproxy));
             }
             return proxyList;
         } catch (IOException e) {
@@ -81,29 +73,22 @@ public class ProxyFactory {
     private static List<ProxyConfig.Proxy> readProxySettingsFromSystemProperties() {
         List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
 
-        String noproxy = getNonNull(
-                System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
+        String noproxy = getNonNull(System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
         if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
         }
 
-        String httpsProxyUrl = getNonNull(
-                System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
-                System.getProperty(
-                        SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
+        String httpsProxyUrl = getNonNull(System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
+                System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
         if (httpsProxyUrl != null) {
-            proxyList.add(new ProxyConfig.Proxy("https-proxy - system",
-                    httpsProxyUrl, noproxy));
+            proxyList.add(new ProxyConfig.Proxy("https-proxy - system", httpsProxyUrl, noproxy));
         }
 
-        String proxyUrl = getNonNull(
-                System.getProperty(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
-                System.getProperty(
-                        SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
+        String proxyUrl = getNonNull(System.getProperty(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
+                System.getProperty(SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
         if (proxyUrl != null) {
-            proxyList.add(
-                    new ProxyConfig.Proxy("proxy - system", proxyUrl, noproxy));
+            proxyList.add(new ProxyConfig.Proxy("proxy - system", proxyUrl, noproxy));
         }
 
         return proxyList;
@@ -118,20 +103,16 @@ public class ProxyFactory {
             noproxy = noproxy.replaceAll(",", "|");
         }
 
-        String httpsProxyUrl = getNonNull(
-                System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
+        String httpsProxyUrl = getNonNull(System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
         if (httpsProxyUrl != null) {
-            proxyList.add(new ProxyConfig.Proxy("https-proxy - env",
-                    httpsProxyUrl, noproxy));
+            proxyList.add(new ProxyConfig.Proxy("https-proxy - env", httpsProxyUrl, noproxy));
         }
 
-        String proxyUrl = getNonNull(
-                System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
+        String proxyUrl = getNonNull(System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
         if (proxyUrl != null) {
-            proxyList.add(
-                    new ProxyConfig.Proxy("proxy - env", proxyUrl, noproxy));
+            proxyList.add(new ProxyConfig.Proxy("proxy - env", proxyUrl, noproxy));
         }
 
         return proxyList;

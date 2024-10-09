@@ -76,18 +76,15 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
 /**
  * Provides basic Vaadin component-based security configuration for the project.
  * <p>
- * Sets up security rules for a Vaadin application and restricts all URLs except
- * for public resources and internal Vaadin URLs to authenticated user.
+ * Sets up security rules for a Vaadin application and restricts all URLs except for public resources and internal
+ * Vaadin URLs to authenticated user.
  * <p>
- * The default behavior can be altered by extending the public/protected methods
- * in the class.
+ * The default behavior can be altered by extending the public/protected methods in the class.
  * <p>
- * Provides default bean implementations for {@link SecurityFilterChain} and
- * {@link WebSecurityCustomizer}.
+ * Provides default bean implementations for {@link SecurityFilterChain} and {@link WebSecurityCustomizer}.
  * <p>
- * To use this, create your own web security class by extending this class and
- * annotate it with <code>@EnableWebSecurity</code> and
- * <code>@Configuration</code>.
+ * To use this, create your own web security class by extending this class and annotate it with
+ * <code>@EnableWebSecurity</code> and <code>@Configuration</code>.
  * <p>
  * For example:
  *
@@ -134,9 +131,8 @@ public abstract class VaadinWebSecurity {
     /**
      * Registers default {@link SecurityFilterChain} bean.
      * <p>
-     * Defines a filter chain which is capable of being matched against an
-     * {@code HttpServletRequest}. in order to decide whether it applies to that
-     * request.
+     * Defines a filter chain which is capable of being matched against an {@code HttpServletRequest}. in order to
+     * decide whether it applies to that request.
      * <p>
      * {@link HttpSecurity} configuration can be customized by overriding
      * {@link VaadinWebSecurity#configure(HttpSecurity)}.
@@ -151,10 +147,8 @@ public abstract class VaadinWebSecurity {
 
         DefaultSecurityFilterChain securityFilterChain = http.build();
         Optional.ofNullable(vaadinRolePrefixHolder)
-                .ifPresent(vaadinRolePrefixHolder -> vaadinRolePrefixHolder
-                        .resetRolePrefix(securityFilterChain));
-        AuthenticationContext.applySecurityConfiguration(http,
-                authenticationContext);
+                .ifPresent(vaadinRolePrefixHolder -> vaadinRolePrefixHolder.resetRolePrefix(securityFilterChain));
+        AuthenticationContext.applySecurityConfiguration(http, authenticationContext);
         return securityFilterChain;
     }
 
@@ -171,8 +165,7 @@ public abstract class VaadinWebSecurity {
     /**
      * Applies Vaadin default configuration to {@link HttpSecurity}.
      *
-     * Typically, subclasses should call super to apply default Vaadin
-     * configuration in addition to custom rules.
+     * Typically, subclasses should call super to apply default Vaadin configuration in addition to custom rules.
      *
      * @param http
      *            the {@link HttpSecurity} to modify
@@ -184,16 +177,12 @@ public abstract class VaadinWebSecurity {
         // requests for protected Hilla endpoints, so that the response could
         // be handled on the client side using e.g. `InvalidSessionMiddleware`.
         http.exceptionHandling(
-                cfg -> cfg.accessDeniedHandler(createAccessDeniedHandler())
-                        .defaultAuthenticationEntryPointFor(
-                                new HttpStatusEntryPoint(
-                                        HttpStatus.UNAUTHORIZED),
-                                requestUtil::isEndpointRequest));
+                cfg -> cfg.accessDeniedHandler(createAccessDeniedHandler()).defaultAuthenticationEntryPointFor(
+                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), requestUtil::isEndpointRequest));
 
         // Vaadin has its own CSRF protection.
         // Spring CSRF is not compatible with Vaadin internal requests
-        http.csrf(cfg -> cfg.ignoringRequestMatchers(
-                requestUtil::isFrameworkInternalRequest));
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(requestUtil::isFrameworkInternalRequest));
 
         // Ensure automated requests to e.g. closing push channels, service
         // workers,
@@ -204,25 +193,18 @@ public abstract class VaadinWebSecurity {
         http.authorizeHttpRequests(urlRegistry -> {
             // Vaadin internal requests must always be allowed to allow public
             // Flow pages and/or login page implemented using Flow.
-            urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
-                    .permitAll();
+            urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest).permitAll();
             // Public endpoints are OK to access
-            urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
-                    .permitAll();
+            urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint).permitAll();
             // Checks for known Hilla views
-            urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
-                    .permitAll();
+            urlRegistry.requestMatchers(requestUtil::isAllowedHillaView).permitAll();
             // Public routes are OK to access
-            urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
-                    .permitAll();
-            urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
-                    requestUtil.getUrlMapping())).permitAll();
+            urlRegistry.requestMatchers(requestUtil::isAnonymousRoute).permitAll();
+            urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(requestUtil.getUrlMapping())).permitAll();
             // matcher for Vaadin static (public) resources
-            urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
-                    requestUtil.getUrlMapping())).permitAll();
+            urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(requestUtil.getUrlMapping())).permitAll();
             // matcher for custom PWA icons and favicon
-            urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
-                    .permitAll();
+            urlRegistry.requestMatchers(requestUtil::isCustomWebIcon).permitAll();
 
             // all other requests require authentication
             urlRegistry.anyRequest().authenticated();
@@ -234,8 +216,8 @@ public abstract class VaadinWebSecurity {
     /**
      * Registers default {@link WebSecurityCustomizer} bean.
      * <p>
-     * Beans of this type will automatically be used by
-     * {@link WebSecurityConfiguration} to customize {@link WebSecurity}.
+     * Beans of this type will automatically be used by {@link WebSecurityConfiguration} to customize
+     * {@link WebSecurity}.
      * <p>
      * {@link WebSecurity} configuration can be customized by overriding
      * {@link VaadinWebSecurity#configure(WebSecurity)}
@@ -260,11 +242,10 @@ public abstract class VaadinWebSecurity {
     /**
      * Gets if navigation access control should be enabled.
      *
-     * Navigation access control is enabled by default. This method can be
-     * overridden returning {@literal false} to disable it.
+     * Navigation access control is enabled by default. This method can be overridden returning {@literal false} to
+     * disable it.
      *
-     * @return {@literal true} if navigation access control should be enabled,
-     *         {@literal false} to disable it.
+     * @return {@literal true} if navigation access control should be enabled, {@literal false} to disable it.
      */
     protected boolean enableNavigationAccessControl() {
         return true;
@@ -282,24 +263,19 @@ public abstract class VaadinWebSecurity {
     }
 
     /**
-     * Matcher for framework internal requests, with Vaadin servlet mapped on
-     * the given path.
+     * Matcher for framework internal requests, with Vaadin servlet mapped on the given path.
      *
      * @param urlMapping
      *            url mapping for the Vaadin servlet.
      * @return default {@link HttpSecurity} bypass matcher
      */
-    public static RequestMatcher getDefaultHttpSecurityPermitMatcher(
-            String urlMapping) {
-        Objects.requireNonNull(urlMapping,
-                "Vaadin servlet url mapping is required");
+    public static RequestMatcher getDefaultHttpSecurityPermitMatcher(String urlMapping) {
+        Objects.requireNonNull(urlMapping, "Vaadin servlet url mapping is required");
         Stream.Builder<String> paths = Stream.builder();
         Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext())
-                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
-                .forEach(paths::add);
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path)).forEach(paths::add);
 
-        return new OrRequestMatcher(paths.build()
-                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+        return new OrRequestMatcher(paths.build().map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
     /**
@@ -314,8 +290,7 @@ public abstract class VaadinWebSecurity {
     }
 
     /**
-     * Matcher for Vaadin static (public) resources, with Vaadin servlet mapped
-     * on the given path.
+     * Matcher for Vaadin static (public) resources, with Vaadin servlet mapped on the given path.
      *
      * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
      *
@@ -323,18 +298,13 @@ public abstract class VaadinWebSecurity {
      *            the url mapping for the Vaadin servlet
      * @return default {@link WebSecurity} ignore matcher
      */
-    public static RequestMatcher getDefaultWebSecurityIgnoreMatcher(
-            String urlMapping) {
-        Objects.requireNonNull(urlMapping,
-                "Vaadin servlet url mapping is required");
-        Stream<String> mappingRelativePaths = Stream
-                .of(HandlerHelper.getPublicResources())
+    public static RequestMatcher getDefaultWebSecurityIgnoreMatcher(String urlMapping) {
+        Objects.requireNonNull(urlMapping, "Vaadin servlet url mapping is required");
+        Stream<String> mappingRelativePaths = Stream.of(HandlerHelper.getPublicResources())
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path));
-        Stream<String> rootPaths = Stream
-                .of(HandlerHelper.getPublicResourcesRoot());
-        return new OrRequestMatcher(Stream
-                .concat(mappingRelativePaths, rootPaths)
-                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+        Stream<String> rootPaths = Stream.of(HandlerHelper.getPublicResourcesRoot());
+        return new OrRequestMatcher(Stream.concat(mappingRelativePaths, rootPaths).map(AntPathRequestMatcher::new)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -342,38 +312,30 @@ public abstract class VaadinWebSecurity {
      *
      * @param patterns
      *            ant patterns
-     * @return an array or {@link RequestMatcher} instances for the given
-     *         patterns.
+     * @return an array or {@link RequestMatcher} instances for the given patterns.
      */
     public RequestMatcher[] antMatchers(String... patterns) {
         return RequestUtil.antMatchers(patterns);
     }
 
     /**
-     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
-     * patterns and HTTP get method.
+     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant patterns and HTTP get method.
      *
      * @param patterns
      *            ant patterns
-     * @return an array or {@link RequestMatcher} instances for the given
-     *         patterns.
+     * @return an array or {@link RequestMatcher} instances for the given patterns.
      */
     public RequestMatcher[] routeMatchers(String... patterns) {
-        return RequestUtil.routeMatchers(Stream.of(patterns)
-                .map(this::applyUrlMapping).toArray(String[]::new));
+        return RequestUtil.routeMatchers(Stream.of(patterns).map(this::applyUrlMapping).toArray(String[]::new));
     }
 
     /**
-     * Sets up login for the application using form login with the given path
-     * for the login view.
+     * Sets up login for the application using form login with the given path for the login view.
      * <p>
-     * This is used when your application uses a Hilla based login view
-     * available at the given path.
+     * This is used when your application uses a Hilla based login view available at the given path.
      *
-     * NOTE: if the login path points to a Flow view, the corresponding java
-     * class must be annotated
-     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
-     * the view is always accessible.
+     * NOTE: if the login path points to a Flow view, the corresponding java class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that the view is always accessible.
      *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
@@ -382,22 +344,17 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath)
-            throws Exception {
+    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath) throws Exception {
         setLoginView(http, hillaLoginViewPath, getDefaultLogoutUrl());
     }
 
     /**
-     * Sets up login for the application using form login with the given path
-     * for the login view.
+     * Sets up login for the application using form login with the given path for the login view.
      * <p>
-     * This is used when your application uses a Hilla based login view
-     * available at the given path.
+     * This is used when your application uses a Hilla based login view available at the given path.
      *
-     * NOTE: if the login path points to a Flow view, the corresponding java
-     * class must be annotated
-     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
-     * the view is always accessible.
+     * NOTE: if the login path points to a Flow view, the corresponding java class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that the view is always accessible.
      *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
@@ -408,20 +365,16 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
-            String logoutSuccessUrl) throws Exception {
+    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath, String logoutSuccessUrl)
+            throws Exception {
         String completeHillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
         http.formLogin(formLogin -> {
             formLogin.loginPage(completeHillaLoginViewPath).permitAll();
-            formLogin.successHandler(
-                    getVaadinSavedRequestAwareAuthenticationSuccessHandler(
-                            http));
+            formLogin.successHandler(getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         });
         configureLogout(http, logoutSuccessUrl);
         http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
-                new LoginUrlAuthenticationEntryPoint(
-                        completeHillaLoginViewPath),
-                AnyRequestMatcher.INSTANCE));
+                new LoginUrlAuthenticationEntryPoint(completeHillaLoginViewPath), AnyRequestMatcher.INSTANCE));
         accessControl.setLoginView(hillaLoginViewPath);
     }
 
@@ -435,8 +388,7 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http,
-            Class<? extends Component> flowLoginView) throws Exception {
+    protected void setLoginView(HttpSecurity http, Class<? extends Component> flowLoginView) throws Exception {
         setLoginView(http, flowLoginView, getDefaultLogoutUrl());
     }
 
@@ -453,28 +405,22 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http,
-            Class<? extends Component> flowLoginView, String logoutSuccessUrl)
+    protected void setLoginView(HttpSecurity http, Class<? extends Component> flowLoginView, String logoutSuccessUrl)
             throws Exception {
-        Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView,
-                Route.class);
+        Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView, Route.class);
 
         if (!route.isPresent()) {
             throw new IllegalArgumentException(
-                    "Unable find a @Route annotation on the login view "
-                            + flowLoginView.getName());
+                    "Unable find a @Route annotation on the login view " + flowLoginView.getName());
         }
 
         if (!(applicationContext instanceof WebApplicationContext)) {
-            throw new RuntimeException(
-                    "VaadinWebSecurity cannot be used without WebApplicationContext.");
+            throw new RuntimeException("VaadinWebSecurity cannot be used without WebApplicationContext.");
         }
 
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
-                ((WebApplicationContext) applicationContext)
-                        .getServletContext());
-        String loginPath = RouteUtil.getRoutePath(vaadinServletContext,
-                flowLoginView);
+                ((WebApplicationContext) applicationContext).getServletContext());
+        String loginPath = RouteUtil.getRoutePath(vaadinServletContext, flowLoginView);
         if (!loginPath.startsWith("/")) {
             loginPath = "/" + loginPath;
         }
@@ -483,37 +429,28 @@ public abstract class VaadinWebSecurity {
         // Actually set it up
         http.formLogin(formLogin -> {
             formLogin.loginPage(completeLoginPath).permitAll();
-            formLogin.successHandler(
-                    getVaadinSavedRequestAwareAuthenticationSuccessHandler(
-                            http));
+            formLogin.successHandler(getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         });
-        http.csrf(cfg -> cfg.ignoringRequestMatchers(
-                new AntPathRequestMatcher(completeLoginPath)));
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(new AntPathRequestMatcher(completeLoginPath)));
         configureLogout(http, logoutSuccessUrl);
         http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
-                new LoginUrlAuthenticationEntryPoint(completeLoginPath),
-                AnyRequestMatcher.INSTANCE));
+                new LoginUrlAuthenticationEntryPoint(completeLoginPath), AnyRequestMatcher.INSTANCE));
         accessControl.setLoginView(flowLoginView);
     }
 
     /**
-     * Sets up the login page URI of the OAuth2 provider on the specified
-     * HttpSecurity instance.
+     * Sets up the login page URI of the OAuth2 provider on the specified HttpSecurity instance.
      *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
      * @param oauth2LoginPage
-     *            the login page of the OAuth2 provider. This Specifies the URL
-     *            to send users to if login is required.
+     *            the login page of the OAuth2 provider. This Specifies the URL to send users to if login is required.
      * @throws Exception
-     *             Re-throws the possible exceptions while activating
-     *             OAuth2LoginConfigurer
+     *             Re-throws the possible exceptions while activating OAuth2LoginConfigurer
      */
-    protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
-            throws Exception {
-        http.oauth2Login(cfg -> cfg.loginPage(oauth2LoginPage).successHandler(
-                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
-                .permitAll());
+    protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage) throws Exception {
+        http.oauth2Login(cfg -> cfg.loginPage(oauth2LoginPage)
+                .successHandler(getVaadinSavedRequestAwareAuthenticationSuccessHandler(http)).permitAll());
         accessControl.setLoginView(servletContextPath + oauth2LoginPage);
     }
 
@@ -523,15 +460,13 @@ public abstract class VaadinWebSecurity {
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
      * @param secretKey
-     *            the secret key for encoding and decoding JWTs, must use a
-     *            {@link MacAlgorithm} algorithm name
+     *            the secret key for encoding and decoding JWTs, must use a {@link MacAlgorithm} algorithm name
      * @param issuer
      *            the issuer JWT claim
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setStatelessAuthentication(HttpSecurity http,
-            SecretKey secretKey, String issuer) throws Exception {
+    protected void setStatelessAuthentication(HttpSecurity http, SecretKey secretKey, String issuer) throws Exception {
         setStatelessAuthentication(http, secretKey, issuer, 1800L);
     }
 
@@ -541,8 +476,7 @@ public abstract class VaadinWebSecurity {
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
      * @param secretKey
-     *            the secret key for encoding and decoding JWTs, must use a
-     *            {@link MacAlgorithm} algorithm name
+     *            the secret key for encoding and decoding JWTs, must use a {@link MacAlgorithm} algorithm name
      * @param issuer
      *            the issuer JWT claim
      * @param expiresIn
@@ -550,19 +484,16 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setStatelessAuthentication(HttpSecurity http,
-            SecretKey secretKey, String issuer, long expiresIn)
+    protected void setStatelessAuthentication(HttpSecurity http, SecretKey secretKey, String issuer, long expiresIn)
             throws Exception {
         VaadinStatelessSecurityConfigurer.apply(http,
-                cfg -> cfg.withSecretKey().secretKey(secretKey).and()
-                        .issuer(issuer).expiresIn(expiresIn));
+                cfg -> cfg.withSecretKey().secretKey(secretKey).and().issuer(issuer).expiresIn(expiresIn));
     }
 
     /**
      * Helper method to prepend configured servlet path to the given path.
      *
-     * Path will always be considered as relative to servlet path, even if it
-     * starts with a slash character.
+     * Path will always be considered as relative to servlet path, even if it starts with a slash character.
      *
      * @param path
      *            path to be prefixed with servlet path
@@ -575,51 +506,44 @@ public abstract class VaadinWebSecurity {
     /**
      * Vaadin views access checker bean.
      * <p>
-     * This getter can be used in implementing class to override logic of
-     * <code>VaadinWebSecurity.setLoginView</code> methods and call
-     * {@link ViewAccessChecker} methods explicitly.
+     * This getter can be used in implementing class to override logic of <code>VaadinWebSecurity.setLoginView</code>
+     * methods and call {@link ViewAccessChecker} methods explicitly.
      * <p>
-     * Note that this bean is a field-autowired, thus this getter returns
-     * <code>null</code> when called from the constructor of implementing class.
+     * Note that this bean is a field-autowired, thus this getter returns <code>null</code> when called from the
+     * constructor of implementing class.
      *
-     * @return {@link ViewAccessChecker} bean used by this VaadinWebSecurity
-     *         configuration.
-     * @deprecated ViewAccessChecker is not used anymore by VaadinWebSecurity,
-     *             and has been replaced by {@link NavigationAccessControl}.
-     *             Calling this method will get a stub implementation that
-     *             delegates to the {@link NavigationAccessControl} instance.
+     * @return {@link ViewAccessChecker} bean used by this VaadinWebSecurity configuration.
+     * @deprecated ViewAccessChecker is not used anymore by VaadinWebSecurity, and has been replaced by
+     *             {@link NavigationAccessControl}. Calling this method will get a stub implementation that delegates to
+     *             the {@link NavigationAccessControl} instance.
      */
     @Deprecated(forRemoval = true, since = "24.3")
     protected ViewAccessChecker getViewAccessChecker() {
-        LoggerFactory.getLogger(getClass()).warn(
-                "ViewAccessChecker is not used anymore by VaadinWebSecurity "
-                        + "and has been replaced by NavigationAccessControl. "
-                        + "'VaadinWebSecurity.getViewAccessChecker()' returns a stub instance that "
-                        + "delegates calls to NavigationAccessControl. "
-                        + "Usages of 'getViewAccessChecker()' should be replaced by calls to 'getNavigationAccessControl()'.");
+        LoggerFactory.getLogger(getClass()).warn("ViewAccessChecker is not used anymore by VaadinWebSecurity "
+                + "and has been replaced by NavigationAccessControl. "
+                + "'VaadinWebSecurity.getViewAccessChecker()' returns a stub instance that "
+                + "delegates calls to NavigationAccessControl. "
+                + "Usages of 'getViewAccessChecker()' should be replaced by calls to 'getNavigationAccessControl()'.");
         return new DeprecateViewAccessCheckerDelegator(accessControl);
     }
 
     /**
      * Vaadin navigation access control bean.
      * <p>
-     * This getter can be used in implementing class to override logic of
-     * <code>VaadinWebSecurity.setLoginView</code> methods and call
-     * {@link NavigationAccessControl} methods explicitly.
+     * This getter can be used in implementing class to override logic of <code>VaadinWebSecurity.setLoginView</code>
+     * methods and call {@link NavigationAccessControl} methods explicitly.
      * <p>
-     * Note that this bean is a field-autowired, thus this getter returns
-     * <code>null</code> when called from the constructor of implementing class.
+     * Note that this bean is a field-autowired, thus this getter returns <code>null</code> when called from the
+     * constructor of implementing class.
      *
-     * @return {@link NavigationAccessControl} bean used by this
-     *         VaadinWebSecurity configuration.
+     * @return {@link NavigationAccessControl} bean used by this VaadinWebSecurity configuration.
      */
     protected NavigationAccessControl getNavigationAccessControl() {
         return accessControl;
     }
 
     /**
-     * Sets additional {@link LogoutHandler}s that will participate in logout
-     * process.
+     * Sets additional {@link LogoutHandler}s that will participate in logout process.
      *
      * @param registry
      *            used to add custom handlers.
@@ -628,8 +552,7 @@ public abstract class VaadinWebSecurity {
 
     }
 
-    private void configureLogout(HttpSecurity http, String logoutSuccessUrl)
-            throws Exception {
+    private void configureLogout(HttpSecurity http, String logoutSuccessUrl) throws Exception {
         VaadinSimpleUrlLogoutSuccessHandler logoutSuccessHandler = new VaadinSimpleUrlLogoutSuccessHandler();
         logoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
         logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
@@ -637,22 +560,18 @@ public abstract class VaadinWebSecurity {
     }
 
     private String getDefaultLogoutUrl() {
-        return servletContextPath.startsWith("/") ? servletContextPath
-                : "/" + servletContextPath;
+        return servletContextPath.startsWith("/") ? servletContextPath : "/" + servletContextPath;
     }
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler getVaadinSavedRequestAwareAuthenticationSuccessHandler(
             HttpSecurity http) {
         VaadinSavedRequestAwareAuthenticationSuccessHandler vaadinSavedRequestAwareAuthenticationSuccessHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
-        vaadinSavedRequestAwareAuthenticationSuccessHandler
-                .setDefaultTargetUrl(applyUrlMapping(""));
+        vaadinSavedRequestAwareAuthenticationSuccessHandler.setDefaultTargetUrl(applyUrlMapping(""));
         RequestCache requestCache = http.getSharedObject(RequestCache.class);
         if (requestCache != null) {
-            vaadinSavedRequestAwareAuthenticationSuccessHandler
-                    .setRequestCache(requestCache);
+            vaadinSavedRequestAwareAuthenticationSuccessHandler.setRequestCache(requestCache);
         }
-        http.setSharedObject(
-                VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
+        http.setSharedObject(VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
                 vaadinSavedRequestAwareAuthenticationSuccessHandler);
         return vaadinSavedRequestAwareAuthenticationSuccessHandler;
     }
@@ -667,31 +586,24 @@ public abstract class VaadinWebSecurity {
 
         final LinkedHashMap<RequestMatcher, AccessDeniedHandler> matcherHandlers = new LinkedHashMap<>();
         matcherHandlers.put(requestUtil::isEndpointRequest,
-                new DelegatingAccessDeniedHandler(exceptionHandlers,
-                        new AccessDeniedHandlerImpl()));
+                new DelegatingAccessDeniedHandler(exceptionHandlers, new AccessDeniedHandlerImpl()));
 
-        return new RequestMatcherDelegatingAccessDeniedHandler(matcherHandlers,
-                defaultHandler);
+        return new RequestMatcherDelegatingAccessDeniedHandler(matcherHandlers, defaultHandler);
     }
 
-    private static class Http401UnauthorizedAccessDeniedHandler
-            implements AccessDeniedHandler {
+    private static class Http401UnauthorizedAccessDeniedHandler implements AccessDeniedHandler {
         @Override
-        public void handle(HttpServletRequest request,
-                HttpServletResponse response,
-                AccessDeniedException accessDeniedException)
-                throws IOException, ServletException {
+        public void handle(HttpServletRequest request, HttpServletResponse response,
+                AccessDeniedException accessDeniedException) throws IOException, ServletException {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
 
-    private static class DeprecateViewAccessCheckerDelegator
-            extends ViewAccessChecker {
+    private static class DeprecateViewAccessCheckerDelegator extends ViewAccessChecker {
 
         private final NavigationAccessControl accessControl;
 
-        public DeprecateViewAccessCheckerDelegator(
-                NavigationAccessControl acc) {
+        public DeprecateViewAccessCheckerDelegator(NavigationAccessControl acc) {
             this.accessControl = acc;
         }
 

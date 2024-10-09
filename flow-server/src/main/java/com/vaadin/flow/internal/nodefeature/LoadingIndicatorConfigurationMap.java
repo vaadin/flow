@@ -26,8 +26,7 @@ import com.vaadin.flow.internal.StateNode;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class LoadingIndicatorConfigurationMap extends NodeMap
-        implements LoadingIndicatorConfiguration {
+public class LoadingIndicatorConfigurationMap extends NodeMap implements LoadingIndicatorConfiguration {
     public static final String FIRST_DELAY_KEY = "first";
     public static final int FIRST_DELAY_DEFAULT = 450;
     public static final String SECOND_DELAY_KEY = "second";
@@ -79,8 +78,7 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
 
     @Override
     public boolean isApplyDefaultTheme() {
-        return getOrDefault(DEFAULT_THEME_APPLIED_KEY,
-                DEFAULT_THEME_APPLIED_DEFAULT);
+        return getOrDefault(DEFAULT_THEME_APPLIED_KEY, DEFAULT_THEME_APPLIED_DEFAULT);
     }
 
     @Override

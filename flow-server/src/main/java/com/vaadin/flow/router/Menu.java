@@ -26,9 +26,8 @@ import java.lang.annotation.Target;
 /**
  * Defines menu information for a route for automatically populated menu.
  * <p>
- * {@link Menu} is used together with {@link Route} to include it automatically
- * in Hilla application's main menu, but only if server route is accessible and
- * {@code frontend/views/@layout.tsx} is used with {@code createMenuItems()}
+ * {@link Menu} is used together with {@link Route} to include it automatically in Hilla application's main menu, but
+ * only if server route is accessible and {@code frontend/views/@layout.tsx} is used with {@code createMenuItems()}
  * function to build the menu.
  * </p>
  *
@@ -48,22 +47,18 @@ public @interface Menu {
     String title() default "";
 
     /**
-     * Used to determine the order in the menu. Ties are resolved based on the
-     * used title. Entries without explicitly defined ordering are put below
-     * entries with an order. {@link Double#MIN_VALUE} is the default value and
+     * Used to determine the order in the menu. Ties are resolved based on the used title. Entries without explicitly
+     * defined ordering are put below entries with an order. {@link Double#MIN_VALUE} is the default value and
      * considered as undefined.
      *
-     * @return the order of the item in the menu. {@link Double#MIN_VALUE} by
-     *         default.
+     * @return the order of the item in the menu. {@link Double#MIN_VALUE} by default.
      */
     double order() default Double.MIN_VALUE;
 
     /**
-     * Icon to use in the menu. Value can go inside a {@code <vaadin-icon>}
-     * element's {@code icon} attribute which accepts icon group and name like
-     * 'vaadin:file'. Or it can go to a {@code <vaadin-icon>} element's
-     * {@code src} attribute which takes path to the icon. E.g.
-     * 'line-awesome/svg/lock-open-solid.svg'.
+     * Icon to use in the menu. Value can go inside a {@code <vaadin-icon>} element's {@code icon} attribute which
+     * accepts icon group and name like 'vaadin:file'. Or it can go to a {@code <vaadin-icon>} element's {@code src}
+     * attribute which takes path to the icon. E.g. 'line-awesome/svg/lock-open-solid.svg'.
      *
      * @return A String for an icon. Empty String by default.
      */

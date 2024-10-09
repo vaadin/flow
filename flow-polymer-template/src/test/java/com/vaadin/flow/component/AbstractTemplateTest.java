@@ -28,11 +28,9 @@ public abstract class AbstractTemplateTest {
     @Before
     public void init() throws Exception {
         service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
 
@@ -43,8 +41,7 @@ public abstract class AbstractTemplateTest {
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.createComponent(Mockito.any()))
-                .thenAnswer(invocation -> ReflectTools
-                        .createInstance(invocation.getArgument(0)));
+                .thenAnswer(invocation -> ReflectTools.createInstance(invocation.getArgument(0)));
 
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
 

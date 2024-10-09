@@ -43,8 +43,7 @@ import org.apache.commons.io.IOUtils;
 public final class DefaultArchiveExtractor implements ArchiveExtractor {
 
     @Override
-    public void extract(File archiveFile, File destinationDirectory)
-            throws ArchiveExtractionException {
+    public void extract(File archiveFile, File destinationDirectory) throws ArchiveExtractionException {
         try {
             if (archiveFile.getAbsolutePath().endsWith("msi")) {
                 extractMSIArchive(archiveFile, destinationDirectory);
@@ -54,39 +53,33 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                 extractGzipTarArchive(archiveFile, destinationDirectory);
             }
         } catch (IOException e) {
-            throw new ArchiveExtractionException(
-                    "Could not extract archive: '" + archiveFile + "'", e);
+            throw new ArchiveExtractionException("Could not extract archive: '" + archiveFile + "'", e);
         }
     }
 
     private void extractMSIArchive(File archiveFile, File destinationDirectory)
             throws IOException, ArchiveExtractionException {
-        String command = "msiexec /a " + archiveFile.getAbsolutePath()
-                + " /qn TARGETDIR=\"" + destinationDirectory + "\"";
+        String command = "msiexec /a " + archiveFile.getAbsolutePath() + " /qn TARGETDIR=\"" + destinationDirectory
+                + "\"";
         Process child = Runtime.getRuntime().exec(command);
         try {
             int result = child.waitFor();
             if (result != 0) {
                 throw new ArchiveExtractionException(
-                        "Could not extract " + archiveFile.getAbsolutePath()
-                                + "; return code " + result);
+                        "Could not extract " + archiveFile.getAbsolutePath() + "; return code " + result);
             }
         } catch (InterruptedException e) {
-            throw new ArchiveExtractionException(
-                    "Unexpected interruption of while waiting for extraction process",
-                    e);
+            throw new ArchiveExtractionException("Unexpected interruption of while waiting for extraction process", e);
         }
     }
 
-    private void extractZipArchive(File archiveFile, File destinationDirectory)
-            throws IOException {
+    private void extractZipArchive(File archiveFile, File destinationDirectory) throws IOException {
         ZipFile zipFile = new ZipFile(archiveFile);
         try {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                final File destPath = new File(destinationDirectory
-                        + File.separator + entry.getName());
+                final File destPath = new File(destinationDirectory + File.separator + entry.getName());
                 prepDestination(destPath, entry.isDirectory());
 
                 copyZipFileContents(zipFile, entry, destPath);
@@ -108,41 +101,33 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
      * @throws IOException
      *             thrown if copying fails
      */
-    private void copyZipFileContents(ZipFile zipFile, ZipEntry entry,
-            File destinationFile) throws IOException {
+    private void copyZipFileContents(ZipFile zipFile, ZipEntry entry, File destinationFile) throws IOException {
         if (entry.isDirectory()) {
             return;
         }
-        try (InputStream in = zipFile.getInputStream(entry);
-                OutputStream out = new FileOutputStream(destinationFile)) {
+        try (InputStream in = zipFile.getInputStream(entry); OutputStream out = new FileOutputStream(destinationFile)) {
             IOUtils.copy(in, out);
         }
     }
 
-    private void extractGzipTarArchive(File archive, File destinationDirectory)
-            throws IOException {
+    private void extractGzipTarArchive(File archive, File destinationDirectory) throws IOException {
         // TarArchiveInputStream can be constructed with a normal
         // FileInputStream if
         // we ever need to extract regular '.tar' files.
 
         try (FileInputStream fis = new FileInputStream(archive);
-                GzipCompressorInputStream gis = new GzipCompressorInputStream(
-                        fis);
+                GzipCompressorInputStream gis = new GzipCompressorInputStream(fis);
                 TarArchiveInputStream tarIn = new TarArchiveInputStream(gis)) {
 
             TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
-            String canonicalDestinationDirectory = destinationDirectory
-                    .getCanonicalPath();
+            String canonicalDestinationDirectory = destinationDirectory.getCanonicalPath();
             while (tarEntry != null) {
                 // Create a file for this tarEntry
-                final File destPath = new File(destinationDirectory
-                        + File.separator + tarEntry.getName());
+                final File destPath = new File(destinationDirectory + File.separator + tarEntry.getName());
                 prepDestination(destPath, tarEntry.isDirectory());
 
-                if (!startsWithPath(destPath.getCanonicalPath(),
-                        canonicalDestinationDirectory)) {
-                    throw new IOException("Expanding " + tarEntry.getName()
-                            + " would create file outside of "
+                if (!startsWithPath(destPath.getCanonicalPath(), canonicalDestinationDirectory)) {
+                    throw new IOException("Expanding " + tarEntry.getName() + " would create file outside of "
                             + canonicalDestinationDirectory);
                 }
 
@@ -153,8 +138,7 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
     }
 
     /**
-     * Copy TarArchiveEntry file contents to target path. Set file to executable
-     * if marked so in the entry.
+     * Copy TarArchiveEntry file contents to target path. Set file to executable if marked so in the entry.
      *
      * @param tarIn
      *            tar archive input stream
@@ -165,8 +149,8 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
      * @throws IOException
      *             thrown if copying fails
      */
-    private void copyTarFileContents(TarArchiveInputStream tarIn,
-            TarArchiveEntry tarEntry, File destinationFile) throws IOException {
+    private void copyTarFileContents(TarArchiveInputStream tarIn, TarArchiveEntry tarEntry, File destinationFile)
+            throws IOException {
         if (tarEntry.isDirectory()) {
             return;
         }
@@ -179,8 +163,7 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
         }
     }
 
-    private void prepDestination(File path, boolean directory)
-            throws IOException {
+    private void prepDestination(File path, boolean directory) throws IOException {
         if (directory) {
             path.mkdirs();
         } else {
@@ -188,16 +171,15 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                 path.getParentFile().mkdirs();
             }
             if (!path.getParentFile().canWrite()) {
-                throw new AccessDeniedException(String.format(
-                        "Could not get write permissions for '%s'",
+                throw new AccessDeniedException(String.format("Could not get write permissions for '%s'",
                         path.getParentFile().getAbsolutePath()));
             }
         }
     }
 
     /**
-     * Do multiple file system checks that should enable the extractor to work
-     * on any file system whether or not it's case sensitive or not.
+     * Do multiple file system checks that should enable the extractor to work on any file system whether or not it's
+     * case sensitive or not.
      *
      * @param destPath
      *            destination path
@@ -211,8 +193,7 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
         } else if (destDir.length() > destPath.length()) {
             return false;
         } else {
-            if (new File(destPath).exists()
-                    && !(new File(destPath.toLowerCase()).exists())) {
+            if (new File(destPath).exists() && !(new File(destPath.toLowerCase()).exists())) {
                 return false;
             }
 

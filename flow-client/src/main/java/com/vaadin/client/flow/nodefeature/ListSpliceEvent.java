@@ -43,12 +43,10 @@ public class ListSpliceEvent extends ReactiveValueChangeEvent {
      * @param add
      *            the added items, not <code>null</code>
      * @param clear
-     *            <code>true</code> when this is an event triggered upon
-     *            removing all the nodes of the given list, <code>false</code>
-     *            otherwise
+     *            <code>true</code> when this is an event triggered upon removing all the nodes of the given list,
+     *            <code>false</code> otherwise
      */
-    public ListSpliceEvent(NodeList source, int index, JsArray<?> remove,
-            JsArray<?> add, boolean clear) {
+    public ListSpliceEvent(NodeList source, int index, JsArray<?> remove, JsArray<?> add, boolean clear) {
         super(source);
 
         assert remove != null;
@@ -95,8 +93,7 @@ public class ListSpliceEvent extends ReactiveValueChangeEvent {
     /**
      * Gets whether this event is a {@code clear} event.
      *
-     * @return <code>true</code> if the event was triggered after a full clear,
-     *         <code>false</code> otherwise.
+     * @return <code>true</code> if the event was triggered after a full clear, <code>false</code> otherwise.
      */
     public boolean isClear() {
         return clear;

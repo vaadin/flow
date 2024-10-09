@@ -23,8 +23,7 @@ import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 
 /**
- * Utility class which contains various methods for defining url parameter
- * template.
+ * Utility class which contains various methods for defining url parameter template.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -35,8 +34,7 @@ class RouteFormat implements Serializable {
      *
      * @param template
      *            a template.
-     * @return true if the specified template contains route parameters,
-     *         otherwise false.
+     * @return true if the specified template contains route parameters, otherwise false.
      */
     static boolean hasParameters(String template) {
         return template.contains(":");
@@ -47,8 +45,7 @@ class RouteFormat implements Serializable {
      *
      * @param template
      *            a template.
-     * @return true if the specified template contains route parameters,
-     *         otherwise false.
+     * @return true if the specified template contains route parameters, otherwise false.
      */
     static boolean hasRequiredParameter(String template) {
         int index = -1;
@@ -64,8 +61,7 @@ class RouteFormat implements Serializable {
                 // ending -1 then check if it's regex or slash or both that is
                 // missing
                 if (parameterNameEnding < 0) {
-                    parameterNameEnding = regexIndex == -1 ? slashIndex
-                            : regexIndex;
+                    parameterNameEnding = regexIndex == -1 ? slashIndex : regexIndex;
                 }
                 // End of the string.
                 if (parameterNameEnding < 0) {
@@ -100,13 +96,11 @@ class RouteFormat implements Serializable {
     }
 
     static boolean isOptionalParameter(String segmentTemplate) {
-        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("?")
-                || segmentTemplate.contains("?("));
+        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("?") || segmentTemplate.contains("?("));
     }
 
     static boolean isVarargsParameter(String segmentTemplate) {
-        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("*")
-                || segmentTemplate.contains("*("));
+        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("*") || segmentTemplate.contains("*("));
     }
 
     static String getModifier(String segmentTemplate) {
@@ -119,8 +113,7 @@ class RouteFormat implements Serializable {
         return "";
     }
 
-    static String formatSegment(RouteSegment segment,
-            Set<RouteParameterFormatOption> format) {
+    static String formatSegment(RouteSegment segment, Set<RouteParameterFormatOption> format) {
 
         if (!segment.isParameter()) {
             return segment.getName();
@@ -130,8 +123,7 @@ class RouteFormat implements Serializable {
 
         result.append(":");
 
-        final boolean formatRegex = format
-                .contains(RouteParameterFormatOption.REGEX)
+        final boolean formatRegex = format.contains(RouteParameterFormatOption.REGEX)
                 || format.contains(RouteParameterFormatOption.REGEX_NAME);
         boolean wrapRegex = false;
 
@@ -145,9 +137,7 @@ class RouteFormat implements Serializable {
             wrapRegex = true;
         }
 
-        final Optional<String> regex = formatRegex
-                ? formatSegmentRegex(segment, format)
-                : Optional.empty();
+        final Optional<String> regex = formatRegex ? formatSegmentRegex(segment, format) : Optional.empty();
         if (regex.isPresent()) {
             if (wrapRegex) {
                 result.append("(");
@@ -163,8 +153,7 @@ class RouteFormat implements Serializable {
         return result.toString();
     }
 
-    static Optional<String> formatSegmentRegex(RouteSegment segment,
-            Set<RouteParameterFormatOption> format) {
+    static Optional<String> formatSegmentRegex(RouteSegment segment, Set<RouteParameterFormatOption> format) {
         final Optional<String> regex = segment.getRegex();
         if (format.contains(RouteParameterFormatOption.REGEX_NAME)) {
             return Optional.of(RouteParameterRegex.getName(regex.orElse("")));

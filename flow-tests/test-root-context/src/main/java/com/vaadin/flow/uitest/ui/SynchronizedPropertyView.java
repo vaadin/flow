@@ -32,13 +32,11 @@ public class SynchronizedPropertyView extends AbstractDivView {
     public static class InputSync extends Component {
         public InputSync(Div label, String event) {
             getElement().setAttribute("placeholder", "Enter text here");
-            label.setText("Server value on create: "
-                    + getElement().getProperty("value"));
+            label.setText("Server value on create: " + getElement().getProperty("value"));
             getElement().addPropertyChangeListener("value", event, e -> {
             });
             getElement().addEventListener(event, e -> {
-                label.setText(
-                        "Server value: " + getElement().getProperty("value"));
+                label.setText("Server value: " + getElement().getProperty("value"));
             });
         }
 
@@ -72,16 +70,14 @@ public class SynchronizedPropertyView extends AbstractDivView {
         final Div syncOnChangeInitialValueLabel = new Div();
         syncOnChangeInitialValueLabel.setId("syncOnChangeInitialValueLabel");
         Element syncOnChangeInitialValue = ElementFactory.createInput();
-        syncOnChangeInitialValueLabel.setText("Server value on create: "
-                + syncOnChangeInitialValue.getProperty("value"));
+        syncOnChangeInitialValueLabel
+                .setText("Server value on create: " + syncOnChangeInitialValue.getProperty("value"));
         syncOnChangeInitialValue.setAttribute("id", "syncOnChangeInitialValue");
-        syncOnChangeInitialValue.addPropertyChangeListener("value", "change",
-                event -> {
-                });
+        syncOnChangeInitialValue.addPropertyChangeListener("value", "change", event -> {
+        });
         syncOnChangeInitialValue.addEventListener("change", e -> {
             syncOnChangeInitialValueLabel
-                    .setText("Server value in change listener: "
-                            + syncOnChangeInitialValue.getProperty("value"));
+                    .setText("Server value in change listener: " + syncOnChangeInitialValue.getProperty("value"));
         });
         syncOnChangeInitialValue.setProperty("value", "initial");
 
@@ -101,8 +97,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
     }
 
     private void addSyncMultipleProperties() {
-        add(new Text(
-                "Synchronize 'value' on 'input' event and 'valueAsNumber' on 'blur'"));
+        add(new Text("Synchronize 'value' on 'input' event and 'valueAsNumber' on 'blur'"));
         Div valueLabel = new Div();
         valueLabel.setId("multiSyncValueLabel");
         Div valueAsNumberLabel = new Div();
@@ -116,12 +111,10 @@ public class SynchronizedPropertyView extends AbstractDivView {
         });
 
         multiSync.addEventListener("input", e -> {
-            valueLabel
-                    .setText("Server value: " + multiSync.getProperty("value"));
+            valueLabel.setText("Server value: " + multiSync.getProperty("value"));
         });
         multiSync.addEventListener("blur", e -> {
-            valueAsNumberLabel.setText("Server valueAsNumber: "
-                    + multiSync.getProperty("valueAsNumber"));
+            valueAsNumberLabel.setText("Server valueAsNumber: " + multiSync.getProperty("valueAsNumber"));
         });
 
         getElement().appendChild(multiSync);
@@ -129,24 +122,21 @@ public class SynchronizedPropertyView extends AbstractDivView {
     }
 
     private void addSyncWithCustomEventDebounce() {
-        add(new Text(
-                "Synchronize custom 'myProperty' on custom 'input' event"));
+        add(new Text("Synchronize custom 'myProperty' on custom 'input' event"));
         Div valueLabel = new Div();
         valueLabel.setId("syncWithCustomEventDebounceLabel");
 
         Input input = new Input();
         input.setId("syncWithCustomEventDebounceInput");
         input.getElement().setProperty("myProperty", "");
-        input.getElement()
-                .addPropertyChangeListener("myProperty", "input", event -> {
-                    valueLabel.setText("Server value: " + event.getValue());
-                }).debounce(500);
+        input.getElement().addPropertyChangeListener("myProperty", "input", event -> {
+            valueLabel.setText("Server value: " + event.getValue());
+        }).debounce(500);
         add(input, valueLabel);
     }
 
     /**
-     * Fixes the broken behavior of valueAsNumber property on IE11, used in
-     * {@link #addSyncMultipleProperties()}
+     * Fixes the broken behavior of valueAsNumber property on IE11, used in {@link #addSyncMultipleProperties()}
      */
     private void valueAsNumberShimForIE11() {
         getPage().executeJs(

@@ -27,7 +27,6 @@ public class TrackMessageSizeIT extends ChromeBrowserTest {
     @Test
     public void runTests() {
         open();
-        Assert.assertEquals("All tests run",
-                this.findElement(By.id("logId")).getText());
+        Assert.assertEquals("All tests run", this.findElement(By.id("logId")).getText());
     }
 }

@@ -64,8 +64,7 @@ public class SpringSecurityAutoConfiguration {
     }
 
     /**
-     * Makes the default navigation access control initializer available for
-     * security configuration.
+     * Makes the default navigation access control initializer available for security configuration.
      *
      * @return the default navigation access control initializer
      */
@@ -76,70 +75,59 @@ public class SpringSecurityAutoConfiguration {
     }
 
     /**
-     * Makes the default navigation access control available for security
-     * configuration.
+     * Makes the default navigation access control available for security configuration.
      *
      * @return the default navigation access control.
      */
     @Bean
-    public NavigationAccessControl navigationAccessControl(
-            List<NavigationAccessChecker> accessCheckerList,
+    public NavigationAccessControl navigationAccessControl(List<NavigationAccessChecker> accessCheckerList,
             NavigationAccessControlConfigurer configurer) {
-        return configurer.build(SpringNavigationAccessControl::new,
-                accessCheckerList);
+        return configurer.build(SpringNavigationAccessControl::new, accessCheckerList);
     }
 
     /**
      * Makes the default configurer for navigation access control available.
      * <p>
-     * The default configurer only enables annotated view access checker. It is
-     * disabled by default for backward compatibility, and it will be enabled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity}.
+     * The default configurer only enables annotated view access checker. It is disabled by default for backward
+     * compatibility, and it will be enabled by {@link com.vaadin.flow.spring.security.VaadinWebSecurity}.
      * <p>
-     * A custom bean can be provided to override default configuration or to
-     * configure navigation access control instance when used without
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity},
+     * A custom bean can be provided to override default configuration or to configure navigation access control
+     * instance when used without {@link com.vaadin.flow.spring.security.VaadinWebSecurity},
      *
      * @return the default configurer for navigation access control.
      */
     @Bean
     @ConditionalOnMissingBean
     NavigationAccessControlConfigurer navigationAccessControlConfigurerCustomizer() {
-        return new NavigationAccessControlConfigurer()
-                .withAnnotatedViewAccessChecker().disabled();
+        return new NavigationAccessControlConfigurer().withAnnotatedViewAccessChecker().disabled();
     }
 
     /**
-     * Makes the default annotation based view access checker available for
-     * security configuration.
+     * Makes the default annotation based view access checker available for security configuration.
      *
      * @param accessAnnotationChecker
      *            the {@link AccessAnnotationChecker} bean to use
      * @return the default view access checker
      */
     @Bean
-    public AnnotatedViewAccessChecker annotatedViewAccessChecker(
-            AccessAnnotationChecker accessAnnotationChecker) {
+    public AnnotatedViewAccessChecker annotatedViewAccessChecker(AccessAnnotationChecker accessAnnotationChecker) {
         return new AnnotatedViewAccessChecker(accessAnnotationChecker);
     }
 
     /**
-     * Makes the default route path access checker available for security
-     * configuration.
+     * Makes the default route path access checker available for security configuration.
      *
      * @param accessPathChecker
      *            the {@link AccessPathChecker} bean to use
      * @return the default route path access checker
      */
     @Bean
-    public RoutePathAccessChecker routePathAccessChecker(
-            AccessPathChecker accessPathChecker) {
+    public RoutePathAccessChecker routePathAccessChecker(AccessPathChecker accessPathChecker) {
         return new RoutePathAccessChecker(accessPathChecker);
     }
 
     /**
-     * Makes the default route path access checker available for security
-     * configuration.
+     * Makes the default route path access checker available for security configuration.
      *
      * @param vaadinProperties
      *            vaadin configuration properties
@@ -149,19 +137,15 @@ public class SpringSecurityAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public AccessPathChecker accessPatchChecker(
-            VaadinConfigurationProperties vaadinProperties,
+    public AccessPathChecker accessPatchChecker(VaadinConfigurationProperties vaadinProperties,
             @Lazy WebInvocationPrivilegeEvaluator evaluator) {
-        return new SpringAccessPathChecker(evaluator,
-                vaadinProperties.getUrlMapping());
+        return new SpringAccessPathChecker(evaluator, vaadinProperties.getUrlMapping());
     }
 
     /**
-     * Makes the default access annotation checker available for security
-     * configuration.
+     * Makes the default access annotation checker available for security configuration.
      * <p>
-     * Fusion makes this bean available by default but if Fusion is excluded
-     * from the project, we make it available here
+     * Fusion makes this bean available by default but if Fusion is excluded from the project, we make it available here
      *
      * @return the default access annotation checker
      */
@@ -185,16 +169,14 @@ public class SpringSecurityAutoConfiguration {
      * Makes role prefix holder available for security configuration.
      *
      * @param grantedAuthorityDefaults
-     *            Optional granted authority defaults bean for the default role
-     *            prefix
+     *            Optional granted authority defaults bean for the default role prefix
      * @return the role prefix holder
      */
     @Bean
     @ConditionalOnMissingBean
-    public VaadinRolePrefixHolder vaadinRolePrefixHolder(
-            Optional<GrantedAuthorityDefaults> grantedAuthorityDefaults) {
-        return new VaadinRolePrefixHolder(grantedAuthorityDefaults
-                .map(GrantedAuthorityDefaults::getRolePrefix).orElse(null));
+    public VaadinRolePrefixHolder vaadinRolePrefixHolder(Optional<GrantedAuthorityDefaults> grantedAuthorityDefaults) {
+        return new VaadinRolePrefixHolder(
+                grantedAuthorityDefaults.map(GrantedAuthorityDefaults::getRolePrefix).orElse(null));
     }
 
 }

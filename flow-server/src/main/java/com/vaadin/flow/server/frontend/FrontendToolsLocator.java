@@ -48,8 +48,7 @@ public class FrontendToolsLocator implements Serializable {
         private final List<String> stdout;
         private final List<String> stderr;
 
-        private CommandResult(String command, int exitCode, List<String> stdout,
-                List<String> stderr) {
+        private CommandResult(String command, int exitCode, List<String> stdout, List<String> stderr) {
             this.command = command;
             this.exitCode = exitCode;
             this.stdout = stdout;
@@ -66,24 +65,19 @@ public class FrontendToolsLocator implements Serializable {
     }
 
     /**
-     * Makes an attempt to locate the tool by its name. If there are multiple
-     * tools to pick from, the first one that will be selected.
+     * Makes an attempt to locate the tool by its name. If there are multiple tools to pick from, the first one that
+     * will be selected.
      *
      * @param toolName
      *            the name of a tool to locate, not {@code null}
-     * @return absolute path to a tool if it was located and
-     *         {@link FrontendToolsLocator#verifyTool(File)} returned
-     *         {@code true} for it or {@link Optional#empty()} if there are no
-     *         such tools
+     * @return absolute path to a tool if it was located and {@link FrontendToolsLocator#verifyTool(File)} returned
+     *         {@code true} for it or {@link Optional#empty()} if there are no such tools
      */
     public Optional<File> tryLocateTool(String toolName) {
-        List<String> candidateLocations = executeCommand(false,
-                isWindows() ? "where" : "which", toolName)
-                .map(this::omitErrorResult).map(CommandResult::getStdout)
-                .orElseGet(() -> Arrays.asList(
+        List<String> candidateLocations = executeCommand(false, isWindows() ? "where" : "which", toolName)
+                .map(this::omitErrorResult).map(CommandResult::getStdout).orElseGet(() -> Arrays.asList(
                         // Add most common paths in unix #5611
-                        "/usr/local/bin/" + toolName,
-                        "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
+                        "/usr/local/bin/" + toolName, "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
         for (String candidateLocation : candidateLocations) {
             File candidate = new File(candidateLocation);
@@ -99,14 +93,11 @@ public class FrontendToolsLocator implements Serializable {
      *
      * @param toolPath
      *            the path to a tool to check
-     * @return {@code true} if the test launch had ended with successful error
-     *         code, {@code false} otherwise
+     * @return {@code true} if the test launch had ended with successful error code, {@code false} otherwise
      */
     public boolean verifyTool(File toolPath) {
-        return Optional.ofNullable(toolPath).filter(File::isFile)
-                .map(File::getAbsolutePath)
-                .flatMap(path -> executeCommand(true, path, "-v"))
-                .map(this::omitErrorResult).isPresent();
+        return Optional.ofNullable(toolPath).filter(File::isFile).map(File::getAbsolutePath)
+                .flatMap(path -> executeCommand(true, path, "-v")).map(this::omitErrorResult).isPresent();
     }
 
     boolean isWindows() {
@@ -114,34 +105,27 @@ public class FrontendToolsLocator implements Serializable {
         return osName != null && osName.toLowerCase().startsWith("windows");
     }
 
-    private Optional<CommandResult> executeCommand(boolean logErrorOnFail,
-            String... commandParts) {
+    private Optional<CommandResult> executeCommand(boolean logErrorOnFail, String... commandParts) {
         String commandString = Arrays.toString(commandParts);
         Process process;
         try {
-            process = FrontendUtils
-                    .createProcessBuilder(Arrays.asList(commandParts)).start();
+            process = FrontendUtils.createProcessBuilder(Arrays.asList(commandParts)).start();
         } catch (IOException e) {
             if (logErrorOnFail) {
-                log().error("Failed to execute the command '{}'", commandString,
-                        e);
+                log().error("Failed to execute the command '{}'", commandString, e);
             } else if (log().isDebugEnabled()) {
-                log().debug("Failed to execute the command '{}'", commandString,
-                        e);
+                log().debug("Failed to execute the command '{}'", commandString, e);
             }
             return Optional.empty();
         }
 
         int exitCode = -1;
         long timeStamp = System.currentTimeMillis();
-        CompletableFuture<Pair<String, String>> streamConsumer = FrontendUtils
-                .consumeProcessStreams(process);
+        CompletableFuture<Pair<String, String>> streamConsumer = FrontendUtils.consumeProcessStreams(process);
         try {
             exitCode = process.waitFor();
         } catch (InterruptedException e) {
-            log().error(
-                    "Unexpected interruption happened during '{}' command execution",
-                    commandString, e);
+            log().error("Unexpected interruption happened during '{}' command execution", commandString, e);
             // Restore interrupted state
             Thread.currentThread().interrupt();
             return Optional.empty();
@@ -153,8 +137,7 @@ public class FrontendToolsLocator implements Serializable {
 
         long executionTime = System.currentTimeMillis() - timeStamp;
         if (log().isDebugEnabled() && executionTime > 3000) {
-            log().debug("Command '{}' execution took over 3 seconds",
-                    commandString);
+            log().debug("Command '{}' execution took over 3 seconds", commandString);
         }
 
         if (exitCode > 0) {
@@ -173,14 +156,10 @@ public class FrontendToolsLocator implements Serializable {
             // Command is expected to execute fast, so give up after a while to
             // prevent the current process to be blocked indefinitely because
             // of pending STDOUT or STDERR
-            Pair<String, String> outputs = streamConsumer.get(10,
-                    TimeUnit.SECONDS);
-            stdout = new ArrayList<>(
-                    List.of(outputs.getFirst().split(System.lineSeparator())));
-            stderr = new ArrayList<>(
-                    List.of(outputs.getSecond().split(System.lineSeparator())));
-        } catch (ExecutionException | InterruptedException
-                | TimeoutException e) {
+            Pair<String, String> outputs = streamConsumer.get(10, TimeUnit.SECONDS);
+            stdout = new ArrayList<>(List.of(outputs.getFirst().split(System.lineSeparator())));
+            stderr = new ArrayList<>(List.of(outputs.getSecond().split(System.lineSeparator())));
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
             Throwable cause = e;
             if (e instanceof InterruptedException) {
                 // Restore interrupted state
@@ -189,30 +168,25 @@ public class FrontendToolsLocator implements Serializable {
             if (e instanceof ExecutionException) {
                 cause = e.getCause();
             }
-            log().error("Failed to read the command '{}' stdout/stderr",
-                    commandString, cause);
+            log().error("Failed to read the command '{}' stdout/stderr", commandString, cause);
             return Optional.empty();
         }
 
-        return Optional.of(new CommandResult(commandString, process.exitValue(),
-                stdout, stderr));
+        return Optional.of(new CommandResult(commandString, process.exitValue(), stdout, stderr));
     }
 
     private CommandResult omitErrorResult(CommandResult commandResult) {
         if (!commandResult.isSuccessful()) {
             if (log().isDebugEnabled()) {
-                log().debug(
-                        "Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
-                        commandResult.command, commandResult.exitCode,
-                        commandResult.exitCode,
+                log().debug("Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
+                        commandResult.command, commandResult.exitCode, commandResult.exitCode,
                         String.join("\n", commandResult.stderr));
             }
             return null;
         }
         if (commandResult.stdout.isEmpty()) {
             if (log().isDebugEnabled()) {
-                log().debug("Command '{}' has no output, stderr:\n'{}'",
-                        commandResult.command,
+                log().debug("Command '{}' has no output, stderr:\n'{}'", commandResult.command,
                         String.join("\n", commandResult.stderr));
             }
             return null;
@@ -221,9 +195,7 @@ public class FrontendToolsLocator implements Serializable {
             // "npm -v" can output deprecation warnings to stderr but it still
             // works
             if (log().isDebugEnabled()) {
-                log().debug(
-                        "Command '{}' has non-empty stderr but assuming this is fine:\n'{}'",
-                        commandResult.command,
+                log().debug("Command '{}' has non-empty stderr but assuming this is fine:\n'{}'", commandResult.command,
                         String.join("\n", commandResult.stderr));
             }
         }

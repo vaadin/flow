@@ -32,8 +32,7 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
- * Abstract implementation of the {@link ElementStateProvider} related to the
- * composition essence of the provider.
+ * Abstract implementation of the {@link ElementStateProvider} related to the composition essence of the provider.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -41,8 +40,7 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
  * @since 1.0
  *
  */
-public abstract class AbstractNodeStateProvider
-        implements ElementStateProvider {
+public abstract class AbstractNodeStateProvider implements ElementStateProvider {
 
     @Override
     public boolean supports(StateNode node) {
@@ -78,8 +76,7 @@ public abstract class AbstractNodeStateProvider
 
     @Override
     public int getChildCount(StateNode node) {
-        Optional<ElementChildrenList> maybeList = node
-                .getFeatureIfInitialized(ElementChildrenList.class);
+        Optional<ElementChildrenList> maybeList = node.getFeatureIfInitialized(ElementChildrenList.class);
         // Lacking Optional.mapToInt
         if (maybeList.isPresent()) {
             return maybeList.get().size();
@@ -101,8 +98,7 @@ public abstract class AbstractNodeStateProvider
     public void insertChild(StateNode node, int index, Element child) {
         assert index >= 0;
         // == if adding as last
-        assert index <= getChildCount(node)
-                : "index " + index + " outside range " + getChildCount(node);
+        assert index <= getChildCount(node) : "index " + index + " outside range " + getChildCount(node);
 
         getChildrenFeature(node).add(index, child.getNode());
         if (child.getComponent().isPresent()) {
@@ -128,51 +124,40 @@ public abstract class AbstractNodeStateProvider
         ElementChildrenList childrenFeature = getChildrenFeature(node);
         int pos = childrenFeature.indexOf(child.getNode());
         if (pos == -1) {
-            throw new IllegalArgumentException(
-                    "Trying to detach an element from parent that does not have it.");
+            throw new IllegalArgumentException("Trying to detach an element from parent that does not have it.");
         }
         childrenFeature.remove(pos);
     }
 
     @Override
-    public void attachExistingElement(StateNode node, String tagName,
-            Element previousSibling, ChildElementConsumer callback) {
+    public void attachExistingElement(StateNode node, String tagName, Element previousSibling,
+            ChildElementConsumer callback) {
         if (tagName == null) {
-            throw new IllegalArgumentException(
-                    "Tag name parameter cannot be null");
+            throw new IllegalArgumentException("Tag name parameter cannot be null");
         }
         if (callback == null) {
-            throw new IllegalArgumentException(
-                    "Callback parameter cannot be null");
+            throw new IllegalArgumentException("Callback parameter cannot be null");
         }
         /*
-         * create a node that should represent the client-side element. This
-         * node won't be available anywhere and will be removed if there is no
-         * appropriate element on the client-side. This node will be used after
-         * client-side roundtrip for the appropriate element.
+         * create a node that should represent the client-side element. This node won't be available anywhere and will
+         * be removed if there is no appropriate element on the client-side. This node will be used after client-side
+         * roundtrip for the appropriate element.
          */
-        StateNode proposedNode = BasicElementStateProvider
-                .createStateNode(tagName);
+        StateNode proposedNode = BasicElementStateProvider.createStateNode(tagName);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
-                    node.getFeature(AttachExistingElementFeature.class)
-                            .register(getNode(node), previousSibling,
-                                    proposedNode, callback);
-                    ui.getPage().executeJs(
-                            "this.attachExistingElement($0, $1, $2, $3);",
-                            getNode(node), previousSibling, tagName,
-                            proposedNode.getId());
-                }));
+        node.runWhenAttached(ui -> ui.getInternals().getStateTree().beforeClientResponse(node, context -> {
+            node.getFeature(AttachExistingElementFeature.class).register(getNode(node), previousSibling, proposedNode,
+                    callback);
+            ui.getPage().executeJs("this.attachExistingElement($0, $1, $2, $3);", getNode(node), previousSibling,
+                    tagName, proposedNode.getId());
+        }));
 
     }
 
     @Override
-    public void appendVirtualChild(StateNode node, Element child, String type,
-            String payload) {
+    public void appendVirtualChild(StateNode node, Element child, String type, String payload) {
         if (node.hasFeature(VirtualChildrenList.class)) {
-            node.getFeature(VirtualChildrenList.class).append(child.getNode(),
-                    type, payload);
+            node.getFeature(VirtualChildrenList.class).append(child.getNode(), type, payload);
         } else {
             throw new UnsupportedOperationException();
         }
@@ -190,8 +175,7 @@ public abstract class AbstractNodeStateProvider
         node.getChildren().forEach(child -> child.accept(visitor));
 
         node.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
-                .ifPresent(list -> list.iterator().forEachRemaining(
-                        child -> acceptVirtualChild(child, visitor)));
+                .ifPresent(list -> list.iterator().forEachRemaining(child -> acceptVirtualChild(child, visitor)));
     }
 
     private void acceptVirtualChild(StateNode node, NodeVisitor visitor) {
@@ -203,8 +187,7 @@ public abstract class AbstractNodeStateProvider
     }
 
     /**
-     * Gets the flyweight instance for the {@code node} supported by the
-     * provider.
+     * Gets the flyweight instance for the {@code node} supported by the provider.
      *
      * @see #supports(StateNode)
      * @param node
@@ -214,8 +197,7 @@ public abstract class AbstractNodeStateProvider
     protected abstract Node<?> getNode(StateNode node);
 
     /**
-     * Gets the children data feature for the given node and asserts it is
-     * non-null.
+     * Gets the children data feature for the given node and asserts it is non-null.
      *
      * @param node
      *            the node

@@ -66,28 +66,24 @@ public class ServerRpcHandlerTest {
         Mockito.when(ui.getCsrfToken()).thenReturn(csrfToken);
 
         deploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(deploymentConfiguration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(deploymentConfiguration);
 
         uiTree = new StateTree(uiInternals);
         Mockito.when(uiInternals.getStateTree()).thenReturn(uiTree);
-        Mockito.when(uiInternals.getDependencyList())
-                .thenReturn(dependencyList);
+        Mockito.when(uiInternals.getDependencyList()).thenReturn(dependencyList);
 
         serverRpcHandler = new ServerRpcHandler();
     }
 
     @Test
     public void handleRpc_resynchronize_throwsExceptionAndDirtiesTreeAndClearsDependenciesSent()
-            throws IOException,
-            ServerRpcHandler.InvalidUIDLSecurityKeyException {
+            throws IOException, ServerRpcHandler.InvalidUIDLSecurityKeyException {
         // given
-        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
-                + "\", \"rpc\":[], \"resynchronize\": true, \"clientId\":1}");
+        StringReader reader = new StringReader(
+                "{\"csrfToken\": \"" + csrfToken + "\", \"rpc\":[], \"resynchronize\": true, \"clientId\":1}");
         uiTree.collectChanges(c -> { // clean tree
         });
-        thrown.expect(
-                ServerRpcHandler.ResynchronizationRequiredException.class);
+        thrown.expect(ServerRpcHandler.ResynchronizationRequiredException.class);
 
         // when
         serverRpcHandler.handleRpc(ui, reader, request);
@@ -100,8 +96,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_duplicateMessage_doNotThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+    public void handleRpc_duplicateMessage_doNotThrow() throws InvalidUIDLSecurityKeyException, IOException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
         ServerRpcHandler handler = new ServerRpcHandler() {
             @Override
@@ -114,21 +109,18 @@ public class ServerRpcHandlerTest {
 
         ui = new UI();
         ui.getInternals().setSession(session);
-        ui.getInternals().setLastProcessedClientToServerId(1,
-                MessageDigestUtil.sha256(msg));
+        ui.getInternals().setLastProcessedClientToServerId(1, MessageDigestUtil.sha256(msg));
 
         // This invocation shouldn't throw. No other checks
         handler.handleRpc(ui, Mockito.mock(Reader.class), request);
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void handleRpc_unexpectedMessage_throw()
-            throws InvalidUIDLSecurityKeyException, IOException {
+    public void handleRpc_unexpectedMessage_throw() throws InvalidUIDLSecurityKeyException, IOException {
         ServerRpcHandler handler = new ServerRpcHandler() {
             @Override
             protected String getMessage(Reader reader) throws IOException {
-                return "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID
-                        + "\":1}";
+                return "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
             }
 
             ;
@@ -141,8 +133,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test(expected = DauEnforcementException.class)
-    public void handleRpc_dauEnforcement_throws()
-            throws InvalidUIDLSecurityKeyException, IOException {
+    public void handleRpc_dauEnforcement_throws() throws InvalidUIDLSecurityKeyException, IOException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
@@ -157,8 +148,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_pollEvent_doNoThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+    public void handleRpc_dauEnforcement_pollEvent_doNoThrow() throws InvalidUIDLSecurityKeyException, IOException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"ui-poll\" }], \"syncId\": 0, \"clientId\":0}");
@@ -213,8 +203,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_unloadBeacon_doNoThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+    public void handleRpc_dauEnforcement_unloadBeacon_doNoThrow() throws InvalidUIDLSecurityKeyException, IOException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"UNLOAD\": true, \"clientId\":0}");
@@ -269,10 +258,8 @@ public class ServerRpcHandlerTest {
     }
 
     private void enableDau() {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
-        Mockito.when(deploymentConfiguration.getBooleanProperty(
-                ArgumentMatchers.eq(Constants.DAU_TOKEN),
+        Mockito.when(deploymentConfiguration.isProductionMode()).thenReturn(true);
+        Mockito.when(deploymentConfiguration.getBooleanProperty(ArgumentMatchers.eq(Constants.DAU_TOKEN),
                 ArgumentMatchers.anyBoolean())).thenReturn(true);
     }
 }

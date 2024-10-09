@@ -33,8 +33,7 @@ public class PropertyChangeEvent extends EventObject {
     private final Serializable value;
 
     /**
-     * Creates a new {@code PropertyChangeEvent} event containing the current
-     * property value of the given element.
+     * Creates a new {@code PropertyChangeEvent} event containing the current property value of the given element.
      *
      * @param element
      *            the source element owning the property, not null
@@ -43,11 +42,9 @@ public class PropertyChangeEvent extends EventObject {
      * @param oldValue
      *            the previous value held by the source of this event
      * @param userOriginated
-     *            {@code true} if this event originates from the client,
-     *            {@code false} otherwise.
+     *            {@code true} if this event originates from the client, {@code false} otherwise.
      */
-    public PropertyChangeEvent(Element element, String propertyName,
-            Serializable oldValue, boolean userOriginated) {
+    public PropertyChangeEvent(Element element, String propertyName, Serializable oldValue, boolean userOriginated) {
         super(element);
         this.propertyName = propertyName;
         this.oldValue = oldValue;
@@ -74,11 +71,10 @@ public class PropertyChangeEvent extends EventObject {
     }
 
     /**
-     * Returns whether this event was triggered by user interaction, on the
-     * client side, or programmatically, on the server side.
+     * Returns whether this event was triggered by user interaction, on the client side, or programmatically, on the
+     * server side.
      *
-     * @return {@code true} if this event originates from the client,
-     *         {@code false} otherwise.
+     * @return {@code true} if this event originates from the client, {@code false} otherwise.
      */
     public boolean isUserOriginated() {
         return userOriginated;

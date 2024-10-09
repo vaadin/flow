@@ -34,8 +34,7 @@ import elemental.json.JsonObject;
 import static org.junit.Assert.assertEquals;
 
 /**
- * This class is used to test {@link DependencyLoader} functionality, that does
- * not require GWT.
+ * This class is used to test {@link DependencyLoader} functionality, that does not require GWT.
  * <p>
  * For the rest of the tests, refer to {@link GwtDependencyLoaderTest}
  */
@@ -51,57 +50,46 @@ public class DependencyLoaderTest {
         List<String> loadingHtml = new ArrayList<>();
 
         @Override
-        public void loadHtml(String htmlUrl,
-                ResourceLoadListener resourceLoadListener, boolean async) {
+        public void loadHtml(String htmlUrl, ResourceLoadListener resourceLoadListener, boolean async) {
             loadingHtml.add(htmlUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, htmlUrl));
         }
 
         @Override
-        public void loadScript(String scriptUrl,
-                ResourceLoadListener resourceLoadListener) {
+        public void loadScript(String scriptUrl, ResourceLoadListener resourceLoadListener) {
             loadingScripts.add(scriptUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, scriptUrl));
         }
 
         @Override
-        public void loadScript(String scriptUrl,
-                ResourceLoadListener resourceLoadListener, boolean async,
+        public void loadScript(String scriptUrl, ResourceLoadListener resourceLoadListener, boolean async,
                 boolean defer) {
             loadingScripts.add(scriptUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, scriptUrl));
         }
 
         @Override
-        public void loadStylesheet(String stylesheetUrl,
-                ResourceLoadListener resourceLoadListener) {
+        public void loadStylesheet(String stylesheetUrl, ResourceLoadListener resourceLoadListener) {
             loadingStyles.add(stylesheetUrl);
-            resourceLoadListener
-                    .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
+            resourceLoadListener.onLoad(new ResourceLoadEvent(this, stylesheetUrl));
         }
 
         @Override
-        public void inlineHtml(String htmlContents,
-                ResourceLoadListener resourceLoadListener) {
+        public void inlineHtml(String htmlContents, ResourceLoadListener resourceLoadListener) {
             loadingHtml.add(htmlContents);
-            resourceLoadListener
-                    .onLoad(new ResourceLoadEvent(this, htmlContents));
+            resourceLoadListener.onLoad(new ResourceLoadEvent(this, htmlContents));
         }
 
         @Override
-        public void inlineScript(String scriptContents,
-                ResourceLoadListener resourceLoadListener) {
+        public void inlineScript(String scriptContents, ResourceLoadListener resourceLoadListener) {
             loadingScripts.add(scriptContents);
-            resourceLoadListener
-                    .onLoad(new ResourceLoadEvent(this, scriptContents));
+            resourceLoadListener.onLoad(new ResourceLoadEvent(this, scriptContents));
         }
 
         @Override
-        public void inlineStyleSheet(String styleSheetContents,
-                ResourceLoadListener resourceLoadListener) {
+        public void inlineStyleSheet(String styleSheetContents, ResourceLoadListener resourceLoadListener) {
             loadingStyles.add(styleSheetContents);
-            resourceLoadListener
-                    .onLoad(new ResourceLoadEvent(this, styleSheetContents));
+            resourceLoadListener.onLoad(new ResourceLoadEvent(this, styleSheetContents));
         }
     }
 
@@ -122,11 +110,9 @@ public class DependencyLoaderTest {
         String TEST_URL = "http://foo.bar/baz";
 
         new DependencyLoader(registry).loadDependencies(
-                createDependenciesMap(new Dependency(Dependency.Type.STYLESHEET,
-                        TEST_URL, LoadMode.EAGER).toJson()));
+                createDependenciesMap(new Dependency(Dependency.Type.STYLESHEET, TEST_URL, LoadMode.EAGER).toJson()));
 
-        assertEquals(Collections.singletonList(TEST_URL),
-                mockResourceLoader.loadingStyles);
+        assertEquals(Collections.singletonList(TEST_URL), mockResourceLoader.loadingStyles);
     }
 
     @Test
@@ -134,11 +120,9 @@ public class DependencyLoaderTest {
         String TEST_URL = "http://foo.bar/baz.js";
 
         new DependencyLoader(registry).loadDependencies(
-                createDependenciesMap(new Dependency(Dependency.Type.JAVASCRIPT,
-                        TEST_URL, LoadMode.EAGER).toJson()));
+                createDependenciesMap(new Dependency(Dependency.Type.JAVASCRIPT, TEST_URL, LoadMode.EAGER).toJson()));
 
-        assertEquals(Collections.singletonList(TEST_URL),
-                mockResourceLoader.loadingScripts);
+        assertEquals(Collections.singletonList(TEST_URL), mockResourceLoader.loadingScripts);
     }
 
     @Test
@@ -147,18 +131,13 @@ public class DependencyLoaderTest {
         String TEST_JS_URL2 = "/my.js";
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL2,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, TEST_CSS_URL,
-                        LoadMode.EAGER).toJson()));
+        new DependencyLoader(registry).loadDependencies(
+                createDependenciesMap(new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL, LoadMode.EAGER).toJson(),
+                        new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL2, LoadMode.EAGER).toJson(),
+                        new Dependency(Dependency.Type.STYLESHEET, TEST_CSS_URL, LoadMode.EAGER).toJson()));
 
-        assertEquals(Arrays.asList(TEST_JS_URL, TEST_JS_URL2),
-                mockResourceLoader.loadingScripts);
-        assertEquals(Collections.singletonList(TEST_CSS_URL),
-                mockResourceLoader.loadingStyles);
+        assertEquals(Arrays.asList(TEST_JS_URL, TEST_JS_URL2), mockResourceLoader.loadingScripts);
+        assertEquals(Collections.singletonList(TEST_CSS_URL), mockResourceLoader.loadingStyles);
     }
 
     @Test
@@ -168,25 +147,17 @@ public class DependencyLoaderTest {
         String cssUrl1 = "/1.css";
         String cssUrl2 = "/2.css";
 
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
-                        LoadMode.EAGER).toJson()));
+        new DependencyLoader(registry).loadDependencies(
+                createDependenciesMap(new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1, LoadMode.EAGER).toJson(),
+                        new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2, LoadMode.EAGER).toJson(),
+                        new Dependency(Dependency.Type.STYLESHEET, cssUrl1, LoadMode.EAGER).toJson(),
+                        new Dependency(Dependency.Type.STYLESHEET, cssUrl2, LoadMode.EAGER).toJson()));
 
-        assertEquals(
-                "jsUrl1 should come before jsUrl2, because it was added earlier",
-                Arrays.asList(jsUrl1, jsUrl2),
+        assertEquals("jsUrl1 should come before jsUrl2, because it was added earlier", Arrays.asList(jsUrl1, jsUrl2),
                 mockResourceLoader.loadingScripts);
 
-        assertEquals(
-                "cssUrl1 should come before cssUrl2, because it was added earlier",
-                Arrays.asList(cssUrl1, cssUrl2),
-                mockResourceLoader.loadingStyles);
+        assertEquals("cssUrl1 should come before cssUrl2, because it was added earlier",
+                Arrays.asList(cssUrl1, cssUrl2), mockResourceLoader.loadingStyles);
 
     }
 
@@ -197,33 +168,25 @@ public class DependencyLoaderTest {
         String cssContents1 = "/1.css";
         String cssContents2 = "/2.css";
 
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents1),
-                createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents2),
-                createInlineDependency(Dependency.Type.STYLESHEET,
-                        cssContents1),
-                createInlineDependency(Dependency.Type.STYLESHEET,
-                        cssContents2)));
+        new DependencyLoader(registry)
+                .loadDependencies(createDependenciesMap(createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents1),
+                        createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents2),
+                        createInlineDependency(Dependency.Type.STYLESHEET, cssContents1),
+                        createInlineDependency(Dependency.Type.STYLESHEET, cssContents2)));
 
-        assertEquals(
-                "jsContents1 should come before jsContents2, because it was added earlier",
-                Arrays.asList(jsContents1, jsContents2),
-                mockResourceLoader.loadingScripts);
+        assertEquals("jsContents1 should come before jsContents2, because it was added earlier",
+                Arrays.asList(jsContents1, jsContents2), mockResourceLoader.loadingScripts);
 
-        assertEquals(
-                "cssContents1 should come before cssContents2, because it was added earlier",
-                Arrays.asList(cssContents1, cssContents2),
-                mockResourceLoader.loadingStyles);
+        assertEquals("cssContents1 should come before cssContents2, because it was added earlier",
+                Arrays.asList(cssContents1, cssContents2), mockResourceLoader.loadingStyles);
 
     }
 
-    private JsMap<LoadMode, JsonArray> createDependenciesMap(
-            JsonObject... dependencies) {
+    private JsMap<LoadMode, JsonArray> createDependenciesMap(JsonObject... dependencies) {
         JsMap<LoadMode, JsonArray> result = JsCollections.map();
         for (int i = 0; i < dependencies.length; i++) {
             JsonObject dependency = dependencies[i];
-            LoadMode loadMode = LoadMode
-                    .valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
+            LoadMode loadMode = LoadMode.valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
             JsonArray jsonArray = Json.createArray();
             jsonArray.set(0, dependency);
 
@@ -244,10 +207,8 @@ public class DependencyLoaderTest {
         return jsonArray1;
     }
 
-    private JsonObject createInlineDependency(Dependency.Type dependencyType,
-            String contents) {
-        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE)
-                .toJson();
+    private JsonObject createInlineDependency(Dependency.Type dependencyType, String contents) {
+        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE).toJson();
         json.remove(Dependency.KEY_URL);
         json.put(Dependency.KEY_CONTENTS, contents);
         return json;

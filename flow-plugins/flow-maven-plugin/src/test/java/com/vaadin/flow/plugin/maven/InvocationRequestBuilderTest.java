@@ -16,14 +16,12 @@ public class InvocationRequestBuilderTest {
     @Test
     public void createInvocationRequest() {
         InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
-        InvocationRequest request = requestBuilder.groupId(groupId)
-                .artifactId(artifactId).version(version).goal(goal)
+        InvocationRequest request = requestBuilder.groupId(groupId).artifactId(artifactId).version(version).goal(goal)
                 .createInvocationRequest();
         List<String> goals = request.getGoals();
         Assert.assertEquals(1, goals.size());
 
-        String expectedGoal = String.format("%s:%s:%s:%s", groupId, artifactId,
-                version, goal);
+        String expectedGoal = String.format("%s:%s:%s:%s", groupId, artifactId, version, goal);
         String actualGoal = goals.get(0);
         Assert.assertEquals(expectedGoal, actualGoal);
     }

@@ -33,8 +33,7 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class MapPutChangeTest {
-    private NodeMap feature = AbstractNodeFeatureTest
-            .createFeature(ElementPropertyMap.class);
+    private NodeMap feature = AbstractNodeFeatureTest.createFeature(ElementPropertyMap.class);
 
     @Test
     public void testJson() {
@@ -42,16 +41,12 @@ public class MapPutChangeTest {
 
         JsonObject json = change.toJson(null);
 
-        Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber(JsonConstants.CHANGE_NODE));
+        Assert.assertEquals(change.getNode().getId(), (int) json.getNumber(JsonConstants.CHANGE_NODE));
         Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
                 (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
-        Assert.assertEquals(JsonConstants.CHANGE_TYPE_PUT,
-                json.getString(JsonConstants.CHANGE_TYPE));
-        Assert.assertEquals("some",
-                json.getString(JsonConstants.CHANGE_MAP_KEY));
-        Assert.assertEquals("string",
-                json.getString(JsonConstants.CHANGE_PUT_VALUE));
+        Assert.assertEquals(JsonConstants.CHANGE_TYPE_PUT, json.getString(JsonConstants.CHANGE_TYPE));
+        Assert.assertEquals("some", json.getString(JsonConstants.CHANGE_MAP_KEY));
+        Assert.assertEquals("string", json.getString(JsonConstants.CHANGE_PUT_VALUE));
     }
 
     @Test

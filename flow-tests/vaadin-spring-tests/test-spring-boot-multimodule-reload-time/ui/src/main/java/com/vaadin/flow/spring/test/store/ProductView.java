@@ -31,8 +31,7 @@ import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
 
 @Route(value = "product", layout = CatalogLayout.class, registerAtStartup = false)
 @RouteAlias(value = "prod", layout = CatalogLayout.class)
-public class ProductView extends VerticalLayout
-        implements HasUrlParameter<Integer> {
+public class ProductView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private Div productDetails;
 
@@ -44,8 +43,7 @@ public class ProductView extends VerticalLayout
     }
 
     @Override
-    public void setParameter(BeforeEvent beforeEvent,
-            @OptionalParameter Integer parameter) {
+    public void setParameter(BeforeEvent beforeEvent, @OptionalParameter Integer parameter) {
         productDetails.removeAll();
         productDetails.add(String.format("Showing product " + parameter));
         productDetails.add(new Hr());
@@ -54,26 +52,20 @@ public class ProductView extends VerticalLayout
         result.setId("result");
         result.setVisible(false);
 
-        NativeButton startTriggerButton = SpringDevToolsReloadUtils
-                .createReloadTriggerButton();
+        NativeButton startTriggerButton = SpringDevToolsReloadUtils.createReloadTriggerButton();
 
         productDetails.add(startTriggerButton, result);
 
-        startTriggerButton.getElement()
-                .addEventListener("componentready", event -> {
+        startTriggerButton.getElement().addEventListener("componentready", event -> {
 
-                    System.out.println("result: " + event.getEventData()
-                            .getNumber("event.detail.result"));
+            System.out.println("result: " + event.getEventData().getNumber("event.detail.result"));
 
-                    result.setText(String.format(
-                            "Reload time by class change was [%s] ms",
-                            event.getEventData()
-                                    .getNumber("event.detail.result")));
-                    result.setVisible(true);
+            result.setText(String.format("Reload time by class change was [%s] ms",
+                    event.getEventData().getNumber("event.detail.result")));
+            result.setVisible(true);
 
-                }).addEventData("event.detail.result");
+        }).addEventData("event.detail.result");
 
-        UI.getCurrent().getPage().executeJs(
-                "window.benchmark.measureRender($0);", startTriggerButton);
+        UI.getCurrent().getPage().executeJs("window.benchmark.measureRender($0);", startTriggerButton);
     }
 }

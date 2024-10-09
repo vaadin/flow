@@ -85,8 +85,7 @@ public class CodeGeneratorMojo extends AbstractMojo {
     private MavenProject project;
 
     @Override
-    public synchronized void execute()
-            throws MojoExecutionException, MojoFailureException {
+    public synchronized void execute() throws MojoExecutionException, MojoFailureException {
         if (skip) {
             getLog().info("Code generation is skipped.");
             return;
@@ -101,21 +100,16 @@ public class CodeGeneratorMojo extends AbstractMojo {
             getLog().info("Code generation done.");
         } catch (Exception e) {
             getLog().error(e);
-            throw new MojoExecutionException(
-                    "Code generation failed. See above for the full exception.");
+            throw new MojoExecutionException("Code generation failed. See above for the full exception.");
         }
     }
 
-    private void generateRoutes(String routePrefix, int numberOfRoutes)
-            throws IOException {
+    private void generateRoutes(String routePrefix, int numberOfRoutes) throws IOException {
         // start by deleting existing package
-        FileUtils.deleteDirectory(new File(
-                output.toString() + "/" + apiPackage.replace(".", "/")));
+        FileUtils.deleteDirectory(new File(output.toString() + "/" + apiPackage.replace(".", "/")));
         // ... and generated frontend css and js
-        FileUtils.deleteDirectory(new File(
-                project.getBasedir().toString() + "/frontend/generated-css"));
-        FileUtils.deleteDirectory(new File(
-                project.getBasedir().toString() + "/frontend/generated-js"));
+        FileUtils.deleteDirectory(new File(project.getBasedir().toString() + "/frontend/generated-css"));
+        FileUtils.deleteDirectory(new File(project.getBasedir().toString() + "/frontend/generated-js"));
 
         int servicesGeneratedTotal = 0;
         int cssImportsGeneratedTotal = 0;
@@ -132,18 +126,15 @@ public class CodeGeneratorMojo extends AbstractMojo {
 
         getLog().info(String.format(
                 "Generated %s route(s) / %s Spring service(s) / %s CssImport(s) / %s JsModule(s) in total.%s",
-                numberOfRoutes, servicesGeneratedTotal,
-                cssImportsGeneratedTotal, jsModulesGeneratedTotal,
+                numberOfRoutes, servicesGeneratedTotal, cssImportsGeneratedTotal, jsModulesGeneratedTotal,
                 (includeAddons) ? " Generated 'addons' route." : ""));
-        if (numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0
-                || jsModulesGeneratedTotal > 0)) {
-            getLog().info("Frontend files generated in "
-                    + project.getBasedir().toString() + "/frontend");
+        if (numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0 || jsModulesGeneratedTotal > 0)) {
+            getLog().info("Frontend files generated in " + project.getBasedir().toString() + "/frontend");
         }
     }
 
-    private List<JavaSpringServiceContext> generateServices(
-            JavaClassContext owner, int numberOfServices) throws IOException {
+    private List<JavaSpringServiceContext> generateServices(JavaClassContext owner, int numberOfServices)
+            throws IOException {
         var result = new ArrayList<JavaSpringServiceContext>();
         for (int index = 0; index < numberOfServices; index++) {
             result.add(generateSpringComponent(owner, "singleton", index));
@@ -151,8 +142,8 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return result;
     }
 
-    private List<CssImportContext> generateCssImports(JavaClassContext owner,
-            int numberOfCssImports) throws IOException {
+    private List<CssImportContext> generateCssImports(JavaClassContext owner, int numberOfCssImports)
+            throws IOException {
         var result = new ArrayList<CssImportContext>();
         for (int index = 0; index < numberOfCssImports; index++) {
             result.add(generateCssImport(owner, index));
@@ -160,8 +151,7 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return result;
     }
 
-    private List<JsModuleContext> generateJsModules(JavaClassContext owner,
-            int numberOfJsModules) throws IOException {
+    private List<JsModuleContext> generateJsModules(JavaClassContext owner, int numberOfJsModules) throws IOException {
         var result = new ArrayList<JsModuleContext>();
         for (int index = 0; index < numberOfJsModules; index++) {
             result.add(generateJsModule(owner, index));
@@ -169,24 +159,20 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return result;
     }
 
-    private JavaRouteContext generateRoute(String routePrefix, int index)
-            throws IOException {
+    private JavaRouteContext generateRoute(String routePrefix, int index) throws IOException {
 
         JavaRouteContext context = new JavaRouteContext();
         context.setPackages(apiPackage);
         context.setClassName("MyRoute" + index);
         context.setRoute(routePrefix + "-" + index);
 
-        var services = generateServices(context,
-                numberOfGeneratedServicesPerRoute);
+        var services = generateServices(context, numberOfGeneratedServicesPerRoute);
         context.setServices(services);
 
-        var cssImports = generateCssImports(context,
-                numberOfGeneratedCssImportsPerRoute);
+        var cssImports = generateCssImports(context, numberOfGeneratedCssImportsPerRoute);
         context.setCssImports(cssImports);
 
-        var jsModules = generateJsModules(context,
-                numberOfGeneratedJsModulesPerRoute);
+        var jsModules = generateJsModules(context, numberOfGeneratedJsModulesPerRoute);
         context.setJsModules(jsModules);
 
         generateJavaFileByMustacheTemplate(context, ROUTE_JAVA_TEMPLATE);
@@ -203,8 +189,7 @@ public class CodeGeneratorMojo extends AbstractMojo {
         generateJavaFileByMustacheTemplate(context, ADDONS_ROUTE_JAVA_TEMPLATE);
     }
 
-    private JavaSpringServiceContext generateSpringComponent(
-            JavaClassContext owner, String scope, int index)
+    private JavaSpringServiceContext generateSpringComponent(JavaClassContext owner, String scope, int index)
             throws IOException {
         JavaSpringServiceContext context = new JavaSpringServiceContext();
         context.setPackages(apiPackage);
@@ -216,41 +201,31 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return context;
     }
 
-    private CssImportContext generateCssImport(JavaClassContext owner,
-            int index) throws IOException {
+    private CssImportContext generateCssImport(JavaClassContext owner, int index) throws IOException {
         CssImportContext context = new CssImportContext();
-        context.setTargetStyleName("css-import-"
-                + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
-        context.setValue(
-                "./generated-css/" + context.getTargetStyleName() + ".css");
+        context.setTargetStyleName("css-import-" + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
+        context.setValue("./generated-css/" + context.getTargetStyleName() + ".css");
 
-        generateFrontendFileByMustacheTemplate(context, CSS_IMPORT_TEMPLATE,
-                getFrontendPath(context.getValue()));
+        generateFrontendFileByMustacheTemplate(context, CSS_IMPORT_TEMPLATE, getFrontendPath(context.getValue()));
         return context;
     }
 
-    private JsModuleContext generateJsModule(JavaClassContext owner, int index)
-            throws IOException {
+    private JsModuleContext generateJsModule(JavaClassContext owner, int index) throws IOException {
         JsModuleContext context = new JsModuleContext();
-        context.setTag("js-module-"
-                + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
+        context.setTag("js-module-" + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
         context.setValue("./generated-js/" + context.getTag() + ".js");
-        context.setName(
-                Stream.of(context.getTag().split("-"))
-                        .map(str -> str.substring(0, 1).toUpperCase(Locale.ROOT)
-                                + str.substring(1))
-                        .collect(Collectors.joining()));
+        context.setName(Stream.of(context.getTag().split("-"))
+                .map(str -> str.substring(0, 1).toUpperCase(Locale.ROOT) + str.substring(1))
+                .collect(Collectors.joining()));
 
-        generateFrontendFileByMustacheTemplate(context, JS_MODULE_TEMPLATE,
-                getFrontendPath(context.getValue()));
+        generateFrontendFileByMustacheTemplate(context, JS_MODULE_TEMPLATE, getFrontendPath(context.getValue()));
         return context;
     }
 
-    private void generateJavaFileByMustacheTemplate(JavaClassContext context,
-            String templateFileName) throws IOException {
+    private void generateJavaFileByMustacheTemplate(JavaClassContext context, String templateFileName)
+            throws IOException {
         File newFile = new File(
-                output.toString() + "/" + apiPackage.replace(".", "/") + "/"
-                        + context.getClassName() + ".java");
+                output.toString() + "/" + apiPackage.replace(".", "/") + "/" + context.getClassName() + ".java");
         generateFileByMustacheTemplate(context, templateFileName, newFile);
     }
 
@@ -258,23 +233,20 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return value.startsWith("./") ? value.substring(2) : value;
     }
 
-    private void generateFrontendFileByMustacheTemplate(Object context,
-            String templateFileName, String frontEndFilePath)
-            throws IOException {
-        File newFile = new File(project.getBasedir().toString() + "/frontend/"
-                + frontEndFilePath);
+    private void generateFrontendFileByMustacheTemplate(Object context, String templateFileName,
+            String frontEndFilePath) throws IOException {
+        File newFile = new File(project.getBasedir().toString() + "/frontend/" + frontEndFilePath);
         generateFileByMustacheTemplate(context, templateFileName, newFile);
     }
 
-    private void generateFileByMustacheTemplate(Object context,
-            String templateFileName, File newFile) throws IOException {
+    private void generateFileByMustacheTemplate(Object context, String templateFileName, File newFile)
+            throws IOException {
         newFile.getParentFile().mkdirs();
-        try (FileWriter writer = new FileWriter(newFile,
-                StandardCharsets.UTF_8)) {
+        try (FileWriter writer = new FileWriter(newFile, StandardCharsets.UTF_8)) {
             Mustache.compiler()
-                    .compile(new FileReader(project.getBasedir().toString()
-                            + "/../generator/src/main/resources/"
-                            + templateFileName, StandardCharsets.UTF_8))
+                    .compile(new FileReader(
+                            project.getBasedir().toString() + "/../generator/src/main/resources/" + templateFileName,
+                            StandardCharsets.UTF_8))
                     .execute(context, writer);
         }
     }

@@ -22,8 +22,8 @@ import java.util.Map;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * <code>KeyMapper</code> is the simple two-way map for generating textual keys
- * for objects and retrieving the objects later with the key.
+ * <code>KeyMapper</code> is the simple two-way map for generating textual keys for objects and retrieving the objects
+ * later with the key.
  *
  * @param <V>
  *            the type of mapped objects
@@ -45,10 +45,8 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
      * Constructs a new mapper.
      *
      * @param identifierGetter
-     *            has to return a unique key for every bean, and the returned
-     *            key has to follow general {@code hashCode()} and
-     *            {@code equals()} contract, see {@link Object#hashCode()} for
-     *            details.
+     *            has to return a unique key for every bean, and the returned key has to follow general
+     *            {@code hashCode()} and {@code equals()} contract, see {@link Object#hashCode()} for details.
      */
     public KeyMapper(ValueProvider<V, Object> identifierGetter) {
         this.identifierGetter = identifierGetter;
@@ -125,8 +123,7 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
      */
     @Override
     public void remove(V removeobj) {
-        final String key = objectIdKeyMap
-                .remove(identifierGetter.apply(removeobj));
+        final String key = objectIdKeyMap.remove(identifierGetter.apply(removeobj));
         if (key != null) {
             keyObjectMap.remove(key);
         }
@@ -146,8 +143,7 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
      *
      * @param key
      *            the key to check
-     * @return <code>true</code> if the key is currently mapped,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the key is currently mapped, <code>false</code> otherwise
      */
     public boolean containsKey(String key) {
         return keyObjectMap.containsKey(key);
@@ -168,8 +164,7 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
             this.identifierGetter = identifierGetter;
             objectIdKeyMap.clear();
             for (Map.Entry<String, V> entry : keyObjectMap.entrySet()) {
-                objectIdKeyMap.put(identifierGetter.apply(entry.getValue()),
-                        entry.getKey());
+                objectIdKeyMap.put(identifierGetter.apply(entry.getValue()), entry.getKey());
             }
         }
     }

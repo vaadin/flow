@@ -35,28 +35,17 @@ public class AddOnIT extends ChromeBrowserTest {
 
         // shouldn't create a dev-bundle
         Assert.assertFalse("No dev-bundle should be created",
-                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION)
-                        .exists());
-        Assert.assertFalse("No node_modules should be created",
-                new File(baseDir, "node_modules").exists());
+                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION).exists());
+        Assert.assertFalse("No node_modules should be created", new File(baseDir, "node_modules").exists());
 
-        Assert.assertFalse("No package.json should be created",
-                new File(baseDir, "package.json").exists());
-        Assert.assertFalse("No package-lock.json should be created",
-                new File(baseDir, "package-lock.json").exists());
-        Assert.assertFalse("No vite generated should be created",
-                new File(baseDir, "vite.generated.ts").exists());
-        Assert.assertFalse("No vite config should be created",
-                new File(baseDir, "vite.config.ts").exists());
-        Assert.assertFalse("No types should be created",
-                new File(baseDir, "types.d.ts").exists());
-        Assert.assertFalse("No tsconfig should be created",
-                new File(baseDir, "tsconfig.json").exists());
-        Assert.assertFalse("No package-lock.yaml should be created",
-                new File(baseDir, "package-lock.yaml").exists());
-        Assert.assertFalse("No .npmrc should be created",
-                new File(baseDir, ".npmrc").exists());
-        Assert.assertFalse("No .pnpmfile.cjs should be created",
-                new File(baseDir, ".pnpmfile.cjs").exists());
+        Assert.assertFalse("No package.json should be created", new File(baseDir, "package.json").exists());
+        Assert.assertFalse("No package-lock.json should be created", new File(baseDir, "package-lock.json").exists());
+        Assert.assertFalse("No vite generated should be created", new File(baseDir, "vite.generated.ts").exists());
+        Assert.assertFalse("No vite config should be created", new File(baseDir, "vite.config.ts").exists());
+        Assert.assertFalse("No types should be created", new File(baseDir, "types.d.ts").exists());
+        Assert.assertFalse("No tsconfig should be created", new File(baseDir, "tsconfig.json").exists());
+        Assert.assertFalse("No package-lock.yaml should be created", new File(baseDir, "package-lock.yaml").exists());
+        Assert.assertFalse("No .npmrc should be created", new File(baseDir, ".npmrc").exists());
+        Assert.assertFalse("No .pnpmfile.cjs should be created", new File(baseDir, ".pnpmfile.cjs").exists());
     }
 }

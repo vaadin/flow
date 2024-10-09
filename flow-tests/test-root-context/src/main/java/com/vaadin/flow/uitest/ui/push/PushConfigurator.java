@@ -16,12 +16,9 @@ import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.uitest.ui.push.components.NativeRadioButtonGroup;
 
 public class PushConfigurator extends Div {
-    private NativeRadioButtonGroup<PushMode> pushMode = new NativeRadioButtonGroup<>(
-            "Push mode");
-    private NativeRadioButtonGroup<Transport> transport = new NativeRadioButtonGroup<>(
-            "Transport");
-    private NativeRadioButtonGroup<Transport> fallbackTransport = new NativeRadioButtonGroup<>(
-            "Fallback");
+    private NativeRadioButtonGroup<PushMode> pushMode = new NativeRadioButtonGroup<>("Push mode");
+    private NativeRadioButtonGroup<Transport> transport = new NativeRadioButtonGroup<>("Transport");
+    private NativeRadioButtonGroup<Transport> fallbackTransport = new NativeRadioButtonGroup<>("Fallback");
     private Input parameter = new Input();
     private Input value = new Input();
     private NativeButton set = new NativeButton("Set");
@@ -79,8 +76,7 @@ public class PushConfigurator extends Div {
 
         paramValue.add(parameter, value, set);
         status.setId("status");
-        vl.add(pushMode, transport, fallbackTransport, paramValue,
-                new Html("<hr></hr>"), status);
+        vl.add(pushMode, transport, fallbackTransport, paramValue, new Html("<hr></hr>"), status);
         add(vl);
 
     }
@@ -102,8 +98,7 @@ public class PushConfigurator extends Div {
         });
 
         set.addClickListener(event -> {
-            ui.getPushConfiguration().setParameter(parameter.getValue(),
-                    value.getValue());
+            ui.getPushConfiguration().setParameter(parameter.getValue(), value.getValue());
             refreshStatus();
         });
     }

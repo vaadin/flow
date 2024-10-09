@@ -79,8 +79,7 @@ import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class UidlWriterTest {
-    private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET
-            .name();
+    private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET.name();
     private MockServletServiceSessionSetup mocks;
 
     @JavaScript("UI-parent-JAVASCRIPT")
@@ -97,22 +96,19 @@ public class UidlWriterTest {
     public static class SuperComponent extends Component {
     }
 
-    public static class EmptyClassWithInterface extends SuperComponent
-            implements AnotherComponentInterface {
+    public static class EmptyClassWithInterface extends SuperComponent implements AnotherComponentInterface {
     }
 
     @JavaScript("JAVASCRIPT")
     @StyleSheet("STYLESHEET")
-    public static class ActualComponent extends EmptyClassWithInterface
-            implements ComponentInterface {
+    public static class ActualComponent extends EmptyClassWithInterface implements ComponentInterface {
     }
 
     @JavaScript("child1-JAVASCRIPT")
     @JavaScript("child2-JAVASCRIPT")
     @StyleSheet("child1-STYLESHEET")
     @StyleSheet("child2-STYLESHEET")
-    public static class ChildComponent extends ActualComponent
-            implements ChildComponentInterface2 {
+    public static class ChildComponent extends ActualComponent implements ChildComponentInterface2 {
     }
 
     @JavaScript("interface-JAVASCRIPT")
@@ -156,13 +152,11 @@ public class UidlWriterTest {
     }
 
     @Tag("super-parent")
-    public static class SuperParentClass extends Component
-            implements RouterLayout {
+    public static class SuperParentClass extends Component implements RouterLayout {
     }
 
     @Tag("components-container")
-    public static class ComponentsContainer extends Component
-            implements HasComponents {
+    public static class ComponentsContainer extends Component implements HasComponents {
 
     }
 
@@ -177,24 +171,20 @@ public class UidlWriterTest {
     public void testEncodeExecuteJavaScript_npmMode() {
         Element element = ElementFactory.createDiv();
 
-        JavaScriptInvocation invocation1 = new JavaScriptInvocation(
-                "$0.focus()", element);
-        JavaScriptInvocation invocation2 = new JavaScriptInvocation(
-                "console.log($0, $1)", "Lives remaining:", Integer.valueOf(3));
-        List<PendingJavaScriptInvocation> executeJavaScriptList = Stream
-                .of(invocation1, invocation2)
-                .map(invocation -> new PendingJavaScriptInvocation(
-                        element.getNode(), invocation))
+        JavaScriptInvocation invocation1 = new JavaScriptInvocation("$0.focus()", element);
+        JavaScriptInvocation invocation2 = new JavaScriptInvocation("console.log($0, $1)", "Lives remaining:",
+                Integer.valueOf(3));
+        List<PendingJavaScriptInvocation> executeJavaScriptList = Stream.of(invocation1, invocation2)
+                .map(invocation -> new PendingJavaScriptInvocation(element.getNode(), invocation))
                 .collect(Collectors.toList());
 
-        JsonArray json = UidlWriter
-                .encodeExecuteJavaScriptList(executeJavaScriptList);
+        JsonArray json = UidlWriter.encodeExecuteJavaScriptList(executeJavaScriptList);
 
         JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
                 // Null since element is not attached
                 Json.createNull(), Json.create("$0.focus()")),
-                JsonUtils.createArray(Json.create("Lives remaining:"),
-                        Json.create(3), Json.create("console.log($0, $1)")));
+                JsonUtils.createArray(Json.create("Lives remaining:"), Json.create(3),
+                        Json.create("console.log($0, $1)")));
 
         assertTrue(JsonUtils.jsonEquals(expectedJson, json));
     }
@@ -213,8 +203,7 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void componentDependencies_productionMode_scanForParentClasses()
-            throws Exception {
+    public void componentDependencies_productionMode_scanForParentClasses() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         mocks.getDeploymentConfiguration().setProductionMode(true);
 
@@ -224,25 +213,20 @@ public class UidlWriterTest {
         // no dependencies should be resent in next response
         JsonObject response = uidlWriter.createUidl(ui, false);
         Set<String> chunks = getDependenciesMap(response).keySet().stream()
-                .filter(key -> key
-                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
-                .map(key -> key
-                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
-                        .replace("');", ""))
+                .filter(key -> key.startsWith("return window.Vaadin.Flow.loadOnDemand('"))
+                .map(key -> key.replace("return window.Vaadin.Flow.loadOnDemand('", "").replace("');", ""))
                 .collect(Collectors.toSet());
 
         Set<String> expectedChunks = Stream
-                .of(TestUI.class, BaseClass.class, ChildComponent.class,
-                        ActualComponent.class, EmptyClassWithInterface.class,
-                        SuperComponent.class)
+                .of(TestUI.class, BaseClass.class, ChildComponent.class, ActualComponent.class,
+                        EmptyClassWithInterface.class, SuperComponent.class)
                 .map(BundleUtils::getChunkId).collect(Collectors.toSet());
 
         assertEquals(expectedChunks, chunks);
     }
 
     @Test
-    public void componentDependencies_developmentMode_onlySendComponentSpecificChunks()
-            throws Exception {
+    public void componentDependencies_developmentMode_onlySendComponentSpecificChunks() throws Exception {
         UidlWriter uidlWriter = new UidlWriter();
         UI ui = initializeUIForDependenciesTest(new TestUI());
         ui.add(new ChildComponent());
@@ -250,15 +234,11 @@ public class UidlWriterTest {
         // no dependencies should be resent in next response
         JsonObject response = uidlWriter.createUidl(ui, false);
         Set<String> chunks = getDependenciesMap(response).keySet().stream()
-                .filter(key -> key
-                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
-                .map(key -> key
-                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
-                        .replace("');", ""))
+                .filter(key -> key.startsWith("return window.Vaadin.Flow.loadOnDemand('"))
+                .map(key -> key.replace("return window.Vaadin.Flow.loadOnDemand('", "").replace("');", ""))
                 .collect(Collectors.toSet());
 
-        Set<String> expectedChunks = Stream
-                .of(TestUI.class, BaseClass.class, ChildComponent.class)
+        Set<String> expectedChunks = Stream.of(TestUI.class, BaseClass.class, ChildComponent.class)
                 .map(BundleUtils::getChunkId).collect(Collectors.toSet());
 
         assertEquals(expectedChunks, chunks);
@@ -272,22 +252,16 @@ public class UidlWriterTest {
         addInitialComponentDependencies(ui, uidlWriter);
 
         // test that dependencies only from new child interfaces are added
-        ui.add(new ActualComponent(), new SuperComponent(),
-                new ChildComponent());
+        ui.add(new ActualComponent(), new SuperComponent(), new ChildComponent());
 
         JsonObject response = uidlWriter.createUidl(ui, false);
-        Map<String, JsonObject> dependenciesMap = ComponentTest
-                .filterLazyLoading(getDependenciesMap(response));
+        Map<String, JsonObject> dependenciesMap = ComponentTest.filterLazyLoading(getDependenciesMap(response));
 
         assertEquals(4, dependenciesMap.size());
-        assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
-        assertDependency("childinterface2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
-        assertDependency("child1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
-        assertDependency("child2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
+        assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
+        assertDependency("childinterface2-" + CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
+        assertDependency("child1-" + CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
+        assertDependency("child2-" + CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
     }
 
     @Test
@@ -298,60 +272,46 @@ public class UidlWriterTest {
 
         ui.add(new ComponentWithAllDependencyTypes());
         JsonObject response = uidlWriter.createUidl(ui, false);
-        Map<LoadMode, List<JsonObject>> dependenciesMap = Stream
-                .of(LoadMode.values())
-                .map(mode -> response.getArray(mode.name()))
-                .flatMap(JsonUtils::<JsonObject> stream)
-                .collect(Collectors.toMap(
-                        jsonObject -> LoadMode.valueOf(
-                                jsonObject.getString(Dependency.KEY_LOAD_MODE)),
-                        Collections::singletonList, (list1, list2) -> {
-                            List<JsonObject> result = new ArrayList<>(list1);
-                            result.addAll(list2);
-                            return result;
-                        }));
-        dependenciesMap.get(LoadMode.LAZY).removeIf(obj -> obj
-                .getString(Dependency.KEY_URL).contains("Flow.loadOnDemand"));
-        assertThat(
-                "Dependencies with all types of load mode should be present in this response",
+        Map<LoadMode, List<JsonObject>> dependenciesMap = Stream.of(LoadMode.values())
+                .map(mode -> response.getArray(mode.name())).flatMap(JsonUtils::<JsonObject> stream).collect(
+                        Collectors.toMap(jsonObject -> LoadMode.valueOf(jsonObject.getString(Dependency.KEY_LOAD_MODE)),
+                                Collections::singletonList, (list1, list2) -> {
+                                    List<JsonObject> result = new ArrayList<>(list1);
+                                    result.addAll(list2);
+                                    return result;
+                                }));
+        dependenciesMap.get(LoadMode.LAZY)
+                .removeIf(obj -> obj.getString(Dependency.KEY_URL).contains("Flow.loadOnDemand"));
+        assertThat("Dependencies with all types of load mode should be present in this response",
                 dependenciesMap.size(), is(LoadMode.values().length));
 
-        List<JsonObject> eagerDependencies = dependenciesMap
-                .get(LoadMode.EAGER);
-        assertThat("Should have an eager dependency", eagerDependencies,
-                hasSize(1));
-        assertThat("Eager dependencies should not have inline contents",
-                eagerDependencies.stream()
-                        .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
-                        .collect(Collectors.toList()),
-                hasSize(0));
+        List<JsonObject> eagerDependencies = dependenciesMap.get(LoadMode.EAGER);
+        assertThat("Should have an eager dependency", eagerDependencies, hasSize(1));
+        assertThat("Eager dependencies should not have inline contents", eagerDependencies.stream()
+                .filter(json -> json.hasKey(Dependency.KEY_CONTENTS)).collect(Collectors.toList()), hasSize(0));
 
         JsonObject eagerDependency = eagerDependencies.get(0);
-        assertEquals("eager.css",
-                eagerDependency.getString(Dependency.KEY_URL));
-        assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
-                .valueOf(eagerDependency.getString(Dependency.KEY_TYPE)));
+        assertEquals("eager.css", eagerDependency.getString(Dependency.KEY_URL));
+        assertEquals(Dependency.Type.STYLESHEET,
+                Dependency.Type.valueOf(eagerDependency.getString(Dependency.KEY_TYPE)));
 
         List<JsonObject> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
         JsonObject lazyDependency = lazyDependencies.get(0);
         assertEquals("lazy.css", lazyDependency.getString(Dependency.KEY_URL));
-        assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
-                .valueOf(lazyDependency.getString(Dependency.KEY_TYPE)));
+        assertEquals(Dependency.Type.STYLESHEET,
+                Dependency.Type.valueOf(lazyDependency.getString(Dependency.KEY_TYPE)));
 
-        List<JsonObject> inlineDependencies = dependenciesMap
-                .get(LoadMode.INLINE);
+        List<JsonObject> inlineDependencies = dependenciesMap.get(LoadMode.INLINE);
         assertInlineDependencies(inlineDependencies);
     }
 
     @Test
-    public void resynchronizationRequested_responseFieldContainsResynchronize()
-            throws Exception {
+    public void resynchronizationRequested_responseFieldContainsResynchronize() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
 
         JsonObject response = uidlWriter.createUidl(ui, false, true);
-        assertTrue("Response contains resynchronize field",
-                response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
+        assertTrue("Response contains resynchronize field", response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
         assertTrue("Response resynchronize field is set to true",
                 response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
     }
@@ -370,13 +330,11 @@ public class UidlWriterTest {
         UidlWriter uidlWriter = new UidlWriter();
         uidlWriter.createUidl(ui, false, true);
 
-        assertFalse("UI is still dirty after creating UIDL",
-                ui.getInternals().isDirty());
+        assertFalse("UI is still dirty after creating UIDL", ui.getInternals().isDirty());
     }
 
     @Test
-    public void createUidl_collectChangesUIStillDirty_shouldNotLoopEndlessly()
-            throws Exception {
+    public void createUidl_collectChangesUIStillDirty_shouldNotLoopEndlessly() throws Exception {
         UI ui = initializeUIForDependenciesTest(spy(new TestUI()));
         StateTree stateTree = spy(ui.getInternals().getStateTree());
         UIInternals internals = spy(ui.getInternals());
@@ -388,36 +346,29 @@ public class UidlWriterTest {
         UidlWriter uidlWriter = new UidlWriter();
         uidlWriter.createUidl(ui, false, true);
 
-        assertTrue(
-                "Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL",
+        assertTrue("Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL",
                 ui.getInternals().isDirty());
     }
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies) {
-        assertThat("Should have an inline dependency", inlineDependencies,
-                hasSize(1));
-        assertThat("Eager dependencies should not have urls",
-                inlineDependencies.stream()
-                        .filter(json -> json.hasKey(Dependency.KEY_URL))
-                        .collect(Collectors.toList()),
-                hasSize(0));
+        assertThat("Should have an inline dependency", inlineDependencies, hasSize(1));
+        assertThat("Eager dependencies should not have urls", inlineDependencies.stream()
+                .filter(json -> json.hasKey(Dependency.KEY_URL)).collect(Collectors.toList()), hasSize(0));
 
         JsonObject inlineDependency = inlineDependencies.get(0);
 
         String url = inlineDependency.getString(Dependency.KEY_CONTENTS);
         assertEquals("inline.css", url);
-        assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
-                .valueOf(inlineDependency.getString(Dependency.KEY_TYPE)));
+        assertEquals(Dependency.Type.STYLESHEET,
+                Dependency.Type.valueOf(inlineDependency.getString(Dependency.KEY_TYPE)));
     }
 
     private UI initializeUIForDependenciesTest(UI ui) throws Exception {
         mocks = new MockServletServiceSessionSetup();
 
-        VaadinServletContext context = (VaadinServletContext) mocks.getService()
-                .getContext();
+        VaadinServletContext context = (VaadinServletContext) mocks.getService().getContext();
         Lookup lookup = context.getAttribute(Lookup.class);
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
-                .thenReturn(new RoutePathProviderImpl());
+        Mockito.when(lookup.lookup(RoutePathProvider.class)).thenReturn(new RoutePathProviderImpl());
 
         VaadinSession session = mocks.getSession();
         session.lock();
@@ -431,21 +382,17 @@ public class UidlWriterTest {
         });
 
         for (String type : new String[] { "html", "js", "css" }) {
-            mocks.getServlet().addServletContextResource("inline." + type,
-                    "inline." + type);
+            mocks.getServlet().addServletContextResource("inline." + type, "inline." + type);
         }
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
 
-        VaadinServletRequest vaadinRequestMock = mock(
-                VaadinServletRequest.class);
+        VaadinServletRequest vaadinRequestMock = mock(VaadinServletRequest.class);
 
-        when(vaadinRequestMock.getHttpServletRequest())
-                .thenReturn(servletRequestMock);
+        when(vaadinRequestMock.getHttpServletRequest()).thenReturn(servletRequestMock);
 
         ui.doInit(vaadinRequestMock, 1);
-        ui.getInternals().getRouter().initializeUI(ui,
-                UITest.requestToLocation(vaadinRequestMock));
+        ui.getInternals().getRouter().initializeUI(ui, UITest.requestToLocation(vaadinRequestMock));
 
         return ui;
     }
@@ -454,40 +401,30 @@ public class UidlWriterTest {
         ui.add(new ActualComponent());
 
         JsonObject response = uidlWriter.createUidl(ui, false);
-        Map<String, JsonObject> dependenciesMap = ComponentTest
-                .filterLazyLoading(getDependenciesMap(response));
+        Map<String, JsonObject> dependenciesMap = ComponentTest.filterLazyLoading(getDependenciesMap(response));
 
         assertEquals(4, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
-        assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
+        assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
 
-        assertDependency("anotherinterface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
+        assertDependency("anotherinterface-" + CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
 
-        assertDependency("interface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
-                dependenciesMap);
+        assertDependency("interface-" + CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
 
         assertDependency(CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
     }
 
     private Map<String, JsonObject> getDependenciesMap(JsonObject response) {
-        return Stream.of(LoadMode.values())
-                .map(mode -> response.getArray(mode.name()))
+        return Stream.of(LoadMode.values()).map(mode -> response.getArray(mode.name()))
                 .flatMap(JsonUtils::<JsonObject> stream)
-                .collect(Collectors.toMap(
-                        jsonObject -> jsonObject.getString(Dependency.KEY_URL),
-                        Function.identity()));
+                .collect(Collectors.toMap(jsonObject -> jsonObject.getString(Dependency.KEY_URL), Function.identity()));
     }
 
-    private void assertDependency(String url, String type,
-            Map<String, JsonObject> dependenciesMap) {
+    private void assertDependency(String url, String type, Map<String, JsonObject> dependenciesMap) {
         JsonObject jsonValue = dependenciesMap.get(url);
-        assertNotNull(
-                "Expected dependencies map to have dependency with key=" + url,
-                jsonValue);
+        assertNotNull("Expected dependencies map to have dependency with key=" + url, jsonValue);
         assertEquals(url, jsonValue.get(Dependency.KEY_URL).asString());
         assertEquals(type, jsonValue.get(Dependency.KEY_TYPE).asString());
     }

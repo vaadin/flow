@@ -27,8 +27,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.ChangeInjectedComponentTextView", layout = ViewTestLayout.class)
 @Tag("update-injected-component-text")
 @JsModule("./ChangeInjectedComponentTextView.js")
-public class ChangeInjectedComponentTextView
-        extends PolymerTemplate<TemplateModel> {
+public class ChangeInjectedComponentTextView extends PolymerTemplate<TemplateModel> {
 
     @Id
     private Div injected;

@@ -29,18 +29,15 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
 @Route("com.vaadin.flow.uitest.ui.PushLayout")
-public class PushLayout extends Div
-        implements RouterLayout, BeforeEnterObserver {
+public class PushLayout extends Div implements RouterLayout, BeforeEnterObserver {
 
     public static String FORWARD_PATH = "forward-no-route";
 
     public PushLayout() {
         setId("push-layout");
-        Lookup lookup = VaadinService.getCurrent().getContext()
-                .getAttribute(Lookup.class);
+        Lookup lookup = VaadinService.getCurrent().getContext().getAttribute(Lookup.class);
         if (lookup.lookup(OSGiMarker.class) == null) {
-            PushConfiguration pushConfiguration = UI.getCurrent()
-                    .getPushConfiguration();
+            PushConfiguration pushConfiguration = UI.getCurrent().getPushConfiguration();
             pushConfiguration.setPushMode(PushMode.AUTOMATIC);
             pushConfiguration.setTransport(Transport.WEBSOCKET_XHR);
         }

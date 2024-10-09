@@ -34,14 +34,12 @@ public class DefaultArchiveExtractorTest {
     }
 
     @Test
-    public void extractZip_contentsAreExtracted()
-            throws IOException, ArchiveExtractionException {
+    public void extractZip_contentsAreExtracted() throws IOException, ArchiveExtractionException {
         File archiveFile = new File(baseDir, "archive.zip");
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempArchive))) {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempArchive))) {
             zipOutputStream.putNextEntry(new ZipEntry(ROOT_FILE));
             zipOutputStream.closeEntry();
             zipOutputStream.putNextEntry(new ZipEntry(SUBFOLDER_FILE));
@@ -50,15 +48,13 @@ public class DefaultArchiveExtractorTest {
 
         new DefaultArchiveExtractor().extract(archiveFile, targetDir);
 
-        Assert.assertTrue("Archive root.file was not extracted",
-                new File(targetDir, ROOT_FILE).exists());
+        Assert.assertTrue("Archive root.file was not extracted", new File(targetDir, ROOT_FILE).exists());
         Assert.assertTrue("Archive subfolder/folder.file was not extracted",
                 new File(targetDir, SUBFOLDER_FILE).exists());
     }
 
     @Test
-    public void extractTarGz_contentsAreExtracted()
-            throws IOException, ArchiveExtractionException {
+    public void extractTarGz_contentsAreExtracted() throws IOException, ArchiveExtractionException {
         File archiveFile = new File(baseDir, "archive.tar.gz");
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
@@ -66,25 +62,21 @@ public class DefaultArchiveExtractorTest {
         try (OutputStream fo = Files.newOutputStream(tempArchive);
                 OutputStream gzo = new GzipCompressorOutputStream(fo);
                 ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
-            o.putArchiveEntry(
-                    o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
+            o.putArchiveEntry(o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
             o.closeArchiveEntry();
-            o.putArchiveEntry(o.createArchiveEntry(new File(SUBFOLDER_FILE),
-                    SUBFOLDER_FILE));
+            o.putArchiveEntry(o.createArchiveEntry(new File(SUBFOLDER_FILE), SUBFOLDER_FILE));
             o.closeArchiveEntry();
         }
 
         new DefaultArchiveExtractor().extract(archiveFile, targetDir);
 
-        Assert.assertTrue("Archive root.file was not extracted",
-                new File(targetDir, ROOT_FILE).exists());
+        Assert.assertTrue("Archive root.file was not extracted", new File(targetDir, ROOT_FILE).exists());
         Assert.assertTrue("Archive subfolder/folder.file was not extracted",
                 new File(targetDir, SUBFOLDER_FILE).exists());
     }
 
     @Test(expected = ArchiveExtractionException.class)
-    public void extractTarAsZip_ArchiveExtractionExceptionIsThrown()
-            throws IOException, ArchiveExtractionException {
+    public void extractTarAsZip_ArchiveExtractionExceptionIsThrown() throws IOException, ArchiveExtractionException {
         File archiveFile = new File(baseDir, "archive.zip");
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
@@ -92,8 +84,7 @@ public class DefaultArchiveExtractorTest {
         try (OutputStream fo = Files.newOutputStream(tempArchive);
                 OutputStream gzo = new GzipCompressorOutputStream(fo);
                 ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
-            o.putArchiveEntry(
-                    o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
+            o.putArchiveEntry(o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
             o.closeArchiveEntry();
         }
 

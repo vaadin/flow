@@ -24,14 +24,11 @@ public class TogglePushView extends Div implements BeforeEnterObserver {
         add(counterLabel);
         counterLabel.setId("counter");
 
-        List<String> pushParam = beforeEnterEvent.getLocation()
-                .getQueryParameters().getParameters().get("push");
-        boolean disabled = pushParam != null && pushParam.size() == 1
-                && pushParam.get(0).equals("disabled");
+        List<String> pushParam = beforeEnterEvent.getLocation().getQueryParameters().getParameters().get("push");
+        boolean disabled = pushParam != null && pushParam.size() == 1 && pushParam.get(0).equals("disabled");
 
         UI ui = beforeEnterEvent.getUI();
-        ui.getPushConfiguration()
-                .setPushMode(disabled ? PushMode.DISABLED : PushMode.AUTOMATIC);
+        ui.getPushConfiguration().setPushMode(disabled ? PushMode.DISABLED : PushMode.AUTOMATIC);
 
         NativeButton pushSetting = new NativeButton();
         pushSetting.setId("push-setting");
@@ -55,27 +52,24 @@ public class TogglePushView extends Div implements BeforeEnterObserver {
         });
         add(pushSetting);
 
-        NativeButton counter = new NativeButton("Update counter now",
-                event -> updateCounter());
+        NativeButton counter = new NativeButton("Update counter now", event -> updateCounter());
         counter.setId("update-counter");
         add(counter);
 
-        NativeButton updateCounterAsync = new NativeButton(
-                "Update counter in 1 sec", event -> {
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            ui.access(() -> updateCounter());
-                        }
-                    }, 1000);
-                });
+        NativeButton updateCounterAsync = new NativeButton("Update counter in 1 sec", event -> {
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    ui.access(() -> updateCounter());
+                }
+            }, 1000);
+        });
         add(updateCounterAsync);
         updateCounterAsync.setId("update-counter-async");
     }
 
     private void updateCounter() {
-        counterLabel
-                .setText("Counter has been updated " + counter++ + " times");
+        counterLabel.setText("Counter has been updated " + counter++ + " times");
     }
 
 }

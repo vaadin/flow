@@ -15,16 +15,14 @@ public class TemplateScalabilityIT extends ChromeBrowserTest {
 
         waitUntil(input -> {
             TestBenchElement view = $("*").id("scalability-view");
-            return view.$("*")
-                    .attribute("id", TemplateScalabilityView.COMPLETED)
-                    .exists();
+            return view.$("*").attribute("id", TemplateScalabilityView.COMPLETED).exists();
         });
 
         TestBenchElement viewTemplate = $("*").id("scalability-view");
         int buttons = viewTemplate.$("template-scalability-panel").all().size();
 
-        Assert.assertEquals("Template should have created "
-                + TemplateScalabilityView.NUM_ITEMS + " panels with buttons.",
+        Assert.assertEquals(
+                "Template should have created " + TemplateScalabilityView.NUM_ITEMS + " panels with buttons.",
                 TemplateScalabilityView.NUM_ITEMS, buttons);
 
         checkLogsForErrors();

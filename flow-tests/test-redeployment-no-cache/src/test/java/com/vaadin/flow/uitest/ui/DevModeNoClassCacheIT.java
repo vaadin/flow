@@ -43,8 +43,7 @@ public class DevModeNoClassCacheIT extends ChromeBrowserTest {
 
         for (int i = 0; i < 5; i++) {
             String[] value = allSpans.get(i).getText().split(":");
-            Assert.assertEquals("Expected " + value[0] + " to be 0.", 0,
-                    Integer.parseInt(value[1]));
+            Assert.assertEquals("Expected " + value[0] + " to be 0.", 0, Integer.parseInt(value[1]));
         }
     }
 }

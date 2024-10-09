@@ -37,8 +37,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public final class DAUUtils {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(DAUUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DAUUtils.class);
 
     static final String DAU_COOKIE_NAME = "DailyActiveUser";
 
@@ -47,8 +46,7 @@ public final class DAUUtils {
 
     static final long DAU_MIN_ACTIVITY_IN_SECONDS = 60L;
 
-    public static final String ENFORCEMENT_EXCEPTION_KEY = DAUUtils.class
-            .getName() + ".EnforcementException";
+    public static final String ENFORCEMENT_EXCEPTION_KEY = DAUUtils.class.getName() + ".EnforcementException";
 
     public static final String STATUS_CODE_KEY = "Vaadin-DAU-Status-Code";
 
@@ -60,37 +58,30 @@ public final class DAUUtils {
      *
      * @param service
      *            the VaadinService instance.
-     * @return {@literal true} if DAU integration is enabled, otherwise
-     *         {@literal false}.
+     * @return {@literal true} if DAU integration is enabled, otherwise {@literal false}.
      */
     public static boolean isDauEnabled(VaadinService service) {
         // TODO: force removal of dau.enable system property to check only on
         // flow-build-info?
         System.clearProperty("vaadin." + Constants.DAU_TOKEN);
         return service.getDeploymentConfiguration().isProductionMode()
-                && service.getDeploymentConfiguration()
-                        .getBooleanProperty(Constants.DAU_TOKEN, false);
+                && service.getDeploymentConfiguration().getBooleanProperty(Constants.DAU_TOKEN, false);
     }
 
     /**
-     * Looks up for a daily active user tracking cookie in a given http request
-     * from browser.
+     * Looks up for a daily active user tracking cookie in a given http request from browser.
      *
      * @param request
      *            Vaadin request
-     * @return optional cookie object, may be missing, if users tracking is
-     *         disabled or if this request is an initial request from client.
+     * @return optional cookie object, may be missing, if users tracking is disabled or if this request is an initial
+     *         request from client.
      */
     public static Optional<Cookie> getTrackingCookie(VaadinRequest request) {
-        Cookie[] cookies = Objects
-                .requireNonNull(request, "Request must not be null")
-                .getCookies();
+        Cookie[] cookies = Objects.requireNonNull(request, "Request must not be null").getCookies();
         if (cookies == null) {
             return Optional.empty();
         } else {
-            return Arrays.stream(cookies)
-                    .filter(cookie -> DAU_COOKIE_NAME.equals(cookie.getName()))
-                    .findAny();
+            return Arrays.stream(cookies).filter(cookie -> DAU_COOKIE_NAME.equals(cookie.getName())).findAny();
         }
     }
 
@@ -98,18 +89,15 @@ public final class DAUUtils {
      * Parses DAU cookie value to extract tracking information.
      * <p>
      * </p>
-     * Cookie value is expected to be in format
-     * {@literal trackingHash$creationTime}, with {@literal creationTime}
-     * expressed as the number of milliseconds from the epoch of
-     * 1970-01-01T00:00:00Z since the cookie creation instant. An empty Optional
-     * is returned if the cookie value is not in the expected format or if the
-     * creation time is invalid.
+     * Cookie value is expected to be in format {@literal trackingHash$creationTime}, with {@literal creationTime}
+     * expressed as the number of milliseconds from the epoch of 1970-01-01T00:00:00Z since the cookie creation instant.
+     * An empty Optional is returned if the cookie value is not in the expected format or if the creation time is
+     * invalid.
      *
      * @param cookie
      *            The DAU cookie.
-     * @return a data structure representing the information stored in the
-     *         cookie, or an empty Optional if the cookie value is malformed or
-     *         contains invalid data.
+     * @return a data structure representing the information stored in the cookie, or an empty Optional if the cookie
+     *         value is malformed or contains invalid data.
      * @see FlowDauIntegration#generateNewCookie(VaadinRequest)
      */
     static Optional<DauCookie> parseCookie(Cookie cookie) {
@@ -122,25 +110,22 @@ public final class DAUUtils {
 
         String trackingHash = tokens[0];
         if (trackingHash.isBlank()) {
-            LOGGER.debug("Invalid DAU cookie value: {}. Missing tracking hash",
-                    cookieValue);
+            LOGGER.debug("Invalid DAU cookie value: {}. Missing tracking hash", cookieValue);
             return Optional.empty();
         }
         Instant creationTime;
         try {
             creationTime = Instant.ofEpochMilli(Long.parseLong(tokens[1]));
         } catch (NumberFormatException e) {
-            LOGGER.debug(
-                    "Invalid DAU cookie value: {}. Unparsable creation timestamp.",
-                    cookieValue);
+            LOGGER.debug("Invalid DAU cookie value: {}. Unparsable creation timestamp.", cookieValue);
             return Optional.empty();
         }
         return Optional.of(new DauCookie(trackingHash, creationTime));
     }
 
     /**
-     * Creates a JSON message which, when sent to client as-is, will cause a
-     * critical error to be shown with the given details.
+     * Creates a JSON message which, when sent to client as-is, will cause a critical error to be shown with the given
+     * details.
      *
      * @param vaadinRequest
      *            the current Vaadin request.
@@ -150,18 +135,17 @@ public final class DAUUtils {
      */
     public static String jsonEnforcementResponse(VaadinRequest vaadinRequest,
             DauEnforcementException enforcementException) {
-        EnforcementNotificationMessages messages = getEnforcementNotificationMessages(
-                vaadinRequest);
-        return VaadinService.createCriticalNotificationJSON(messages.caption(),
-                messages.message(), messages.details(), messages.url());
+        EnforcementNotificationMessages messages = getEnforcementNotificationMessages(vaadinRequest);
+        return VaadinService.createCriticalNotificationJSON(messages.caption(), messages.message(), messages.details(),
+                messages.url());
     }
 
     /**
      * Gets the enforcement messages for the given request.
      * <p>
      * </p>
-     * Enforcement messages are get from the registered {@link DAUCustomizer},
-     * if available. Otherwise, the default messages are returned.
+     * Enforcement messages are get from the registered {@link DAUCustomizer}, if available. Otherwise, the default
+     * messages are returned.
      *
      * @param vaadinRequest
      *            The current request
@@ -169,20 +153,15 @@ public final class DAUUtils {
      * @see DAUCustomizer#getEnforcementNotificationMessages(SystemMessagesInfo)
      * @see EnforcementNotificationMessages#DEFAULT
      */
-    public static EnforcementNotificationMessages getEnforcementNotificationMessages(
-            VaadinRequest vaadinRequest) {
+    public static EnforcementNotificationMessages getEnforcementNotificationMessages(VaadinRequest vaadinRequest) {
         EnforcementNotificationMessages messages = EnforcementNotificationMessages.DEFAULT;
         VaadinService service = vaadinRequest.getService();
         if (service != null) {
-            DAUCustomizer dauCustomizer = service.getContext()
-                    .getAttribute(DAUCustomizer.class);
+            DAUCustomizer dauCustomizer = service.getContext().getAttribute(DAUCustomizer.class);
             if (dauCustomizer != null) {
                 SystemMessagesInfo systemMessagesInfo = new SystemMessagesInfo(
-                        HandlerHelper.findLocale(VaadinSession.getCurrent(),
-                                vaadinRequest),
-                        vaadinRequest, service);
-                messages = dauCustomizer
-                        .getEnforcementNotificationMessages(systemMessagesInfo);
+                        HandlerHelper.findLocale(VaadinSession.getCurrent(), vaadinRequest), vaadinRequest, service);
+                messages = dauCustomizer.getEnforcementNotificationMessages(systemMessagesInfo);
             }
         }
         return messages;
@@ -195,15 +174,13 @@ public final class DAUUtils {
         INSTANCE;
 
         /**
-         * Executes the given operation, marking it as eligible for DAU
-         * tracking.
+         * Executes the given operation, marking it as eligible for DAU tracking.
          *
          * @param operation
          *            the operation to execute.
          */
         public void execute(Runnable operation) {
-            CurrentInstance.set(TrackableOperation.class,
-                    TrackableOperation.INSTANCE);
+            CurrentInstance.set(TrackableOperation.class, TrackableOperation.INSTANCE);
             try {
                 operation.run();
             } finally {
@@ -214,8 +191,7 @@ public final class DAUUtils {
         /**
          * Gets if the current request has been marked for DAU tracking.
          *
-         * @return {@literal true} if DAU tracking should be applied to the
-         *         current request, otherwise {@literal false}.
+         * @return {@literal true} if DAU tracking should be applied to the current request, otherwise {@literal false}.
          */
         public boolean isTrackable() {
             return CurrentInstance.get(TrackableOperation.class) != null;
@@ -239,24 +215,20 @@ public final class DAUUtils {
      * <ul>
      * <li>INIT request.</li>
      * <li>UIDL requests</li>
-     * <li>PUSH requests, with WEBSOCKET transport. For other transports
-     * interaction happens as UIDL request on an HTTP request</li>
+     * <li>PUSH requests, with WEBSOCKET transport. For other transports interaction happens as UIDL request on an HTTP
+     * request</li>
      * </ul>
      *
      * @param request
      *            the Vaadin request.
-     * @return {@literal true} if DAU user tracking should be applied for the
-     *         given request, otherwise {@literal false}.
+     * @return {@literal true} if DAU user tracking should be applied for the given request, otherwise {@literal false}.
      */
     static boolean isTrackableRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.INIT)
-                || HandlerHelper.isRequestType(request,
-                        HandlerHelper.RequestType.UIDL)
+        return HandlerHelper.isRequestType(request, HandlerHelper.RequestType.INIT)
+                || HandlerHelper.isRequestType(request, HandlerHelper.RequestType.UIDL)
                 // PUSH request with WEBSOCKET transport, ignoring connect
                 // or Hilla endpoint invocation
-                || TrackableOperation.INSTANCE.isTrackable()
-                || isDirectViewRequest(request);
+                || TrackableOperation.INSTANCE.isTrackable() || isDirectViewRequest(request);
     }
 
     private static boolean isKnownPublicResource(VaadinRequest request) {
@@ -269,15 +241,11 @@ public final class DAUUtils {
 
     private static boolean isPwaIcon(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
-        if (request.getService()
-                .getContext() instanceof VaadinServletContext vaadinContext) {
-            PwaConfiguration pwaConfiguration = PwaRegistry
-                    .getInstance(vaadinContext.getContext())
+        if (request.getService().getContext() instanceof VaadinServletContext vaadinContext) {
+            PwaConfiguration pwaConfiguration = PwaRegistry.getInstance(vaadinContext.getContext())
                     .getPwaConfiguration();
             if (pwaConfiguration.isEnabled()) {
-                return HandlerHelper
-                        .getIconVariants(pwaConfiguration.getIconPath())
-                        .contains(pathInfo);
+                return HandlerHelper.getIconVariants(pwaConfiguration.getIconPath()).contains(pathInfo);
             }
         }
         return false;
@@ -286,12 +254,10 @@ public final class DAUUtils {
     private static boolean isDirectViewRequest(VaadinRequest request) {
         if ("GET".equalsIgnoreCase(request.getMethod())) {
             String pathInfo = request.getPathInfo();
-            if (pathInfo == null || pathInfo.isEmpty()
-                    || "/".equals(pathInfo)) {
+            if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo)) {
                 return true;
             }
-            if (pathInfo.startsWith("/VAADIN/")
-                    || pathInfo.startsWith("/HILLA/")) {
+            if (pathInfo.startsWith("/VAADIN/") || pathInfo.startsWith("/HILLA/")) {
                 return false;
             }
             return !isKnownPublicResource(request);
@@ -299,8 +265,7 @@ public final class DAUUtils {
         return false;
     }
 
-    private static VaadinRequest createVaadinRequest(
-            VaadinService defaultVaadinService, HttpServletRequest request) {
+    private static VaadinRequest createVaadinRequest(VaadinService defaultVaadinService, HttpServletRequest request) {
         VaadinService service = VaadinService.getCurrent();
         if (service == null) {
             service = defaultVaadinService;
@@ -310,8 +275,7 @@ public final class DAUUtils {
             // request creation
             service = null;
         }
-        return new VaadinServletRequest(request,
-                (VaadinServletService) service);
+        return new VaadinServletRequest(request, (VaadinServletService) service);
     }
 
     /**
@@ -335,32 +299,29 @@ public final class DAUUtils {
     }
 
     /**
-     * Track DAU and check if enforcement should apply to the given request. If
-     * enforcement is needed, the enforcement messages are returned.
+     * Track DAU and check if enforcement should apply to the given request. If enforcement is needed, the enforcement
+     * messages are returned.
      * <p>
      * </p>
-     * Method checks if the current request should be considered for DAU
-     * tracking by using {@link #isDauEnabled(VaadinService)}.
+     * Method checks if the current request should be considered for DAU tracking by using
+     * {@link #isDauEnabled(VaadinService)}.
      *
      * @param defaultVaadinService
-     *            the default VaadinService to use if the current service is not
-     *            available
+     *            the default VaadinService to use if the current service is not available
      * @param request
      *            the request. Cannot be null.
      * @param response
      *            the response
      * @return the enforcement result. Never null.
      */
-    public static EnforcementResult trackDAU(VaadinService defaultVaadinService,
-            HttpServletRequest request, HttpServletResponse response) {
+    public static EnforcementResult trackDAU(VaadinService defaultVaadinService, HttpServletRequest request,
+            HttpServletResponse response) {
         assert request != null;
 
-        VaadinRequest vaadinRequest = createVaadinRequest(defaultVaadinService,
-                request);
+        VaadinRequest vaadinRequest = createVaadinRequest(defaultVaadinService, request);
         VaadinService service = vaadinRequest.getService();
         VaadinResponse vaadinResponse = (response != null)
-                ? new VaadinServletResponse(response,
-                        (VaadinServletService) service)
+                ? new VaadinServletResponse(response, (VaadinServletService) service)
                 : null;
 
         Runnable endRequestAction = null;
@@ -374,13 +335,11 @@ public final class DAUUtils {
                 DAUUtils.TrackableOperation.INSTANCE.execute(() -> {
                     service.requestStart(vaadinRequest, vaadinResponse);
                     if (DAUUtils.isDauEnabled(service)) {
-                        FlowDauIntegration.applyEnforcement(vaadinRequest,
-                                unused -> true);
+                        FlowDauIntegration.applyEnforcement(vaadinRequest, unused -> true);
                     }
                 });
             } catch (DauEnforcementException e) {
-                EnforcementNotificationMessages messages = DAUUtils
-                        .getEnforcementNotificationMessages(vaadinRequest);
+                EnforcementNotificationMessages messages = DAUUtils.getEnforcementNotificationMessages(vaadinRequest);
                 return new EnforcementResult(messages, e, endRequestAction);
             }
         }

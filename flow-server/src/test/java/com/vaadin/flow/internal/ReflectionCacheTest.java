@@ -29,8 +29,7 @@ public class ReflectionCacheTest {
     public void generateCachedValues() {
         AtomicInteger count = new AtomicInteger();
 
-        ReflectionCache<Object, Integer> cache = new ReflectionCache<>(
-                type -> count.incrementAndGet());
+        ReflectionCache<Object, Integer> cache = new ReflectionCache<>(type -> count.incrementAndGet());
 
         Assert.assertEquals(0, count.get());
 
@@ -44,8 +43,7 @@ public class ReflectionCacheTest {
 
     @Test
     public void cacheContains() {
-        ReflectionCache<Object, Object> cache = new ReflectionCache<>(
-                type -> type);
+        ReflectionCache<Object, Object> cache = new ReflectionCache<>(type -> type);
 
         Assert.assertFalse(cache.contains(Object.class));
 
@@ -56,8 +54,7 @@ public class ReflectionCacheTest {
 
     @Test
     public void cacheClear() {
-        ReflectionCache<Object, Object> cache = new ReflectionCache<>(
-                type -> type);
+        ReflectionCache<Object, Object> cache = new ReflectionCache<>(type -> type);
 
         cache.get(Object.class);
         Assert.assertTrue(cache.contains(Object.class));
@@ -68,10 +65,8 @@ public class ReflectionCacheTest {
 
     @Test
     public void clearAll() {
-        ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
-                type -> type);
-        ReflectionCache<Object, Object> cache2 = new ReflectionCache<>(
-                type -> type);
+        ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(type -> type);
+        ReflectionCache<Object, Object> cache2 = new ReflectionCache<>(type -> type);
 
         cache1.get(Object.class);
         cache2.get(Object.class);
@@ -84,10 +79,8 @@ public class ReflectionCacheTest {
 
     @Test
     public void cacheIsGarbageCollected() throws InterruptedException {
-        ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
-                type -> type);
-        WeakReference<ReflectionCache<Object, Object>> ref = new WeakReference<>(
-                cache1);
+        ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(type -> type);
+        WeakReference<ReflectionCache<Object, Object>> ref = new WeakReference<>(cache1);
 
         cache1 = null;
         Assert.assertTrue(TestUtil.isGarbageCollected(ref));
@@ -95,8 +88,7 @@ public class ReflectionCacheTest {
 
     @Test
     public void cacheIsClearedAfterGc() throws InterruptedException {
-        ReflectionCache<Object, Object> cache = new ReflectionCache<>(
-                type -> type);
+        ReflectionCache<Object, Object> cache = new ReflectionCache<>(type -> type);
         cache.get(Object.class);
 
         // Ensure garbage is collected before clearing
@@ -113,17 +105,14 @@ public class ReflectionCacheTest {
         CurrentInstance.set(String.class, currentString);
 
         ReflectionCache<Object, String> cache = new ReflectionCache<>(
-                type -> type.getSimpleName() + ": "
-                        + CurrentInstance.get(String.class));
+                type -> type.getSimpleName() + ": " + CurrentInstance.get(String.class));
 
         try {
             String result = cache.get(Object.class);
 
-            Assert.assertEquals("Current instance should not be in the result",
-                    "Object: null", result);
-            Assert.assertEquals(
-                    "Current instance should be preserved after running",
-                    currentString, CurrentInstance.get(String.class));
+            Assert.assertEquals("Current instance should not be in the result", "Object: null", result);
+            Assert.assertEquals("Current instance should be preserved after running", currentString,
+                    CurrentInstance.get(String.class));
         } finally {
             CurrentInstance.set(String.class, null);
         }

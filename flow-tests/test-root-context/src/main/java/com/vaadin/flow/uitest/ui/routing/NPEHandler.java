@@ -27,17 +27,14 @@ import com.vaadin.flow.router.HasErrorParameter;
  * @since 1.0
  *
  */
-public class NPEHandler extends Div
-        implements HasErrorParameter<NullPointerException> {
+public class NPEHandler extends Div implements HasErrorParameter<NullPointerException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NullPointerException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NullPointerException> parameter) {
         getElement().setText("NPE is thrown " + event.getLocation().getPath());
 
         Exception exception = parameter.getCaughtException();
-        LoggerFactory.getLogger(NPEHandler.class).error(exception.getMessage(),
-                exception);
+        LoggerFactory.getLogger(NPEHandler.class).error(exception.getMessage(), exception);
 
         setId("no-route");
         return 500;

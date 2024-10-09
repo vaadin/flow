@@ -54,49 +54,41 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
         eventLog = new Div(new Text("Click events and their sources:"));
         eventLog.setId(EVENT_LOG);
 
-        final NativeButton testButton = createButton("Key-X shortcut",
-                this::logClickEvent);
+        final NativeButton testButton = createButton("Key-X shortcut", this::logClickEvent);
         testButton.setId(UI_BUTTON);
         testButton.addClickShortcut(SHORTCUT_KEY);
 
-        add(createOpenDialogButton(true, OPEN_MODAL_BUTTON),
-                createOpenDialogButton(false, OPEN_MODELESS_BUTTON), testButton,
-                eventLog);
+        add(createOpenDialogButton(true, OPEN_MODAL_BUTTON), createOpenDialogButton(false, OPEN_MODELESS_BUTTON),
+                testButton, eventLog);
         setId("main-div");
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         Location location = event.getLocation();
-        Map<String, List<String>> queryParameters = location
-                .getQueryParameters().getParameters();
+        Map<String, List<String>> queryParameters = location.getQueryParameters().getParameters();
         if (queryParameters.containsKey("open_dialog")) {
-            boolean modal = queryParameters.get("open_dialog")
-                    .contains("modal");
+            boolean modal = queryParameters.get("open_dialog").contains("modal");
             final Dialog dialog = new Dialog(modal);
             dialog.open();
         }
     }
 
     private void logClickEvent(ClickEvent<?> event) {
-        eventLog.addComponentAsFirst(new Div(new Text((eventCounter++) + "-"
-                + event.getSource().getId().orElse("NO-SOURCE-ID"))));
+        eventLog.addComponentAsFirst(
+                new Div(new Text((eventCounter++) + "-" + event.getSource().getId().orElse("NO-SOURCE-ID"))));
     }
 
     private Component createOpenDialogButton(boolean modal, String id) {
-        final NativeButton button = createButton(
-                "Open " + (modal ? "modal" : "non-modal") + " dialog",
-                event -> {
-                    final Dialog dialog = new Dialog(modal);
-                    dialog.open();
-                });
+        final NativeButton button = createButton("Open " + (modal ? "modal" : "non-modal") + " dialog", event -> {
+            final Dialog dialog = new Dialog(modal);
+            dialog.open();
+        });
         button.setId(id);
         return button;
     }
 
-    private NativeButton createButton(String caption,
-            ComponentEventListener<ClickEvent<NativeButton>> listener) {
+    private NativeButton createButton(String caption, ComponentEventListener<ClickEvent<NativeButton>> listener) {
         final NativeButton button = new NativeButton();
         button.setText(caption);
         button.addClickListener(listener);
@@ -111,36 +103,30 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
         public Dialog(boolean modal) {
             this.modal = modal;
 
-            final NativeButton testButton = createButton(
-                    "Test button with enter shortcut",
+            final NativeButton testButton = createButton("Test button with enter shortcut",
                     ModalDialogView.this::logClickEvent);
             testButton.setId(DIALOG_BUTTON);
-            final NativeButton uiScopeShortcutButton = new NativeButton(
-                    "Add shortcut with listenOn(UI)", event -> {
-                        testButton.addClickShortcut(SHORTCUT_KEY);
-                        event.getSource().setEnabled(false);
-                    });
+            final NativeButton uiScopeShortcutButton = new NativeButton("Add shortcut with listenOn(UI)", event -> {
+                testButton.addClickShortcut(SHORTCUT_KEY);
+                event.getSource().setEnabled(false);
+            });
             uiScopeShortcutButton.setId(LISTEN_ON_UI_BUTTON);
-            final NativeButton dialogScopeShortcutButton = new NativeButton(
-                    "Add shortcut with listenOn(Dialog)", event -> {
-                        testButton.addClickShortcut(SHORTCUT_KEY)
-                                .listenOn(Dialog.this);
+            final NativeButton dialogScopeShortcutButton = new NativeButton("Add shortcut with listenOn(Dialog)",
+                    event -> {
+                        testButton.addClickShortcut(SHORTCUT_KEY).listenOn(Dialog.this);
                         event.getSource().setEnabled(false);
                     });
             dialogScopeShortcutButton.setId(LISTEN_ON_DIALOG_BUTTON);
 
-            final Component closeButton = createButton("Close",
-                    event -> close());
+            final Component closeButton = createButton("Close", event -> close());
             closeButton.setId(DIALOG_CLOSE_BUTTON);
-            add(new Text("A " + (modal ? "modal" : "modeless") + " dialog"),
-                    new Input(), new Div(), closeButton, uiScopeShortcutButton,
-                    dialogScopeShortcutButton, new Div(), testButton);
+            add(new Text("A " + (modal ? "modal" : "modeless") + " dialog"), new Input(), new Div(), closeButton,
+                    uiScopeShortcutButton, dialogScopeShortcutButton, new Div(), testButton);
 
             getUI().ifPresent(ui -> {
                 ui.setChildComponentModal(this, modal);
             });
-            getStyle().set("position", "fixed").set("inset", "50% 50%")
-                    .set("border", "1px solid black");
+            getStyle().set("position", "fixed").set("inset", "50% 50%").set("border", "1px solid black");
             setId(DIALOG);
         }
 

@@ -23,16 +23,15 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from {@link String} to {@link Boolean} and back.
- * The String representation is given by {@link Boolean#toString()} or provided
- * in constructor
+ * A converter that converts from {@link String} to {@link Boolean} and back. The String representation is given by
+ * {@link Boolean#toString()} or provided in constructor
  * {@link StringToBooleanConverter#StringToBooleanConverter(String, String, String)}.
  * <p>
  * Leading and trailing white spaces are ignored when converting from a String.
  * </p>
  * <p>
- * For language-dependent representation, subclasses should overwrite
- * {@link #getFalseString(Locale)} and {@link #getTrueString(Locale)}
+ * For language-dependent representation, subclasses should overwrite {@link #getFalseString(Locale)} and
+ * {@link #getTrueString(Locale)}
  * </p>
  *
  * @author Vaadin Ltd
@@ -47,8 +46,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
     private ErrorMessageProvider errorMessageProvider;
 
     /**
-     * Creates converter with default string representations - "true" and
-     * "false".
+     * Creates converter with default string representations - "true" and "false".
      *
      * @param errorMessage
      *            the error message to use if conversion fails
@@ -58,15 +56,14 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
     }
 
     /**
-     * Creates a new converter instance with the given error message provider.
-     * Empty strings are converted to <code>null</code>.
+     * Creates a new converter instance with the given error message provider. Empty strings are converted to
+     * <code>null</code>.
      *
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
     public StringToBooleanConverter(ErrorMessageProvider errorMessageProvider) {
-        this(Boolean.TRUE.toString(), Boolean.FALSE.toString(),
-                errorMessageProvider);
+        this(Boolean.TRUE.toString(), Boolean.FALSE.toString(), errorMessageProvider);
     }
 
     /**
@@ -79,8 +76,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
      * @param trueString
      *            string representation for <code>true</code>
      */
-    public StringToBooleanConverter(String errorMessage, String trueString,
-            String falseString) {
+    public StringToBooleanConverter(String errorMessage, String trueString, String falseString) {
         this(trueString, falseString, ctx -> errorMessage);
     }
 
@@ -94,8 +90,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    public StringToBooleanConverter(String trueString, String falseString,
-            ErrorMessageProvider errorMessageProvider) {
+    public StringToBooleanConverter(String trueString, String falseString, ErrorMessageProvider errorMessageProvider) {
         this.errorMessageProvider = errorMessageProvider;
         this.trueString = trueString;
         this.falseString = falseString;
@@ -136,8 +131,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
     }
 
     /**
-     * Gets the locale-depended string representation for false. Default is
-     * locale-independent value {@code false}
+     * Gets the locale-depended string representation for false. Default is locale-independent value {@code false}
      *
      * @param locale
      *            to be used
@@ -148,8 +142,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
     }
 
     /**
-     * Gets the locale-depended string representation for true. Default is
-     * locale-independent value {@code true}
+     * Gets the locale-depended string representation for true. Default is locale-independent value {@code true}
      *
      * @param locale
      *            to be used

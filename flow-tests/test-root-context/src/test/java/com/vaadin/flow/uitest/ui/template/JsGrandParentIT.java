@@ -29,8 +29,7 @@ public class JsGrandParentIT extends ChromeBrowserTest {
 
         TestBenchElement parent = $("js-grand-parent").first();
         TestBenchElement child = parent.$("js-sub-template").first();
-        TestBenchElement grandChild = child.$("js-injected-grand-child")
-                .first();
+        TestBenchElement grandChild = child.$("js-injected-grand-child").first();
         WebElement label = grandChild.$(TestBenchElement.class).id("foo-prop");
 
         waitUntil(driver -> "bar".equals(label.getText()));

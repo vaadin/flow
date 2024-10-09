@@ -22,8 +22,8 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * The feature contains a value of the basic type.
  * <p>
- * The value is wrapped into a {@link StateNode} and this feature instead being
- * sent directly. It allows to use basic types in lists.
+ * The value is wrapped into a {@link StateNode} and this feature instead being sent directly. It allows to use basic
+ * types in lists.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

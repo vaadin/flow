@@ -36,14 +36,13 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
- * The default implementation of {@link DeploymentConfiguration} based on a base
- * class for resolving system properties and a set of init parameters.
+ * The default implementation of {@link DeploymentConfiguration} based on a base class for resolving system properties
+ * and a set of init parameters.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class DefaultDeploymentConfiguration
-        extends PropertyDeploymentConfiguration {
+public class DefaultDeploymentConfiguration extends PropertyDeploymentConfiguration {
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
@@ -59,15 +58,11 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used.";
 
     public static final String WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED = "WARNING: "
-            + InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY
-            + " has been set to an unrecognized value.\n"
+            + InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY + " has been set to an unrecognized value.\n"
             + "The permitted values are "
-            + Arrays.stream(SessionLockCheckStrategy.values())
-                    .map(it -> "\"" + it.name().toLowerCase() + "\"")
+            + Arrays.stream(SessionLockCheckStrategy.values()).map(it -> "\"" + it.name().toLowerCase() + "\"")
                     .collect(Collectors.joining(", "))
-            + ".\nThe default of \""
-            + SessionLockCheckStrategy.ASSERT.name().toLowerCase()
-            + "\" will be used.";
+            + ".\nThe default of \"" + SessionLockCheckStrategy.ASSERT.name().toLowerCase() + "\" will be used.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -120,14 +115,12 @@ public class DefaultDeploymentConfiguration
      * @param parentConfig
      *            a parent application configuration
      * @param systemPropertyBaseClass
-     *            the class that should be used as a basis when reading system
-     *            properties
+     *            the class that should be used as a basis when reading system properties
      * @param initParameters
-     *            the init parameters that should make up the foundation for
-     *            this configuration
+     *            the init parameters that should make up the foundation for this configuration
      */
-    public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig,
-            Class<?> systemPropertyBaseClass, Properties initParameters) {
+    public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig, Class<?> systemPropertyBaseClass,
+            Properties initParameters) {
         super(parentConfig, systemPropertyBaseClass, initParameters);
 
         boolean log = logging.getAndSet(false);
@@ -180,8 +173,7 @@ public class DefaultDeploymentConfiguration
     /**
      * {@inheritDoc}
      * <p>
-     * The default is <code>true</code> when not in production and
-     * <code>false</code> when in production mode.
+     * The default is <code>true</code> when not in production and <code>false</code> when in production mode.
      */
     @Override
     public boolean isRequestTiming() {
@@ -288,8 +280,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkProductionMode(boolean log) {
         if (isOwnProperty(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
-            productionMode = getBooleanProperty(
-                    InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
+            productionMode = getBooleanProperty(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         } else {
             productionMode = getParentConfiguration().isProductionMode();
         }
@@ -306,10 +297,8 @@ public class DefaultDeploymentConfiguration
      * Log information about enabled feature flags.
      */
     private void checkFeatureFlags() {
-        List<Feature> enabledFeatures = FeatureFlags
-                .get(getParentConfiguration().getContext()).getFeatures()
-                .stream().filter(f -> f.isEnabled())
-                .collect(Collectors.toList());
+        List<Feature> enabledFeatures = FeatureFlags.get(getParentConfiguration().getContext()).getFeatures().stream()
+                .filter(f -> f.isEnabled()).collect(Collectors.toList());
         if (!enabledFeatures.isEmpty()) {
             info.add("\nThe following feature previews are enabled:");
             enabledFeatures.forEach(feature -> {
@@ -324,23 +313,18 @@ public class DefaultDeploymentConfiguration
      * Checks if request timing data should be provided to the client.
      */
     private void checkRequestTiming() {
-        requestTiming = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
-                !productionMode);
+        requestTiming = getBooleanProperty(InitParameters.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
     }
 
     /**
      * Log a warning if cross-site request forgery protection is disabled.
      */
     private void checkXsrfProtection(boolean loggWarning) {
-        if (isOwnProperty(
-                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
-            xsrfProtectionEnabled = !getBooleanProperty(
-                    InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
+            xsrfProtectionEnabled = !getBooleanProperty(InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
                     false);
         } else {
-            xsrfProtectionEnabled = getParentConfiguration()
-                    .isXsrfProtectionEnabled();
+            xsrfProtectionEnabled = getParentConfiguration().isXsrfProtectionEnabled();
         }
         if (!xsrfProtectionEnabled && loggWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
@@ -349,8 +333,7 @@ public class DefaultDeploymentConfiguration
 
     private void checkHeartbeatInterval() {
         try {
-            heartbeatInterval = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+            heartbeatInterval = getApplicationOrSystemProperty(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                     DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
             warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
@@ -361,12 +344,11 @@ public class DefaultDeploymentConfiguration
     private void checkMaxMessageSuspendTimeout() {
         try {
             maxMessageSuspendTimeout = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
-                    DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT, Integer::parseInt);
+                    InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT, DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                    Integer::parseInt);
         } catch (NumberFormatException e) {
-            String warning = "WARNING: maxMessageSuspendInterval has been set to an illegal value."
-                    + "The default of " + DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT
-                    + " ms will be used.";
+            String warning = "WARNING: maxMessageSuspendInterval has been set to an illegal value." + "The default of "
+                    + DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT + " ms will be used.";
             warnings.add(warning);
             maxMessageSuspendTimeout = DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT;
         }
@@ -375,8 +357,8 @@ public class DefaultDeploymentConfiguration
     private void checkWebComponentDisconnectTimeout() {
         try {
             webComponentDisconnect = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT,
-                    DEFAULT_WEB_COMPONENT_DISCONNECT, Integer::parseInt);
+                    InitParameters.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT, DEFAULT_WEB_COMPONENT_DISCONNECT,
+                    Integer::parseInt);
 
         } catch (NumberFormatException e) {
             warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
@@ -385,17 +367,14 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkCloseIdleSessions() {
-        closeIdleSessions = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
+        closeIdleSessions = getBooleanProperty(InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
                 DEFAULT_CLOSE_IDLE_SESSIONS);
     }
 
     private void checkPushMode() {
         try {
-            pushMode = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_PUSH_MODE,
-                    PushMode.DISABLED, stringMode -> Enum
-                            .valueOf(PushMode.class, stringMode.toUpperCase()));
+            pushMode = getApplicationOrSystemProperty(InitParameters.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
+                    stringMode -> Enum.valueOf(PushMode.class, stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -405,11 +384,8 @@ public class DefaultDeploymentConfiguration
     private void checkSessionLockCheckStrategy() {
         try {
             sessionLockCheckStrategy = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
-                    SessionLockCheckStrategy.ASSERT,
-                    stringStrategy -> Enum.valueOf(
-                            SessionLockCheckStrategy.class,
-                            stringStrategy.toUpperCase()));
+                    InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY, SessionLockCheckStrategy.ASSERT,
+                    stringStrategy -> Enum.valueOf(SessionLockCheckStrategy.class, stringStrategy.toUpperCase()));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
             sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
@@ -417,19 +393,15 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkPushServletMapping() {
-        pushServletMapping = getStringProperty(
-                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING, "");
+        pushServletMapping = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING, "");
     }
 
     private void checkSyncIdCheck() {
-        syncIdCheck = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK,
-                DEFAULT_SYNC_ID_CHECK);
+        syncIdCheck = getBooleanProperty(InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK, DEFAULT_SYNC_ID_CHECK);
     }
 
     private void checkSendUrlsAsParameters() {
-        sendUrlsAsParameters = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+        sendUrlsAsParameters = getBooleanProperty(InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
 
@@ -437,9 +409,7 @@ public class DefaultDeploymentConfiguration
         if (isProductionMode()) {
             frontendHotdeploy = false;
         } else {
-            frontendHotdeploy = getBooleanProperty(
-                    InitParameters.FRONTEND_HOTDEPLOY,
-                    automaticHotdeployDefault());
+            frontendHotdeploy = getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY, automaticHotdeployDefault());
         }
     }
 

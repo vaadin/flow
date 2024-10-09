@@ -33,8 +33,7 @@ public class PushRouteNotFoundView extends RouteNotFoundError {
     private boolean isPushPath;
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NotFoundException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NotFoundException> parameter) {
         String path = event.getLocation().getPath();
         if (PUSH_NON_EXISTENT_PATH.equals(path)) {
             isPushPath = true;
@@ -47,8 +46,8 @@ public class PushRouteNotFoundView extends RouteNotFoundError {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         if (isPushPath) {
-            Element div = ElementFactory.createDiv("Push mode: "
-                    + attachEvent.getUI().getPushConfiguration().getPushMode());
+            Element div = ElementFactory
+                    .createDiv("Push mode: " + attachEvent.getUI().getPushConfiguration().getPushMode());
             div.setAttribute("id", "push-mode");
             getElement().appendChild(div);
         }

@@ -25,8 +25,7 @@ public class DevToolsPluginView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        add(new Span(
-                "This is a dummy view that can be updated from a dev tools plugin"));
+        add(new Span("This is a dummy view that can be updated from a dev tools plugin"));
 
         NativeButton refresh = new NativeButton("Refresh");
         refresh.setId("refresh");

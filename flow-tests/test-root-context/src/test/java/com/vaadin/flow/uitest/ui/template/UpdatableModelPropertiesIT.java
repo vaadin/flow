@@ -81,16 +81,14 @@ public class UpdatableModelPropertiesIT extends ChromeBrowserTest {
     }
 
     private void waitUpdate() {
-        waitUntil(driver -> getElement("updateStatus").getText()
-                .startsWith("Update Done"));
+        waitUntil(driver -> getElement("updateStatus").getText().startsWith("Update Done"));
     }
 
     private void assertUpdate(String expectedValue) {
         waitUpdate();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        WebElement value = template.$(TestBenchElement.class)
-                .id("property-value");
+        WebElement value = template.$(TestBenchElement.class).id("property-value");
         Assert.assertEquals(expectedValue, value.getText());
     }
 
@@ -98,8 +96,7 @@ public class UpdatableModelPropertiesIT extends ChromeBrowserTest {
         waitUpdate();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        WebElement value = template.$(TestBenchElement.class)
-                .id("property-value");
+        WebElement value = template.$(TestBenchElement.class).id("property-value");
         Assert.assertNotEquals(unexpectedValue, value.getText());
     }
 

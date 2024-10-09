@@ -23,8 +23,7 @@ public class RouteNotFoundProdModeIT extends RouteNotFoundIT {
 
     @Test
     public void notFoundProdMode() {
-        getDriver().get(
-                getRootURL() + "/view-production/notfound/" + INJECT_ATTACK);
+        getDriver().get(getRootURL() + "/view-production/notfound/" + INJECT_ATTACK);
         waitForDevServer();
         assertPageHasRoutes(false);
     }

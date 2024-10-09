@@ -58,26 +58,22 @@ public class DomEventTest {
         assertSettings(FilterEvent.class, "a == b", 0);
     }
 
-    @DomEvent(value = "event", debounce = @DebounceSettings(timeout = 200, phases = {
-            DebouncePhase.INTERMEDIATE, DebouncePhase.TRAILING }))
-    public static class DebounceTimeoutPhasesEvent
-            extends ComponentEvent<Component> {
-        public DebounceTimeoutPhasesEvent(Component source,
-                boolean fromClient) {
+    @DomEvent(value = "event", debounce = @DebounceSettings(timeout = 200, phases = { DebouncePhase.INTERMEDIATE,
+            DebouncePhase.TRAILING }))
+    public static class DebounceTimeoutPhasesEvent extends ComponentEvent<Component> {
+        public DebounceTimeoutPhasesEvent(Component source, boolean fromClient) {
             super(source, fromClient);
         }
     }
 
     @Test
     public void debouncePhases() {
-        assertSettings(DebounceTimeoutPhasesEvent.class,
-                ElementListenerMap.ALWAYS_TRUE_FILTER, 200,
+        assertSettings(DebounceTimeoutPhasesEvent.class, ElementListenerMap.ALWAYS_TRUE_FILTER, 200,
                 DebouncePhase.INTERMEDIATE, DebouncePhase.TRAILING);
     }
 
     @DomEvent(value = "event", debounce = @DebounceSettings(timeout = 200, phases = {}))
-    public static class DebounceEmptyPhasesEvent
-            extends ComponentEvent<Component> {
+    public static class DebounceEmptyPhasesEvent extends ComponentEvent<Component> {
         public DebounceEmptyPhasesEvent(Component source, boolean fromClient) {
             super(source, fromClient);
         }
@@ -97,13 +93,11 @@ public class DomEventTest {
 
     @Test
     public void debounceFilter() {
-        assertSettings(DebounceFilterEvent.class, "filter(event)", 300,
-                DebouncePhase.TRAILING);
+        assertSettings(DebounceFilterEvent.class, "filter(event)", 300, DebouncePhase.TRAILING);
     }
 
-    private <T extends ComponentEvent<Component>> void assertSettings(
-            Class<T> eventType, String expectedFilter, int expectedTimeout,
-            DebouncePhase... expectedPhases) {
+    private <T extends ComponentEvent<Component>> void assertSettings(Class<T> eventType, String expectedFilter,
+            int expectedTimeout, DebouncePhase... expectedPhases) {
         JsonObject settings = getEventSettings(eventType);
 
         if (expectedFilter == null) {
@@ -111,16 +105,13 @@ public class DomEventTest {
             return;
         }
 
-        Assert.assertArrayEquals(new String[] { expectedFilter },
-                settings.keys());
+        Assert.assertArrayEquals(new String[] { expectedFilter }, settings.keys());
 
         if (expectedTimeout == 0 && expectedPhases.length == 0) {
-            Assert.assertEquals(
-                    "There should be a boolean instead of empty phase list",
-                    JsonType.BOOLEAN, settings.get(expectedFilter).getType());
+            Assert.assertEquals("There should be a boolean instead of empty phase list", JsonType.BOOLEAN,
+                    settings.get(expectedFilter).getType());
             boolean isFilter = settings.getBoolean(expectedFilter);
-            Assert.assertTrue("Expression should be used as a filter",
-                    isFilter);
+            Assert.assertTrue("Expression should be used as a filter", isFilter);
             return;
         }
 
@@ -130,32 +121,27 @@ public class DomEventTest {
 
         JsonArray filterSetting = filterSettings.getArray(0);
 
-        Assert.assertEquals("Debunce timeout should be as expected",
-                expectedTimeout, (int) filterSetting.getNumber(0));
+        Assert.assertEquals("Debunce timeout should be as expected", expectedTimeout, (int) filterSetting.getNumber(0));
 
-        Assert.assertEquals("Number of phases should be as expected",
-                expectedPhases.length, filterSetting.length() - 1);
+        Assert.assertEquals("Number of phases should be as expected", expectedPhases.length,
+                filterSetting.length() - 1);
 
         for (int i = 0; i < expectedPhases.length; i++) {
             String expectedIdentifier = expectedPhases[i].getIdentifier();
-            Assert.assertEquals(expectedIdentifier,
-                    filterSetting.getString(i + 1));
+            Assert.assertEquals(expectedIdentifier, filterSetting.getString(i + 1));
         }
     }
 
-    private void assertFilter(String expectedFilter,
-            JsonObject filterSettings) {
+    private void assertFilter(String expectedFilter, JsonObject filterSettings) {
     }
 
-    private <T extends ComponentEvent<Component>> JsonObject getEventSettings(
-            Class<T> eventType) {
+    private <T extends ComponentEvent<Component>> JsonObject getEventSettings(Class<T> eventType) {
         Component component = new Component(new Element("element")) {
         };
         component.addListener(eventType, e -> {
         });
 
-        ElementListenerMap elementListenerMap = component.getElement().getNode()
-                .getFeature(ElementListenerMap.class);
+        ElementListenerMap elementListenerMap = component.getElement().getNode().getFeature(ElementListenerMap.class);
 
         List<NodeChange> changes = new ArrayList<>();
         elementListenerMap.collectChanges(changes::add);

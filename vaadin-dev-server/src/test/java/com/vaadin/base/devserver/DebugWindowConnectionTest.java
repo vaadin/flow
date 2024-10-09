@@ -40,8 +40,7 @@ import static org.mockito.Mockito.times;
 
 public class DebugWindowConnectionTest {
 
-    private final DebugWindowConnection reload = new DebugWindowConnection(
-            getMockContext());
+    private final DebugWindowConnection reload = new DebugWindowConnection(getMockContext());
 
     @Test
     public void onConnect_suspend_sayHello() {
@@ -55,8 +54,7 @@ public class DebugWindowConnectionTest {
 
         Assert.assertTrue(reload.isLiveReload(resource));
         Mockito.verify(resource).suspend(-1);
-        Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}",
-                resource);
+        Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}", resource);
     }
 
     @Test
@@ -71,8 +69,7 @@ public class DebugWindowConnectionTest {
 
         Assert.assertTrue(reload.isLiveReload(resource));
         Mockito.verify(resource, times(1)).suspend(-1);
-        Mockito.verify(broadcaster, times(1))
-                .broadcast("{\"command\": \"hello\"}", resource);
+        Mockito.verify(broadcaster, times(1)).broadcast("{\"command\": \"hello\"}", resource);
     }
 
     @Test
@@ -87,8 +84,7 @@ public class DebugWindowConnectionTest {
 
         Assert.assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
-        Mockito.verify(broadcaster, times(0))
-                .broadcast("{\"command\": \"hello\"}", resource);
+        Mockito.verify(broadcaster, times(0)).broadcast("{\"command\": \"hello\"}", resource);
 
     }
 
@@ -104,8 +100,7 @@ public class DebugWindowConnectionTest {
 
         Assert.assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
-        Mockito.verify(broadcaster, times(0))
-                .broadcast("{\"command\": \"hello\"}", resource);
+        Mockito.verify(broadcaster, times(0)).broadcast("{\"command\": \"hello\"}", resource);
 
         Mockito.when(request.getParameter("token")).thenReturn(null);
 
@@ -113,8 +108,7 @@ public class DebugWindowConnectionTest {
 
         Assert.assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
-        Mockito.verify(broadcaster, times(0))
-                .broadcast("{\"command\": \"hello\"}", resource);
+        Mockito.verify(broadcaster, times(0)).broadcast("{\"command\": \"hello\"}", resource);
     }
 
     @Test
@@ -147,27 +141,20 @@ public class DebugWindowConnectionTest {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
 
-        DevToolsInterface devToolsInterface = reload
-                .getDevToolsInterface(resource1);
-        DevToolsInterface devToolsInterface2 = reload
-                .getDevToolsInterface(resource2);
+        DevToolsInterface devToolsInterface = reload.getDevToolsInterface(resource1);
+        DevToolsInterface devToolsInterface2 = reload.getDevToolsInterface(resource2);
 
-        Assert.assertNotEquals(
-                "DevTollsInterface for different resources should not be equal",
-                devToolsInterface, devToolsInterface2);
-        Assert.assertEquals(devToolsInterface,
-                reload.getDevToolsInterface(resource1));
-        Assert.assertEquals(devToolsInterface2,
-                reload.getDevToolsInterface(resource2));
+        Assert.assertNotEquals("DevTollsInterface for different resources should not be equal", devToolsInterface,
+                devToolsInterface2);
+        Assert.assertEquals(devToolsInterface, reload.getDevToolsInterface(resource1));
+        Assert.assertEquals(devToolsInterface2, reload.getDevToolsInterface(resource2));
 
         Map<DevToolsInterface, String> map = new HashMap<>();
         map.put(devToolsInterface, "one");
         map.put(devToolsInterface2, "two");
 
-        Assert.assertEquals("one",
-                map.get(reload.getDevToolsInterface(resource1)));
-        Assert.assertEquals("two",
-                map.get(reload.getDevToolsInterface(resource2)));
+        Assert.assertEquals("one", map.get(reload.getDevToolsInterface(resource1)));
+        Assert.assertEquals("two", map.get(reload.getDevToolsInterface(resource2)));
     }
 
     @Test
@@ -204,42 +191,36 @@ public class DebugWindowConnectionTest {
     public void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
-        DebugWindowConnection reload = new DebugWindowConnection(
-                new ClassLoader(getClass().getClassLoader()) {
-                    @Override
-                    protected Class<?> findClass(String name)
-                            throws ClassNotFoundException {
-                        switch (name) {
-                        case "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener":
-                            return JRebelInitializer.class;
-                        default:
-                            throw new ClassNotFoundException();
-                        }
-                    }
-                }, getMockContext());
-        Assert.assertEquals(BrowserLiveReload.Backend.JREBEL,
-                reload.getBackend());
+        DebugWindowConnection reload = new DebugWindowConnection(new ClassLoader(getClass().getClassLoader()) {
+            @Override
+            protected Class<?> findClass(String name) throws ClassNotFoundException {
+                switch (name) {
+                case "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener":
+                    return JRebelInitializer.class;
+                default:
+                    throw new ClassNotFoundException();
+                }
+            }
+        }, getMockContext());
+        Assert.assertEquals(BrowserLiveReload.Backend.JREBEL, reload.getBackend());
     }
 
     @Test
     public void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
         class VaadinIntegration {
         }
-        DebugWindowConnection reload = new DebugWindowConnection(
-                new ClassLoader(getClass().getClassLoader()) {
-                    @Override
-                    protected Class<?> findClass(String name)
-                            throws ClassNotFoundException {
-                        switch (name) {
-                        case "org.hotswap.agent.plugin.vaadin.VaadinIntegration":
-                            return VaadinIntegration.class;
-                        default:
-                            throw new ClassNotFoundException();
-                        }
-                    }
-                }, getMockContext());
-        Assert.assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT,
-                reload.getBackend());
+        DebugWindowConnection reload = new DebugWindowConnection(new ClassLoader(getClass().getClassLoader()) {
+            @Override
+            protected Class<?> findClass(String name) throws ClassNotFoundException {
+                switch (name) {
+                case "org.hotswap.agent.plugin.vaadin.VaadinIntegration":
+                    return VaadinIntegration.class;
+                default:
+                    throw new ClassNotFoundException();
+                }
+            }
+        }, getMockContext());
+        Assert.assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT, reload.getBackend());
     }
 
     @Test
@@ -248,23 +229,20 @@ public class DebugWindowConnectionTest {
         }
         class LiveReloadServer {
         }
-        DebugWindowConnection reload = new DebugWindowConnection(
-                new ClassLoader(getClass().getClassLoader()) {
-                    @Override
-                    protected Class<?> findClass(String name)
-                            throws ClassNotFoundException {
-                        switch (name) {
-                        case "com.vaadin.flow.spring.SpringServlet":
-                            return SpringServlet.class;
-                        case "org.springframework.boot.devtools.livereload.LiveReloadServer":
-                            return LiveReloadServer.class;
-                        default:
-                            throw new ClassNotFoundException();
-                        }
-                    }
-                }, getMockContext());
-        Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
-                reload.getBackend());
+        DebugWindowConnection reload = new DebugWindowConnection(new ClassLoader(getClass().getClassLoader()) {
+            @Override
+            protected Class<?> findClass(String name) throws ClassNotFoundException {
+                switch (name) {
+                case "com.vaadin.flow.spring.SpringServlet":
+                    return SpringServlet.class;
+                case "org.springframework.boot.devtools.livereload.LiveReloadServer":
+                    return LiveReloadServer.class;
+                default:
+                    throw new ClassNotFoundException();
+                }
+            }
+        }, getMockContext());
+        Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS, reload.getBackend());
     }
 
     @Test
@@ -279,8 +257,7 @@ public class DebugWindowConnectionTest {
             Class<?> clazz = classLoader.loadClass(className);
             clazz.getMethod(methodName, VaadinService.class);
             clazz.getDeclaredConstructor().newInstance();
-        } catch (ClassNotFoundException | NoSuchMethodException
-                | InstantiationException | IllegalAccessException
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException
                 | InvocationTargetException e) {
             e.printStackTrace();
             Assert.fail(className
@@ -291,17 +268,14 @@ public class DebugWindowConnectionTest {
 
     private VaadinContext getMockContext() {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = Mockito.mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class, appConfig);
-        context.setAttribute(Lookup.class,
-                Lookup.of(appConfig, ApplicationConfiguration.class));
+        context.setAttribute(Lookup.class, Lookup.of(appConfig, ApplicationConfiguration.class));
         return context;
     }
 
-    private AtmosphereRequest createMockRequestWithToken(
-            AtmosphereResource resource, String tokenToGiveBack) {
+    private AtmosphereRequest createMockRequestWithToken(AtmosphereResource resource, String tokenToGiveBack) {
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
         Mockito.when(request.getParameter("token")).thenReturn(tokenToGiveBack);

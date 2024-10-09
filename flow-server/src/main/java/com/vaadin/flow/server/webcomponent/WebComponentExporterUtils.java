@@ -31,8 +31,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponent
 import com.vaadin.flow.internal.ReflectTools;
 
 /**
- * Internal utility methods for {@link WebComponentExporter} and
- * {@link WebComponentExporterFactory} classes.
+ * Internal utility methods for {@link WebComponentExporter} and {@link WebComponentExporterFactory} classes.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -46,65 +45,49 @@ public final class WebComponentExporterUtils {
     }
 
     /**
-     * Returns exported web component factories based on exporters and factories
-     * types.
+     * Returns exported web component factories based on exporters and factories types.
      *
      * @param classes
      *            types of exporters and exporter factories
      * @return exported web component factories
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static Set<WebComponentExporterFactory> getFactories(
-            Set<Class<?>> classes) {
+    public static Set<WebComponentExporterFactory> getFactories(Set<Class<?>> classes) {
         Set<WebComponentExporterFactory> factories = new HashSet<>();
         classes.stream().filter(WebComponentExporter.class::isAssignableFrom)
                 .filter(WebComponentExporterUtils::isEligible)
-                .map(clazz -> new DefaultWebComponentExporterFactory(clazz))
-                .forEach(factories::add);
+                .map(clazz -> new DefaultWebComponentExporterFactory(clazz)).forEach(factories::add);
 
-        classes.stream()
-                .filter(WebComponentExporterFactory.class::isAssignableFrom)
+        classes.stream().filter(WebComponentExporterFactory.class::isAssignableFrom)
                 .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
-                .filter(clazz -> !clazz
-                        .equals(DefaultWebComponentExporterFactory.class))
-                .map(ReflectTools::createInstance)
-                .map(WebComponentExporterFactory.class::cast)
-                .forEach(factories::add);
+                .filter(clazz -> !clazz.equals(DefaultWebComponentExporterFactory.class))
+                .map(ReflectTools::createInstance).map(WebComponentExporterFactory.class::cast).forEach(factories::add);
         return factories;
     }
 
     private static boolean isEligible(Class<?> clazz) {
         if (Modifier.isAbstract(clazz.getModifiers())) {
-            getLogger().error(
-                    "Class {} is abstract, and won't be instantiated as a '{}' by default",
-                    clazz.getName(),
+            getLogger().error("Class {} is abstract, and won't be instantiated as a '{}' by default", clazz.getName(),
                     WebComponentExporter.class.getSimpleName());
             return false;
         }
         if (!Modifier.isPublic(clazz.getModifiers())) {
-            getLogger().error(
-                    "Class {} is not public, and won't be instantiated as a '{}' by default",
-                    clazz.getName(),
+            getLogger().error("Class {} is not public, and won't be instantiated as a '{}' by default", clazz.getName(),
                     WebComponentExporter.class.getSimpleName());
             return false;
         }
-        Optional<Constructor<?>> constructor = Stream
-                .of(clazz.getConstructors())
+        Optional<Constructor<?>> constructor = Stream.of(clazz.getConstructors())
                 .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
-        if (!constructor.isPresent()
-                || !Modifier.isPublic(constructor.get().getModifiers())) {
+        if (!constructor.isPresent() || !Modifier.isPublic(constructor.get().getModifiers())) {
             getLogger().error(
                     "Class {} has no public no-argument constructor, and won't be instantiated as a '{}' by default",
-                    clazz.getName(),
-                    WebComponentExporter.class.getSimpleName());
+                    clazz.getName(), WebComponentExporter.class.getSimpleName());
             return false;
         }
-        if (clazz.getEnclosingClass() != null
-                && !Modifier.isStatic(clazz.getModifiers())) {
+        if (clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers())) {
             getLogger().error(
                     "Class {} is inner (nested non static) class, and won't be instantiated as a '{}' by default",
-                    clazz.getName(),
-                    WebComponentExporter.class.getSimpleName());
+                    clazz.getName(), WebComponentExporter.class.getSimpleName());
             return false;
         }
         return true;

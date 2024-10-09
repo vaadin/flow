@@ -54,10 +54,8 @@ import com.vaadin.flow.spring.SpringVaadinSession;
 import com.vaadin.flow.spring.annotation.RouteScopeOwner;
 
 /**
- * Implementation of Spring's
- * {@link org.springframework.beans.factory.config.Scope} that binds the beans
- * to a component in the navigation chain. Registered by default as the scope "
- * {@value #VAADIN_ROUTE_SCOPE_NAME}".
+ * Implementation of Spring's {@link org.springframework.beans.factory.config.Scope} that binds the beans to a component
+ * in the navigation chain. Registered by default as the scope " {@value #VAADIN_ROUTE_SCOPE_NAME}".
  *
  * @see com.vaadin.flow.spring.annotation.VaadinSessionScope
  * @author Vaadin Ltd
@@ -82,28 +80,23 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             routeStores = new HashMap<>();
             if (session instanceof SpringVaadinSession) {
                 sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
+                ((SpringVaadinSession) session).addDestroyListener(event -> destroy());
             } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
+                sessionDestroyListenerRegistration = session.getService().addSessionDestroyListener(event -> destroy());
             }
         }
 
         private RouteBeanStore getBeanStore(UI ui) {
             assert session.hasLock();
-            ExtendedClientDetails details = ui.getInternals()
-                    .getExtendedClientDetails();
+            ExtendedClientDetails details = ui.getInternals().getExtendedClientDetails();
             String key = getUIStoreKey(ui);
             if (details == null) {
-                ui.getPage().retrieveExtendedClientDetails(
-                        det -> relocateStore(ui, key));
+                ui.getPage().retrieveExtendedClientDetails(det -> relocateStore(ui, key));
             }
             RouteBeanStore beanStore = routeStores.get(key);
             if (beanStore == null) {
                 beanStore = new RouteBeanStore(ui, session,
-                        uiInstance -> routeStores
-                                .remove(getUIStoreKey(uiInstance)));
+                        uiInstance -> routeStores.remove(getUIStoreKey(uiInstance)));
                 routeStores.put(key, beanStore);
             }
             return beanStore;
@@ -113,15 +106,11 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             assert session.hasLock();
             RouteBeanStore beanStore = routeStores.remove(key);
             if (beanStore == null) {
-                LoggerFactory.getLogger(RouteStoreWrapper.class).trace(
-                        "UI bean store is not found by the initial UI id via the key '"
-                                + key + "'.");
+                LoggerFactory.getLogger(RouteStoreWrapper.class)
+                        .trace("UI bean store is not found by the initial UI id via the key '" + key + "'.");
                 if (routeStores.get(getUIStoreKey(ui)) == null) {
-                    throw new IllegalStateException(
-                            "UI bean store is not found by the initial UI id via the key '"
-                                    + key + "' and it's not found by the key '"
-                                    + getUIStoreKey(ui)
-                                    + "' after relocation.");
+                    throw new IllegalStateException("UI bean store is not found by the initial UI id via the key '"
+                            + key + "' and it's not found by the key '" + getUIStoreKey(ui) + "' after relocation.");
                 }
             } else {
                 routeStores.put(getUIStoreKey(ui), beanStore);
@@ -129,8 +118,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         }
 
         private String getUIStoreKey(UI ui) {
-            ExtendedClientDetails details = ui.getInternals()
-                    .getExtendedClientDetails();
+            ExtendedClientDetails details = ui.getInternals().getExtendedClientDetails();
             if (details == null) {
                 return "uid-" + ui.getUIId();
             } else {
@@ -155,8 +143,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
     }
 
     private class NavigationListener
-            implements BeforeEnterListener, AfterNavigationListener,
-            ComponentEventListener<DetachEvent>, Serializable {
+            implements BeforeEnterListener, AfterNavigationListener, ComponentEventListener<DetachEvent>, Serializable {
 
         private Class<?> currentNavigationTarget;
         private List<Class<? extends RouterLayout>> currentLayouts;
@@ -182,14 +169,12 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             } else {
                 Map<Class<?>, Set<String>> activeChain = new HashMap<>();
                 event.getActiveChain().stream().map(Object::getClass)
-                        .forEach(clazz -> putIfNotNull(activeChain, clazz,
-                                removeBeansByNavigationComponent(clazz)));
+                        .forEach(clazz -> putIfNotNull(activeChain, clazz, removeBeansByNavigationComponent(clazz)));
 
                 Map<Class<?>, Set<String>> notActiveChain = getBeanNamesByNavigationComponents();
                 setBeanNamesByNavigationComponents(activeChain);
 
-                notActiveChain.values()
-                        .forEach(names -> names.forEach(store::remove));
+                notActiveChain.values().forEach(names -> names.forEach(store::remove));
             }
         }
 
@@ -204,17 +189,14 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             } else {
                 Map<Class<?>, Set<String>> activeChain = new HashMap<>();
                 putIfNotNull(activeChain, currentNavigationTarget,
-                        removeBeansByNavigationComponent(
-                                currentNavigationTarget));
-                currentLayouts.forEach(
-                        layoutClass -> putIfNotNull(activeChain, layoutClass,
-                                removeBeansByNavigationComponent(layoutClass)));
+                        removeBeansByNavigationComponent(currentNavigationTarget));
+                currentLayouts.forEach(layoutClass -> putIfNotNull(activeChain, layoutClass,
+                        removeBeansByNavigationComponent(layoutClass)));
 
                 Map<Class<?>, Set<String>> notActiveChain = getBeanNamesByNavigationComponents();
                 setBeanNamesByNavigationComponents(activeChain);
 
-                notActiveChain.values()
-                        .forEach(names -> names.forEach(store::remove));
+                notActiveChain.values().forEach(names -> names.forEach(store::remove));
             }
         }
 
@@ -226,8 +208,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         }
 
         boolean hasNavigationOwner(RouteScopeOwner owner) {
-            return owner == null || hasOwnerType(currentNavigationTarget, owner)
-                    || layoutsContainsOwner(owner);
+            return owner == null || hasOwnerType(currentNavigationTarget, owner) || layoutsContainsOwner(owner);
         }
 
         void storeOwner(String name, RouteScopeOwner owner) {
@@ -237,8 +218,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             } else {
                 clazz = owner.value();
             }
-            Set<String> set = getBeanNamesByNavigationComponents()
-                    .computeIfAbsent(clazz, key -> new HashSet<>());
+            Set<String> set = getBeanNamesByNavigationComponents().computeIfAbsent(clazz, key -> new HashSet<>());
             set.add(name);
         }
 
@@ -247,13 +227,11 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         }
 
         private boolean layoutsContainsOwner(RouteScopeOwner owner) {
-            return currentLayouts != null && currentLayouts.stream()
-                    .anyMatch(clazz -> hasOwnerType(clazz, owner));
+            return currentLayouts != null && currentLayouts.stream().anyMatch(clazz -> hasOwnerType(clazz, owner));
 
         }
 
-        private void putIfNotNull(Map<Class<?>, Set<String>> map, Class<?> key,
-                Set<String> value) {
+        private void putIfNotNull(Map<Class<?>, Set<String>> map, Class<?> key, Set<String> value) {
             if (value != null) {
                 map.put(key, value);
             }
@@ -281,8 +259,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             }
         }
 
-        private void setBeanNamesByNavigationComponents(
-                Map<Class<?>, Set<String>> map) {
+        private void setBeanNamesByNavigationComponents(Map<Class<?>, Set<String>> map) {
             BeanNamesWrapper wrapper = getBeanNamesWrapper();
             if (wrapper != null) {
                 wrapper.beanNamesByNavigationComponents = map;
@@ -295,8 +272,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         private Map<Class<?>, Set<String>> beanNamesByNavigationComponents = new HashMap<>();
     }
 
-    private static class RouteBeanStore extends BeanStore
-            implements ComponentEventListener<DetachEvent> {
+    private static class RouteBeanStore extends BeanStore implements ComponentEventListener<DetachEvent> {
 
         private UI currentUI;
 
@@ -306,8 +282,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
 
         private final BeanNamesWrapper beanNames = new BeanNamesWrapper();
 
-        private RouteBeanStore(UI ui, VaadinSession session,
-                SerializableConsumer<UI> detachUiCallback) {
+        private RouteBeanStore(UI ui, VaadinSession session, SerializableConsumer<UI> detachUiCallback) {
             super(session);
             currentUI = ui;
             uiDetachRegistration = currentUI.addDetachListener(this);
@@ -328,13 +303,11 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
 
         @Override
         protected Object doGet(String name, ObjectFactory<?> objectFactory) {
-            RouteScopeOwner owner = getContext().findAnnotationOnBean(name,
-                    RouteScopeOwner.class);
+            RouteScopeOwner owner = getContext().findAnnotationOnBean(name, RouteScopeOwner.class);
             if (!getNavigationListener().hasNavigationOwner(owner)) {
                 assert owner != null;
-                throw new IllegalStateException(String.format(
-                        "Route owner '%s' instance is not available in the "
-                                + "active navigation components chain: the scope defined by the bean '%s' doesn't exist.",
+                throw new IllegalStateException(String.format("Route owner '%s' instance is not available in the "
+                        + "active navigation components chain: the scope defined by the bean '%s' doesn't exist.",
                         owner.value(), name));
             }
             return super.doGet(name, objectFactory);
@@ -343,8 +316,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         @Override
         protected void storeBean(String name, Object bean) {
             super.storeBean(name, bean);
-            RouteScopeOwner owner = getContext().findAnnotationOnBean(name,
-                    RouteScopeOwner.class);
+            RouteScopeOwner owner = getContext().findAnnotationOnBean(name, RouteScopeOwner.class);
             getNavigationListener().storeOwner(name, owner);
         }
 
@@ -365,17 +337,14 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         private ApplicationContext getContext() {
             VaadinService service = currentUI.getSession().getService();
             VaadinContext context = service.getContext();
-            ServletContext servletContext = ((VaadinServletContext) context)
-                    .getContext();
+            ServletContext servletContext = ((VaadinServletContext) context).getContext();
             assert servletContext != null;
-            return WebApplicationContextUtils
-                    .getRequiredWebApplicationContext(servletContext);
+            return WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         }
 
         @NonNull
         private NavigationListener getNavigationListener() {
-            NavigationListener navigationListener = ComponentUtil
-                    .getData(currentUI, NavigationListener.class);
+            NavigationListener navigationListener = ComponentUtil.getData(currentUI, NavigationListener.class);
             assert navigationListener != null;
             return navigationListener;
         }
@@ -383,8 +352,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
     }
 
     @Override
-    public void postProcessBeanFactory(
-            ConfigurableListableBeanFactory beanFactory) {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
         beanFactory.registerScope(VAADIN_ROUTE_SCOPE_NAME, this);
     }
 
@@ -396,8 +364,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
     @Override
     public void uiInit(UIInitEvent event) {
         NavigationListener listener = new NavigationListener(event.getUI());
-        ComponentUtil.setData(event.getUI(), NavigationListener.class,
-                listener);
+        ComponentUtil.setData(event.getUI(), NavigationListener.class, listener);
     }
 
     @Override
@@ -419,8 +386,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
 
     private RouteBeanStore getBeanStoreIfExists(VaadinSession session) {
         assert session.hasLock();
-        RouteStoreWrapper wrapper = session
-                .getAttribute(RouteStoreWrapper.class);
+        RouteStoreWrapper wrapper = session.getAttribute(RouteStoreWrapper.class);
         if (wrapper == null) {
             return null;
         }
@@ -428,8 +394,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
     }
 
     private static String getWindowName(UI ui) {
-        ExtendedClientDetails details = ui.getInternals()
-                .getExtendedClientDetails();
+        ExtendedClientDetails details = ui.getInternals().getExtendedClientDetails();
         if (details == null) {
             return null;
         }
@@ -439,8 +404,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
     private static UI getUI() {
         UI ui = UI.getCurrent();
         if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The route scope is not active");
+            throw new IllegalStateException("There is no UI available. The route scope is not active");
         }
         return ui;
     }
@@ -449,8 +413,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
         VaadinSession session = ui.getSession();
         String windowName = getWindowName(ui);
         for (UI sessionUi : session.getUIs()) {
-            if (sessionUi != ui && windowName != null
-                    && windowName.equals(getWindowName(sessionUi))) {
+            if (sessionUi != ui && windowName != null && windowName.equals(getWindowName(sessionUi))) {
                 return sessionUi;
             }
         }

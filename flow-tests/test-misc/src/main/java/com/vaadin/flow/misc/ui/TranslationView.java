@@ -44,8 +44,7 @@ public class TranslationView extends Div {
         german.setId("german");
         Span germany = new Span(getTranslation("label", Locale.GERMANY));
         germany.setId("germany");
-        Span finnish = new Span(
-                getTranslation("label", new Locale("fi", "FI")));
+        Span finnish = new Span(getTranslation("label", new Locale("fi", "FI")));
         finnish.setId("finnish");
         Span french = new Span(getTranslation("label", Locale.FRANCE));
         french.setId("french");
@@ -69,13 +68,11 @@ public class TranslationView extends Div {
         dynamic = new Span("waiting");
         dynamic.setId("dynamic");
 
-        Span staticMethod = new Span(
-                I18NProvider.translate(Locale.ENGLISH, "label"));
+        Span staticMethod = new Span(I18NProvider.translate(Locale.ENGLISH, "label"));
         staticMethod.setId("static-method");
 
-        add(defaultLang, new Div(), german, new Div(), germany, new Div(),
-                finnish, new Div(), french, new Div(), japanese, new Div(),
-                dynamic, new Div(), staticMethod);
+        add(defaultLang, new Div(), german, new Div(), germany, new Div(), finnish, new Div(), french, new Div(),
+                japanese, new Div(), dynamic, new Div(), staticMethod);
     }
 
     @Override

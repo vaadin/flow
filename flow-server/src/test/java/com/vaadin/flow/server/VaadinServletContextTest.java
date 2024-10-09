@@ -32,27 +32,23 @@ public class VaadinServletContextTest {
     public void setup() {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-                .then(invocationOnMock -> attributeMap
-                        .get(invocationOnMock.getArguments()[0].toString()));
+                .then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
         Mockito.doAnswer(invocationOnMock -> {
             attributeMap.remove(invocationOnMock.getArguments()[0].toString());
             return null;
         }).when(servletContext).removeAttribute(Mockito.anyString());
 
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
-                invocationOnMock.getArguments()[0].toString(),
+        Mockito.doAnswer(invocationOnMock -> attributeMap.put(invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
                 .setAttribute(Mockito.anyString(), Mockito.any());
 
         properties = new HashMap<>();
-        properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
-                "true");
+        properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
         properties.put(InitParameters.FRONTEND_HOTDEPLOY, "false");
 
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.enumeration(properties.keySet()));
-        Mockito.when(servletContext.getInitParameter(Mockito.anyString())).then(
-                invocation -> properties.get(invocation.getArguments()[0]));
+        Mockito.when(servletContext.getInitParameterNames()).thenReturn(Collections.enumeration(properties.keySet()));
+        Mockito.when(servletContext.getInitParameter(Mockito.anyString()))
+                .then(invocation -> properties.get(invocation.getArguments()[0]));
         context = new VaadinServletContext(servletContext);
     }
 
@@ -60,12 +56,11 @@ public class VaadinServletContextTest {
     public void getAttributeWithProvider() {
         Assert.assertNull(context.getAttribute(String.class));
 
-        String value = context.getAttribute(String.class,
-                VaadinServletContextTest::testAttributeProvider);
+        String value = context.getAttribute(String.class, VaadinServletContextTest::testAttributeProvider);
         Assert.assertEquals(testAttributeProvider(), value);
 
-        Assert.assertEquals("Value from provider should be persisted",
-                testAttributeProvider(), context.getAttribute(String.class));
+        Assert.assertEquals("Value from provider should be persisted", testAttributeProvider(),
+                context.getAttribute(String.class));
     }
 
     @Test(expected = AssertionError.class)
@@ -103,9 +98,7 @@ public class VaadinServletContextTest {
         context.setAttribute(value);
 
         CharSequence retrieved = context.getAttribute(CharSequence.class);
-        Assert.assertNull(
-                "Value set base on its own type should not be found based on a super type",
-                retrieved);
+        Assert.assertNull("Value set base on its own type should not be found based on a super type", retrieved);
     }
 
     @Test
@@ -114,9 +107,7 @@ public class VaadinServletContextTest {
         context.setAttribute(CharSequence.class, value);
 
         CharSequence retrieved = context.getAttribute(CharSequence.class);
-        Assert.assertSame(
-                "Value should be found based on the type used when setting",
-                value, retrieved);
+        Assert.assertSame("Value should be found based on the type used when setting", value, retrieved);
     }
 
     @Test
@@ -124,8 +115,7 @@ public class VaadinServletContextTest {
         context.setAttribute(testAttributeProvider());
         context.removeAttribute(String.class);
 
-        Assert.assertNull("Value should be removed",
-                context.getAttribute(String.class));
+        Assert.assertNull("Value should be removed", context.getAttribute(String.class));
     }
 
     @Test
@@ -133,20 +123,16 @@ public class VaadinServletContextTest {
         context.setAttribute(testAttributeProvider());
         context.setAttribute(String.class, null);
 
-        Assert.assertNull("Value should be removed",
-                context.getAttribute(String.class));
+        Assert.assertNull("Value should be removed", context.getAttribute(String.class));
     }
 
     @Test
     public void getPropertyNames_returnsExpectedProperties() {
-        List<String> list = Collections
-                .list(context.getContextParameterNames());
-        Assert.assertEquals(
-                "Context should return only keys defined in ServletContext",
-                properties.size(), list.size());
+        List<String> list = Collections.list(context.getContextParameterNames());
+        Assert.assertEquals("Context should return only keys defined in ServletContext", properties.size(),
+                list.size());
         for (String key : properties.keySet()) {
-            Assert.assertEquals(String.format(
-                    "Value should be same from context for key '%s'", key),
+            Assert.assertEquals(String.format("Value should be same from context for key '%s'", key),
                     properties.get(key), context.getContextParameter(key));
         }
     }

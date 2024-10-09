@@ -38,8 +38,7 @@ public class HistoryIT extends ChromeBrowserTest {
         URI baseUrl = getCurrentUrl();
 
         InputTextElement stateField = $(InputTextElement.class).id("state");
-        InputTextElement locationField = $(InputTextElement.class)
-                .id("location");
+        InputTextElement locationField = $(InputTextElement.class).id("location");
         WebElement pushButton = findElement(By.id("pushState"));
         WebElement replaceButton = findElement(By.id("replaceState"));
         WebElement backButton = findElement(By.id("back"));
@@ -57,10 +56,7 @@ public class HistoryIT extends ChromeBrowserTest {
 
         Assert.assertEquals(baseUrl, getCurrentUrl());
         // idx value in history state is added by react-router
-        Assert.assertEquals(
-                Arrays.asList(
-                        "New location: com.vaadin.flow.uitest.ui.HistoryView"),
-                getStatusMessages());
+        Assert.assertEquals(Arrays.asList("New location: com.vaadin.flow.uitest.ui.HistoryView"), getStatusMessages());
         clearButton.click();
 
         stateField.clear();
@@ -73,16 +69,14 @@ public class HistoryIT extends ChromeBrowserTest {
         // Forward to originally pushed state
         forwardButton.click();
         Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: asdf",
-                "New state: {\"foo\":true}"), getStatusMessages());
+        Assert.assertEquals(Arrays.asList("New location: asdf", "New state: {\"foo\":true}"), getStatusMessages());
         clearButton.click();
 
         // Back to the replaced state
         backButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: qwerty"),
-                getStatusMessages());
+        Assert.assertEquals(Arrays.asList("New location: qwerty"), getStatusMessages());
 
         // Navigate to empty string should go to the context path root
         stateField.clear();
@@ -107,7 +101,6 @@ public class HistoryIT extends ChromeBrowserTest {
     }
 
     private List<String> getStatusMessages() {
-        return findElements(By.className("status")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+        return findElements(By.className("status")).stream().map(WebElement::getText).collect(Collectors.toList());
     }
 }

@@ -36,14 +36,13 @@ public class ComponentEvent<T extends Component> extends EventObject {
     private Command unregisterListenerCommand = null;
 
     /**
-     * Creates a new event using the given source and indicator whether the
-     * event originated from the client side or the server side.
+     * Creates a new event using the given source and indicator whether the event originated from the client side or the
+     * server side.
      *
      * @param source
      *            the source component
      * @param fromClient
-     *            <code>true</code> if the event originated from the client
-     *            side, <code>false</code> otherwise
+     *            <code>true</code> if the event originated from the client side, <code>false</code> otherwise
      */
     public ComponentEvent(T source, boolean fromClient) {
         super(source);
@@ -59,8 +58,7 @@ public class ComponentEvent<T extends Component> extends EventObject {
     /**
      * Checks if this event originated from the client side.
      *
-     * @return <code>true</code> if the event originated from the client side,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the event originated from the client side, <code>false</code> otherwise
      */
     public boolean isFromClient() {
         return fromClient;
@@ -81,14 +79,12 @@ public class ComponentEvent<T extends Component> extends EventObject {
     /**
      * Unregisters the event listener currently being invoked.
      * <p>
-     * This method can only be called from within an event listener. Calling it
-     * will remove the current event listener so no further events are passed to
-     * it.
+     * This method can only be called from within an event listener. Calling it will remove the current event listener
+     * so no further events are passed to it.
      */
     public void unregisterListener() {
         if (unregisterListenerCommand == null) {
-            throw new IllegalStateException(
-                    "unregisterListener can only be called inside the event listener");
+            throw new IllegalStateException("unregisterListener can only be called inside the event listener");
         }
         unregisterListenerCommand.execute();
     }

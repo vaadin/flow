@@ -24,8 +24,7 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 
 /**
- * Generate <code>vite-devmode.ts</code> if it is missing in frontend/generated
- * folder.
+ * Generate <code>vite-devmode.ts</code> if it is missing in frontend/generated folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -47,9 +46,7 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        return new File(
-                new File(options.getFrontendDirectory(),
-                        FrontendUtils.GENERATED),
+        return new File(new File(options.getFrontendDirectory(), FrontendUtils.GENERATED),
                 FrontendUtils.VITE_DEVMODE_TS);
     }
 
@@ -60,8 +57,7 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        try (InputStream devModeStream = getClass()
-                .getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS)) {
+        try (InputStream devModeStream = getClass().getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS)) {
             return IOUtils.toString(devModeStream, UTF_8);
         }
     }

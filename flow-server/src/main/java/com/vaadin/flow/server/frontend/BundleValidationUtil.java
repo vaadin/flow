@@ -60,25 +60,21 @@ public final class BundleValidationUtil {
      *            Vaadin application mode
      * @return true if a new frontend bundle is needed, false otherwise
      */
-    public static boolean needsBuild(Options options,
-            FrontendDependenciesScanner frontendDependencies, Mode mode) {
+    public static boolean needsBuild(Options options, FrontendDependenciesScanner frontendDependencies, Mode mode) {
         getLogger().info("Checking if a {} mode bundle build is needed", mode);
         try {
             boolean needsBuild;
             if (mode.isProduction()) {
-                if (options.isForceProductionBuild() || FrontendUtils
-                        .isHillaUsed(options.getFrontendDirectory(),
-                                options.getClassFinder())) {
+                if (options.isForceProductionBuild()
+                        || FrontendUtils.isHillaUsed(options.getFrontendDirectory(), options.getClassFinder())) {
                     if (options.isForceProductionBuild()) {
-                        UsageStatistics.markAsUsed("flow/prod-build-requested",
-                                null);
+                        UsageStatistics.markAsUsed("flow/prod-build-requested", null);
                     }
                     getLogger().info("Frontend build requested.");
                     saveResultInFile(true, options);
                     return true;
                 } else {
-                    needsBuild = needsBuildProdBundle(options,
-                            frontendDependencies);
+                    needsBuild = needsBuildProdBundle(options, frontendDependencies);
                     saveResultInFile(needsBuild, options);
                 }
             } else if (Mode.DEVELOPMENT_BUNDLE == mode) {
@@ -96,50 +92,37 @@ public final class BundleValidationUtil {
             }
             return needsBuild;
         } catch (Exception e) {
-            getLogger().error(String.format(
-                    "Error when checking if a %s bundle build " + "is needed",
-                    mode), e);
+            getLogger().error(String.format("Error when checking if a %s bundle build " + "is needed", mode), e);
             return true;
         }
     }
 
-    private static boolean needsBuildDevBundle(Options options,
-            FrontendDependenciesScanner frontendDependencies)
+    private static boolean needsBuildDevBundle(Options options, FrontendDependenciesScanner frontendDependencies)
             throws IOException {
         File npmFolder = options.getNpmFolder();
-        File compressedDevBundle = new File(npmFolder,
-                Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
-        if (!DevBundleUtils
-                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
-                .exists() && !compressedDevBundle.exists()
-                && !hasJarBundle(DEV_BUNDLE_JAR_PATH,
-                        options.getClassFinder())) {
+        File compressedDevBundle = new File(npmFolder, Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
+        if (!DevBundleUtils.getDevBundleFolder(npmFolder, options.getBuildDirectoryName()).exists()
+                && !compressedDevBundle.exists() && !hasJarBundle(DEV_BUNDLE_JAR_PATH, options.getClassFinder())) {
             getLogger().info("No dev-bundle found.");
             return true;
         }
 
-        if (!DevBundleUtils
-                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
-                .exists() && compressedDevBundle.exists()) {
+        if (!DevBundleUtils.getDevBundleFolder(npmFolder, options.getBuildDirectoryName()).exists()
+                && compressedDevBundle.exists()) {
             DevBundleUtils.unpackBundle(npmFolder,
-                    new File(
-                            new File(npmFolder,
-                                    options.getBuildDirectoryName()),
-                            Constants.DEV_BUNDLE_LOCATION));
+                    new File(new File(npmFolder, options.getBuildDirectoryName()), Constants.DEV_BUNDLE_LOCATION));
 
         }
 
         if (options.isSkipDevBundle()) {
             // if skip dev bundle defined and we have a dev bundle,
             // cancel all checks and trust existing bundle
-            getLogger()
-                    .info("Skip dev bundle requested. Using existing bundle.");
+            getLogger().info("Skip dev bundle requested. Using existing bundle.");
             return false;
         }
 
-        if (!DevBundleUtils
-                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
-                .exists() && !options.isReactEnabled()) {
+        if (!DevBundleUtils.getDevBundleFolder(npmFolder, options.getBuildDirectoryName()).exists()
+                && !options.isReactEnabled()) {
             // Using default dev bundle in a Jar.
             // Default dev bundle is packaged with react router only. With react
             // disabled, let's rebuild bundle to get vaadin router instead.
@@ -147,26 +130,21 @@ public final class BundleValidationUtil {
             return true;
         }
 
-        String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder,
-                options.getBuildDirectoryName());
+        String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder, options.getBuildDirectoryName());
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
-            getLogger().info(
-                    "No bundle's stats.json found for dev-bundle validation.");
+            getLogger().info("No bundle's stats.json found for dev-bundle validation.");
             return true;
         }
 
-        return needsBuildInternal(options, frontendDependencies,
-                statsJsonContent);
+        return needsBuildInternal(options, frontendDependencies, statsJsonContent);
     }
 
-    private static boolean needsBuildProdBundle(Options options,
-            FrontendDependenciesScanner frontendDependencies)
+    private static boolean needsBuildProdBundle(Options options, FrontendDependenciesScanner frontendDependencies)
             throws IOException {
 
-        if (!options.isReactEnabled() && !ProdBundleUtils
-                .getProdBundle(options.getNpmFolder()).exists()) {
+        if (!options.isReactEnabled() && !ProdBundleUtils.getProdBundle(options.getNpmFolder()).exists()) {
             // Using default prod bundle in a Jar.
             // Default prod bundle is packaged with react router only. With
             // react disabled, let's rebuild bundle to get vaadin router
@@ -174,75 +152,55 @@ public final class BundleValidationUtil {
             getLogger().info("Bundle build required for non default router.");
             return true;
         }
-        String statsJsonContent = ProdBundleUtils.findBundleStatsJson(
-                options.getNpmFolder(), options.getClassFinder());
+        String statsJsonContent = ProdBundleUtils.findBundleStatsJson(options.getNpmFolder(), options.getClassFinder());
 
-        if (!options.getClassFinder()
-                .getAnnotatedClasses(LoadDependenciesOnStartup.class)
-                .isEmpty()) {
-            getLogger()
-                    .info("Custom eager routes defined. Require bundle build.");
-            UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-bundle-custom-loading", null);
+        if (!options.getClassFinder().getAnnotatedClasses(LoadDependenciesOnStartup.class).isEmpty()) {
+            getLogger().info("Custom eager routes defined. Require bundle build.");
+            UsageStatistics.markAsUsed("flow/rebundle-reason-bundle-custom-loading", null);
             return true;
         }
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
-            getLogger().info(
-                    "No bundle's stats.json found for production-bundle validation.");
+            getLogger().info("No bundle's stats.json found for production-bundle validation.");
             return true;
         }
 
-        return needsBuildInternal(options, frontendDependencies,
-                statsJsonContent);
+        return needsBuildInternal(options, frontendDependencies, statsJsonContent);
     }
 
-    private static boolean needsBuildInternal(Options options,
-            FrontendDependenciesScanner frontendDependencies,
+    private static boolean needsBuildInternal(Options options, FrontendDependenciesScanner frontendDependencies,
             String statsJsonContent) throws IOException {
 
         JsonObject packageJson = getPackageJson(options, frontendDependencies);
         JsonObject statsJson = Json.parse(statsJsonContent);
 
         // Get scanned @NpmPackage annotations
-        final Map<String, String> npmPackages = frontendDependencies
-                .getPackages();
+        final Map<String, String> npmPackages = frontendDependencies.getPackages();
 
-        if (!BundleValidationUtil.hashAndBundleModulesEqual(statsJson,
-                packageJson, npmPackages)) {
-            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-package",
-                    null);
+        if (!BundleValidationUtil.hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-package", null);
             // Hash in the project doesn't match the bundle hash or NpmPackages
             // are found missing in bundle.
             return true;
         }
-        if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
-                frontendDependencies)) {
-            UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-missing-frontend-import", null);
+        if (!BundleValidationUtil.frontendImportsFound(statsJson, options, frontendDependencies)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-frontend-import", null);
             return true;
         }
 
-        if (ThemeValidationUtil.themeConfigurationChanged(options, statsJson,
-                frontendDependencies)) {
-            UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-changed-theme-config", null);
+        if (ThemeValidationUtil.themeConfigurationChanged(options, statsJson, frontendDependencies)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-changed-theme-config", null);
             return true;
         }
 
-        if (ThemeValidationUtil.themeShadowDOMStylesheetsChanged(options,
-                statsJson, frontendDependencies)) {
-            UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-changed-shadow-DOM-stylesheets",
-                    null);
+        if (ThemeValidationUtil.themeShadowDOMStylesheetsChanged(options, statsJson, frontendDependencies)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-changed-shadow-DOM-stylesheets", null);
             return true;
         }
 
-        if (BundleValidationUtil.exportedWebComponents(statsJson,
-                options.getClassFinder())) {
-            UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-added-exported-component", null);
+        if (BundleValidationUtil.exportedWebComponents(statsJson, options.getClassFinder())) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-added-exported-component", null);
             return true;
         }
 
@@ -264,8 +222,7 @@ public final class BundleValidationUtil {
     /**
      * Get the package.json file from disk if available else generate in memory.
      * <p>
-     * For the loaded file update versions as per in memory to get correct
-     * application versions.
+     * For the loaded file update versions as per in memory to get correct application versions.
      *
      * @param options
      *            the task options
@@ -273,18 +230,15 @@ public final class BundleValidationUtil {
      *            frontend dependency scanner
      * @return package.json content as JsonObject
      */
-    public static JsonObject getPackageJson(Options options,
-            FrontendDependenciesScanner frontendDependencies) {
+    public static JsonObject getPackageJson(Options options, FrontendDependenciesScanner frontendDependencies) {
         File packageJsonFile = new File(options.getNpmFolder(), "package.json");
 
         if (packageJsonFile.exists()) {
             try {
                 final JsonObject packageJson = Json
-                        .parse(FileUtils.readFileToString(packageJsonFile,
-                                StandardCharsets.UTF_8));
+                        .parse(FileUtils.readFileToString(packageJsonFile, StandardCharsets.UTF_8));
                 cleanOldPlatformDependencies(packageJson);
-                return getDefaultPackageJson(options, frontendDependencies,
-                        packageJson);
+                return getDefaultPackageJson(options, frontendDependencies, packageJson);
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
@@ -294,11 +248,9 @@ public final class BundleValidationUtil {
         return null;
     }
 
-    public static JsonObject getDefaultPackageJson(Options options,
-            FrontendDependenciesScanner frontendDependencies,
+    public static JsonObject getDefaultPackageJson(Options options, FrontendDependenciesScanner frontendDependencies,
             JsonObject packageJson) {
-        NodeUpdater nodeUpdater = new NodeUpdater(frontendDependencies,
-                options) {
+        NodeUpdater nodeUpdater = new NodeUpdater(frontendDependencies, options) {
             @Override
             public void execute() {
             }
@@ -310,36 +262,27 @@ public final class BundleValidationUtil {
             nodeUpdater.addVaadinDefaultsToJson(packageJson);
             nodeUpdater.updateDefaultDependencies(packageJson);
 
-            final Map<String, String> applicationDependencies = frontendDependencies
-                    .getPackages();
+            final Map<String, String> applicationDependencies = frontendDependencies.getPackages();
 
-            Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
-                    options.getClassFinder(),
-                    options.isReactEnabled()
-                            && FrontendUtils.isReactModuleAvailable(options))
+            Map<String, String> filteredApplicationDependencies = new ExclusionFilter(options.getClassFinder(),
+                    options.isReactEnabled() && FrontendUtils.isReactModuleAvailable(options))
                     .exclude(applicationDependencies);
 
             // Add application dependencies
-            for (Map.Entry<String, String> dep : filteredApplicationDependencies
-                    .entrySet()) {
-                nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
-                        dep.getKey(), dep.getValue());
+            for (Map.Entry<String, String> dep : filteredApplicationDependencies.entrySet()) {
+                nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, dep.getKey(), dep.getValue());
             }
 
-            final String hash = TaskUpdatePackages
-                    .generatePackageJsonHash(packageJson);
-            packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
-                    .put(NodeUpdater.HASH_KEY, hash);
+            final String hash = TaskUpdatePackages.generatePackageJsonHash(packageJson);
+            packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY).put(NodeUpdater.HASH_KEY, hash);
 
-            final JsonObject platformPinnedDependencies = nodeUpdater
-                    .getPlatformPinnedDependencies();
+            final JsonObject platformPinnedDependencies = nodeUpdater.getPlatformPinnedDependencies();
             for (String key : platformPinnedDependencies.keys()) {
                 // need to double check that not overriding a scanned
                 // dependency since add-ons should be able to downgrade
                 // version through exclusion
                 if (!filteredApplicationDependencies.containsKey(key)) {
-                    TaskUpdatePackages.pinPlatformDependency(packageJson,
-                            platformPinnedDependencies, key);
+                    TaskUpdatePackages.pinPlatformDependency(packageJson, platformPinnedDependencies, key);
                 }
             }
 
@@ -351,46 +294,38 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Removes Vaadin managed dependencies found under "vaadin:dependencies"
-     * from "dependencies" block if the package name and version match. Needed
-     * for cases when Vaadin provided dependencies are not a part of the
-     * platform anymore, so these dependencies are not treated as a developer
-     * provided dependencies and, thus, a new bundle generation is not triggered
-     * erroneously.
+     * Removes Vaadin managed dependencies found under "vaadin:dependencies" from "dependencies" block if the package
+     * name and version match. Needed for cases when Vaadin provided dependencies are not a part of the platform
+     * anymore, so these dependencies are not treated as a developer provided dependencies and, thus, a new bundle
+     * generation is not triggered erroneously.
      * <p>
-     * Examples: polymer iron-list dependencies or Vaadin web components with a
-     * deprecated "vaadin-" prefix that are not a part of platform 24.0 anymore.
+     * Examples: polymer iron-list dependencies or Vaadin web components with a deprecated "vaadin-" prefix that are not
+     * a part of platform 24.0 anymore.
      *
      * @param packageJson
      *            content of the package.json content red from a file
      */
     private static void cleanOldPlatformDependencies(JsonObject packageJson) {
-        if (packageJson == null
-                || !hasFrameworkDependencyObjects(packageJson)) {
+        if (packageJson == null || !hasFrameworkDependencyObjects(packageJson)) {
             return;
         }
 
-        JsonObject dependencies = packageJson
-                .getObject(NodeUpdater.DEPENDENCIES);
-        JsonObject vaadinDependencies = packageJson
-                .getObject(NodeUpdater.VAADIN_DEP_KEY)
+        JsonObject dependencies = packageJson.getObject(NodeUpdater.DEPENDENCIES);
+        JsonObject vaadinDependencies = packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getObject(NodeUpdater.DEPENDENCIES);
 
         for (String vaadinDependency : vaadinDependencies.keys()) {
             String version = vaadinDependencies.getString(vaadinDependency);
-            if (dependencies.hasKey(vaadinDependency) && version
-                    .equals(dependencies.getString(vaadinDependency))) {
+            if (dependencies.hasKey(vaadinDependency) && version.equals(dependencies.getString(vaadinDependency))) {
                 dependencies.remove(vaadinDependency);
-                getLogger().debug(
-                        "Old Vaadin provided dependency '{}':'{}' has been removed from package.json",
+                getLogger().debug("Old Vaadin provided dependency '{}':'{}' has been removed from package.json",
                         vaadinDependency, version);
             }
         }
     }
 
     /**
-     * Verify that package hash versions are equal and that all project
-     * npmPackages are in bundle.
+     * Verify that package hash versions are equal and that all project npmPackages are in bundle.
      *
      *
      * @param statsJson
@@ -401,27 +336,22 @@ public final class BundleValidationUtil {
      *            npm packages map
      * @return {@code true} if up to date
      */
-    public static boolean hashAndBundleModulesEqual(JsonObject statsJson,
-            JsonObject packageJson, Map<String, String> npmPackages) {
+    public static boolean hashAndBundleModulesEqual(JsonObject statsJson, JsonObject packageJson,
+            Map<String, String> npmPackages) {
 
-        String packageJsonHash = BundleValidationUtil
-                .getPackageJsonHash(packageJson);
-        String bundlePackageJsonHash = BundleValidationUtil
-                .getStatsHash(statsJson);
+        String packageJsonHash = BundleValidationUtil.getPackageJsonHash(packageJson);
+        String bundlePackageJsonHash = BundleValidationUtil.getStatsHash(statsJson);
 
         if (packageJsonHash == null || packageJsonHash.isEmpty()) {
-            getLogger().error(
-                    "No hash found for 'package.json' even though one should always be generated!");
+            getLogger().error("No hash found for 'package.json' even though one should always be generated!");
             return false;
         }
 
-        JsonObject bundleModules = statsJson
-                .getObject("packageJsonDependencies");
+        JsonObject bundleModules = statsJson.getObject("packageJsonDependencies");
 
         if (bundleModules == null) {
             getLogger().error(
-                    "Bundle did not contain package json dependencies to validate.\n"
-                            + "Rebuild of bundle needed.");
+                    "Bundle did not contain package json dependencies to validate.\n" + "Rebuild of bundle needed.");
             return false;
         }
 
@@ -437,33 +367,27 @@ public final class BundleValidationUtil {
         List<String> dependenciesList = Arrays.stream(dependencies.keys())
                 // skip checking flow-frontend as it was used in previous
                 // versions as an alias for ./target/flow-frontend
-                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg)).collect(Collectors.toList());
 
-        List<String> missingFromBundle = dependenciesList.stream()
-                .filter(pkg -> !bundleModules.hasKey(pkg))
+        List<String> missingFromBundle = dependenciesList.stream().filter(pkg -> !bundleModules.hasKey(pkg))
                 .collect(Collectors.toList());
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
-                getLogger().info("Dependency " + dependency
-                        + " is missing from the bundle");
+                getLogger().info("Dependency " + dependency + " is missing from the bundle");
             }
             return false;
         }
 
         // We know here that all dependencies exist
         missingFromBundle = dependenciesList.stream()
-                .filter(pkg -> !versionAccepted(dependencies.getString(pkg),
-                        bundleModules.getString(pkg)))
+                .filter(pkg -> !versionAccepted(dependencies.getString(pkg), bundleModules.getString(pkg)))
                 .collect(Collectors.toList());
 
         if (!missingFromBundle.isEmpty()) {
             for (String pkg : missingFromBundle) {
-                getLogger().info(
-                        "Dependency {}:{} has the wrong version {} in the bundle",
-                        pkg, dependencies.getString(pkg),
-                        bundleModules.getString(pkg));
+                getLogger().info("Dependency {}:{} has the wrong version {} in the bundle", pkg,
+                        dependencies.getString(pkg), bundleModules.getString(pkg));
             }
             return false;
         }
@@ -490,28 +414,21 @@ public final class BundleValidationUtil {
         } else if (expectedVersion == null || actualVersion == null) {
             // expected or actual version is referencing a local package
             // while the other one is a parsable version
-            getLogger().debug(
-                    "Version '{}' cannot be parsed and compared to '{}'",
-                    expectedVersion == null ? expected : actual,
-                    expectedVersion == null ? actual : expected);
+            getLogger().debug("Version '{}' cannot be parsed and compared to '{}'",
+                    expectedVersion == null ? expected : actual, expectedVersion == null ? actual : expected);
             return false;
         }
 
         if (expected.startsWith("~")) {
-            boolean correctRange = expectedVersion
-                    .getMajorVersion() == actualVersion.getMajorVersion()
-                    && expectedVersion.getMinorVersion() == actualVersion
-                            .getMinorVersion();
+            boolean correctRange = expectedVersion.getMajorVersion() == actualVersion.getMajorVersion()
+                    && expectedVersion.getMinorVersion() == actualVersion.getMinorVersion();
             // Installed version may be newer than the package version.
-            return (expectedVersion.isEqualTo(actualVersion)
-                    || expectedVersion.isOlderThan(actualVersion))
+            return (expectedVersion.isEqualTo(actualVersion) || expectedVersion.isOlderThan(actualVersion))
                     && correctRange;
         } else if (expected.startsWith("^")) {
-            boolean correctRange = expectedVersion
-                    .getMajorVersion() == actualVersion.getMajorVersion();
+            boolean correctRange = expectedVersion.getMajorVersion() == actualVersion.getMajorVersion();
             // Installed version may be newer than the package version.
-            return (expectedVersion.isEqualTo(actualVersion)
-                    || expectedVersion.isOlderThan(actualVersion))
+            return (expectedVersion.isEqualTo(actualVersion) || expectedVersion.isOlderThan(actualVersion))
                     && correctRange;
         }
         return expectedVersion.isEqualTo(actualVersion);
@@ -526,59 +443,45 @@ public final class BundleValidationUtil {
      *            json object containing dependencies to check against
      * @return {@code false} if all packages are found
      */
-    private static boolean dependenciesContainsAllPackages(
-            Map<String, String> npmPackages, JsonObject dependencies) {
+    private static boolean dependenciesContainsAllPackages(Map<String, String> npmPackages, JsonObject dependencies) {
         final List<String> collect = npmPackages.keySet().stream()
-                .filter(pkg -> !(dependencies.hasKey(pkg) && versionAccepted(
-                        dependencies.getString(pkg), npmPackages.get(pkg))))
+                .filter(pkg -> !(dependencies.hasKey(pkg)
+                        && versionAccepted(dependencies.getString(pkg), npmPackages.get(pkg))))
                 .collect(Collectors.toList());
         if (!collect.isEmpty()) {
-            collect.forEach(dependency -> getLogger().info("Dependency "
-                    + dependency + " is missing from the bundle"));
+            collect.forEach(dependency -> getLogger().info("Dependency " + dependency + " is missing from the bundle"));
             return false;
         }
         return true;
     }
 
-    public static boolean exportedWebComponents(JsonObject statsJson,
-            ClassFinder finder) {
+    public static boolean exportedWebComponents(JsonObject statsJson, ClassFinder finder) {
         try {
             Set<Class<?>> exporterRelatedClasses = new HashSet<>();
-            finder.getSubTypesOf(WebComponentExporter.class.getName())
-                    .forEach(exporterRelatedClasses::add);
-            finder.getSubTypesOf(WebComponentExporterFactory.class.getName())
-                    .forEach(exporterRelatedClasses::add);
+            finder.getSubTypesOf(WebComponentExporter.class.getName()).forEach(exporterRelatedClasses::add);
+            finder.getSubTypesOf(WebComponentExporterFactory.class.getName()).forEach(exporterRelatedClasses::add);
 
-            Set<String> webComponents = WebComponentExporterUtils
-                    .getFactories(exporterRelatedClasses).stream()
-                    .map(BundleValidationUtil::getTag)
-                    .collect(Collectors.toSet());
+            Set<String> webComponents = WebComponentExporterUtils.getFactories(exporterRelatedClasses).stream()
+                    .map(BundleValidationUtil::getTag).collect(Collectors.toSet());
 
-            JsonArray webComponentsInStats = statsJson
-                    .getArray("webComponents");
+            JsonArray webComponentsInStats = statsJson.getArray("webComponents");
 
             if (webComponentsInStats == null) {
                 if (!webComponents.isEmpty()) {
-                    getLogger().info(
-                            "Found embedded web components not yet included "
-                                    + "into the bundle: {}",
+                    getLogger().info("Found embedded web components not yet included " + "into the bundle: {}",
                             String.join(", ", webComponents));
                     return true;
                 }
                 return false;
             } else {
-                for (int index = 0; index < webComponentsInStats
-                        .length(); index++) {
-                    String webComponentInStats = webComponentsInStats
-                            .getString(index);
+                for (int index = 0; index < webComponentsInStats.length(); index++) {
+                    String webComponentInStats = webComponentsInStats.getString(index);
                     webComponents.remove(webComponentInStats);
                 }
             }
 
             if (!webComponents.isEmpty()) {
-                getLogger().info(
-                        "Found newly added embedded web components not "
-                                + "yet included into the bundle: {}",
+                getLogger().info("Found newly added embedded web components not " + "yet included into the bundle: {}",
                         String.join(", ", webComponents));
                 return true;
             }
@@ -586,47 +489,38 @@ public final class BundleValidationUtil {
             return false;
 
         } catch (ClassNotFoundException e) {
-            getLogger()
-                    .error("Unable to locate embedded web component classes.");
+            getLogger().error("Unable to locate embedded web component classes.");
             return false;
         }
     }
 
-    private static String getTag(
-            WebComponentExporterFactory<? extends Component> factory) {
+    private static String getTag(WebComponentExporterFactory<? extends Component> factory) {
         WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
         return exporterTagExtractor.apply(factory);
     }
 
-    public static boolean frontendImportsFound(JsonObject statsJson,
-            Options options, FrontendDependenciesScanner frontendDependencies)
-            throws IOException {
+    public static boolean frontendImportsFound(JsonObject statsJson, Options options,
+            FrontendDependenciesScanner frontendDependencies) throws IOException {
 
         // Validate frontend requirements in flow-generated-imports.js
-        final GenerateMainImports generateMainImports = new GenerateMainImports(
-                frontendDependencies, options, statsJson);
+        final GenerateMainImports generateMainImports = new GenerateMainImports(frontendDependencies, options,
+                statsJson);
         generateMainImports.run();
-        final List<String> imports = generateMainImports.getLines().stream()
-                .filter(line -> line.startsWith("import"))
-                .map(line -> line.substring(line.indexOf('\'') + 1,
-                        line.lastIndexOf('\'')))
+        final List<String> imports = generateMainImports.getLines().stream().filter(line -> line.startsWith("import"))
+                .map(line -> line.substring(line.indexOf('\'') + 1, line.lastIndexOf('\'')))
                 .map(importString -> importString.contains("?")
-                        ? importString.substring(0,
-                                importString.lastIndexOf("?"))
+                        ? importString.substring(0, importString.lastIndexOf("?"))
                         : importString)
                 .collect(Collectors.toList());
         LinkedHashSet<String> uniqueImports = new LinkedHashSet<>(imports);
-        JsonArray statsBundle = statsJson.hasKey("bundleImports")
-                ? statsJson.getArray("bundleImports")
+        JsonArray statsBundle = statsJson.hasKey("bundleImports") ? statsJson.getArray("bundleImports")
                 : Json.createArray();
-        final List<String> missingFromBundle = uniqueImports.stream().filter(
-                importString -> !arrayContainsString(statsBundle, importString))
-                .collect(Collectors.toList());
+        final List<String> missingFromBundle = uniqueImports.stream()
+                .filter(importString -> !arrayContainsString(statsBundle, importString)).collect(Collectors.toList());
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
-                getLogger().info("Frontend import " + dependency
-                        + " is missing from the bundle");
+                getLogger().info("Frontend import " + dependency + " is missing from the bundle");
             }
             return false;
         }
@@ -634,49 +528,39 @@ public final class BundleValidationUtil {
         String resourcePath = "generated/jar-resources/";
         final List<String> jarImports = uniqueImports.stream()
                 .filter(importString -> importString.contains(resourcePath))
-                .map(importString -> importString
-                        .substring(importString.indexOf(resourcePath)
-                                + resourcePath.length()))
+                .map(importString -> importString.substring(importString.indexOf(resourcePath) + resourcePath.length()))
                 .collect(Collectors.toList());
 
         final List<String> projectImports = uniqueImports.stream()
-                .filter(importString -> importString
-                        .startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)
+                .filter(importString -> importString.startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)
                         && !importString.contains(resourcePath))
-                .map(importString -> importString.substring(
-                        FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
+                .map(importString -> importString.substring(FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
                 .collect(Collectors.toList());
 
         final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         List<String> faultyContent = new ArrayList<>();
 
         for (String jarImport : jarImports) {
-            final String jarResourceString = FrontendUtils
-                    .getJarResourceString(jarImport, options.getClassFinder());
+            final String jarResourceString = FrontendUtils.getJarResourceString(jarImport, options.getClassFinder());
             if (jarResourceString == null) {
                 getLogger().info("No file found for '{}'", jarImport);
                 return false;
             }
-            compareFrontendHashes(frontendHashes, faultyContent, jarImport,
-                    jarResourceString);
+            compareFrontendHashes(frontendHashes, faultyContent, jarImport, jarResourceString);
         }
 
         for (String projectImport : projectImports) {
-            File frontendFile = new File(options.getFrontendDirectory(),
-                    projectImport);
+            File frontendFile = new File(options.getFrontendDirectory(), projectImport);
             if (!frontendFile.exists()) {
                 getLogger().info("No file found for '{}'", projectImport);
                 return false;
             }
-            String frontendFileContent = FileUtils
-                    .readFileToString(frontendFile, StandardCharsets.UTF_8);
-            compareFrontendHashes(frontendHashes, faultyContent, projectImport,
-                    frontendFileContent);
+            String frontendFileContent = FileUtils.readFileToString(frontendFile, StandardCharsets.UTF_8);
+            compareFrontendHashes(frontendHashes, faultyContent, projectImport, frontendFileContent);
         }
 
         if (!faultyContent.isEmpty()) {
-            logChangedFiles(faultyContent,
-                    "Detected changed content for frontend files:");
+            logChangedFiles(faultyContent, "Detected changed content for frontend files:");
             return false;
         }
 
@@ -684,21 +568,18 @@ public final class BundleValidationUtil {
             return false;
         }
 
-        Map<String, String> remainingImports = getRemainingImports(jarImports,
-                projectImports, frontendHashes);
+        Map<String, String> remainingImports = getRemainingImports(jarImports, projectImports, frontendHashes);
 
-        if (importedFrontendFilesChanged(options.getFrontendDirectory(),
-                remainingImports)) {
+        if (importedFrontendFilesChanged(options.getFrontendDirectory(), remainingImports)) {
             return false;
         }
 
         return true;
     }
 
-    private static boolean indexFileAddedOrDeleted(Options options,
-            JsonObject frontendHashes) {
-        Collection<String> indexFiles = Arrays.asList(FrontendUtils.INDEX_TS,
-                FrontendUtils.INDEX_JS, FrontendUtils.INDEX_TSX);
+    private static boolean indexFileAddedOrDeleted(Options options, JsonObject frontendHashes) {
+        Collection<String> indexFiles = Arrays.asList(FrontendUtils.INDEX_TS, FrontendUtils.INDEX_JS,
+                FrontendUtils.INDEX_TSX);
         for (String indexFile : indexFiles) {
             File file = new File(options.getFrontendDirectory(), indexFile);
             if (file.exists() && !frontendHashes.hasKey(indexFile)) {
@@ -712,12 +593,10 @@ public final class BundleValidationUtil {
         return false;
     }
 
-    private static Map<String, String> getRemainingImports(
-            List<String> jarImports, List<String> projectImports,
+    private static Map<String, String> getRemainingImports(List<String> jarImports, List<String> projectImports,
             JsonObject frontendHashes) {
         Map<String, String> remainingImportEntries = new HashMap<>();
-        List<String> remainingKeys = new ArrayList<>(
-                Arrays.asList(frontendHashes.keys()));
+        List<String> remainingKeys = new ArrayList<>(Arrays.asList(frontendHashes.keys()));
 
         remainingKeys.removeAll(jarImports);
         remainingKeys.removeAll(projectImports);
@@ -733,31 +612,27 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Checks for possible changes in TS/JS files in frontend folder which are
-     * referenced from other TS/JS files with 'import {foo} from 'Frontend/bar'.
+     * Checks for possible changes in TS/JS files in frontend folder which are referenced from other TS/JS files with
+     * 'import {foo} from 'Frontend/bar'.
      *
      * @param frontendDirectory
      *            folder with frontend resources in the project
      * @param remainingImports
-     *            frontend resource imports listed in the bundle, but not found
-     *            with class scanner.
+     *            frontend resource imports listed in the bundle, but not found with class scanner.
      * @return true if changes detected, false otherwise
      * @throws IOException
      *             if exception is thrown while reading files content
      */
-    private static boolean importedFrontendFilesChanged(File frontendDirectory,
-            Map<String, String> remainingImports) throws IOException {
+    private static boolean importedFrontendFilesChanged(File frontendDirectory, Map<String, String> remainingImports)
+            throws IOException {
         if (!remainingImports.isEmpty()) {
             List<String> changed = new ArrayList<>();
-            for (Map.Entry<String, String> importEntry : remainingImports
-                    .entrySet()) {
+            for (Map.Entry<String, String> importEntry : remainingImports.entrySet()) {
                 String filePath = importEntry.getKey();
                 String expectedHash = importEntry.getValue();
                 File frontendFile = new File(frontendDirectory, filePath);
                 if (frontendFile.exists()) {
-                    final String hash = calculateHash(
-                            FileUtils.readFileToString(frontendFile,
-                                    StandardCharsets.UTF_8));
+                    final String hash = calculateHash(FileUtils.readFileToString(frontendFile, StandardCharsets.UTF_8));
                     if (!expectedHash.equals(hash)) {
                         changed.add(filePath);
                     }
@@ -771,12 +646,11 @@ public final class BundleValidationUtil {
         return false;
     }
 
-    private static void compareFrontendHashes(JsonObject frontendHashes,
-            List<String> faultyContent, String frontendFilePath,
-            String frontendFileContent) {
+    private static void compareFrontendHashes(JsonObject frontendHashes, List<String> faultyContent,
+            String frontendFilePath, String frontendFileContent) {
         final String contentHash = calculateHash(frontendFileContent);
-        if (frontendHashes.hasKey(frontendFilePath) && !frontendHashes
-                .getString(frontendFilePath).equals(contentHash)) {
+        if (frontendHashes.hasKey(frontendFilePath)
+                && !frontendHashes.getString(frontendFilePath).equals(contentHash)) {
             faultyContent.add(frontendFilePath);
         } else if (!frontendHashes.hasKey(frontendFilePath)) {
             getLogger().info("No hash info for '{}'", frontendFilePath);
@@ -808,31 +682,25 @@ public final class BundleValidationUtil {
     }
 
     public static String getPackageJsonHash(JsonObject packageJson) {
-        if (packageJson != null && packageJson.hasKey("vaadin")
-                && packageJson.getObject("vaadin").hasKey("hash")) {
+        if (packageJson != null && packageJson.hasKey("vaadin") && packageJson.getObject("vaadin").hasKey("hash")) {
             return packageJson.getObject("vaadin").getString("hash");
         }
 
         return null;
     }
 
-    private static boolean hasFrameworkDependencyObjects(
-            JsonObject packageJson) {
+    private static boolean hasFrameworkDependencyObjects(JsonObject packageJson) {
         return packageJson.hasKey(NodeUpdater.VAADIN_DEP_KEY)
-                && packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
-                        .hasKey(NodeUpdater.DEPENDENCIES)
+                && packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY).hasKey(NodeUpdater.DEPENDENCIES)
                 && packageJson.hasKey(NodeUpdater.DEPENDENCIES);
     }
 
-    public static void logChangedFiles(List<String> frontendFiles,
-            String message) {
+    public static void logChangedFiles(List<String> frontendFiles, String message) {
         if (message == null || message.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Changed files message cannot be empty");
+            throw new IllegalArgumentException("Changed files message cannot be empty");
         }
         if (message.contains("{}")) {
-            throw new IllegalArgumentException(
-                    "Changed files message shouldn't include '{}' placeholder");
+            throw new IllegalArgumentException("Changed files message shouldn't include '{}' placeholder");
         }
         message += "\n{}";
         StringBuilder handledFiles = new StringBuilder();
@@ -842,50 +710,41 @@ public final class BundleValidationUtil {
         getLogger().info(message, handledFiles);
     }
 
-    public static URL getProdBundleResource(String filename,
-            ClassFinder finder) {
+    public static URL getProdBundleResource(String filename, ClassFinder finder) {
         return finder.getResource(Constants.PROD_BUNDLE_JAR_PATH + filename);
     }
 
     /**
-     * Checks if a new production bundle is needed by restoring re-bundle
-     * checker result flag from a temporal file.
+     * Checks if a new production bundle is needed by restoring re-bundle checker result flag from a temporal file.
      *
      * @param resourceOutputFolder
      *            output directory for generated non-served resources
      * @return true if a new bundle is needed, false otherwise
      */
     public static boolean needsBundleBuild(File resourceOutputFolder) {
-        final File needsBuildFile = new File(resourceOutputFolder,
-                Constants.NEEDS_BUNDLE_BUILD_FILE);
+        final File needsBuildFile = new File(resourceOutputFolder, Constants.NEEDS_BUNDLE_BUILD_FILE);
         if (!needsBuildFile.exists()) {
-            getLogger().error("Require bundle build due to missing '{}' file.",
-                    Constants.NEEDS_BUNDLE_BUILD_FILE);
+            getLogger().error("Require bundle build due to missing '{}' file.", Constants.NEEDS_BUNDLE_BUILD_FILE);
             return true;
         }
         try {
-            String content = FileUtils.readFileToString(needsBuildFile,
-                    StandardCharsets.UTF_8.name());
+            String content = FileUtils.readFileToString(needsBuildFile, StandardCharsets.UTF_8.name());
             return Boolean.parseBoolean(content);
         } catch (IOException e) {
-            getLogger().error(
-                    "Failed to read re-bundle checker result from file", e);
+            getLogger().error("Failed to read re-bundle checker result from file", e);
             return true;
         } finally {
             FileUtils.deleteQuietly(needsBuildFile);
         }
     }
 
-    private static void saveResultInFile(boolean needsBundle, Options options)
-            throws IOException {
-        File needsBuildFile = new File(options.getResourceOutputDirectory(),
-                Constants.NEEDS_BUNDLE_BUILD_FILE);
+    private static void saveResultInFile(boolean needsBundle, Options options) throws IOException {
+        File needsBuildFile = new File(options.getResourceOutputDirectory(), Constants.NEEDS_BUNDLE_BUILD_FILE);
         File targetDir = needsBuildFile.getParentFile();
         if (!targetDir.exists()) {
             FileUtils.forceMkdir(targetDir);
         }
-        FileUtils.write(needsBuildFile, Boolean.toString(needsBundle),
-                StandardCharsets.UTF_8.name());
+        FileUtils.write(needsBuildFile, Boolean.toString(needsBundle), StandardCharsets.UTF_8.name());
     }
 
     private static Logger getLogger() {

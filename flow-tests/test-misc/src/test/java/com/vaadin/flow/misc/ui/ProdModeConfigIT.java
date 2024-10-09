@@ -34,26 +34,19 @@ public class ProdModeConfigIT extends ChromeBrowserTest {
 
         Assert.assertEquals("productionMode is expected to be true", "true",
                 findElement(By.id("productionMode")).getText());
-        Assert.assertEquals(
-                "devModeLiveReloadEnabled is supposed to be false"
-                        + " by default in production mode",
-                "false",
-                findElement(By.id("devModeLiveReloadEnabled")).getText());
+        Assert.assertEquals("devModeLiveReloadEnabled is supposed to be false" + " by default in production mode",
+                "false", findElement(By.id("devModeLiveReloadEnabled")).getText());
 
-        Assert.assertTrue(
-                findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
+        Assert.assertTrue(findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
     }
 
     @Test
     public void prodMode_devTools_alwaysDisabled_shouldNotRenderDevToolsPopup() {
         open();
 
-        Assert.assertEquals(
-                "devToolsEnabled is supposed to be false "
-                        + "by default in production mode",
-                "false", findElement(By.id("devToolsEnabled")).getText());
+        Assert.assertEquals("devToolsEnabled is supposed to be false " + "by default in production mode", "false",
+                findElement(By.id("devToolsEnabled")).getText());
 
-        Assert.assertTrue(
-                findElements(By.tagName("vaadin-dev-tools")).isEmpty());
+        Assert.assertTrue(findElements(By.tagName("vaadin-dev-tools")).isEmpty());
     }
 }

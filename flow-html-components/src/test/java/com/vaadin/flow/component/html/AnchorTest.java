@@ -63,13 +63,10 @@ public class AnchorTest extends ComponentTest {
         anchor.setTarget(AnchorTarget.BLANK);
 
         Assert.assertEquals(anchor.getTargetValue(), AnchorTarget.BLANK);
-        Assert.assertEquals(anchor.getTarget(),
-                Optional.of(AnchorTarget.BLANK.getValue()));
+        Assert.assertEquals(anchor.getTarget(), Optional.of(AnchorTarget.BLANK.getValue()));
 
-        Assert.assertEquals(anchor.getTargetValue(),
-                new Anchor("#", "Home", AnchorTarget.BLANK).getTargetValue());
-        Assert.assertEquals(anchor.getTarget(),
-                new Anchor("#", "Home", AnchorTarget.BLANK).getTarget());
+        Assert.assertEquals(anchor.getTargetValue(), new Anchor("#", "Home", AnchorTarget.BLANK).getTargetValue());
+        Assert.assertEquals(anchor.getTarget(), new Anchor("#", "Home", AnchorTarget.BLANK).getTarget());
     }
 
     @Test
@@ -78,8 +75,7 @@ public class AnchorTest extends ComponentTest {
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.removeHref();
 
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
+        Assert.assertEquals("Anchor element should have router-ignore " + "attribute", "",
                 anchor.getElement().getAttribute("router-ignore"));
     }
 
@@ -89,8 +85,7 @@ public class AnchorTest extends ComponentTest {
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.setHref("/logout");
 
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
+        Assert.assertEquals("Anchor element should have router-ignore " + "attribute", "",
                 anchor.getElement().getAttribute("router-ignore"));
     }
 
@@ -99,8 +94,7 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTarget.PARENT);
 
-        Assert.assertEquals(Optional.of(AnchorTarget.PARENT.getValue()),
-                anchor.getTarget());
+        Assert.assertEquals(Optional.of(AnchorTarget.PARENT.getValue()), anchor.getTarget());
         Assert.assertEquals(AnchorTarget.PARENT, anchor.getTargetValue());
     }
 
@@ -118,8 +112,7 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTarget.SELF.getValue());
 
-        Assert.assertEquals(Optional.of(AnchorTarget.SELF.getValue()),
-                anchor.getTarget());
+        Assert.assertEquals(Optional.of(AnchorTarget.SELF.getValue()), anchor.getTarget());
         Assert.assertEquals(AnchorTarget.SELF, anchor.getTargetValue());
     }
 
@@ -138,8 +131,7 @@ public class AnchorTest extends ComponentTest {
     protected void addProperties() {
         addStringProperty("href", "", false);
         addOptionalStringProperty("target");
-        addProperty("routerIgnore", boolean.class, false, true, false, true,
-                "router-ignore");
+        addProperty("routerIgnore", boolean.class, false, true, false, true, "router-ignore");
     }
 
     @Test

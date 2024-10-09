@@ -29,8 +29,7 @@ public final class HighlightActions {
     }
 
     /**
-     * An action which toggles {@code className} class on the target based on
-     * its highlight state.
+     * An action which toggles {@code className} class on the target based on its highlight state.
      *
      * @param <C>
      *            the target type
@@ -38,15 +37,12 @@ public final class HighlightActions {
      *            the class name to toggle
      * @return the highlight action
      */
-    public static <C extends HasStyle> HighlightAction<C> toggleClassName(
-            String className) {
-        return (component, highlight) -> component.getClassNames()
-                .set(className, highlight);
+    public static <C extends HasStyle> HighlightAction<C> toggleClassName(String className) {
+        return (component, highlight) -> component.getClassNames().set(className, highlight);
     }
 
     /**
-     * An action which toggles {@code theme} on the target based on its
-     * highlight state.
+     * An action which toggles {@code theme} on the target based on its highlight state.
      *
      * @param <C>
      *            the target type
@@ -54,15 +50,12 @@ public final class HighlightActions {
      *            the theme to toggle
      * @return the highlight action
      */
-    public static <C extends HasElement> HighlightAction<C> toggleTheme(
-            String theme) {
-        return (component, highlight) -> component.getElement().getThemeList()
-                .set(theme, highlight);
+    public static <C extends HasElement> HighlightAction<C> toggleTheme(String theme) {
+        return (component, highlight) -> component.getElement().getThemeList().set(theme, highlight);
     }
 
     /**
-     * An action which toggles the target's {@code attribute} based on its
-     * highlight state.
+     * An action which toggles the target's {@code attribute} based on its highlight state.
      *
      * @param <C>
      *            the target type
@@ -70,10 +63,8 @@ public final class HighlightActions {
      *            the attribute to toggle
      * @return the highlight action
      */
-    public static <C extends HasElement> HighlightAction<C> toggleAttribute(
-            String attribute) {
-        return (component, highlight) -> component.getElement()
-                .setAttribute(attribute, highlight);
+    public static <C extends HasElement> HighlightAction<C> toggleAttribute(String attribute) {
+        return (component, highlight) -> component.getElement().setAttribute(attribute, highlight);
     }
 
     /**

@@ -25,9 +25,8 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * DataView for a in-memory list data that provides information on the data and
- * allows operations on it. Mutation operations can be used only if the backing
- * {@link List} is mutable.
+ * DataView for a in-memory list data that provides information on the data and allows operations on it. Mutation
+ * operations can be used only if the backing {@link List} is mutable.
  *
  * @param <T>
  *            data type
@@ -35,17 +34,14 @@ import com.vaadin.flow.function.ValueProvider;
  *            ListDataView type
  * @since
  */
-public interface ListDataView<T, V extends ListDataView<T, ?>>
-        extends DataView<T> {
+public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T> {
 
     /**
      * Check if item is present in the currently filtered data set.
      * <p>
-     * By default, {@code equals} method implementation of the item is used for
-     * identity check. If a custom data provider is used, then the
-     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
-     * identity can be set up with a
-     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
+     * By default, {@code equals} method implementation of the item is used for identity check. If a custom data
+     * provider is used, then the {@link DataProvider#getId(Object)} method is used instead. Item's custom identity can
+     * be set up with a {@link DataView#setIdentifierProvider(IdentifierProvider)}.
      *
      * @param item
      *            item to search for
@@ -56,10 +52,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     boolean contains(T item);
 
     /**
-     * Get the full item count with filters if any set. As the item count might
-     * change at any point, it is recommended to add a listener with the
-     * {@link #addItemCountChangeListener(ComponentEventListener)} method
-     * instead to get notified when the item count has changed.
+     * Get the full item count with filters if any set. As the item count might change at any point, it is recommended
+     * to add a listener with the {@link #addItemCountChangeListener(ComponentEventListener)} method instead to get
+     * notified when the item count has changed.
      *
      * @return filtered item count
      * @see #addItemCountChangeListener(ComponentEventListener)
@@ -69,13 +64,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Gets the item after given item from the filtered and sorted data.
      * <p>
-     * Note! Item might be present in the data set, but be filtered out or be
-     * the last item so that the next item won't be available.
+     * Note! Item might be present in the data set, but be filtered out or be the last item so that the next item won't
+     * be available.
      *
      * @param item
      *            item to get next for
-     * @return next item if available, else empty optional if item doesn't exist
-     *         or not in current filtered items
+     * @return next item if available, else empty optional if item doesn't exist or not in current filtered items
      *
      * @see #getPreviousItem(Object)
      */
@@ -84,13 +78,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Gets the item before given item from the filtered and sorted data.
      * <p>
-     * Note! Item might be present in the data set, but be filtered out or be
-     * the first item so that the previous item won't be available.
+     * Note! Item might be present in the data set, but be filtered out or be the first item so that the previous item
+     * won't be available.
      *
      * @param item
      *            item to get previous for
-     * @return previous item if available, else empty optional if item doesn't
-     *         exist or not in current filtered items
+     * @return previous item if available, else empty optional if item doesn't exist or not in current filtered items
      *
      * @see #getNextItem(Object)
      */
@@ -99,8 +92,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds an item to the data list if it is not already present.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
      *
      * @param item
      *            item to add
@@ -116,8 +108,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds an item after the given target item.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
      * <p>
      * If the item is already present in the data provider, then it is moved.
      * <p>
@@ -140,8 +131,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds an item before the given target item.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
      * <p>
      * If the item is already present in the data provider, then it is moved.
      * <p>
@@ -164,8 +154,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds multiple items to the data list.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
      * <p>
      * Any items that already present in the data provider are moved to the end.
      *
@@ -181,12 +170,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItems(Collection<T> items);
 
     /**
-     * Adds multiple items after the given target item. The full collection is
-     * added in order after the target.
+     * Adds multiple items after the given target item. The full collection is added in order after the target.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception. Any items that already present in
-     * the data provider are moved.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
+     * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -205,11 +192,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemsAfter(Collection<T> items, T after);
 
     /**
-     * Adds multiple items before the given target item. The full collection is
-     * added in order before the target.
+     * Adds multiple items before the given target item. The full collection is added in order before the target.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
      * <p>
      * Any items that already present in the data provider are moved.
      * <p>
@@ -232,8 +217,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Remove an item from the data list.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
      *
      * @param item
      *            item to remove
@@ -248,8 +232,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Remove multiple items from the data list.
      * <p>
-     * The backing {@link List} must be mutable to use this method. Immutable
-     * data structure will throw an exception.
+     * The backing {@link List} must be mutable to use this method. Immutable data structure will throw an exception.
      *
      * @param items
      *            collection of items to remove
@@ -262,19 +245,15 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeItems(Collection<T> items);
 
     /**
-     * Sets a filter to be applied to the data. The filter replaces any filter
-     * that has been set or added previously. {@code null} will clear all
-     * filters.
+     * Sets a filter to be applied to the data. The filter replaces any filter that has been set or added previously.
+     * {@code null} will clear all filters.
      * <p>
-     * This filter is bound to the component. Thus, any other component using
-     * the same {@link DataProvider} object would not be affected by setting a
-     * filter through data view of another component. A filter set by this
-     * method won't be retained when a new {@link DataProvider} is set to the
-     * component.
+     * This filter is bound to the component. Thus, any other component using the same {@link DataProvider} object would
+     * not be affected by setting a filter through data view of another component. A filter set by this method won't be
+     * retained when a new {@link DataProvider} is set to the component.
      *
      * @param filter
-     *            filter to be set, or <code>null</code> to clear any previously
-     *            set filters
+     *            filter to be set, or <code>null</code> to clear any previously set filters
      * @return ListDataView instance
      *
      * @see #addFilter(SerializablePredicate)
@@ -283,14 +262,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V setFilter(SerializablePredicate<T> filter);
 
     /**
-     * Adds a filter to be applied to all queries. The filter will be used in
-     * addition to any filter that has been set or added previously.
+     * Adds a filter to be applied to all queries. The filter will be used in addition to any filter that has been set
+     * or added previously.
      * <p>
-     * This filter is bound to the component. Thus, any other component using
-     * the same {@link DataProvider} object would not be affected by setting a
-     * filter through data view of another component. A filter set by this
-     * method won't be retained when a new {@link DataProvider} is set to the
-     * component.
+     * This filter is bound to the component. Thus, any other component using the same {@link DataProvider} object would
+     * not be affected by setting a filter through data view of another component. A filter set by this method won't be
+     * retained when a new {@link DataProvider} is set to the component.
      *
      * @param filter
      *            the filter to add, not <code>null</code>
@@ -312,18 +289,15 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeFilters();
 
     /**
-     * Sets the comparator to use as the default sorting. This overrides the
-     * sorting set by any other method that manipulates the default sorting.
+     * Sets the comparator to use as the default sorting. This overrides the sorting set by any other method that
+     * manipulates the default sorting.
      * <p>
-     * This comparator is bound to the component. Thus, any other component
-     * using the same {@link DataProvider} object would not be affected by
-     * setting a sort comparator through data view of another component. A
-     * sorting set by this method won't be retained when a new
-     * {@link DataProvider} is set to the component.
+     * This comparator is bound to the component. Thus, any other component using the same {@link DataProvider} object
+     * would not be affected by setting a sort comparator through data view of another component. A sorting set by this
+     * method won't be retained when a new {@link DataProvider} is set to the component.
      *
      * @param sortComparator
-     *            a comparator to use, or <code>null</code> to clear any
-     *            previously set sort order
+     *            a comparator to use, or <code>null</code> to clear any previously set sort order
      * @return ListDataView instance
      *
      * @see #addSortComparator(SerializableComparator)
@@ -331,17 +305,14 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V setSortComparator(SerializableComparator<T> sortComparator);
 
     /**
-     * Adds a comparator to the data default sorting. If no default sorting has
-     * been defined, then the provided comparator will be used as the default
-     * sorting. If a default sorting has been defined, then the provided
-     * comparator will be used to determine the ordering of items that are
-     * considered equal by the previously defined default sorting.
+     * Adds a comparator to the data default sorting. If no default sorting has been defined, then the provided
+     * comparator will be used as the default sorting. If a default sorting has been defined, then the provided
+     * comparator will be used to determine the ordering of items that are considered equal by the previously defined
+     * default sorting.
      * <p>
-     * This comparator is bound to the component. Thus, any other component
-     * using the same {@link DataProvider} object would not be affected by
-     * setting a sort comparator through data view of another component. A
-     * sorting set by this method won't be retained when a new
-     * {@link DataProvider} is set to the component.
+     * This comparator is bound to the component. Thus, any other component using the same {@link DataProvider} object
+     * would not be affected by setting a sort comparator through data view of another component. A sorting set by this
+     * method won't be retained when a new {@link DataProvider} is set to the component.
      *
      * @param sortComparator
      *            a comparator to add, not <code>null</code>
@@ -354,9 +325,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Removes any default sorting that has been set or added previously.
      * <p>
-     * Any other component using the same {@link DataProvider} object would not
-     * be affected by removing default sorting through data view of another
-     * component.
+     * Any other component using the same {@link DataProvider} object would not be affected by removing default sorting
+     * through data view of another component.
      *
      * @return ListDataView instance
      *
@@ -366,19 +336,15 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeSorting();
 
     /**
-     * Sets the property and direction to use as the default sorting. This
-     * overrides the sorting set by any other method that manipulates the
-     * default sorting of this {@link DataProvider}.
+     * Sets the property and direction to use as the default sorting. This overrides the sorting set by any other method
+     * that manipulates the default sorting of this {@link DataProvider}.
      * <p>
-     * This sort order is bound to the component. Thus, any other component
-     * using the same {@link DataProvider} object would not be affected by
-     * setting a sort order through data view of another component. A sort order
-     * set by this method won't be retained when a new {@link DataProvider} is
-     * set to the component.
+     * This sort order is bound to the component. Thus, any other component using the same {@link DataProvider} object
+     * would not be affected by setting a sort order through data view of another component. A sort order set by this
+     * method won't be retained when a new {@link DataProvider} is set to the component.
      *
      * @param valueProvider
-     *            the value provider that defines the property do sort by, not
-     *            <code>null</code>
+     *            the value provider that defines the property do sort by, not <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
      * @param <V1>
@@ -388,25 +354,20 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *
      * @see #addSortOrder(ValueProvider, SortDirection)
      */
-    <V1 extends Comparable<? super V1>> V setSortOrder(
-            ValueProvider<T, V1> valueProvider, SortDirection sortDirection);
+    <V1 extends Comparable<? super V1>> V setSortOrder(ValueProvider<T, V1> valueProvider, SortDirection sortDirection);
 
     /**
-     * Adds a property and direction to the default sorting. If no default
-     * sorting has been defined, then the provided sort order will be used as
-     * the default sorting. If a default sorting has been defined, then the
-     * provided sort order will be used to determine the ordering of items that
-     * are considered equal by the previously defined default sorting.
+     * Adds a property and direction to the default sorting. If no default sorting has been defined, then the provided
+     * sort order will be used as the default sorting. If a default sorting has been defined, then the provided sort
+     * order will be used to determine the ordering of items that are considered equal by the previously defined default
+     * sorting.
      * <p>
-     * This sort order is bound to the component. Thus, any other component
-     * using the same {@link DataProvider} object would not be affected by
-     * setting a sort sort through data view of another component. A sorting set
-     * by this method won't be retained when a new {@link DataProvider} is set
-     * to the component.
+     * This sort order is bound to the component. Thus, any other component using the same {@link DataProvider} object
+     * would not be affected by setting a sort sort through data view of another component. A sorting set by this method
+     * won't be retained when a new {@link DataProvider} is set to the component.
      *
      * @param valueProvider
-     *            the value provider that defines the property do sort by, not
-     *            <code>null</code>
+     *            the value provider that defines the property do sort by, not <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
      * @param <V1>
@@ -416,6 +377,5 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *
      * @see #setSortOrder(ValueProvider, SortDirection)
      */
-    <V1 extends Comparable<? super V1>> V addSortOrder(
-            ValueProvider<T, V1> valueProvider, SortDirection sortDirection);
+    <V1 extends Comparable<? super V1>> V addSortOrder(ValueProvider<T, V1> valueProvider, SortDirection sortDirection);
 }

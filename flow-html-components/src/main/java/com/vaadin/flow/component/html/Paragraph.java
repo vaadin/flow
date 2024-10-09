@@ -27,8 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.P)
-public class Paragraph extends HtmlContainer
-        implements ClickNotifier<Paragraph> {
+public class Paragraph extends HtmlContainer implements ClickNotifier<Paragraph> {
 
     /**
      * Creates a new empty paragraph.

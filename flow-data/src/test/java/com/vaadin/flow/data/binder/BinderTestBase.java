@@ -36,8 +36,7 @@ import com.vaadin.flow.data.converter.Converter;
  * @since 1.0.
  *
  */
-public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
-        implements Serializable {
+public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM> implements Serializable {
 
     protected static final String NEGATIVE_ERROR_MESSAGE = "Value must be non-negative";
 
@@ -52,16 +51,13 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
     protected TestTextField nameField;
     protected TestTextField ageField;
 
-    protected Validator<String> notEmpty = Validator.from(val -> !val.isEmpty(),
-            EMPTY_ERROR_MESSAGE);
-    protected Converter<String, Integer> stringToInteger = Converter.from(
-            Integer::valueOf, String::valueOf, e -> NOT_NUMBER_ERROR_MESSAGE);
-    protected Validator<Integer> notNegative = Validator.from(x -> x >= 0,
-            NEGATIVE_ERROR_MESSAGE);
+    protected Validator<String> notEmpty = Validator.from(val -> !val.isEmpty(), EMPTY_ERROR_MESSAGE);
+    protected Converter<String, Integer> stringToInteger = Converter.from(Integer::valueOf, String::valueOf,
+            e -> NOT_NUMBER_ERROR_MESSAGE);
+    protected Validator<Integer> notNegative = Validator.from(x -> x >= 0, NEGATIVE_ERROR_MESSAGE);
 
     public static void testSerialization(Object toSerialize) {
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(
-                new ByteArrayOutputStream())) {
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new ByteArrayOutputStream())) {
             objectOutputStream.writeObject(toSerialize);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -69,9 +65,8 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
     }
 
     void assertInvalidField(String expectedErrorMessage, HasValidation field) {
-        Assert.assertEquals(
-                "The field should contain same error message as binder",
-                expectedErrorMessage, field.getErrorMessage());
+        Assert.assertEquals("The field should contain same error message as binder", expectedErrorMessage,
+                field.getErrorMessage());
         Assert.assertTrue("The field should be invalid", field.isInvalid());
     }
 

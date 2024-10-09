@@ -67,16 +67,13 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class VaadinAppShellInitializerTest {
 
-    public interface InterfaceAppShellWithoutAnnotations
-            extends AppShellConfigurator {
+    public interface InterfaceAppShellWithoutAnnotations extends AppShellConfigurator {
     }
 
-    public static abstract class AbstractAppShellWithoutAnnotations
-            implements InterfaceAppShellWithoutAnnotations {
+    public static abstract class AbstractAppShellWithoutAnnotations implements InterfaceAppShellWithoutAnnotations {
     }
 
-    public static class MyAppShellWithoutAnnotations
-            extends AbstractAppShellWithoutAnnotations {
+    public static class MyAppShellWithoutAnnotations extends AbstractAppShellWithoutAnnotations {
     }
 
     @Meta(name = "foo", content = "bar")
@@ -89,8 +86,7 @@ public class VaadinAppShellInitializerTest {
     @PageTitle("my-title")
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
     @Theme(themeClass = AbstractTheme.class)
-    public static class MyAppShellWithMultipleAnnotations
-            implements AppShellConfigurator {
+    public static class MyAppShellWithMultipleAnnotations implements AppShellConfigurator {
     }
 
     @Meta(name = "foo", content = "bar")
@@ -111,20 +107,17 @@ public class VaadinAppShellInitializerTest {
 
     @Theme(themeClass = AbstractTheme.class)
     @Push(PushMode.AUTOMATIC)
-    public static class NonOffendingExporter
-            extends WebComponentExporter<WebHolder> {
+    public static class NonOffendingExporter extends WebComponentExporter<WebHolder> {
         public NonOffendingExporter() {
             super("web-component");
         }
 
         @Override
-        public void configureInstance(WebComponent<WebHolder> webComponent,
-                WebHolder component) {
+        public void configureInstance(WebComponent<WebHolder> webComponent, WebHolder component) {
         }
     }
 
-    public static class MyAppShellWithConfigurator
-            implements AppShellConfigurator {
+    public static class MyAppShellWithConfigurator implements AppShellConfigurator {
         @Override
         public void configurePage(AppShellSettings settings) {
             settings.setViewport("my-viewport");
@@ -132,34 +125,28 @@ public class VaadinAppShellInitializerTest {
             settings.addMetaTag("foo", "bar");
             settings.addMetaTag("lorem", "ipsum");
             settings.addInlineFromFile("inline.html", Wrapping.AUTOMATIC);
-            settings.addInlineFromFile(Position.PREPEND, "inline.css",
-                    Wrapping.AUTOMATIC);
-            settings.addInlineFromFile(TargetElement.BODY, Position.APPEND,
-                    "inline.js", Wrapping.JAVASCRIPT);
+            settings.addInlineFromFile(Position.PREPEND, "inline.css", Wrapping.AUTOMATIC);
+            settings.addInlineFromFile(TargetElement.BODY, Position.APPEND, "inline.js", Wrapping.JAVASCRIPT);
             settings.setBodySize("my-width", "my-height");
 
             settings.addFavIcon("icon1", "icon1.png", "1x1");
             settings.addFavIcon("icon2", "icon2.png", "2x2");
             settings.addInlineWithContents(Position.PREPEND,
-                    "window.messages = window.messages || [];\n"
-                            + "window.messages.push(\"content script\");",
+                    "window.messages = window.messages || [];\n" + "window.messages.push(\"content script\");",
                     Wrapping.JAVASCRIPT);
-            settings.addInlineFromFile(Position.PREPEND, "inline.js",
-                    Wrapping.JAVASCRIPT);
+            settings.addInlineFromFile(Position.PREPEND, "inline.js", Wrapping.JAVASCRIPT);
 
-            settings.addLink("icons/favicon.ico",
-                    new LinkedHashMap<String, String>() {
-                        {
-                            put("rel", "shortcut icon");
-                        }
-                    });
-            settings.addLink("icons/icon-192.png",
-                    new LinkedHashMap<String, String>() {
-                        {
-                            put("rel", "icon");
-                            put("sizes", "192x192");
-                        }
-                    });
+            settings.addLink("icons/favicon.ico", new LinkedHashMap<String, String>() {
+                {
+                    put("rel", "shortcut icon");
+                }
+            });
+            settings.addLink("icons/icon-192.png", new LinkedHashMap<String, String>() {
+                {
+                    put("rel", "icon");
+                    put("sizes", "192x192");
+                }
+            });
 
             settings.addLink("shortcut icon", "icons/favicon.ico");
 
@@ -184,8 +171,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Tag("div")
-    public static class AppShellExtendingComponent extends Component
-            implements AppShellConfigurator {
+    public static class AppShellExtendingComponent extends Component implements AppShellConfigurator {
     }
 
     @Rule
@@ -214,37 +200,29 @@ public class VaadinAppShellInitializerTest {
 
         appConfig = mockApplicationConfiguration();
 
-        Lookup lookup = (Lookup) servletContext
-                .getAttribute(Lookup.class.getName());
+        Lookup lookup = (Lookup) servletContext.getAttribute(Lookup.class.getName());
 
-        Mockito.when(lookup.lookup(AppShellPredicate.class))
-                .thenReturn(AppShellConfigurator.class::isAssignableFrom);
+        Mockito.when(lookup.lookup(AppShellPredicate.class)).thenReturn(AppShellConfigurator.class::isAssignableFrom);
 
-        attributeMap.put(Lookup.class.getName(),
-                servletContext.getAttribute(Lookup.class.getName()));
+        attributeMap.put(Lookup.class.getName(), servletContext.getAttribute(Lookup.class.getName()));
         attributeMap.put(ApplicationConfiguration.class.getName(), appConfig);
 
         service = mocks.getService();
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-                .then(invocationOnMock -> attributeMap
-                        .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
-                invocationOnMock.getArguments()[0].toString(),
+                .then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
+        Mockito.doAnswer(invocationOnMock -> attributeMap.put(invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
                 .setAttribute(Mockito.anyString(), Mockito.any());
 
-        ServletRegistration registration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration registration = Mockito.mock(ServletRegistration.class);
         context = new VaadinServletContext(servletContext);
 
         classes = new HashSet<>();
 
         Map<String, ServletRegistration> registry = new HashMap<>();
         registry.put("foo", registration);
-        Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn((Map) registry);
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getServletRegistrations()).thenReturn((Map) registry);
+        Mockito.when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
 
         initializer = new VaadinAppShellInitializer();
         document = Document.createShell("");
@@ -260,24 +238,20 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_modifyDocument_when_noAnnotatedAppShell()
-            throws Exception {
+    public void should_not_modifyDocument_when_noAnnotatedAppShell() throws Exception {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.process(classes, servletContext);
-        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
-                createVaadinRequest("/"));
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document, createVaadinRequest("/"));
         assertEquals(0, document.head().children().size());
         assertEquals(0, document.body().children().size());
     }
 
     @Test
-    public void should_not_modifyPushConfiguration_when_noAnnotatedAppShell()
-            throws Exception {
+    public void should_not_modifyPushConfiguration_when_noAnnotatedAppShell() throws Exception {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.process(classes, servletContext);
 
-        AppShellRegistry.getInstance(context)
-                .modifyPushConfiguration(pushConfiguration);
+        AppShellRegistry.getInstance(context).modifyPushConfiguration(pushConfiguration);
 
         initializer.process(Collections.emptySet(), servletContext);
     }
@@ -288,20 +262,17 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_haveMetasAndBodySize_when_annotatedAppShell()
-            throws Exception {
+    public void should_haveMetasAndBodySize_when_annotatedAppShell() throws Exception {
         classes.add(MyAppShellWithMultipleAnnotations.class);
 
         initializer.process(classes, servletContext);
 
-        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
-                createVaadinRequest("/"));
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
         assertEquals(7, elements.size());
         assertEquals("text/css", elements.get(5).attr("type"));
-        assertEquals("body,#outlet{width:my-width;height:my-height;}",
-                elements.get(5).childNode(0).toString());
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", elements.get(5).childNode(0).toString());
     }
 
     @Test
@@ -310,8 +281,7 @@ public class VaadinAppShellInitializerTest {
 
         initializer.process(classes, servletContext);
 
-        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
-                createVaadinRequest("/"));
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> headElements = document.head().children();
         assertEquals(7, headElements.size());
@@ -327,57 +297,46 @@ public class VaadinAppShellInitializerTest {
         assertEquals("text/css", headElements.get(5).attr("type"));
         assertEquals("style", headElements.get(5).tagName());
         assertTrue(headElements.get(5).outerHtml().contains("width:my-width"));
-        assertTrue(
-                headElements.get(5).outerHtml().contains("height:my-height"));
+        assertTrue(headElements.get(5).outerHtml().contains("height:my-height"));
 
         assertEquals("text/javascript", headElements.get(6).attr("type"));
         assertEquals("script", headElements.get(6).tagName());
-        assertTrue(headElements.get(6).outerHtml()
-                .contains("might not yet be accessible"));
+        assertTrue(headElements.get(6).outerHtml().contains("might not yet be accessible"));
 
         List<Element> bodyElements = document.body().children();
         assertEquals(1, bodyElements.size());
         assertEquals("text/javascript", bodyElements.get(0).attr("type"));
         assertEquals("script", bodyElements.get(0).tagName());
-        assertTrue(bodyElements.get(0).outerHtml()
-                .contains("window.messages.push"));
+        assertTrue(bodyElements.get(0).outerHtml().contains("window.messages.push"));
     }
 
     @Test
-    public void should_modifyPushConfiguration_when_annotatedAppShell()
-            throws Exception {
+    public void should_modifyPushConfiguration_when_annotatedAppShell() throws Exception {
         classes.add(MyAppShellWithMultipleAnnotations.class);
         initializer.process(classes, servletContext);
 
-        AppShellRegistry.getInstance(context)
-                .modifyPushConfiguration(pushConfiguration);
+        AppShellRegistry.getInstance(context).modifyPushConfiguration(pushConfiguration);
 
         Mockito.verify(pushConfiguration).setPushMode(PushMode.MANUAL);
         Mockito.verify(pushConfiguration).setTransport(Transport.WEBSOCKET);
     }
 
     @Test
-    public void should_not_haveMetas_when_not_callingInitializer()
-            throws Exception {
-        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
-                createVaadinRequest("/"));
+    public void should_not_haveMetas_when_not_callingInitializer() throws Exception {
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document, createVaadinRequest("/"));
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
     }
 
     @Test
-    public void should_not_modifyPushConfiguration_when_not_callingInitializer()
-            throws Exception {
-        AppShellRegistry.getInstance(context)
-                .modifyPushConfiguration(pushConfiguration);
+    public void should_not_modifyPushConfiguration_when_not_callingInitializer() throws Exception {
+        AppShellRegistry.getInstance(context).modifyPushConfiguration(pushConfiguration);
 
-        Mockito.verify(pushConfiguration, Mockito.never())
-                .setPushMode(Mockito.any(PushMode.class));
+        Mockito.verify(pushConfiguration, Mockito.never()).setPushMode(Mockito.any(PushMode.class));
     }
 
     @Test
-    public void should_reuseContextAppShell_when_creatingNewInstance()
-            throws Exception {
+    public void should_reuseContextAppShell_when_creatingNewInstance() throws Exception {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         Assert.assertSame(registry, AppShellRegistry.getInstance(context));
@@ -386,11 +345,8 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_throw_when_offendingClass() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(containsString(
-                "Found app shell configuration annotations in non"));
-        exception.expectMessage(containsString(
-                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
-                        + " from"));
+        exception.expectMessage(containsString("Found app shell configuration annotations in non"));
+        exception.expectMessage(containsString("- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme" + " from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
@@ -405,8 +361,7 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_throw_when_multipleAppShell() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(containsString(
-                "Multiple classes implementing `AppShellConfigurator` were found"));
+        exception.expectMessage(containsString("Multiple classes implementing `AppShellConfigurator` were found"));
 
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(MyAppShellWithMultipleAnnotations.class);
@@ -414,8 +369,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_throw_when_interface_and_abstract_and_concrete_AppShell()
-            throws Exception {
+    public void should_not_throw_when_interface_and_abstract_and_concrete_AppShell() throws Exception {
         classes.add(InterfaceAppShellWithoutAnnotations.class);
         classes.add(AbstractAppShellWithoutAnnotations.class);
         classes.add(MyAppShellWithoutAnnotations.class);
@@ -423,15 +377,12 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass()
-            throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+    public void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass() throws Exception {
+        Mockito.when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
 
-        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
-                createVaadinRequest("/"));
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
@@ -439,32 +390,27 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_link_to_PWA_article() throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        Mockito.when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingPwaClass.class);
         initializer.process(classes, servletContext);
         Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
-        assertTrue(arg.getValue()
-                .contains("We changed the way you configure PWAs"));
+        assertTrue(arg.getValue().contains("We changed the way you configure PWAs"));
     }
 
     @Test
     public void should_not_link_to_PWA_article() throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        Mockito.when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingNonPwaClass.class);
         initializer.process(classes, servletContext);
         Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
-        assertFalse(arg.getValue()
-                .contains("We changed the way you configure PWAs"));
+        assertFalse(arg.getValue().contains("We changed the way you configure PWAs"));
         assertTrue(arg.getValue().contains("@Viewport"));
     }
 
     @Test(expected = InvalidApplicationConfigurationException.class)
-    public void should_throwException_when_appShellExtendsComponent()
-            throws Exception {
+    public void should_throwException_when_appShellExtendsComponent() throws Exception {
         classes.add(AppShellExtendingComponent.class);
         initializer.process(classes, servletContext);
     }
@@ -478,8 +424,7 @@ public class VaadinAppShellInitializerTest {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getServletPath()).thenReturn("");
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
+        Mockito.when(request.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
         return request;
     }
 
@@ -496,23 +441,19 @@ public class VaadinAppShellInitializerTest {
         ILoggerFactory ilogger = LoggerFactory.getILoggerFactory();
         Field field = SimpleLoggerFactory.class.getDeclaredField("loggerMap");
         field.setAccessible(true);
-        ConcurrentMap<String, Logger> map = (ConcurrentMap<String, Logger>) field
-                .get(ilogger);
+        ConcurrentMap<String, Logger> map = (ConcurrentMap<String, Logger>) field.get(ilogger);
         map.clear();
         return map;
     }
 
     private ApplicationConfiguration mockApplicationConfiguration() {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = Mockito.mock(ApplicationConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
         Mockito.when(config.frontendHotdeploy()).thenReturn(true);
 
-        Mockito.when(config.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        Mockito.when(config.getStringProperty(Mockito.anyString(), Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(config.getBooleanProperty(Mockito.anyString(),
-                Mockito.anyBoolean()))
+        Mockito.when(config.getBooleanProperty(Mockito.anyString(), Mockito.anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         return config;
     }

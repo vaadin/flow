@@ -27,25 +27,21 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 @Tag("multiple-props-mutation")
 @JsModule("./MultiplePropsMutation.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.MutationSeveralSyncedPropsView", layout = ViewTestLayout.class)
-public class MutationSeveralSyncedPropsView
-        extends PolymerTemplate<TemplateModel> {
+public class MutationSeveralSyncedPropsView extends PolymerTemplate<TemplateModel> {
 
     public MutationSeveralSyncedPropsView() {
-        getElement().addPropertyChangeListener("name", "name-changed",
-                event -> {
-                });
-        getElement().addPropertyChangeListener("message", "message-changed",
-                event -> {
-                });
+        getElement().addPropertyChangeListener("name", "name-changed", event -> {
+        });
+        getElement().addPropertyChangeListener("message", "message-changed", event -> {
+        });
 
         getElement().setProperty("name", "foo");
         getElement().setProperty("message", "msg");
 
         setId("template");
 
-        NativeButton button = AbstractDivView.createButton(
-                "Update two synchronized properties simultaneously", "update",
-                event -> {
+        NativeButton button = AbstractDivView.createButton("Update two synchronized properties simultaneously",
+                "update", event -> {
                     getElement().setProperty("name", "bar");
                     getElement().setProperty("message", "baz");
                 });

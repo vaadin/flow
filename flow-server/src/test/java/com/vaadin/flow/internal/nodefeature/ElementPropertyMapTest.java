@@ -63,8 +63,7 @@ public class ElementPropertyMapTest {
         Assert.assertNull(event.get().getValue());
         Assert.assertEquals("bar", event.get().getOldValue());
         Assert.assertEquals("foo", event.get().getPropertyName());
-        Assert.assertEquals(Element.get(map.getNode()),
-                event.get().getSource());
+        Assert.assertEquals(Element.get(map.getNode()), event.get().getSource());
         Assert.assertTrue(event.get().isUserOriginated());
     }
 
@@ -74,8 +73,7 @@ public class ElementPropertyMapTest {
         PropertyChangeListener listener = ev -> {
             Assert.fail();
         };
-        Registration registration = map.addPropertyChangeListener("foo",
-                listener);
+        Registration registration = map.addPropertyChangeListener("foo", listener);
         registration.remove();
 
         // listener is not called. Otherwise its assertion fails.
@@ -113,8 +111,7 @@ public class ElementPropertyMapTest {
         map.resolveModelMap("foo");
 
         StateNode stateNode = (StateNode) map.get("foo");
-        Assert.assertTrue(
-                stateNode.isReportedFeature(ElementPropertyMap.class));
+        Assert.assertTrue(stateNode.isReportedFeature(ElementPropertyMap.class));
     }
 
     @Test
@@ -153,18 +150,16 @@ public class ElementPropertyMapTest {
         map.setUpdateFromClientFilter(name -> false);
         Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
-        DomListenerRegistration domListenerRegistration = Element
-                .get(map.getNode())
-                .addPropertyChangeListener("foo", "event", event -> {
+        DomListenerRegistration domListenerRegistration = Element.get(map.getNode()).addPropertyChangeListener("foo",
+                "event", event -> {
                 });
         Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
 
         domListenerRegistration.remove();
         Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
-        DomListenerRegistration registration = Element.get(map.getNode())
-                .addEventListener("dummy", event -> {
-                }).synchronizeProperty("foo");
+        DomListenerRegistration registration = Element.get(map.getNode()).addEventListener("dummy", event -> {
+        }).synchronizeProperty("foo");
         Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
 
         registration.remove();
@@ -200,8 +195,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_filterAllowsUpdate()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_filterAllowsUpdate() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
         ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
@@ -213,8 +207,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test(expected = PropertyChangeDeniedException.class)
-    public void deferredUpdateFromClient_noFilter_throws()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_noFilter_throws() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
         ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
@@ -224,8 +217,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_filterDisallowsUpdate()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_filterDisallowsUpdate() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
         ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
@@ -252,8 +244,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_listChild_filterAllowsUpdate()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_listChild_filterAllowsUpdate() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
         StateNode child = new StateNode(ElementPropertyMap.class);
@@ -267,8 +258,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test(expected = PropertyChangeDeniedException.class)
-    public void deferredUpdateFromClient_listItem_noFilter_throws()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_listItem_noFilter_throws() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
         StateNode child = new StateNode(ElementPropertyMap.class);
@@ -281,8 +271,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_listChild_filterDisallowsUpdate()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_listChild_filterDisallowsUpdate() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
         StateNode child = new StateNode(ElementPropertyMap.class);
@@ -343,8 +332,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test(expected = PropertyChangeDeniedException.class)
-    public void deferredUpdateFromClient_updateNotAllowed_throw()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_updateNotAllowed_throw() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.deferredUpdateFromClient("foo", "value");
@@ -375,8 +363,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_clientFiltersOutUpdate_noOpRunnable()
-            throws PropertyChangeDeniedException {
+    public void deferredUpdateFromClient_clientFiltersOutUpdate_noOpRunnable() throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setUpdateFromClientFilter(name -> !name.equals("foo"));
 
@@ -385,8 +372,7 @@ public class ElementPropertyMapTest {
 
         Runnable runnable = map.deferredUpdateFromClient("foo", "value");
         MatcherAssert.assertThat(runnable.getClass().getName(),
-                CoreMatchers.not(CoreMatchers.equalTo(
-                        ElementPropertyMap.class.getName() + "$PutResult")));
+                CoreMatchers.not(CoreMatchers.equalTo(ElementPropertyMap.class.getName() + "$PutResult")));
         runnable.run();
         Assert.assertNull(eventCapture.get());
     }
@@ -444,24 +430,22 @@ public class ElementPropertyMapTest {
         map.setProperty("bar", "foo");
     }
 
-    private Runnable assertDeferredUpdate_putResult(ElementPropertyMap map,
-            String property) throws PropertyChangeDeniedException {
+    private Runnable assertDeferredUpdate_putResult(ElementPropertyMap map, String property)
+            throws PropertyChangeDeniedException {
         Runnable runnable = map.deferredUpdateFromClient(property, "a");
-        MatcherAssert.assertThat(runnable.getClass().getName(), CoreMatchers
-                .equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
+        MatcherAssert.assertThat(runnable.getClass().getName(),
+                CoreMatchers.equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
         return runnable;
     }
 
-    private void assertDeferredUpdate_noOp(ElementPropertyMap map,
-            String property) throws PropertyChangeDeniedException {
+    private void assertDeferredUpdate_noOp(ElementPropertyMap map, String property)
+            throws PropertyChangeDeniedException {
         Runnable runnable = map.deferredUpdateFromClient(property, "a");
         MatcherAssert.assertThat(runnable.getClass().getName(),
-                CoreMatchers.not(CoreMatchers.equalTo(
-                        ElementPropertyMap.class.getName() + "$PutResult")));
+                CoreMatchers.not(CoreMatchers.equalTo(ElementPropertyMap.class.getName() + "$PutResult")));
     }
 
     private static ElementPropertyMap createSimplePropertyMap() {
-        return BasicElementStateProvider.createStateNode("div")
-                .getFeature(ElementPropertyMap.class);
+        return BasicElementStateProvider.createStateNode("div").getFeature(ElementPropertyMap.class);
     }
 }

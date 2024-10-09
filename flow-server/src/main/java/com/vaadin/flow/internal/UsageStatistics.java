@@ -21,14 +21,11 @@ import java.util.stream.Stream;
 import com.vaadin.flow.server.Version;
 
 /**
- * Collects entries that should be exported for vaadin-usage-statistics when
- * running in development mode.
+ * Collects entries that should be exported for vaadin-usage-statistics when running in development mode.
  * <p>
- * Statistics gathering is automatically disabled and excluded in production
- * mode.
+ * Statistics gathering is automatically disabled and excluded in production mode.
  * <p>
- * For details and to opt-out, see
- * https://github.com/vaadin/vaadin-usage-statistics.
+ * For details and to opt-out, see https://github.com/vaadin/vaadin-usage-statistics.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -80,14 +77,13 @@ public class UsageStatistics {
     }
 
     /**
-     * Registers a new entry with the given feature name and version string if
-     * no previous entry has been registered for the same name.
+     * Registers a new entry with the given feature name and version string if no previous entry has been registered for
+     * the same name.
      *
      * @param name
      *            the feature name, not <code>null</code>
      * @param version
-     *            the version, or <code>null</code> to use the current Flow
-     *            version
+     *            the version, or <code>null</code> to use the current Flow version
      */
     public static void markAsUsed(String name, String version) {
         assert name != null;

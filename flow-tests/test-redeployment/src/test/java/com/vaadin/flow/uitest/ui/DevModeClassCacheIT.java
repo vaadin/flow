@@ -40,8 +40,7 @@ import com.vaadin.testbench.TestBenchElement;
 @NotThreadSafe
 public class DevModeClassCacheIT extends AbstractReloadIT {
 
-    private static final Path VIEW_PATH = Path.of("com", "vaadin", "flow",
-            "uitest", "ui", "reloadaddedviews");
+    private static final Path VIEW_PATH = Path.of("com", "vaadin", "flow", "uitest", "ui", "reloadaddedviews");
 
     private static final String NEW_CLASS_WITH_ROUTE = """
             package com.vaadin.flow.uitest.ui.reloadaddedviews;
@@ -66,11 +65,8 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
     @After
     public void removeTemporaryView() throws IOException {
         Path baseDir = new File(System.getProperty("user.dir", ".")).toPath();
-        FileUtils.deleteDirectory(baseDir.resolve(Path.of("target", "classes"))
-                .resolve(VIEW_PATH).toFile());
-        FileUtils
-                .deleteDirectory(baseDir.resolve(Path.of("src", "main", "java"))
-                        .resolve(VIEW_PATH).toFile());
+        FileUtils.deleteDirectory(baseDir.resolve(Path.of("target", "classes")).resolve(VIEW_PATH).toFile());
+        FileUtils.deleteDirectory(baseDir.resolve(Path.of("src", "main", "java")).resolve(VIEW_PATH).toFile());
     }
 
     @Test
@@ -87,12 +83,10 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         for (int i = 1; i < 5; i++) {
             String[] value = allSpans.get(i).getText().split(":");
-            Assert.assertTrue("Expected " + value[0] + " to be greater than 0.",
-                    Integer.parseInt(value[1]) > 0);
+            Assert.assertTrue("Expected " + value[0] + " to be greater than 0.", Integer.parseInt(value[1]) > 0);
         }
 
-        Assert.assertEquals("Unexpected cached route packages.",
-                "com.vaadin.flow.uitest.ui",
+        Assert.assertEquals("Unexpected cached route packages.", "com.vaadin.flow.uitest.ui",
                 allSpans.get(5).getText().split(":")[1]);
 
         // Ensure newly created classes in packages not previously used for
@@ -105,8 +99,7 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         for (int i = 1; i < 5; i++) {
             String[] value = allSpans.get(i).getText().split(":");
-            Assert.assertTrue("Expected " + value[0] + " to be greater than 0.",
-                    Integer.parseInt(value[1]) > 0);
+            Assert.assertTrue("Expected " + value[0] + " to be greater than 0.", Integer.parseInt(value[1]) > 0);
         }
 
         Assert.assertEquals("Unexpected cached route packages.",
@@ -118,8 +111,7 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
         createOrUpdateViewReloadAndWait(false);
         waitForElementPresent(By.id("last-span"));
         allSpans = $("span").all();
-        Assert.assertEquals("Unexpected cached route packages.",
-                "com.vaadin.flow.uitest.ui",
+        Assert.assertEquals("Unexpected cached route packages.", "com.vaadin.flow.uitest.ui",
                 allSpans.get(5).getText().split(":")[1]);
 
         // Modify the class to add Route annotation and ensure the package is
@@ -138,21 +130,18 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         Path baseDir = new File(System.getProperty("user.dir", ".")).toPath();
         Path outputPath = baseDir.resolve(Path.of("target", "classes"));
-        Path sourcePath = baseDir.resolve(Path.of("src", "main", "java"))
-                .resolve(VIEW_PATH);
+        Path sourcePath = baseDir.resolve(Path.of("src", "main", "java")).resolve(VIEW_PATH);
         Path sourceFile = sourcePath.resolve("MyView.java");
         try {
             Files.createDirectories(sourcePath);
-            Files.writeString(sourceFile,
-                    withRoute ? NEW_CLASS_WITH_ROUTE : NEW_CLASS_WITHOUT_ROUTE,
-                    StandardOpenOption.WRITE, StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(sourceFile, withRoute ? NEW_CLASS_WITH_ROUTE : NEW_CLASS_WITHOUT_ROUTE,
+                    StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        int result = compiler.run(null, null, null, "-d", outputPath.toString(),
-                "-sourcepath", sourcePath.toString(), sourceFile.toString());
+        int result = compiler.run(null, null, null, "-d", outputPath.toString(), "-sourcepath", sourcePath.toString(),
+                sourceFile.toString());
         Assert.assertEquals("Failed to compile " + sourceFile, 0, result);
 
         waitUntil(driver -> {

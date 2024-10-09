@@ -23,8 +23,7 @@ import com.vaadin.flow.router.RouterLink;
 public class PreDestroyView extends Div {
 
     public PreDestroyView() {
-        RouterLink link = new RouterLink("navigate to preserved view",
-                MainPreDestroyView.class);
+        RouterLink link = new RouterLink("navigate to preserved view", MainPreDestroyView.class);
         add(link);
         link.setId("navigate-out");
     }

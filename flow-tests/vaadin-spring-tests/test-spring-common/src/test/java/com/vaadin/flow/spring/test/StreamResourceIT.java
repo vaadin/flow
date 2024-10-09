@@ -47,8 +47,7 @@ public class StreamResourceIT extends AbstractSpringTest {
         getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
 
         try (InputStream stream = download(url)) {
-            List<String> lines = IOUtils.readLines(stream,
-                    StandardCharsets.UTF_8);
+            List<String> lines = IOUtils.readLines(stream, StandardCharsets.UTF_8);
             String text = lines.stream().collect(Collectors.joining());
             Assert.assertEquals("Hello world", text);
         }
@@ -57,25 +56,19 @@ public class StreamResourceIT extends AbstractSpringTest {
     /*
      * Stolen from stackexchange.
      *
-     * It's not possible to use a straight way to download the link externally
-     * since it will use another session and the link will be invalid in this
-     * session. So either this pure client side way or external download with
-     * cookies copy (which allows preserve the session) needs to be used.
+     * It's not possible to use a straight way to download the link externally since it will use another session and the
+     * link will be invalid in this session. So either this pure client side way or external download with cookies copy
+     * (which allows preserve the session) needs to be used.
      */
     public InputStream download(String url) throws IOException {
-        String script = "var url = arguments[0];"
-                + "var callback = arguments[arguments.length - 1];"
-                + "var xhr = new XMLHttpRequest();"
-                + "xhr.open('GET', url, true);"
+        String script = "var url = arguments[0];" + "var callback = arguments[arguments.length - 1];"
+                + "var xhr = new XMLHttpRequest();" + "xhr.open('GET', url, true);"
                 + "xhr.responseType = \"arraybuffer\";" +
                 // force the HTTP response, response-type header to be array
                 // buffer
-                "xhr.onload = function() {"
-                + "  var arrayBuffer = xhr.response;"
-                + "  var byteArray = new Uint8Array(arrayBuffer);"
-                + "  callback(byteArray);" + "};" + "xhr.send();";
-        Object response = ((JavascriptExecutor) getDriver())
-                .executeAsyncScript(script, url);
+                "xhr.onload = function() {" + "  var arrayBuffer = xhr.response;"
+                + "  var byteArray = new Uint8Array(arrayBuffer);" + "  callback(byteArray);" + "};" + "xhr.send();";
+        Object response = ((JavascriptExecutor) getDriver()).executeAsyncScript(script, url);
         // Selenium returns an Array of Long, we need byte[]
         ArrayList<?> byteList = (ArrayList<?>) response;
         byte[] bytes = new byte[byteList.size()];

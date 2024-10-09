@@ -59,8 +59,7 @@ public abstract class ClassFinder {
     /**
      * Lists all class path entries by splitting the class path string.
      * <p>
-     * Adapted from ClassPathExplorer.getRawClasspathEntries(), but without
-     * filtering.
+     * Adapted from ClassPathExplorer.getRawClasspathEntries(), but without filtering.
      *
      * @return List of class path segment strings
      */
@@ -82,20 +81,16 @@ public abstract class ClassFinder {
     }
 
     /**
-     * Lists class names (based on .class files) in a directory (a package path
-     * root).
+     * Lists class names (based on .class files) in a directory (a package path root).
      *
      * @param parentPackage
-     *            parent package name or null at root of hierarchy, used by
-     *            recursion
+     *            parent package name or null at root of hierarchy, used by recursion
      * @param parent
      *            File representing the directory to scan
      * @return collection of fully qualified class names in the directory
      */
-    private static Collection<String> findClassesInDirectory(
-            String parentPackage, File parent) {
-        if (parent.isHidden()
-                || parent.getPath().contains(File.separator + ".")) {
+    private static Collection<String> findClassesInDirectory(String parentPackage, File parent) {
+        if (parent.isHidden() || parent.getPath().contains(File.separator + ".")) {
             return Collections.emptyList();
         }
 
@@ -112,11 +107,10 @@ public abstract class ClassFinder {
         assertNotNull(files);
         for (File child : files) {
             if (child.isDirectory()) {
-                classNames.addAll(findClassesInDirectory(
-                        parentPackage + child.getName(), child));
+                classNames.addAll(findClassesInDirectory(parentPackage + child.getName(), child));
             } else if (child.getName().endsWith(".class")) {
-                classNames.add(parentPackage.replace(File.separatorChar, '.')
-                        + child.getName().replaceAll("\\.class", ""));
+                classNames.add(
+                        parentPackage.replace(File.separatorChar, '.') + child.getName().replaceAll("\\.class", ""));
             }
         }
 
@@ -124,8 +118,7 @@ public abstract class ClassFinder {
     }
 
     /**
-     * JARs that will be scanned for classes to test, in addition to classpath
-     * directories.
+     * JARs that will be scanned for classes to test, in addition to classpath directories.
      *
      * @return the compiled pattern
      */
@@ -140,8 +133,7 @@ public abstract class ClassFinder {
     }
 
     protected boolean isTestClass(Class<?> cls) {
-        if (cls.getEnclosingClass() != null
-                && isTestClass(cls.getEnclosingClass())) {
+        if (cls.getEnclosingClass() != null && isTestClass(cls.getEnclosingClass())) {
             return true;
         }
 
@@ -156,14 +148,12 @@ public abstract class ClassFinder {
     }
 
     /**
-     * Finds the server side classes/interfaces under a class path entry -
-     * either a directory or a JAR that matches {@link #getJarPattern()}.
+     * Finds the server side classes/interfaces under a class path entry - either a directory or a JAR that matches
+     * {@link #getJarPattern()}.
      * <p>
-     * Only classes under {@link #getBasePackages} are considered, and those
-     * matching {@code excludes} are filtered out.
+     * Only classes under {@link #getBasePackages} are considered, and those matching {@code excludes} are filtered out.
      */
-    protected List<String> findServerClasses(String classpathEntry,
-            Collection<Pattern> excludes) throws IOException {
+    protected List<String> findServerClasses(String classpathEntry, Collection<Pattern> excludes) throws IOException {
         Collection<String> classes;
 
         File file = new File(classpathEntry);
@@ -176,10 +166,8 @@ public abstract class ClassFinder {
             return Collections.emptyList();
         }
         return classes.stream()
-                .filter(className -> getBasePackages().anyMatch(
-                        basePackage -> className.startsWith(basePackage + ".")))
-                .filter(className -> excludes.stream()
-                        .noneMatch(p -> p.matcher(className).matches()))
+                .filter(className -> getBasePackages().anyMatch(basePackage -> className.startsWith(basePackage + ".")))
+                .filter(className -> excludes.stream().noneMatch(p -> p.matcher(className).matches()))
                 .collect(Collectors.toList());
     }
 
@@ -198,8 +186,7 @@ public abstract class ClassFinder {
             while (e.hasMoreElements()) {
                 JarEntry entry = e.nextElement();
                 if (entry.getName().endsWith(".class")) {
-                    String nameWithoutExtension = entry.getName()
-                            .replaceAll("\\.class", "");
+                    String nameWithoutExtension = entry.getName().replaceAll("\\.class", "");
                     String className = nameWithoutExtension.replace('/', '.');
                     classes.add(className);
                 }

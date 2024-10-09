@@ -30,10 +30,8 @@ import com.vaadin.flow.server.RouteRegistry;
 public class CustomRoute extends Div {
 
     public CustomRoute() {
-        final RouteRegistry registry = ((CustomServletService) CustomServletService
-                .getCurrent()).getRouteRegistry();
-        final Span span = new Span(
-                "Used " + registry.getClass().getSimpleName());
+        final RouteRegistry registry = ((CustomServletService) CustomServletService.getCurrent()).getRouteRegistry();
+        final Span span = new Span("Used " + registry.getClass().getSimpleName());
         span.setId("registry");
 
         add(span);
@@ -41,11 +39,9 @@ public class CustomRoute extends Div {
 
         final Map<Class<? extends Exception>, Class<? extends Component>> exceptionHandlers = ((AbstractRouteRegistry) registry)
                 .getConfiguration().getExceptionHandlers();
-        add(new Span(
-                "Found " + exceptionHandlers.size() + " exception handlers"));
+        add(new Span("Found " + exceptionHandlers.size() + " exception handlers"));
         exceptionHandlers.forEach((exception, view) -> {
-            Span exceptionSpan = new Span(
-                    exception.getSimpleName() + " :: " + view.getSimpleName());
+            Span exceptionSpan = new Span(exception.getSimpleName() + " :: " + view.getSimpleName());
             exceptionSpan.setId(exception.getSimpleName());
             add(new Div(), exceptionSpan);
         });

@@ -24,9 +24,8 @@ import elemental.dom.Node;
 /**
  * Binding strategy/factory for {@link StateNode}s.
  * <p>
- * Only one strategy may be applicable for the given {@link StateNode} instance.
- * Once the applicable strategy is identified it's used to produce a
- * {@link Node} based on the {@link StateNode} instance and bind it.
+ * Only one strategy may be applicable for the given {@link StateNode} instance. Once the applicable strategy is
+ * identified it's used to produce a {@link Node} based on the {@link StateNode} instance and bind it.
  *
  * @param <T>
  *            a DOM node type which strategy is applicable for
@@ -41,8 +40,7 @@ public interface BindingStrategy<T extends Node> {
      * Creates a DOM node for the {@code node}.
      *
      * @param node
-     *            the state node for which to create a DOM node, not
-     *            {@code null}
+     *            the state node for which to create a DOM node, not {@code null}
      * @return the DOM node, not <code>null</code>
      */
     T create(StateNode node);
@@ -58,22 +56,19 @@ public interface BindingStrategy<T extends Node> {
     boolean isApplicable(StateNode node);
 
     /**
-     * Binds a DOM node to the {@code stateNode} using {@code context} to create
-     * and bind nodes of other types.
+     * Binds a DOM node to the {@code stateNode} using {@code context} to create and bind nodes of other types.
      *
      * @param stateNode
      *            the state node to bind, not {@code null}
      * @param domNode
      *            the DOM node, not <code>null</code>
      * @param context
-     *            binder context to create and construct HTML nodes of other
-     *            types
+     *            binder context to create and construct HTML nodes of other types
      */
     void bind(StateNode stateNode, T domNode, BinderContext context);
 
     /**
-     * Gets the tag value from the {@link NodeFeatures#ELEMENT_DATA} feature for
-     * the {@code node}.
+     * Gets the tag value from the {@link NodeFeatures#ELEMENT_DATA} feature for the {@code node}.
      *
      * @param node
      *            the state node

@@ -23,8 +23,7 @@ import com.vaadin.flow.shared.Registration;
  * Mixin interface to handle focus events on components.
  *
  * @param <T>
- *            the type of the component returned at the
- *            {@link FocusEvent#getSource()}
+ *            the type of the component returned at the {@link FocusEvent#getSource()}
  * @since 1.0
  */
 public interface FocusNotifier<T extends Component> extends Serializable {
@@ -35,21 +34,15 @@ public interface FocusNotifier<T extends Component> extends Serializable {
      * @param listener
      *            the focus listener
      * @return a registration that can be used to unregister the listener
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">focus
-     *      event at MDN</a>
+     * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/Events/blur">focus event at MDN</a>
      */
-    default Registration addFocusListener(
-            ComponentEventListener<FocusEvent<T>> listener) {
+    default Registration addFocusListener(ComponentEventListener<FocusEvent<T>> listener) {
         if (this instanceof Component) {
-            return ComponentUtil.addListener((Component) this, FocusEvent.class,
-                    (ComponentEventListener) listener);
+            return ComponentUtil.addListener((Component) this, FocusEvent.class, (ComponentEventListener) listener);
         } else {
             throw new IllegalStateException(String.format(
-                    "The class '%s' doesn't extend '%s'. "
-                            + "Make your implementation for the method '%s'.",
-                    getClass().getName(), Component.class.getSimpleName(),
-                    "addFocusListener"));
+                    "The class '%s' doesn't extend '%s'. " + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(), "addFocusListener"));
         }
     }
 
@@ -68,8 +61,7 @@ public interface FocusNotifier<T extends Component> extends Serializable {
          * @param source
          *            the source component
          * @param fromClient
-         *            <code>true</code> if the event originated from the client
-         *            side, <code>false</code> otherwise
+         *            <code>true</code> if the event originated from the client side, <code>false</code> otherwise
          * @see ComponentEvent
          */
         public FocusEvent(C source, boolean fromClient) {

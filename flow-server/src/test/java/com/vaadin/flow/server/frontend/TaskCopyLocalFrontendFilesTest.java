@@ -17,8 +17,7 @@ public class TaskCopyLocalFrontendFilesTest {
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void directoryWithReadOnlyFile_copyIsNotReadOnly()
-            throws IOException {
+    public void directoryWithReadOnlyFile_copyIsNotReadOnly() throws IOException {
         final File sourceFolder = createReadOnlySource();
 
         final File outFolder = temporaryFolder.newFolder("out");
@@ -26,15 +25,12 @@ public class TaskCopyLocalFrontendFilesTest {
         TaskCopyLocalFrontendFiles.copyLocalResources(sourceFolder, outFolder);
 
         final File copiedReadOnly = new File(outFolder, "readOnly.txt");
-        Assert.assertTrue(
-                "Copied files should be writable even when source is readOnly",
-                copiedReadOnly.canWrite());
+        Assert.assertTrue("Copied files should be writable even when source is readOnly", copiedReadOnly.canWrite());
 
     }
 
     @Test
-    public void directoryWithReadOnlyFile_canCopyMultipleTimesToSource()
-            throws IOException {
+    public void directoryWithReadOnlyFile_canCopyMultipleTimesToSource() throws IOException {
         final File sourceFolder = createReadOnlySource();
 
         final File outFolder = temporaryFolder.newFolder("out");
@@ -50,23 +46,18 @@ public class TaskCopyLocalFrontendFilesTest {
 
         final File outFolder = temporaryFolder.newFolder("out");
 
-        Options options = new MockOptions(temporaryFolder.getRoot())
-                .withJarFrontendResourcesFolder(outFolder)
+        Options options = new MockOptions(temporaryFolder.getRoot()).withJarFrontendResourcesFolder(outFolder)
                 .copyLocalResources(sourceFolder);
 
         GeneratedFilesSupport generatedFileSupport = new GeneratedFilesSupport();
-        TaskCopyLocalFrontendFiles task = new TaskCopyLocalFrontendFiles(
-                options);
+        TaskCopyLocalFrontendFiles task = new TaskCopyLocalFrontendFiles(options);
         task.setGeneratedFileSupport(generatedFileSupport);
         task.execute();
 
         final File copiedReadOnly = new File(outFolder, "readOnly.txt");
-        Assert.assertTrue(
-                "Copied files should be writable even when source is readOnly",
-                copiedReadOnly.canWrite());
+        Assert.assertTrue("Copied files should be writable even when source is readOnly", copiedReadOnly.canWrite());
 
-        Assert.assertEquals("Copied files should have been tracked",
-                Set.of(copiedReadOnly.toPath()),
+        Assert.assertEquals("Copied files should have been tracked", Set.of(copiedReadOnly.toPath()),
                 generatedFileSupport.getFiles());
     }
 
@@ -74,8 +65,7 @@ public class TaskCopyLocalFrontendFilesTest {
         final File sourceFolder = temporaryFolder.newFolder("source");
         File readOnly = new File(sourceFolder, "readOnly.txt");
         readOnly.createNewFile();
-        Assert.assertTrue("Could not make file read-only",
-                readOnly.setReadOnly());
+        Assert.assertTrue("Could not make file read-only", readOnly.setReadOnly());
 
         return sourceFolder;
     }

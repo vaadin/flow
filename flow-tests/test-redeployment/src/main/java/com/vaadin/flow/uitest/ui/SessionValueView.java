@@ -16,8 +16,7 @@ public class SessionValueView extends AbstractReloadView {
         addTriggerButton();
 
         WrappedSession session = VaadinSession.getCurrent().getSession();
-        String customAttribute = (String) session
-                .getAttribute("custom-attribute");
+        String customAttribute = (String) session.getAttribute("custom-attribute");
         if (customAttribute == null) {
             customAttribute = UUID.randomUUID().toString();
             session.setAttribute("custom-attribute", customAttribute);

@@ -50,22 +50,17 @@ public class RouteTarget implements Serializable {
      * @param parents
      *            parent layout chain
      */
-    public RouteTarget(Class<? extends Component> target,
-            List<Class<? extends RouterLayout>> parents) {
+    public RouteTarget(Class<? extends Component> target, List<Class<? extends RouterLayout>> parents) {
         this.target = target;
-        this.parentLayouts = parents != null
-                ? Collections.unmodifiableList(new ArrayList<>(parents))
+        this.parentLayouts = parents != null ? Collections.unmodifiableList(new ArrayList<>(parents))
                 : Collections.emptyList();
-        Route routeAnnotation = AnnotationReader
-                .getAnnotationFor(target, Route.class).orElse(null);
+        Route routeAnnotation = AnnotationReader.getAnnotationFor(target, Route.class).orElse(null);
         this.annotatedRoute = routeAnnotation != null;
-        this.registeredAtStartup = routeAnnotation != null
-                && routeAnnotation.registerAtStartup();
+        this.registeredAtStartup = routeAnnotation != null && routeAnnotation.registerAtStartup();
     }
 
     /**
-     * Create a new Route target holder with the given target registered and
-     * empty parent layouts.
+     * Create a new Route target holder with the given target registered and empty parent layouts.
      *
      * @param target
      *            navigation target
@@ -104,23 +99,20 @@ public class RouteTarget implements Serializable {
     }
 
     /**
-     * Gets if the route navigation target is a {@link Route} annotated class or
-     * not.
+     * Gets if the route navigation target is a {@link Route} annotated class or not.
      *
-     * @return {@literal true} if the navigation target class is annotated
-     *         with @{@link Route} annotation, otherwise {@literal false}.
+     * @return {@literal true} if the navigation target class is annotated with @{@link Route} annotation, otherwise
+     *         {@literal false}.
      */
     boolean isAnnotatedRoute() {
         return annotatedRoute;
     }
 
     /**
-     * Gets if this route has been registered during the initial route
-     * registration on application startup.
+     * Gets if this route has been registered during the initial route registration on application startup.
      * <p>
      *
-     * @return {@literal true} if the route was registered at application
-     *         startup, otherwise {@literal false}.
+     * @return {@literal true} if the route was registered at application startup, otherwise {@literal false}.
      */
     boolean isRegisteredAtStartup() {
         return registeredAtStartup;

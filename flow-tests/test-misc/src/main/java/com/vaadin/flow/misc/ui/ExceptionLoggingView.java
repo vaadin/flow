@@ -26,21 +26,19 @@ import com.vaadin.flow.router.Route;
 public class ExceptionLoggingView extends Div {
 
     public ExceptionLoggingView() {
-        NativeButton causeException = new NativeButton(
-                "Cause client side exception", e -> {
-                    getUI().get().getPage().executeJs("null.foo");
-                });
+        NativeButton causeException = new NativeButton("Cause client side exception", e -> {
+            getUI().get().getPage().executeJs("null.foo");
+        });
         causeException.setId("exception");
         add(causeException);
 
         /*
-         * Used for manually testing that the name of an offending external
-         * function is actually reported in the browser.
+         * Used for manually testing that the name of an offending external function is actually reported in the
+         * browser.
          */
-        NativeButton causeExternalException = new NativeButton(
-                "Cause external client side exception", e -> {
-                    getUI().get().getPage().executeJs("externalErrorTrigger()");
-                });
+        NativeButton causeExternalException = new NativeButton("Cause external client side exception", e -> {
+            getUI().get().getPage().executeJs("externalErrorTrigger()");
+        });
         causeExternalException.setId("externalException");
 
         add(causeException, causeExternalException);

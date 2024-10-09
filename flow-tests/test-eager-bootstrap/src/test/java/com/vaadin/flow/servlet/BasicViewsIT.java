@@ -27,16 +27,14 @@ public class BasicViewsIT extends ChromeBrowserTest {
     public void rootViewShown() throws Exception {
         getDriver().get(getRootURL() + "/");
         waitForDevServer();
-        Assert.assertEquals("This is the root view",
-                $("*").id("view").getText());
+        Assert.assertEquals("This is the root view", $("*").id("view").getText());
     }
 
     @Test
     public void helloViewShown() throws Exception {
         getDriver().get(getRootURL() + "/hello");
         waitForDevServer();
-        Assert.assertEquals("This is the Hello view",
-                $("*").id("view").getText());
+        Assert.assertEquals("This is the Hello view", $("*").id("view").getText());
     }
 
     @Test
@@ -44,8 +42,7 @@ public class BasicViewsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/nonexistant");
         waitForDevServer();
 
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("Could not navigate to 'nonexistant'"));
+        Assert.assertTrue(getDriver().getPageSource().contains("Could not navigate to 'nonexistant'"));
     }
 
 }

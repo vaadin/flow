@@ -21,8 +21,7 @@ import java.util.Optional;
 public class CustomMenuAccessControl implements MenuAccessControl {
 
     @Override
-    public void setPopulateClientSideMenu(
-            PopulateClientMenu populateClientSideMenu) {
+    public void setPopulateClientSideMenu(PopulateClientMenu populateClientSideMenu) {
     }
 
     @Override

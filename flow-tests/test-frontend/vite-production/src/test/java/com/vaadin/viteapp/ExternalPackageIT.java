@@ -14,7 +14,6 @@ public class ExternalPackageIT extends ChromeBrowserTest {
         getDriver().get(getRootURL());
         waitForDevServer();
         $(NativeButtonElement.class).id(MainView.OUTSIDE).click();
-        Assert.assertEquals("It works - It works", $(ParagraphElement.class)
-                .id(MainView.OUTSIDE_RESULT).getText());
+        Assert.assertEquals("It works - It works", $(ParagraphElement.class).id(MainView.OUTSIDE_RESULT).getText());
     }
 }

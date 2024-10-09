@@ -58,31 +58,27 @@ import jakarta.servlet.annotation.WebListener;
  *
  * @since 3.0
  */
-@HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
-        PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, Push.class, Theme.class,
+@HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class, PWA.class, Inline.class,
+        Inline.Container.class, Viewport.class, BodySize.class, PageTitle.class, Push.class, Theme.class,
         NoTheme.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener
-public class VaadinAppShellInitializer
-        implements VaadinServletContextStartupInitializer,
+public class VaadinAppShellInitializer implements VaadinServletContextStartupInitializer,
         // implementing ServletContextListener is needed for the @WebListener
         // annotation.
         ServletContextListener, Serializable {
 
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context) {
-        init(AbstractAnnotationValidator
-                .removeHandleTypesSelfReferences(classes, this), context);
+        init(AbstractAnnotationValidator.removeHandleTypesSelfReferences(classes, this), context);
     }
 
     /**
      * Initializes the {@link AppShellRegistry} for the application.
      *
      * @param classes
-     *            a set of classes that matches the {@link HandlesTypes} set in
-     *            this class.
+     *            a set of classes that matches the {@link HandlesTypes} set in this class.
      * @param context
      *            the {@link VaadinContext}.
      */
@@ -90,8 +86,7 @@ public class VaadinAppShellInitializer
     public static void init(Set<Class<?>> classes, VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        boolean disregardOffendingAnnotations = config.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false);
+        boolean disregardOffendingAnnotations = config.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS, false);
 
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.reset();
@@ -101,21 +96,14 @@ public class VaadinAppShellInitializer
         }
 
         List<String> offendingAnnotations = new ArrayList<>();
-        AppShellPredicate predicate = context.getAttribute(Lookup.class)
-                .lookup(AppShellPredicate.class);
+        AppShellPredicate predicate = context.getAttribute(Lookup.class).lookup(AppShellPredicate.class);
 
-        classes.stream()
-                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
+        classes.stream().filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
                 // sort classes by putting the app shell in first position
-                .sorted((a, b) -> predicate.isShell(a) ? -1
-                        : predicate.isShell(b) ? 1 : 0)
-                .forEach(clz -> {
+                .sorted((a, b) -> predicate.isShell(a) ? -1 : predicate.isShell(b) ? 1 : 0).forEach(clz -> {
                     if (predicate.isShell(clz)) {
-                        registry.setShell(
-                                (Class<? extends AppShellConfigurator>) clz);
-                        getLogger().debug(
-                                "Using {} class for configuring `index.html` response",
-                                clz.getName());
+                        registry.setShell((Class<? extends AppShellConfigurator>) clz);
+                        getLogger().debug("Using {} class for configuring `index.html` response", clz.getName());
                     } else {
                         String error = registry.validateClass(clz);
                         if (error != null) {
@@ -126,55 +114,41 @@ public class VaadinAppShellInitializer
 
         if (!offendingAnnotations.isEmpty()) {
             if (disregardOffendingAnnotations) {
-                boolean hasPwa = offendingAnnotations.stream()
-                        .anyMatch(err -> err.matches(".*@PWA.*"));
-                String message = String.format(
-                        hasPwa ? ERROR_HEADER_OFFENDING_PWA
-                                : ERROR_HEADER_NO_SHELL,
+                boolean hasPwa = offendingAnnotations.stream().anyMatch(err -> err.matches(".*@PWA.*"));
+                String message = String.format(hasPwa ? ERROR_HEADER_OFFENDING_PWA : ERROR_HEADER_NO_SHELL,
                         String.join("\n  ", offendingAnnotations));
                 getLogger().error(message);
             } else {
-                String message = String.format(ERROR_HEADER_NO_SHELL,
-                        String.join("\n  ", offendingAnnotations));
+                String message = String.format(ERROR_HEADER_NO_SHELL, String.join("\n  ", offendingAnnotations));
                 throw new InvalidApplicationConfigurationException(message);
             }
         }
     }
 
     /**
-     * Return the list of annotations handled by this class. This method is
-     * thought to be called from external plugins (e.g. Vaadin Spring) that
-     * would need to override the <code>@HandlesTypes</code>-based classpath
-     * scanning.
+     * Return the list of annotations handled by this class. This method is thought to be called from external plugins
+     * (e.g. Vaadin Spring) that would need to override the <code>@HandlesTypes</code>-based classpath scanning.
      *
-     * @return list of annotations handled by
-     *         {@link VaadinAppShellInitializer#init(Set, VaadinContext)}
+     * @return list of annotations handled by {@link VaadinAppShellInitializer#init(Set, VaadinContext)}
      */
     @SuppressWarnings("unchecked")
     public static List<Class<? extends Annotation>> getValidAnnotations() {
         return Arrays.stream(getHandledTypes()).filter(Class::isAnnotation)
-                .map(clz -> (Class<? extends Annotation>) clz)
-                .collect(Collectors.toList());
+                .map(clz -> (Class<? extends Annotation>) clz).collect(Collectors.toList());
     }
 
     /**
-     * Return the list of super classes handled by this class. This method is
-     * thought to be called from external plugins (e.g. Vaadin Spring) that
-     * would need to override the <code>@HandlesTypes</code>-based classpath
-     * scanning.
+     * Return the list of super classes handled by this class. This method is thought to be called from external plugins
+     * (e.g. Vaadin Spring) that would need to override the <code>@HandlesTypes</code>-based classpath scanning.
      *
-     * @return list of super classes handled by
-     *         {@link VaadinAppShellInitializer#init(Set, VaadinContext)}
+     * @return list of super classes handled by {@link VaadinAppShellInitializer#init(Set, VaadinContext)}
      */
     public static List<Class<?>> getValidSupers() {
-        return Arrays.stream(getHandledTypes())
-                .filter(clz -> !clz.isAnnotation())
-                .collect(Collectors.toList());
+        return Arrays.stream(getHandledTypes()).filter(clz -> !clz.isAnnotation()).collect(Collectors.toList());
     }
 
     private static Class<?>[] getHandledTypes() {
-        HandlesTypes annotation = VaadinAppShellInitializer.class
-                .getAnnotation(HandlesTypes.class);
+        HandlesTypes annotation = VaadinAppShellInitializer.class.getAnnotation(HandlesTypes.class);
         assert annotation != null;
         return annotation.value();
     }

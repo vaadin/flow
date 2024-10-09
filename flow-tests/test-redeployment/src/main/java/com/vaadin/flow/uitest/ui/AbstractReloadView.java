@@ -32,8 +32,7 @@ public abstract class AbstractReloadView extends Div {
     public UUID viewId = UUID.randomUUID();
 
     protected void addTriggerButton() {
-        final NativeButton triggerButton = new NativeButton("Trigger reload",
-                event -> Application.triggerReload());
+        final NativeButton triggerButton = new NativeButton("Trigger reload", event -> Application.triggerReload());
         triggerButton.setId(TRIGGER_RELOAD_ID);
         add(triggerButton);
     }

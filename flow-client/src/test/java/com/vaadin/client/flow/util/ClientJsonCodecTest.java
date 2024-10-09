@@ -37,12 +37,10 @@ public class ClientJsonCodecTest {
         decodePrimitiveValues(ClientJsonCodec::decodeWithoutTypeInfo);
     }
 
-    private static void decodePrimitiveValues(
-            Function<JsonValue, Object> decoder) {
+    private static void decodePrimitiveValues(Function<JsonValue, Object> decoder) {
         Assert.assertEquals("string", decoder.apply(Json.create("string")));
 
-        Assert.assertEquals(Double.valueOf(3.14),
-                decoder.apply(Json.create(3.14)));
+        Assert.assertEquals(Double.valueOf(3.14), decoder.apply(Json.create(3.14)));
 
         Assert.assertEquals(Boolean.TRUE, decoder.apply(Json.create(true)));
 
@@ -61,14 +59,12 @@ public class ClientJsonCodecTest {
 
     @Test
     public void decodeWithTypeInfo_primitives() {
-        decodePrimitiveValues(
-                json -> ClientJsonCodec.decodeWithTypeInfo(null, json));
+        decodePrimitiveValues(json -> ClientJsonCodec.decodeWithTypeInfo(null, json));
     }
 
     @Test
     public void decodeWithTypeInfo_array() {
-        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
-                .createArray(Json.create("string"), Json.create(true)));
+        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils.createArray(Json.create("string"), Json.create(true)));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, json);
 
@@ -91,8 +87,7 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
 
@@ -115,8 +110,7 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
 
         StateNode decoded = ClientJsonCodec.decodeStateNode(tree, json);
 
@@ -125,25 +119,21 @@ public class ClientJsonCodecTest {
 
     @Test
     public void decodeStateNode_array() {
-        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
-                .createArray(Json.create("string"), Json.create(true)));
+        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils.createArray(Json.create("string"), Json.create(true)));
 
         Assert.assertNull(ClientJsonCodec.decodeStateNode(null, json));
     }
 
     @Test
     public void decodeStateNode_primitive() {
-        Assert.assertNull(
-                ClientJsonCodec.decodeStateNode(null, Json.create("string")));
+        Assert.assertNull(ClientJsonCodec.decodeStateNode(null, Json.create("string")));
     }
 
-    private static void encodePrimitiveValues(
-            Function<Object, JsonValue> encoder) {
+    private static void encodePrimitiveValues(Function<Object, JsonValue> encoder) {
 
         assertJsonEquals(Json.create("string"), encoder.apply("string"));
 
-        assertJsonEquals(Json.create(3.14),
-                encoder.apply(Double.valueOf(3.14)));
+        assertJsonEquals(Json.create(3.14), encoder.apply(Double.valueOf(3.14)));
 
         assertJsonEquals(Json.create(true), encoder.apply(Boolean.TRUE));
 
@@ -151,8 +141,7 @@ public class ClientJsonCodecTest {
     }
 
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
-        Assert.assertTrue(
-                actual.toJson() + " does not equal " + expected.toJson(),
+        Assert.assertTrue(actual.toJson() + " does not equal " + expected.toJson(),
                 JsonUtils.jsonEquals(expected, actual));
     }
 

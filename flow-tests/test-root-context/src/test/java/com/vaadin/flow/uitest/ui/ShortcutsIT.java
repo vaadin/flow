@@ -31,8 +31,7 @@ import org.openqa.selenium.interactions.Actions;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ShortcutsIT extends ChromeBrowserTest {
-    private static final Set<Keys> modifiers = Stream
-            .of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META)
+    private static final Set<Keys> modifiers = Stream.of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META)
             .collect(Collectors.toSet());
 
     private static final String DEFAULT_VALUE = "testing...";
@@ -224,8 +223,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     public void removingShortcutCleansJavascriptEventSettingsItUsed() {
         WebElement removalInput = findElement(By.id("removal-input"));
 
-        Assert.assertEquals("removalInput should be empty", "",
-                removalInput.getAttribute("value"));
+        Assert.assertEquals("removalInput should be empty", "", removalInput.getAttribute("value"));
 
         // the removalInput has a shortcut bound on 'd'. When 'd' is typed,
         // instead of printing the letter, the contents are capitalized instead.
@@ -233,14 +231,11 @@ public class ShortcutsIT extends ChromeBrowserTest {
         // printed out.
 
         removalInput.sendKeys("abcd");
-        Assert.assertEquals("removalInput should have 'ABC' and no 'd'", "ABC",
-                removalInput.getAttribute("value"));
+        Assert.assertEquals("removalInput should have 'ABC' and no 'd'", "ABC", removalInput.getAttribute("value"));
 
         removalInput.sendKeys("abcd");
-        Assert.assertEquals(
-                "removalInput 'ABCabcd'. Since shortcut was removed, 'd' can "
-                        + "be typed.",
-                "ABCabcd", removalInput.getAttribute("value"));
+        Assert.assertEquals("removalInput 'ABCabcd'. Since shortcut was removed, 'd' can " + "be typed.", "ABCabcd",
+                removalInput.getAttribute("value"));
     }
 
     @Test
@@ -269,8 +264,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     private void assertActualEquals(String expected) {
-        Assert.assertEquals(expected,
-                findElement(By.id("actual")).getAttribute("value"));
+        Assert.assertEquals(expected, findElement(By.id("actual")).getAttribute("value"));
     }
 
     private void resetActual() {

@@ -26,8 +26,7 @@ public class PaperInputView extends Div {
         PaperInput paperInput = new PaperInput("foo");
 
         add(paperInput);
-        paperInput.getElement().addPropertyChangeListener("value",
-                event -> showValue(paperInput.getValue()));
+        paperInput.getElement().addPropertyChangeListener("value", event -> showValue(paperInput.getValue()));
     }
 
     private void showValue(String value) {

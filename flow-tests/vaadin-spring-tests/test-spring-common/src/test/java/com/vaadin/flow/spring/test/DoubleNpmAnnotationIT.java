@@ -31,17 +31,13 @@ public class DoubleNpmAnnotationIT extends AbstractSpringTest {
         List<TestBenchElement> paperInputs = $("paper-input").all();
 
         // check that elements are on the page
-        Assert.assertTrue("Should have found a 'paper-checkbox'",
-                paperCheckboxes.size() > 0);
-        Assert.assertTrue("Should have found a 'paper-input'",
-                paperInputs.size() > 0);
+        Assert.assertTrue("Should have found a 'paper-checkbox'", paperCheckboxes.size() > 0);
+        Assert.assertTrue("Should have found a 'paper-input'", paperInputs.size() > 0);
 
         // verify that the paper components are upgraded
-        Assert.assertNotNull(
-                "'paper-checkbox' should have had element in shadow dom",
+        Assert.assertNotNull("'paper-checkbox' should have had element in shadow dom",
                 paperCheckboxes.get(0).$("checkboxContainer"));
-        Assert.assertNotNull(
-                "'paper-input' should have had element in shadow dom",
+        Assert.assertNotNull("'paper-input' should have had element in shadow dom",
                 paperInputs.get(0).$("paper-input-container"));
     }
 

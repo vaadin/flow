@@ -27,16 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handles Atmosphere requests and forwards them to logical methods in
- * {@link PushHandler}.
+ * Handles Atmosphere requests and forwards them to logical methods in {@link PushHandler}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
-        implements Serializable {
+public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler implements Serializable {
 
     private PushHandler pushHandler = null;
 
@@ -49,8 +47,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     }
 
     @Override
-    public void onStateChange(AtmosphereResourceEvent event)
-            throws IOException {
+    public void onStateChange(AtmosphereResourceEvent event) throws IOException {
         super.onStateChange(event);
         if (pushHandler == null) {
             getLogger().warn(
@@ -91,8 +88,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     }
 
     /**
-     * Called when the client sends the first request (to establish a push
-     * connection).
+     * Called when the client sends the first request (to establish a push connection).
      *
      * @param resource
      *            the resource which was connected
@@ -103,8 +99,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
         pushHandler.onConnect(resource);
     }
 
-    private class AtmosphereResourceListener extends
-            AtmosphereResourceEventListenerAdapter implements Serializable {
+    private class AtmosphereResourceListener extends AtmosphereResourceEventListenerAdapter implements Serializable {
 
         @Override
         public void onDisconnect(AtmosphereResourceEvent event) {
@@ -115,8 +110,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
 
         @Override
         public void onThrowable(AtmosphereResourceEvent event) {
-            getLogger().error("Exception in push connection",
-                    event.throwable());
+            getLogger().error("Exception in push connection", event.throwable());
             pushHandler.connectionLost(event);
         }
     }

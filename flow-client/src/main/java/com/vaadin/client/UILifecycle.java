@@ -54,8 +54,8 @@ public class UILifecycle {
     /**
      * Sets the state of the UI to the given value.
      * <p>
-     * Only allows state changes in one direction: {@link UIState#INITIALIZING}
-     * -&gt; {@link UIState#RUNNING} -&gt; {@link UIState#TERMINATED}.
+     * Only allows state changes in one direction: {@link UIState#INITIALIZING} -&gt; {@link UIState#RUNNING} -&gt;
+     * {@link UIState#TERMINATED}.
      * <p>
      * Changing the state fires a {@link StateChangeEvent}.
      *
@@ -65,8 +65,7 @@ public class UILifecycle {
     public void setState(UIState state) {
         if (state.ordinal() != this.state.ordinal() + 1) {
             throw new IllegalArgumentException(
-                    "Tried to move from state " + this.state.name() + " to "
-                            + state.name() + " which is not allowed");
+                    "Tried to move from state " + this.state.name() + " to " + state.name() + " which is not allowed");
         }
 
         this.state = state;
@@ -76,8 +75,7 @@ public class UILifecycle {
     /**
      * Check if the state is {@link UIState#RUNNING}.
      *
-     * @return {@code true} if the status is {@link UIState#RUNNING},
-     *         {@code false} otherwise
+     * @return {@code true} if the status is {@link UIState#RUNNING}, {@code false} otherwise
      */
     public boolean isRunning() {
         return getState() == UIState.RUNNING;
@@ -86,8 +84,7 @@ public class UILifecycle {
     /**
      * Check if the state is {@link UIState#TERMINATED}.
      *
-     * @return {@code true} if the status is {@link UIState#TERMINATED},
-     *         {@code false} otherwise
+     * @return {@code true} if the status is {@link UIState#TERMINATED}, {@code false} otherwise
      */
     public boolean isTerminated() {
         return getState() == UIState.TERMINATED;
@@ -100,11 +97,9 @@ public class UILifecycle {
      *            the handler to add
      * @param <H>
      *            the handler type
-     * @return a handler registration object which can be used to remove the
-     *         handler
+     * @return a handler registration object which can be used to remove the handler
      */
-    public <H extends StateChangeHandler> HandlerRegistration addHandler(
-            H handler) {
+    public <H extends StateChangeHandler> HandlerRegistration addHandler(H handler) {
         return eventBus.addHandler(StateChangeEvent.getType(), handler);
     }
 
@@ -169,8 +164,7 @@ public class UILifecycle {
     public interface StateChangeHandler extends EventHandler {
 
         /**
-         * Triggered when state of a UI if changed. To get the current state,
-         * call {@link UILifecycle#getState()}.
+         * Triggered when state of a UI if changed. To get the current state, call {@link UILifecycle#getState()}.
          *
          * @param event
          *            the event object

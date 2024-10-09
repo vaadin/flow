@@ -42,8 +42,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Utils class, intended to ease working with Polymer related code on a client
- * side.
+ * Utils class, intended to ease working with Polymer related code on a client side.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -67,12 +66,9 @@ public final class PolymerUtils {
      * @param newValue
      *            new value to be set at desired index
      *
-     * @see <a href=
-     *      "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer
-     *      docs</a>
+     * @see <a href= "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer docs</a>
      */
-    public static native void setListValueByIndex(Element htmlNode, String path,
-            int listIndex, JsonValue newValue)
+    public static native void setListValueByIndex(Element htmlNode, String path, int listIndex, JsonValue newValue)
     /*-{
         htmlNode.set(path + "." + listIndex, newValue);
     }-*/;
@@ -80,8 +76,8 @@ public final class PolymerUtils {
     /**
      * Calls Polymer {@code splice} method on specified {@code htmlNode}.
      *
-     * Splice call is made via {@code apply} method in order to force the method
-     * to treat {@code itemsToAdd} as numerous parameters, not a single one.
+     * Splice call is made via {@code apply} method in order to force the method to treat {@code itemsToAdd} as numerous
+     * parameters, not a single one.
      *
      * @param htmlNode
      *            node to call splice method on
@@ -94,12 +90,10 @@ public final class PolymerUtils {
      * @param itemsToAdd
      *            elements to add after startIndex
      *
-     * @see <a href=
-     *      "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer
-     *      docs</a>
+     * @see <a href= "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer docs</a>
      */
-    public static native void splice(Element htmlNode, String path,
-            int startIndex, int deleteCount, JsonArray itemsToAdd)
+    public static native void splice(Element htmlNode, String path, int startIndex, int deleteCount,
+            JsonArray itemsToAdd)
     /*-{
         htmlNode.splice.apply(htmlNode, [path, startIndex, deleteCount].concat(itemsToAdd));
     }-*/;
@@ -141,16 +135,12 @@ public final class PolymerUtils {
             } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
             } else if (node.hasFeature(NodeFeatures.BASIC_TYPE_VALUE)) {
-                return createModelTree(
-                        node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
-                                .getProperty(NodeProperties.VALUE));
+                return createModelTree(node.getMap(NodeFeatures.BASIC_TYPE_VALUE).getProperty(NodeProperties.VALUE));
             }
-            assert feature != null
-                    : "Don't know how to convert node without map or list features";
+            assert feature != null : "Don't know how to convert node without map or list features";
 
             JsonValue convert = feature.convert(PolymerUtils::createModelTree);
-            if (convert instanceof JsonObject
-                    && !((JsonObject) convert).hasKey("nodeId")) {
+            if (convert instanceof JsonObject && !((JsonObject) convert).hasKey("nodeId")) {
 
                 ((JsonObject) convert).put("nodeId", node.getId());
                 registerChangeHandlers(node, feature, convert);
@@ -162,8 +152,7 @@ public final class PolymerUtils {
                 return createModelTree(property.getValue());
             } else {
                 JsonObject convertedObject = Json.createObject();
-                convertedObject.put(property.getName(),
-                        createModelTree(property.getValue()));
+                convertedObject.put(property.getName(), createModelTree(property.getValue()));
                 return convertedObject;
             }
         } else {
@@ -171,8 +160,7 @@ public final class PolymerUtils {
         }
     }
 
-    private static void registerChangeHandlers(StateNode node,
-            NodeFeature feature, JsonValue value) {
+    private static void registerChangeHandlers(StateNode node, NodeFeature feature, JsonValue value) {
 
         JsArray<EventRemover> registrations = JsCollections.array();
         if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
@@ -187,48 +175,39 @@ public final class PolymerUtils {
                     : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
                             + feature;
             NodeList list = (NodeList) feature;
-            registrations.push(list.addSpliceListener(
-                    event -> handleListChange(event, value)));
+            registrations.push(list.addSpliceListener(event -> handleListChange(event, value)));
         }
-        assert !registrations.isEmpty()
-                : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
+        assert !registrations.isEmpty() : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
 
-        registrations.push(node.addUnregisterListener(
-                event -> registrations.forEach(EventRemover::remove)));
+        registrations.push(node.addUnregisterListener(event -> registrations.forEach(EventRemover::remove)));
     }
 
-    private static void registerPropertyAddHandler(JsonValue value,
-            JsArray<EventRemover> registrations, NodeMap map) {
+    private static void registerPropertyAddHandler(JsonValue value, JsArray<EventRemover> registrations, NodeMap map) {
         registrations.push(map.addPropertyAddListener(event -> {
             MapProperty property = event.getProperty();
-            registrations.push(property.addChangeListener(
-                    change -> handlePropertyChange(property, value)));
+            registrations.push(property.addChangeListener(change -> handlePropertyChange(property, value)));
             handlePropertyChange(property, value);
         }));
     }
 
-    private static void registerPropertyChangeHandlers(JsonValue value,
-            JsArray<EventRemover> registrations, NodeMap map) {
+    private static void registerPropertyChangeHandlers(JsonValue value, JsArray<EventRemover> registrations,
+            NodeMap map) {
         map.forEachProperty((property, propertyName) -> registrations
-                .push(property.addChangeListener(
-                        event -> handlePropertyChange(property, value))));
+                .push(property.addChangeListener(event -> handlePropertyChange(property, value))));
     }
 
-    private static void handleListChange(ListSpliceEvent event,
-            JsonValue value) {
+    private static void handleListChange(ListSpliceEvent event, JsonValue value) {
         Reactive.addFlushListener(() -> doHandleListChange(event, value));
     }
 
-    private static void doHandleListChange(ListSpliceEvent event,
-            JsonValue value) {
+    private static void doHandleListChange(ListSpliceEvent event, JsonValue value) {
         JsArray<?> add = event.getAdd();
         int index = event.getIndex();
         int remove = event.getRemove().length();
         StateNode node = event.getSource().getNode();
         StateNode root = getFirstParentWithDomNode(node);
         if (root == null) {
-            Console.warn("Root node for node " + node.getId()
-                    + " could not be found");
+            Console.warn("Root node for node " + node.getId() + " could not be found");
             return;
         }
 
@@ -239,8 +218,7 @@ public final class PolymerUtils {
             String path = getNotificationPath(root, node, null);
             if (path != null) {
 
-                splice((Element) root.getDomNode(), path, index, remove,
-                        WidgetUtil.crazyJsoCast(array));
+                splice((Element) root.getDomNode(), path, index, remove, WidgetUtil.crazyJsoCast(array));
                 return;
             }
         }
@@ -249,19 +227,16 @@ public final class PolymerUtils {
         payload.spliceArray(index, remove, array);
     }
 
-    private static void handlePropertyChange(MapProperty property,
-            JsonValue bean) {
+    private static void handlePropertyChange(MapProperty property, JsonValue bean) {
         Reactive.addFlushListener(() -> doHandlePropertyChange(property, bean));
     }
 
-    private static void doHandlePropertyChange(MapProperty property,
-            JsonValue value) {
+    private static void doHandlePropertyChange(MapProperty property, JsonValue value) {
         String propertyName = property.getName();
         StateNode node = property.getMap().getNode();
         StateNode root = getFirstParentWithDomNode(node);
         if (root == null) {
-            Console.warn("Root node for node " + node.getId()
-                    + " could not be found");
+            Console.warn("Root node for node " + node.getId() + " could not be found");
             return;
         }
         JsonValue modelTree = createModelTree(property.getValue());
@@ -276,8 +251,7 @@ public final class PolymerUtils {
         WidgetUtil.setJsProperty(value, propertyName, modelTree);
     }
 
-    private static String getNotificationPath(StateNode rootNode,
-            StateNode currentNode, String propertyName) {
+    private static String getNotificationPath(StateNode rootNode, StateNode currentNode, String propertyName) {
 
         JsArray<String> path = JsCollections.array();
         if (propertyName != null) {
@@ -286,8 +260,7 @@ public final class PolymerUtils {
         return doGetNotificationPath(rootNode, currentNode, path);
     }
 
-    private static String doGetNotificationPath(StateNode rootNode,
-            StateNode currentNode, JsArray<String> path) {
+    private static String doGetNotificationPath(StateNode rootNode, StateNode currentNode, JsArray<String> path) {
 
         StateNode parent = currentNode.getParent();
         if (parent.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
@@ -318,8 +291,7 @@ public final class PolymerUtils {
 
     private static String getListNotificationPath(StateNode currentNode) {
         int indexInTheList = -1;
-        NodeList children = currentNode.getParent()
-                .getList(NodeFeatures.TEMPLATE_MODELLIST);
+        NodeList children = currentNode.getParent().getList(NodeFeatures.TEMPLATE_MODELLIST);
 
         for (int i = 0; i < children.length(); i++) {
             Object object = children.get(i);
@@ -337,8 +309,7 @@ public final class PolymerUtils {
 
     private static String getPropertiesNotificationPath(StateNode currentNode) {
         String propertyNameInTheMap = null;
-        NodeMap map = currentNode.getParent()
-                .getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        NodeMap map = currentNode.getParent().getMap(NodeFeatures.ELEMENT_PROPERTIES);
 
         JsArray<String> propertyNames = map.getPropertyNames();
         for (int i = 0; i < propertyNames.length(); i++) {
@@ -359,8 +330,7 @@ public final class PolymerUtils {
      *
      * @param node
      *            the node
-     * @return the first parent node with a DOM Node, or <code>null</code> if
-     *         none can be found
+     * @return the first parent node with a DOM Node, or <code>null</code> if none can be found
      */
     private static StateNode getFirstParentWithDomNode(StateNode node) {
         StateNode parent = node.getParent();
@@ -386,16 +356,14 @@ public final class PolymerUtils {
     }-*/;
 
     /**
-     * Checks whether the {@code htmlNode} can turn into polymer 2 element
-     * later.
+     * Checks whether the {@code htmlNode} can turn into polymer 2 element later.
      * <p>
-     * Lazy loaded dependencies can load Polymer later than the element itself
-     * gets processed by the Flow. This method helps to determine such elements.
+     * Lazy loaded dependencies can load Polymer later than the element itself gets processed by the Flow. This method
+     * helps to determine such elements.
      *
      * @param htmlNode
      *            HTML element to check
-     * @return {@code true} if the {@code htmlNode} can become a polymer 2
-     *         element
+     * @return {@code true} if the {@code htmlNode} can become a polymer 2 element
      *
      * @deprecated This is not in use anywhere and can be removed
      */
@@ -420,8 +388,7 @@ public final class PolymerUtils {
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
-    public static native Node searchForElementInShadowRoot(
-            ShadowRoot shadowRoot, String cssQuery)
+    public static native Node searchForElementInShadowRoot(ShadowRoot shadowRoot, String cssQuery)
     /*-{
         return shadowRoot.querySelector(cssQuery);
     }-*/;
@@ -441,8 +408,7 @@ public final class PolymerUtils {
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
-    public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
-            String id)
+    public static native Node getElementInShadowRootById(ShadowRoot shadowRoot, String id)
     /*-{
         return shadowRoot.getElementById(id);
     }-*/;
@@ -451,27 +417,22 @@ public final class PolymerUtils {
      * Find the DOM element inside shadow root of the {@code shadowRootParent}.
      *
      * @param shadowRootParent
-     *            the parent whose shadow root contains the element with the
-     *            {@code id}
+     *            the parent whose shadow root contains the element with the {@code id}
      * @param id
      *            the identifier of the element to search for
-     * @return the element with the given {@code id} inside the shadow root of
-     *         the parent
-     * @deprecated This is Polymer specific. Use
-     *             {@link ElementUtil#getElementById(Node, String)} for the
-     *             generic version
+     * @return the element with the given {@code id} inside the shadow root of the parent
+     * @deprecated This is Polymer specific. Use {@link ElementUtil#getElementById(Node, String)} for the generic
+     *             version
      */
     @Deprecated
-    public static native Element getDomElementById(Node shadowRootParent,
-            String id)
+    public static native Element getDomElementById(Node shadowRootParent, String id)
     /*-{
         return shadowRootParent.$[id];
     }-*/;
 
     /**
-     * Returns {@code true} if the DOM structure of the polymer custom element
-     * {@code shadowRootParent} is ready (meaning that it has shadow root and
-     * its shadow root may be queried for children referenced by id).
+     * Returns {@code true} if the DOM structure of the polymer custom element {@code shadowRootParent} is ready
+     * (meaning that it has shadow root and its shadow root may be queried for children referenced by id).
      *
      * @param shadowRootParent
      *            the polymer custom element
@@ -491,18 +452,15 @@ public final class PolymerUtils {
      *            the required tag name
      * @return {@code true} if the node has required tag name
      *
-     * @deprecated Use the generic {@link ElementUtil#hasTag(Node, String)}
-     *             instead
+     * @deprecated Use the generic {@link ElementUtil#hasTag(Node, String)} instead
      */
     @Deprecated
     public static boolean hasTag(Node node, String tag) {
-        return node instanceof Element
-                && tag.equalsIgnoreCase(((Element) node).getTagName());
+        return node instanceof Element && tag.equalsIgnoreCase(((Element) node).getTagName());
     }
 
     /**
-     * Gets the custom element using {@code path} of indices starting from the
-     * {@code root}.
+     * Gets the custom element using {@code path} of indices starting from the {@code root}.
      *
      * @param root
      *            the root element to start from
@@ -519,11 +477,9 @@ public final class PolymerUtils {
         if (current instanceof Element) {
             return (Element) current;
         } else if (current == null) {
-            Console.warn(
-                    "There is no element addressed by the path '" + path + "'");
+            Console.warn("There is no element addressed by the path '" + path + "'");
         } else {
-            Console.warn("The node addressed by path " + path
-                    + " is not an Element");
+            Console.warn("The node addressed by path " + path + " is not an Element");
         }
         return null;
     }
@@ -541,16 +497,15 @@ public final class PolymerUtils {
     }-*/;
 
     /**
-     * Invokes the {@code runnable} when the custom element with the given
-     * {@code tagName} is initialized (its DOM structure becomes available).
+     * Invokes the {@code runnable} when the custom element with the given {@code tagName} is initialized (its DOM
+     * structure becomes available).
      *
      * @param tagName
      *            the name of the custom element
      * @param runnable
      *            the command to run when the element if initialized
      */
-    public static native void invokeWhenDefined(String tagName,
-            Runnable runnable)
+    public static native void invokeWhenDefined(String tagName, Runnable runnable)
     /*-{
         $wnd.customElements.whenDefined(tagName).then(
             function () {
@@ -566,25 +521,22 @@ public final class PolymerUtils {
      * @return the tag name of the node
      */
     public static String getTag(StateNode node) {
-        return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.TAG).getValue();
+        return (String) node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).getValue();
     }
 
     /**
-     * Adds the {@code listener} which will be invoked when the
-     * {@code polymerElement} becomes "ready" meaning that it's method
-     * {@code ready} is called.
+     * Adds the {@code listener} which will be invoked when the {@code polymerElement} becomes "ready" meaning that it's
+     * method {@code ready} is called.
      * <p>
-     * The listener won't be called if the element is already "ready" and the
-     * listener will be removed immediately once it's executed.
+     * The listener won't be called if the element is already "ready" and the listener will be removed immediately once
+     * it's executed.
      *
      * @param polymerElement
      *            the custom (polymer) element to listen its readiness state
      * @param listener
      *            the callback to execute once the element becomes ready
      */
-    public static void addReadyListener(Element polymerElement,
-            Runnable listener) {
+    public static void addReadyListener(Element polymerElement, Runnable listener) {
         if (readyListeners == null) {
             readyListeners = JsCollections.weakMap();
         }
@@ -618,10 +570,8 @@ public final class PolymerUtils {
         int filteredIndex = -1;
         for (int i = 0; i < children.getLength(); i++) {
             Node next = children.item(i);
-            assert next instanceof Element
-                    : "Unexpected element type in the collection of children. "
-                            + "DomElement::getChildren is supposed to return Element chidren only, but got "
-                            + next.getClass();
+            assert next instanceof Element : "Unexpected element type in the collection of children. "
+                    + "DomElement::getChildren is supposed to return Element chidren only, but got " + next.getClass();
             Element element = (Element) next;
             if (!"style".equalsIgnoreCase(element.getTagName())) {
                 filteredIndex++;
@@ -643,8 +593,7 @@ public final class PolymerUtils {
      * @param value
      *            the value
      */
-    public static native void setProperty(Element element, String path,
-            Object value)
+    public static native void setProperty(Element element, String path, Object value)
     /*-{
          element.set(path, value);
      }-*/;

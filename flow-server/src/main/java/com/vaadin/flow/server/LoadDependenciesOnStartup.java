@@ -27,21 +27,16 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
  *
  * Defines routes to load eagerly.
  * <p>
- * All dependencies for the routes you add to this annotation will be loaded
- * when the user first opens the application. Dependencies for other routes will
- * be loaded when the corresponding route is visited the first time.
+ * All dependencies for the routes you add to this annotation will be loaded when the user first opens the application.
+ * Dependencies for other routes will be loaded when the corresponding route is visited the first time.
  * <p>
- * Define the classes you want to load eagerly as parameters, e.g.
- * {@code @LoadDependenciesOnStartup({MainView.class,
- * TheOtherEntryPointView.class})} to load the {@code MainView} and
- * {@code TheOtherEntryPointView}.
+ * Define the classes you want to load eagerly as parameters, e.g. {@code @LoadDependenciesOnStartup({MainView.class,
+ * TheOtherEntryPointView.class})} to load the {@code MainView} and {@code TheOtherEntryPointView}.
  * <p>
- * If you this annotation without any parameters, i.e.
- * {@code @LoadDependenciesOnStartup()} then the dependencies for all routes
- * will be loaded on startup.
+ * If you this annotation without any parameters, i.e. {@code @LoadDependenciesOnStartup()} then the dependencies for
+ * all routes will be loaded on startup.
  * <p>
- * This annotation must be added to the class implementing
- * {@link AppShellConfigurator}.
+ * This annotation must be added to the class implementing {@link AppShellConfigurator}.
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -49,14 +44,11 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 public @interface LoadDependenciesOnStartup {
 
     /**
-     * The views for which to load dependencies when the application is opened
-     * for the first time.
+     * The views for which to load dependencies when the application is opened for the first time.
      * <p>
-     * Note that all classes must extend {@link Component}. The the type is
-     * {@code Class<?>} because of a VS Code issue.
+     * Note that all classes must extend {@link Component}. The the type is {@code Class<?>} because of a VS Code issue.
      *
-     * @return a collection of views to load eagerly or an empty array to load
-     *         all dependencies eagerly
+     * @return a collection of views to load eagerly or an empty array to load all dependencies eagerly
      */
     Class<?>[] value() default {};
 

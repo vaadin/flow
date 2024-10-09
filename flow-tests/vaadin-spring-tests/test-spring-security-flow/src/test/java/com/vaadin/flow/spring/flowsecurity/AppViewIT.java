@@ -42,8 +42,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private void clickAccessRolePrefixedAdminPageFromThread() {
-        getMainView().$(ButtonElement.class)
-                .id(AdminView.ROLE_PREFIX_TEST_BUTTON_ID).click();
+        getMainView().$(ButtonElement.class).id(AdminView.ROLE_PREFIX_TEST_BUTTON_ID).click();
     }
 
     @Test
@@ -224,28 +223,23 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void static_resources_accessible_without_login() throws Exception {
         open("manifest.webmanifest");
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("\"name\":\"Spring Security Helper Test Project\""));
+        Assert.assertTrue(getDriver().getPageSource().contains("\"name\":\"Spring Security Helper Test Project\""));
         open("sw.js");
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("this._installAndActiveListenersAdded"));
+        Assert.assertTrue(getDriver().getPageSource().contains("this._installAndActiveListenersAdded"));
         open("sw-runtime-resources-precache.js");
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("self.additionalManifestEntries = ["));
+        Assert.assertTrue(getDriver().getPageSource().contains("self.additionalManifestEntries = ["));
     }
 
     @Test
     public void public_app_resources_available_for_all() {
         openResource("public/public.txt");
         String shouldBeTextFile = getDriver().getPageSource();
-        Assert.assertTrue(
-                shouldBeTextFile.contains("Public document for all users"));
+        Assert.assertTrue(shouldBeTextFile.contains("Public document for all users"));
         open(LOGIN_PATH);
         loginUser();
         openResource("public/public.txt");
         shouldBeTextFile = getDriver().getPageSource();
-        Assert.assertTrue(
-                shouldBeTextFile.contains("Public document for all users"));
+        Assert.assertTrue(shouldBeTextFile.contains("Public document for all users"));
     }
 
     @Test
@@ -254,8 +248,7 @@ public class AppViewIT extends AbstractIT {
         loginUser();
         UploadElement upload = $(UploadElement.class).first();
         File tmpFile = File.createTempFile("security-flow-image", ".png");
-        InputStream imageStream = getClass().getClassLoader()
-                .getResourceAsStream("image.png");
+        InputStream imageStream = getClass().getClassLoader().getResourceAsStream("image.png");
         IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
         tmpFile.deleteOnExit();
         upload.upload(tmpFile);
@@ -263,10 +256,8 @@ public class AppViewIT extends AbstractIT {
         TestBenchElement text = $("p").id("uploadText");
         TestBenchElement img = $("img").id("uploadImage");
 
-        Assert.assertEquals("Loan application uploaded by John the User",
-                text.getText());
-        Assert.assertTrue(img.getPropertyString("src")
-                .contains("/VAADIN/dynamic/resource/"));
+        Assert.assertEquals("Loan application uploaded by John the User", text.getText());
+        Assert.assertTrue(img.getPropertyString("src").contains("/VAADIN/dynamic/resource/"));
     }
 
     @Test
@@ -356,8 +347,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private void assertForbiddenPage() {
-        assertPageContains(
-                "There was an unexpected error (type=Forbidden, status=403).");
+        assertPageContains("There was an unexpected error (type=Forbidden, status=403).");
     }
 
     private void assertPageContains(String contents) {
@@ -366,8 +356,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private List<MenuItem> getMenuItems() {
-        List<TestBenchElement> anchors = getMainView().$("vaadin-tabs").first()
-                .$("a").all();
+        List<TestBenchElement> anchors = getMainView().$("vaadin-tabs").first().$("a").all();
 
         return anchors.stream().map(anchor -> {
             String href = (String) anchor.callFunction("getAttribute", "href");

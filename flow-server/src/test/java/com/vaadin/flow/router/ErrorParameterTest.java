@@ -23,8 +23,8 @@ public class ErrorParameterTest {
     public void matchingExceptionType() {
         NullPointerException exception = new NullPointerException();
 
-        ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
-                NullPointerException.class, exception);
+        ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(NullPointerException.class,
+                exception);
 
         Assert.assertSame(exception, errorParameter.getException());
         Assert.assertSame(exception, errorParameter.getCaughtException());
@@ -34,8 +34,7 @@ public class ErrorParameterTest {
     public void superExceptionType() {
         NullPointerException exception = new NullPointerException();
 
-        ErrorParameter<RuntimeException> errorParameter = new ErrorParameter<>(
-                RuntimeException.class, exception);
+        ErrorParameter<RuntimeException> errorParameter = new ErrorParameter<>(RuntimeException.class, exception);
 
         Assert.assertSame(exception, errorParameter.getException());
         Assert.assertSame(exception, errorParameter.getCaughtException());
@@ -46,8 +45,8 @@ public class ErrorParameterTest {
         NullPointerException cause = new NullPointerException();
         IllegalStateException exception = new IllegalStateException(cause);
 
-        ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
-                NullPointerException.class, exception);
+        ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(NullPointerException.class,
+                exception);
 
         Assert.assertSame(cause, errorParameter.getException());
         Assert.assertSame(exception, errorParameter.getCaughtException());
@@ -60,8 +59,8 @@ public class ErrorParameterTest {
         };
         IllegalStateException exception = new IllegalStateException(cause);
 
-        ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
-                NullPointerException.class, exception);
+        ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(NullPointerException.class,
+                exception);
 
         Assert.assertSame(cause, errorParameter.getException());
         Assert.assertSame(exception, errorParameter.getCaughtException());

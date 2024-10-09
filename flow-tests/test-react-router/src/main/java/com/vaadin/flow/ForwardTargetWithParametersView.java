@@ -24,12 +24,10 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.ForwardTargetWithParametersView")
-public class ForwardTargetWithParametersView extends Div
-        implements HasUrlParameter<String> {
+public class ForwardTargetWithParametersView extends Div implements HasUrlParameter<String> {
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         add(new Span("setParameter"));
     }
 }

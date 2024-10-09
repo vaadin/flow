@@ -35,9 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A class visitor for annotated classes. It's used to visit multiple classes
- * and extract all the properties of an specific annotation defined in the
- * constructor.
+ * A class visitor for annotated classes. It's used to visit multiple classes and extract all the properties of an
+ * specific annotation defined in the constructor.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -50,8 +49,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private final ClassFinder finder;
 
     /**
-     * Create a new {@link ClassVisitor} that will be used for visiting a
-     * specific class to get the data of an annotation.
+     * Create a new {@link ClassVisitor} that will be used for visiting a specific class to get the data of an
+     * annotation.
      *
      * @param finder
      *            The class finder to use
@@ -64,8 +63,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         this.finder = finder;
         this.annotationName = annotationName;
         if (!annotationDefaults.containsKey(annotationName)) {
-            annotationDefaults.put(annotationName,
-                    readAnnotationDefaultValues(annotationName));
+            annotationDefaults.put(annotationName, readAnnotationDefaultValues(annotationName));
         }
     }
 
@@ -108,16 +106,13 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     // Executed for the class definition info.
     @Override
-    public void visit(int version, int access, String name, String signature,
-            String superName, String[] interfaces) {
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         visitClass(superName, this);
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(String descriptor,
-            boolean visible) {
-        String cname = descriptor.replaceFirst("^L(.*);$", "$1").replace("/",
-                ".");
+    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+        String cname = descriptor.replaceFirst("^L(.*);$", "$1").replace("/", ".");
         if (cname.equals(annotationName)) {
             return new DataAnnotationVisitor(data, false);
         } else if (cname.equals(annotationName + "$Container")) {
@@ -127,9 +122,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Return all values of a repeated annotation parameter. For instance
-     * `getValues("value")` will return 'Bar' and 'Baz' when we have the
-     * following code:
+     * Return all values of a repeated annotation parameter. For instance `getValues("value")` will return 'Bar' and
+     * 'Baz' when we have the following code:
      *
      * <pre>
      * <code>
@@ -147,14 +141,13 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getValues(String parameter) {
-        return (Set<T>) data.stream().filter(h -> h.containsKey(parameter))
-                .map(h -> h.get(parameter)).collect(Collectors.toSet());
+        return (Set<T>) data.stream().filter(h -> h.containsKey(parameter)).map(h -> h.get(parameter))
+                .collect(Collectors.toSet());
     }
 
     /**
-     * Return all parameter values of a repeated annotation when they share the
-     * same value for a key parameter. For example `getValuesForKey("value",
-     * "foo", "other")` will return 'aa' and 'bb' if we have the following code:
+     * Return all parameter values of a repeated annotation when they share the same value for a key parameter. For
+     * example `getValuesForKey("value", "foo", "other")` will return 'aa' and 'bb' if we have the following code:
      *
      * <pre>
      * <code>
@@ -174,10 +167,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      * @return a set of all values found
      */
     @SuppressWarnings("unchecked")
-    public <T> Set<T> getValuesForKey(String key, String value,
-            String property) {
-        return (Set<T>) data.stream()
-                .filter(h -> h.containsKey(key) && h.get(key).equals(value))
+    public <T> Set<T> getValuesForKey(String key, String value, String property) {
+        return (Set<T>) data.stream().filter(h -> h.containsKey(key) && h.get(key).equals(value))
                 .map(h -> h.get(property)).collect(Collectors.toSet());
     }
 
@@ -192,14 +183,12 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      */
     public <T> T getValue(String parameter) {
         if (data.size() != 1) {
-            throw new IllegalArgumentException(
-                    "getValue can only be used when there is one annotation. There are "
-                            + data.size() + " instances of " + annotationName);
+            throw new IllegalArgumentException("getValue can only be used when there is one annotation. There are "
+                    + data.size() + " instances of " + annotationName);
         }
         Set<T> values = getValues(parameter);
         if (values.isEmpty()) {
-            getLogger().debug("No value for {} using default: {}", parameter,
-                    getDefault(parameter));
+            getLogger().debug("No value for {} using default: {}", parameter, getDefault(parameter));
             return getDefault(parameter);
         }
         return values.iterator().next();
@@ -209,16 +198,13 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         return (T) annotationDefaults.get(annotationName).get(parameter);
     }
 
-    private Map<String, Object> readAnnotationDefaultValues(
-            String annotationName) {
+    private Map<String, Object> readAnnotationDefaultValues(String annotationName) {
         getLogger().debug("Reading default values for {}", annotationName);
         Map<String, Object> defaults = new HashMap<>();
 
-        visitClass(annotationName,
-                new DefaultsAnnotationClassVisitor(api, defaults));
+        visitClass(annotationName, new DefaultsAnnotationClassVisitor(api, defaults));
 
-        getLogger().debug("Default values for {}: {}", annotationName,
-                defaults);
+        getLogger().debug("Default values for {}: {}", annotationName, defaults);
 
         return defaults;
     }
@@ -233,17 +219,15 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private static class DefaultsAnnotationClassVisitor extends ClassVisitor {
         private final Map<String, Object> defaults;
 
-        public DefaultsAnnotationClassVisitor(int api,
-                Map<String, Object> defaults) {
+        public DefaultsAnnotationClassVisitor(int api, Map<String, Object> defaults) {
             super(api);
             this.defaults = defaults;
         }
 
         @Override
-        public MethodVisitor visitMethod(int access, String methodName,
-                String descriptor, String signature, String[] exceptions) {
-            return new DefaultsAnnotationMethodVisitor(api, methodName,
-                    defaults);
+        public MethodVisitor visitMethod(int access, String methodName, String descriptor, String signature,
+                String[] exceptions) {
+            return new DefaultsAnnotationMethodVisitor(api, methodName, defaults);
         }
     }
 
@@ -254,8 +238,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         private final String methodName;
         private final Map<String, Object> defaults;
 
-        public DefaultsAnnotationMethodVisitor(int api, String methodName,
-                Map<String, Object> defaults) {
+        public DefaultsAnnotationMethodVisitor(int api, String methodName, Map<String, Object> defaults) {
             super(api);
             this.methodName = methodName;
             this.defaults = defaults;
@@ -275,8 +258,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         private final String methodName;
         private final Map<String, Object> defaults;
 
-        public DefaultsAnnotationVisitor(int api, String methodName,
-                Map<String, Object> defaults) {
+        public DefaultsAnnotationVisitor(int api, String methodName, Map<String, Object> defaults) {
             super(api);
             this.methodName = methodName;
             this.defaults = defaults;
@@ -299,15 +281,13 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     /**
      * Collects data from possibly repeated annotations.
      */
-    private static class DataAnnotationVisitor
-            extends RepeatedAnnotationVisitor {
+    private static class DataAnnotationVisitor extends RepeatedAnnotationVisitor {
         private final List<HashMap<String, Object>> data;
         private final boolean isRepeatableContainer;
         // initialize for non repeated annotations
         private HashMap<String, Object> info = new HashMap<>();
 
-        DataAnnotationVisitor(List<HashMap<String, Object>> data,
-                boolean isRepeatableContainer) {
+        DataAnnotationVisitor(List<HashMap<String, Object>> data, boolean isRepeatableContainer) {
             this.data = data;
             this.isRepeatableContainer = isRepeatableContainer;
             data.add(info);
@@ -335,8 +315,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
         // Only visited when annotation is repeated
         @Override
-        public AnnotationVisitor visitAnnotation(String name,
-                String descriptor) {
+        public AnnotationVisitor visitAnnotation(String name, String descriptor) {
             // initialize in each repeated annotation occurrence
             info = new HashMap<>();
             data.add(info);

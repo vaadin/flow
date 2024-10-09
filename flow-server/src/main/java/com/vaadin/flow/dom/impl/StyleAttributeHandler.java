@@ -30,8 +30,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
 
 /**
- * Emulates the <code>style</code> attribute by delegating to
- * {@link Element#getStyle()}.
+ * Emulates the <code>style</code> attribute by delegating to {@link Element#getStyle()}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -53,8 +52,7 @@ public class StyleAttributeHandler extends CustomAttribute {
         Style style = element.getStyle();
 
         return style.getNames().map(styleName -> {
-            return StyleUtil.stylePropertyToAttribute(styleName) + ":"
-                    + style.get(styleName);
+            return StyleUtil.stylePropertyToAttribute(styleName) + ":" + style.get(styleName);
         }).collect(Collectors.joining(";"));
     }
 
@@ -66,35 +64,30 @@ public class StyleAttributeHandler extends CustomAttribute {
     }
 
     /**
-     * Parses the given style string and populates the given style object with
-     * the found styles.
+     * Parses the given style string and populates the given style object with the found styles.
      *
      * @param styleString
      *            the string to parse
      * @return a map containing the found style rules
      */
-    public static LinkedHashMap<String, String> parseStyles(
-            String styleString) {
+    public static LinkedHashMap<String, String> parseStyles(String styleString) {
         CollectingCSSParseErrorHandler errorCollector = new CollectingCSSParseErrorHandler();
-        CSSDeclarationList parsed = CSSReaderDeclarationList.readFromString(
-                styleString, ECSSVersion.LATEST, errorCollector);
+        CSSDeclarationList parsed = CSSReaderDeclarationList.readFromString(styleString, ECSSVersion.LATEST,
+                errorCollector);
         if (errorCollector.hasParseErrors()) {
-            throw new IllegalArgumentException(String
-                    .format(ERROR_PARSING_STYLE, styleString, errorCollector
-                            .getAllParseErrors().get(0).getErrorMessage()));
+            throw new IllegalArgumentException(String.format(ERROR_PARSING_STYLE, styleString,
+                    errorCollector.getAllParseErrors().get(0).getErrorMessage()));
         }
         if (parsed == null) {
             // Did not find any styles
-            throw new IllegalArgumentException(String.format(
-                    ERROR_PARSING_STYLE, styleString, "No styles found"));
+            throw new IllegalArgumentException(String.format(ERROR_PARSING_STYLE, styleString, "No styles found"));
         }
 
         LinkedHashMap<String, String> parsedStyles = new LinkedHashMap<>();
         for (CSSDeclaration declaration : parsed.getAllDeclarations()) {
             String key = declaration.getProperty();
             String value = declaration.getExpression()
-                    .getAsCSSString(new CSSWriterSettings(ECSSVersion.LATEST)
-                            .setOptimizedOutput(true), 0);
+                    .getAsCSSString(new CSSWriterSettings(ECSSVersion.LATEST).setOptimizedOutput(true), 0);
             parsedStyles.put(StyleUtil.styleAttributeToProperty(key), value);
         }
 

@@ -19,13 +19,10 @@ package com.vaadin.flow.server;
 import java.util.EventObject;
 
 /**
- * Event gets fired when a new Vaadin service session is initialized for a
- * Vaadin service.
+ * Event gets fired when a new Vaadin service session is initialized for a Vaadin service.
  * <p>
- * Because of the way different service instances share the same session, the
- * event is not necessarily fired immediately when the session is created but
- * only when the first request for that session is handled by a specific
- * service.
+ * Because of the way different service instances share the same session, the event is not necessarily fired immediately
+ * when the session is created but only when the first request for that session is handled by a specific service.
  *
  * @see SessionInitListener#sessionInit(SessionInitEvent)
  *
@@ -47,8 +44,7 @@ public class SessionInitEvent extends EventObject {
      * @param request
      *            the request that triggered the initialization
      */
-    public SessionInitEvent(VaadinService service, VaadinSession session,
-            VaadinRequest request) {
+    public SessionInitEvent(VaadinService service, VaadinSession session, VaadinRequest request) {
         super(service);
         this.session = session;
         this.request = request;

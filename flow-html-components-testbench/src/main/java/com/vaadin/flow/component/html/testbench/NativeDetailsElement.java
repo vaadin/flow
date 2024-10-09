@@ -29,8 +29,7 @@ import com.vaadin.testbench.elementsbase.Element;
 public class NativeDetailsElement extends TestBenchElement {
 
     /**
-     * Dispatches a {@code toggle} event by clicking the summary of the details.
-     * Toggles the details element open state.
+     * Dispatches a {@code toggle} event by clicking the summary of the details. Toggles the details element open state.
      */
     public void toggle() {
         findElement(By.tagName("summary")).click();

@@ -25,9 +25,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.SerializablePredicate;
 
 /**
- * A functional interface for validating user input or other potentially invalid
- * data. When a validator instance is applied to a value of the corresponding
- * type, it returns a <i>result</i> signifying that the value either passed or
+ * A functional interface for validating user input or other potentially invalid data. When a validator instance is
+ * applied to a value of the corresponding type, it returns a <i>result</i> signifying that the value either passed or
  * failed the validation.
  * <p>
  * For instance, the following validator checks if a number is positive:
@@ -51,12 +50,11 @@ import com.vaadin.flow.function.SerializablePredicate;
  * @see ValidationResult
  */
 @FunctionalInterface
-public interface Validator<T>
-        extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
+public interface Validator<T> extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
 
     /**
-     * Validates the given value. Returns a {@code ValidationResult} instance
-     * representing the outcome of the validation.
+     * Validates the given value. Returns a {@code ValidationResult} instance representing the outcome of the
+     * validation.
      *
      * @param value
      *            the input value to validate
@@ -79,14 +77,12 @@ public interface Validator<T>
     }
 
     /**
-     * Builds a validator out of a conditional function and an error message. If
-     * the function returns true, the validator returns {@code Result.ok()}; if
-     * it returns false or throws an exception,
-     * {@link ValidationResult#error(String)} is returned with the given message
-     * and error level {@link ErrorLevel#ERROR}.
+     * Builds a validator out of a conditional function and an error message. If the function returns true, the
+     * validator returns {@code Result.ok()}; if it returns false or throws an exception,
+     * {@link ValidationResult#error(String)} is returned with the given message and error level
+     * {@link ErrorLevel#ERROR}.
      * <p>
-     * For instance, the following validator checks if a number is between 0 and
-     * 10, inclusive:
+     * For instance, the following validator checks if a number is between 0 and 10, inclusive:
      *
      * <pre>
      * Validator&lt;Integer&gt; v = Validator.from(num -&gt; num &gt;= 0 &amp;&amp; num &lt;= 10,
@@ -101,21 +97,17 @@ public interface Validator<T>
      *            the message returned if validation fails, not null
      * @return the new validator using the function
      */
-    static <T> Validator<T> from(SerializablePredicate<T> guard,
-            String errorMessage) {
+    static <T> Validator<T> from(SerializablePredicate<T> guard, String errorMessage) {
         Objects.requireNonNull(errorMessage, "errorMessage cannot be null");
         return from(guard, ctx -> errorMessage);
     }
 
     /**
-     * Builds a validator out of a conditional function and an error message. If
-     * the function returns true, the validator returns {@code Result.ok()}; if
-     * it returns false or throws an exception,
-     * {@link ValidationResult#error(String)} is returned with the given message
-     * and error level.
+     * Builds a validator out of a conditional function and an error message. If the function returns true, the
+     * validator returns {@code Result.ok()}; if it returns false or throws an exception,
+     * {@link ValidationResult#error(String)} is returned with the given message and error level.
      * <p>
-     * For instance, the following validator checks if a number is between 0 and
-     * 10, inclusive:
+     * For instance, the following validator checks if a number is between 0 and 10, inclusive:
      *
      * <pre>
      * Validator&lt;Integer&gt; v = Validator.from(num -&gt; num &gt;= 0 &amp;&amp; num &lt;= 10,
@@ -133,17 +125,15 @@ public interface Validator<T>
      * @return the new validator using the function
      *
      */
-    static <T> Validator<T> from(SerializablePredicate<T> guard,
-            String errorMessage, ErrorLevel errorLevel) {
+    static <T> Validator<T> from(SerializablePredicate<T> guard, String errorMessage, ErrorLevel errorLevel) {
         Objects.requireNonNull(errorMessage, "errorMessage cannot be null");
         return from(guard, ctx -> errorMessage, errorLevel);
     }
 
     /**
-     * Builds a validator out of a conditional function and an error message
-     * provider. If the function returns true, the validator returns
-     * {@code Result.ok()}; if it returns false or throws an exception,
-     * {@code Result.error()} is returned with the message from the provider.
+     * Builds a validator out of a conditional function and an error message provider. If the function returns true, the
+     * validator returns {@code Result.ok()}; if it returns false or throws an exception, {@code Result.error()} is
+     * returned with the message from the provider.
      *
      * @param <T>
      *            the value type
@@ -153,16 +143,14 @@ public interface Validator<T>
      *            the provider to generate error messages, not null
      * @return the new validator using the function
      */
-    static <T> Validator<T> from(SerializablePredicate<T> guard,
-            ErrorMessageProvider errorMessageProvider) {
+    static <T> Validator<T> from(SerializablePredicate<T> guard, ErrorMessageProvider errorMessageProvider) {
         return from(guard, errorMessageProvider, ErrorLevel.ERROR);
     }
 
     /**
-     * Builds a validator out of a conditional function and an error message
-     * provider. If the function returns true, the validator returns
-     * {@code Result.ok()}; if it returns false or throws an exception,
-     * {@code Result.error()} is returned with the message from the provider.
+     * Builds a validator out of a conditional function and an error message provider. If the function returns true, the
+     * validator returns {@code Result.ok()}; if it returns false or throws an exception, {@code Result.error()} is
+     * returned with the message from the provider.
      *
      * @param <T>
      *            the value type
@@ -175,25 +163,21 @@ public interface Validator<T>
      * @return the new validator using the function
      *
      */
-    static <T> Validator<T> from(SerializablePredicate<T> guard,
-            ErrorMessageProvider errorMessageProvider, ErrorLevel errorLevel) {
+    static <T> Validator<T> from(SerializablePredicate<T> guard, ErrorMessageProvider errorMessageProvider,
+            ErrorLevel errorLevel) {
         Objects.requireNonNull(guard, "guard cannot be null");
-        Objects.requireNonNull(errorMessageProvider,
-                "errorMessageProvider cannot be null");
+        Objects.requireNonNull(errorMessageProvider, "errorMessageProvider cannot be null");
         Objects.requireNonNull(errorLevel, "errorLevel cannot be null");
         return (value, context) -> {
             try {
                 if (guard.test(value)) {
                     return ValidationResult.ok();
                 } else {
-                    return ValidationResult.create(
-                            errorMessageProvider.apply(context), errorLevel);
+                    return ValidationResult.create(errorMessageProvider.apply(context), errorLevel);
                 }
             } catch (Exception e) {
-                LoggerFactory.getLogger(Validator.class.getName())
-                        .info("An exception is thrown during validation", e);
-                return ValidationResult.create(
-                        errorMessageProvider.apply(context), errorLevel);
+                LoggerFactory.getLogger(Validator.class.getName()).info("An exception is thrown during validation", e);
+                return ValidationResult.create(errorMessageProvider.apply(context), errorLevel);
             }
         };
     }

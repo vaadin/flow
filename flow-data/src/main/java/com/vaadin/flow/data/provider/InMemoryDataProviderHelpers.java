@@ -37,8 +37,8 @@ import com.vaadin.flow.function.ValueProvider;
 public class InMemoryDataProviderHelpers {
 
     /**
-     * Supplier that attempts to resolve a locale from the current UI. Returns
-     * the system's default locale as a fallback.
+     * Supplier that attempts to resolve a locale from the current UI. Returns the system's default locale as a
+     * fallback.
      */
     public static final SerializableSupplier<Locale> CURRENT_LOCALE_SUPPLIER = () -> {
         UI currentUi = UI.getCurrent();
@@ -53,8 +53,7 @@ public class InMemoryDataProviderHelpers {
     }
 
     /**
-     * Wraps a given data provider so that its filter ignores null items
-     * returned by the given value provider.
+     * Wraps a given data provider so that its filter ignores null items returned by the given value provider.
      *
      * @param dataProvider
      *            the data provider to wrap
@@ -70,57 +69,48 @@ public class InMemoryDataProviderHelpers {
      *            the data provider object type
      * @return the wrapped data provider
      */
-    public static <T, V, Q> DataProvider<T, Q> filteringByIgnoreNull(
-            InMemoryDataProvider<T> dataProvider,
-            ValueProvider<T, V> valueProvider,
-            SerializableBiPredicate<V, Q> predicate) {
+    public static <T, V, Q> DataProvider<T, Q> filteringByIgnoreNull(InMemoryDataProvider<T> dataProvider,
+            ValueProvider<T, V> valueProvider, SerializableBiPredicate<V, Q> predicate) {
         Objects.requireNonNull(predicate, "Predicate cannot be null");
 
         return dataProvider.filteringBy(valueProvider,
-                (itemValue, queryFilter) -> itemValue != null
-                        && predicate.test(itemValue, queryFilter));
+                (itemValue, queryFilter) -> itemValue != null && predicate.test(itemValue, queryFilter));
     }
 
     /**
-     * Wraps a given data provider so that its filter tests the given predicate
-     * with the lower case string provided by the given value provider.
+     * Wraps a given data provider so that its filter tests the given predicate with the lower case string provided by
+     * the given value provider.
      *
      * @param dataProvider
      *            the data provider to wrap
      * @param valueProvider
      *            the value provider for providing string values to filter
      * @param predicate
-     *            the predicate to use for comparing the resulting lower case
-     *            strings
+     *            the predicate to use for comparing the resulting lower case strings
      * @param localeSupplier
      *            the locale to use when converting strings to lower case
      * @param <T>
      *            the data provider object type
      * @return the wrapped data provider
      */
-    public static <T> DataProvider<T, String> filteringByCaseInsensitiveString(
-            InMemoryDataProvider<T> dataProvider,
-            ValueProvider<T, String> valueProvider,
-            SerializableBiPredicate<String, String> predicate,
+    public static <T> DataProvider<T, String> filteringByCaseInsensitiveString(InMemoryDataProvider<T> dataProvider,
+            ValueProvider<T, String> valueProvider, SerializableBiPredicate<String, String> predicate,
             SerializableSupplier<Locale> localeSupplier) {
         // Only assert since these are only passed from our own code
         assert predicate != null;
         assert localeSupplier != null;
 
-        return filteringByIgnoreNull(dataProvider, valueProvider,
-                (itemString, filterString) -> {
-                    Locale locale = localeSupplier.get();
-                    assert locale != null;
+        return filteringByIgnoreNull(dataProvider, valueProvider, (itemString, filterString) -> {
+            Locale locale = localeSupplier.get();
+            assert locale != null;
 
-                    return predicate.test(itemString.toLowerCase(locale),
-                            filterString.toLowerCase(locale));
-                });
+            return predicate.test(itemString.toLowerCase(locale), filterString.toLowerCase(locale));
+        });
     }
 
     /**
-     * Creates a comparator for the return type of the given
-     * {@link ValueProvider}, sorted in the direction specified by the given
-     * {@link SortDirection}.
+     * Creates a comparator for the return type of the given {@link ValueProvider}, sorted in the direction specified by
+     * the given {@link SortDirection}.
      *
      * @param valueProvider
      *            the value provider to use
@@ -140,21 +130,18 @@ public class InMemoryDataProviderHelpers {
 
         Comparator<V> comparator = getNaturalSortComparator(sortDirection);
 
-        return (a, b) -> comparator.compare(valueProvider.apply(a),
-                valueProvider.apply(b));
+        return (a, b) -> comparator.compare(valueProvider.apply(a), valueProvider.apply(b));
     }
 
     /**
-     * Gets the natural order comparator for the type argument, or the natural
-     * order comparator reversed if the given sorting direction is
-     * {@link SortDirection#DESCENDING}.
+     * Gets the natural order comparator for the type argument, or the natural order comparator reversed if the given
+     * sorting direction is {@link SortDirection#DESCENDING}.
      *
      * @param sortDirection
      *            the sort direction to use
      * @param <V>
      *            the objects to compare
-     * @return the natural comparator, with ordering defined by the given sort
-     *         direction
+     * @return the natural comparator, with ordering defined by the given sort direction
      */
     public static <V extends Comparable<? super V>> Comparator<V> getNaturalSortComparator(
             SortDirection sortDirection) {
@@ -166,9 +153,8 @@ public class InMemoryDataProviderHelpers {
     }
 
     /**
-     * Creates a new predicate from the given predicate and value provider. This
-     * allows using a predicate of the value providers return type with objects
-     * of the value providers type.
+     * Creates a new predicate from the given predicate and value provider. This allows using a predicate of the value
+     * providers return type with objects of the value providers type.
      *
      * @param valueProvider
      *            the value provider to use
@@ -181,15 +167,14 @@ public class InMemoryDataProviderHelpers {
      *
      * @return the created predicate
      */
-    public static <T, V> SerializablePredicate<T> createValueProviderFilter(
-            ValueProvider<T, V> valueProvider,
+    public static <T, V> SerializablePredicate<T> createValueProviderFilter(ValueProvider<T, V> valueProvider,
             SerializablePredicate<V> valueFilter) {
         return item -> valueFilter.test(valueProvider.apply(item));
     }
 
     /**
-     * Creates a predicate that compares equality of the given required value to
-     * the value the given value provider obtains.
+     * Creates a predicate that compares equality of the given required value to the value the given value provider
+     * obtains.
      *
      * @param valueProvider
      *            the value provider to use
@@ -201,8 +186,8 @@ public class InMemoryDataProviderHelpers {
      *            the provided value type
      * @return the created predicate
      */
-    public static <T, V> SerializablePredicate<T> createEqualsFilter(
-            ValueProvider<T, V> valueProvider, V requiredValue) {
+    public static <T, V> SerializablePredicate<T> createEqualsFilter(ValueProvider<T, V> valueProvider,
+            V requiredValue) {
         Objects.requireNonNull(valueProvider, "Value provider cannot be null");
 
         return item -> Objects.equals(valueProvider.apply(item), requiredValue);

@@ -35,8 +35,7 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
         Assert.assertEquals("Server value: 123", labelSyncOnChange.getText());
         syncOnChange.sendKeys("456");
         blur();
-        Assert.assertEquals("Server value: 123456",
-                labelSyncOnChange.getText());
+        Assert.assertEquals("Server value: 123456", labelSyncOnChange.getText());
     }
 
     @Test
@@ -57,21 +56,17 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
     @Test
     public void synchronizeInitialValueNotSentToServer() {
         open();
-        WebElement syncOnChangeInitialValue = findElement(
-                By.id("syncOnChangeInitialValue"));
-        WebElement labelSyncOnChange = findElement(
-                By.id("syncOnChangeInitialValueLabel"));
+        WebElement syncOnChangeInitialValue = findElement(By.id("syncOnChangeInitialValue"));
+        WebElement labelSyncOnChange = findElement(By.id("syncOnChangeInitialValueLabel"));
 
         // Property was set after label was created and sync set up
         // It is intentionally in the "wrong" state until there is a sync
         // message from the client
-        Assert.assertEquals("Server value on create: null",
-                labelSyncOnChange.getText());
+        Assert.assertEquals("Server value on create: null", labelSyncOnChange.getText());
         syncOnChangeInitialValue.sendKeys(Keys.END);
         syncOnChangeInitialValue.sendKeys("123");
         blur();
-        Assert.assertEquals("Server value in change listener: initial123",
-                labelSyncOnChange.getText());
+        Assert.assertEquals("Server value in change listener: initial123", labelSyncOnChange.getText());
 
     }
 
@@ -79,70 +74,51 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
     public void synchronizeMultipleProperties() {
         open();
         WebElement multiSyncValue = findElement(By.id("multiSyncValue"));
-        WebElement multiSyncValueLabel = findElement(
-                By.id("multiSyncValueLabel"));
-        WebElement multiSyncValueAsNumberLabel = findElement(
-                By.id("multiSyncValueAsNumberLabel"));
+        WebElement multiSyncValueLabel = findElement(By.id("multiSyncValueLabel"));
+        WebElement multiSyncValueAsNumberLabel = findElement(By.id("multiSyncValueAsNumberLabel"));
         multiSyncValue.sendKeys("123");
-        waitUntil(driver -> "Server value: 123"
-                .equals(multiSyncValueLabel.getText()), 2);
+        waitUntil(driver -> "Server value: 123".equals(multiSyncValueLabel.getText()), 2);
         Assert.assertEquals("", multiSyncValueAsNumberLabel.getText());
         blur();
-        waitUntil(driver -> "Server value: 123"
-                .equals(multiSyncValueLabel.getText()), 2);
-        Assert.assertEquals("Server valueAsNumber: 123",
-                multiSyncValueAsNumberLabel.getText());
+        waitUntil(driver -> "Server value: 123".equals(multiSyncValueLabel.getText()), 2);
+        Assert.assertEquals("Server valueAsNumber: 123", multiSyncValueAsNumberLabel.getText());
 
         multiSyncValue.sendKeys("456");
-        waitUntil(driver -> "Server value: 123456"
-                .equals(multiSyncValueLabel.getText()), 2);
-        Assert.assertEquals("Server valueAsNumber: 123",
-                multiSyncValueAsNumberLabel.getText());
+        waitUntil(driver -> "Server value: 123456".equals(multiSyncValueLabel.getText()), 2);
+        Assert.assertEquals("Server valueAsNumber: 123", multiSyncValueAsNumberLabel.getText());
         blur();
-        waitUntil(driver -> "Server value: 123456"
-                .equals(multiSyncValueLabel.getText()), 2);
-        Assert.assertEquals("Server valueAsNumber: 123456",
-                multiSyncValueAsNumberLabel.getText());
+        waitUntil(driver -> "Server value: 123456".equals(multiSyncValueLabel.getText()), 2);
+        Assert.assertEquals("Server valueAsNumber: 123456", multiSyncValueAsNumberLabel.getText());
     }
 
     @Test
     public void synchronizePropertyWithCustomEventDebounce_singleEvent() {
         open();
-        WebElement label = findElement(
-                By.id("syncWithCustomEventDebounceLabel"));
-        executeScript(
-                "const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
-                        + "input.myProperty = 'value1';\n"
-                        + "input.dispatchEvent(new CustomEvent('input'));");
+        WebElement label = findElement(By.id("syncWithCustomEventDebounceLabel"));
+        executeScript("const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
+                + "input.myProperty = 'value1';\n" + "input.dispatchEvent(new CustomEvent('input'));");
         waitUntil(driver -> "Server value: value1".equals(label.getText()), 2);
     }
 
     @Test
     public void synchronizePropertyWithCustomEventDebounce_twoEvents() {
         open();
-        WebElement label = findElement(
-                By.id("syncWithCustomEventDebounceLabel"));
-        executeScript(
-                "const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
-                        + "input.myProperty = 'value1';\n"
-                        + "input.dispatchEvent(new CustomEvent('input'));\n"
-                        + "input.dispatchEvent(new CustomEvent('input'));");
+        WebElement label = findElement(By.id("syncWithCustomEventDebounceLabel"));
+        executeScript("const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
+                + "input.myProperty = 'value1';\n" + "input.dispatchEvent(new CustomEvent('input'));\n"
+                + "input.dispatchEvent(new CustomEvent('input'));");
         waitUntil(driver -> "Server value: value1".equals(label.getText()), 2);
     }
 
     @Test
     public void synchronizePropertyWithCustomEventDebounce_multipleEventAndValueChanges() {
         open();
-        WebElement label = findElement(
-                By.id("syncWithCustomEventDebounceLabel"));
-        executeScript(
-                "const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
-                        + "input.myProperty = 'value1';\n"
-                        + "input.dispatchEvent(new CustomEvent('input'));\n"
-                        + "input.dispatchEvent(new CustomEvent('input'));\n"
-                        + "input.myProperty = 'value2';\n"
-                        + "input.dispatchEvent(new CustomEvent('input'));\n"
-                        + "input.dispatchEvent(new CustomEvent('input'));");
+        WebElement label = findElement(By.id("syncWithCustomEventDebounceLabel"));
+        executeScript("const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
+                + "input.myProperty = 'value1';\n" + "input.dispatchEvent(new CustomEvent('input'));\n"
+                + "input.dispatchEvent(new CustomEvent('input'));\n" + "input.myProperty = 'value2';\n"
+                + "input.dispatchEvent(new CustomEvent('input'));\n"
+                + "input.dispatchEvent(new CustomEvent('input'));");
         waitUntil(driver -> "Server value: value2".equals(label.getText()), 2);
     }
 }

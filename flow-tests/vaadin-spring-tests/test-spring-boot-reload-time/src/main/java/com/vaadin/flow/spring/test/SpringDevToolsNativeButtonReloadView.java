@@ -31,26 +31,20 @@ public class SpringDevToolsNativeButtonReloadView extends Div {
         result.setId("result");
         result.setVisible(false);
 
-        NativeButton startTriggerButton = SpringDevToolsReloadUtils
-                .createReloadTriggerButton();
+        NativeButton startTriggerButton = SpringDevToolsReloadUtils.createReloadTriggerButton();
 
         add(startTriggerButton, result);
 
-        startTriggerButton.getElement()
-                .addEventListener("componentready", event -> {
+        startTriggerButton.getElement().addEventListener("componentready", event -> {
 
-                    System.out.println("result: " + event.getEventData()
-                            .getNumber("event.detail.result"));
+            System.out.println("result: " + event.getEventData().getNumber("event.detail.result"));
 
-                    result.setText(String.format(
-                            "Reload time by class change was [%s] ms",
-                            event.getEventData()
-                                    .getNumber("event.detail.result")));
-                    result.setVisible(true);
+            result.setText(String.format("Reload time by class change was [%s] ms",
+                    event.getEventData().getNumber("event.detail.result")));
+            result.setVisible(true);
 
-                }).addEventData("event.detail.result");
+        }).addEventData("event.detail.result");
 
-        UI.getCurrent().getPage().executeJs(
-                "window.benchmark.measureRender($0);", startTriggerButton);
+        UI.getCurrent().getPage().executeJs("window.benchmark.measureRender($0);", startTriggerButton);
     }
 }

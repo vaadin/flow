@@ -20,11 +20,9 @@ import java.util.function.Supplier;
 
 import org.junit.Assert;
 
-public abstract class AbstractMapFeatureTest<T extends NodeFeature>
-        extends AbstractNodeFeatureTest<T> {
+public abstract class AbstractMapFeatureTest<T extends NodeFeature> extends AbstractNodeFeatureTest<T> {
 
-    protected void testString(NodeMap mapFeature, String key,
-            Consumer<String> setter, Supplier<String> getter) {
+    protected void testString(NodeMap mapFeature, String key, Consumer<String> setter, Supplier<String> getter) {
         String value1 = "foo";
         String value2 = "bar";
 
@@ -36,8 +34,7 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         Assert.assertEquals(value2, getter.get());
     }
 
-    protected void testInt(NodeMap mapFeature, String key,
-            Consumer<Integer> setter, Supplier<Integer> getter) {
+    protected void testInt(NodeMap mapFeature, String key, Consumer<Integer> setter, Supplier<Integer> getter) {
         Integer value1 = 37;
         Integer value2 = 5844;
 
@@ -49,8 +46,7 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         Assert.assertEquals(value2, getter.get());
     }
 
-    protected void testBoolean(NodeMap mapFeature, String key,
-            Consumer<Boolean> setter, Supplier<Boolean> getter) {
+    protected void testBoolean(NodeMap mapFeature, String key, Consumer<Boolean> setter, Supplier<Boolean> getter) {
         Boolean value1 = true;
         Boolean value2 = false;
 

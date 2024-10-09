@@ -31,7 +31,6 @@ import java.util.function.BiConsumer;
  * @since 1.0
  * @see BiConsumer
  */
-public interface SerializableBiConsumer<T, U>
-        extends BiConsumer<T, U>, Serializable {
+public interface SerializableBiConsumer<T, U> extends BiConsumer<T, U>, Serializable {
 
 }

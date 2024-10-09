@@ -29,8 +29,7 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "serverforwardview", layout = MainLayout.class)
-public class ServerSideForwardView extends Div
-        implements BeforeEnterObserver, HasUrlParameter<Boolean> {
+public class ServerSideForwardView extends Div implements BeforeEnterObserver, HasUrlParameter<Boolean> {
 
     NativeButton proceedButton;
     BeforeLeaveEvent lastEvent;
@@ -41,8 +40,7 @@ public class ServerSideForwardView extends Div
         add(new Text("Server view forward"));
         setId("serverForwardView");
 
-        final NativeButton forwardViewButton = new NativeButton(
-                "Open Server View which does forward to Client View",
+        final NativeButton forwardViewButton = new NativeButton("Open Server View which does forward to Client View",
                 buttonClickEvent -> {
                     final UI ui = buttonClickEvent.getSource().getUI().get();
 
@@ -53,8 +51,7 @@ public class ServerSideForwardView extends Div
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter Boolean parameter) {
+    public void setParameter(BeforeEvent event, @OptionalParameter Boolean parameter) {
         this.parameter = parameter;
     }
 

@@ -47,21 +47,17 @@ public class ThemeComponentsCssIT extends ChromeBrowserTest {
         Assert.assertFalse(nodeModules.exists());
         waitUntil(driver -> {
             try {
-                TestBenchElement component = $("vaadin-horizontal-layout")
-                        .first();
+                TestBenchElement component = $("vaadin-horizontal-layout").first();
                 return GREEN_COLOR.equals(getPartBackgroundColor(component, 0))
-                        && WHITE_COLOR
-                                .equals(getPartBackgroundColor(component, 1))
-                        && RED_COLOR
-                                .equals(getPartBackgroundColor(component, 2));
+                        && WHITE_COLOR.equals(getPartBackgroundColor(component, 1))
+                        && RED_COLOR.equals(getPartBackgroundColor(component, 2));
             } catch (StaleElementReferenceException e) {
                 return false;
             }
         });
     }
 
-    private static String getPartBackgroundColor(TestBenchElement component,
-            int index) {
+    private static String getPartBackgroundColor(TestBenchElement component, int index) {
         return component.$("div").get(index).getCssValue("background-color");
     }
 

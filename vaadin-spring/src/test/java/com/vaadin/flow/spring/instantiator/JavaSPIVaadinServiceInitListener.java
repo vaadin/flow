@@ -18,8 +18,7 @@ package com.vaadin.flow.spring.instantiator;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
-public class JavaSPIVaadinServiceInitListener
-        implements VaadinServiceInitListener {
+public class JavaSPIVaadinServiceInitListener implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {

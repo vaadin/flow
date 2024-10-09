@@ -47,11 +47,9 @@ public class NavigationEvent extends EventObject {
      * @param ui
      *            the UI in which the navigation occurs, not {@code null}
      * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
+     *            the type of user action that triggered this navigation event, not {@code null}
      */
-    public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger) {
+    public NavigationEvent(Router router, Location location, UI ui, NavigationTrigger trigger) {
         super(router);
 
         assert location != null;
@@ -73,17 +71,15 @@ public class NavigationEvent extends EventObject {
      * @param ui
      *            the UI in which the navigation occurs, not {@code null}
      * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
+     *            the type of user action that triggered this navigation event, not {@code null}
      * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
+     *            includes navigation state info including for example the scroll position and the complete href of the
+     *            RouterLink
      * @param forwardTo
-     *            indicates if this event is created as a result of
-     *            {@link BeforeEvent#forwardTo} or not
+     *            indicates if this event is created as a result of {@link BeforeEvent#forwardTo} or not
      */
-    public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state, boolean forwardTo) {
+    public NavigationEvent(Router router, Location location, UI ui, NavigationTrigger trigger, JsonValue state,
+            boolean forwardTo) {
         this(router, location, ui, trigger);
 
         this.state = state;
@@ -100,25 +96,20 @@ public class NavigationEvent extends EventObject {
      * @param ui
      *            the UI in which the navigation occurs, not {@code null}
      * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
+     *            the type of user action that triggered this navigation event, not {@code null}
      * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
+     *            includes navigation state info including for example the scroll position and the complete href of the
+     *            RouterLink
      * @param forwardTo
-     *            indicates if this event is created as a result of
-     *            {@link BeforeEvent#forwardTo} or not
+     *            indicates if this event is created as a result of {@link BeforeEvent#forwardTo} or not
      * @param forceInstantiation
-     *            if set to {@code true}, the navigation target will always be
-     *            instantiated
+     *            if set to {@code true}, the navigation target will always be instantiated
      * @param recreateLayoutChain
-     *            if set to {@code true}, the complete layout chain up to the
-     *            navigation target will be re-instantiated. Requires
-     *            {@code forceInstantiation} to be true to have an effect.
+     *            if set to {@code true}, the complete layout chain up to the navigation target will be re-instantiated.
+     *            Requires {@code forceInstantiation} to be true to have an effect.
      */
-    public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state, boolean forwardTo,
-            boolean forceInstantiation, boolean recreateLayoutChain) {
+    public NavigationEvent(Router router, Location location, UI ui, NavigationTrigger trigger, JsonValue state,
+            boolean forwardTo, boolean forceInstantiation, boolean recreateLayoutChain) {
         this(router, location, ui, trigger);
 
         this.state = state;
@@ -153,16 +144,15 @@ public class NavigationEvent extends EventObject {
     /**
      * Gets the type of user action that triggered this navigation event.
      *
-     * @return the type of user action that triggered this navigation event, not
-     *         {@code null}
+     * @return the type of user action that triggered this navigation event, not {@code null}
      */
     public NavigationTrigger getTrigger() {
         return trigger;
     }
 
     /**
-     * Gets navigation state. It contains for example the scroll position and
-     * the complete href of the RouterLink that triggers this navigation.
+     * Gets navigation state. It contains for example the scroll position and the complete href of the RouterLink that
+     * triggers this navigation.
      *
      * @return the navigation state
      */
@@ -171,33 +161,29 @@ public class NavigationEvent extends EventObject {
     }
 
     /**
-     * Checks whether this event is created as a result of
-     * {@link BeforeEvent#forwardTo} or not.
+     * Checks whether this event is created as a result of {@link BeforeEvent#forwardTo} or not.
      *
-     * @return {@code true} if this event is created as a result calling
-     *         {@link BeforeEvent#forwardTo}, {@code false} otherwise
+     * @return {@code true} if this event is created as a result calling {@link BeforeEvent#forwardTo}, {@code false}
+     *         otherwise
      */
     public boolean isForwardTo() {
         return forwardTo;
     }
 
     /**
-     * When set to true, the navigation target should be instantiated regardless
-     * of it being already available.
+     * When set to true, the navigation target should be instantiated regardless of it being already available.
      *
-     * @return {@code true} if navigation target should be instantiated in any
-     *         case
+     * @return {@code true} if navigation target should be instantiated in any case
      */
     public boolean isForceInstantiation() {
         return forceInstantiation;
     }
 
     /**
-     * When set to true, the complete layout chain up to the navigation target
-     * should be re-instantiated regardless of it being already available.
+     * When set to true, the complete layout chain up to the navigation target should be re-instantiated regardless of
+     * it being already available.
      *
-     * @return {@code true} if layout chain up to the navigation target should
-     *         be instantiated in any case
+     * @return {@code true} if layout chain up to the navigation target should be instantiated in any case
      */
     public boolean isRecreateLayoutChain() {
         return recreateLayoutChain;

@@ -3,8 +3,7 @@ package com.vaadin.flow.data.binder.testcomponents;
 import com.vaadin.flow.component.Tag;
 
 @Tag("test-checkbox")
-public class TestCheckbox
-        extends AbstractTestHasValueAndValidation<TestCheckbox, Boolean> {
+public class TestCheckbox extends AbstractTestHasValueAndValidation<TestCheckbox, Boolean> {
 
     private String label = null;
 

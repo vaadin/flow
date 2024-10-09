@@ -46,8 +46,7 @@ public class ClientUpdateModeView extends AbstractDivView {
 
     @Tag("client-update-mode")
     @JsModule("./ClientUpdateMode.js")
-    public static class ClientUpdateModeTemplate
-            extends PolymerTemplate<ClientUpdateModeModel> {
+    public static class ClientUpdateModeTemplate extends PolymerTemplate<ClientUpdateModeModel> {
     }
 
     public ClientUpdateModeView() {
@@ -55,14 +54,10 @@ public class ClientUpdateModeView extends AbstractDivView {
         add(template);
 
         Element element = template.getElement();
-        Stream.of("value", "indirectAllowed", "indirect", "twoWayDenied")
-                .forEach(propertyName -> {
-                    element.addPropertyChangeListener(propertyName,
-                            event -> add(
-                                    new Text(propertyName + " changed to "
-                                            + event.getValue()),
-                                    new Html("<br>")));
-                });
+        Stream.of("value", "indirectAllowed", "indirect", "twoWayDenied").forEach(propertyName -> {
+            element.addPropertyChangeListener(propertyName,
+                    event -> add(new Text(propertyName + " changed to " + event.getValue()), new Html("<br>")));
+        });
 
     }
 }

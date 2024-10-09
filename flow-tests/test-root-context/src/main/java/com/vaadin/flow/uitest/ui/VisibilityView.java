@@ -36,18 +36,16 @@ public class VisibilityView extends AbstractDivView {
         label.setId("nested-label");
         div.add(label);
 
-        NativeButton updateVisibility = createButton("Update visibility",
-                "updateVisibiity", event -> div.setVisible(!div.isVisible()));
+        NativeButton updateVisibility = createButton("Update visibility", "updateVisibiity",
+                event -> div.setVisible(!div.isVisible()));
 
-        NativeButton updateLabelVisibility = createButton(
-                "Update label visibility", "updateLabelVisibiity",
+        NativeButton updateLabelVisibility = createButton("Update label visibility", "updateLabelVisibiity",
                 event -> label.setVisible(!label.isVisible()));
 
-        NativeButton updateStyle = createButton(
-                "Update target element property", "updateProperty", event -> {
-                    div.setClassName("foo");
-                    label.setClassName("bar");
-                });
+        NativeButton updateStyle = createButton("Update target element property", "updateProperty", event -> {
+            div.setClassName("foo");
+            label.setClassName("bar");
+        });
 
         add(div, updateVisibility, updateStyle, updateLabelVisibility);
     }

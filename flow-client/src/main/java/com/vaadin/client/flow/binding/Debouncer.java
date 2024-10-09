@@ -30,9 +30,8 @@ import elemental.dom.Node;
 import elemental.util.Timer;
 
 /**
- * Manages debouncing of events. Use {@link #getOrCreate(Node, String, double)}
- * to either create a new instance or get an existing instance that currently
- * tracks a sequence of similar events.
+ * Manages debouncing of events. Use {@link #getOrCreate(Node, String, double)} to either create a new instance or get
+ * an existing instance that currently tracks a sequence of similar events.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -64,68 +63,55 @@ public class Debouncer {
      * Informs this debouncer that an event has occurred.
      *
      * @param phases
-     *            a set of strings identifying the phases for which the
-     *            triggered event should be considered.
+     *            a set of strings identifying the phases for which the triggered event should be considered.
      * @param command
-     *            a consumer that will may be asynchronously invoked with a
-     *            phase code if an associated phase is triggered
+     *            a consumer that will may be asynchronously invoked with a phase code if an associated phase is
+     *            triggered
      * @param commands
-     *            individual commands executed just before the given send
-     *            command
+     *            individual commands executed just before the given send command
      *
-     * @return <code>true</code> if the event should be processed as-is without
-     *         delaying
+     * @return <code>true</code> if the event should be processed as-is without delaying
      */
-    public boolean trigger(JsSet<String> phases, Consumer<String> command,
-            JsMap<String, Runnable> commands) {
+    public boolean trigger(JsSet<String> phases, Consumer<String> command, JsMap<String, Runnable> commands) {
         // If "leading" events are requested and no timers created yet,
         // this is considered the leading event that is triggered immediately
         // and there is no need to save it
-        final boolean triggerImmediately = phases
-                .has(JsonConstants.EVENT_PHASE_LEADING) && idleTimer == null
+        final boolean triggerImmediately = phases.has(JsonConstants.EVENT_PHASE_LEADING) && idleTimer == null
                 && intermediateTimer == null;
-        if (!triggerImmediately
-                && (phases.has(JsonConstants.EVENT_PHASE_TRAILING) || phases
-                        .has(JsonConstants.EVENT_PHASE_INTERMEDIATE))) {
+        if (!triggerImmediately && (phases.has(JsonConstants.EVENT_PHASE_TRAILING)
+                || phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE))) {
             // last command is saved for timers unless this is a "leading" event
             bufferedSendCommand = command;
             bufferedCommands = commands;
             if (!phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE)
-                    && (idleTimer == null
-                            || previousBufferedNonExecutedCommands == null)) {
+                    && (idleTimer == null || previousBufferedNonExecutedCommands == null)) {
                 previousBufferedNonExecutedCommands = commands;
             }
             potentialTrailingWithBothTrailingAndIntermediate = null;
             potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = null;
         }
         // idleTimer is used for trailing/leading, should always be there?
-        if (phases.has(JsonConstants.EVENT_PHASE_LEADING)
-                || phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
+        if (phases.has(JsonConstants.EVENT_PHASE_LEADING) || phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
             if (idleTimer == null) {
                 idleTimer = new Timer() {
                     @Override
                     public void run() {
                         if (bufferedSendCommand != null) {
-                            runCommands(JsonConstants.EVENT_PHASE_TRAILING,
-                                    bufferedSendCommand, bufferedCommands,
+                            runCommands(JsonConstants.EVENT_PHASE_TRAILING, bufferedSendCommand, bufferedCommands,
                                     previousBufferedNonExecutedCommands);
                             bufferedSendCommand = null;
                             bufferedCommands = null;
                             previousBufferedNonExecutedCommands = null;
                         } else if (potentialTrailingWithBothTrailingAndIntermediate != null) {
                             /*
-                             * This happens if both trailing & intermediate are
-                             * configured and e.g. typing has stopped. Then we
-                             * wait for one additional timeout and if no new
-                             * commands are there, we re-post the SAME event to
-                             * the server. Documented in DebouncePhase. This is
-                             * ugly but maybe handy for some people in some
-                             * situations.
+                             * This happens if both trailing & intermediate are configured and e.g. typing has stopped.
+                             * Then we wait for one additional timeout and if no new commands are there, we re-post the
+                             * SAME event to the server. Documented in DebouncePhase. This is ugly but maybe handy for
+                             * some people in some situations.
                              */
                             runCommands(JsonConstants.EVENT_PHASE_TRAILING,
                                     potentialTrailingWithBothTrailingAndIntermediate,
-                                    potentialTrailingWithBothTrailingAndIntermediateBufferedCommands,
-                                    null);
+                                    potentialTrailingWithBothTrailingAndIntermediateBufferedCommands, null);
                         }
                         unregister(); // unregister to release memory
                     }
@@ -135,14 +121,13 @@ public class Debouncer {
             idleTimer.schedule((int) timeout);
         }
 
-        if (intermediateTimer == null
-                && phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE)) {
+        if (intermediateTimer == null && phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE)) {
             intermediateTimer = new Timer() {
                 @Override
                 public void run() {
                     if (bufferedSendCommand != null) {
-                        runCommands(JsonConstants.EVENT_PHASE_INTERMEDIATE,
-                                bufferedSendCommand, bufferedCommands, null);
+                        runCommands(JsonConstants.EVENT_PHASE_INTERMEDIATE, bufferedSendCommand, bufferedCommands,
+                                null);
                         if (phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
                             potentialTrailingWithBothTrailingAndIntermediate = bufferedSendCommand;
                             potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = bufferedCommands;
@@ -161,13 +146,11 @@ public class Debouncer {
         return triggerImmediately;
     }
 
-    private static void runCommands(String phase, Consumer<String> sendCommand,
-            JsMap<String, Runnable> commands,
+    private static void runCommands(String phase, Consumer<String> sendCommand, JsMap<String, Runnable> commands,
             JsMap<String, Runnable> previousCommands) {
         if (JsonConstants.EVENT_PHASE_TRAILING.equals(phase)) {
             commands.forEach((command, property) -> {
-                if (command == MapProperty.NO_OP
-                        && hasPreviousCommand(previousCommands, property)) {
+                if (command == MapProperty.NO_OP && hasPreviousCommand(previousCommands, property)) {
                     previousCommands.get(property).run();
                 } else {
                     command.run();
@@ -179,10 +162,8 @@ public class Debouncer {
         sendCommand.accept(phase);
     }
 
-    private static boolean hasPreviousCommand(
-            JsMap<String, Runnable> previousCommands, String property) {
-        return previousCommands != null && property != null
-                && previousCommands.has(property);
+    private static boolean hasPreviousCommand(JsMap<String, Runnable> previousCommands, String property) {
+        return previousCommands != null && property != null && previousCommands.has(property);
     }
 
     private void unregister() {
@@ -194,8 +175,7 @@ public class Debouncer {
             idleTimer.cancel();
             idleTimer = null;
         }
-        JsMap<String, JsMap<Double, Debouncer>> elementMap = debouncers
-                .get(element);
+        JsMap<String, JsMap<Double, Debouncer>> elementMap = debouncers.get(element);
         if (elementMap == null) {
             return;
         }
@@ -217,22 +197,19 @@ public class Debouncer {
     }
 
     /**
-     * Gets an existing debouncer or creates a new one associated with the given
-     * DOM node, identifier and debounce timeout.
+     * Gets an existing debouncer or creates a new one associated with the given DOM node, identifier and debounce
+     * timeout.
      *
      * @param element
      *            the DOM node to which this debouncer is bound
      * @param identifier
-     *            a unique identifier string in the scope of the provided
-     *            element
+     *            a unique identifier string in the scope of the provided element
      * @param debounce
      *            the debounce timeout
      * @return a debouncer instance
      */
-    public static Debouncer getOrCreate(Node element, String identifier,
-            double debounce) {
-        JsMap<String, JsMap<Double, Debouncer>> elementMap = debouncers
-                .get(element);
+    public static Debouncer getOrCreate(Node element, String identifier, double debounce) {
+        JsMap<String, JsMap<Double, Debouncer>> elementMap = debouncers.get(element);
         if (elementMap == null) {
             elementMap = JsCollections.map();
             debouncers.set(element, elementMap);
@@ -265,16 +242,14 @@ public class Debouncer {
         ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>> flusher = new ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>>() {
 
             @Override
-            public void accept(JsMap<String, JsMap<Double, Debouncer>> jsmap,
-                    Node key) {
+            public void accept(JsMap<String, JsMap<Double, Debouncer>> jsmap, Node key) {
                 jsmap.mapValues().forEach(value -> {
                     value.mapValues().forEach(debouncer -> {
                         if (debouncer.idleTimer != null) {
                             if (debouncer.bufferedSendCommand != null) {
                                 // if there is trailing timer, consider as extra
                                 // trailing event
-                                runCommands(JsonConstants.EVENT_PHASE_TRAILING,
-                                        debouncer.bufferedSendCommand,
+                                runCommands(JsonConstants.EVENT_PHASE_TRAILING, debouncer.bufferedSendCommand,
                                         debouncer.bufferedCommands, null);
                             } else {
                                 // "Debouncer was in queue, but no command.
@@ -285,14 +260,12 @@ public class Debouncer {
                             // Because of an other triggered event, this now
                             // comes bit early, but most likely this is better
                             // than in wrong order
-                            runCommands(JsonConstants.EVENT_PHASE_INTERMEDIATE,
-                                    debouncer.bufferedSendCommand,
+                            runCommands(JsonConstants.EVENT_PHASE_INTERMEDIATE, debouncer.bufferedSendCommand,
                                     debouncer.bufferedCommands, null);
                             // Restart intermediate timer so that there won't
                             // be triggering more than one event "quicker than
                             // orderd" in the orginal schedule.
-                            debouncer.intermediateTimer
-                                    .scheduleRepeating((int) debouncer.timeout);
+                            debouncer.intermediateTimer.scheduleRepeating((int) debouncer.timeout);
                         }
                         if (debouncer.bufferedSendCommand != null) {
                             executedCommands.add(debouncer.bufferedSendCommand);

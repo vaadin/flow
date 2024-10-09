@@ -95,15 +95,13 @@ public class AuthenticationContextTest {
 
     @Test
     public void getAuthenticatedUser_notAuthenticated_getsEmpty() {
-        Assert.assertTrue(
-                authContext.getAuthenticatedUser(Object.class).isEmpty());
+        Assert.assertTrue(authContext.getAuthenticatedUser(Object.class).isEmpty());
     }
 
     @Test
     @WithAnonymousUser
     public void getAuthenticatedUser_anonymous_getsEmpty() {
-        Assert.assertTrue(
-                authContext.getAuthenticatedUser(Object.class).isEmpty());
+        Assert.assertTrue(authContext.getAuthenticatedUser(Object.class).isEmpty());
     }
 
     @Test
@@ -117,8 +115,8 @@ public class AuthenticationContextTest {
     @Test
     @WithMockUser()
     public void getAuthenticatedUser_loggedUserWrongUserType_throws() {
-        Assert.assertThrows(ClassCastException.class, () -> authContext
-                .getAuthenticatedUser(AuthenticatedPrincipal.class));
+        Assert.assertThrows(ClassCastException.class,
+                () -> authContext.getAuthenticatedUser(AuthenticatedPrincipal.class));
     }
 
     @Test
@@ -156,10 +154,8 @@ public class AuthenticationContextTest {
     public void getGrantedAuthorities_authenticated_rolesAreIncluded() {
         var authorities = authContext.getGrantedAuthorities();
         Assert.assertEquals(2, authorities.size());
-        Assert.assertTrue(
-                authorities.contains(new SimpleGrantedAuthority("ROLE_USER")));
-        Assert.assertTrue(
-                authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        Assert.assertTrue(authorities.contains(new SimpleGrantedAuthority("ROLE_USER")));
+        Assert.assertTrue(authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
     }
 
     @Test
@@ -167,10 +163,8 @@ public class AuthenticationContextTest {
     public void getGrantedAuthorities_authenticated_authoritiesAreIncluded() {
         var authorities = authContext.getGrantedAuthorities();
         Assert.assertEquals(2, authorities.size());
-        Assert.assertTrue(
-                authorities.contains(new SimpleGrantedAuthority("AUTH_READ")));
-        Assert.assertTrue(
-                authorities.contains(new SimpleGrantedAuthority("AUTH_WRITE")));
+        Assert.assertTrue(authorities.contains(new SimpleGrantedAuthority("AUTH_READ")));
+        Assert.assertTrue(authorities.contains(new SimpleGrantedAuthority("AUTH_WRITE")));
     }
 
     @Test
@@ -247,8 +241,7 @@ public class AuthenticationContextTest {
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void hasAnyRole_hasOneOfTheRoles_true() {
         Assert.assertTrue(authContext.hasAnyRole("USER", "SUPERADMIN"));
-        Assert.assertTrue(
-                authContext.hasAnyRole(List.of("ADMIN", "SUPERADMIN")));
+        Assert.assertTrue(authContext.hasAnyRole(List.of("ADMIN", "SUPERADMIN")));
     }
 
     @Test
@@ -333,8 +326,7 @@ public class AuthenticationContextTest {
     @WithAnonymousUser()
     public void hasAnyAuthority_anonymous_false() {
         Assert.assertFalse(authContext.hasAnyAuthority("ROLE_ANONYMOUS"));
-        Assert.assertFalse(
-                authContext.hasAnyAuthority(List.of("ROLE_ANONYMOUS")));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("ROLE_ANONYMOUS")));
     }
 
     @Test
@@ -348,10 +340,8 @@ public class AuthenticationContextTest {
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAnyAuthority_hasOneOfTheAuthorities_true() {
-        Assert.assertTrue(
-                authContext.hasAnyAuthority("AUTH_READ", "AUTH_MANAGE"));
-        Assert.assertTrue(authContext
-                .hasAnyAuthority(List.of("AUTH_WRITE", "AUTH_MANAGE")));
+        Assert.assertTrue(authContext.hasAnyAuthority("AUTH_READ", "AUTH_MANAGE"));
+        Assert.assertTrue(authContext.hasAnyAuthority(List.of("AUTH_WRITE", "AUTH_MANAGE")));
     }
 
     @Test
@@ -370,45 +360,36 @@ public class AuthenticationContextTest {
 
     @Test
     public void hasAllAuthorities_notAuthenticated_false() {
-        Assert.assertFalse(
-                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext
-                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithAnonymousUser()
     public void hasAllAuthorities_anonymous_false() {
         Assert.assertFalse(authContext.hasAllAuthorities("ROLE_ANONYMOUS"));
-        Assert.assertFalse(
-                authContext.hasAllAuthorities(List.of("ROLE_ANONYMOUS")));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("ROLE_ANONYMOUS")));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAllAuthorities_hasAuthorities_true() {
-        Assert.assertTrue(
-                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertTrue(authContext
-                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertTrue(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertTrue(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ" })
     public void hasAllAuthorities_lacksAuthority_false() {
-        Assert.assertFalse(
-                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext
-                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithMockUser(roles = {})
     public void hasAllAuthorities_noAuthorities_false() {
-        Assert.assertFalse(
-                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext
-                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
@@ -417,8 +398,7 @@ public class AuthenticationContextTest {
         authContext.setLogoutHandlers(Mockito.mock(LogoutSuccessHandler.class),
                 List.of(Mockito.mock(LogoutHandler.class)));
         try {
-            CurrentInstance.set(VaadinRequest.class,
-                    Mockito.mock(VaadinServletRequest.class));
+            CurrentInstance.set(VaadinRequest.class, Mockito.mock(VaadinServletRequest.class));
             UI.setCurrent(Mockito.mock(UI.class));
             mockPush(UI.getCurrent(), Transport.WEBSOCKET_XHR);
             try {
@@ -448,12 +428,10 @@ public class AuthenticationContextTest {
             UI.setCurrent(ui);
             authContext.logout();
 
-            Mockito.verify(setup.successHandler()).onLogoutSuccess(
-                    setup.request(), setup.response(), setup.authentication());
-            Mockito.verify(setup.handler2()).logout(setup.request(),
-                    setup.response(), setup.authentication());
-            Mockito.verify(setup.handler1()).logout(setup.request(),
-                    setup.response(), setup.authentication());
+            Mockito.verify(setup.successHandler()).onLogoutSuccess(setup.request(), setup.response(),
+                    setup.authentication());
+            Mockito.verify(setup.handler2()).logout(setup.request(), setup.response(), setup.authentication());
+            Mockito.verify(setup.handler1()).logout(setup.request(), setup.response(), setup.authentication());
         } finally {
             CurrentInstance.clearAll();
         }
@@ -472,88 +450,71 @@ public class AuthenticationContextTest {
         mockPush(ui, Transport.WEBSOCKET);
         Page page = Mockito.mock(Page.class);
         Mockito.when(ui.getPage()).thenReturn(page);
-        Mockito.when(page.executeJs(Mockito.anyString()))
-                .thenReturn(new PendingJavaScriptResult() {
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
+        Mockito.when(page.executeJs(Mockito.anyString())).thenReturn(new PendingJavaScriptResult() {
+            @Override
+            public boolean cancelExecution() {
+                return false;
+            }
 
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return true;
-                    }
+            @Override
+            public boolean isSentToBrowser() {
+                return true;
+            }
 
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(null);
-                    }
-                });
+            @Override
+            public void then(SerializableConsumer<JsonValue> resultHandler, SerializableConsumer<String> errorHandler) {
+                resultHandler.accept(null);
+            }
+        });
         try {
             CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
             CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
             UI.setCurrent(ui);
             authContext.logout();
 
-            Mockito.verify(setup.successHandler()).onLogoutSuccess(
-                    setup.request(), setup.response(), setup.authentication());
-            Mockito.verify(setup.handler2()).logout(setup.request(),
-                    setup.response(), setup.authentication());
-            Mockito.verify(setup.handler1()).logout(setup.request(),
-                    setup.response(), setup.authentication());
+            Mockito.verify(setup.successHandler()).onLogoutSuccess(setup.request(), setup.response(),
+                    setup.authentication());
+            Mockito.verify(setup.handler2()).logout(setup.request(), setup.response(), setup.authentication());
+            Mockito.verify(setup.handler1()).logout(setup.request(), setup.response(), setup.authentication());
         } finally {
             CurrentInstance.clearAll();
         }
     }
 
     private SetupForLogoutTest getSetupForLogoutTest() {
-        Authentication authentication = SecurityContextHolder.getContext()
-                .getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        LogoutSuccessHandler successHandler = Mockito
-                .mock(LogoutSuccessHandler.class);
+        LogoutSuccessHandler successHandler = Mockito.mock(LogoutSuccessHandler.class);
         LogoutHandler handler1 = Mockito.mock(LogoutHandler.class);
         LogoutHandler handler2 = Mockito.mock(LogoutHandler.class);
-        authContext.setLogoutHandlers(successHandler,
-                List.of(handler2, handler1));
+        authContext.setLogoutHandlers(successHandler, List.of(handler2, handler1));
 
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        VaadinServletRequest vaadinRequest = Mockito
-                .mock(VaadinServletRequest.class);
+        VaadinServletRequest vaadinRequest = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getHttpServletRequest()).thenReturn(request);
 
         HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-        VaadinServletResponse vaadinResponse = Mockito
-                .mock(VaadinServletResponse.class);
-        Mockito.when(vaadinResponse.getHttpServletResponse())
-                .thenReturn(response);
-        return new SetupForLogoutTest(authentication, successHandler, handler1,
-                handler2, request, vaadinRequest, response, vaadinResponse);
+        VaadinServletResponse vaadinResponse = Mockito.mock(VaadinServletResponse.class);
+        Mockito.when(vaadinResponse.getHttpServletResponse()).thenReturn(response);
+        return new SetupForLogoutTest(authentication, successHandler, handler1, handler2, request, vaadinRequest,
+                response, vaadinResponse);
     }
 
-    private record SetupForLogoutTest(Authentication authentication,
-            LogoutSuccessHandler successHandler, LogoutHandler handler1,
-            LogoutHandler handler2, HttpServletRequest request,
-            VaadinServletRequest vaadinRequest, HttpServletResponse response,
-            VaadinServletResponse vaadinResponse) {
+    private record SetupForLogoutTest(Authentication authentication, LogoutSuccessHandler successHandler,
+            LogoutHandler handler1, LogoutHandler handler2, HttpServletRequest request,
+            VaadinServletRequest vaadinRequest, HttpServletResponse response, VaadinServletResponse vaadinResponse) {
     }
 
     @Test
-    public void applySecurityConfiguration_logoutHandlerConfigured()
-            throws Exception {
-        LogoutSuccessHandler logoutSuccessHandler = Mockito
-                .mock(LogoutSuccessHandler.class);
+    public void applySecurityConfiguration_logoutHandlerConfigured() throws Exception {
+        LogoutSuccessHandler logoutSuccessHandler = Mockito.mock(LogoutSuccessHandler.class);
         LogoutHandler handler1 = Mockito.mock(LogoutHandler.class);
         LogoutHandler handler2 = Mockito.mock(LogoutHandler.class);
 
-        HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
-                new AuthenticationManagerBuilder(postProcessor),
+        HttpSecurity httpSecurity = new HttpSecurity(postProcessor, new AuthenticationManagerBuilder(postProcessor),
                 Map.of(ApplicationContext.class, appCtx));
-        httpSecurity
-                .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
-                        .addLogoutHandler(handler1).addLogoutHandler(handler2));
+        httpSecurity.logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler).addLogoutHandler(handler1)
+                .addLogoutHandler(handler2));
         httpSecurity.build();
         AuthenticationContext authCtx = new AuthenticationContext();
         AuthenticationContext.applySecurityConfiguration(httpSecurity, authCtx);
@@ -571,26 +532,20 @@ public class AuthenticationContextTest {
     }
 
     @Test
-    public void applySecurityConfiguration_unbuiltHttpSecurity_throws()
-            throws Exception {
-        LogoutSuccessHandler logoutSuccessHandler = Mockito
-                .mock(LogoutSuccessHandler.class);
+    public void applySecurityConfiguration_unbuiltHttpSecurity_throws() throws Exception {
+        LogoutSuccessHandler logoutSuccessHandler = Mockito.mock(LogoutSuccessHandler.class);
         LogoutHandler handler1 = Mockito.mock(LogoutHandler.class);
         LogoutHandler handler2 = Mockito.mock(LogoutHandler.class);
-        HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
-                new AuthenticationManagerBuilder(postProcessor),
+        HttpSecurity httpSecurity = new HttpSecurity(postProcessor, new AuthenticationManagerBuilder(postProcessor),
                 Map.of(ApplicationContext.class, appCtx));
-        httpSecurity
-                .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
-                        .addLogoutHandler(handler1).addLogoutHandler(handler2));
+        httpSecurity.logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler).addLogoutHandler(handler1)
+                .addLogoutHandler(handler2));
 
         AuthenticationContext authCtx = new AuthenticationContext();
 
-        IllegalStateException exception = Assert.assertThrows(
-                IllegalStateException.class, () -> AuthenticationContext
-                        .applySecurityConfiguration(httpSecurity, authCtx));
-        Assert.assertEquals("This object has not been built",
-                exception.getMessage());
+        IllegalStateException exception = Assert.assertThrows(IllegalStateException.class,
+                () -> AuthenticationContext.applySecurityConfiguration(httpSecurity, authCtx));
+        Assert.assertEquals("This object has not been built", exception.getMessage());
     }
 
     @Test
@@ -613,13 +568,11 @@ public class AuthenticationContextTest {
     private static void mockPush(UI ui, Transport pushTransport) {
         UIInternals internals = Mockito.mock(UIInternals.class);
         PushConnection pushConnection = Mockito.mock(PushConnection.class);
-        PushConfiguration pushConfiguration = Mockito
-                .mock(PushConfiguration.class);
+        PushConfiguration pushConfiguration = Mockito.mock(PushConfiguration.class);
 
         Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfiguration);
         Mockito.when(pushConfiguration.getTransport())
-                .thenReturn(pushTransport == null ? Transport.WEBSOCKET_XHR
-                        : pushTransport);
+                .thenReturn(pushTransport == null ? Transport.WEBSOCKET_XHR : pushTransport);
         Mockito.when(ui.getInternals()).thenReturn(internals);
         Mockito.when(internals.getPushConnection()).thenReturn(pushConnection);
         Mockito.when(pushConnection.isConnected()).thenReturn(true);

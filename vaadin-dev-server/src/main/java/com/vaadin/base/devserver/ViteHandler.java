@@ -53,17 +53,13 @@ public final class ViteHandler extends AbstractDevServerRunner {
      */
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
     /**
-     * Files that are loaded from the root path but Vite places them in the
-     * VAADIN folder.
+     * Files that are loaded from the root path but Vite places them in the VAADIN folder.
      */
-    private static final String[] FILES_IN_ROOT = new String[] { INDEX_HTML,
-            WEB_COMPONENT_HTML, SERVICE_WORKER_SRC_JS };
-    private static final Pattern SERVER_RESTARTED_PATTERN = Pattern
-            .compile("\\[vite] server restart(ed| failed)");
-    private static final Pattern SERVER_RESTARTING_PATTERN = Pattern
-            .compile("\\[vite].*restarting server\\.\\.\\.");
-    private static final Pattern SERVER_SUCCESS_PATTERN = Pattern
-            .compile("ready in .*ms");
+    private static final String[] FILES_IN_ROOT = new String[] { INDEX_HTML, WEB_COMPONENT_HTML,
+            SERVICE_WORKER_SRC_JS };
+    private static final Pattern SERVER_RESTARTED_PATTERN = Pattern.compile("\\[vite] server restart(ed| failed)");
+    private static final Pattern SERVER_RESTARTING_PATTERN = Pattern.compile("\\[vite].*restarting server\\.\\.\\.");
+    private static final Pattern SERVER_SUCCESS_PATTERN = Pattern.compile("ready in .*ms");
 
     /**
      * Creates and starts the dev mode handler if none has been started yet.
@@ -71,22 +67,18 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * @param lookup
      *            the provided lookup to get required data
      * @param runningPort
-     *            a port on which Vite is already running or 0 to start a new
-     *            process
+     *            a port on which Vite is already running or 0 to start a new process
      * @param npmFolder
      *            folder with npm configuration files
      * @param waitFor
-     *            a completable future whose execution result needs to be
-     *            available to start the dev server
+     *            a completable future whose execution result needs to be available to start the dev server
      */
-    public ViteHandler(Lookup lookup, int runningPort, File npmFolder,
-            CompletableFuture<Void> waitFor) {
+    public ViteHandler(Lookup lookup, int runningPort, File npmFolder, CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);
     }
 
     @Override
-    protected List<String> getServerStartupCommand(
-            FrontendTools frontendTools) {
+    protected List<String> getServerStartupCommand(FrontendTools frontendTools) {
         List<String> command = new ArrayList<>();
         command.add(frontendTools.getNodeExecutable());
         command.add(getServerBinary().getAbsolutePath());
@@ -98,13 +90,10 @@ public final class ViteHandler extends AbstractDevServerRunner {
         command.add(getPathToVaadin());
 
         String customParameters = getApplicationConfiguration()
-                .getStringProperty(
-                        InitParameters.SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS,
-                        "");
+                .getStringProperty(InitParameters.SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS, "");
         if (!customParameters.isEmpty()) {
             command.addAll(Arrays.asList(customParameters.split(" +")));
-            getLogger().info("Starting {} using: {}", getServerName(),
-                    String.join(" ", command)); // NOSONAR
+            getLogger().info("Starting {} using: {}", getServerName(), String.join(" ", command)); // NOSONAR
         }
 
         return command;
@@ -152,20 +141,17 @@ public final class ViteHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    public HttpURLConnection prepareConnection(String path, String method)
-            throws IOException {
+    public HttpURLConnection prepareConnection(String path, String method) throws IOException {
         for (String fileInSerlvetPath : FILES_IN_ROOT) {
             if (path.equals("/" + fileInSerlvetPath)) {
-                return super.prepareConnection(
-                        getPathToVaadin() + fileInSerlvetPath, method);
+                return super.prepareConnection(getPathToVaadin() + fileInSerlvetPath, method);
             }
         }
 
         // The path passed to this method starts with /VAADIN and
         // getPathToVaadin() also
         // includes /VAADIN so one needs to be removed
-        String vitePath = getPathToVaadin().replace("/" + VAADIN_MAPPING, "")
-                + path;
+        String vitePath = getPathToVaadin().replace("/" + VAADIN_MAPPING, "") + path;
         return super.prepareConnection(vitePath, method);
     }
 
@@ -184,8 +170,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * @return the url path to the /VAADIN folder, relative to the context root
      */
     public String getPathToVaadinInContext() {
-        return FrontendUtils.getFrontendServletPath(
-                getServletContext().getContext()) + "/" + VAADIN_MAPPING;
+        return FrontendUtils.getFrontendServletPath(getServletContext().getContext()) + "/" + VAADIN_MAPPING;
     }
 
     private String getContextPath() {
@@ -194,8 +179,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
     }
 
     private VaadinServletContext getServletContext() {
-        return (VaadinServletContext) getApplicationConfiguration()
-                .getContext();
+        return (VaadinServletContext) getApplicationConfiguration().getContext();
     }
 
 }

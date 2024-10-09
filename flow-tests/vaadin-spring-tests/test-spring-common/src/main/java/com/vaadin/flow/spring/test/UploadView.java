@@ -36,8 +36,7 @@ public class UploadView extends Div {
         upload.setId("upl");
 
         upload.addSucceededListener(event -> {
-            Component component = createComponent(event.getMIMEType(),
-                    event.getFileName(),
+            Component component = createComponent(event.getMIMEType(), event.getFileName(),
                     buffer.getInputStream(event.getFileName()));
             add(component);
         });
@@ -45,8 +44,7 @@ public class UploadView extends Div {
         add(upload);
     }
 
-    private Component createComponent(String mimeType, String fileName,
-            InputStream stream) {
+    private Component createComponent(String mimeType, String fileName, InputStream stream) {
         if (!mimeType.startsWith("text")) {
             throw new IllegalStateException();
         }

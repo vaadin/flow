@@ -46,27 +46,22 @@ public class ClientCallableHandlersTest {
 
     @Test
     public void attach_noFeature() {
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
-                stateNode.getFeature(ClientCallableHandlers.class).size());
+        Assert.assertEquals(0, stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
     @Test
     public void attach_noComponent() {
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
 
-        StateNode stateNode = new StateNode(ComponentMapping.class,
-                ClientCallableHandlers.class);
+        StateNode stateNode = new StateNode(ComponentMapping.class, ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
-                stateNode.getFeature(ClientCallableHandlers.class).size());
+        Assert.assertEquals(0, stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
     @Test
@@ -75,8 +70,7 @@ public class ClientCallableHandlersTest {
         NonTemplateComponentWithEventHandler component = new NonTemplateComponentWithEventHandler();
         ui.add(component);
 
-        ClientCallableHandlers feature = component.getElement().getNode()
-                .getFeature(ClientCallableHandlers.class);
+        ClientCallableHandlers feature = component.getElement().getNode().getFeature(ClientCallableHandlers.class);
         assertListFeature(feature, "publishedMethod1");
     }
 
@@ -86,13 +80,11 @@ public class ClientCallableHandlersTest {
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);
 
-        ClientCallableHandlers feature = component.getElement().getNode()
-                .getFeature(ClientCallableHandlers.class);
+        ClientCallableHandlers feature = component.getElement().getNode().getFeature(ClientCallableHandlers.class);
         assertListFeature(feature);
     }
 
-    private void assertListFeature(SerializableNodeList<String> feature,
-            String... expected) {
+    private void assertListFeature(SerializableNodeList<String> feature, String... expected) {
         Assert.assertEquals(expected.length, feature.size());
         for (int i = 0; i < expected.length; i++) {
             Assert.assertEquals(expected[i], feature.get(i));
@@ -103,9 +95,8 @@ public class ClientCallableHandlersTest {
     private Stream<String> getDeclaredMethods(Class<?> clazz) {
         // Code coverage jacoco adds nice unexpected private static method
         // $jacocoInit which nobody needs
-        return Stream.of(clazz.getDeclaredMethods())
-                .filter(method -> !Modifier.isStatic(method.getModifiers())
-                        && !Modifier.isPrivate(method.getModifiers()))
+        return Stream.of(clazz.getDeclaredMethods()).filter(
+                method -> !Modifier.isStatic(method.getModifiers()) && !Modifier.isPrivate(method.getModifiers()))
                 .map(Method::getName);
     }
 }

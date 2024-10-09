@@ -28,8 +28,7 @@ public class FileTestUtil {
             }
         }
 
-        throw new IllegalStateException(
-                "File " + file.getAbsolutePath() + " does not exist");
+        throw new IllegalStateException("File " + file.getAbsolutePath() + " does not exist");
     }
 
     /**

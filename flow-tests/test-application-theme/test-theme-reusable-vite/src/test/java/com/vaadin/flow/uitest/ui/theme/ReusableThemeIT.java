@@ -44,16 +44,14 @@ public class ReusableThemeIT extends ChromeBrowserTest {
 
     @Test
     public void secondTheme_staticFilesNotCopied() {
-        getDriver()
-                .get(getRootURL() + "/path/themes/reusable-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/themes/reusable-theme/img/bg.jpg");
         Assert.assertFalse("reusable-theme static files should be copied",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
         String source = driver.getPageSource();
-        Matcher m = Pattern.compile(
-                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
-                Pattern.DOTALL).matcher(source);
+        Matcher m = Pattern.compile(".*Could not navigate to.*themes/no-copy/no-copy.txt.*", Pattern.DOTALL)
+                .matcher(source);
         Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }
 
@@ -69,19 +67,16 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         // Vite will make the image to something like "bg.45a07d7f.jpg" instead
         // of keeping name intact.
         final String bgCssValue = body.getCssValue("background-image");
-        final String regex = ("url\\(\"" + getRootURL()
-                + "/path/VAADIN/build/(.*)\\.jpg\"\\)")
-                .replaceAll("/", "\\\\/");
+        final String regex = ("url\\(\"" + getRootURL() + "/path/VAADIN/build/(.*)\\.jpg\"\\)").replaceAll("/",
+                "\\\\/");
         Matcher imageMatcher = Pattern.compile(regex).matcher(bgCssValue);
 
-        Assert.assertTrue("BG image not found in body css '" + bgCssValue + "'",
-                imageMatcher.find());
+        Assert.assertTrue("BG image not found in body css '" + bgCssValue + "'", imageMatcher.find());
 
         Assert.assertEquals("Ostrich", body.getCssValue("font-family"));
 
         // Note themes/reusable-theme gets VAADIN/static from the file-loader
-        getDriver().get(getRootURL() + "/path/VAADIN/build/"
-                + imageMatcher.group(1) + ".jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/build/" + imageMatcher.group(1) + ".jpg");
         Assert.assertFalse("reusable-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -91,18 +86,13 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        Assert.assertEquals("Imported FontAwesome css file should be applied.",
-                "\"Font Awesome 5 Free\"", $(SpanElement.class)
-                        .id(FONTAWESOME_ID).getCssValue("font-family"));
+        Assert.assertEquals("Imported FontAwesome css file should be applied.", "\"Font Awesome 5 Free\"",
+                $(SpanElement.class).id(FONTAWESOME_ID).getCssValue("font-family"));
 
-        String iconUnicode = getCssPseudoElementValue(FONTAWESOME_ID,
-                "::before");
-        Assert.assertEquals(
-                "Font-Icon from FontAwesome css file should be applied.",
-                "\"\uf0f4\"", iconUnicode);
+        String iconUnicode = getCssPseudoElementValue(FONTAWESOME_ID, "::before");
+        Assert.assertEquals("Font-Icon from FontAwesome css file should be applied.", "\"\uf0f4\"", iconUnicode);
 
-        getDriver().get(getRootURL()
-                + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
         Assert.assertFalse("Font resource should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -110,12 +100,10 @@ public class ReusableThemeIT extends ChromeBrowserTest {
     @Test
     public void componentThemeIsApplied() {
         open();
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+        TestBenchElement myField = $(TestBenchElement.class).id(MY_COMPONENT_ID);
+        TestBenchElement input = myField.$("vaadin-input-container").attribute("part", "input-field").first();
+        Assert.assertEquals("Polymer text field should have red background", "rgba(255, 0, 0, 1)",
+                input.getCssValue("background-color"));
     }
 
     @Test
@@ -124,10 +112,8 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         // Note themes/reusable-theme gets VAADIN/static from the file-loader
-        Assert.assertTrue("Imported css file URLs should have been handled.",
-                $(SpanElement.class).id(SUB_COMPONENT_ID)
-                        .getCssValue("background-image")
-                        .contains("data:image/png;base64"));
+        Assert.assertTrue("Imported css file URLs should have been handled.", $(SpanElement.class).id(SUB_COMPONENT_ID)
+                .getCssValue("background-image").contains("data:image/png;base64"));
     }
 
     @Test
@@ -135,14 +121,11 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        Assert.assertEquals(
-                "Node assets should have been copied to 'themes/reusable-theme'",
-                getRootURL()
-                        + "/path/themes/reusable-theme/fortawesome/icons/snowflake.svg",
+        Assert.assertEquals("Node assets should have been copied to 'themes/reusable-theme'",
+                getRootURL() + "/path/themes/reusable-theme/fortawesome/icons/snowflake.svg",
                 $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
-        open(getRootURL() + "/path/"
-                + $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
+        open(getRootURL() + "/path/" + $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
         Assert.assertFalse("Node static icon should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -150,27 +133,19 @@ public class ReusableThemeIT extends ChromeBrowserTest {
     @Test
     public void cssWithAssetRelativePaths_urlPathIsNotRelative() {
         open();
-        String expectedIconsURL = getRootURL()
-                + "/path/VAADIN/static/themes/reusable-theme/fortawesome/icons/";
-        String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
-                .getCssValue("background-image");
-        Assert.assertTrue(
-                "Expecting relative asset URL to be resolved as "
-                        + expectedIconsURL + "keyboard.svg but was " + imageUrl,
-                imageUrl.contains(expectedIconsURL + "keyboard.svg"));
+        String expectedIconsURL = getRootURL() + "/path/VAADIN/static/themes/reusable-theme/fortawesome/icons/";
+        String imageUrl = $(DivElement.class).id(KEYBOARD_ID).getCssValue("background-image");
+        Assert.assertTrue("Expecting relative asset URL to be resolved as " + expectedIconsURL + "keyboard.svg but was "
+                + imageUrl, imageUrl.contains(expectedIconsURL + "keyboard.svg"));
 
-        imageUrl = $(DivElement.class).id(LEMON_ID)
-                .getCssValue("background-image");
+        imageUrl = $(DivElement.class).id(LEMON_ID).getCssValue("background-image");
         Assert.assertTrue(
-                "Expecting relative asset URL to be resolved as "
-                        + expectedIconsURL + "lemon.svg but was " + imageUrl,
+                "Expecting relative asset URL to be resolved as " + expectedIconsURL + "lemon.svg but was " + imageUrl,
                 imageUrl.contains(expectedIconsURL + "lemon.svg"));
 
-        imageUrl = $(DivElement.class).id(SUN_ID)
-                .getCssValue("background-image");
+        imageUrl = $(DivElement.class).id(SUN_ID).getCssValue("background-image");
         Assert.assertTrue(
-                "Expecting relative asset URL to be resolved as "
-                        + expectedIconsURL + "sun.svg but was " + imageUrl,
+                "Expecting relative asset URL to be resolved as " + expectedIconsURL + "sun.svg but was " + imageUrl,
                 imageUrl.contains(expectedIconsURL + "sun.svg"));
     }
 
@@ -180,15 +155,12 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         Assert.assertEquals("Relative non theme url should not be touched",
-                "url(\"" + getRootURL()
-                        + "/path/test/path/monarch-butterfly.jpg\")",
-                $(SpanElement.class).id(BUTTERFLY_ID)
-                        .getCssValue("background-image"));
+                "url(\"" + getRootURL() + "/path/test/path/monarch-butterfly.jpg\")",
+                $(SpanElement.class).id(BUTTERFLY_ID).getCssValue("background-image"));
 
         Assert.assertEquals("Absolute non theme url should not be touched",
                 "url(\"" + getRootURL() + "/octopuss.jpg\")",
-                $(SpanElement.class).id(OCTOPUSS_ID)
-                        .getCssValue("background-image"));
+                $(SpanElement.class).id(OCTOPUSS_ID).getCssValue("background-image"));
 
         getDriver().get(getRootURL() + "/path/test/path/monarch-butterfly.jpg");
         Assert.assertFalse("webapp resource should be served",
@@ -206,10 +178,8 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         return path.replace(view, "path/");
     }
 
-    private String getCssPseudoElementValue(String elementId,
-            String pseudoElement) {
-        String script = "return window.getComputedStyle("
-                + "document.getElementById(arguments[0])"
+    private String getCssPseudoElementValue(String elementId, String pseudoElement) {
+        String script = "return window.getComputedStyle(" + "document.getElementById(arguments[0])"
                 + ", arguments[1]).content";
         JavascriptExecutor js = (JavascriptExecutor) driver;
         return (String) js.executeScript(script, elementId, pseudoElement);

@@ -29,14 +29,12 @@ public final class JsoConfiguration extends JavaScriptObject {
     }
 
     /**
-     * Reads a configuration parameter as a string. Please note that the
-     * javascript value of the parameter should also be a string, or else an
-     * undefined exception may be thrown.
+     * Reads a configuration parameter as a string. Please note that the javascript value of the parameter should also
+     * be a string, or else an undefined exception may be thrown.
      *
      * @param name
      *            name of the configuration parameter
-     * @return value of the configuration parameter, or <code>null</code> if not
-     *         defined
+     * @return value of the configuration parameter, or <code>null</code> if not defined
      */
     public native String getConfigString(String name)
     /*-{
@@ -49,14 +47,12 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
-     * Reads a configuration parameter as a {@link ValueMap}. Please note that
-     * the javascript value of the parameter should also be a javascript object,
-     * or else an undefined exception may be thrown.
+     * Reads a configuration parameter as a {@link ValueMap}. Please note that the javascript value of the parameter
+     * should also be a javascript object, or else an undefined exception may be thrown.
      *
      * @param name
      *            name of the configuration parameter
-     * @return value of the configuration parameter, or <code>null</code>if not
-     *         defined
+     * @return value of the configuration parameter, or <code>null</code>if not defined
      */
     public native ValueMap getConfigValueMap(String name)
     /*-{
@@ -68,8 +64,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      *
      * @param name
      *            name of the configuration parameter
-     * @return value of the configuration parameter, or <code>null</code>if not
-     *         defined
+     * @return value of the configuration parameter, or <code>null</code>if not defined
      */
     public native String[] getConfigStringArray(String name)
     /*-{
@@ -79,13 +74,12 @@ public final class JsoConfiguration extends JavaScriptObject {
     /**
      * Reads a configuration parameter as a boolean.
      * <p>
-     * Please note that the javascript value of the parameter should also be a
-     * boolean, or else an undefined exception may be thrown.
+     * Please note that the javascript value of the parameter should also be a boolean, or else an undefined exception
+     * may be thrown.
      *
      * @param name
      *            name of the configuration parameter
-     * @return the boolean value of the configuration parameter, or
-     *         <code>false</code> if no value is defined
+     * @return the boolean value of the configuration parameter, or <code>false</code> if no value is defined
      */
     public native boolean getConfigBoolean(String name)
     /*-{
@@ -99,14 +93,12 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
-     * Reads a configuration parameter as an integer object. Please note that
-     * the javascript value of the parameter should also be an integer, or else
-     * an undefined exception may be thrown.
+     * Reads a configuration parameter as an integer object. Please note that the javascript value of the parameter
+     * should also be an integer, or else an undefined exception may be thrown.
      *
      * @param name
      *            name of the configuration parameter
-     * @return integer value of the configuration parameter, or
-     *         <code>null</code> if no value is defined
+     * @return integer value of the configuration parameter, or <code>null</code> if no value is defined
      */
     public native Integer getConfigInteger(String name)
     /*-{
@@ -120,15 +112,13 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
-     * Reads a configuration parameter as an {@link ErrorMessage} object. Please
-     * note that the javascript value of the parameter should also be an object
-     * with appropriate fields, or else an undefined exception may be thrown
-     * when calling this method or when calling methods on the returned object.
+     * Reads a configuration parameter as an {@link ErrorMessage} object. Please note that the javascript value of the
+     * parameter should also be an object with appropriate fields, or else an undefined exception may be thrown when
+     * calling this method or when calling methods on the returned object.
      *
      * @param name
      *            name of the configuration parameter
-     * @return error message with the given name, or <code>null</code> if no
-     *         value is defined
+     * @return error message with the given name, or <code>null</code> if no value is defined
      */
     public native ErrorMessage getConfigError(String name)
     /*-{

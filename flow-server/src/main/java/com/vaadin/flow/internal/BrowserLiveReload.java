@@ -22,8 +22,7 @@ import com.vaadin.flow.server.communication.FragmentedMessageHolder;
 import elemental.json.JsonObject;
 
 /**
- * Provides a way to reload browser tabs via web socket connection passed as a
- * {@link AtmosphereResource}.
+ * Provides a way to reload browser tabs via web socket connection passed as a {@link AtmosphereResource}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -71,8 +70,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
     void onDisconnect(AtmosphereResource resource);
 
     /**
-     * Returns whether the passed connection is a browser live-reload
-     * connection.
+     * Returns whether the passed connection is a browser live-reload connection.
      *
      * @param resource
      *            a web socket connection resource, not <code>null</code>.
@@ -81,18 +79,16 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
     boolean isLiveReload(AtmosphereResource resource);
 
     /**
-     * Requests reload via the resource provided via
-     * {@link #onConnect(AtmosphereResource)} call.
+     * Requests reload via the resource provided via {@link #onConnect(AtmosphereResource)} call.
      */
     void reload();
 
     /**
-     * Requests a refresh of the current view in the browser, without reloading
-     * the whole page.
+     * Requests a refresh of the current view in the browser, without reloading the whole page.
      *
      * @param refreshLayouts
-     *            {@code true} to refresh all layouts in the route chain,
-     *            {@code false} to only refresh the route component
+     *            {@code true} to refresh all layouts in the route chain, {@code false} to only refresh the route
+     *            component
      */
     default void refresh(boolean refreshLayouts) {
         reload();

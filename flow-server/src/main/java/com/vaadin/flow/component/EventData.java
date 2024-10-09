@@ -28,20 +28,16 @@ import elemental.json.JsonValue;
 /**
  * Maps data from a DOM event to a {@link ComponentEvent}.
  * <p>
- * This annotation should be added to parameters in the DOM event constructor in
- * a {@link ComponentEvent}, mapped using @{@link DomEvent}. See
- * the @{@link DomEvent} documentation for more information.
+ * This annotation should be added to parameters in the DOM event constructor in a {@link ComponentEvent}, mapped
+ * using @{@link DomEvent}. See the @{@link DomEvent} documentation for more information.
  * <p>
- * The annotation {@link #value()} will be evaluated as JavaScript when the
- * event is handled in the browser. The expression is evaluated in a context
- * where <code>element</code> refers to the element for which the listener is
- * registered and <code>event</code> refers to the fired event. The value of the
- * expression is passed back to the server and injected into the annotated
- * {@link ComponentEvent} constructor parameter.
+ * The annotation {@link #value()} will be evaluated as JavaScript when the event is handled in the browser. The
+ * expression is evaluated in a context where <code>element</code> refers to the element for which the listener is
+ * registered and <code>event</code> refers to the fired event. The value of the expression is passed back to the server
+ * and injected into the annotated {@link ComponentEvent} constructor parameter.
  * <p>
- * Supported parameter types are {@link String}, {@link JsonValue},
- * {@link Integer}, {@link Double}, {@link Boolean} and their respective
- * primitive types.
+ * Supported parameter types are {@link String}, {@link JsonValue}, {@link Integer}, {@link Double}, {@link Boolean} and
+ * their respective primitive types.
  *
  * @see DomEvent
  * @see DomListenerRegistration#addEventData(String)
@@ -53,8 +49,7 @@ import elemental.json.JsonValue;
 @Documented
 public @interface EventData {
     /**
-     * A JavaScript expression that will be evaluated to collect data when an
-     * event is handled.
+     * A JavaScript expression that will be evaluated to collect data when an event is handled.
      *
      * @see DomListenerRegistration#addEventData(String)
      *

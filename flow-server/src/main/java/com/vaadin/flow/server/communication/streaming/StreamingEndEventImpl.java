@@ -22,8 +22,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingEndEvent;
  *
  * @since 1.0
  */
-public final class StreamingEndEventImpl extends AbstractStreamingEvent
-        implements StreamingEndEvent {
+public final class StreamingEndEventImpl extends AbstractStreamingEvent implements StreamingEndEvent {
 
     /**
      * End event constructor.
@@ -35,8 +34,7 @@ public final class StreamingEndEventImpl extends AbstractStreamingEvent
      * @param totalBytes
      *            total size in bytes
      */
-    public StreamingEndEventImpl(String filename, String type,
-            long totalBytes) {
+    public StreamingEndEventImpl(String filename, String type, long totalBytes) {
         super(filename, type, totalBytes, totalBytes);
     }
 

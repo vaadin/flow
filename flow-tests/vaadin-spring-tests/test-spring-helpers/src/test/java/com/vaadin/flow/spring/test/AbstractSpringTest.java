@@ -12,8 +12,7 @@ public abstract class AbstractSpringTest extends ChromeBrowserTest {
 
     @Override
     protected String getTestURL(String... parameters) {
-        return getTestURL(getRootURL(), getContextPath() + getTestPath(),
-                parameters);
+        return getTestURL(getRootURL(), getContextPath() + getTestPath(), parameters);
     }
 
     @Override
@@ -49,8 +48,7 @@ public abstract class AbstractSpringTest extends ChromeBrowserTest {
 
             properties = new Properties();
             try {
-                InputStream res = getClass()
-                        .getResourceAsStream("/application.properties");
+                InputStream res = getClass().getResourceAsStream("/application.properties");
                 if (res != null) {
                     properties.load(res);
                 }

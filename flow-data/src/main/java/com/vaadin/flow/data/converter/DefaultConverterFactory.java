@@ -30,8 +30,8 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ReflectTools;
 
 /**
- * Default implementation of {@link ConverterFactory}, handling all standard
- * converters defined in {@code com.vaadin.flow.data.converters} package.
+ * Default implementation of {@link ConverterFactory}, handling all standard converters defined in
+ * {@code com.vaadin.flow.data.converters} package.
  *
  * @author Vaadin Ltd
  * @since
@@ -45,87 +45,57 @@ public enum DefaultConverterFactory implements ConverterFactory {
 
     DefaultConverterFactory() {
         registerConverter(DateToLongConverter.class, DateToLongConverter::new);
-        registerConverter(DateToSqlDateConverter.class,
-                DateToSqlDateConverter::new);
+        registerConverter(DateToSqlDateConverter.class, DateToSqlDateConverter::new);
         registerConverter(LocalDateTimeToInstantConverter.class,
-                () -> new LocalDateTimeToInstantConverter(
-                        ZoneId.systemDefault()));
+                () -> new LocalDateTimeToInstantConverter(ZoneId.systemDefault()));
         registerConverter(LocalDateTimeToDateConverter.class,
                 () -> new LocalDateTimeToDateConverter(ZoneId.systemDefault()));
-        registerConverter(LocalDateToDateConverter.class,
-                LocalDateToDateConverter::new);
-        registerConverterWithMessageProvider(StringToBigDecimalConverter.class,
-                StringToBigDecimalConverter::new);
-        registerConverterWithMessageProvider(StringToBigIntegerConverter.class,
-                StringToBigIntegerConverter::new);
-        registerConverterWithMessageProvider(StringToBooleanConverter.class,
-                StringToBooleanConverter::new);
-        registerConverter(StringToDateConverter.class,
-                StringToDateConverter::new);
-        registerConverterWithMessageProvider(StringToDoubleConverter.class,
-                StringToDoubleConverter::new);
-        registerConverterWithMessageProvider(StringToFloatConverter.class,
-                StringToFloatConverter::new);
-        registerConverterWithMessageProvider(StringToIntegerConverter.class,
-                StringToIntegerConverter::new);
-        registerConverterWithMessageProvider(StringToLongConverter.class,
-                StringToLongConverter::new);
-        registerConverterWithMessageProvider(StringToUuidConverter.class,
-                StringToUuidConverter::new);
-        registerConverter(BigDecimalToDoubleConverter.class,
-                BigDecimalToDoubleConverter::new);
-        registerConverter(BigDecimalToIntegerConverter.class,
-                BigDecimalToIntegerConverter::new);
-        registerConverter(DoubleToBigDecimalConverter.class,
-                DoubleToBigDecimalConverter::new);
-        registerConverter(IntegerToBigDecimalConverter.class,
-                IntegerToBigDecimalConverter::new);
-        registerConverter(IntegerToDoubleConverter.class,
-                IntegerToDoubleConverter::new);
-        registerConverter(IntegerToLongConverter.class,
-                IntegerToLongConverter::new);
-        registerConverter(BigDecimalToFloatConverter.class,
-                BigDecimalToFloatConverter::new);
-        registerConverter(BigDecimalToLongConverter.class,
-                BigDecimalToLongConverter::new);
-        registerConverter(LongToBigDecimalConverter.class,
-                LongToBigDecimalConverter::new);
-        registerConverter(FloatToBigDecimalConverter.class,
-                FloatToBigDecimalConverter::new);
-        registerConverter(FloatToDoubleConverter.class,
-                FloatToDoubleConverter::new);
+        registerConverter(LocalDateToDateConverter.class, LocalDateToDateConverter::new);
+        registerConverterWithMessageProvider(StringToBigDecimalConverter.class, StringToBigDecimalConverter::new);
+        registerConverterWithMessageProvider(StringToBigIntegerConverter.class, StringToBigIntegerConverter::new);
+        registerConverterWithMessageProvider(StringToBooleanConverter.class, StringToBooleanConverter::new);
+        registerConverter(StringToDateConverter.class, StringToDateConverter::new);
+        registerConverterWithMessageProvider(StringToDoubleConverter.class, StringToDoubleConverter::new);
+        registerConverterWithMessageProvider(StringToFloatConverter.class, StringToFloatConverter::new);
+        registerConverterWithMessageProvider(StringToIntegerConverter.class, StringToIntegerConverter::new);
+        registerConverterWithMessageProvider(StringToLongConverter.class, StringToLongConverter::new);
+        registerConverterWithMessageProvider(StringToUuidConverter.class, StringToUuidConverter::new);
+        registerConverter(BigDecimalToDoubleConverter.class, BigDecimalToDoubleConverter::new);
+        registerConverter(BigDecimalToIntegerConverter.class, BigDecimalToIntegerConverter::new);
+        registerConverter(DoubleToBigDecimalConverter.class, DoubleToBigDecimalConverter::new);
+        registerConverter(IntegerToBigDecimalConverter.class, IntegerToBigDecimalConverter::new);
+        registerConverter(IntegerToDoubleConverter.class, IntegerToDoubleConverter::new);
+        registerConverter(IntegerToLongConverter.class, IntegerToLongConverter::new);
+        registerConverter(BigDecimalToFloatConverter.class, BigDecimalToFloatConverter::new);
+        registerConverter(BigDecimalToLongConverter.class, BigDecimalToLongConverter::new);
+        registerConverter(LongToBigDecimalConverter.class, LongToBigDecimalConverter::new);
+        registerConverter(FloatToBigDecimalConverter.class, FloatToBigDecimalConverter::new);
+        registerConverter(FloatToDoubleConverter.class, FloatToDoubleConverter::new);
     }
 
-    private <C extends Converter<?, ?>> void registerConverter(
-            Class<C> converterType, SerializableSupplier<C> factory) {
-        List<Class<?>> types = ReflectTools
-                .getGenericInterfaceTypes(converterType, Converter.class);
+    private <C extends Converter<?, ?>> void registerConverter(Class<C> converterType,
+            SerializableSupplier<C> factory) {
+        List<Class<?>> types = ReflectTools.getGenericInterfaceTypes(converterType, Converter.class);
         assert !types.isEmpty() && types.stream().allMatch(Objects::nonNull);
         Key key = new Key(types.get(0), types.get(1));
         converterMap.put(key, factory);
     }
 
-    private <C extends Converter<?, ?>> void registerConverterWithMessageProvider(
-            Class<C> converterType, Function<ErrorMessageProvider, C> factory) {
+    private <C extends Converter<?, ?>> void registerConverterWithMessageProvider(Class<C> converterType,
+            Function<ErrorMessageProvider, C> factory) {
         registerConverter(converterType, () -> factory.apply(context -> ""));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <P, M> Optional<Converter<P, M>> newInstance(
-            Class<P> presentationType, Class<M> modelType) {
+    public <P, M> Optional<Converter<P, M>> newInstance(Class<P> presentationType, Class<M> modelType) {
         if (presentationType == null) {
-            throw new IllegalArgumentException(
-                    "The presentation type cannot be null");
+            throw new IllegalArgumentException("The presentation type cannot be null");
         }
         if (modelType == null) {
-            throw new IllegalArgumentException(
-                    "The model type must cannot be null");
+            throw new IllegalArgumentException("The model type must cannot be null");
         }
-        return Optional
-                .ofNullable(
-                        converterMap.get(new Key(presentationType, modelType)))
-                .map(Supplier::get);
+        return Optional.ofNullable(converterMap.get(new Key(presentationType, modelType))).map(Supplier::get);
     }
 
     private static final class Key implements Serializable {
@@ -134,8 +104,7 @@ public enum DefaultConverterFactory implements ConverterFactory {
 
         private Key(Class<?> presentationType, Class<?> modelType) {
             assert presentationType != null && modelType != null;
-            this.presentationType = ReflectTools
-                    .convertPrimitiveType(presentationType);
+            this.presentationType = ReflectTools.convertPrimitiveType(presentationType);
             this.modelType = ReflectTools.convertPrimitiveType(modelType);
         }
 
@@ -146,8 +115,7 @@ public enum DefaultConverterFactory implements ConverterFactory {
             if (o == null || getClass() != o.getClass())
                 return false;
             Key key = (Key) o;
-            return presentationType.equals(key.presentationType)
-                    && modelType.equals(key.modelType);
+            return presentationType.equals(key.presentationType) && modelType.equals(key.modelType);
         }
 
         @Override

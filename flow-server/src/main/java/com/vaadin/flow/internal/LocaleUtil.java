@@ -48,8 +48,7 @@ public final class LocaleUtil {
      *            application provided locales
      * @return found locale or null if no exact matches
      */
-    public static Optional<Locale> getExactLocaleMatch(VaadinRequest request,
-            List<Locale> providedLocales) {
+    public static Optional<Locale> getExactLocaleMatch(VaadinRequest request, List<Locale> providedLocales) {
         Locale foundLocale = null;
         Enumeration<Locale> locales = request.getLocales();
         while (locales.hasMoreElements()) {
@@ -63,8 +62,7 @@ public final class LocaleUtil {
     }
 
     /**
-     * Get the locale matching the language of the request locale in the
-     * provided locales.
+     * Get the locale matching the language of the request locale in the provided locales.
      *
      * @param request
      *            request to get locale for
@@ -72,16 +70,13 @@ public final class LocaleUtil {
      *            application provided locales
      * @return found locale or null if no matches by language
      */
-    public static Optional<Locale> getLocaleMatchByLanguage(
-            VaadinRequest request, List<Locale> providedLocales) {
+    public static Optional<Locale> getLocaleMatchByLanguage(VaadinRequest request, List<Locale> providedLocales) {
         Locale foundLocale = null;
         Enumeration<Locale> locales = request.getLocales();
         while (locales.hasMoreElements()) {
             Locale locale = locales.nextElement();
-            Optional<Locale> matching = providedLocales
-                    .stream().filter(providedLocale -> providedLocale
-                            .getLanguage().equals(locale.getLanguage()))
-                    .findFirst();
+            Optional<Locale> matching = providedLocales.stream()
+                    .filter(providedLocale -> providedLocale.getLanguage().equals(locale.getLanguage())).findFirst();
             if (matching.isPresent()) {
                 foundLocale = matching.get();
                 break;
@@ -97,38 +92,32 @@ public final class LocaleUtil {
      * @return the optional value of I18nProvider
      */
     public static Optional<I18NProvider> getI18NProvider() {
-        return Optional.ofNullable(VaadinService.getCurrent())
-                .map(VaadinService::getInstantiator)
+        return Optional.ofNullable(VaadinService.getCurrent()).map(VaadinService::getInstantiator)
                 .map(Instantiator::getI18NProvider);
     }
 
     /**
      * Get the locale from the current UI or from the given I18NProvider.
      * <p>
-     * -> If UI is not null, then it is used to get the locale, -> if UI is
-     * null, then the I18NProvider providedLocales first match will be returned,
-     * -> if I18NProvider is null, then default locale is returned.
+     * -> If UI is not null, then it is used to get the locale, -> if UI is null, then the I18NProvider providedLocales
+     * first match will be returned, -> if I18NProvider is null, then default locale is returned.
      *
      * @param i18NProvider
      *            - supplier for the i18n provider
      * @return the locale for the UI
      */
-    public static Locale getLocale(
-            Supplier<Optional<I18NProvider>> i18NProvider) {
-        return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
-                .or(() -> i18NProvider.get()
-                        .map(I18NProvider::getProvidedLocales)
-                        .flatMap(locales -> locales.stream().findFirst()))
+    public static Locale getLocale(Supplier<Optional<I18NProvider>> i18NProvider) {
+        return Optional
+                .ofNullable(UI.getCurrent()).map(UI::getLocale).or(() -> i18NProvider.get()
+                        .map(I18NProvider::getProvidedLocales).flatMap(locales -> locales.stream().findFirst()))
                 .orElseGet(Locale::getDefault);
     }
 
     /**
-     * Get the locale from the current UI or from the I18NProvider from the
-     * current VaadinService.
+     * Get the locale from the current UI or from the I18NProvider from the current VaadinService.
      * <p>
-     * -> If UI is not null, then it is used to get the locale, -> if UI is
-     * null, then the I18NProvider providedLocales first match will be returned,
-     * -> if I18NProvider is null, then default locale is returned.
+     * -> If UI is not null, then it is used to get the locale, -> if UI is null, then the I18NProvider providedLocales
+     * first match will be returned, -> if I18NProvider is null, then default locale is returned.
      *
      * @return the locale for the UI
      */

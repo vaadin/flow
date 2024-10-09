@@ -24,8 +24,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * List of nodes describing the virtually connected child elements of an
- * element.
+ * List of nodes describing the virtually connected child elements of an element.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -46,8 +45,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
     }
 
     /**
-     * Inserts an item supplied with payload data at the given index of the
-     * list.
+     * Inserts an item supplied with payload data at the given index of the list.
      *
      *
      * @param index
@@ -64,8 +62,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
     }
 
     /**
-     * Inserts an item supplied with payload data at the given index of the
-     * list.
+     * Inserts an item supplied with payload data at the given index of the list.
      *
      *
      * @param index
@@ -91,8 +88,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
     }
 
     /**
-     * Inserts an item supplied with payload type at the given index of the
-     * list.
+     * Inserts an item supplied with payload type at the given index of the list.
      *
      * @param index
      *            index to insert at

@@ -29,19 +29,16 @@ public class DisabledUpdateModeTest {
         assertMostPermissive(ALWAYS, ALWAYS, ONLY_WHEN_ENABLED);
         assertMostPermissive(ALWAYS, ALWAYS, null);
 
-        assertMostPermissive(ONLY_WHEN_ENABLED, ONLY_WHEN_ENABLED,
-                ONLY_WHEN_ENABLED);
+        assertMostPermissive(ONLY_WHEN_ENABLED, ONLY_WHEN_ENABLED, ONLY_WHEN_ENABLED);
         assertMostPermissive(ONLY_WHEN_ENABLED, ONLY_WHEN_ENABLED, null);
 
         assertMostPermissive(null, null, null);
     }
 
-    private static void assertMostPermissive(DisabledUpdateMode expectedResult,
-            DisabledUpdateMode first, DisabledUpdateMode second) {
+    private static void assertMostPermissive(DisabledUpdateMode expectedResult, DisabledUpdateMode first,
+            DisabledUpdateMode second) {
 
-        Assert.assertEquals(expectedResult,
-                DisabledUpdateMode.mostPermissive(first, second));
-        Assert.assertEquals(expectedResult,
-                DisabledUpdateMode.mostPermissive(second, first));
+        Assert.assertEquals(expectedResult, DisabledUpdateMode.mostPermissive(first, second));
+        Assert.assertEquals(expectedResult, DisabledUpdateMode.mostPermissive(second, first));
     }
 }

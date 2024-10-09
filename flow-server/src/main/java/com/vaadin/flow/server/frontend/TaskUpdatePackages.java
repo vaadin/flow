@@ -47,9 +47,8 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
- * found in the classpath. It also visits classes annotated with
- * {@link NpmPackage}.
+ * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in the classpath. It also visits
+ * classes annotated with {@link NpmPackage}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -70,8 +69,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @param options
      *            the task options
      */
-    TaskUpdatePackages(FrontendDependenciesScanner frontendDependencies,
-            Options options) {
+    TaskUpdatePackages(FrontendDependenciesScanner frontendDependencies, Options options) {
         super(frontendDependencies, options);
         this.jarResourcesFolder = options.getJarFrontendResourcesFolder();
         this.forceCleanUp = options.isCleanNpmFiles();
@@ -81,26 +79,21 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
-            Map<String, String> scannedApplicationDependencies = frontDeps
-                    .getPackages();
-            Map<String, String> scannedApplicationDevDependencies = frontDeps
-                    .getDevPackages();
+            Map<String, String> scannedApplicationDependencies = frontDeps.getPackages();
+            Map<String, String> scannedApplicationDevDependencies = frontDeps.getDevPackages();
             JsonObject packageJson = getPackageJson();
-            modified = updatePackageJsonDependencies(packageJson,
-                    scannedApplicationDependencies,
+            modified = updatePackageJsonDependencies(packageJson, scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
             generateVersionsJson(packageJson);
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
             if (modified || npmVersionLockingUpdated) {
-                if (!packageJson.hasKey("type")
-                        || !packageJson.getString("type").equals("module")) {
+                if (!packageJson.hasKey("type") || !packageJson.getString("type").equals("module")) {
                     packageJson.put("type", "module");
-                    log().info(
-                            """
-                                    Adding package.json type as module to enable ES6 modules which is now required.
-                                    With this change sources need to use 'import' instead of 'require' for imports.
-                                    """);
+                    log().info("""
+                            Adding package.json type as module to enable ES6 modules which is now required.
+                            With this change sources need to use 'import' instead of 'require' for imports.
+                            """);
                 }
                 writePackageFile(packageJson);
             }
@@ -117,17 +110,14 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         for (String dependency : versionsJson.keys()) {
             if (!overridesSection.hasKey(dependency)
-                    && shouldLockDependencyVersion(dependency, dependencies,
-                            versionsJson)) {
+                    && shouldLockDependencyVersion(dependency, dependencies, versionsJson)) {
                 overridesSection.put(dependency, "$" + dependency);
                 versionLockingUpdated = true;
             }
         }
-        final JsonObject devDependencies = packageJson
-                .getObject(DEV_DEPENDENCIES);
+        final JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
         for (String dependency : overridesSection.keys()) {
-            if (!dependencies.hasKey(dependency)
-                    && !devDependencies.hasKey(dependency)
+            if (!dependencies.hasKey(dependency) && !devDependencies.hasKey(dependency)
                     && overridesSection.getString(dependency).startsWith("$")) {
                 overridesSection.remove(dependency);
                 versionLockingUpdated = true;
@@ -137,8 +127,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         return versionLockingUpdated;
     }
 
-    private boolean shouldLockDependencyVersion(String dependency,
-            JsonObject projectDependencies, JsonObject versionsJson) {
+    private boolean shouldLockDependencyVersion(String dependency, JsonObject projectDependencies,
+            JsonObject versionsJson) {
         String platformDefinedVersion = versionsJson.getString(dependency);
 
         if (isInternalPseudoDependency(platformDefinedVersion)) {
@@ -159,8 +149,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
-        return dependencyVersion != null && dependencyVersion
-                .startsWith("./" + options.getBuildDirectoryName());
+        return dependencyVersion != null && dependencyVersion.startsWith("./" + options.getBuildDirectoryName());
     }
 
     private JsonObject getOverridesSection(JsonObject packageJson) {
@@ -209,29 +198,22 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     @SuppressWarnings("squid:S134")
-    private boolean updatePackageJsonDependencies(JsonObject packageJson,
-            Map<String, String> applicationDependencies,
+    private boolean updatePackageJsonDependencies(JsonObject packageJson, Map<String, String> applicationDependencies,
             Map<String, String> applicationDevDependencies) throws IOException {
         int added = 0;
 
-        Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
-                finder,
-                options.isReactEnabled()
-                        && FrontendUtils.isReactModuleAvailable(options))
+        Map<String, String> filteredApplicationDependencies = new ExclusionFilter(finder,
+                options.isReactEnabled() && FrontendUtils.isReactModuleAvailable(options))
                 .exclude(applicationDependencies);
 
         // Add application dependencies
-        for (Entry<String, String> dep : filteredApplicationDependencies
-                .entrySet()) {
-            added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
-                    dep.getValue());
+        for (Entry<String, String> dep : filteredApplicationDependencies.entrySet()) {
+            added += addDependency(packageJson, DEPENDENCIES, dep.getKey(), dep.getValue());
         }
 
         // Add application dev dependencies.
-        for (Entry<String, String> devDep : applicationDevDependencies
-                .entrySet()) {
-            added += addDependency(packageJson, DEV_DEPENDENCIES,
-                    devDep.getKey(), devDep.getValue());
+        for (Entry<String, String> devDep : applicationDevDependencies.entrySet()) {
+            added += addDependency(packageJson, DEV_DEPENDENCIES, devDep.getKey(), devDep.getValue());
         }
 
         /*
@@ -244,8 +226,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             // dependency since add-ons should be able to downgrade
             // version through exclusion
             if (!filteredApplicationDependencies.containsKey(key)
-                    && pinPlatformDependency(packageJson,
-                            platformPinnedDependencies, key)) {
+                    && pinPlatformDependency(packageJson, platformPinnedDependencies, key)) {
                 added++;
             }
             // make sure platform pinned dependency is not cleared
@@ -257,29 +238,24 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         // Remove obsolete dependencies
-        List<String> dependencyCollection = Stream
-                .concat(filteredApplicationDependencies.entrySet().stream(),
-                        getDefaultDependencies().entrySet().stream())
-                .map(Entry::getKey).collect(Collectors.toList());
+        List<String> dependencyCollection = Stream.concat(filteredApplicationDependencies.entrySet().stream(),
+                getDefaultDependencies().entrySet().stream()).map(Entry::getKey).collect(Collectors.toList());
         dependencyCollection.addAll(pinnedPlatformDependencies);
 
         boolean doCleanUp = forceCleanUp; // forced only in tests
         int removed = removeLegacyProperties(packageJson);
-        removed += cleanDependencies(dependencyCollection, packageJson,
-                DEPENDENCIES);
+        removed += cleanDependencies(dependencyCollection, packageJson, DEPENDENCIES);
 
         // FIXME do not do cleanup of node_modules every time platform is
         // updated ?
         doCleanUp = doCleanUp || (!enablePnpm && isPlatformVersionUpdated());
 
         // Remove obsolete devDependencies
-        dependencyCollection = new ArrayList<>(
-                getDefaultDevDependencies().keySet());
+        dependencyCollection = new ArrayList<>(getDefaultDevDependencies().keySet());
         dependencyCollection.addAll(applicationDevDependencies.keySet());
 
         int removedDev = 0;
-        removedDev = cleanDependencies(dependencyCollection, packageJson,
-                DEV_DEPENDENCIES);
+        removedDev = cleanDependencies(dependencyCollection, packageJson, DEV_DEPENDENCIES);
 
         if (removed > 0) {
             log().debug("Removed {} dependencies", removed);
@@ -292,27 +268,22 @@ public class TaskUpdatePackages extends NodeUpdater {
             cleanUp();
         }
 
-        String oldHash = packageJson.getObject(VAADIN_DEP_KEY)
-                .getString(HASH_KEY);
+        String oldHash = packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
         String newHash = generatePackageJsonHash(packageJson);
         // update packageJson hash value, if no changes it will not be written
         packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
 
-        return added > 0 || removed > 0 || removedDev > 0
-                || !oldHash.equals(newHash);
+        return added > 0 || removed > 0 || removedDev > 0 || !oldHash.equals(newHash);
     }
 
-    private int cleanDependencies(List<String> dependencyCollection,
-            JsonObject packageJson, String dependencyKey) {
+    private int cleanDependencies(List<String> dependencyCollection, JsonObject packageJson, String dependencyKey) {
         int removed = 0;
 
         JsonObject dependencyObject = packageJson.getObject(dependencyKey);
-        JsonObject vaadinDependencyObject = packageJson
-                .getObject(VAADIN_DEP_KEY).getObject(dependencyKey);
+        JsonObject vaadinDependencyObject = packageJson.getObject(VAADIN_DEP_KEY).getObject(dependencyKey);
         if (dependencyObject != null) {
             for (String key : dependencyObject.keys()) {
-                if (!dependencyCollection.contains(key)
-                        && vaadinDependencyObject.hasKey(key)) {
+                if (!dependencyCollection.contains(key) && vaadinDependencyObject.hasKey(key)) {
                     dependencyObject.remove(key);
                     vaadinDependencyObject.remove(key);
                     log().debug("Removed \"{}\".", key);
@@ -323,17 +294,15 @@ public class TaskUpdatePackages extends NodeUpdater {
         return removed;
     }
 
-    protected static boolean pinPlatformDependency(JsonObject packageJson,
-            JsonObject platformPinnedVersions, String pkg) {
-        final FrontendVersion platformPinnedVersion = FrontendUtils
-                .getPackageVersionFromJson(platformPinnedVersions, pkg,
-                        "vaadin_dependencies.json");
+    protected static boolean pinPlatformDependency(JsonObject packageJson, JsonObject platformPinnedVersions,
+            String pkg) {
+        final FrontendVersion platformPinnedVersion = FrontendUtils.getPackageVersionFromJson(platformPinnedVersions,
+                pkg, "vaadin_dependencies.json");
         if (platformPinnedVersion == null) {
             return false;
         }
 
-        final JsonObject vaadinDeps = packageJson.getObject(VAADIN_DEP_KEY)
-                .getObject(DEPENDENCIES);
+        final JsonObject vaadinDeps = packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
         final JsonObject packageJsonDeps = packageJson.getObject(DEPENDENCIES);
         // packages exist at this point
         assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
@@ -342,8 +311,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         FrontendVersion packageJsonVersion = null, vaadinDepsVersion = null;
         try {
             if (packageJsonDeps.hasKey(pkg)) {
-                packageJsonVersion = new FrontendVersion(
-                        packageJsonDeps.getString(pkg));
+                packageJsonVersion = new FrontendVersion(packageJsonDeps.getString(pkg));
             }
         } catch (NumberFormatException e) {
             // Overridden to a file link in package.json, do not change
@@ -351,8 +319,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         try {
             if (vaadinDeps.hasKey(pkg)) {
-                vaadinDepsVersion = new FrontendVersion(
-                        vaadinDeps.getString(pkg));
+                vaadinDepsVersion = new FrontendVersion(vaadinDeps.getString(pkg));
             }
         } catch (NumberFormatException e) {
             // Vaadin defines a non-numeric version. Not sure what the case
@@ -365,8 +332,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             return false;
         }
 
-        if (platformPinnedVersion.equals(packageJsonVersion)
-                && platformPinnedVersion.equals(vaadinDepsVersion)) {
+        if (platformPinnedVersion.equals(packageJsonVersion) && platformPinnedVersion.equals(vaadinDepsVersion)) {
             return false;
         }
 
@@ -376,10 +342,9 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Compares current platform version with the one last recorded as installed
-     * in node_modules/.vaadin/vaadin_version. In case there was no existing
-     * platform version recorder and node_modules exists, then platform is
-     * considered updated.
+     * Compares current platform version with the one last recorded as installed in node_modules/.vaadin/vaadin_version.
+     * In case there was no existing platform version recorder and node_modules exists, then platform is considered
+     * updated.
      *
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
@@ -389,45 +354,37 @@ public class TaskUpdatePackages extends NodeUpdater {
         // if no record of current version is present, version is not
         // considered updated
         Optional<String> platformVersion = getVaadinVersion(finder);
-        if (platformVersion.isPresent()
-                && options.getNodeModulesFolder().exists()) {
+        if (platformVersion.isPresent() && options.getNodeModulesFolder().exists()) {
             JsonObject vaadinJsonContents = getVaadinJsonContents();
             // If no record of previous version, version is considered updated
             if (!vaadinJsonContents.hasKey(NodeUpdater.VAADIN_VERSION)) {
                 return true;
             }
-            return !Objects.equals(
-                    vaadinJsonContents.getString(NodeUpdater.VAADIN_VERSION),
-                    platformVersion.get());
+            return !Objects.equals(vaadinJsonContents.getString(NodeUpdater.VAADIN_VERSION), platformVersion.get());
         }
         return false;
     }
 
     static Optional<String> getVaadinVersion(ClassFinder finder) {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+        URL coreVersionsResource = finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
 
         if (coreVersionsResource == null) {
             return Optional.empty();
         }
-        try (InputStream vaadinVersionsStream = coreVersionsResource
-                .openStream()) {
-            final JsonObject versionsJson = Json.parse(IOUtils
-                    .toString(vaadinVersionsStream, StandardCharsets.UTF_8));
+        try (InputStream vaadinVersionsStream = coreVersionsResource.openStream()) {
+            final JsonObject versionsJson = Json.parse(IOUtils.toString(vaadinVersionsStream, StandardCharsets.UTF_8));
             if (versionsJson.hasKey("platform")) {
                 return Optional.of(versionsJson.getString("platform"));
             }
         } catch (Exception e) {
-            LoggerFactory.getLogger(Platform.class)
-                    .error("Unable to determine version information", e);
+            LoggerFactory.getLogger(Platform.class).error("Unable to determine version information", e);
         }
 
         return Optional.empty();
     }
 
     /**
-     * Cleans up any previous version properties from the packageJson object if
-     * present.
+     * Cleans up any previous version properties from the packageJson object if present.
      *
      * @param packageJson
      *            JsonObject of current package.json contents
@@ -435,8 +392,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @throws IOException
      *             thrown if removal of package-lock.json fails
      */
-    private int removeLegacyProperties(JsonObject packageJson)
-            throws IOException {
+    private int removeLegacyProperties(JsonObject packageJson) throws IOException {
         int result = 0;
         /*
          * In modern Flow versions "@vaadin/flow-deps" should not exist.
@@ -445,21 +401,18 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject object = packageJson.getObject(DEPENDENCIES);
             if (object.hasKey(DEP_NAME_FLOW_DEPS)) {
                 object.remove(DEP_NAME_FLOW_DEPS);
-                log().debug("Removed \"{}\" as it's not generated anymore.",
-                        DEP_NAME_FLOW_DEPS);
+                log().debug("Removed \"{}\" as it's not generated anymore.", DEP_NAME_FLOW_DEPS);
                 result++;
             }
             if (object.hasKey(DEP_NAME_FLOW_JARS)) {
                 object.remove(DEP_NAME_FLOW_JARS);
-                log().debug("Removed \"{}\" as it's not needed anymore.",
-                        DEP_NAME_FLOW_JARS);
+                log().debug("Removed \"{}\" as it's not needed anymore.", DEP_NAME_FLOW_JARS);
                 result++;
             }
         }
         if (packageJson.hasKey(VAADIN_APP_PACKAGE_HASH)) {
             packageJson.remove(VAADIN_APP_PACKAGE_HASH);
-            log().debug("Removed \"{}\" as it's not used.",
-                    VAADIN_APP_PACKAGE_HASH);
+            log().debug("Removed \"{}\" as it's not used.", VAADIN_APP_PACKAGE_HASH);
             result++;
         }
         if (!enablePnpm) {
@@ -488,12 +441,11 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Generate hash for package dependencies. This will consider both
-     * 'dependencies' and 'devDependencies' of the packageJson format
-     * JsonObject.
+     * Generate hash for package dependencies. This will consider both 'dependencies' and 'devDependencies' of the
+     * packageJson format JsonObject.
      * <p>
-     * Dependencies will be sorted by key so that different runs for same
-     * dependencies in different order will not trigger npm install.
+     * Dependencies will be sorted by key so that different runs for same dependencies in different order will not
+     * trigger npm install.
      *
      * @param packageJson
      *            JsonObject built in the same format as package.json
@@ -504,10 +456,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         if (packageJson.hasKey(DEPENDENCIES)) {
             JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
             hashContent.append("\"dependencies\": {");
-            String sortedDependencies = Arrays.stream(dependencies.keys())
-                    .sorted(String::compareToIgnoreCase)
-                    .map(key -> String.format("\"%s\": \"%s\"", key,
-                            dependencies.getString(key)))
+            String sortedDependencies = Arrays.stream(dependencies.keys()).sorted(String::compareToIgnoreCase)
+                    .map(key -> String.format("\"%s\": \"%s\"", key, dependencies.getString(key)))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDependencies);
             hashContent.append("}");
@@ -516,13 +466,10 @@ public class TaskUpdatePackages extends NodeUpdater {
             if (hashContent.length() > 0) {
                 hashContent.append(",\n");
             }
-            JsonObject devDependencies = packageJson
-                    .getObject(DEV_DEPENDENCIES);
+            JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
             hashContent.append("\"devDependencies\": {");
-            String sortedDevDependencies = Arrays.stream(devDependencies.keys())
-                    .sorted(String::compareToIgnoreCase)
-                    .map(key -> String.format("\"%s\": \"%s\"", key,
-                            devDependencies.getString(key)))
+            String sortedDevDependencies = Arrays.stream(devDependencies.keys()).sorted(String::compareToIgnoreCase)
+                    .map(key -> String.format("\"%s\": \"%s\"", key, devDependencies.getString(key)))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");

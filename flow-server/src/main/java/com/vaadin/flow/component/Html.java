@@ -31,24 +31,20 @@ import com.vaadin.flow.dom.Element;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * A component which encapsulates a given HTML fragment with a single root
- * element.
+ * A component which encapsulates a given HTML fragment with a single root element.
  * <p>
- * Note that it is the developer's responsibility to sanitize and remove any
- * dangerous parts of the HTML before sending it to the user through this
- * component. Passing raw input data to the user will possibly lead to
- * cross-site scripting attacks.
+ * Note that it is the developer's responsibility to sanitize and remove any dangerous parts of the HTML before sending
+ * it to the user through this component. Passing raw input data to the user will possibly lead to cross-site scripting
+ * attacks.
  * <p>
- * This component does not expand the HTML fragment into a server side DOM tree
- * so you cannot traverse or modify the HTML on the server. The root element can
- * be accessed through {@link #getElement()} and the inner HTML through
+ * This component does not expand the HTML fragment into a server side DOM tree so you cannot traverse or modify the
+ * HTML on the server. The root element can be accessed through {@link #getElement()} and the inner HTML through
  * {@link #getInnerHtml()}.
  * <p>
- * The HTML fragment cannot be changed after creation. You should create a new
- * instance to encapsulate another fragment.
+ * The HTML fragment cannot be changed after creation. You should create a new instance to encapsulate another fragment.
  * <p>
- * Note that this component doesn't support svg element as a root node. See
- * separate {@link Svg} component if you want to display SVG images.
+ * Note that this component doesn't support svg element as a root node. See separate {@link Svg} component if you want
+ * to display SVG images.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -59,14 +55,12 @@ public class Html extends Component {
             .propertyWithDefault("innerHTML", "");
 
     /**
-     * Creates an instance based on the HTML fragment read from the stream. The
-     * fragment must have exactly one root element.
+     * Creates an instance based on the HTML fragment read from the stream. The fragment must have exactly one root
+     * element.
      * <p>
-     * A best effort is done to parse broken HTML but no guarantees are given
-     * for how invalid HTML is handled.
+     * A best effort is done to parse broken HTML but no guarantees are given for how invalid HTML is handled.
      * <p>
-     * Any heading or trailing whitespace is removed while parsing but any
-     * whitespace inside the root tag is preserved.
+     * Any heading or trailing whitespace is removed while parsing but any whitespace inside the root tag is preserved.
      *
      * @param stream
      *            the input stream which provides the HTML in UTF-8
@@ -80,29 +74,22 @@ public class Html extends Component {
         }
         try {
             /*
-             * Cannot use any of the methods that accept a stream since they all
-             * parse as a document rather than as a body fragment. The logic for
-             * reading a stream into a String is the same that is used
-             * internally by JSoup if you strip away all the logic to guess an
-             * encoding in case one isn't defined.
+             * Cannot use any of the methods that accept a stream since they all parse as a document rather than as a
+             * body fragment. The logic for reading a stream into a String is the same that is used internally by JSoup
+             * if you strip away all the logic to guess an encoding in case one isn't defined.
              */
-            setOuterHtml(UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
-                    .toString(), false);
+            setOuterHtml(UTF_8.decode(DataUtil.readToByteBuffer(stream, 0)).toString(), false);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read HTML from stream",
-                    e);
+            throw new UncheckedIOException("Unable to read HTML from stream", e);
         }
     }
 
     /**
-     * Creates an instance based on the given HTML fragment. The fragment must
-     * have exactly one root element.
+     * Creates an instance based on the given HTML fragment. The fragment must have exactly one root element.
      * <p>
-     * A best effort is done to parse broken HTML but no guarantees are given
-     * for how invalid HTML is handled.
+     * A best effort is done to parse broken HTML but no guarantees are given for how invalid HTML is handled.
      * <p>
-     * Any heading or trailing whitespace is removed while parsing but any
-     * whitespace inside the root tag is preserved.
+     * Any heading or trailing whitespace is removed while parsing but any whitespace inside the root tag is preserved.
      *
      * @param outerHtml
      *            the HTML to wrap
@@ -117,14 +104,12 @@ public class Html extends Component {
     }
 
     /**
-     * Sets the content based on the given HTML fragment. The fragment must have
-     * exactly one root element, which matches the existing one.
+     * Sets the content based on the given HTML fragment. The fragment must have exactly one root element, which matches
+     * the existing one.
      * <p>
-     * A best effort is done to parse broken HTML but no guarantees are given
-     * for how invalid HTML is handled.
+     * A best effort is done to parse broken HTML but no guarantees are given for how invalid HTML is handled.
      * <p>
-     * Any heading or trailing whitespace is removed while parsing but any
-     * whitespace inside the root tag is preserved.
+     * Any heading or trailing whitespace is removed while parsing but any whitespace inside the root tag is preserved.
      *
      * @param html
      *            the HTML to wrap
@@ -140,8 +125,7 @@ public class Html extends Component {
             String message = "HTML must contain exactly one top level element (ignoring text nodes). Found "
                     + nrChildren;
             if (nrChildren > 1) {
-                String tagNames = doc.body().children().stream()
-                        .map(org.jsoup.nodes.Element::tagName)
+                String tagNames = doc.body().children().stream().map(org.jsoup.nodes.Element::tagName)
                         .collect(Collectors.joining(", "));
                 message += " elements with the tag names " + tagNames;
             }
@@ -158,8 +142,7 @@ public class Html extends Component {
 
         if (update && !root.tagName().equals(getElement().getTag())) {
             throw new IllegalStateException(
-                    "Existing root tag '" + getElement().getTag()
-                            + "' can't be changed to '" + root.tagName() + "'");
+                    "Existing root tag '" + getElement().getTag() + "' can't be changed to '" + root.tagName() + "'");
         }
 
         doc.outputSettings().prettyPrint(false);

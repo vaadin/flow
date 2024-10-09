@@ -29,8 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tracks the output of a dev server and scans for given success and/or failure
- * patterns while copying the dev server output to standard output.
+ * Tracks the output of a dev server and scans for given success and/or failure patterns while copying the dev server
+ * output to standard output.
  * <p>
  * Triggers an event whenever a success or failure pattern is found on a row.
  */
@@ -46,8 +46,7 @@ public class DevServerOutputTracker {
         private boolean started = false;
         private RestartMonitor restartMonitor;
 
-        private Finder(InputStream inputStream, Pattern success,
-                Pattern failure, Consumer<Result> onMatch) {
+        private Finder(InputStream inputStream, Pattern success, Pattern failure, Consumer<Result> onMatch) {
             this.inputStream = inputStream;
             this.success = success;
             this.failure = failure;
@@ -56,8 +55,7 @@ public class DevServerOutputTracker {
 
         @Override
         public void run() {
-            InputStreamReader reader = new InputStreamReader(inputStream,
-                    StandardCharsets.UTF_8);
+            InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
             try {
                 readLinesLoop(reader);
             } catch (IOException e) {
@@ -66,11 +64,9 @@ public class DevServerOutputTracker {
             }
 
             /*
-             * Process closed stream, means that it exited. If the server has
-             * never started, there was most likely a problem with the
-             * configuration or similar. We need to show that to the user. If
-             * the server has already started, this is probably about stopping
-             * the server.
+             * Process closed stream, means that it exited. If the server has never started, there was most likely a
+             * problem with the configuration or similar. We need to show that to the user. If the server has already
+             * started, this is probably about stopping the server.
              */
             if (!started) {
                 onMatch.accept(new Result(false, cumulativeOutput.toString()));
@@ -79,8 +75,7 @@ public class DevServerOutputTracker {
             }
         }
 
-        private void readLinesLoop(InputStreamReader reader)
-                throws IOException {
+        private void readLinesLoop(InputStreamReader reader) throws IOException {
             StringBuilder line = new StringBuilder();
             for (int i; (i = reader.read()) >= 0;) {
                 char ch = (char) i;
@@ -94,8 +89,7 @@ public class DevServerOutputTracker {
 
         private void processLine(String line) {
             // remove color escape codes
-            String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)",
-                    "");
+            String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
 
             // Remove newline and timestamp as logger will add it
             String logLine = cleanLine;
@@ -108,9 +102,7 @@ public class DevServerOutputTracker {
                 // Use a separate logger so these can be enabled like the
                 // similar Spring Boot
                 // log rows
-                LoggerFactory.getLogger(
-                        DevServerOutputTracker.class.getName() + ".Reloader")
-                        .debug(logLine);
+                LoggerFactory.getLogger(DevServerOutputTracker.class.getName() + ".Reloader").debug(logLine);
             } else if (logLine.startsWith("[vite] page reload")) {
                 // This is partly the same as "Recompiling because" but can
                 // batch some changes
@@ -131,8 +123,7 @@ public class DevServerOutputTracker {
 
             // We found the success or failure pattern in stream
             if (succeed || failed) {
-                onMatch.accept(
-                        new Result(succeed, cumulativeOutput.toString()));
+                onMatch.accept(new Result(succeed, cumulativeOutput.toString()));
                 if (succeed) {
                     started = true;
                 }
@@ -188,8 +179,7 @@ public class DevServerOutputTracker {
     private Finder finder;
 
     /**
-     * Creates a new finder that scans for the given success and/or failure
-     * pattern.
+     * Creates a new finder that scans for the given success and/or failure pattern.
      *
      * @param inputStream
      *            the stream to scan
@@ -200,8 +190,7 @@ public class DevServerOutputTracker {
      * @param onMatch
      *            callback triggered when either success or failure is found
      */
-    public DevServerOutputTracker(InputStream inputStream, Pattern success,
-            Pattern failure, Consumer<Result> onMatch) {
+    public DevServerOutputTracker(InputStream inputStream, Pattern success, Pattern failure, Consumer<Result> onMatch) {
         monitor = new CountDownLatch(1);
         finder = new Finder(inputStream, success, failure, result -> {
             if (result != null) {
@@ -212,45 +201,33 @@ public class DevServerOutputTracker {
     }
 
     /**
-     * Gets a guard object that blocks the current request to dev-server when
-     * dev-server is performing a restart operation.
+     * Gets a guard object that blocks the current request to dev-server when dev-server is performing a restart
+     * operation.
      *
      * @param restartingPattern
-     *            a pattern to match with the output to determine that the
-     *            server is restarting.
+     *            a pattern to match with the output to determine that the server is restarting.
      * @param restartedPattern
-     *            a pattern to match with the output to determine that the
-     *            server has been restarted.
-     * @return a {@link Runnable} instance that blocks execution during dev
-     *         server restarts, never {@literal null}.
+     *            a pattern to match with the output to determine that the server has been restarted.
+     * @return a {@link Runnable} instance that blocks execution during dev server restarts, never {@literal null}.
      */
-    public Runnable serverRestartGuard(Pattern restartingPattern,
-            Pattern restartedPattern) {
-        Objects.requireNonNull(restartingPattern,
-                "Restarting pattern is required");
-        Objects.requireNonNull(restartedPattern,
-                "Restarted pattern is required");
-        finder.restartMonitor = new RestartMonitor(restartingPattern,
-                restartedPattern);
+    public Runnable serverRestartGuard(Pattern restartingPattern, Pattern restartedPattern) {
+        Objects.requireNonNull(restartingPattern, "Restarting pattern is required");
+        Objects.requireNonNull(restartedPattern, "Restarted pattern is required");
+        finder.restartMonitor = new RestartMonitor(restartingPattern, restartedPattern);
         return finder.restartMonitor::waitForServerReady;
     }
 
     /**
-     * Gets the server restart guard object associated with the currently
-     * running output tracker thread.
+     * Gets the server restart guard object associated with the currently running output tracker thread.
      *
-     * This method should be called to obtain the guard object when reusing an
-     * existing dev-server instance.
+     * This method should be called to obtain the guard object when reusing an existing dev-server instance.
      *
-     * @return a {@link Runnable} instance that blocks execution during
-     *         dev-server restarts, or {@literal null} if output tracker thread
-     *         is not active.
+     * @return a {@link Runnable} instance that blocks execution during dev-server restarts, or {@literal null} if
+     *         output tracker thread is not active.
      */
     static Runnable activeServerRestartGuard() {
-        return Thread.getAllStackTraces().keySet().stream()
-                .filter(t -> FinderThread.class.equals(t.getClass()))
-                .findFirst().map(FinderThread.class::cast)
-                .map(t -> t.finder.restartMonitor)
+        return Thread.getAllStackTraces().keySet().stream().filter(t -> FinderThread.class.equals(t.getClass()))
+                .findFirst().map(FinderThread.class::cast).map(t -> t.finder.restartMonitor)
                 .<Runnable> map(m -> m::waitForServerReady).orElse(null);
     }
 
@@ -269,11 +246,9 @@ public class DevServerOutputTracker {
      *            the maximum number of seconds to wait
      * @throws InterruptedException
      *             if the finder thread is interrupted
-     * @return {@code true} if a match was found, {@code false} if a timeout
-     *         occurred
+     * @return {@code true} if a match was found, {@code false} if a timeout occurred
      */
-    public boolean awaitFirstMatch(int timeoutInSeconds)
-            throws InterruptedException {
+    public boolean awaitFirstMatch(int timeoutInSeconds) throws InterruptedException {
         return monitor.await(timeoutInSeconds, TimeUnit.SECONDS);
     }
 

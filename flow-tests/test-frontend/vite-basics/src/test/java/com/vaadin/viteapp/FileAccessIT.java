@@ -15,23 +15,20 @@ public class FileAccessIT extends ViteDevModeIT {
     @Test
     public void expectedFoldersAccessible() throws Exception {
         /*
-         * This just tests a few sample folders to see that there is not a
-         * fundamental problem
+         * This just tests a few sample folders to see that there is not a fundamental problem
          */
         assertAllowed(FrontendUtils.DEFAULT_FRONTEND_DIR + "jsonloader.js");
     }
 
     private void assertAllowed(String fileInProject) throws IOException {
-        String result = IOUtils.toString(getFsUrl(fileInProject),
-                StandardCharsets.UTF_8);
+        String result = IOUtils.toString(getFsUrl(fileInProject), StandardCharsets.UTF_8);
         Assert.assertFalse(result.isEmpty());
     }
 
     @Test
     public void mostFoldersNotAccessible() throws Exception {
         /*
-         * This just tests a few sample folders to see that there is not a
-         * fundamental problem
+         * This just tests a few sample folders to see that there is not a fundamental problem
          */
         assertDenied("target/vaadin-dev-server-settings.json");
         assertDenied("pom.xml");
@@ -44,12 +41,9 @@ public class FileAccessIT extends ViteDevModeIT {
             IOUtils.toString(url, StandardCharsets.UTF_8);
             Assert.fail("Request for " + url + " should not succeed");
         } catch (IOException e) {
-            Assert.assertTrue(
-                    "Request for " + fileInProject + " using URL " + url
-                            + " should have failed but returned '"
-                            + e.getMessage() + "'",
-                    e.getMessage().contains(
-                            "Server returned HTTP response code: 403"));
+            Assert.assertTrue("Request for " + fileInProject + " using URL " + url
+                    + " should have failed but returned '" + e.getMessage() + "'",
+                    e.getMessage().contains("Server returned HTTP response code: 403"));
         }
 
     }
@@ -58,16 +52,14 @@ public class FileAccessIT extends ViteDevModeIT {
         // For Windows, the URLs should be like
         // http://localhost:8888/VAADIN/@fs/C:/Code/flow/flow-tests/test-frontend/vite-basics/target/vaadin-dev-server-settings.json
 
-        String currentPath = new java.io.File(".").getCanonicalPath()
-                .replace("\\", "/");
+        String currentPath = new java.io.File(".").getCanonicalPath().replace("\\", "/");
         if (!currentPath.startsWith("/")) {
             currentPath = "/" + currentPath;
         }
         if (currentPath.endsWith("/")) {
             currentPath = currentPath.substring(0, currentPath.length() - 1);
         }
-        return new URL("http://localhost:8888/VAADIN/@fs" + currentPath + "/"
-                + fileInProject);
+        return new URL("http://localhost:8888/VAADIN/@fs" + currentPath + "/" + fileInProject);
     }
 
 }

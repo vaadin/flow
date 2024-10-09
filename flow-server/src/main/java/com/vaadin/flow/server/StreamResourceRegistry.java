@@ -42,8 +42,7 @@ public class StreamResourceRegistry implements Serializable {
 
         private final URI uri;
 
-        private Registration(StreamResourceRegistry registry, String id,
-                String name) {
+        private Registration(StreamResourceRegistry registry, String id, String name) {
             this.registry = registry;
             uri = getURI(name, id);
         }
@@ -60,8 +59,7 @@ public class StreamResourceRegistry implements Serializable {
 
         @Override
         public AbstractStreamResource getResource() {
-            Optional<AbstractStreamResource> resource = registry
-                    .getResource(getResourceUri());
+            Optional<AbstractStreamResource> resource = registry.getResource(getResourceUri());
             return resource.isPresent() ? resource.get() : null;
         }
     }
@@ -77,26 +75,20 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
-     * Registers a stream resource in the session and returns registration
-     * handler.
+     * Registers a stream resource in the session and returns registration handler.
      * <p>
-     * You can get resource URI to use it in the application (e.g. set an
-     * attribute value or property value) via the registration handler. The
-     * registration handler should be used to unregister resource when it's not
-     * needed anymore. Note that it is the developer's responsibility to
-     * unregister resources. Otherwise resources won't be garbage collected
-     * until the session expires which causes memory leak.
+     * You can get resource URI to use it in the application (e.g. set an attribute value or property value) via the
+     * registration handler. The registration handler should be used to unregister resource when it's not needed
+     * anymore. Note that it is the developer's responsibility to unregister resources. Otherwise resources won't be
+     * garbage collected until the session expires which causes memory leak.
      *
      * @param resource
      *            stream resource to register
      * @return registration handler
      */
-    public StreamRegistration registerResource(
-            AbstractStreamResource resource) {
-        session.checkHasLock(
-                "Session needs to be locked when registering stream resources.");
-        StreamRegistration registration = new Registration(this,
-                resource.getId(), resource.getName());
+    public StreamRegistration registerResource(AbstractStreamResource resource) {
+        session.checkHasLock("Session needs to be locked when registering stream resources.");
+        StreamRegistration registration = new Registration(this, resource.getId(), resource.getName());
         res.put(registration.getResourceUri(), resource);
         return registration;
     }
@@ -114,8 +106,7 @@ public class StreamResourceRegistry implements Serializable {
     /**
      * Gets the URI for the given {@code resource}.
      * <p>
-     * The URI won't be handled (and won't work) if {@code resource} is not
-     * registered in the session.
+     * The URI won't be handled (and won't work) if {@code resource} is not registered in the session.
      *
      * @see #registerResource(AbstractStreamResource)
      *
@@ -128,8 +119,7 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
-     * Returns the URI path to the given resource in the context of this
-     * registry (relevant in portlet context).
+     * Returns the URI path to the given resource in the context of this registry (relevant in portlet context).
      *
      * @param resource
      *            stream resource
@@ -155,8 +145,7 @@ public class StreamResourceRegistry implements Serializable {
      *
      * @param uri
      *            resource URI
-     * @return an optional resource, or an empty optional if no resource has
-     *         been registered with this URI
+     * @return an optional resource, or an empty optional if no resource has been registered with this URI
      */
     public Optional<AbstractStreamResource> getResource(URI uri) {
         session.checkHasLock();
@@ -172,15 +161,12 @@ public class StreamResourceRegistry implements Serializable {
      *            resource URI
      * @param <T>
      *            resource extending AbstractStreamResource
-     * @return an optional resource, or an empty optional if no resource has
-     *         been registered with this URI
+     * @return an optional resource, or an empty optional if no resource has been registered with this URI
      */
-    public <T extends AbstractStreamResource> Optional<T> getResource(
-            Class<T> type, URI uri) {
+    public <T extends AbstractStreamResource> Optional<T> getResource(Class<T> type, URI uri) {
         session.checkHasLock();
         AbstractStreamResource abstractStreamResource = res.get(uri);
-        if (abstractStreamResource != null
-                && type.isAssignableFrom(abstractStreamResource.getClass())) {
+        if (abstractStreamResource != null && type.isAssignableFrom(abstractStreamResource.getClass())) {
             return Optional.of((T) abstractStreamResource);
         }
         return Optional.empty();

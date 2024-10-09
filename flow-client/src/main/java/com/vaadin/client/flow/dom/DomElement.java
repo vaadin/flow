@@ -24,14 +24,12 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * Element that has all methods from
- * <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element
- * API</a> that have been overridden in
- * <a href="https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer
- * DOM module</a>.
+ * Element that has all methods from <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element API</a>
+ * that have been overridden in <a href="https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer DOM
+ * module</a>.
  * <p>
- * No instances of this class should be created directly, but instead
- * {@link DomApi#wrap(elemental.dom.Node)} should be used
+ * No instances of this class should be created directly, but instead {@link DomApi#wrap(elemental.dom.Node)} should be
+ * used
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -40,9 +38,7 @@ import jsinterop.annotations.JsType;
 public interface DomElement extends DomNode {
 
     /**
-     * A
-     * <a href="https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList">
-     * DOMTokenList</a> java representation.
+     * A <a href="https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList"> DOMTokenList</a> java representation.
      */
     @JsType(isNative = true)
     interface DomTokenList {
@@ -68,8 +64,7 @@ public interface DomElement extends DomNode {
          *
          * @param token
          *            the token to check for
-         * @return <code>true</code> if token was found, <code>false</code> if
-         *         not
+         * @return <code>true</code> if token was found, <code>false</code> if not
          */
         boolean contains(String token);
 
@@ -90,14 +85,13 @@ public interface DomElement extends DomNode {
         void remove(String token);
 
         /**
-         * Removes <code>token</code> from string and returns <code>false</code>
-         * . If <code>token</code> doesn't exist it's added and the function
-         * returns <code>true</code>.
+         * Removes <code>token</code> from string and returns <code>false</code> . If <code>token</code> doesn't exist
+         * it's added and the function returns <code>true</code>.
          *
          * @param token
          *            the token to toggle
-         * @return <code>true</code> if token did not exist and was added,
-         *         <code>false</code> if token existed and was removed
+         * @return <code>true</code> if token did not exist and was added, <code>false</code> if token existed and was
+         *         removed
          */
         boolean toggle(String token);
     }
@@ -144,8 +138,7 @@ public interface DomElement extends DomNode {
     void setInnerHTML(String innerHTML);
 
     /**
-     * Returns the <code>children</code> property containing all child elements
-     * of the element, as a live collection.
+     * Returns the <code>children</code> property containing all child elements of the element, as a live collection.
      *
      * @return a collection of all child elements
      */
@@ -153,8 +146,7 @@ public interface DomElement extends DomNode {
     HTMLCollection getChildren();
 
     /**
-     * Returns the first <code>Node</code> which matches the specified selector
-     * string relative to the element.
+     * Returns the first <code>Node</code> which matches the specified selector string relative to the element.
      *
      * @param selectors
      *            a group of selectors to match on
@@ -163,15 +155,14 @@ public interface DomElement extends DomNode {
     Element querySelector(String selectors);
 
     /**
-     * Returns a non-live <code>NodeList</code> of all elements descended from
-     * this element and match the given group of CSS selectors.
+     * Returns a non-live <code>NodeList</code> of all elements descended from this element and match the given group of
+     * CSS selectors.
      * <p>
-     * NOTE: returns an array since that is what the Polymer.dom API does, and
-     * luckily native NodeList items can be accessed array like with
-     * <code>list[index].</code>
+     * NOTE: returns an array since that is what the Polymer.dom API does, and luckily native NodeList items can be
+     * accessed array like with <code>list[index].</code>
      * <p>
-     * This means that only {@link JsArray#get(int)} and
-     * {@link JsArray#length()} methods can be used from the returned "array".
+     * This means that only {@link JsArray#get(int)} and {@link JsArray#length()} methods can be used from the returned
+     * "array".
      *
      * @param selectors
      *            a group of selectors to match on

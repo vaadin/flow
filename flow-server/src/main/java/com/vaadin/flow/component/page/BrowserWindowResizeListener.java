@@ -18,8 +18,7 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 
 /**
- * Listener that gets notified when the size of the browser window containing
- * the uI has changed.
+ * Listener that gets notified when the size of the browser window containing the uI has changed.
  *
  * @author Vaadin Ltd
  * @since 1.2

@@ -27,15 +27,12 @@ import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
- * Component for an HTML element declared as a polymer component. The HTML
- * markup should be loaded using the {@link JsModule} annotation and the
- * components should be associated with the web component element using the
+ * Component for an HTML element declared as a polymer component. The HTML markup should be loaded using the
+ * {@link JsModule} annotation and the components should be associated with the web component element using the
  * {@link Tag @Tag} annotation.
  * <p>
- * You may use {@link Id} annotation inside your template class for a field to
- * reference an element inside your template via <b>id</b> attribute value. Note
- * that the injected element will have functional limitations on the server
- * side.
+ * You may use {@link Id} annotation inside your template class for a field to reference an element inside your template
+ * via <b>id</b> attribute value. Note that the injected element will have functional limitations on the server side.
  *
  * @param <M>
  *            a model class that will be used for template data propagation
@@ -46,25 +43,20 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
-public abstract class PolymerTemplate<M extends TemplateModel>
-        extends AbstractTemplate<M> implements Template {
+public abstract class PolymerTemplate<M extends TemplateModel> extends AbstractTemplate<M> implements Template {
 
-    private static final AtomicBoolean licenseChecked = new AtomicBoolean(
-            false);
+    private static final AtomicBoolean licenseChecked = new AtomicBoolean(false);
 
     static {
         UsageStatistics.markAsUsed("flow/PolymerTemplate", null);
     }
 
     /**
-     * Creates the component that is responsible for Polymer template
-     * functionality using the provided {@code parser}.
+     * Creates the component that is responsible for Polymer template functionality using the provided {@code parser}.
      *
      * @param parser
      *            a template parser
@@ -74,8 +66,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     }
 
     /**
-     * Creates the component that is responsible for Polymer template
-     * functionality using the provided {@code parser}.
+     * Creates the component that is responsible for Polymer template functionality using the provided {@code parser}.
      *
      * @param parser
      *            a template parser
@@ -84,8 +75,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      */
     protected PolymerTemplate(TemplateParser parser, VaadinService service) {
         if (service == null) {
-            throw new IllegalStateException(VaadinService.class.getSimpleName()
-                    + " instance is null. "
+            throw new IllegalStateException(VaadinService.class.getSimpleName() + " instance is null. "
                     + "It means that you are trying to create "
                     + "a component instance outside of servlet request thread "
                     + "which is not thread safe. Any component "
@@ -93,39 +83,32 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                     + "Call your logic inside the UI::access method.");
         }
 
-        if (!service.getDeploymentConfiguration().isProductionMode()
-                && !licenseChecked.get()) {
-            LicenseChecker.checkLicense("flow-polymer-template",
-                    Version.getFullVersion(), BuildType.DEVELOPMENT);
+        if (!service.getDeploymentConfiguration().isProductionMode() && !licenseChecked.get()) {
+            LicenseChecker.checkLicense("flow-polymer-template", Version.getFullVersion(), BuildType.DEVELOPMENT);
             licenseChecked.compareAndSet(false, true);
         }
 
-        TemplateInitializer templateInitializer = new TemplateInitializer(this,
-                parser, service);
+        TemplateInitializer templateInitializer = new TemplateInitializer(this, parser, service);
         templateInitializer.initChildElements();
 
-        Set<String> twoWayBindingPaths = templateInitializer
-                .getTwoWayBindingPaths();
+        Set<String> twoWayBindingPaths = templateInitializer.getTwoWayBindingPaths();
 
         initModel(twoWayBindingPaths);
     }
 
     /**
-     * Creates the component that is responsible for Polymer template
-     * functionality.
+     * Creates the component that is responsible for Polymer template functionality.
      */
     public PolymerTemplate() {
-        this(VaadinService.getCurrent().getInstantiator()
-                .getOrCreate(TemplateParser.TemplateParserFactory.class)
+        this(VaadinService.getCurrent().getInstantiator().getOrCreate(TemplateParser.TemplateParserFactory.class)
                 .createParser(), VaadinService.getCurrent());
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Please note that components defined using {@link Id @Id} are not child
-     * components since they are attached inside the Shadow DOM. Only components
-     * explicitly added through methods such as {@link HasComponents#add} or
+     * Please note that components defined using {@link Id @Id} are not child components since they are attached inside
+     * the Shadow DOM. Only components explicitly added through methods such as {@link HasComponents#add} or
      * {@link Element#appendChild(Element...)} are returned by this method.
      */
     @Override

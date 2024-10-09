@@ -46,8 +46,7 @@ public class WebComponentTest {
 
     @Before
     public void init() {
-        WebComponentBinding<Component> componentBinding = new WebComponentBinding<>(
-                mock(Component.class));
+        WebComponentBinding<Component> componentBinding = new WebComponentBinding<>(mock(Component.class));
         webComponent = new WebComponent<>(componentBinding, new Element("tag"));
     }
 
@@ -80,17 +79,14 @@ public class WebComponentTest {
     @Test
     public void setProperty_throwsOnUnknownProperty() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "WebComponent does not have a property identified");
+        exception.expectMessage("WebComponent does not have a property identified");
 
-        WebComponentBinding<Component> binding = new WebComponentBinding<>(
-                mock(Component.class));
+        WebComponentBinding<Component> binding = new WebComponentBinding<>(mock(Component.class));
 
-        WebComponent<Component> webComponent = new WebComponent<>(binding,
-                new Element("tag"));
+        WebComponent<Component> webComponent = new WebComponent<>(binding, new Element("tag"));
 
-        PropertyConfigurationImpl<Component, String> configuration = new PropertyConfigurationImpl<>(
-                Component.class, "property", String.class, "value");
+        PropertyConfigurationImpl<Component, String> configuration = new PropertyConfigurationImpl<>(Component.class,
+                "property", String.class, "value");
 
         webComponent.setProperty(configuration, "newValue");
     }
@@ -98,19 +94,16 @@ public class WebComponentTest {
     @Test
     public void setProperty_throwsWhenGivenWrongPropertyTypeAsParameter() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Property 'property' of type "
-                + "'java.lang.Integer' cannot be assigned value of type "
+        exception.expectMessage("Property 'property' of type " + "'java.lang.Integer' cannot be assigned value of type "
                 + "'java.lang.String'!");
 
         PropertyConfigurationImpl<Component, Integer> intConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "property", Integer.class, 0);
 
-        WebComponentBinding<Component> binding = new WebComponentBinding<>(
-                mock(Component.class));
+        WebComponentBinding<Component> binding = new WebComponentBinding<>(mock(Component.class));
         binding.bindProperty(intConfiguration, false, null);
 
-        WebComponent<Component> webComponent = new WebComponent<>(binding,
-                new Element("tag"));
+        WebComponent<Component> webComponent = new WebComponent<>(binding, new Element("tag"));
 
         PropertyConfigurationImpl<Component, String> stringConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "property", String.class, "value");
@@ -135,8 +128,7 @@ public class WebComponentTest {
                 Component.class, "json", JsonValue.class, Json.createNull());
 
         // binding
-        WebComponentBinding<Component> binding = new WebComponentBinding<>(
-                mock(Component.class));
+        WebComponentBinding<Component> binding = new WebComponentBinding<>(mock(Component.class));
         binding.bindProperty(intConfiguration, false, null);
         binding.bindProperty(doubleConfiguration, false, null);
         binding.bindProperty(stringConfiguration, false, null);
@@ -144,29 +136,23 @@ public class WebComponentTest {
         binding.bindProperty(jsonConfiguration, false, null);
 
         // test
-        WebComponent<Component> webComponent = new WebComponent<>(binding,
-                element);
+        WebComponent<Component> webComponent = new WebComponent<>(binding, element);
 
         webComponent.setProperty(intConfiguration, 1);
-        verify(element, Mockito.times(1)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+        verify(element, Mockito.times(1)).executeJs(ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 ArgumentMatchers.any());
         webComponent.setProperty(doubleConfiguration, 1.0);
-        verify(element, Mockito.times(2)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+        verify(element, Mockito.times(2)).executeJs(ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 ArgumentMatchers.any());
         webComponent.setProperty(stringConfiguration, "asd");
-        verify(element, Mockito.times(3)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+        verify(element, Mockito.times(3)).executeJs(ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 ArgumentMatchers.any());
         webComponent.setProperty(booleanConfiguration, true);
-        verify(element, Mockito.times(4)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+        verify(element, Mockito.times(4)).executeJs(ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 ArgumentMatchers.any());
         // JsonValue has a different number of arguments
         webComponent.setProperty(jsonConfiguration, Json.create(true));
-        verify(element, Mockito.times(5)).executeJs(
-                ArgumentMatchers.anyString(),
+        verify(element, Mockito.times(5)).executeJs(ArgumentMatchers.anyString(),
                 ArgumentMatchers.any(Serializable[].class));
     }
 }

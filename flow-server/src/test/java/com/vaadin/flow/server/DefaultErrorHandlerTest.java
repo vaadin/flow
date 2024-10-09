@@ -37,13 +37,9 @@ public class DefaultErrorHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        logger = Mockito
-                .spy(LoggerFactory.getLogger(DefaultErrorHandler.class));
+        logger = Mockito.spy(LoggerFactory.getLogger(DefaultErrorHandler.class));
         loggerFactory = Mockito.mockStatic(LoggerFactory.class);
-        loggerFactory
-                .when(() -> LoggerFactory
-                        .getLogger(DefaultErrorHandler.class.getName()))
-                .thenReturn(logger);
+        loggerFactory.when(() -> LoggerFactory.getLogger(DefaultErrorHandler.class.getName())).thenReturn(logger);
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
     }
 
@@ -54,9 +50,8 @@ public class DefaultErrorHandlerTest {
 
     @Test
     public void error_acceptedException_errorHandled() {
-        DefaultErrorHandler errorHandler = Mockito
-                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
-                        MalformedURLException.class.getName())));
+        DefaultErrorHandler errorHandler = Mockito.spy(
+                new DefaultErrorHandler(Set.of(IOException.class.getName(), MalformedURLException.class.getName())));
 
         Throwable throwable = new RuntimeException();
         errorHandler.error(new ErrorEvent(throwable));
@@ -70,23 +65,20 @@ public class DefaultErrorHandlerTest {
     @Test
     public void error_ignoredException_notHandled() {
         DefaultErrorHandler errorHandler = Mockito
-                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
-                        MalformedURLException.class.getName(),
+                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(), MalformedURLException.class.getName(),
                         "com.vaadin.flow.server.DefaultErrorHandlerTest$InnerException")));
 
         errorHandler.error(new ErrorEvent(new IOException()));
         errorHandler.error(new ErrorEvent(new MalformedURLException()));
         errorHandler.error(new ErrorEvent(new InnerException()));
 
-        Mockito.verify(logger, Mockito.never()).error(
-                ArgumentMatchers.anyString(),
+        Mockito.verify(logger, Mockito.never()).error(ArgumentMatchers.anyString(),
                 ArgumentMatchers.any(Throwable.class));
     }
 
     @Test
     public void error_subclassOfIgnoredException_errorHandled() {
-        DefaultErrorHandler errorHandler = Mockito.spy(
-                new DefaultErrorHandler(Set.of(IOException.class.getName())));
+        DefaultErrorHandler errorHandler = Mockito.spy(new DefaultErrorHandler(Set.of(IOException.class.getName())));
 
         Throwable throwable = new MalformedURLException();
         errorHandler.error(new ErrorEvent(throwable));
@@ -99,8 +91,7 @@ public class DefaultErrorHandlerTest {
         Mockito.doReturn(true).when(logger).isDebugEnabled();
 
         DefaultErrorHandler errorHandler = Mockito
-                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
-                        MalformedURLException.class.getName(),
+                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(), MalformedURLException.class.getName(),
                         "com.vaadin.flow.server.DefaultErrorHandlerTest$InnerException")));
 
         Throwable throwable = new RuntimeException();

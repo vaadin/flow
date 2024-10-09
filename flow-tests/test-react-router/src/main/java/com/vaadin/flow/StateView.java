@@ -28,19 +28,17 @@ public class StateView extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        Span enabled = new Span("React enabled: " + getUI().get().getSession()
-                .getService().getDeploymentConfiguration().isReactEnabled());
+        Span enabled = new Span("React enabled: "
+                + getUI().get().getSession().getService().getDeploymentConfiguration().isReactEnabled());
         enabled.setId(ENABLED_SPAN);
 
-        File baseDir = attachEvent.getSession().getConfiguration()
-                .getProjectFolder();
+        File baseDir = attachEvent.getSession().getConfiguration().getProjectFolder();
         if (baseDir == null) {
             baseDir = getBaseDir(attachEvent);
         }
         String packageJson = null;
         try {
-            packageJson = FileUtils.readFileToString(
-                    new File(baseDir, "package.json"), StandardCharsets.UTF_8);
+            packageJson = FileUtils.readFileToString(new File(baseDir, "package.json"), StandardCharsets.UTF_8);
             log.info("Read package.json from {}", baseDir.getPath());
         } catch (IOException e) {
             log.error("Could not read package.json", e);
@@ -55,8 +53,8 @@ public class StateView extends Div {
 
     private File getBaseDir(AttachEvent attachEvent) {
 
-        String folder = attachEvent.getSession().getConfiguration()
-                .getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
+        String folder = attachEvent.getSession().getConfiguration().getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null);
         if (folder != null) {
             return new File(folder);
         }
@@ -67,25 +65,19 @@ public class StateView extends Div {
         }
 
         /*
-         * Accept user.dir or cwd as a fallback only if the directory seems to
-         * be a Maven or Gradle project. Check to avoid cluttering server
-         * directories (see tickets #8249, #8403).
+         * Accept user.dir or cwd as a fallback only if the directory seems to be a Maven or Gradle project. Check to
+         * avoid cluttering server directories (see tickets #8249, #8403).
          */
         String baseDirCandidate = System.getProperty("user.dir", ".");
         Path path = Paths.get(baseDirCandidate);
         if (path.toFile().isDirectory()
-                && (path.resolve("pom.xml").toFile().exists()
-                        || path.resolve("build.gradle").toFile().exists())) {
+                && (path.resolve("pom.xml").toFile().exists() || path.resolve("build.gradle").toFile().exists())) {
             return path.toAbsolutePath().toFile();
         } else {
-            throw new IllegalStateException(String.format(
-                    "Failed to determine project directory for dev mode. "
-                            + "Directory '%s' does not look like a Maven or "
-                            + "Gradle project. Ensure that you have run the "
-                            + "prepare-frontend Maven goal, which generates "
-                            + "'flow-build-info.json', prior to deploying your "
-                            + "application",
-                    path.toString()));
+            throw new IllegalStateException(String.format("Failed to determine project directory for dev mode. "
+                    + "Directory '%s' does not look like a Maven or " + "Gradle project. Ensure that you have run the "
+                    + "prepare-frontend Maven goal, which generates "
+                    + "'flow-build-info.json', prior to deploying your " + "application", path.toString()));
         }
     }
 }

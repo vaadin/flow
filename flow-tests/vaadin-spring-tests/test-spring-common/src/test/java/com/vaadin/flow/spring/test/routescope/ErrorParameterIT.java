@@ -34,8 +34,7 @@ public class ErrorParameterIT extends AbstractSpringTest {
         open();
 
         Assert.assertTrue(isElementPresent(By.id("custom-exception-created")));
-        Assert.assertTrue(
-                isElementPresent(By.id("custom-exception-destroyed")));
+        Assert.assertTrue(isElementPresent(By.id("custom-exception-destroyed")));
 
         WebElement button = findElement(By.id("custom-exception-button"));
         String buttonId = button.getText();

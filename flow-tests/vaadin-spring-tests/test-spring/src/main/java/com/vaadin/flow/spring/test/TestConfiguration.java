@@ -23,8 +23,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 /**
- * Test configuration which holds the package: all UI classes in the dependent
- * module are inside this package.
+ * Test configuration which holds the package: all UI classes in the dependent module are inside this package.
  *
  * @author Vaadin Ltd
  *

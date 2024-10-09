@@ -41,10 +41,8 @@ public class RequestParametersView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        requestParamLabel.setText(event.getLocation().getQueryParameters()
-                .getParameters()
-                .getOrDefault(REQUEST_PARAM_NAME, Collections.emptyList())
-                .stream().findFirst().orElse(NO_INPUT_TEXT));
+        requestParamLabel.setText(event.getLocation().getQueryParameters().getParameters()
+                .getOrDefault(REQUEST_PARAM_NAME, Collections.emptyList()).stream().findFirst().orElse(NO_INPUT_TEXT));
 
     }
 }

@@ -40,12 +40,11 @@ import elemental.html.SpanElement;
 import elemental.html.StyleElement;
 
 /**
- * ResourceLoader lets you dynamically include external scripts and styles on
- * the page and lets you know when the resource has been loaded.
+ * ResourceLoader lets you dynamically include external scripts and styles on the page and lets you know when the
+ * resource has been loaded.
  *
- * You can also preload resources, allowing them to get cached by the browser
- * without being evaluated. This enables downloading multiple resources at once
- * while still controlling in which order e.g. scripts are executed.
+ * You can also preload resources, allowing them to get cached by the browser without being evaluated. This enables
+ * downloading multiple resources at once while still controlling in which order e.g. scripts are executed.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -62,8 +61,7 @@ public class ResourceLoader {
         public void onLoad(ResourceLoadEvent event) {
             // Chrome, IE, Edge all fire load for errors, must check
             // stylesheet data
-            if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE()
-                    || BrowserInfo.get().isEdge()) {
+            if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE() || BrowserInfo.get().isEdge()) {
                 int styleSheetLength = getStyleSheetLength(url);
                 // Error if there's an empty stylesheet
                 if (styleSheetLength == 0) {
@@ -139,8 +137,7 @@ public class ResourceLoader {
          * @param loader
          *            the resource loader that has loaded the resource
          * @param resourceData
-         *            the url or content of the loaded resource or the JS
-         *            expression that imports the resource
+         *            the url or content of the loaded resource or the JS expression that imports the resource
          */
         public ResourceLoadEvent(ResourceLoader loader, String resourceData) {
             this.loader = loader;
@@ -157,11 +154,9 @@ public class ResourceLoader {
         }
 
         /**
-         * Gets the absolute url or content of the loaded resource or the JS
-         * expression that imports the resource.
+         * Gets the absolute url or content of the loaded resource or the JS expression that imports the resource.
          *
-         * @return the absolute url or content of the loaded resource or the JS
-         *         expression that imports the resource
+         * @return the absolute url or content of the loaded resource or the JS expression that imports the resource
          */
         public String getResourceData() {
             return resourceData;
@@ -174,55 +169,46 @@ public class ResourceLoader {
      */
     public interface ResourceLoadListener {
         /**
-         * Notifies this ResourceLoadListener that a resource has been loaded.
-         * Some browsers do not support any way of detecting load errors. In
-         * these cases, onLoad will be called regardless of the status.
+         * Notifies this ResourceLoadListener that a resource has been loaded. Some browsers do not support any way of
+         * detecting load errors. In these cases, onLoad will be called regardless of the status.
          *
          * @see ResourceLoadEvent
          *
          * @param event
-         *            a resource load event with information about the loaded
-         *            resource
+         *            a resource load event with information about the loaded resource
          */
         void onLoad(ResourceLoadEvent event);
 
         /**
-         * Notifies this ResourceLoadListener that a resource could not be
-         * loaded, e.g. because the file could not be found or because the
-         * server did not respond. Some browsers do not support any way of
-         * detecting load errors. In these cases, onLoad will be called
-         * regardless of the status.
+         * Notifies this ResourceLoadListener that a resource could not be loaded, e.g. because the file could not be
+         * found or because the server did not respond. Some browsers do not support any way of detecting load errors.
+         * In these cases, onLoad will be called regardless of the status.
          *
          * @see ResourceLoadEvent
          *
          * @param event
-         *            a resource load event with information about the resource
-         *            that could not be loaded.
+         *            a resource load event with information about the resource that could not be loaded.
          */
         void onError(ResourceLoadEvent event);
     }
 
     private final JsSet<String> loadedResources = JsCollections.set();
 
-    private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections
-            .map();
+    private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections.map();
 
     private Registry registry;
 
-    private final boolean supportsHtmlWhenReady = GWT.isClient()
-            && supportsHtmlWhenReady();
+    private final boolean supportsHtmlWhenReady = GWT.isClient() && supportsHtmlWhenReady();
 
     /**
-     * Creates a new resource loader. You should not create you own resource
-     * loader, but instead use {@link Registry#getResourceLoader()} to get an
-     * instance.
+     * Creates a new resource loader. You should not create you own resource loader, but instead use
+     * {@link Registry#getResourceLoader()} to get an instance.
      *
      * @param registry
      *            the global registry
      * @param initFromDom
-     *            <code>true</code> if currently loaded resources should be
-     *            marked as loaded, <code>false</code> to ignore currently
-     *            loaded resources
+     *            <code>true</code> if currently loaded resources should be marked as loaded, <code>false</code> to
+     *            ignore currently loaded resources
      */
     public ResourceLoader(Registry registry, boolean initFromDom) {
         this.registry = registry;
@@ -232,8 +218,7 @@ public class ResourceLoader {
     }
 
     /**
-     * Populates the resource loader with the scripts currently added to the
-     * page.
+     * Populates the resource loader with the scripts currently added to the page.
      */
     private void initLoadedResourcesFromDom() {
         Document document = Browser.getDocument();
@@ -253,8 +238,7 @@ public class ResourceLoader {
             LinkElement linkElement = (LinkElement) links.item(i);
             String rel = linkElement.getRel();
             String href = linkElement.getHref();
-            if (("stylesheet".equalsIgnoreCase(rel)
-                    || "import".equalsIgnoreCase(rel)) && href != null
+            if (("stylesheet".equalsIgnoreCase(rel) || "import".equalsIgnoreCase(rel)) && href != null
                     && href.length() != 0) {
                 loadedResources.add(href);
             }
@@ -262,13 +246,11 @@ public class ResourceLoader {
     }
 
     /**
-     * Load a script and notify a listener when the script is loaded. Calling
-     * this method when the script is currently loading or already loaded
-     * doesn't cause the script to be loaded again, but the listener will still
-     * be notified when appropriate.
+     * Load a script and notify a listener when the script is loaded. Calling this method when the script is currently
+     * loading or already loaded doesn't cause the script to be loaded again, but the listener will still be notified
+     * when appropriate.
      * <p>
-     * Loads all dependencies with {@code async = false} and
-     * {@code defer = false} attribute values, see
+     * Loads all dependencies with {@code async = false} and {@code defer = false} attribute values, see
      * {@link #loadScript(String, ResourceLoadListener, boolean, boolean)}.
      *
      * @param scriptUrl
@@ -276,16 +258,14 @@ public class ResourceLoader {
      * @param resourceLoadListener
      *            the listener that will get notified when the script is loaded
      */
-    public void loadScript(final String scriptUrl,
-            final ResourceLoadListener resourceLoadListener) {
+    public void loadScript(final String scriptUrl, final ResourceLoadListener resourceLoadListener) {
         loadScript(scriptUrl, resourceLoadListener, false, false);
     }
 
     /**
-     * Load a script and notify a listener when the script is loaded. Calling
-     * this method when the script is currently loading or already loaded
-     * doesn't cause the script to be loaded again, but the listener will still
-     * be notified when appropriate.
+     * Load a script and notify a listener when the script is loaded. Calling this method when the script is currently
+     * loading or already loaded doesn't cause the script to be loaded again, but the listener will still be notified
+     * when appropriate.
      *
      *
      * @param scriptUrl
@@ -297,18 +277,15 @@ public class ResourceLoader {
      * @param defer
      *            What mode the script.defer attribute should be set to
      */
-    public void loadScript(final String scriptUrl,
-            final ResourceLoadListener resourceLoadListener, boolean async,
+    public void loadScript(final String scriptUrl, final ResourceLoadListener resourceLoadListener, boolean async,
             boolean defer) {
-        loadScript(scriptUrl, resourceLoadListener, async, defer,
-                "text/javascript");
+        loadScript(scriptUrl, resourceLoadListener, async, defer, "text/javascript");
     }
 
     /**
-     * Load a script with type module and notify a listener when the script is
-     * loaded. Calling this method when the script is currently loading or
-     * already loaded doesn't cause the script to be loaded again, but the
-     * listener will still be notified when appropriate.
+     * Load a script with type module and notify a listener when the script is loaded. Calling this method when the
+     * script is currently loading or already loaded doesn't cause the script to be loaded again, but the listener will
+     * still be notified when appropriate.
      *
      *
      * @param scriptUrl
@@ -320,15 +297,13 @@ public class ResourceLoader {
      * @param defer
      *            What mode the script.defer attribute should be set to
      */
-    public void loadJsModule(final String scriptUrl,
-            final ResourceLoadListener resourceLoadListener, boolean async,
+    public void loadJsModule(final String scriptUrl, final ResourceLoadListener resourceLoadListener, boolean async,
             boolean defer) {
         loadScript(scriptUrl, resourceLoadListener, async, defer, "module");
     }
 
-    private void loadScript(String scriptUrl,
-            ResourceLoadListener resourceLoadListener, boolean async,
-            boolean defer, String type) {
+    private void loadScript(String scriptUrl, ResourceLoadListener resourceLoadListener, boolean async, boolean defer,
+            String type) {
         final String url = WidgetUtil.getAbsoluteUrl(scriptUrl);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
@@ -339,8 +314,7 @@ public class ResourceLoader {
         }
 
         if (addListener(url, resourceLoadListener, loadListeners)) {
-            ScriptElement scriptTag = Browser.getDocument()
-                    .createScriptElement();
+            ScriptElement scriptTag = Browser.getDocument().createScriptElement();
             scriptTag.setSrc(url);
             scriptTag.setType(type);
             scriptTag.setAsync(async);
@@ -352,18 +326,16 @@ public class ResourceLoader {
     }
 
     /**
-     * Inlines a script and notify a listener when the script is loaded. Calling
-     * this method when the script is currently loading or already loaded
-     * doesn't cause the script to be loaded again, but the listener will still
-     * be notified when appropriate.
+     * Inlines a script and notify a listener when the script is loaded. Calling this method when the script is
+     * currently loading or already loaded doesn't cause the script to be loaded again, but the listener will still be
+     * notified when appropriate.
      *
      * @param scriptContents
      *            the script contents to inline
      * @param resourceLoadListener
      *            listener to notify when script is loaded
      */
-    public void inlineScript(String scriptContents,
-            final ResourceLoadListener resourceLoadListener) {
+    public void inlineScript(String scriptContents, final ResourceLoadListener resourceLoadListener) {
         ResourceLoadEvent event = new ResourceLoadEvent(this, scriptContents);
         if (loadedResources.has(scriptContents)) {
             if (resourceLoadListener != null) {
@@ -391,21 +363,18 @@ public class ResourceLoader {
     }
 
     /**
-     * Loads an HTML import and notify a listener when the HTML import is
-     * loaded. Calling this method when the HTML import is currently loading or
-     * already loaded doesn't cause the HTML import to be loaded again, but the
-     * listener will still be notified when appropriate.
+     * Loads an HTML import and notify a listener when the HTML import is loaded. Calling this method when the HTML
+     * import is currently loading or already loaded doesn't cause the HTML import to be loaded again, but the listener
+     * will still be notified when appropriate.
      *
      * @param htmlUrl
      *            url of HTML import to load
      * @param resourceLoadListener
      *            listener to notify when the HTML import is loaded
      * @param async
-     *            loads the import asynchronously, if {@code true},
-     *            synchronously otherwise
+     *            loads the import asynchronously, if {@code true}, synchronously otherwise
      */
-    public void loadHtml(final String htmlUrl,
-            final ResourceLoadListener resourceLoadListener, boolean async) {
+    public void loadHtml(final String htmlUrl, final ResourceLoadListener resourceLoadListener, boolean async) {
         final String url = WidgetUtil.getAbsoluteUrl(htmlUrl);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
@@ -435,18 +404,16 @@ public class ResourceLoader {
     }
 
     /**
-     * Inlines an HTML import and notify a listener when the HTML import is
-     * loaded. Calling this method when the HTML import is currently loading or
-     * already loaded doesn't cause the HTML import to be loaded again, but the
-     * listener will still be notified when appropriate.
+     * Inlines an HTML import and notify a listener when the HTML import is loaded. Calling this method when the HTML
+     * import is currently loading or already loaded doesn't cause the HTML import to be loaded again, but the listener
+     * will still be notified when appropriate.
      *
      * @param htmlContents
      *            the html contents to inline
      * @param resourceLoadListener
      *            listener to notify when the HTML import is loaded
      */
-    public void inlineHtml(String htmlContents,
-            final ResourceLoadListener resourceLoadListener) {
+    public void inlineHtml(String htmlContents, final ResourceLoadListener resourceLoadListener) {
         ResourceLoadEvent event = new ResourceLoadEvent(this, htmlContents);
         if (loadedResources.has(htmlContents)) {
             if (resourceLoadListener != null) {
@@ -471,9 +438,8 @@ public class ResourceLoader {
     }
 
     /**
-     * Sets the provided task to be run by <code>HTMLImports.whenReady</code>.
-     * The task is run immediately if <code>HTMLImports.whenReady</code> is not
-     * supported.
+     * Sets the provided task to be run by <code>HTMLImports.whenReady</code>. The task is run immediately if
+     * <code>HTMLImports.whenReady</code> is not supported.
      *
      * @param task
      *            the task to run, not <code>null</code>
@@ -500,9 +466,8 @@ public class ResourceLoader {
     }-*/;
 
     /**
-     * Adds an onload listener to the given element, which should be a link or a
-     * script tag. The listener is called whenever loading is complete or an
-     * error occurred.
+     * Adds an onload listener to the given element, which should be a link or a script tag. The listener is called
+     * whenever loading is complete or an error occurred.
      *
      * @param element
      *            the element to attach a listener to
@@ -511,8 +476,7 @@ public class ResourceLoader {
      * @param event
      *            the event passed to the listener
      */
-    public static native void addOnloadHandler(Element element,
-            ResourceLoadListener listener, ResourceLoadEvent event)
+    public static native void addOnloadHandler(Element element, ResourceLoadListener listener, ResourceLoadEvent event)
     /*-{
         element.onload = $entry(function() {
             element.onload = null;
@@ -534,19 +498,16 @@ public class ResourceLoader {
     }-*/;
 
     /**
-     * Load a stylesheet and notify a listener when the stylesheet is loaded.
-     * Calling this method when the stylesheet is currently loading or already
-     * loaded doesn't cause the stylesheet to be loaded again, but the listener
-     * will still be notified when appropriate.
+     * Load a stylesheet and notify a listener when the stylesheet is loaded. Calling this method when the stylesheet is
+     * currently loading or already loaded doesn't cause the stylesheet to be loaded again, but the listener will still
+     * be notified when appropriate.
      *
      * @param stylesheetUrl
      *            the url of the stylesheet to load
      * @param resourceLoadListener
-     *            the listener that will get notified when the stylesheet is
-     *            loaded
+     *            the listener that will get notified when the stylesheet is loaded
      */
-    public void loadStylesheet(final String stylesheetUrl,
-            final ResourceLoadListener resourceLoadListener) {
+    public void loadStylesheet(final String stylesheetUrl, final ResourceLoadListener resourceLoadListener) {
         final String url = WidgetUtil.getAbsoluteUrl(stylesheetUrl);
         final ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
@@ -587,8 +548,7 @@ public class ResourceLoader {
                     }
                 }, 10);
             } else {
-                addOnloadHandler(linkElement, new StyleSheetLoadListener(url),
-                        event);
+                addOnloadHandler(linkElement, new StyleSheetLoadListener(url), event);
                 if (BrowserInfo.get().isOpera()) {
                     // Opera onerror never fired, assume error if no onload in x
                     // seconds
@@ -608,21 +568,17 @@ public class ResourceLoader {
     }
 
     /**
-     * Inlines a stylesheet and notify a listener when the stylesheet is loaded.
-     * Calling this method when the stylesheet is currently loading or already
-     * loaded doesn't cause the stylesheet to be loaded again, but the listener
-     * will still be notified when appropriate.
+     * Inlines a stylesheet and notify a listener when the stylesheet is loaded. Calling this method when the stylesheet
+     * is currently loading or already loaded doesn't cause the stylesheet to be loaded again, but the listener will
+     * still be notified when appropriate.
      *
      * @param styleSheetContents
      *            the contents to inline
      * @param resourceLoadListener
-     *            the listener that will get notified when the stylesheet is
-     *            loaded
+     *            the listener that will get notified when the stylesheet is loaded
      */
-    public void inlineStyleSheet(String styleSheetContents,
-            final ResourceLoadListener resourceLoadListener) {
-        final ResourceLoadEvent event = new ResourceLoadEvent(this,
-                styleSheetContents);
+    public void inlineStyleSheet(String styleSheetContents, final ResourceLoadListener resourceLoadListener) {
+        final ResourceLoadEvent event = new ResourceLoadEvent(this, styleSheetContents);
         if (loadedResources.has(styleSheetContents)) {
             if (resourceLoadListener != null) {
                 resourceLoadListener.onLoad(event);
@@ -630,8 +586,7 @@ public class ResourceLoader {
             return;
         }
 
-        if (addListener(styleSheetContents, resourceLoadListener,
-                loadListeners)) {
+        if (addListener(styleSheetContents, resourceLoadListener, loadListeners)) {
             StyleElement styleSheetElement = getDocument().createStyleElement();
             styleSheetElement.setTextContent(styleSheetContents);
             styleSheetElement.setType("text/css");
@@ -666,26 +621,23 @@ public class ResourceLoader {
     }
 
     /**
-     * Loads a dynamic import via the provided JS {@code expression} and reports
-     * the result via the {@code resourceLoadListener}.
+     * Loads a dynamic import via the provided JS {@code expression} and reports the result via the
+     * {@code resourceLoadListener}.
      *
      * @param expression
      *            the JS expression which returns a Promise
      * @param resourceLoadListener
      *            a listener to report the Promise result exection
      */
-    public void loadDynamicImport(String expression,
-            ResourceLoadListener resourceLoadListener) {
+    public void loadDynamicImport(String expression, ResourceLoadListener resourceLoadListener) {
 
         ResourceLoadEvent event = new ResourceLoadEvent(this, expression);
         NativeFunction function = new NativeFunction(expression);
-        runPromiseExpression(expression, () -> function.call(null),
-                () -> resourceLoadListener.onLoad(event),
+        runPromiseExpression(expression, () -> function.call(null), () -> resourceLoadListener.onLoad(event),
                 () -> resourceLoadListener.onError(event));
     }
 
-    private void addCssLoadHandler(String styleSheetContents,
-            ResourceLoadEvent event, StyleElement styleSheetElement) {
+    private void addCssLoadHandler(String styleSheetContents, ResourceLoadEvent event, StyleElement styleSheetElement) {
         if (BrowserInfo.get().isSafariOrIOS() || BrowserInfo.get().isOpera()) {
             // Safari and Opera don't fire any events for link elements
             // See http://www.phpied.com/when-is-a-stylesheet-really-loaded/
@@ -739,8 +691,7 @@ public class ResourceLoader {
         return -1;
     }-*/;
 
-    private static boolean addListener(String resourceId,
-            ResourceLoadListener listener,
+    private static boolean addListener(String resourceId, ResourceLoadListener listener,
             JsMap<String, JsArray<ResourceLoadListener>> listenerMap) {
         JsArray<ResourceLoadListener> listeners = listenerMap.get(resourceId);
         if (listeners == null) {
@@ -755,8 +706,7 @@ public class ResourceLoader {
     }
 
     private void fireError(ResourceLoadEvent event) {
-        registry.getSystemErrorHandler()
-                .handleError("Error loading " + event.getResourceData());
+        registry.getSystemErrorHandler().handleError("Error loading " + event.getResourceData());
         String resource = event.getResourceData();
 
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
@@ -787,9 +737,8 @@ public class ResourceLoader {
         }
     }
 
-    private static native void runPromiseExpression(String expression,
-            Supplier<Object> promiseSupplier, Runnable onSuccess,
-            Runnable onError)
+    private static native void runPromiseExpression(String expression, Supplier<Object> promiseSupplier,
+            Runnable onSuccess, Runnable onError)
     /*-{
           try {
             var promise = promiseSupplier.@java.util.function.Supplier::get(*)();

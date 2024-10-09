@@ -72,8 +72,7 @@ public class ResultTest {
         Result<String> result = new SimpleResult<String>("foo", null) {
 
             @Override
-            public <S> Result<S> flatMap(
-                    SerializableFunction<String, Result<S>> mapper) {
+            public <S> Result<S> flatMap(SerializableFunction<String, Result<S>> mapper) {
                 return mapper.apply("foo");
             }
         };
@@ -92,8 +91,7 @@ public class ResultTest {
         Result<String> result = new SimpleResult<String>("foo", null) {
 
             @Override
-            public <S> Result<S> flatMap(
-                    SerializableFunction<String, Result<S>> mapper) {
+            public <S> Result<S> flatMap(SerializableFunction<String, Result<S>> mapper) {
                 return new SimpleResult<>(null, "bar");
             }
         };

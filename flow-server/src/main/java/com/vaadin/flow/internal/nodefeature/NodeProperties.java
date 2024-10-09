@@ -74,8 +74,7 @@ public final class NodeProperties {
     public static final String INJECT_BY_NAME = "@name";
 
     /**
-     * JsonObject template-in-template type value for
-     * {@link VirtualChildrenList}.
+     * JsonObject template-in-template type value for {@link VirtualChildrenList}.
      */
     public static final String TEMPLATE_IN_TEMPLATE = "subTemplate";
 
@@ -88,29 +87,25 @@ public final class NodeProperties {
     public static final String ID = "id";
 
     /**
-     * The property value used on the client side only in addition to
-     * {@link #VISIBLE}.
+     * The property value used on the client side only in addition to {@link #VISIBLE}.
      */
     public static final String VISIBILITY_BOUND_PROPERTY = "bound";
 
     /**
-     * The property used on the client side only in addition to
-     * {@link #VISIBLE}. Stores the client side value of "hidden" property.
+     * The property used on the client side only in addition to {@link #VISIBLE}. Stores the client side value of
+     * "hidden" property.
      */
     public static final String VISIBILITY_HIDDEN_PROPERTY = "hidden";
 
     /**
-     * The property used on the client side only in addition to
-     * {@link #VISIBLE}. It stores the client side value of the CSS "display"
-     * property to be able to restore when making a hidden element visible
-     * again. Used only when the element is inside a shadow root, and the CSS
-     * "display: none" is set in addition the "hidden" attribute.
+     * The property used on the client side only in addition to {@link #VISIBLE}. It stores the client side value of the
+     * CSS "display" property to be able to restore when making a hidden element visible again. Used only when the
+     * element is inside a shadow root, and the CSS "display: none" is set in addition the "hidden" attribute.
      */
     public static final String VISIBILITY_STYLE_DISPLAY_PROPERTY = "styleDisplay";
 
     /**
-     * The property in Json object which marks the object as special value
-     * transmitting URI (not just any string).
+     * The property in Json object which marks the object as special value transmitting URI (not just any string).
      * <p>
      * Used in the {@link ElementAttributeMap}.
      */

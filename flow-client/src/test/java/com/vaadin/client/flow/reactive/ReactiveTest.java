@@ -42,20 +42,16 @@ public class ReactiveTest {
 
         Reactive.flush();
 
-        Assert.assertEquals("Flush listeners are removed after each flush", 2,
-                count.get());
+        Assert.assertEquals("Flush listeners are removed after each flush", 2, count.get());
     }
 
     @Test
     public void addFlushListenerDuringFlush() {
-        Reactive.addFlushListener(
-                () -> Reactive.addFlushListener(count::incrementAndGet));
+        Reactive.addFlushListener(() -> Reactive.addFlushListener(count::incrementAndGet));
 
         Reactive.flush();
 
-        Assert.assertEquals(
-                "Listener added during flush is run in the same flush", 1,
-                count.get());
+        Assert.assertEquals("Listener added during flush is run in the same flush", 1, count.get());
 
         Reactive.flush();
 
@@ -66,8 +62,7 @@ public class ReactiveTest {
     public void testCollectEvents() {
         TestReactiveEventRouter router = new TestReactiveEventRouter();
 
-        EventRemover eventRemover = Reactive
-                .addEventCollector(e -> count.incrementAndGet());
+        EventRemover eventRemover = Reactive.addEventCollector(e -> count.incrementAndGet());
 
         Assert.assertEquals(0, count.get());
 
@@ -77,15 +72,13 @@ public class ReactiveTest {
 
         router.invalidate();
 
-        Assert.assertEquals("Event should still trigger collector", 2,
-                count.get());
+        Assert.assertEquals("Event should still trigger collector", 2, count.get());
 
         eventRemover.remove();
 
         router.invalidate();
 
-        Assert.assertEquals("Event should no longer trigger collector", 2,
-                count.get());
+        Assert.assertEquals("Event should no longer trigger collector", 2, count.get());
     }
 
     @Test
@@ -118,8 +111,7 @@ public class ReactiveTest {
 
         for (int i = 0; i < 10; i++) {
             final int iFinal = i;
-            Reactive.addPostFlushListener(
-                    () -> order.add(Integer.valueOf(iFinal)));
+            Reactive.addPostFlushListener(() -> order.add(Integer.valueOf(iFinal)));
         }
 
         Reactive.flush();
@@ -148,16 +140,13 @@ public class ReactiveTest {
         List<String> order = new ArrayList<>();
 
         Reactive.addPostFlushListener(() -> order.add("postFlush1"));
-        Reactive.addPostFlushListener(
-                () -> Reactive.addFlushListener(() -> order.add("flush2")));
+        Reactive.addPostFlushListener(() -> Reactive.addFlushListener(() -> order.add("flush2")));
         Reactive.addPostFlushListener(() -> order.add("postFlush2"));
         Reactive.addFlushListener(() -> order.add("flush1"));
 
         Reactive.flush();
 
-        Assert.assertEquals(
-                Arrays.asList("flush1", "postFlush1", "flush2", "postFlush2"),
-                order);
+        Assert.assertEquals(Arrays.asList("flush1", "postFlush1", "flush2", "postFlush2"), order);
     }
 
     @Test
@@ -175,7 +164,6 @@ public class ReactiveTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(Arrays.asList("flush", "flush2", "postFlush"),
-                order);
+        Assert.assertEquals(Arrays.asList("flush", "flush2", "postFlush"), order);
     }
 }

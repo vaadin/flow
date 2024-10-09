@@ -76,16 +76,13 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void writeSessionExpired() throws Exception {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
+        ApplicationConfiguration config = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(config.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
         Mockito.when(config.getBuildFolder()).thenReturn(".");
         VaadinContext context = new MockVaadinContext();
         Mockito.when(config.getContext()).thenReturn(context);
         VaadinService service = new VaadinServletService(null,
-                new DefaultDeploymentConfiguration(config, getClass(),
-                        new Properties()));
+                new DefaultDeploymentConfiguration(config, getClass(), new Properties()));
         when(request.getService()).thenReturn(service);
 
         when(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
@@ -94,13 +91,10 @@ public class UidlRequestHandlerTest {
         boolean result = handler.handleSessionExpired(request, response);
         Assert.assertTrue("Result should be true", result);
 
-        String responseContent = CommunicationUtil
-                .getStringWhenWriteBytesOffsetLength(outputStream);
+        String responseContent = CommunicationUtil.getStringWhenWriteBytesOffsetLength(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+        Assert.assertEquals("Invalid response", "for(;;);[{\"meta\":{\"sessionExpired\":true}}]", responseContent);
     }
 
     @Test
@@ -112,17 +106,13 @@ public class UidlRequestHandlerTest {
 
         when(service.findUI(request)).thenReturn(null);
 
-        boolean result = handler.synchronizedHandleRequest(session, request,
-                response);
+        boolean result = handler.synchronizedHandleRequest(session, request, response);
         Assert.assertTrue("Result should be true", result);
 
-        String responseContent = CommunicationUtil
-                .getStringWhenWriteString(outputStream);
+        String responseContent = CommunicationUtil.getStringWhenWriteString(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+        Assert.assertEquals("Invalid response", "for(;;);[{\"meta\":{\"sessionExpired\":true}}]", responseContent);
     }
 
     @Test
@@ -161,14 +151,12 @@ public class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
 
-        assertEquals(
-                "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
+        assertEquals("setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
                 uidl.getArray("execute").getArray(1).getString(1));
     }
 
     @Test
-    public void should_updateHash_when_v7LocationNotProvided()
-            throws Exception {
+    public void should_updateHash_when_v7LocationNotProvided() throws Exception {
         UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
@@ -182,8 +170,7 @@ public class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
 
-        assertEquals(
-                "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
+        assertEquals("setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
                 uidl.getArray("execute").getArray(1).getString(1));
     }
 
@@ -212,8 +199,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_update_browser_history_if_no_hash_in_location()
-            throws Exception {
+    public void should_not_update_browser_history_if_no_hash_in_location() throws Exception {
         UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
@@ -230,8 +216,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
-            throws IOException {
+    public void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503() throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
         when(session.getService()).thenReturn(service);
@@ -242,8 +227,7 @@ public class UidlRequestHandlerTest {
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
             public void handleRpc(UI ui, Reader reader, VaadinRequest request) {
-                throw new DauEnforcementException(
-                        new EnforcementException("test"));
+                throw new DauEnforcementException(new EnforcementException("test"));
             }
         };
 
@@ -310,8 +294,7 @@ public class UidlRequestHandlerTest {
         // @formatter:on
 
         if (withLocation) {
-            v7String = v7String.replace("\"___PLACE_FOR_LOCATION_CHANGE___\"",
-                    locationChange);
+            v7String = v7String.replace("\"___PLACE_FOR_LOCATION_CHANGE___\"", locationChange);
         }
         if (withHash) {
             v7String = v7String.replace("___PLACE_FOR_HASH_RPC___", hashRpc);

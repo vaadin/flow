@@ -67,9 +67,8 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
          */
         private static boolean isClientRouter(TestBenchTestCase test) {
             if (hasClientRouter == null) {
-                hasClientRouter = (boolean) ((JavascriptExecutor) test
-                        .getDriver()).executeScript(
-                                "return !!window.Vaadin.Flow.clients.TypeScript");
+                hasClientRouter = (boolean) ((JavascriptExecutor) test.getDriver())
+                        .executeScript("return !!window.Vaadin.Flow.clients.TypeScript");
             }
             return hasClientRouter;
         }
@@ -83,17 +82,15 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     /** System property key for the test server port. */
     public static final String SERVER_PORT_PROPERTY_KEY = "serverPort";
     /**
-     * Server port resolved by system property
-     * {@value #SERVER_PORT_PROPERTY_KEY} or the default
+     * Server port resolved by system property {@value #SERVER_PORT_PROPERTY_KEY} or the default
      * {@value #DEFAULT_SERVER_PORT}.
      */
-    public static final int SERVER_PORT = Integer.parseInt(
-            System.getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT));
+    public static final int SERVER_PORT = Integer
+            .parseInt(System.getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT));
 
     public static final String USE_HUB_PROPERTY = "test.use.hub";
 
-    public static final boolean USE_HUB = Boolean.TRUE.toString()
-            .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
+    public static final boolean USE_HUB = Boolean.TRUE.toString().equals(System.getProperty(USE_HUB_PROPERTY, "false"));
 
     public static final String USE_BROWSERSTACK_PROPERTY = "test.use.browserstack";
 
@@ -102,8 +99,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     public static final String BROWSERSTACK_IDENTIFIER_PROPERTY = "test.browserstack.identifier";
 
-    public static final String BROWSERSTACK_IDENTIFIER = System
-            .getProperty(BROWSERSTACK_IDENTIFIER_PROPERTY, "");
+    public static final String BROWSERSTACK_IDENTIFIER = System.getProperty(BROWSERSTACK_IDENTIFIER_PROPERTY, "");
 
     private boolean serverAvailabilityChecked;
 
@@ -121,8 +117,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 new URL(rootUrl).openConnection().connect();
             } catch (IOException e) {
                 throw new IllegalStateException(String.format(
-                        "Could not connect to %s please check that you have a web server started.",
-                        rootUrl), e);
+                        "Could not connect to %s please check that you have a web server started.", rootUrl), e);
             }
             serverAvailabilityChecked = true;
         }
@@ -145,8 +140,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     protected void openUrl(String targetUrl, String... parameters) {
         String url = getTestURL(parameters);
         if (!url.contains("/view/")) {
-            throw new IllegalArgumentException("Custom url mode (" + targetUrl
-                    + ") is only available for /view/ URLs");
+            throw new IllegalArgumentException("Custom url mode (" + targetUrl + ") is only available for /view/ URLs");
         }
         StringBuilder builder = new StringBuilder(targetUrl);
         if (!targetUrl.startsWith("/")) {
@@ -179,8 +173,8 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     protected void waitForWebComponentsBootstrap() {
-        waitUntil(driver -> driver.findElement(By.cssSelector(
-                "script[src*='web-component/web-component-bootstrap.js']")),
+        waitUntil(
+                driver -> driver.findElement(By.cssSelector("script[src*='web-component/web-component-bootstrap.js']")),
                 // longer timeout to prevent failures during dev-bundle creation
                 60);
     }
@@ -188,8 +182,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     protected void waitForWebComponent(String tagName) {
         waitForWebComponentsBootstrap();
         waitUntil(d -> getCommandExecutor()
-                .executeScript("return await customElements.whenDefined('"
-                        + tagName + "').then(() => true)"));
+                .executeScript("return await customElements.whenDefined('" + tagName + "').then(() => true)"));
     }
 
     /**
@@ -207,8 +200,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     /**
      * Gets the absolute path to the test, starting with a "/".
      *
-     * @return the path to the test, appended to {@link #getRootURL()} for the
-     *         full test URL.
+     * @return the path to the test, appended to {@link #getRootURL()} for the full test URL.
      */
     protected abstract String getTestPath();
 
@@ -222,30 +214,24 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Compares the given reference screenshot to the current and fails the test
-     * if it doesn't match.
+     * Compares the given reference screenshot to the current and fails the test if it doesn't match.
      *
      * @param identifier
-     *            the identifier to use for the screenshot, becomes part of the
-     *            screenshot name in the
+     *            the identifier to use for the screenshot, becomes part of the screenshot name in the
      *            {@code module-folder/reference-screenshots/} folder
      * @throws IOException
      *             if there was a problem accessing the reference image
      */
     protected void verifyScreenshot(String identifier) throws IOException {
-        Assert.assertTrue(
-                "SCREENSHOT MATCH FAILURE: <" + identifier
-                        + "> does not match expected.",
+        Assert.assertTrue("SCREENSHOT MATCH FAILURE: <" + identifier + "> does not match expected.",
                 testBench().compareScreen(identifier));
     }
 
     /**
-     * Produces a collection of browsers to run the test on. This method is
-     * executed by the test runner when determining how many test methods to
-     * invoke and with what parameters. For each returned value a test method is
-     * ran and before running that,
-     * {@link #setDesiredCapabilities(DesiredCapabilities)} is invoked with the
-     * value returned by this method.
+     * Produces a collection of browsers to run the test on. This method is executed by the test runner when determining
+     * how many test methods to invoke and with what parameters. For each returned value a test method is ran and before
+     * running that, {@link #setDesiredCapabilities(DesiredCapabilities)} is invoked with the value returned by this
+     * method.
      *
      * @return The browsers to run the test on
      */
@@ -260,12 +246,11 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     /**
      * Gets the browsers capabilities list to execute test on the tests Hub.
      * <p>
-     * This list will be used only for the tests Hub. Local test execution is
-     * managed by {@link LocalExecution} annotation.
+     * This list will be used only for the tests Hub. Local test execution is managed by {@link LocalExecution}
+     * annotation.
      * <p>
-     * The method {@link #getBrowsersToTest()} delegates the logic to this
-     * method in case {@link #getLocalExecution()} return value is an empty
-     * optional (i.e. the tests Hub is used).
+     * The method {@link #getBrowsersToTest()} delegates the logic to this method in case {@link #getLocalExecution()}
+     * return value is an empty optional (i.e. the tests Hub is used).
      *
      * @return the browsers capabilities list to execute test on the tests Hub
      */
@@ -280,8 +265,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      *            a browsers list
      * @return the capabilities for the given <code>browsers</code>
      */
-    protected List<DesiredCapabilities> getBrowserCapabilities(
-            Browser... browsers) {
+    protected List<DesiredCapabilities> getBrowserCapabilities(Browser... browsers) {
         List<DesiredCapabilities> capabilities = new ArrayList<>();
         for (Browser browser : browsers) {
             DesiredCapabilities caps = browser.getDesiredCapabilities();
@@ -292,12 +276,10 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 caps.setPlatform(Platform.WINDOWS);
 
                 if (!BROWSERSTACK_IDENTIFIER.isEmpty()) {
-                    caps.setCapability("browserstack.localIdentifier",
-                            BROWSERSTACK_IDENTIFIER);
+                    caps.setCapability("browserstack.localIdentifier", BROWSERSTACK_IDENTIFIER);
                 }
                 caps.setCapability("build", "BrowserStack Tests"
-                        + (BROWSERSTACK_IDENTIFIER.isEmpty() ? ""
-                                : " [" + BROWSERSTACK_IDENTIFIER + "]"));
+                        + (BROWSERSTACK_IDENTIFIER.isEmpty() ? "" : " [" + BROWSERSTACK_IDENTIFIER + "]"));
 
                 caps.setCapability("acceptSslCerts", "true");
                 caps.setCapability("resolution", "1680x1050");
@@ -321,22 +303,18 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Returns host address that can be targeted from the outside, like from a
-     * test hub.
+     * Returns host address that can be targeted from the outside, like from a test hub.
      *
      * @return host address
      * @throws RuntimeException
-     *             if host name could not be determined or
-     *             {@link SocketException} was caught during the determination.
+     *             if host name could not be determined or {@link SocketException} was caught during the determination.
      */
     protected String getCurrentHostAddress() {
         try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface
-                    .getNetworkInterfaces();
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface nwInterface = interfaces.nextElement();
-                if (!nwInterface.isUp() || nwInterface.isLoopback()
-                        || nwInterface.isVirtual()) {
+                if (!nwInterface.isUp() || nwInterface.isLoopback() || nwInterface.isVirtual()) {
                     continue;
                 }
                 Optional<String> address = getHostAddress(nwInterface);
@@ -347,15 +325,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         } catch (SocketException e) {
             throw new RuntimeException("Could not find the host name", e);
         }
-        throw new RuntimeException(
-                "No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
+        throw new RuntimeException("No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
     }
 
     /**
      * Used to determine what port the test is running on.
      *
-     * @return The port the test is running on, by default
-     *         AbstractTestBenchTest.DEFAULT_SERVER_PORT
+     * @return The port the test is running on, by default AbstractTestBenchTest.DEFAULT_SERVER_PORT
      */
     protected int getDeploymentPort() {
         return SERVER_PORT;
@@ -388,26 +364,21 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     /**
      * Gets local execution ({@link LocalExecution}) configuration for the test.
      * <p>
-     * If this method return an empty optional then test with be run on the test
-     * Hub
+     * If this method return an empty optional then test with be run on the test Hub
      *
      * @see LocalExecution
      *
-     * @return an optional configuration, or an empty optional if configuration
-     *         is disabled or not available
+     * @return an optional configuration, or an empty optional if configuration is disabled or not available
      *
      */
     protected Optional<LocalExecution> getLocalExecution() {
         if (USE_HUB) {
             return Optional.empty();
         }
-        return Optional
-                .ofNullable(getClass().getAnnotation(LocalExecution.class))
-                .filter(LocalExecution::active);
+        return Optional.ofNullable(getClass().getAnnotation(LocalExecution.class)).filter(LocalExecution::active);
     }
 
-    private static Optional<String> getHostAddress(
-            NetworkInterface nwInterface) {
+    private static Optional<String> getHostAddress(NetworkInterface nwInterface) {
         Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
         while (addresses.hasMoreElements()) {
             InetAddress address = addresses.nextElement();
@@ -433,8 +404,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      *
      * @return the URL for the test
      */
-    public static String getTestURL(String rootUrl, String testPath,
-            String... parameters) {
+    public static String getTestURL(String rootUrl, String testPath, String... parameters) {
         while (rootUrl.endsWith("/")) {
             rootUrl = rootUrl.substring(0, rootUrl.length() - 1);
         }
@@ -447,19 +417,17 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 rootUrl += "&";
             }
 
-            rootUrl += Arrays.stream(parameters)
-                    .collect(Collectors.joining("&"));
+            rootUrl += Arrays.stream(parameters).collect(Collectors.joining("&"));
         }
 
         return rootUrl;
     }
 
-    protected void assertImageEquals(Path pathToExpectedImage, String imageUrl)
-            throws IOException {
+    protected void assertImageEquals(Path pathToExpectedImage, String imageUrl) throws IOException {
         byte[] expectedImage = Files.readAllBytes(pathToExpectedImage);
         if (imageUrl.startsWith("url(\"data")) {
-            String expectedUrl = "url(\"data:image/png;base64,"
-                    + Base64.getEncoder().encodeToString(expectedImage) + "\")";
+            String expectedUrl = "url(\"data:image/png;base64," + Base64.getEncoder().encodeToString(expectedImage)
+                    + "\")";
             Assert.assertEquals(expectedUrl, imageUrl);
         } else if (imageUrl.startsWith("url(")) {
             imageUrl = imageUrl.replaceFirst("url\\(['\"](.*)['\"]\\)", "$1");
@@ -469,8 +437,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     protected void waitForFont(String fontSizeAndName) {
-        waitUntil(d -> (boolean) executeScript(
-                "return document.fonts.check(arguments[0])", fontSizeAndName));
+        waitUntil(d -> (boolean) executeScript("return document.fonts.check(arguments[0])", fontSizeAndName));
     }
 
     protected void assertRuleOnce(String style) {
@@ -483,8 +450,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 style);
 
         Assert.assertEquals("Theme rule should have been added once", 1,
-                adoptedStyleSheetsWithString.size()
-                        + styleAndLinkTagsWithString.size());
+                adoptedStyleSheetsWithString.size() + styleAndLinkTagsWithString.size());
 
     }
 

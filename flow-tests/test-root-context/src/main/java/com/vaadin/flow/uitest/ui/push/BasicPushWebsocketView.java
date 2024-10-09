@@ -14,8 +14,7 @@ public class BasicPushWebsocketView extends BasicPushView {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         // Don't use fallback so we can easier detect failures
-        attachEvent.getUI().getPushConfiguration().setParameter(
-                PushConfigurationMap.FALLBACK_TRANSPORT_KEY, "none");
+        attachEvent.getUI().getPushConfiguration().setParameter(PushConfigurationMap.FALLBACK_TRANSPORT_KEY, "none");
     }
 
 }
