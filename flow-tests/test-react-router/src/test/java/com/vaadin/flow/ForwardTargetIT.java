@@ -58,4 +58,27 @@ public class ForwardTargetIT extends ChromeBrowserTest {
                         .filter(span -> span.getText().equals("setParameter"))
                         .count());
     }
+
+    // Test for https://github.com/vaadin/flow/issues/19822
+    @Test
+    public void testRouterLinkSetParameterCalledOnlyOnceAfterForward() {
+        getDriver().get(getTestURL(getRootURL(),
+                "/view/com.vaadin.flow.RouterLinkForwardingToParametersView",
+                null));
+        $("a").id("forwardViewLink").click();
+
+        try {
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(
+                    "/view/com.vaadin.flow.ForwardTargetWithParametersView"));
+        } catch (TimeoutException e) {
+            Assert.fail("URL wasn't updated to expected one: "
+                    + "/view/com.vaadin.flow.ForwardTargetWithParametersView");
+        }
+
+        Assert.assertEquals("setParameter was called more than once", 1,
+                $(SpanElement.class).all().stream()
+                        .filter(span -> span.getText().equals("setParameter"))
+                        .count());
+    }
+
 }
