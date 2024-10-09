@@ -18,17 +18,16 @@ package com.vaadin.flow.server.menu;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.server.VaadinService;
 
 /**
  * Menu configuration helper class to retrieve available menu entries for
@@ -70,7 +69,8 @@ public final class MenuConfiguration {
      * Attempts to retrieve header from the following sources:
      * <ul>
      * <li>from {@code ViewConfig.title} of the client-side views;</li>
-     * <li>from {@link PageTitle} value of the server-side route</li>
+     * <li>from {@link HasDynamicTitle#getPageTitle()} if present, then from
+     * {@link PageTitle} value of the server-side route</li>
      * </ul>
      * <p>
      * For server-side routes it falls back to route's Java class name, if a
@@ -88,6 +88,19 @@ public final class MenuConfiguration {
      */
     public static Optional<String> getPageHeader(Component content) {
         if (isServerSideContent(content)) {
+            UI ui = UI.getCurrent();
+            if (ui != null) {
+                Optional<String> maybeTitle = ui.getInternals()
+                        .getActiveRouterTargetsChain().stream()
+                        .filter(HasDynamicTitle.class::isInstance)
+                        .map(element -> ((HasDynamicTitle) element)
+                                .getPageTitle())
+                        .filter(Objects::nonNull).findFirst();
+                if (maybeTitle.isPresent()) {
+                    return maybeTitle;
+                }
+            }
+
             return Optional.of(MenuRegistry.getTitle(content.getClass()));
         }
         return getPageHeaderFromMenuItems(
@@ -101,7 +114,8 @@ public final class MenuConfiguration {
      * Attempts to retrieve header from the following sources:
      * <ul>
      * <li>from {@code ViewConfig.title} of the client-side views;</li>
-     * <li>from {@link PageTitle} value of the server-side route</li>
+     * <li>from {@link HasDynamicTitle#getPageTitle()} if present, then from
+     * {@link PageTitle} value of the server-side route</li>
      * </ul>
      * <p>
      * For server-side routes it falls back to route's Java class name. For

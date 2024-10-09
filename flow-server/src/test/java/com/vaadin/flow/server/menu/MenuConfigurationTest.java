@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,13 +40,16 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.Menu;
@@ -205,6 +209,8 @@ public class MenuConfigurationTest {
         Location location = Mockito.mock(Location.class);
         Mockito.when(mockUi.getInternals()).thenReturn(uiInternals);
         Mockito.when(uiInternals.getActiveViewLocation()).thenReturn(location);
+        Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                .thenReturn(Collections.emptyList());
 
         final UI currentUi = UI.getCurrent();
 
@@ -225,6 +231,17 @@ public class MenuConfigurationTest {
             Assert.assertTrue(header.isPresent());
             // directly from @PageTitle
             Assert.assertEquals("My Normal Route", header.get());
+
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(List.of(new NormalRouteWithDynamicTitle()));
+            Mockito.when(location.getPath())
+                    .thenReturn("normal-route-with-dynamic-title");
+            header = MenuConfiguration.getPageHeader(new NormalRoute());
+            Assert.assertTrue(header.isPresent());
+            // from HasDynamicTitle
+            Assert.assertEquals("My Route with dynamic title", header.get());
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(Collections.emptyList());
 
             Mockito.when(location.getPath())
                     .thenReturn("mandatory-parameter-route");
@@ -434,6 +451,19 @@ public class MenuConfigurationTest {
     @PageTitle("My Normal Route")
     @Route("normal-route-with-page-title")
     public static class NormalRouteWithPageTitle extends Component {
+    }
+
+    public static class NormalRouteWithDynamicTitle
+            implements HasDynamicTitle, HasElement {
+        @Override
+        public String getPageTitle() {
+            return "My Route with dynamic title";
+        }
+
+        @Override
+        public Element getElement() {
+            return null;
+        }
     }
 
     @Tag("some-tag")
