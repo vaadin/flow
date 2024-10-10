@@ -2,8 +2,8 @@ package com.vaadin.base.devserver.editor;
 
 public enum ComponentType {
 
-    BUTTON("com.vaadin.flow.component.button.Button"), TEXTFIELD(
-            "com.vaadin.flow.component.textfield.TextField");
+    BUTTON("com.vaadin.flow.component.button.Button"),
+    TEXTFIELD("com.vaadin.flow.component.textfield.TextField");
 
     private String className;
 

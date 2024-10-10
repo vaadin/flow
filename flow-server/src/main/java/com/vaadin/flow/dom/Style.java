@@ -267,7 +267,29 @@ public interface Style extends Serializable {
     }
 
     public enum Display {
-        INLINE, BLOCK, CONTENTS, FLEX, GRID, INLINE_BLOCK, INLINE_FLEX, INLINE_GRID, INLINE_TABLE, LIST_ITEM, RUN_IN, TABLE, TABLE_CAPTION, TABLE_COLUMN_GROUP, TABLE_HEADER_GROUP, TABLE_FOOTER_GROUP, TABLE_ROW_GROUP, TABLE_CELL, TABLE_COLUMN, TABLE_ROW, NONE, INITIAL, INHERIT
+        INLINE,
+        BLOCK,
+        CONTENTS,
+        FLEX,
+        GRID,
+        INLINE_BLOCK,
+        INLINE_FLEX,
+        INLINE_GRID,
+        INLINE_TABLE,
+        LIST_ITEM,
+        RUN_IN,
+        TABLE,
+        TABLE_CAPTION,
+        TABLE_COLUMN_GROUP,
+        TABLE_HEADER_GROUP,
+        TABLE_FOOTER_GROUP,
+        TABLE_ROW_GROUP,
+        TABLE_CELL,
+        TABLE_COLUMN,
+        TABLE_ROW,
+        NONE,
+        INITIAL,
+        INHERIT
     }
 
     /**
@@ -825,7 +847,19 @@ public interface Style extends Serializable {
      * Css values for the <code>align-items</code> property.
      */
     public enum AlignItems {
-        NORMAL, STRETCH, CENTER, UNSAFE, SAFE, START, END, FLEX_START, FLEX_END, SELF_START, SELF_END, BASELINE, INITIAL;
+        NORMAL,
+        STRETCH,
+        CENTER,
+        UNSAFE,
+        SAFE,
+        START,
+        END,
+        FLEX_START,
+        FLEX_END,
+        SELF_START,
+        SELF_END,
+        BASELINE,
+        INITIAL;
     }
 
     /**
@@ -844,7 +878,20 @@ public interface Style extends Serializable {
      * Css values for the <code>align-self</code> property.
      */
     public enum AlignSelf {
-        AUTO, NORMAL, STRETCH, UNSAFE, SAFE, CENTER, START, END, FLEX_START, FLEX_END, SELF_START, SELF_END, BASELINE, INITIAL;
+        AUTO,
+        NORMAL,
+        STRETCH,
+        UNSAFE,
+        SAFE,
+        CENTER,
+        START,
+        END,
+        FLEX_START,
+        FLEX_END,
+        SELF_START,
+        SELF_END,
+        BASELINE,
+        INITIAL;
     }
 
     /**
@@ -906,7 +953,21 @@ public interface Style extends Serializable {
      * Css values for the <code>justify-content</code> property.
      */
     public enum JustifyContent {
-        CENTER, START, END, FLEX_START, FLEX_END, LEFT, RIGHT, NORMAL, SPACE_BETWEEN, SPACE_AROUND, SPACE_EVENLY, STRETCH, SAFE, UNSAFE, INITIAL
+        CENTER,
+        START,
+        END,
+        FLEX_START,
+        FLEX_END,
+        LEFT,
+        RIGHT,
+        NORMAL,
+        SPACE_BETWEEN,
+        SPACE_AROUND,
+        SPACE_EVENLY,
+        STRETCH,
+        SAFE,
+        UNSAFE,
+        INITIAL
     }
 
     /**
