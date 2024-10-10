@@ -24,6 +24,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
@@ -38,6 +39,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
  */
 public final class MenuConfiguration {
 
+    private static final String STATISTICS_DYNAMIC_MENU_ENTRIES = "flow/dynamic-menu-entries";
+
     /**
      * Collect ordered list of menu entries for menu population. All client
      * views are collected and any accessible server views.
@@ -45,6 +48,7 @@ public final class MenuConfiguration {
      * @return ordered list of {@link MenuEntry} instances
      */
     public static List<MenuEntry> getMenuEntries() {
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
         return MenuRegistry.collectMenuItemsList().stream()
                 .map(MenuConfiguration::createMenuEntry).toList();
     }
@@ -59,6 +63,7 @@ public final class MenuConfiguration {
      * @return ordered list of {@link MenuEntry} instances
      */
     public static List<MenuEntry> getMenuEntries(Locale locale) {
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
         return MenuRegistry.collectMenuItemsList(locale).stream()
                 .map(MenuConfiguration::createMenuEntry).toList();
     }
