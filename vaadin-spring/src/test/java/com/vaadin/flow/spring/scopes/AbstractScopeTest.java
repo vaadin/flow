@@ -57,7 +57,7 @@ public abstract class AbstractScopeTest {
                 Field serviceField = VaadinSession.class
                         .getDeclaredField("service");
                 serviceField.setAccessible(true);
-                serviceField.set(this, Mockito.mock(VaadinService.class));
+                serviceField.set(this, Mockito.spy(VaadinService.class));
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
