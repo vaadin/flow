@@ -60,8 +60,14 @@ public class Editor {
     public static class Modification implements Comparable<Modification> {
 
         private enum Type {
-            IMPORT, INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, INSERT_LINE_BEFORE, //
-            REPLACE, INSERT_AT_END_OF_BLOCK, REMOVE_NODE
+            IMPORT,
+            INSERT_AFTER,
+            INSERT_BEFORE,
+            INSERT_LINE_AFTER,
+            INSERT_LINE_BEFORE, //
+            REPLACE,
+            INSERT_AT_END_OF_BLOCK,
+            REMOVE_NODE
         };
 
         private Node referenceNode;
