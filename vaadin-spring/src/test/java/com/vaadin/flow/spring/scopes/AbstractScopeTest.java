@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,7 +50,15 @@ public abstract class AbstractScopeTest {
     public static class TestSession extends SpringVaadinSession {
 
         public TestSession() {
-            super(Mockito.mock(VaadinService.class));
+            super(null);
+            try {
+                Field serviceField = VaadinSession.class
+                        .getDeclaredField("service");
+                serviceField.setAccessible(true);
+                serviceField.set(this, Mockito.mock(VaadinService.class));
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }
