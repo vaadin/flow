@@ -1,11 +1,3 @@
-/*
- * Copyright (C) 2000-2024 Vaadin Ltd
- *
- * This program is available under Vaadin Commercial License and Service Terms.
- *
- * See <https://vaadin.com/commercial-license-and-service-terms> for the full
- * license.
- */
 package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
@@ -20,8 +12,8 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.SetParameterForwardToView", layout = ViewTestLayout.class)
-public class SetParameterForwardToView extends Div
+@Route(value = "com.vaadin.flow.uitest.ui.SetParameterRerouteToView", layout = ViewTestLayout.class)
+public class SetParameterRerouteToView extends Div
         implements HasUrlParameter<String>, AfterNavigationObserver {
 
     static final String LOCATION_ID = "location";
@@ -30,7 +22,7 @@ public class SetParameterForwardToView extends Div
     private final Div location;
     private final Div param;
 
-    public SetParameterForwardToView() {
+    public SetParameterRerouteToView() {
         location = new Div();
         location.setId(LOCATION_ID);
         param = new Div();
@@ -43,22 +35,22 @@ public class SetParameterForwardToView extends Div
         if (parameter != null) {
             switch (parameter) {
             case "location":
-                event.forwardTo(
-                        "com.vaadin.flow.uitest.ui.SetParameterForwardToView/locationTwo");
+                event.rerouteTo(
+                        "com.vaadin.flow.uitest.ui.SetParameterRerouteToView/locationTwo");
                 break;
             case "locationRouteParameter":
-                event.forwardTo(
-                        "com.vaadin.flow.uitest.ui.SetParameterForwardToView",
+                event.rerouteTo(
+                        "com.vaadin.flow.uitest.ui.SetParameterRerouteToView",
                         "locationRouteParameterTwo");
                 break;
             case "locationRouteParameterList":
-                event.forwardTo(
-                        "com.vaadin.flow.uitest.ui.SetParameterForwardToView",
+                event.rerouteTo(
+                        "com.vaadin.flow.uitest.ui.SetParameterRerouteToView",
                         List.of("locationRouteParameterListTwo"));
                 break;
             case "locationQueryParams":
-                event.forwardTo(
-                        "com.vaadin.flow.uitest.ui.SetParameterForwardToView/locationQueryParamsTwo",
+                event.rerouteTo(
+                        "com.vaadin.flow.uitest.ui.SetParameterRerouteToView/locationQueryParamsTwo",
                         QueryParameters.empty());
                 break;
             }
@@ -71,4 +63,5 @@ public class SetParameterForwardToView extends Div
         location.setText(event.getLocation().getPath());
         add(location, param);
     }
+
 }
