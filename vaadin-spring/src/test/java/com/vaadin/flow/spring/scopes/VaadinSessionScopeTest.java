@@ -29,8 +29,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -71,12 +71,13 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
     @Test
     public void destroySession_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         VaadinSession session = mockSession();
-        SpringVaadinSession springSession = (SpringVaadinSession) session;
+        VaadinService service = session.getService();
 
-        doCallRealMethod().when(springSession)
-                .addDestroyListener(Mockito.any());
-
-        doCallRealMethod().when(springSession).fireSessionDestroy();
+        doCallRealMethod().when(session)
+                .addSessionDestroyListener(Mockito.any());
+        doCallRealMethod().when(session).getLockInstance();
+        doCallRealMethod().when(session).getPendingAccessQueue();
+        doCallRealMethod().when(session).access(Mockito.any());
 
         VaadinSessionScope scope = new VaadinSessionScope();
 
@@ -89,7 +90,8 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
         when(factory.getObject()).thenReturn(object);
         scope.get("foo", factory);
 
-        springSession.fireSessionDestroy();
+        service.fireSessionDestroy(session);
+        service.runPendingAccessTasks(session);
 
         Assert.assertEquals(1, count.get());
         Assert.assertNull(session.getAttribute(BeanStore.class));
