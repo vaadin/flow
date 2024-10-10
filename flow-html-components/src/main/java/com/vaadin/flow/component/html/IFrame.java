@@ -75,18 +75,21 @@ public class IFrame extends HtmlComponent {
      * Sandbox types.
      */
     public enum SandboxType {
-        RESTRICT_ALL(""), ALLOW_FORMS("allow-forms"), ALLOW_MODALS(
-                "allow-modals"), ALLOW_ORIENTATION_LOCK(
-                        "allow-orientation-lock"), ALLOW_POINTER_LOCK(
-                                "allow-pointer-lock"), ALLOW_POPUPS(
-                                        "allow-popups"), ALLOW_POPUPS_TO_ESCAPE_SANDBOX(
-                                                "allow-popups-to-escape-sandbox"), ALLOW_PRESENTATION(
-                                                        "allow-presentation"), ALLOW_SAME_ORIGIN(
-                                                                "allow-same-origin"), ALLOW_SCRIPTS(
-                                                                        "allow-scripts"), ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
-                                                                                "allow-storage-access-by-user-activation"), ALLOW_TOP_NAVIGATION(
-                                                                                        "allow-top-navigation"), ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
-                                                                                                "allow-top-navigation-by-user-activation");
+        RESTRICT_ALL(""),
+        ALLOW_FORMS("allow-forms"),
+        ALLOW_MODALS("allow-modals"),
+        ALLOW_ORIENTATION_LOCK("allow-orientation-lock"),
+        ALLOW_POINTER_LOCK("allow-pointer-lock"),
+        ALLOW_POPUPS("allow-popups"),
+        ALLOW_POPUPS_TO_ESCAPE_SANDBOX("allow-popups-to-escape-sandbox"),
+        ALLOW_PRESENTATION("allow-presentation"),
+        ALLOW_SAME_ORIGIN("allow-same-origin"),
+        ALLOW_SCRIPTS("allow-scripts"),
+        ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
+                "allow-storage-access-by-user-activation"),
+        ALLOW_TOP_NAVIGATION("allow-top-navigation"),
+        ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
+                "allow-top-navigation-by-user-activation");
 
         private final String value;
 
