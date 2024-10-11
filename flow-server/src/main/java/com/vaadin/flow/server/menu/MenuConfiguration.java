@@ -18,6 +18,7 @@ package com.vaadin.flow.server.menu;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -154,13 +155,14 @@ public final class MenuConfiguration {
             String activeLocation = PathUtil.trimPath(
                     ui.getInternals().getActiveViewLocation().getPath());
 
-            List<AvailableViewInfo> menuItems = MenuRegistry.getMenuItems(false)
-                    .values().stream().toList();
+            Map<String, AvailableViewInfo> menuItems = MenuRegistry
+                    .getMenuItems(false);
 
-            return menuItems.stream()
-                    .filter(menuItem -> PathUtil.trimPath(menuItem.route())
+            return menuItems.entrySet().stream()
+                    .filter(menuEntry -> PathUtil.trimPath(menuEntry.getKey())
                             .equals(activeLocation))
-                    .map(AvailableViewInfo::title).findFirst();
+                    .map(Map.Entry::getValue).map(AvailableViewInfo::title)
+                    .findFirst();
         }
         return Optional.empty();
     }
