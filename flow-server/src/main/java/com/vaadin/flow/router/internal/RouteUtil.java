@@ -623,10 +623,25 @@ public class RouteUtil {
     public static boolean hasServerRouteWithAutoLayout(
             AbstractRouteRegistry registry) {
         Collection<?> layouts = registry.getLayouts();
-        return registry.getRegisteredRoutes().stream()
-                .anyMatch(routeData -> !routeData.getParentLayouts().isEmpty()
-                        && routeData.getParentLayouts().stream()
-                                .anyMatch(layouts::contains));
+        return registry.getRegisteredRoutes().stream().anyMatch(routeData -> {
+            String path;
+            if (routeData.getNavigationTarget()
+                    .getAnnotation(Route.class) != null) {
+                path = getRoutePath(registry.getContext(),
+                        routeData.getNavigationTarget());
+            } else {
+                path = resolve(registry.getContext(),
+                        routeData.getNavigationTarget());
+                List<String> parentRoutePrefixes = getRoutePrefixes(
+                        routeData.getNavigationTarget(), null, path);
+                path = String.join("/", parentRoutePrefixes);
+            }
+            return RouteUtil
+                    .isAutolayoutEnabled(routeData.getNavigationTarget(), path)
+                    && registry.hasLayout(path)
+                    && collectRouteParentLayouts(registry.getLayout(path))
+                            .stream().anyMatch(layouts::contains);
+        });
     }
 
     /**

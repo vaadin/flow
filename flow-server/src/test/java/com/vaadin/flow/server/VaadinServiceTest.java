@@ -48,6 +48,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
@@ -73,6 +74,18 @@ public class VaadinServiceTest {
 
     @Tag("div")
     public static class TestView extends Component {
+
+    }
+
+    @Route("test")
+    @Tag("div")
+    public static class AnnotatedTestView extends Component {
+
+    }
+
+    @Route(value = "flow", autoLayout = false)
+    @Tag("div")
+    public static class OptOutAutoLayoutTestView extends Component {
 
     }
 
@@ -160,8 +173,8 @@ public class VaadinServiceTest {
         VaadinServiceInitListener initListener = event -> {
             ApplicationRouteRegistry.getInstance(event.getSource().getContext())
                     .setLayout(AutoLayout.class);
-            RouteConfiguration.forApplicationScope().setRoute("test",
-                    TestView.class, AutoLayout.class);
+            RouteConfiguration.forApplicationScope()
+                    .setAnnotatedRoute(AnnotatedTestView.class);
         };
         MockVaadinServletService service = new MockVaadinServletService();
         runWithClientRoute("test", false, service, () -> {
@@ -188,8 +201,6 @@ public class VaadinServiceTest {
         VaadinServiceInitListener initListener = event -> {
             ApplicationRouteRegistry.getInstance(event.getSource().getContext())
                     .setLayout(AutoLayout.class);
-            RouteConfiguration.forApplicationScope().setRoute("flow",
-                    TestView.class);
         };
         MockVaadinServletService service = new MockVaadinServletService();
         runWithClientRoute("test", true, service, () -> {
@@ -202,6 +213,40 @@ public class VaadinServiceTest {
                     e -> Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
             Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                    e -> Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT
+                            .equals(e.getName())));
+        });
+    }
+
+    @Test
+    public void should_reported_auto_layout_routes_not_used() {
+        UsageStatistics.resetEntries();
+        @Route(value = "not-in-auto-layout")
+        @Tag("div")
+        class LayoutTestView extends Component {
+        }
+        @Layout("layout")
+        class AutoLayout extends Component implements RouterLayout {
+        }
+        VaadinServiceInitListener initListener = event -> {
+            ApplicationRouteRegistry.getInstance(event.getSource().getContext())
+                    .setLayout(AutoLayout.class);
+            RouteConfiguration.forApplicationScope()
+                    .setAnnotatedRoute(OptOutAutoLayoutTestView.class);
+            RouteConfiguration.forApplicationScope()
+                    .setAnnotatedRoute(LayoutTestView.class);
+        };
+        MockVaadinServletService service = new MockVaadinServletService();
+        runWithClientRoute("test", false, service, () -> {
+            service.init(new MockInstantiator(initListener));
+
+            Assert.assertTrue(UsageStatistics.getEntries()
+                    .anyMatch(e -> Constants.STATISTIC_HAS_AUTO_LAYOUT
+                            .equals(e.getName())));
+            Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+                    e -> Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT
+                            .equals(e.getName())));
+            Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
                     e -> Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
         });
