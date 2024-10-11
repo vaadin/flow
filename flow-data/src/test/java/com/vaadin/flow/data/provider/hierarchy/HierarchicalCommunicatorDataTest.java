@@ -35,6 +35,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.Hierarch
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -368,22 +369,15 @@ public class HierarchicalCommunicatorDataTest {
         private static VaadinSession findOrCreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
+                DataCommunicatorTest.MockService service = Mockito
+                        .mock(DataCommunicatorTest.MockService.class);
+                Mockito.when(service.getRouteRegistry())
+                        .thenReturn(Mockito.mock(RouteRegistry.class));
                 session = new DataCommunicatorTest.AlwaysLockedVaadinSession(
-                        null);
+                        service);
                 VaadinSession.setCurrent(session);
             }
             return session;
         }
     }
-
-    public static class AlwaysLockedVaadinSession
-            extends DataCommunicatorTest.MockVaadinSession {
-
-        public AlwaysLockedVaadinSession(VaadinService service) {
-            super(service);
-            lock();
-        }
-
-    }
-
 }
