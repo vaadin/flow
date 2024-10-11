@@ -116,16 +116,9 @@ public class ApplicationConnection {
             registry.getMessageHandler().handleMessage(initialUidl);
         }
 
-        if (BrowserInfo.get().isFirefox()) {
-            // Sends in beforeunload in FF (don't support beacon in pagehide)
-            Browser.getWindow().addEventListener("beforeunload", e -> {
-                registry.getMessageSender().sendUnloadBeacon();
-            });
-        } else {
-            Browser.getWindow().addEventListener("pagehide", e -> {
-                registry.getMessageSender().sendUnloadBeacon();
-            });
-        }
+        Browser.getWindow().addEventListener("pagehide", e -> {
+            registry.getMessageSender().sendUnloadBeacon();
+        });
 
         Browser.getWindow().addEventListener("pageshow", e -> {
             // Currently only Safari gets here, sometimes when going back/foward
