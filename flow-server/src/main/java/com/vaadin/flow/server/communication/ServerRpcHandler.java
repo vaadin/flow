@@ -48,11 +48,15 @@ import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHa
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.Registration;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Handles a client-to-server message containing serialized RPC invocations.
@@ -358,8 +362,47 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().debug(
                         "Eager UI close ignored for @PreserveOnRefresh view");
             } else {
-                ui.close();
-                getLogger().debug("UI closed with a beacon request");
+                boolean firefox = ui.getSession().getBrowser().isFirefox();
+                if (firefox) {
+                    getLogger().debug(
+                            "FF originated UI close request, can't trust it, deferring to wait for a cancellation...");
+                    AtomicBoolean wasCancelled = new AtomicBoolean(false);
+
+                    // Firefox sends the beacon in beforeunload, but thanks to
+                    // firefox, we can't really know if it really leaves. We'll
+                    // need to defer the cleanup and let a timer in browser
+                    // cancel the request.
+                    Registration reg = ui.addPollListener(e -> {
+                        getLogger().debug(
+                                "... FF polled after beacond request, cancel cleanup.");
+                        wasCancelled.set(true);
+                    });
+                    Runnable cleanUiIfWasNotCancelled = () -> {
+                        getLogger().debug(
+                                "... checking if FF UI should be collected.");
+                        ui.access(() -> {
+                            if (!wasCancelled.get()) {
+                                ui.close();
+                                getLogger().debug(
+                                        "UI closed with a beacon request");
+                            } else {
+                                getLogger().debug("Its alive, ignore...");
+                                reg.remove();
+                            }
+                        });
+                    };
+
+                    // TODO figure out if Flow has some good existin scheduled
+                    // executor
+                    // or other place to do this kind of maintenance (trigger in
+                    // e.g. every request
+                    Executors.newSingleThreadScheduledExecutor().schedule(
+                            cleanUiIfWasNotCancelled, 5, TimeUnit.SECONDS);
+
+                } else {
+                    ui.close();
+                    getLogger().debug("UI closed with a beacon request");
+                }
             }
         }
 

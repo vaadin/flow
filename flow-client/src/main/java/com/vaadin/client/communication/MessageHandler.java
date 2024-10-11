@@ -129,7 +129,7 @@ public class MessageHandler {
      * {@link #UNDEFINED_SYNC_ID} ({@value #UNDEFINED_SYNC_ID}). This happens
      * between the bootstrap HTML being loaded and the first UI being rendered;
      */
-    private int lastSeenServerSyncId = UNDEFINED_SYNC_ID;
+    int lastSeenServerSyncId = UNDEFINED_SYNC_ID;
     private final Registry registry;
 
     private boolean initialMessageHandled;

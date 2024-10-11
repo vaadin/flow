@@ -43,6 +43,9 @@ public class MessageSender {
         extraJson.put(ApplicationConstants.UNLOAD_BEACON, true);
         JsonObject payload = preparePayload(dummyEmptyJson, extraJson);
         sendBeacon(registry.getXhrConnection().getUri(), payload.toJson());
+        // beacon request is not handled, syncId not synced :-) Normally this
+        // doesn't matter (as leaving the page), but FF has its quirks...
+        registry.getMessageHandler().lastSeenServerSyncId++;
     }
 
     public static native void sendBeacon(String url, String payload) /*-{

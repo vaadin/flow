@@ -19,6 +19,7 @@ package com.vaadin.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Timer;
 
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
@@ -120,6 +121,19 @@ public class ApplicationConnection {
             // Sends in beforeunload in FF (don't support beacon in pagehide)
             Browser.getWindow().addEventListener("beforeunload", e -> {
                 registry.getMessageSender().sendUnloadBeacon();
+
+                Timer timer = new Timer() {
+                    @Override
+                    public void run() {
+                        // If this gets executed, FF didn't finally leave the
+                        // page
+                        // and e.g. a file download happened.
+                        // Cancels the unload beacon by hitting the server
+                        registry.getPoller().poll();
+                        registry.getMessageSender().sendUnloadBeacon();
+                    }
+                };
+                timer.schedule(1000);
             });
         } else {
             Browser.getWindow().addEventListener("pagehide", e -> {
