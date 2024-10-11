@@ -80,7 +80,7 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        Map<String, AvailableViewInfo> menuRoutes = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuRoutes = MenuRegistry
                 .getMenuItems(true);
         menuRoutes.entrySet()
                 .removeIf(entry -> Optional.ofNullable(entry.getValue())
@@ -132,15 +132,14 @@ public class MenuRegistry {
      *            {@code true} to filter routes by authentication status
      * @return routes with view information
      */
-    public Map<String, AvailableViewInfo> getMenuItems(
+    public static Map<String, AvailableViewInfo> getMenuItems(
             boolean filterClientViews) {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forApplicationScope();
 
-        Map<String, AvailableViewInfo> menuRoutes = new HashMap<>();
-
-        menuRoutes.putAll(collectClientMenuItems(filterClientViews,
-                VaadinService.getCurrent().getDeploymentConfiguration()));
+        Map<String, AvailableViewInfo> menuRoutes = new HashMap<>(
+                collectClientMenuItems(filterClientViews, VaadinService
+                        .getCurrent().getDeploymentConfiguration()));
 
         collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
 

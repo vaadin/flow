@@ -100,8 +100,8 @@
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>3.5.0</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.5.0</maven.failsafe.plugin.version>
+        <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.5.1</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
@@ -257,12 +257,12 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.15.3</version>
+                <version>1.15.4</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>9.7</version>
+                <version>9.7.1</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
@@ -333,9 +333,9 @@
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.24.1</version>
                 <configuration>
-                    <configFile>https://raw.githubusercontent.com/vaadin/flow/main/eclipse/VaadinJavaConventions.xml</configFile>
+                    <configFile>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>https://raw.githubusercontent.com/vaadin/flow/main/eclipse/VaadinJavaConventions.xml</configJsFile>
+                    <configJsFile>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configJsFile>
                     <lineEnding>LF</lineEnding>
                 </configuration>
             </plugin>

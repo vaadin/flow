@@ -9,15 +9,15 @@
   "author": "Artur Signell",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polymer/polymer": "3.5.1",
+    "@polymer/polymer": "3.5.2",
     "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "3.2.0"
+    "lit": "3.2.1"
   },
   "devDependencies": {
     "async": "3.2.6",
     "glob": "10.4.5",
-    "typescript": "5.6.2",
+    "typescript": "5.6.3",
     "workbox-core": "7.1.0",
     "workbox-precaching": "7.1.0",
     "strip-css-comments": "5.0.0"
