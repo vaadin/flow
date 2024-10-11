@@ -615,7 +615,7 @@ public class RouteUtil {
                         service.getDeploymentConfiguration())
                 .keySet().stream().map(PathUtil::trimPath)
                 .filter(clientRoute -> Arrays.stream(flowRouteTemplates)
-                        .map(PathUtil::trimPath).toList().contains(clientRoute))
+                        .map(PathUtil::trimPath).anyMatch(clientRoute::equals))
                 .toList();
         if (!collisions.isEmpty()) {
             String msg = String.format(

@@ -32,8 +32,12 @@ import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -51,16 +55,16 @@ public abstract class AbstractScopeTest {
 
         private final ReentrantLock lock = new ReentrantLock();
 
-        public TestSession() {
-            super(null);
-            try {
-                Field serviceField = VaadinSession.class
-                        .getDeclaredField("service");
-                serviceField.setAccessible(true);
-                serviceField.set(this, Mockito.spy(VaadinService.class));
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+        public TestSession(VaadinService service) {
+            super(service);
+            // try {
+            // Field serviceField = VaadinSession.class
+            // .getDeclaredField("service");
+            // serviceField.setAccessible(true);
+            // serviceField.set(this, Mockito.spy(VaadinService.class));
+            // } catch (NoSuchFieldException | IllegalAccessException e) {
+            // throw new RuntimeException(e);
+            // }
         }
 
         @Override
@@ -146,8 +150,12 @@ public abstract class AbstractScopeTest {
 
     @SuppressWarnings("unchecked")
     protected VaadinSession mockSession() {
+        MockService service = Mockito.spy(MockService.class);
+        Mockito.when(service.getRouteRegistry())
+                .thenReturn(Mockito.mock(RouteRegistry.class));
+
         VaadinSession session = Mockito.mock(TestSession.class,
-                Mockito.withSettings().useConstructor());
+                Mockito.withSettings().useConstructor(service));
         doCallRealMethod().when(session).setAttribute(Mockito.any(Class.class),
                 Mockito.any());
         doCallRealMethod().when(session).getAttribute(Mockito.any(Class.class));
@@ -189,4 +197,12 @@ public abstract class AbstractScopeTest {
     }
 
     protected abstract Scope getScope();
+
+    public static abstract class MockService extends VaadinService {
+
+        @Override
+        public RouteRegistry getRouteRegistry() {
+            return null;
+        }
+    }
 }
