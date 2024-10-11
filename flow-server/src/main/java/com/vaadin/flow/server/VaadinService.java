@@ -66,6 +66,8 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
@@ -304,6 +306,7 @@ public abstract class VaadinService implements Serializable {
                 addRouterUsageStatistics();
             }
             routeDataList.stream().map(Object::toString).forEach(logger::debug);
+            addAutoLayoutUsageStatistics();
             DevToolsToken.init(this);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
@@ -329,6 +332,25 @@ public abstract class VaadinService implements Serializable {
                     Version.getFullVersion());
         }
         UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
+    }
+
+    private void addAutoLayoutUsageStatistics() {
+        if (getRouteRegistry() instanceof AbstractRouteRegistry registry
+                && RouteUtil.hasAutoLayout(registry)) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_AUTO_LAYOUT,
+                    null);
+            if (RouteUtil.hasClientRouteWithAutoLayout(
+                    getDeploymentConfiguration())) {
+                UsageStatistics.markAsUsed(
+                        Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT,
+                        null);
+            }
+            if (RouteUtil.hasServerRouteWithAutoLayout(registry)) {
+                UsageStatistics.markAsUsed(
+                        Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT,
+                        null);
+            }
+        }
     }
 
     /**
