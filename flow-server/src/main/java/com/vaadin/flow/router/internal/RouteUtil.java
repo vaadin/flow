@@ -611,14 +611,11 @@ public class RouteUtil {
         }
 
         List<String> collisions = MenuRegistry
-                .collectClientMenuItems(
-                        false, service.getDeploymentConfiguration())
-                .keySet().stream()
-                .map(clientRoute -> clientRoute.startsWith("/")
-                        ? clientRoute.substring(1)
-                        : clientRoute)
-                .filter(clientRoute -> Arrays.asList(flowRouteTemplates)
-                        .contains(clientRoute))
+                .collectClientMenuItems(false,
+                        service.getDeploymentConfiguration())
+                .keySet().stream().map(PathUtil::trimPath)
+                .filter(clientRoute -> Arrays.stream(flowRouteTemplates)
+                        .map(PathUtil::trimPath).toList().contains(clientRoute))
                 .toList();
         if (!collisions.isEmpty()) {
             String msg = String.format(

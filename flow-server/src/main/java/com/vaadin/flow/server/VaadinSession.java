@@ -151,12 +151,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public VaadinSession(VaadinService service) {
         this.service = service;
-
-        // null-check needed due to service being transient field
-        if (service != null) {
-            RouteUtil.checkForClientRouteCollisions(
-                    service.getRouteRegistry().getRegisteredRoutes());
-        }
+        RouteUtil.checkForClientRouteCollisions(
+                service.getRouteRegistry().getRegisteredRoutes());
         resourceRegistry = createStreamResourceRegistry();
     }
 

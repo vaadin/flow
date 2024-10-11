@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -483,6 +484,15 @@ public class VaadinSessionTest {
     public void valueUnbound_sessionIsNotInitialized_noAnyInteractions() {
         VaadinSession session = Mockito.spy(TestVaadinSession.class);
 
+        try {
+            Field serviceField = VaadinSession.class
+                    .getDeclaredField("service");
+            serviceField.setAccessible(true);
+            serviceField.set(session, null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
         HttpSessionBindingEvent event = Mockito
                 .mock(HttpSessionBindingEvent.class);
         session.valueUnbound(null);
@@ -496,7 +506,7 @@ public class VaadinSessionTest {
     public static class TestVaadinSession extends VaadinSession {
 
         public TestVaadinSession() {
-            super(null);
+            super(new MockVaadinServletService());
         }
     }
 
