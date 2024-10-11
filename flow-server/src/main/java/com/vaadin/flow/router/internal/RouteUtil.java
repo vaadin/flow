@@ -17,6 +17,7 @@ package com.vaadin.flow.router.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,12 +51,14 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
  * Utility class with methods for route handling.
@@ -589,8 +592,17 @@ public class RouteUtil {
 
     }
 
-    public static void checkForClientRouteCollisions(
-            List<RouteData> flowRoutes) {
+    /**
+     * Checks the given list of Flow routes for potential collisions with Hilla
+     * routes.
+     *
+     * @param flowRoutes
+     *            Flow routes to check against
+     * @throws InvalidRouteConfigurationException
+     *             if a collision is detected
+     */
+    public static void checkForClientRouteCollisions(List<RouteData> flowRoutes)
+            throws InvalidRouteConfigurationException {
         VaadinService service = VaadinService.getCurrent();
         if (service == null) {
             return;
@@ -603,8 +615,18 @@ public class RouteUtil {
         }
     }
 
+    /**
+     * Checks the given array of Flow route templates for potential collisions
+     * with Hilla routes.
+     *
+     * @param flowRouteTemplates
+     *            Flow routes to check against
+     * @throws InvalidRouteConfigurationException
+     *             if a collision is detected
+     */
     public static void checkForClientRouteCollisions(
-            String... flowRouteTemplates) {
+            String... flowRouteTemplates)
+            throws InvalidRouteConfigurationException {
         VaadinService service = VaadinService.getCurrent();
         if (service == null) {
             return;
@@ -624,6 +646,63 @@ public class RouteUtil {
                     String.join(", ", collisions));
             throw new InvalidRouteConfigurationException(msg);
         }
+    }
+
+    /**
+     * Check if the given registry has any auto layouts added
+     * with @{@link Layout} annotation.
+     *
+     * @param registry
+     *            the registry to check
+     * @return {@code true} if the registry has any auto layouts
+     */
+    public static boolean hasAutoLayout(AbstractRouteRegistry registry) {
+        return !registry.getLayouts().isEmpty();
+    }
+
+    /**
+     * Check if currently registered client routes use auto layout based on
+     * {@link AvailableViewInfo#flowLayout()}.
+     *
+     * @param configuration
+     *            deployment configuration
+     * @return {@code true} if any client route has auto layout
+     */
+    public static boolean hasClientRouteWithAutoLayout(
+            AbstractConfiguration configuration) {
+        return MenuRegistry.collectClientMenuItems(false, configuration)
+                .values().stream().anyMatch(AvailableViewInfo::flowLayout);
+    }
+
+    /**
+     * Check if the given registry has any routes using auto layout.
+     *
+     * @param registry
+     *            the registry to check
+     * @return {@code true} if the registry has any auto layouts
+     */
+    public static boolean hasServerRouteWithAutoLayout(
+            AbstractRouteRegistry registry) {
+        Collection<?> layouts = registry.getLayouts();
+        return registry.getRegisteredRoutes().stream().anyMatch(routeData -> {
+            String path;
+            if (routeData.getNavigationTarget()
+                    .getAnnotation(Route.class) != null) {
+                path = getRoutePath(registry.getContext(),
+                        routeData.getNavigationTarget());
+            } else {
+                path = resolve(registry.getContext(),
+                        routeData.getNavigationTarget());
+                List<String> parentRoutePrefixes = getRoutePrefixes(
+                        routeData.getNavigationTarget(), null, path);
+                path = String.join("/", parentRoutePrefixes);
+            }
+            return RouteUtil
+                    .isAutolayoutEnabled(routeData.getNavigationTarget(), path)
+                    && registry.hasLayout(path)
+                    && collectRouteParentLayouts(registry.getLayout(path))
+                            .stream().anyMatch(layouts::contains);
+        });
     }
 
     /**
