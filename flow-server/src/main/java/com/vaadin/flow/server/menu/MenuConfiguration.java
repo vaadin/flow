@@ -155,13 +155,14 @@ public final class MenuConfiguration {
             String activeLocation = PathUtil.trimPath(
                     ui.getInternals().getActiveViewLocation().getPath());
 
-            Map<String, AvailableViewInfo> menuItems = MenuRegistry.getMenuItems(
-                    false);
+            Map<String, AvailableViewInfo> menuItems = MenuRegistry
+                    .getMenuItems(false);
 
             return menuItems.entrySet().stream()
                     .filter(menuEntry -> PathUtil.trimPath(menuEntry.getKey())
-                            .equals(activeLocation)).map(Map.Entry::getValue)
-                    .map(AvailableViewInfo::title).findFirst();
+                            .equals(activeLocation))
+                    .map(Map.Entry::getValue).map(AvailableViewInfo::title)
+                    .findFirst();
         }
         return Optional.empty();
     }
