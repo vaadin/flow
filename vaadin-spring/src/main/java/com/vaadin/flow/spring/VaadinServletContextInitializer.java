@@ -1086,7 +1086,7 @@ public class VaadinServletContextInitializer
                             AtomicBoolean parentIsAllowedByPackageProperties = new AtomicBoolean(
                                     true);
                             if (parents.stream()
-                                    .anyMatch(parent -> shouldPathBeScanned(
+                                    .allMatch(parent -> shouldPathBeScanned(
                                             path.substring(parent.length()),
                                             parent,
                                             parentIsAllowedByPackageProperties))) {
