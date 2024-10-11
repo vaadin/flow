@@ -668,4 +668,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public boolean isDefinedSize() {
         return true;
     }
+
+    @Override
+    public Stream<T> getRequestedRangeItems() {
+        Stream<T> items = super.getRequestedRangeItems();
+        return Stream.concat(items, dataControllers.values().stream()
+                .flatMap(controller -> controller.getRequestedRangeItems()));
+    }
 }

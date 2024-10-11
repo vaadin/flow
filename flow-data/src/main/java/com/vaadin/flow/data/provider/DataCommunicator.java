@@ -17,6 +17,7 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -557,6 +558,20 @@ public class DataCommunicator<T> implements Serializable {
      */
     public boolean isItemActive(T item) {
         return getKeyMapper().has(item);
+    }
+
+    public Stream<T> getRequestedRangeItems() {
+        Range activeRange = Range.between(activeStart,
+                activeStart + activeKeyOrder.size());
+        Range activeRequestedRange = requestedRange.restrictTo(activeRange);
+
+        HashSet<T> items = new HashSet<>();
+        for (int i = activeRequestedRange.getStart(); i < activeRequestedRange
+                .getEnd(); i++) {
+            items.add(keyMapper.get(activeKeyOrder.get(i - activeStart)));
+        }
+
+        return items.stream();
     }
 
     /**

@@ -17,6 +17,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -362,6 +363,20 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         if (!range.isEmpty()) {
             action.accept(range);
         }
+    }
+
+    public Stream<T> getRequestedRangeItems() {
+        Range activeRange = Range.between(activeStart,
+                activeStart + activeKeyOrder.size());
+        Range activeRequestedRange = requestedRange.restrictTo(activeRange);
+
+        HashSet<T> items = new HashSet<>();
+        for (int i = activeRequestedRange.getStart(); i < activeRequestedRange
+                .getEnd(); i++) {
+            items.add(keyMapper.get(activeKeyOrder.get(i - activeStart)));
+        }
+
+        return items.stream();
     }
 
 }
