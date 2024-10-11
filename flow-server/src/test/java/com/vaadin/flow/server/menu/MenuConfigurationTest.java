@@ -355,6 +355,12 @@ public class MenuConfigurationTest {
             // from ViewConfig.title, when flow layout is false
             Assert.assertEquals("Hilla", header.get());
 
+            Mockito.when(location.getPath()).thenReturn("/flow/hello");
+            header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from ViewConfig.title, when flow layout is false
+            Assert.assertEquals("Hello", header.get());
+
             Mockito.when(uiInternals.getActiveRouterTargetsChain())
                     .thenReturn(List.of(new RouteOrLayoutWithDynamicTitle()));
             header = MenuConfiguration.getPageHeader();
@@ -522,6 +528,19 @@ public class MenuConfigurationTest {
                     "route": "hilla",
                     "title": "Hilla",
                     "flowLayout": false
+                  }
+                ]
+              },
+              {
+                "route": "flow",
+                "params": {},
+                "children": [
+                  {
+                    "route": "hello",
+                    "menu": {
+                      "title": "Hello For Flow Layout"
+                    },
+                    "title": "Hello"
                   }
                 ]
               }
