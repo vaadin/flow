@@ -1,13 +1,6 @@
 {
-  "name": "flow-default-dependencies",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Artur Signell",
-  "license": "Apache-2.0",
+  "private": true,
+  "description": "A list of default Flow dependencies",
   "dependencies": {
     "@polymer/polymer": "3.5.2",
     "@vaadin/common-frontend": "0.0.19",
