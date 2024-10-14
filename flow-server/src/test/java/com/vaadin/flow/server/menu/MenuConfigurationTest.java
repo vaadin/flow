@@ -143,9 +143,9 @@ public class MenuConfigurationTest {
         List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
         Assert.assertEquals(
                 "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
-                4, menuEntries.size());
-        assertOrder(menuEntries,
-                new String[] { "", "/about", "/hilla", "/hilla/sub" });
+                7, menuEntries.size());
+        assertOrder(menuEntries, new String[] { "/", "/about", "/hilla",
+                "/hilla/sub", "/opt_params", "/params", "/wc_params" });
     }
 
     @Test
@@ -166,9 +166,10 @@ public class MenuConfigurationTest {
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
-        Assert.assertEquals(5, menuEntries.size());
-        assertOrder(menuEntries, new String[] { "", "/home", "/info", "/param",
-                "/param/varargs" });
+        Assert.assertEquals(8, menuEntries.size());
+        assertOrder(menuEntries,
+                new String[] { "/", "/home", "/info", "/opt_params", "/param",
+                        "/param/varargs", "/params", "/wc_params" });
 
         Map<String, MenuEntry> mapMenuItems = menuEntries.stream()
                 .collect(Collectors.toMap(MenuEntry::path, item -> item));
@@ -385,8 +386,8 @@ public class MenuConfigurationTest {
     private void assertClientRoutes(Map<String, MenuEntry> menuOptions,
             boolean authenticated, boolean hasRole) {
         Assert.assertTrue("Client route '' missing",
-                menuOptions.containsKey(""));
-        Assert.assertEquals("Public", menuOptions.get("").title());
+                menuOptions.containsKey("/"));
+        Assert.assertEquals("Public", menuOptions.get("/").title());
 
         if (authenticated) {
             Assert.assertTrue("Client route 'about' missing",

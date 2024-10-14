@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -82,10 +83,8 @@ public class MenuRegistry {
     public static Map<String, AvailableViewInfo> collectMenuItems() {
         Map<String, AvailableViewInfo> menuRoutes = MenuRegistry
                 .getMenuItems(true);
-        menuRoutes.entrySet()
-                .removeIf(entry -> Optional.ofNullable(entry.getValue())
-                        .map(AvailableViewInfo::menu).map(MenuData::isExclude)
-                        .orElse(false));
+        filterMenuItems(menuRoutes);
+
         return menuRoutes;
     }
 
@@ -115,7 +114,8 @@ public class MenuRegistry {
         return collectMenuItems().entrySet().stream().map(entry -> {
             AvailableViewInfo value = entry.getValue();
             return new AvailableViewInfo(value.title(), value.rolesAllowed(),
-                    value.loginRequired(), entry.getKey(), value.lazy(),
+                    value.loginRequired(),
+                    getMenuLink(entry.getValue(), entry.getKey()), value.lazy(),
                     value.register(), value.menu(), value.children(),
                     value.routeParameters(), value.flowLayout());
         }).sorted(getMenuOrderComparator(
@@ -437,6 +437,17 @@ public class MenuRegistry {
         }
     }
 
+    private static boolean hasRequiredParameter(AvailableViewInfo viewInfo) {
+        final Map<String, RouteParamType> routeParameters = viewInfo
+                .routeParameters();
+        if (routeParameters != null && !routeParameters.isEmpty()
+                && routeParameters.values().stream().anyMatch(
+                        paramType -> paramType == RouteParamType.REQUIRED)) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Check view against authentication state.
      * <p>
@@ -539,5 +550,38 @@ public class MenuRegistry {
             return ordersCompareTo != 0 ? ordersCompareTo
                     : collator.compare(o1.route(), o2.route());
         };
+    }
+
+    private static String getMenuLink(AvailableViewInfo info,
+            String defaultMenuLink) {
+        if (info.routeParameters() == null
+                || info.routeParameters().isEmpty()) {
+            return (defaultMenuLink.startsWith("/")) ? defaultMenuLink
+                    : "/" + defaultMenuLink;
+        }
+        // menu link with omitted route parameters
+        final var parameterNames = info.routeParameters().keySet();
+        return Stream.of(defaultMenuLink.split("/")).filter(
+                part -> parameterNames.stream().noneMatch(part::startsWith))
+                .collect(Collectors.joining("/"));
+    }
+
+    private static void filterMenuItems(
+            Map<String, AvailableViewInfo> menuRoutes) {
+        for (var path : new HashSet<>(menuRoutes.keySet())) {
+            if (!menuRoutes.containsKey(path)) {
+                continue;
+            }
+            var viewInfo = menuRoutes.get(path);
+            // Remove following, including nested ones:
+            // - routes with required parameters
+            // - routes with exclude=true
+            if (viewInfo.menu().isExclude() || hasRequiredParameter(viewInfo)) {
+                menuRoutes.remove(path);
+                if (viewInfo.children() != null) {
+                    removeChildren(menuRoutes, viewInfo, path);
+                }
+            }
+        }
     }
 }
