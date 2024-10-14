@@ -316,6 +316,9 @@ public abstract class VaadinService implements Serializable {
             UsageStatistics.markAsUsed("flow/bun", null);
         }
 
+        RouteUtil.checkForClientRouteCollisions(this,
+                getRouteRegistry().getRegisteredRoutes());
+
         initialized = true;
     }
 

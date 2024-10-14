@@ -599,14 +599,17 @@ public class RouteUtil {
      * Note: Routes will only be checked in development mode, when Hilla is in
      * use.
      *
+     * @param service
+     *            VaadinService instance
      * @param flowRoutes
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
      */
-    public static void checkForClientRouteCollisions(List<RouteData> flowRoutes)
+    public static void checkForClientRouteCollisions(VaadinService service,
+            List<RouteData> flowRoutes)
             throws InvalidRouteConfigurationException {
-        checkForClientRouteCollisions(flowRoutes.stream()
+        checkForClientRouteCollisions(service, flowRoutes.stream()
                 .map(RouteData::getTemplate).toArray(String[]::new));
     }
 
@@ -617,15 +620,16 @@ public class RouteUtil {
      * Note: Routes will only be checked in development mode, when Hilla is in
      * use.
      *
+     * @param service
+     *            VaadinService instance
      * @param flowRouteTemplates
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
      */
-    public static void checkForClientRouteCollisions(
+    public static void checkForClientRouteCollisions(VaadinService service,
             String... flowRouteTemplates)
             throws InvalidRouteConfigurationException {
-        VaadinService service = VaadinService.getCurrent();
         if (service == null
                 || service.getDeploymentConfiguration().isProductionMode()
                 || !FrontendUtils.isHillaUsed(service

@@ -403,7 +403,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
-        RouteUtil.checkForClientRouteCollisions(
+        RouteUtil.checkForClientRouteCollisions(VaadinService.getCurrent(),
                 HasUrlParameterFormat.getTemplate(path, navigationTarget));
         configureWithFullTemplate(path, navigationTarget,
                 (configuration, fullTemplate) -> configuration
