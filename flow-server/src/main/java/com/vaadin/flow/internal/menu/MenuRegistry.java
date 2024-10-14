@@ -31,8 +31,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
@@ -303,6 +306,53 @@ public class MenuRegistry {
             boolean filterClientViews, AbstractConfiguration configuration,
             VaadinRequest vaadinRequest) {
 
+        Map<String, AvailableViewInfo> configurations = new HashMap<>();
+
+        collectClientMenuItems(configuration,
+                clientViewConfig -> collectClientViews("", clientViewConfig,
+                        configurations));
+
+        if (filterClientViews && !configurations.isEmpty()) {
+            filterClientViews(configurations, vaadinRequest);
+        }
+
+        return configurations;
+    }
+
+    /**
+     * Determines whether the application contains a Hilla auto layout.
+     * <p>
+     * This method checks if any of the client view configurations in the
+     * {@code file-routes.json} file correspond to a main menu layout, i.e. has
+     * children views.
+     *
+     * @param configuration
+     *            the {@link AbstractConfiguration} containing the application
+     *            configuration
+     * @return {@code true} if a Hilla auto layout is present in the
+     *         configuration, {@code false} otherwise
+     */
+    public static boolean hasHillaAutoLayout(
+            AbstractConfiguration configuration) {
+        AtomicBoolean hasHillaAutoLayout = new AtomicBoolean(false);
+        collectClientMenuItems(configuration, clientViewConfig -> {
+            if (!hasHillaAutoLayout.get() && isMainLayout(clientViewConfig)) {
+                hasHillaAutoLayout.compareAndSet(false, true);
+            }
+        });
+        return hasHillaAutoLayout.get();
+    }
+
+    private static boolean isMainLayout(AvailableViewInfo viewInfo) {
+        return (viewInfo.route() == null || viewInfo.route().isBlank())
+                && viewInfo.children() != null;
+    }
+
+    private static void collectClientMenuItems(
+            AbstractConfiguration configuration,
+            SerializableConsumer<AvailableViewInfo> viewInfoConsumer) {
+        Objects.requireNonNull(configuration);
+        Objects.requireNonNull(viewInfoConsumer);
         URL viewsJsonAsResource = getViewsJsonAsResource(configuration);
         if (viewsJsonAsResource == null) {
             LoggerFactory.getLogger(MenuRegistry.class).debug(
@@ -310,10 +360,8 @@ public class MenuRegistry {
                     FILE_ROUTES_JSON_NAME,
                     configuration.isProductionMode() ? "'META-INF/VAADIN'"
                             : "'frontend/generated'");
-            return Collections.emptyMap();
+            return;
         }
-
-        Map<String, AvailableViewInfo> configurations = new HashMap<>();
 
         try (InputStream source = viewsJsonAsResource.openStream()) {
             if (source != null) {
@@ -322,20 +370,13 @@ public class MenuRegistry {
                         false);
                 mapper.readValue(source,
                         new TypeReference<List<AvailableViewInfo>>() {
-                        }).forEach(clientViewConfig -> collectClientViews("",
-                                clientViewConfig, configurations));
+                        }).forEach(viewInfoConsumer);
             }
         } catch (IOException e) {
             LoggerFactory.getLogger(MenuRegistry.class).warn(
                     "Failed load {} from {}", FILE_ROUTES_JSON_NAME,
                     viewsJsonAsResource.getPath(), e);
         }
-
-        if (filterClientViews) {
-            filterClientViews(configurations, vaadinRequest);
-        }
-
-        return configurations;
     }
 
     private static void collectClientViews(String basePath,

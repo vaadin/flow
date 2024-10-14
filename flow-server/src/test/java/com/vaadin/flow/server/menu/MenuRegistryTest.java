@@ -59,6 +59,9 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_PROD_PATH;
@@ -329,6 +332,38 @@ public class MenuRegistryTest {
         Assert.assertEquals(4, menuItems.size());
         assertOrder(menuItems,
                 new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasLayout_true()
+            throws IOException {
+        JsonArray fileRoutes = JsonUtil.parse(testClientRouteFile);
+        JsonObject layout = fileRoutes.getObject(0);
+        JsonArray children = layout.getArray("children");
+        Assert.assertNotNull(children);
+        Assert.assertTrue(children.length() > 0);
+
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        boolean hasHillaAutoLayout = MenuRegistry
+                .hasHillaAutoLayout(vaadinService.getDeploymentConfiguration());
+        Assert.assertTrue(hasHillaAutoLayout);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasNoLayout_false()
+            throws IOException {
+        Assert.assertFalse(noLayoutsRouteFile.contains("\"children\""));
+
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), noLayoutsRouteFile);
+
+        boolean hasHillaAutoLayout = MenuRegistry
+                .hasHillaAutoLayout(vaadinService.getDeploymentConfiguration());
+        Assert.assertFalse(hasHillaAutoLayout);
     }
 
     private void assertOrder(List<AvailableViewInfo> menuItems,
@@ -680,6 +715,21 @@ public class MenuRegistryTest {
                     ]
                   }
                 ]
+              }
+            ]
+            """;
+
+    String noLayoutsRouteFile = """
+            [
+              {
+                "route": "",
+                "menu": {
+                  "title": "Public page",
+                  "icon": "vaadin:group"
+                },
+                "flowLayout": false,
+                "params": {},
+                "title": "Public"
               }
             ]
             """;
