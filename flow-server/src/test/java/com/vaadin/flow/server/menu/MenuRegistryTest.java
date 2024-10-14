@@ -59,6 +59,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
@@ -83,6 +84,8 @@ public class MenuRegistryTest {
 
     private AutoCloseable closeable;
 
+    private MockedStatic<FrontendUtils> frontendUtils;
+
     @Before
     public void init() {
         closeable = MockitoAnnotations.openMocks(this);
@@ -102,6 +105,10 @@ public class MenuRegistryTest {
         Mockito.when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.getRoot());
 
+        frontendUtils = Mockito.mockStatic(FrontendUtils.class);
+        frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                .thenReturn(true);
+
         VaadinService.setCurrent(vaadinService);
 
         session = new MockVaadinSession(vaadinService) {
@@ -119,6 +126,7 @@ public class MenuRegistryTest {
 
     @After
     public void cleanup() throws Exception {
+        frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
     }

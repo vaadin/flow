@@ -596,6 +596,9 @@ public class RouteUtil {
      * Checks the given list of Flow routes for potential collisions with Hilla
      * routes.
      *
+     * Note: Routes will only be checked in development mode, when Hilla is in
+     * use.
+     *
      * @param flowRoutes
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
@@ -603,21 +606,16 @@ public class RouteUtil {
      */
     public static void checkForClientRouteCollisions(List<RouteData> flowRoutes)
             throws InvalidRouteConfigurationException {
-        VaadinService service = VaadinService.getCurrent();
-        if (service == null) {
-            return;
-        }
-
-        if (FrontendUtils.isHillaUsed(
-                service.getDeploymentConfiguration().getFrontendFolder())) {
-            checkForClientRouteCollisions(flowRoutes.stream()
-                    .map(RouteData::getTemplate).toArray(String[]::new));
-        }
+        checkForClientRouteCollisions(flowRoutes.stream()
+                .map(RouteData::getTemplate).toArray(String[]::new));
     }
 
     /**
      * Checks the given array of Flow route templates for potential collisions
      * with Hilla routes.
+     *
+     * Note: Routes will only be checked in development mode, when Hilla is in
+     * use.
      *
      * @param flowRouteTemplates
      *            Flow routes to check against
@@ -628,7 +626,10 @@ public class RouteUtil {
             String... flowRouteTemplates)
             throws InvalidRouteConfigurationException {
         VaadinService service = VaadinService.getCurrent();
-        if (service == null) {
+        if (service == null
+                || service.getDeploymentConfiguration().isProductionMode()
+                || !FrontendUtils.isHillaUsed(service
+                        .getDeploymentConfiguration().getFrontendFolder())) {
             return;
         }
 
