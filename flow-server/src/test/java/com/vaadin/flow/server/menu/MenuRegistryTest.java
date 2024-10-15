@@ -377,7 +377,8 @@ public class MenuRegistryTest {
         assertHasHillaMainLayout(nonEmptyRoute, false);
     }
 
-    private void assertHasHillaMainLayout(String fileRoutes, boolean expected) throws IOException {
+    private void assertHasHillaMainLayout(String fileRoutes, boolean expected)
+            throws IOException {
         File generated = tmpDir.newFolder(GENERATED);
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), fileRoutes);

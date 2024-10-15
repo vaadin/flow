@@ -48,7 +48,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
@@ -75,6 +74,23 @@ public class MenuRegistry {
 
     private static final Logger log = LoggerFactory
             .getLogger(MenuRegistry.class);
+
+    /**
+     * File routes lazy loading and caching.
+     */
+    private enum FileRoutesCache {
+        INSTANCE;
+
+        private List<AvailableViewInfo> cachedResource;
+
+        private List<AvailableViewInfo> get(
+                AbstractConfiguration configuration) {
+            if (cachedResource == null) {
+                cachedResource = loadClientMenuItems(configuration);
+            }
+            return cachedResource;
+        }
+    }
 
     /**
      * Collect views with menu annotation for automatic menu population. All
@@ -307,7 +323,8 @@ public class MenuRegistry {
 
         Map<String, AvailableViewInfo> configurations = new HashMap<>();
 
-        collectClientMenuItems(configuration).forEach(viewInfo -> collectClientViews("", viewInfo, configurations));
+        collectClientMenuItems(configuration).forEach(
+                viewInfo -> collectClientViews("", viewInfo, configurations));
 
         if (filterClientViews && !configurations.isEmpty()) {
             filterClientViews(configurations, vaadinRequest);
@@ -317,16 +334,21 @@ public class MenuRegistry {
     }
 
     /**
-     * Determines whether the application contains a Hilla automatic main layout.
+     * Determines whether the application contains a Hilla automatic main
+     * layout.
      * <p>
-     * This method detects only a top-level main layout, when the following conditions are met:
+     * This method detects only a top-level main layout, when the following
+     * conditions are met:
      * <ul>
-     * <li>only one single root element is present in {@code file-routes.json}</li>
+     * <li>only one single root element is present in
+     * {@code file-routes.json}</li>
      * <li>this element has no or blank {@code route} parameter</li>
-     * <li>this element has non-null children array, which may or may not be empty</li>
+     * <li>this element has non-null children array, which may or may not be
+     * empty</li>
      * </ul>
      * <p>
-     * This method doesn't check nor does it detect the nested layouts, i.e. that are not root entries.
+     * This method doesn't check nor does it detect the nested layouts, i.e.
+     * that are not root entries.
      *
      * @param configuration
      *            the {@link AbstractConfiguration} containing the application
@@ -336,8 +358,10 @@ public class MenuRegistry {
      */
     public static boolean hasHillaMainLayout(
             AbstractConfiguration configuration) {
-        List<AvailableViewInfo> viewInfos = collectClientMenuItems(configuration);
-        return viewInfos.size() == 1 && isMainLayout(viewInfos.iterator().next());
+        List<AvailableViewInfo> viewInfos = collectClientMenuItems(
+                configuration);
+        return viewInfos.size() == 1
+                && isMainLayout(viewInfos.iterator().next());
     }
 
     private static boolean isMainLayout(AvailableViewInfo viewInfo) {
@@ -345,7 +369,24 @@ public class MenuRegistry {
                 && viewInfo.children() != null;
     }
 
+    /**
+     * Caches the loaded file routes data in production. Always loads from a
+     * local file in development.
+     *
+     * @param configuration
+     *            application configuration
+     * @return file routes data loaded from {@code file-routes.json}
+     */
     private static List<AvailableViewInfo> collectClientMenuItems(
+            AbstractConfiguration configuration) {
+        if (configuration.isProductionMode()) {
+            return FileRoutesCache.INSTANCE.get(configuration);
+        } else {
+            return loadClientMenuItems(configuration);
+        }
+    }
+
+    private static List<AvailableViewInfo> loadClientMenuItems(
             AbstractConfiguration configuration) {
         Objects.requireNonNull(configuration);
         URL viewsJsonAsResource = getViewsJsonAsResource(configuration);
@@ -355,7 +396,8 @@ public class MenuRegistry {
                     ObjectMapper mapper = new ObjectMapper().configure(
                             DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                             false);
-                    return mapper.readValue(source, new TypeReference<>() {});
+                    return mapper.readValue(source, new TypeReference<>() {
+                    });
                 }
             } catch (IOException e) {
                 LoggerFactory.getLogger(MenuRegistry.class).warn(
