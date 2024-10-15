@@ -9,7 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@vaadin/router": "2.0.0-rc4"
+    "@vaadin/router": "2.0.0"
   },
   "devDependencies": {
   }
