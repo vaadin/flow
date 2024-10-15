@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,10 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
@@ -308,9 +307,7 @@ public class MenuRegistry {
 
         Map<String, AvailableViewInfo> configurations = new HashMap<>();
 
-        collectClientMenuItems(configuration,
-                clientViewConfig -> collectClientViews("", clientViewConfig,
-                        configurations));
+        collectClientMenuItems(configuration).forEach(viewInfo -> collectClientViews("", viewInfo, configurations));
 
         if (filterClientViews && !configurations.isEmpty()) {
             filterClientViews(configurations, vaadinRequest);
@@ -320,27 +317,27 @@ public class MenuRegistry {
     }
 
     /**
-     * Determines whether the application contains a Hilla auto layout.
+     * Determines whether the application contains a Hilla automatic main layout.
      * <p>
-     * This method checks if any of the client view configurations in the
-     * {@code file-routes.json} file correspond to a main menu layout, i.e. has
-     * children views.
+     * This method detects only a top-level main layout, when the following conditions are met:
+     * <ul>
+     * <li>only one single root element is present in {@code file-routes.json}</li>
+     * <li>this element has no or blank {@code route} parameter</li>
+     * <li>this element has non-null children array, which may or may not be empty</li>
+     * </ul>
+     * <p>
+     * This method doesn't check nor does it detect the nested layouts, i.e. that are not root entries.
      *
      * @param configuration
      *            the {@link AbstractConfiguration} containing the application
      *            configuration
-     * @return {@code true} if a Hilla auto layout is present in the
+     * @return {@code true} if a Hilla automatic main layout is present in the
      *         configuration, {@code false} otherwise
      */
-    public static boolean hasHillaAutoLayout(
+    public static boolean hasHillaMainLayout(
             AbstractConfiguration configuration) {
-        AtomicBoolean hasHillaAutoLayout = new AtomicBoolean(false);
-        collectClientMenuItems(configuration, clientViewConfig -> {
-            if (!hasHillaAutoLayout.get() && isMainLayout(clientViewConfig)) {
-                hasHillaAutoLayout.compareAndSet(false, true);
-            }
-        });
-        return hasHillaAutoLayout.get();
+        List<AvailableViewInfo> viewInfos = collectClientMenuItems(configuration);
+        return viewInfos.size() == 1 && isMainLayout(viewInfos.iterator().next());
     }
 
     private static boolean isMainLayout(AvailableViewInfo viewInfo) {
@@ -348,35 +345,31 @@ public class MenuRegistry {
                 && viewInfo.children() != null;
     }
 
-    private static void collectClientMenuItems(
-            AbstractConfiguration configuration,
-            SerializableConsumer<AvailableViewInfo> viewInfoConsumer) {
+    private static List<AvailableViewInfo> collectClientMenuItems(
+            AbstractConfiguration configuration) {
         Objects.requireNonNull(configuration);
-        Objects.requireNonNull(viewInfoConsumer);
         URL viewsJsonAsResource = getViewsJsonAsResource(configuration);
-        if (viewsJsonAsResource == null) {
+        if (viewsJsonAsResource != null) {
+            try (InputStream source = viewsJsonAsResource.openStream()) {
+                if (source != null) {
+                    ObjectMapper mapper = new ObjectMapper().configure(
+                            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                            false);
+                    return mapper.readValue(source, new TypeReference<>() {});
+                }
+            } catch (IOException e) {
+                LoggerFactory.getLogger(MenuRegistry.class).warn(
+                        "Failed load {} from {}", FILE_ROUTES_JSON_NAME,
+                        viewsJsonAsResource.getPath(), e);
+            }
+        } else {
             LoggerFactory.getLogger(MenuRegistry.class).debug(
                     "No {} found under {} directory. Skipping client route registration.",
                     FILE_ROUTES_JSON_NAME,
                     configuration.isProductionMode() ? "'META-INF/VAADIN'"
                             : "'frontend/generated'");
-            return;
         }
-
-        try (InputStream source = viewsJsonAsResource.openStream()) {
-            if (source != null) {
-                ObjectMapper mapper = new ObjectMapper().configure(
-                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                        false);
-                mapper.readValue(source,
-                        new TypeReference<List<AvailableViewInfo>>() {
-                        }).forEach(viewInfoConsumer);
-            }
-        } catch (IOException e) {
-            LoggerFactory.getLogger(MenuRegistry.class).warn(
-                    "Failed load {} from {}", FILE_ROUTES_JSON_NAME,
-                    viewsJsonAsResource.getPath(), e);
-        }
+        return Collections.emptyList();
     }
 
     private static void collectClientViews(String basePath,

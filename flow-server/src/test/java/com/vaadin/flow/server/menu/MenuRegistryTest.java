@@ -335,35 +335,56 @@ public class MenuRegistryTest {
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasLayout_true()
+    public void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
             throws IOException {
         JsonArray fileRoutes = JsonUtil.parse(testClientRouteFile);
         JsonObject layout = fileRoutes.getObject(0);
         JsonArray children = layout.getArray("children");
         Assert.assertNotNull(children);
-        Assert.assertTrue(children.length() > 0);
 
-        File generated = tmpDir.newFolder(GENERATED);
-        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
-        Files.writeString(clientFiles.toPath(), testClientRouteFile);
-
-        boolean hasHillaAutoLayout = MenuRegistry
-                .hasHillaAutoLayout(vaadinService.getDeploymentConfiguration());
-        Assert.assertTrue(hasHillaAutoLayout);
+        assertHasHillaMainLayout(testClientRouteFile, true);
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasNoLayout_false()
+    public void hasHillaAutoLayout_fileRoutesHasEmptyChildren_true()
             throws IOException {
-        Assert.assertFalse(noLayoutsRouteFile.contains("\"children\""));
+        JsonArray fileRoutes = JsonUtil.parse(emptyChildren);
+        JsonObject layout = fileRoutes.getObject(0);
+        JsonArray children = layout.getArray("children");
+        Assert.assertNotNull(children);
+        Assert.assertEquals(0, children.length());
 
+        assertHasHillaMainLayout(emptyChildren, true);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasSingleRootRoute_false()
+            throws IOException {
+        Assert.assertFalse(singleRoute.contains("\"children\""));
+
+        assertHasHillaMainLayout(singleRoute, false);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasMultipleRootRoutes_false()
+            throws IOException {
+        assertHasHillaMainLayout(multipleRootRoutes, false);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasNonEmptyRoute_false()
+            throws IOException {
+        assertHasHillaMainLayout(nonEmptyRoute, false);
+    }
+
+    private void assertHasHillaMainLayout(String fileRoutes, boolean expected) throws IOException {
         File generated = tmpDir.newFolder(GENERATED);
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
-        Files.writeString(clientFiles.toPath(), noLayoutsRouteFile);
+        Files.writeString(clientFiles.toPath(), fileRoutes);
 
-        boolean hasHillaAutoLayout = MenuRegistry
-                .hasHillaAutoLayout(vaadinService.getDeploymentConfiguration());
-        Assert.assertFalse(hasHillaAutoLayout);
+        boolean hasHillaMainLayout = MenuRegistry
+                .hasHillaMainLayout(vaadinService.getDeploymentConfiguration());
+        Assert.assertEquals(expected, hasHillaMainLayout);
     }
 
     private void assertOrder(List<AvailableViewInfo> menuItems,
@@ -719,7 +740,34 @@ public class MenuRegistryTest {
             ]
             """;
 
-    String noLayoutsRouteFile = """
+    String emptyChildren = """
+            [
+              {
+                "route": "",
+                "title": "Main Layout",
+                "children": []
+              }
+            ]
+            """;
+
+    String nonEmptyRoute = """
+            [
+              {
+                "route": "foo",
+                "title": "Main Layout",
+                "children": [
+                  {
+                    "route": "hilla",
+                    "flowLayout": false,
+                    "params": {},
+                    "title": "Hilla view"
+                  }
+                ]
+              }
+            ]
+            """;
+
+    String singleRoute = """
             [
               {
                 "route": "",
@@ -730,6 +778,41 @@ public class MenuRegistryTest {
                 "flowLayout": false,
                 "params": {},
                 "title": "Public"
+              }
+            ]
+            """;
+
+    String multipleRootRoutes = """
+            [
+              {
+                "route": "hilla",
+                "flowLayout": false,
+                "params": {},
+                "children": [
+                  {
+                    "route": "",
+                    "flowLayout": false,
+                    "params": {},
+                    "title": "Layout"
+                  }
+                ]
+              },
+              {
+                "route": "",
+                "flowLayout": false,
+                "params": {},
+                "title": "Layout",
+                "children": [
+                  {
+                    "route": "components",
+                    "menu": {
+                      "title": "React Components"
+                    },
+                    "flowLayout": false,
+                    "params": {},
+                    "title": "Components"
+                  }
+                ]
               }
             ]
             """;
