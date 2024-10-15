@@ -90,6 +90,10 @@ public class MenuRegistry {
             }
             return cachedResource;
         }
+
+        private void clear() {
+            cachedResource = null;
+        }
     }
 
     /**
@@ -569,6 +573,16 @@ public class MenuRegistry {
      */
     public static boolean hasClientRoute(String route) {
         return hasClientRoute(route, false);
+    }
+
+    /**
+     * For internal use only.
+     * <p>
+     * Clears file routes cache when running in production.
+     * Only used in tests and should not be needed in projects.
+     */
+    public static void clearFileRoutesCache() {
+        FileRoutesCache.INSTANCE.clear();
     }
 
     /**
