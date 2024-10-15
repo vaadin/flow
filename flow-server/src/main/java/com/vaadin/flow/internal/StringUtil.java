@@ -27,7 +27,11 @@ public final class StringUtil {
      * Comment parser state enumeration.
      */
     private enum State {
-        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING, IN_STRING_APOSTROPHE
+        NORMAL,
+        IN_LINE_COMMENT,
+        IN_BLOCK_COMMENT,
+        IN_STRING,
+        IN_STRING_APOSTROPHE
     }
 
     /**
