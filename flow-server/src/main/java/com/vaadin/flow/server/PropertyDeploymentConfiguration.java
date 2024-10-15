@@ -155,8 +155,7 @@ public class PropertyDeploymentConfiguration
             if (FrontendUtils.isHillaUsed(getFrontendFolder())) {
                 return true;
             } else {
-                return getBooleanProperty(FRONTEND_HOTDEPLOY,
-                        FrontendUtils.isHillaUsed(getFrontendFolder()));
+                return getBooleanProperty(FRONTEND_HOTDEPLOY, false);
             }
         }
         return parentConfig.frontendHotdeploy();

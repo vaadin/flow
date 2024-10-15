@@ -56,8 +56,7 @@ public interface AbstractConfiguration extends Serializable {
         } else if (FrontendUtils.isHillaUsed(getFrontendFolder())) {
             return true;
         } else {
-            return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
-                    FrontendUtils.isHillaUsed(getFrontendFolder()));
+            return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY, false);
         }
     }
 
