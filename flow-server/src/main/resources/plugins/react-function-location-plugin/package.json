@@ -1,5 +1,5 @@
 {
-  "name": "react-function-location-plugin",
+  "name": "@vaadin/react-function-location-plugin",
   "version": "1.0.0",
   "description": "A Vite plugin for gather development information about source location of React functions",
   "main": "react-function-location-plugin.js",
