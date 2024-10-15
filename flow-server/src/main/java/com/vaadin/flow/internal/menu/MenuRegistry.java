@@ -578,8 +578,8 @@ public class MenuRegistry {
     /**
      * For internal use only.
      * <p>
-     * Clears file routes cache when running in production.
-     * Only used in tests and should not be needed in projects.
+     * Clears file routes cache when running in production. Only used in tests
+     * and should not be needed in projects.
      */
     public static void clearFileRoutesCache() {
         FileRoutesCache.INSTANCE.clear();
