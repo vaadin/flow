@@ -1,7 +1,6 @@
 {
-  "name": "flow-vite-dependencies",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "A list of Vite Flow dependencies",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

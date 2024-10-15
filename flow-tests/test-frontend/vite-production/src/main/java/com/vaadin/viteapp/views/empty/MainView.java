@@ -19,8 +19,8 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-@JsModule("@testscope/button")
-@JsModule("@testscope/map")
+@JsModule("@vaadin/testscope-button")
+@JsModule("@vaadin/testscope-map")
 @JsModule("./lit-invalid-imports.ts")
 @CssImport("./image.css")
 public class MainView extends Div {
