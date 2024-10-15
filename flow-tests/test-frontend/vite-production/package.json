@@ -1,12 +1,12 @@
 {
-  "name": "no-name",
+  "private": true,
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.1",
-    "@testscope/all": "../vite-test-assets/packages/@testscope/all",
-    "@testscope/button": "../vite-test-assets/packages/@testscope/button",
-    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
+    "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
+    "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
+    "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.19",
     "@vaadin/polymer-legacy-adapter": "24.3.2",
@@ -15,8 +15,8 @@
     "@vaadin/vaadin-themable-mixin": "24.3.2",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "3.1.2",
-    "package-outside-npm": "file:../vite-test-assets/packages/package-outside-npm",
-    "package2-outside-npm": "../vite-test-assets/packages/package2-outside-npm",
+    "@vaadin/test-package-outside-npm": "file:../vite-test-assets/packages/@vaadin/test-package-outside-npm",
+    "@vaadin/test-package2-outside-npm": "../vite-test-assets/packages/@vaadin/test-package2-outside-npm",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "6.22.3"
