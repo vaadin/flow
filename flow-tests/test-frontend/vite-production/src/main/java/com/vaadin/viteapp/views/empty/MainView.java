@@ -1,11 +1,3 @@
-/*
- * Copyright (C) 2000-2024 Vaadin Ltd
- *
- * This program is available under Vaadin Commercial License and Service Terms.
- *
- * See <https://vaadin.com/commercial-license-and-service-terms> for the full
- * license.
- */
 package com.vaadin.viteapp.views.empty;
 
 import com.vaadin.flow.component.HtmlComponent;
@@ -19,8 +11,8 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-@JsModule("@testscope/button")
-@JsModule("@testscope/map")
+@JsModule("@vaadin/testscope-button")
+@JsModule("@vaadin/testscope-map")
 @JsModule("./lit-invalid-imports.ts")
 @CssImport("./image.css")
 public class MainView extends Div {
