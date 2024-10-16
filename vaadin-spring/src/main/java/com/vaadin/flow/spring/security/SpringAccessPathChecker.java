@@ -42,7 +42,8 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * method.
  *
  * <pre>
- * {@code @Bean
+ * {@code
+ * @Bean
  * NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
  *     return new NavigationAccessControlConfigurer()
  *             .withRoutePathAccessChecker().withLoginView(LoginView.class);
