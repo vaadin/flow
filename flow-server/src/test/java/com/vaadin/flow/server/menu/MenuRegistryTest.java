@@ -62,6 +62,9 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_PROD_PATH;
@@ -140,7 +143,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(2, menuItems.size());
+        Assert.assertEquals(8, menuItems.size());
         assertClientRoutes(menuItems);
     }
 
@@ -167,7 +170,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(false);
 
-        Assert.assertEquals(5, menuItems.size());
+        Assert.assertEquals(11, menuItems.size());
         // Validate as if logged in as all routes should be available
         assertClientRoutes(menuItems, true, true, false);
     }
@@ -228,7 +231,7 @@ public class MenuRegistryTest {
             Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                     .getMenuItems(true);
 
-            Assert.assertEquals(2, menuItems.size());
+            Assert.assertEquals(8, menuItems.size());
             assertClientRoutes(menuItems);
         }
     }
@@ -262,7 +265,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(4, menuItems.size());
+        Assert.assertEquals(10, menuItems.size());
         assertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
     }
@@ -283,7 +286,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .collectMenuItems();
 
-        Assert.assertEquals(5, menuItems.size());
+        Assert.assertEquals(8, menuItems.size());
         assertClientRoutes(menuItems, false, false, true);
         assertServerRoutes(menuItems);
         assertServerRoutesWithParameters(menuItems, true);
@@ -303,7 +306,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(5, menuItems.size());
+        Assert.assertEquals(11, menuItems.size());
         assertClientRoutes(menuItems, true, true, false);
 
         // Verify that getMenuItemsList returns the same data
@@ -311,9 +314,9 @@ public class MenuRegistryTest {
                 .collectMenuItemsList();
         Assert.assertEquals(
                 "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
-                4, menuItemsList.size());
-        assertOrder(menuItemsList,
-                new String[] { "", "/about", "/hilla", "/hilla/sub" });
+                7, menuItemsList.size());
+        assertOrder(menuItemsList, new String[] { "/", "/about", "/hilla",
+                "/hilla/sub", "/opt_params", "/params", "/wc_params" });
     }
 
     @Test
@@ -330,7 +333,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(3, menuItems.size());
+        Assert.assertEquals(9, menuItems.size());
         assertClientRoutes(menuItems, true, false, false);
     }
 
@@ -348,14 +351,15 @@ public class MenuRegistryTest {
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<AvailableViewInfo> menuItems = MenuRegistry.collectMenuItemsList();
-        Assert.assertEquals(5, menuItems.size());
-        assertOrder(menuItems, new String[] { "", "/home", "/info", "/param",
-                "/param/varargs" });
+        Assert.assertEquals(8, menuItems.size());
+        assertOrder(menuItems,
+                new String[] { "/", "/home", "/info", "/opt_params", "/param",
+                        "/param/varargs", "/params", "/wc_params" });
         // verifying that data is same as with collectMenuItems
         Map<String, AvailableViewInfo> mapMenuItems = menuItems.stream()
                 .collect(Collectors.toMap(AvailableViewInfo::route,
                         item -> item));
-        assertClientRoutes(mapMenuItems, false, false, true);
+        assertClientRoutes(mapMenuItems, false, false, true, "/");
         assertServerRoutes(mapMenuItems);
         assertServerRoutesWithParameters(mapMenuItems, true);
     }
@@ -374,6 +378,60 @@ public class MenuRegistryTest {
                 new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
     }
 
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
+            throws IOException {
+        JsonArray fileRoutes = JsonUtil.parse(testClientRouteFile);
+        JsonObject layout = fileRoutes.getObject(0);
+        JsonArray children = layout.getArray("children");
+        Assert.assertNotNull(children);
+
+        assertHasHillaMainLayout(testClientRouteFile, true);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasEmptyChildren_true()
+            throws IOException {
+        JsonArray fileRoutes = JsonUtil.parse(emptyChildren);
+        JsonObject layout = fileRoutes.getObject(0);
+        JsonArray children = layout.getArray("children");
+        Assert.assertNotNull(children);
+        Assert.assertEquals(0, children.length());
+
+        assertHasHillaMainLayout(emptyChildren, true);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasSingleRootRoute_false()
+            throws IOException {
+        Assert.assertFalse(singleRoute.contains("\"children\""));
+
+        assertHasHillaMainLayout(singleRoute, false);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasMultipleRootRoutes_false()
+            throws IOException {
+        assertHasHillaMainLayout(multipleRootRoutes, false);
+    }
+
+    @Test
+    public void hasHillaAutoLayout_fileRoutesHasNonEmptyRoute_false()
+            throws IOException {
+        assertHasHillaMainLayout(nonEmptyRoute, false);
+    }
+
+    private void assertHasHillaMainLayout(String fileRoutes, boolean expected)
+            throws IOException {
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), fileRoutes);
+
+        boolean hasHillaMainLayout = MenuRegistry
+                .hasHillaMainLayout(vaadinService.getDeploymentConfiguration());
+        Assert.assertEquals(expected, hasHillaMainLayout);
+    }
+
     private void assertOrder(List<AvailableViewInfo> menuItems,
             String[] expectedOrder) {
         for (int i = 0; i < menuItems.size(); i++) {
@@ -387,10 +445,18 @@ public class MenuRegistryTest {
 
     private void assertClientRoutes(Map<String, AvailableViewInfo> menuItems,
             boolean authenticated, boolean hasRole, boolean excludeExpected) {
-        Assert.assertTrue("Client route '' missing", menuItems.containsKey(""));
-        Assert.assertEquals("Public", menuItems.get("").title());
+        assertClientRoutes(menuItems, authenticated, hasRole, excludeExpected,
+                "");
+    }
+
+    private void assertClientRoutes(Map<String, AvailableViewInfo> menuItems,
+            boolean authenticated, boolean hasRole, boolean excludeExpected,
+            String expectedRootPath) {
+        Assert.assertTrue("Client route '" + expectedRootPath + "' missing",
+                menuItems.containsKey(expectedRootPath));
+        Assert.assertEquals("Public", menuItems.get(expectedRootPath).title());
         Assert.assertNotNull("Public should contain default menu data",
-                menuItems.get("").menu());
+                menuItems.get(expectedRootPath).menu());
 
         if (authenticated) {
             Assert.assertTrue("Client route 'about' missing",
@@ -627,6 +693,52 @@ public class MenuRegistryTest {
                     ]
                   },
                   {
+                    "route": "wc_params/:param?",
+                    "loginRequired": false,
+                    "params": {
+                       ":param": "*"
+                    },
+                    "title": "wc_params path is included in menu"
+                  },
+                  {
+                    "route": "opt_params/:param?",
+                    "loginRequired": false,
+                    "params": {
+                       ":param": "opt"
+                    },
+                    "title": "opt_params path is included in menu"
+                  },
+                  {
+                    "route": "req_params/:param",
+                    "loginRequired": false,
+                    "params": {
+                       ":param": "req"
+                    },
+                    "title": "req_params path is excluded from menu"
+                  },
+                  {
+                    "route": "params",
+                    "loginRequired": false,
+                    "title": "params path is shown in menu",
+                    "children": [
+                      {
+                        "route": ":param",
+                        "loginRequired": false,
+                        "params": {
+                           ":param": "req"
+                        },
+                        "title": "params/:param path is excluded from menu",
+                        "children": [
+                          {
+                            "route": "sub",
+                            "loginRequired": false,
+                            "title": "params/:param/sub path is excluded from menu"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
                     "route": "login",
                     "menu": {
                       "exclude": true
@@ -673,6 +785,83 @@ public class MenuRegistryTest {
                         ]
                       }
                     ]
+                  }
+                ]
+              }
+            ]
+            """;
+
+    String emptyChildren = """
+            [
+              {
+                "route": "",
+                "title": "Main Layout",
+                "children": []
+              }
+            ]
+            """;
+
+    String nonEmptyRoute = """
+            [
+              {
+                "route": "foo",
+                "title": "Main Layout",
+                "children": [
+                  {
+                    "route": "hilla",
+                    "flowLayout": false,
+                    "params": {},
+                    "title": "Hilla view"
+                  }
+                ]
+              }
+            ]
+            """;
+
+    String singleRoute = """
+            [
+              {
+                "route": "",
+                "menu": {
+                  "title": "Public page",
+                  "icon": "vaadin:group"
+                },
+                "flowLayout": false,
+                "params": {},
+                "title": "Public"
+              }
+            ]
+            """;
+
+    String multipleRootRoutes = """
+            [
+              {
+                "route": "hilla",
+                "flowLayout": false,
+                "params": {},
+                "children": [
+                  {
+                    "route": "",
+                    "flowLayout": false,
+                    "params": {},
+                    "title": "Layout"
+                  }
+                ]
+              },
+              {
+                "route": "",
+                "flowLayout": false,
+                "params": {},
+                "title": "Layout",
+                "children": [
+                  {
+                    "route": "components",
+                    "menu": {
+                      "title": "React Components"
+                    },
+                    "flowLayout": false,
+                    "params": {},
+                    "title": "Components"
                   }
                 ]
               }
