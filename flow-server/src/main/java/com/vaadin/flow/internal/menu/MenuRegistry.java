@@ -324,14 +324,16 @@ public class MenuRegistry {
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
             boolean filterClientViews, AbstractConfiguration configuration,
             VaadinRequest vaadinRequest) {
-
+        VaadinService vaadinService = Optional.ofNullable(vaadinRequest)
+                .map(VaadinRequest::getService)
+                .orElseGet(VaadinService::getCurrent);
         Map<String, AvailableViewInfo> configurations = new HashMap<>();
 
         collectClientMenuItems(configuration).forEach(
                 viewInfo -> collectClientViews("", viewInfo, configurations));
 
         if (filterClientViews && !configurations.isEmpty()) {
-            filterClientViews(configurations, vaadinRequest);
+            filterClientViews(configurations, vaadinService);
         }
 
         return configurations;
@@ -480,9 +482,7 @@ public class MenuRegistry {
 
     private static void filterClientViews(
             Map<String, AvailableViewInfo> configurations,
-            VaadinRequest vaadinRequest) {
-        final boolean isUserAuthenticated = vaadinRequest
-                .getUserPrincipal() != null;
+            VaadinService vaadinService) {
 
         Set<String> clientEntries = new HashSet<>(configurations.keySet());
         for (String key : clientEntries) {
@@ -491,8 +491,8 @@ public class MenuRegistry {
                 continue;
             }
             AvailableViewInfo viewInfo = configurations.get(key);
-            boolean routeValid = validateViewAccessible(viewInfo,
-                    isUserAuthenticated, vaadinRequest::isUserInRole);
+            boolean routeValid = vaadinService.getInstantiator()
+                    .getMenuAccessControl().canAccessView(viewInfo);
 
             if (!routeValid) {
                 configurations.remove(key);
@@ -526,31 +526,6 @@ public class MenuRegistry {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Check view against authentication state.
-     * <p>
-     * If not authenticated and login required -> invalid. If user doesn't have
-     * correct roles -> invalid.
-     *
-     * @param viewInfo
-     *            view info
-     * @param isUserAuthenticated
-     *            user authentication state
-     * @param roleAuthentication
-     *            method to authenticate if user has role
-     * @return true if accessible, false if something is not authenticated
-     */
-    private static boolean validateViewAccessible(AvailableViewInfo viewInfo,
-            boolean isUserAuthenticated,
-            Predicate<? super String> roleAuthentication) {
-        if (viewInfo.loginRequired() && !isUserAuthenticated) {
-            return false;
-        }
-        String[] roles = viewInfo.rolesAllowed();
-        return roles == null || roles.length == 0
-                || Arrays.stream(roles).anyMatch(roleAuthentication);
     }
 
     /**
