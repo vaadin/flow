@@ -189,7 +189,7 @@ public class MenuRegistryTest {
 
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(false);
-        Assert.assertEquals(7, menuItems.size());
+        Assert.assertEquals(13, menuItems.size());
 
         RouteUtil.checkForClientRouteCollisions(vaadinService,
                 routeConfiguration.getAvailableRoutes());
