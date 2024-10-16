@@ -641,12 +641,12 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 return true;
             }
             try {
-                session.lock();
+                session.getLockInstance().lock();
                 VaadinService service = session.getService();
                 RouteUtil.checkForClientRouteCollisions(service, service
                         .getRouter().getRegistry().getRegisteredRoutes());
             } finally {
-                session.unlock();
+                session.getLockInstance().unlock();
             }
 
             return false;
