@@ -1,8 +1,10 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -22,10 +24,12 @@ import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static org.mockito.Mockito.when;
 
 public class GenerateNpmBOMMojoTest {
 
@@ -109,6 +113,16 @@ public class GenerateNpmBOMMojoTest {
                     .lookup(ClassFinder.class);
             return lookup;
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
+        when(project.getRuntimeClasspathElements())
+                .thenReturn(projectClassPath());
+
+    }
+
+    private static List<String> projectClassPath() throws URISyntaxException {
+        List<String> classPaths = new ArrayList<>();
+        classPaths.add(AbstractTheme.class.getProtectionDomain().getCodeSource()
+                .getLocation().toURI().getPath());
+        return classPaths;
     }
 
     @Test
