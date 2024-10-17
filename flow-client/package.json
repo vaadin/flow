@@ -1,5 +1,5 @@
 {
-  "name": "@vaadin/flow-deps",
+  "name": "@vaadin/flow-client",
   "description": "Flow client package",
   "version": "0.0.1",
   "main": "src/main/resources/META-INF/frontend/Flow",
