@@ -6,7 +6,7 @@
  * See <https://vaadin.com/commercial-license-and-service-terms> for the full
  * license.
  */
-import '@vaadin/testscope/all';
+import '@vaadin/testscope-all';
 
 import { Map } from '@vaadin/testscope-map';
 window.BundleMapClass = Map;
