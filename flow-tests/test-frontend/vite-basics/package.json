@@ -1,14 +1,14 @@
 {
-  "name": "no-name",
+  "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "postinstall": "node -e \"fs.writeFileSync('target/classes/main.postinstall', 'hello')\""
   },
   "dependencies": {
     "@polymer/polymer": "3.5.1",
-    "@testscope/all": "../vite-test-assets/packages/@testscope/all",
-    "@testscope/button": "../vite-test-assets/packages/@testscope/button",
-    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
+    "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
+    "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
+    "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.18",
     "@vaadin/polymer-legacy-adapter": "24.2.1",
@@ -20,8 +20,8 @@
     "copy-to-clipboard": "^3.3.1",
     "lit": "3.0.2",
     "mobile-drag-drop": "2.3.0-rc.2",
-    "package-outside-npm": "file:../vite-test-assets/packages/package-outside-npm",
-    "package2-outside-npm": "../vite-test-assets/packages/package2-outside-npm"
+    "@vaadin/test-package-outside-npm": "file:../vite-test-assets/packages/@vaadin/test-package-outside-npm",
+    "@vaadin/test-package2-outside-npm": "../vite-test-assets/packages/@vaadin/test-package2-outside-npm"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "5.0.4",
@@ -41,12 +41,12 @@
     "workbox-precaching": "7.0.0"
   },
   "overrides": {
-    "@testscope/all": "$@testscope/all",
-    "@testscope/button": "$@testscope/button",
+    "@vaadin/testscope-all": "$@vaadin/testscope-all",
+    "@vaadin/testscope-button": "$@vaadin/testscope-button",
     "@vaadin/bundles": "$@vaadin/bundles",
     "copy-to-clipboard": "$copy-to-clipboard",
-    "package-outside-npm": "$package-outside-npm",
-    "package2-outside-npm": "$package2-outside-npm",
+    "@vaadin/test-package-outside-npm": "$@vaadin/test-package-outside-npm",
+    "@vaadin/test-package2-outside-npm": "$@vaadin/test-package2-outside-npm",
     "glob": "$glob",
     "rollup-plugin-brotli": "$rollup-plugin-brotli",
     "typescript": "$typescript",
