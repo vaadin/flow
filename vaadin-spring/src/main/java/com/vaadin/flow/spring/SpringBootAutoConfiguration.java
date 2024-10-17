@@ -88,10 +88,21 @@ public class SpringBootAutoConfiguration {
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
             VaadinConfigurationProperties configurationProperties) {
-        String mapping = configurationProperties.getUrlMapping();
-        Map<String, String> initParameters = new HashMap<>();
-        boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+        boolean rootMapping = RootMappedCondition
+                .isRootMapping(configurationProperties.getUrlMapping());
+        return configureServletRegistrationBean(multipartConfig,
+                configurationProperties,
+                new SpringServlet(context, rootMapping));
+    }
 
+    public static ServletRegistrationBean<SpringServlet> configureServletRegistrationBean(
+            ObjectProvider<MultipartConfigElement> multipartConfig,
+            VaadinConfigurationProperties configurationProperties,
+            SpringServlet servletInstance) {
+
+        String mapping = configurationProperties.getUrlMapping();
+        boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+        Map<String, String> initParameters = new HashMap<>();
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(
@@ -105,7 +116,7 @@ public class SpringBootAutoConfiguration {
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context, rootMapping), mapping);
+                servletInstance, mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
