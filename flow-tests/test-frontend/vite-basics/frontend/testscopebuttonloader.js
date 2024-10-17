@@ -6,7 +6,7 @@
  * See <https://vaadin.com/commercial-license-and-service-terms> for the full
  * license.
  */
-import '@testscope/all';
+import '@vaadin/testscope-all';
 
-import { Button } from '@testscope/button';
+import { Button } from '@vaadin/testscope-button';
 window.BundleButtonClass = Button;

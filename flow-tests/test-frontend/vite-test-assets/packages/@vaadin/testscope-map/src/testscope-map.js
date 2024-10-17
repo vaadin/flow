@@ -6,7 +6,7 @@
  * See <https://vaadin.com/commercial-license-and-service-terms> for the full
  * license.
  */
-import { default as lib } from '@testscope/map/src/lib.js';
+import { default as lib } from '@vaadin/testscope-map/src/lib.js';
 
 export class Map extends HTMLElement {
   static get is() {
