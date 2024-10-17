@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,13 +47,17 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
@@ -585,6 +590,67 @@ public class RouteUtil {
                 && target.getAnnotation(Route.class).autoLayout()
                 && target.getAnnotation(Route.class).layout().equals(UI.class);
 
+    }
+
+    /**
+     * Checks the given list of Flow routes for potential collisions with Hilla
+     * routes.
+     *
+     * Note: Routes will only be checked in development mode, when Hilla is in
+     * use.
+     *
+     * @param service
+     *            VaadinService instance
+     * @param flowRoutes
+     *            Flow routes to check against
+     * @throws InvalidRouteConfigurationException
+     *             if a collision is detected
+     */
+    public static void checkForClientRouteCollisions(VaadinService service,
+            List<RouteData> flowRoutes)
+            throws InvalidRouteConfigurationException {
+        checkForClientRouteCollisions(service, flowRoutes.stream()
+                .map(RouteData::getTemplate).toArray(String[]::new));
+    }
+
+    /**
+     * Checks the given array of Flow route templates for potential collisions
+     * with Hilla routes.
+     *
+     * Note: Routes will only be checked in development mode, when Hilla is in
+     * use.
+     *
+     * @param service
+     *            VaadinService instance
+     * @param flowRouteTemplates
+     *            Flow routes to check against
+     * @throws InvalidRouteConfigurationException
+     *             if a collision is detected
+     */
+    public static void checkForClientRouteCollisions(VaadinService service,
+            String... flowRouteTemplates)
+            throws InvalidRouteConfigurationException {
+        if (service == null
+                || service.getDeploymentConfiguration().isProductionMode()
+                || !FrontendUtils.isHillaUsed(service
+                        .getDeploymentConfiguration().getFrontendFolder())) {
+            return;
+        }
+
+        List<String> collisions = MenuRegistry
+                .collectClientMenuItems(false,
+                        service.getDeploymentConfiguration())
+                .keySet().stream().map(PathUtil::trimPath)
+                .filter(clientRoute -> Arrays.stream(flowRouteTemplates)
+                        .map(PathUtil::trimPath).anyMatch(clientRoute::equals))
+                .toList();
+        if (!collisions.isEmpty()) {
+            String msg = String.format(
+                    "Invalid route configuration. The following Hilla "
+                            + "route(s) conflict with configured Flow routes: %s",
+                    String.join(", ", collisions));
+            throw new InvalidRouteConfigurationException(msg);
+        }
     }
 
     /**

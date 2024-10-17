@@ -4,6 +4,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
@@ -64,6 +66,12 @@ public class SessionRouteRegistryTest {
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File("/frontend"));
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(configuration);
         VaadinServletContext context = new MockVaadinContext();
 
         ApplicationConfiguration applicationConfiguration = Mockito

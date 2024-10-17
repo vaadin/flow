@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,8 +32,12 @@ import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -50,8 +55,8 @@ public abstract class AbstractScopeTest {
 
         private final ReentrantLock lock = new ReentrantLock();
 
-        public TestSession() {
-            super(Mockito.spy(VaadinService.class));
+        public TestSession(VaadinService service) {
+            super(service);
         }
 
         @Override
@@ -137,8 +142,12 @@ public abstract class AbstractScopeTest {
 
     @SuppressWarnings("unchecked")
     protected VaadinSession mockSession() {
+        MockService service = Mockito.spy(MockService.class);
+        Mockito.when(service.getRouteRegistry())
+                .thenReturn(Mockito.mock(RouteRegistry.class));
+
         VaadinSession session = Mockito.mock(TestSession.class,
-                Mockito.withSettings().useConstructor());
+                Mockito.withSettings().useConstructor(service));
         doCallRealMethod().when(session).setAttribute(Mockito.any(Class.class),
                 Mockito.any());
         doCallRealMethod().when(session).getAttribute(Mockito.any(Class.class));
@@ -180,4 +189,12 @@ public abstract class AbstractScopeTest {
     }
 
     protected abstract Scope getScope();
+
+    public static abstract class MockService extends VaadinService {
+
+        @Override
+        public RouteRegistry getRouteRegistry() {
+            return null;
+        }
+    }
 }
