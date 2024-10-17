@@ -27,6 +27,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
@@ -180,6 +181,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
         var routeTypes = new HashSet<Class<?>>();
         routeTypes.addAll(reflections.getTypesAnnotatedWith(Route.class));
         routeTypes.addAll(reflections.getTypesAnnotatedWith(RouteAlias.class));
+        routeTypes.addAll(reflections.getTypesAnnotatedWith(Layout.class));
         return routeTypes;
     }
 
