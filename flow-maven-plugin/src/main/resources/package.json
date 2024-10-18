@@ -1,5 +1,5 @@
 {
-  "name": "production-mode-build",
+  "name": "@vaadin/production-mode-build",
   "version": "1.0.0",
   "main": "",
   "devDependencies": {
