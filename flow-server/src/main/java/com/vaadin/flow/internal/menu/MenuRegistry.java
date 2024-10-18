@@ -677,7 +677,7 @@ public class MenuRegistry {
             // - routes with required parameters
             // - routes with exclude=true
             // Remove following without including nested ones:
-            // - routes with direct children with optional or varargs parameter
+            // - routes with direct children with route parameter
             if (viewInfo.menu().isExclude() || hasRequiredParameter(viewInfo)) {
                 menuRoutes.remove(path);
                 if (viewInfo.children() != null) {
