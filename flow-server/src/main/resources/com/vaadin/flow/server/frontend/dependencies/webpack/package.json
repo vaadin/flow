@@ -1,15 +1,13 @@
 {
-  "name": "flow-webpack-dependencies",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "A list of Webpack Flow dependencies",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Artur Signell",
   "license": "Apache-2.0",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "esbuild-loader": "2.19.0",
     "html-webpack-plugin": "4.5.1",
