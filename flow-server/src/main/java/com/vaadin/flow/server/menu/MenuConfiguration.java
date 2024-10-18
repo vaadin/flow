@@ -167,7 +167,7 @@ public final class MenuConfiguration {
                     .filter(menuEntry -> PathUtil.trimPath(menuEntry.getKey())
                             .equals(activeLocation))
                     .map(Map.Entry::getValue).map(AvailableViewInfo::title)
-                    .findFirst();
+                    .filter(Objects::nonNull).findFirst();
         }
         return Optional.empty();
     }
