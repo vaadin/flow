@@ -42,6 +42,8 @@ public class RouteTarget implements Serializable {
     private final boolean annotatedRoute;
     private final boolean registeredAtStartup;
 
+    private String template;
+
     /**
      * Create a new Route target holder with the given target registered.
      *
@@ -72,6 +74,23 @@ public class RouteTarget implements Serializable {
      */
     public RouteTarget(Class<? extends Component> target) {
         this(target, null);
+    }
+
+    /**
+     * Create a new Route target holder with the given target registered and
+     * route template and empty parent layouts.
+     *
+     * @param target
+     *            navigation target
+     * @param parents
+     *            parent layout chain
+     * @param template
+     *            route template
+     */
+    RouteTarget(Class<? extends Component> target,
+            List<Class<? extends RouterLayout>> parents, String template) {
+        this(target, parents);
+        this.template = template;
     }
 
     /**
@@ -126,4 +145,12 @@ public class RouteTarget implements Serializable {
         return registeredAtStartup;
     }
 
+    /**
+     * Get the route template.
+     *
+     * @return route template
+     */
+    String getTemplate() {
+        return template;
+    }
 }
