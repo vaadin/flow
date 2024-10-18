@@ -65,17 +65,18 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
         // simulate expired session by invalidating current session
         session.invalidate();
-        waitForWebComponent("login-form");
 
         // init request to resynchronize expired session and recreate components
         clickButton();
 
+        waitForWebComponent("login-form");
         try {
             // it seems WebDriver needs also sync to new session
             setUsername("");
         } catch (StaleElementReferenceException ex) {
             // NOP
         }
+        waitUntil(d -> "".equals(getAuthenticationResult()));
 
         // check if web component works again
         setUsername("admin");
