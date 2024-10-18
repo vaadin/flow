@@ -528,16 +528,6 @@ public class MenuRegistry {
         return false;
     }
 
-    private static boolean hasOptionalOrVarargsParameter(
-            AvailableViewInfo viewInfo) {
-        final Map<String, RouteParamType> routeParameters = viewInfo
-                .routeParameters();
-        return routeParameters != null && !routeParameters.isEmpty()
-                && routeParameters.values().stream().anyMatch(
-                        paramType -> paramType == RouteParamType.OPTIONAL
-                                || paramType == RouteParamType.WILDCARD);
-    }
-
     /**
      * Check view against authentication state.
      * <p>
