@@ -528,6 +528,16 @@ public class MenuRegistry {
         return false;
     }
 
+    private static boolean hasOptionalOrVarargsParameter(
+            AvailableViewInfo viewInfo) {
+        final Map<String, RouteParamType> routeParameters = viewInfo
+                .routeParameters();
+        return routeParameters != null && !routeParameters.isEmpty()
+                && routeParameters.values().stream().anyMatch(
+                        paramType -> paramType == RouteParamType.OPTIONAL
+                                || paramType == RouteParamType.WILDCARD);
+    }
+
     /**
      * Check view against authentication state.
      * <p>
@@ -666,12 +676,26 @@ public class MenuRegistry {
             // Remove following, including nested ones:
             // - routes with required parameters
             // - routes with exclude=true
+            // Remove following without including nested ones:
+            // - routes with direct children with optional or varargs parameter
             if (viewInfo.menu().isExclude() || hasRequiredParameter(viewInfo)) {
                 menuRoutes.remove(path);
                 if (viewInfo.children() != null) {
                     removeChildren(menuRoutes, viewInfo, path);
                 }
+            } else if (childrenHasRouteParameter(viewInfo.children())) {
+                menuRoutes.remove(path);
             }
         }
+    }
+
+    private static boolean childrenHasRouteParameter(
+            List<AvailableViewInfo> children) {
+        if (children == null || children.isEmpty()) {
+            return false;
+        }
+        return children.stream()
+                .anyMatch(viewInfo -> viewInfo.routeParameters() != null
+                        && !viewInfo.routeParameters().isEmpty());
     }
 }
