@@ -51,8 +51,10 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
@@ -1835,10 +1837,21 @@ public class DataCommunicatorTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new AlwaysLockedVaadinSession(null);
+                MockService service = Mockito.mock(MockService.class);
+                Mockito.when(service.getRouteRegistry())
+                        .thenReturn(Mockito.mock(RouteRegistry.class));
+                session = new AlwaysLockedVaadinSession(service);
                 VaadinSession.setCurrent(session);
             }
             return session;
+        }
+    }
+
+    public static class MockService extends VaadinServletService {
+
+        @Override
+        public RouteRegistry getRouteRegistry() {
+            return super.getRouteRegistry();
         }
     }
 
