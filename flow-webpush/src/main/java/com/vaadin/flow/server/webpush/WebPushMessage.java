@@ -17,8 +17,8 @@ package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Web Push message object containing an information to be shown in the
@@ -26,15 +26,38 @@ import elemental.json.JsonObject;
  *
  * @since 24.2
  */
-public record WebPushMessage(String title, String body) implements Serializable {
+public record WebPushMessage(String title, ObjectNode options) implements Serializable {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Creates a new Web Push notification message with title and body.
+     * Creates a new Web Push notification message with title and various options being fetched from a given arbitrary Java Object.
      *
      * @param title notification title
-     * @param body  notification body
+     * @param options any Serializable Java Object representing custom settings that you want to apply to the notification
+     * @see <a href=https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification#parameters</a>
      */
-    public WebPushMessage {
+    public WebPushMessage(String title, Serializable options) {
+        this(title, objectMapper.convertValue(options, ObjectNode.class));
+    }
+
+    /**
+     * Creates a new Web Push notification message with just a title and body.
+     *
+     * @param title notification title
+     * @param body notification body
+     */
+    public WebPushMessage(String title, String body) {
+        this(title, getBodyOption(body));
+    }
+
+    /**
+     * Creates a new Web Push notification message with just a title.
+     *
+     * @param title notification title
+     */
+    public WebPushMessage(String title) {
+        this(title, (ObjectNode) null);
     }
 
     @Override
@@ -48,9 +71,21 @@ public record WebPushMessage(String title, String body) implements Serializable 
      * @return JSON representation of this message
      */
     public String toJson() {
-        JsonObject json = Json.createObject();
+        ObjectNode json = objectMapper.createObjectNode();
         json.put("title", title);
-        json.put("body", body);
-        return json.toJson();
+        if (options != null) {
+            json.set("options", options);
+        }
+        return json.toString();
+    }
+
+    private static ObjectNode getBodyOption(String body) {
+        if (body != null) {
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put("body", body);
+            return objectNode;
+        } else {
+            return objectMapper.createObjectNode();
+        }
     }
 }
