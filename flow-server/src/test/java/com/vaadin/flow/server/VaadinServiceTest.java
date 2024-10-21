@@ -177,7 +177,7 @@ public class VaadinServiceTest {
                     .setAnnotatedRoute(AnnotatedTestView.class);
         };
         MockVaadinServletService service = new MockVaadinServletService();
-        runWithClientRoute("test", false, service, () -> {
+        runWithClientRoute("client-test", false, service, () -> {
             service.init(new MockInstantiator(initListener));
 
             Assert.assertTrue(UsageStatistics.getEntries()
@@ -267,8 +267,8 @@ public class VaadinServiceTest {
     private static Map<String, AvailableViewInfo> createClientRoutesMap(
             String route, boolean flowLayout) {
         Map<String, AvailableViewInfo> clientViews = new HashMap<>();
-        clientViews.put("test", new AvailableViewInfo("Test", null, false,
-                route, false, false, null, null, null, flowLayout));
+        clientViews.put(route, new AvailableViewInfo(route, null, false, route,
+                false, false, null, null, null, flowLayout));
         return clientViews;
     }
 
