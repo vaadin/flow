@@ -16,8 +16,12 @@
 package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
+import java.util.List;
+
+import com.vaadin.flow.internal.JsonUtils;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -26,7 +30,23 @@ import elemental.json.JsonObject;
  *
  * @since 24.2
  */
-public record WebPushMessage(String title, String body) implements Serializable {
+public record WebPushMessage(
+        String title,
+        List<WebPushAction> actions,
+        String badge,
+        String body,
+        Serializable data,
+        WebPushDir dir,
+        String icon,
+        String image,
+        String lang,
+        Boolean renotify,
+        Boolean requireInteraction,
+        Boolean silent,
+        String tag,
+        Long timestamp,
+        List<Integer> vibrate
+) implements Serializable {
 
     /**
      * Creates a new Web Push notification message with title and body.
@@ -35,6 +55,14 @@ public record WebPushMessage(String title, String body) implements Serializable 
      * @param body  notification body
      */
     public WebPushMessage {
+    }
+
+    public static WebPushMessageBuilder builder(String title) {
+        return new WebPushMessageBuilder(title);
+    }
+
+    public static WebPushMessageBuilder builder(String title, String body) {
+        return new WebPushMessageBuilder(title, body);
     }
 
     @Override
@@ -48,9 +76,8 @@ public record WebPushMessage(String title, String body) implements Serializable 
      * @return JSON representation of this message
      */
     public String toJson() {
-        JsonObject json = Json.createObject();
-        json.put("title", title);
-        json.put("body", body);
-        return json.toJson();
+        JsonObject jsonObject = JsonUtils.beanToJson(this);
+        return jsonObject.toJson();
     }
+
 }
