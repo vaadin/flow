@@ -364,7 +364,8 @@ function Flow() {
             let blockingPromise: any;
             roundTrip.current = new Promise<void>((resolve,reject) => blockingPromise = {resolve:resolve,reject:reject});
 
-            // Do not skip server round-trip if navigation originates from a click on a link
+            // Proceed to the blocked location, unless the navigation originates from a click on a link.
+            // In that case continue with function execution and perform a server round-trip
             if (navigated.current && !fromAnchor.current) {
                 blocker.proceed();
                 blockingPromise.resolve();
@@ -421,6 +422,9 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
+        if (blocker.state === 'blocked') {
+            return;
+        }
         if (navigated.current) {
             navigated.current = false;
             fireNavigated(location.pathname,location.search);

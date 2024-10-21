@@ -91,8 +91,8 @@ public final class DevBundleBuildingHandler implements DevModeHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        return AbstractDevServerRunner.handleRequestInternal(request, response,
-                buildCompletedFuture, new AtomicBoolean());
+        return AbstractDevServerRunner.handleRequestInternal(session, request,
+                response, buildCompletedFuture, new AtomicBoolean());
     }
 
     /**

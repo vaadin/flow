@@ -71,6 +71,7 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -274,7 +275,7 @@ public abstract class AbstractNavigationStateRenderer
                 new AfterNavigationEvent(locationChangeEvent, parameters),
                 afterNavigationHandlers);
 
-        updatePageTitle(event, componentInstance);
+        updatePageTitle(event, componentInstance, route);
 
         return statusCode;
     }
@@ -953,18 +954,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
-            Component routeTarget) {
+            Component routeTarget, String route) {
 
         Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
                 routeTarget).map(PageTitle::value).orElse("");
 
         // check for HasDynamicTitle in current router targets chain
-        String title = navigationEvent.getUI().getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(HasDynamicTitle.class::isInstance)
-                .map(tc -> ((HasDynamicTitle) tc).getPageTitle())
-                .filter(Objects::nonNull).findFirst()
-                .orElseGet(lookForTitleInTarget);
+        String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
+                .orElseGet(() -> Optional
+                        .ofNullable(
+                                MenuRegistry.getClientRoutes(true).get(route))
+                        .map(AvailableViewInfo::title)
+                        .orElseGet(lookForTitleInTarget));
 
         navigationEvent.getUI().getPage().setTitle(title);
     }

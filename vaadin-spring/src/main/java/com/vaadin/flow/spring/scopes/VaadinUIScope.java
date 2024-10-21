@@ -26,7 +26,6 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 /**
  * Implementation of Spring's
@@ -48,22 +47,13 @@ public class VaadinUIScope extends AbstractScope {
 
         private final VaadinSession session;
 
-        private final Registration sessionDestroyListenerRegistration;
-
         private final Map<Integer, BeanStore> uiStores;
 
         private UIStoreWrapper(VaadinSession session) {
             assert session.hasLock();
             uiStores = new HashMap<>();
             this.session = session;
-            if (session instanceof SpringVaadinSession) {
-                sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
-            } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
-            }
+            session.addSessionDestroyListener(event -> destroy());
         }
 
         @Override
@@ -96,9 +86,6 @@ public class VaadinUIScope extends AbstractScope {
                 uiStores.clear();
             } finally {
                 session.unlock();
-                if (sessionDestroyListenerRegistration != null) {
-                    sessionDestroyListenerRegistration.remove();
-                }
             }
         }
 

@@ -125,7 +125,7 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
     return Object.values(clients).find(client => client.exportedWebComponents && client.exportedWebComponents.indexOf('_TagDash_') != -1)
   }
   disconnectedCallback() {
-    this.$server.disconnected();
+    this.$server && this.$server.disconnected();
 
     console.debug("disconnected", this);
   }

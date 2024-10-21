@@ -41,9 +41,9 @@ public class BundlesIT extends ViteDevModeIT {
 
     @Test
     public void optimizeDepsExcludeBundleContents() {
-        Assert.assertTrue(isExcluded("@testscope/all"));
-        Assert.assertTrue(isExcluded("@testscope/button"));
-        Assert.assertTrue(isExcluded("@testscope/map"));
+        Assert.assertTrue(isExcluded("@vaadin/testscope-all"));
+        Assert.assertTrue(isExcluded("@vaadin/testscope-button"));
+        Assert.assertTrue(isExcluded("@vaadin/testscope-map"));
     }
 
     private boolean isExcluded(String dependency) {

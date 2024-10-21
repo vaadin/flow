@@ -13,8 +13,8 @@ import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 
 @Route("")
 @JsModule("./jsonloader.js")
-@JsModule("package-outside-npm/index.js")
-@JsModule("package2-outside-npm/index.js")
+@JsModule("@vaadin/test-package-outside-npm/index.js")
+@JsModule("@vaadin/test-package2-outside-npm/index.js")
 @JsModule("./testscopebuttonloader.js")
 @JsModule("./testscopemaploader.js")
 @JsModule("./importdir.js")

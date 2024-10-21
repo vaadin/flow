@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -65,6 +66,8 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
@@ -303,6 +306,7 @@ public abstract class VaadinService implements Serializable {
                 addRouterUsageStatistics();
             }
             routeDataList.stream().map(Object::toString).forEach(logger::debug);
+            addAutoLayoutUsageStatistics();
             DevToolsToken.init(this);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
@@ -311,6 +315,9 @@ public abstract class VaadinService implements Serializable {
         if (getDeploymentConfiguration().isBunEnabled()) {
             UsageStatistics.markAsUsed("flow/bun", null);
         }
+
+        RouteUtil.checkForClientRouteCollisions(this,
+                getRouteRegistry().getRegisteredRoutes());
 
         initialized = true;
     }
@@ -328,6 +335,25 @@ public abstract class VaadinService implements Serializable {
                     Version.getFullVersion());
         }
         UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
+    }
+
+    private void addAutoLayoutUsageStatistics() {
+        if (getRouteRegistry() instanceof AbstractRouteRegistry registry
+                && RouteUtil.hasAutoLayout(registry)) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_AUTO_LAYOUT,
+                    null);
+            if (RouteUtil.hasClientRouteWithAutoLayout(
+                    getDeploymentConfiguration())) {
+                UsageStatistics.markAsUsed(
+                        Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT,
+                        null);
+            }
+            if (RouteUtil.hasServerRouteWithAutoLayout(registry)) {
+                UsageStatistics.markAsUsed(
+                        Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT,
+                        null);
+            }
+        }
     }
 
     /**
@@ -621,14 +647,21 @@ public abstract class VaadinService implements Serializable {
     /**
      * Adds a listener that gets notified when a Vaadin service session that has
      * been initialized for this service is destroyed.
+     *
      * <p>
      * The session being destroyed is locked and its UIs have been removed when
      * the listeners are called.
+     *
+     * <p>
+     * This method delivers notifications for all associated sessions. To be
+     * notified for only one specific session, use
+     * {@link VaadinSession#addSessionDestroyListener}.
      *
      * @param listener
      *            the vaadin service session destroy listener
      * @return a handle that can be used for removing the listener
      * @see #addSessionInitListener(SessionInitListener)
+     * @see VaadinSession#addSessionDestroyListener
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
@@ -684,18 +717,19 @@ public abstract class VaadinService implements Serializable {
             }
             SessionDestroyEvent event = new SessionDestroyEvent(
                     VaadinService.this, session);
-            for (SessionDestroyListener listener : sessionDestroyListeners) {
-                try {
-                    listener.sessionDestroy(event);
-                } catch (Exception e) {
-                    /*
-                     * for now, use the session error handler; in the future,
-                     * could have an API for using some other handler for
-                     * session init and destroy listeners
-                     */
-                    session.getErrorHandler().error(new ErrorEvent(e));
-                }
-            }
+            Stream.concat(session.destroyListeners.stream(),
+                    sessionDestroyListeners.stream()).forEach(listener -> {
+                        try {
+                            listener.sessionDestroy(event);
+                        } catch (Exception e) {
+                            /*
+                             * for now, use the session error handler; in the
+                             * future, could have an API for using some other
+                             * handler for session init and destroy listeners
+                             */
+                            session.getErrorHandler().error(new ErrorEvent(e));
+                        }
+                    });
 
             session.setState(VaadinSessionState.CLOSED);
         });
@@ -2116,11 +2150,12 @@ public abstract class VaadinService implements Serializable {
         // Dump all current instances, not only the ones dumped by setCurrent
         Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
                 .getInstances();
-        CurrentInstance.setCurrent(session);
         try {
             while ((pendingAccess = session.getPendingAccessQueue()
                     .poll()) != null) {
                 if (!pendingAccess.isCancelled()) {
+                    CurrentInstance.clearAll();
+                    CurrentInstance.setCurrent(session);
                     pendingAccess.run();
 
                     try {

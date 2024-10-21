@@ -80,7 +80,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @WebMvcTest
-@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
+@ContextConfiguration(classes = { SecurityAutoConfiguration.class,
+        SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class,
         JwtStatelessAuthenticationTest.WorkaroundConfig.class,
         JwtStatelessAuthenticationTest.SecurityConfig.class })

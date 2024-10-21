@@ -365,6 +365,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             // applied auto layout changed
                     RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(),
                             currentPath)
+                            && registry.hasLayout(currentPath)
                             && RouteUtil
                                     .collectRouteParentLayouts(
                                             registry.getLayout(currentPath))
