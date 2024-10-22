@@ -327,7 +327,7 @@ public class VaadinServletContextInitializer
                 getLogger().debug("There are no discovered routes yet. "
                         + "Start to collect all routes from the classpath...");
                 try {
-                    Collection<String> routePackages = null;
+                    Collection<String> routePackages;
                     if (devModeCachingEnabled
                             && ReloadCache.routePackages != null) {
                         routePackages = ReloadCache.routePackages;
@@ -356,11 +356,27 @@ public class VaadinServletContextInitializer
                             "There are {} navigation targets after filtering route classes: {}",
                             navigationTargets.size(), navigationTargets);
 
+                    Collection<String> layoutPackages;
+                    if (devModeCachingEnabled
+                            && ReloadCache.layoutPackages != null) {
+                        layoutPackages = ReloadCache.layoutPackages;
+                    } else {
+                        layoutPackages = getDefaultPackages();
+                    }
+
                     Set<Class<?>> layoutClasses = findByAnnotation(
-                            routePackages, Layout.class)
+                            layoutPackages, Layout.class)
                             .collect(Collectors.toSet());
+
+                    if (devModeCachingEnabled) {
+                        ReloadCache.layoutPackages = layoutClasses.stream()
+                                .map(Class::getPackageName)
+                                .collect(Collectors.toSet());
+                    }
+
                     RouteRegistryInitializer
                             .validateLayoutAnnotations(layoutClasses);
+
                     // Collect all layouts to use with Hilla as a main layout
                     layoutClasses.stream().filter(
                             clazz -> RouterLayout.class.isAssignableFrom(clazz))
@@ -1070,7 +1086,7 @@ public class VaadinServletContextInitializer
                             AtomicBoolean parentIsAllowedByPackageProperties = new AtomicBoolean(
                                     true);
                             if (parents.stream()
-                                    .anyMatch(parent -> shouldPathBeScanned(
+                                    .allMatch(parent -> shouldPathBeScanned(
                                             path.substring(parent.length()),
                                             parent,
                                             parentIsAllowedByPackageProperties))) {

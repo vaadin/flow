@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -128,6 +129,12 @@ public class ErrorHandlerUtilTest {
 
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
         Mockito.when(ui.getInternals()).thenReturn(internals);
+
+        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(routeRegistry.getRegisteredRoutes())
+                .thenReturn(new ArrayList<>());
+        Mockito.when(vaadinService.getRouteRegistry())
+                .thenReturn(routeRegistry);
 
         session = new AlwaysLockedVaadinSession(vaadinService);
         VaadinContext context = new MockVaadinContext();

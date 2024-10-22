@@ -66,11 +66,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v20.17.0";
+    public static final String DEFAULT_NODE_VERSION = "v22.10.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "10.8.2";
+    public static final String DEFAULT_NPM_VERSION = "10.9.0";
 
     public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
@@ -137,8 +137,10 @@ public class FrontendTools {
             1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
 
     private enum BuildTool {
-        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js"), PNPM("pnpm",
-                null), BUN("bun", null);
+        NPM("npm", "npm-cli.js"),
+        NPX("npx", "npx-cli.js"),
+        PNPM("pnpm", null),
+        BUN("bun", null);
 
         private final String name;
         private final String script;

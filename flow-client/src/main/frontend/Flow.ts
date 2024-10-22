@@ -45,7 +45,7 @@ interface FlowRoot {
 
 export interface NavigationParameters {
   pathname: string;
-  search: string;
+  search?: string;
 }
 
 export interface PreventCommands {
