@@ -143,7 +143,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(8, menuItems.size());
+        Assert.assertEquals(10, menuItems.size());
         assertClientRoutes(menuItems);
     }
 
@@ -170,7 +170,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(false);
 
-        Assert.assertEquals(11, menuItems.size());
+        Assert.assertEquals(13, menuItems.size());
         // Validate as if logged in as all routes should be available
         assertClientRoutes(menuItems, true, true, false);
     }
@@ -189,7 +189,7 @@ public class MenuRegistryTest {
 
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(false);
-        Assert.assertEquals(13, menuItems.size());
+        Assert.assertEquals(15, menuItems.size());
 
         RouteUtil.checkForClientRouteCollisions(vaadinService,
                 routeConfiguration.getAvailableRoutes());
@@ -231,7 +231,7 @@ public class MenuRegistryTest {
             Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                     .getMenuItems(true);
 
-            Assert.assertEquals(8, menuItems.size());
+            Assert.assertEquals(10, menuItems.size());
             assertClientRoutes(menuItems);
         }
     }
@@ -265,7 +265,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(10, menuItems.size());
+        Assert.assertEquals(12, menuItems.size());
         assertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
     }
@@ -306,7 +306,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(11, menuItems.size());
+        Assert.assertEquals(13, menuItems.size());
         assertClientRoutes(menuItems, true, true, false);
 
         // Verify that getMenuItemsList returns the same data
@@ -315,8 +315,10 @@ public class MenuRegistryTest {
         Assert.assertEquals(
                 "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
                 7, menuItemsList.size());
-        assertOrder(menuItemsList, new String[] { "/", "/about", "/hilla",
-                "/hilla/sub", "/opt_params", "/params", "/wc_params" });
+        assertOrder(menuItemsList,
+                new String[] { "/", "/about", "/hilla", "/hilla/sub",
+                        "/opt_params", "/params_with_opt_children",
+                        "/wc_params" });
     }
 
     @Test
@@ -333,7 +335,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(9, menuItems.size());
+        Assert.assertEquals(11, menuItems.size());
         assertClientRoutes(menuItems, true, false, false);
     }
 
@@ -354,7 +356,8 @@ public class MenuRegistryTest {
         Assert.assertEquals(8, menuItems.size());
         assertOrder(menuItems,
                 new String[] { "/", "/home", "/info", "/opt_params", "/param",
-                        "/param/varargs", "/params", "/wc_params" });
+                        "/param/varargs", "/params_with_opt_children",
+                        "/wc_params" });
         // verifying that data is same as with collectMenuItems
         Map<String, AvailableViewInfo> mapMenuItems = menuItems.stream()
                 .collect(Collectors.toMap(AvailableViewInfo::route,
@@ -709,6 +712,20 @@ public class MenuRegistryTest {
                     "title": "opt_params path is included in menu"
                   },
                   {
+                    "route": "params_with_opt_children",
+                    "loginRequired": false,
+                    "children": [
+                        {
+                            "route": ":param?",
+                            "loginRequired": false,
+                            "params": {
+                               ":param": "opt"
+                            },
+                            "title": "params_with_opt_children/:param? path is included in menu"
+                        }
+                    ]
+                  },
+                  {
                     "route": "req_params/:param",
                     "loginRequired": false,
                     "params": {
@@ -719,7 +736,7 @@ public class MenuRegistryTest {
                   {
                     "route": "params",
                     "loginRequired": false,
-                    "title": "params path is shown in menu",
+                    "title": null,
                     "children": [
                       {
                         "route": ":param",
