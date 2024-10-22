@@ -714,7 +714,6 @@ public class MenuRegistryTest {
                   {
                     "route": "params_with_opt_children",
                     "loginRequired": false,
-                    "title": "params_with_opt_children path is not included in menu",
                     "children": [
                         {
                             "route": ":param?",
@@ -737,7 +736,7 @@ public class MenuRegistryTest {
                   {
                     "route": "params",
                     "loginRequired": false,
-                    "title": "params path is shown in menu",
+                    "title": null,
                     "children": [
                       {
                         "route": ":param",

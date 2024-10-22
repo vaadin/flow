@@ -667,25 +667,18 @@ public class MenuRegistry {
             // - routes with required parameters
             // - routes with exclude=true
             // Remove following without including nested ones:
-            // - routes with direct children with route parameter
+            // - routes with undefined title and icon
             if (viewInfo.menu().isExclude() || hasRequiredParameter(viewInfo)) {
                 menuRoutes.remove(path);
                 if (viewInfo.children() != null) {
                     removeChildren(menuRoutes, viewInfo, path);
                 }
-            } else if (childrenHasRouteParameter(viewInfo.children())) {
-                menuRoutes.remove(path);
+            } else if (viewInfo.menu().getIcon() == null) {
+                if (viewInfo.menu().title() == null
+                        && viewInfo.title() == null) {
+                    menuRoutes.remove(path);
+                }
             }
         }
-    }
-
-    private static boolean childrenHasRouteParameter(
-            List<AvailableViewInfo> children) {
-        if (children == null || children.isEmpty()) {
-            return false;
-        }
-        return children.stream()
-                .anyMatch(viewInfo -> viewInfo.routeParameters() != null
-                        && !viewInfo.routeParameters().isEmpty());
     }
 }
