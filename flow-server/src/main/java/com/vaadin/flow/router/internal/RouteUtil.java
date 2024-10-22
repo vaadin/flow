@@ -746,8 +746,7 @@ public class RouteUtil {
         RouteModel routeModel = RouteModel.create(true);
         MenuRegistry.getClientRoutes(false).forEach((key, value) -> {
             try {
-                routeModel.addRoute(key,
-                        new RouteTarget(Component.class, null, key));
+                routeModel.addRoute(key, new ClientTarget(key));
             } catch (AmbiguousRouteConfigurationException tolerate) {
                 // tolerate ambiguous routes. First added route wins and
                 // declares returned template.
@@ -756,6 +755,6 @@ public class RouteUtil {
         url = url.isEmpty() ? url : url.startsWith("/") ? url : "/" + url;
         return Optional.ofNullable(routeModel.getNavigationRouteTarget(url))
                 .map(NavigationRouteTarget::getRouteTarget)
-                .map(RouteTarget::getTemplate);
+                .map(ClientTarget.class::cast).map(ClientTarget::getTemplate);
     }
 }
