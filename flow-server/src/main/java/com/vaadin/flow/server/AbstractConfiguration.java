@@ -43,8 +43,8 @@ public interface AbstractConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Get if the dev server should be enabled. Defaults to true if Hilla is in
-     * use, otherwise defaults to false to enable dev bundle.
+     * Get if the dev server should be enabled. false by default as a
+     * development bundle is used.
      *
      * @return true if dev server should be used
      * @deprecated Use {@link #getMode()} instead
@@ -53,11 +53,9 @@ public interface AbstractConfiguration extends Serializable {
     default boolean frontendHotdeploy() {
         if (isProductionMode()) {
             return false;
-        } else if (FrontendUtils.isHillaUsed(getFrontendFolder())) {
-            return true;
-        } else {
-            return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY, false);
         }
+        return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
+                FrontendUtils.isHillaUsed(getFrontendFolder()));
     }
 
     default File getFrontendFolder() {
