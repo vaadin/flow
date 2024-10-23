@@ -666,10 +666,17 @@ public class MenuRegistry {
             // Remove following, including nested ones:
             // - routes with required parameters
             // - routes with exclude=true
+            // Remove following without including nested ones:
+            // - routes with undefined title and icon
             if (viewInfo.menu().isExclude() || hasRequiredParameter(viewInfo)) {
                 menuRoutes.remove(path);
                 if (viewInfo.children() != null) {
                     removeChildren(menuRoutes, viewInfo, path);
+                }
+            } else if (viewInfo.menu().getIcon() == null) {
+                if (viewInfo.menu().title() == null
+                        && viewInfo.title() == null) {
+                    menuRoutes.remove(path);
                 }
             }
         }
