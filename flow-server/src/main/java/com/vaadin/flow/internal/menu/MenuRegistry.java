@@ -60,6 +60,7 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEV_BUNDLE_FOLDER;
 
 /**
  * Registry for getting the menu items available for the current state of the
@@ -468,6 +469,11 @@ public class MenuRegistry {
         try {
             Path fileRoutes = configuration.getFrontendFolder().toPath()
                     .resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
+            if (fileRoutes.toFile().exists()) {
+                return fileRoutes.toUri().toURL();
+            }
+            fileRoutes = configuration.getProjectFolder().toPath()
+                    .resolve(DEV_BUNDLE_FOLDER).resolve(FILE_ROUTES_JSON_NAME);
             if (fileRoutes.toFile().exists()) {
                 return fileRoutes.toUri().toURL();
             }

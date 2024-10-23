@@ -91,9 +91,11 @@ public class InvalidUrlTest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
         Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
+        Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
 
         session.lock();
         session.setConfiguration(config);
+        ((MockVaadinServletService) service).setConfiguration(config);
         CurrentInstance.set(VaadinSession.class, session);
 
         ui.getInternals().setSession(session);

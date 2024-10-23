@@ -244,10 +244,11 @@ public class UITest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
         Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
+        Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
 
         session.lock();
         session.setConfiguration(config);
-
+        ((MockVaadinServletService) service).setConfiguration(config);
         ui.getInternals().setSession(session);
 
         RouteConfiguration routeConfiguration = RouteConfiguration

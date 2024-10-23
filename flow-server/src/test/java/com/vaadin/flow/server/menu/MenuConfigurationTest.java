@@ -106,6 +106,8 @@ public class MenuConfigurationTest {
 
         Mockito.when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getProjectFolder())
+                .thenReturn(tmpDir.getRoot());
 
         VaadinService.setCurrent(vaadinService);
 
