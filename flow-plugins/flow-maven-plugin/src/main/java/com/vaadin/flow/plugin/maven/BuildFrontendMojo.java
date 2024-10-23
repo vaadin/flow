@@ -135,6 +135,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
+        augmentPluginClassloader();
 
         TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
                 npmFolder(), frontendDirectory(), getClassFinder());

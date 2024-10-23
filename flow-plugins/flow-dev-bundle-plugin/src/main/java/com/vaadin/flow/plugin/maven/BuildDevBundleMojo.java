@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -31,12 +33,15 @@ import java.util.stream.Stream;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -52,7 +57,9 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.utils.FlowFileUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -130,6 +137,9 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
+    @Component
+    MojoExecution mojoExecution;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -171,9 +181,13 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
 
+    private ClassFinder classFinder;
+
     @Override
     public void execute() throws MojoFailureException {
         long start = System.nanoTime();
+
+        augmentPluginClassloader();
 
         try {
             BuildFrontendUtil.runDevBuildNodeUpdater(this);
@@ -282,11 +296,43 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public ClassFinder getClassFinder() {
+        if (classFinder == null) {
+            classFinder = createClassFinder(project);
+        }
+        return classFinder;
+    }
 
+    private static ClassFinder createClassFinder(MavenProject project) {
         List<String> classpathElements = getClasspathElements(project);
+        URL[] urls = classpathElements.stream().distinct().map(File::new)
+                .map(FlowFileUtils::convertToUrl).toArray(URL[]::new);
 
-        return BuildFrontendUtil.getClassFinder(classpathElements);
+        // A custom class loader that reverts the order for resources lookup
+        // by first searching self and then delegating to the parent.
+        // This hack is required to prevent resources being loaded from the
+        // flow-server artifact the plugin depends on, giving priority to the
+        // flow-server version defined by the project.
+        // On the contrary, classes will be loaded first from the parent class
+        // loader, that should be the maven plugin class loader, but augmented
+        // with the project artifacts. This prevents class cast exceptions at
+        // runtime caused by classes loaded both from the plugin class loader
+        // and by the class loader used by Lookup (e.g.
+        // EndpointGeneratorTaskFactoryImpl from Hilla could not be cast to
+        // EndpointGeneratorTaskFactory because the interface is loaded by both
+        // the classloaders)
+        ClassLoader classLoader = new URLClassLoader(urls,
+                Thread.currentThread().getContextClassLoader()) {
+            @Override
+            public URL getResource(String name) {
+                URL resource = findResource(name);
+                if (resource == null) {
+                    resource = super.getResource(name);
+                }
+                return resource;
+            }
 
+        };
+        return new ReflectionsClassFinder(classLoader, urls);
     }
 
     @Override
@@ -469,4 +515,21 @@ public class BuildDevBundleMojo extends AbstractMojo
             Consumer<String> missingDependencyMessageConsumer) {
         return false;
     }
+
+    /**
+     * Adds project artifacts to the plugin class loader to prevent class cast
+     * exceptions caused by plugin and Lookup loading separately the same
+     * classes.
+     */
+    protected void augmentPluginClassloader() {
+        ClassRealm classRealm = mojoExecution.getMojoDescriptor()
+                .getPluginDescriptor().getClassRealm();
+        if (classRealm != null) {
+            List<String> classpathElements = getClasspathElements(project);
+            classpathElements.stream().distinct().map(File::new)
+                    .map(FlowFileUtils::convertToUrl)
+                    .forEach(classRealm::addURL);
+        }
+    }
+
 }

@@ -16,9 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -50,6 +48,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             logWarn("The <productionMode>" + productionMode
                     + "</productionMode> Maven parameter no longer has any effect and can be removed. Production mode is automatically enabled when you run the build-frontend target.");
         }
+
+        augmentPluginClassloader();
 
         // propagate info via System properties and token file
         File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);

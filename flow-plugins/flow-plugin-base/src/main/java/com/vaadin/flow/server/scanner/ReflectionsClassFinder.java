@@ -56,8 +56,12 @@ public class ReflectionsClassFinder implements ClassFinder {
      *            the list of urls for finding classes.
      */
     public ReflectionsClassFinder(URL... urls) {
-        classLoader = new URLClassLoader(urls,
-                Thread.currentThread().getContextClassLoader());
+        this(new URLClassLoader(urls,
+                Thread.currentThread().getContextClassLoader()));
+    }
+
+    public ReflectionsClassFinder(ClassLoader classLoader, URL... urls) {
+        this.classLoader = classLoader;
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .addClassLoaders(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);

@@ -310,7 +310,7 @@ public class BuildFrontendUtil {
 
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
-                    lookup, adapter.npmFolder())
+                    lookup, classFinder, adapter.npmFolder())
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
