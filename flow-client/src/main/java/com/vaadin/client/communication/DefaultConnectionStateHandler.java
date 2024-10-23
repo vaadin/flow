@@ -201,7 +201,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
 
         reconnectAttempt++;
-        Console.log("Reconnect attempt " + reconnectAttempt + " for " + type);
+        Console.debug("Reconnect attempt " + reconnectAttempt + " for " + type);
 
         if (reconnectAttempt >= getConfiguration().getReconnectAttempts()) {
             // Max attempts reached, stop trying and go back to CONNECTION_LOST
@@ -259,7 +259,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             return;
         }
         if (payload != null) {
-            Console.log("Re-sending last message to the server...");
+            Console.debug("Re-sending last message to the server...");
             registry.getMessageSender().send(payload);
         } else {
             // Use heartbeat

@@ -264,7 +264,7 @@ public class MessageSender {
             return;
         }
         if (force) {
-            Console.log(
+            Console.debug(
                     "Forced update of clientId to " + clientToServerMessageId);
             clientToServerMessageId = nextExpectedId;
             return;
@@ -275,7 +275,7 @@ public class MessageSender {
                 // We have never sent a message to the server, so likely the
                 // server knows better (typical case is that we refreshed a
                 // @PreserveOnRefresh UI)
-                Console.log("Updating client-to-server id to " + nextExpectedId
+                Console.debug("Updating client-to-server id to " + nextExpectedId
                         + " based on server");
             } else {
                 Console.warn("Server expects next client-to-server id to be "
@@ -300,7 +300,7 @@ public class MessageSender {
     boolean requestResynchronize() {
         switch (resynchronizationState) {
         case NOT_ACTIVE:
-            Console.log("Resynchronize from server requested");
+            Console.debug("Resynchronize from server requested");
             resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
             return true;
         case SEND_TO_SERVER:
