@@ -19,8 +19,10 @@ package com.vaadin.flow.internal.menu;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,11 +58,11 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEV_BUNDLE_FOLDER;
 
 /**
  * Registry for getting the menu items available for the current state of the
@@ -472,13 +474,10 @@ public class MenuRegistry {
             if (fileRoutes.toFile().exists()) {
                 return fileRoutes.toUri().toURL();
             }
-            fileRoutes = configuration.getProjectFolder().toPath()
-                    .resolve(DEV_BUNDLE_FOLDER).resolve(FILE_ROUTES_JSON_NAME);
-            if (fileRoutes.toFile().exists()) {
-                return fileRoutes.toUri().toURL();
-            }
-            return null;
-        } catch (MalformedURLException e) {
+            return DevBundleUtils.findBundleFile(
+                    configuration.getProjectFolder(),
+                    configuration.getBuildFolder(), FILE_ROUTES_JSON_NAME);
+        } catch (IOException e) {
             LoggerFactory.getLogger(MenuRegistry.class).warn(
                     "Failed to find {} under frontend/generated",
                     FILE_ROUTES_JSON_NAME, e);

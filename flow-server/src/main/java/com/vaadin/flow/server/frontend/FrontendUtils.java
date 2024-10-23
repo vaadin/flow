@@ -107,11 +107,6 @@ public class FrontendUtils {
     public static final String GENERATED = "generated/";
 
     /**
-     * Path of the folder to custom dev-bundle.
-     */
-    public static final String DEV_BUNDLE_FOLDER = "target/dev-bundle/";
-
-    /**
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
      *

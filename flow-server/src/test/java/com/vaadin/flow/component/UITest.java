@@ -245,6 +245,7 @@ public class UITest {
         Mockito.when(config.isProductionMode()).thenReturn(false);
         Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
         Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
+        Mockito.when(config.getBuildFolder()).thenReturn("build");
 
         session.lock();
         session.setConfiguration(config);
