@@ -275,8 +275,8 @@ public class MessageSender {
                 // We have never sent a message to the server, so likely the
                 // server knows better (typical case is that we refreshed a
                 // @PreserveOnRefresh UI)
-                Console.debug("Updating client-to-server id to " + nextExpectedId
-                        + " based on server");
+                Console.debug("Updating client-to-server id to "
+                        + nextExpectedId + " based on server");
             } else {
                 Console.warn("Server expects next client-to-server id to be "
                         + nextExpectedId + " but we were going to use "
