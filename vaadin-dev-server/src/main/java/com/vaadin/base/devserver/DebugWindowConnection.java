@@ -381,4 +381,15 @@ public class DebugWindowConnection implements BrowserLiveReload {
         resources.put(ref, new FragmentedMessage());
     }
 
+    @Override
+    public void sendHmrEvent(String event, JsonObject eventData) {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "hmr");
+        JsonObject data = Json.createObject();
+        msg.put("data", data);
+        data.put("event", event);
+        data.put("eventData", eventData);
+        broadcast(msg);
+    }
+
 }

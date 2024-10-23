@@ -62,13 +62,16 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.menu.MenuRegistry;
+import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -155,7 +158,10 @@ public abstract class AbstractNavigationStateRenderer
         final RouteParameters parameters = navigationState.getRouteParameters();
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
-        routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
+        routeLayoutTypes = routeTarget != null
+                ? getTargetParentLayouts(routeTarget,
+                        event.getSource().getRegistry(),
+                        event.getLocation().getPath())
                 : getRouterLayoutTypes(routeTargetType,
                         ui.getInternals().getRouter());
 
@@ -269,9 +275,33 @@ public abstract class AbstractNavigationStateRenderer
                 new AfterNavigationEvent(locationChangeEvent, parameters),
                 afterNavigationHandlers);
 
-        updatePageTitle(event, componentInstance);
+        updatePageTitle(event, componentInstance, route);
 
         return statusCode;
+    }
+
+    /**
+     * Get the parentLayouts for given routeTarget or use an applicable
+     * {@code @Layout} when no parentLayouts defined and target is a Route
+     * annotated target with autoLayout enabled and no layout set.
+     *
+     * @param routeTarget
+     *            RouteTarget to get parents for
+     * @param registry
+     *            Registry in use
+     * @param path
+     *            request path
+     * @return List of parent layouts
+     */
+    protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
+            RouteTarget routeTarget, RouteRegistry registry, String path) {
+        if (routeTarget.getParentLayouts().isEmpty()
+                && RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(), path)
+                && registry.hasLayout(path)) {
+            return RouteUtil
+                    .collectRouteParentLayouts(registry.getLayout(path));
+        }
+        return routeTarget.getParentLayouts();
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
@@ -296,8 +326,8 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (ui.getInternals().getSession().getConfiguration()
-                .isReactEnabled()) {
+        } else if (ui.getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled()) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
@@ -924,18 +954,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
-            Component routeTarget) {
+            Component routeTarget, String route) {
 
         Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
                 routeTarget).map(PageTitle::value).orElse("");
 
         // check for HasDynamicTitle in current router targets chain
-        String title = navigationEvent.getUI().getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(HasDynamicTitle.class::isInstance)
-                .map(tc -> ((HasDynamicTitle) tc).getPageTitle())
-                .filter(Objects::nonNull).findFirst()
-                .orElseGet(lookForTitleInTarget);
+        String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
+                .orElseGet(() -> Optional
+                        .ofNullable(
+                                MenuRegistry.getClientRoutes(true).get(route))
+                        .map(AvailableViewInfo::title)
+                        .orElseGet(lookForTitleInTarget));
 
         navigationEvent.getUI().getPage().setTitle(title);
     }

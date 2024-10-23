@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.menu;
+package com.vaadin.flow.internal.menu;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,10 +31,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -54,6 +56,8 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.RouteParamType;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -63,11 +67,34 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  *
  * Only returns views that are accessible at the moment and leaves out routes
  * that require path parameters.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class MenuRegistry {
 
     private static final Logger log = LoggerFactory
             .getLogger(MenuRegistry.class);
+
+    /**
+     * File routes lazy loading and caching.
+     */
+    private enum FileRoutesCache {
+        INSTANCE;
+
+        private List<AvailableViewInfo> cachedResource;
+
+        private List<AvailableViewInfo> get(
+                AbstractConfiguration configuration) {
+            if (cachedResource == null) {
+                cachedResource = loadClientMenuItems(configuration);
+            }
+            return cachedResource;
+        }
+
+        private void clear() {
+            cachedResource = null;
+        }
+    }
 
     /**
      * Collect views with menu annotation for automatic menu population. All
@@ -76,12 +103,10 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        Map<String, AvailableViewInfo> menuRoutes = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuRoutes = MenuRegistry
                 .getMenuItems(true);
-        menuRoutes.entrySet()
-                .removeIf(entry -> Optional.ofNullable(entry.getValue())
-                        .map(AvailableViewInfo::menu).map(MenuData::isExclude)
-                        .orElse(false));
+        filterMenuItems(menuRoutes);
+
         return menuRoutes;
     }
 
@@ -111,7 +136,8 @@ public class MenuRegistry {
         return collectMenuItems().entrySet().stream().map(entry -> {
             AvailableViewInfo value = entry.getValue();
             return new AvailableViewInfo(value.title(), value.rolesAllowed(),
-                    value.loginRequired(), entry.getKey(), value.lazy(),
+                    value.loginRequired(),
+                    getMenuLink(entry.getValue(), entry.getKey()), value.lazy(),
                     value.register(), value.menu(), value.children(),
                     value.routeParameters(), value.flowLayout());
         }).sorted(getMenuOrderComparator(
@@ -128,15 +154,14 @@ public class MenuRegistry {
      *            {@code true} to filter routes by authentication status
      * @return routes with view information
      */
-    public Map<String, AvailableViewInfo> getMenuItems(
+    public static Map<String, AvailableViewInfo> getMenuItems(
             boolean filterClientViews) {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forApplicationScope();
 
-        Map<String, AvailableViewInfo> menuRoutes = new HashMap<>();
-
-        menuRoutes.putAll(collectClientMenuItems(filterClientViews,
-                VaadinService.getCurrent().getDeploymentConfiguration()));
+        Map<String, AvailableViewInfo> menuRoutes = new HashMap<>(
+                collectClientMenuItems(filterClientViews, VaadinService
+                        .getCurrent().getDeploymentConfiguration()));
 
         collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
 
@@ -300,39 +325,97 @@ public class MenuRegistry {
             boolean filterClientViews, AbstractConfiguration configuration,
             VaadinRequest vaadinRequest) {
 
+        Map<String, AvailableViewInfo> configurations = new HashMap<>();
+
+        collectClientMenuItems(configuration).forEach(
+                viewInfo -> collectClientViews("", viewInfo, configurations));
+
+        if (filterClientViews && !configurations.isEmpty()) {
+            filterClientViews(configurations, vaadinRequest);
+        }
+
+        return configurations;
+    }
+
+    /**
+     * Determines whether the application contains a Hilla automatic main
+     * layout.
+     * <p>
+     * This method detects only a top-level main layout, when the following
+     * conditions are met:
+     * <ul>
+     * <li>only one single root element is present in
+     * {@code file-routes.json}</li>
+     * <li>this element has no or blank {@code route} parameter</li>
+     * <li>this element has non-null children array, which may or may not be
+     * empty</li>
+     * </ul>
+     * <p>
+     * This method doesn't check nor does it detect the nested layouts, i.e.
+     * that are not root entries.
+     *
+     * @param configuration
+     *            the {@link AbstractConfiguration} containing the application
+     *            configuration
+     * @return {@code true} if a Hilla automatic main layout is present in the
+     *         configuration, {@code false} otherwise
+     */
+    public static boolean hasHillaMainLayout(
+            AbstractConfiguration configuration) {
+        List<AvailableViewInfo> viewInfos = collectClientMenuItems(
+                configuration);
+        return viewInfos.size() == 1
+                && isMainLayout(viewInfos.iterator().next());
+    }
+
+    private static boolean isMainLayout(AvailableViewInfo viewInfo) {
+        return (viewInfo.route() == null || viewInfo.route().isBlank())
+                && viewInfo.children() != null;
+    }
+
+    /**
+     * Caches the loaded file routes data in production. Always loads from a
+     * local file in development.
+     *
+     * @param configuration
+     *            application configuration
+     * @return file routes data loaded from {@code file-routes.json}
+     */
+    private static List<AvailableViewInfo> collectClientMenuItems(
+            AbstractConfiguration configuration) {
+        if (configuration.isProductionMode()) {
+            return FileRoutesCache.INSTANCE.get(configuration);
+        } else {
+            return loadClientMenuItems(configuration);
+        }
+    }
+
+    private static List<AvailableViewInfo> loadClientMenuItems(
+            AbstractConfiguration configuration) {
+        Objects.requireNonNull(configuration);
         URL viewsJsonAsResource = getViewsJsonAsResource(configuration);
-        if (viewsJsonAsResource == null) {
+        if (viewsJsonAsResource != null) {
+            try (InputStream source = viewsJsonAsResource.openStream()) {
+                if (source != null) {
+                    ObjectMapper mapper = new ObjectMapper().configure(
+                            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                            false);
+                    return mapper.readValue(source, new TypeReference<>() {
+                    });
+                }
+            } catch (IOException e) {
+                LoggerFactory.getLogger(MenuRegistry.class).warn(
+                        "Failed load {} from {}", FILE_ROUTES_JSON_NAME,
+                        viewsJsonAsResource.getPath(), e);
+            }
+        } else {
             LoggerFactory.getLogger(MenuRegistry.class).debug(
                     "No {} found under {} directory. Skipping client route registration.",
                     FILE_ROUTES_JSON_NAME,
                     configuration.isProductionMode() ? "'META-INF/VAADIN'"
                             : "'frontend/generated'");
-            return Collections.emptyMap();
         }
-
-        Map<String, AvailableViewInfo> configurations = new HashMap<>();
-
-        try (InputStream source = viewsJsonAsResource.openStream()) {
-            if (source != null) {
-                ObjectMapper mapper = new ObjectMapper().configure(
-                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                        false);
-                mapper.readValue(source,
-                        new TypeReference<List<AvailableViewInfo>>() {
-                        }).forEach(clientViewConfig -> collectClientViews("",
-                                clientViewConfig, configurations));
-            }
-        } catch (IOException e) {
-            LoggerFactory.getLogger(MenuRegistry.class).warn(
-                    "Failed load {} from {}", FILE_ROUTES_JSON_NAME,
-                    viewsJsonAsResource.getPath(), e);
-        }
-
-        if (filterClientViews) {
-            filterClientViews(configurations, vaadinRequest);
-        }
-
-        return configurations;
+        return Collections.emptyList();
     }
 
     private static void collectClientViews(String basePath,
@@ -343,11 +426,24 @@ public class MenuRegistry {
                 : viewConfig.route().startsWith("/")
                         ? basePath + viewConfig.route()
                         : basePath + '/' + viewConfig.route();
+        if (viewConfig.menu() == null) {
+            // create MenuData anyway to avoid need for null checking
+            viewConfig = copyAvailableViewInfo(viewConfig,
+                    new MenuData(viewConfig.title(), null, false, null, null));
+        }
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
             viewConfig.children().forEach(
                     child -> collectClientViews(path, child, configurations));
         }
+    }
+
+    private static AvailableViewInfo copyAvailableViewInfo(
+            AvailableViewInfo source, MenuData newMenuData) {
+        return new AvailableViewInfo(source.title(), source.rolesAllowed(),
+                source.loginRequired(), source.route(), source.lazy(),
+                source.register(), newMenuData, source.children(),
+                source.routeParameters(), source.flowLayout());
     }
 
     public static final String FILE_ROUTES_JSON_NAME = "file-routes.json";
@@ -421,6 +517,17 @@ public class MenuRegistry {
         }
     }
 
+    private static boolean hasRequiredParameter(AvailableViewInfo viewInfo) {
+        final Map<String, RouteParamType> routeParameters = viewInfo
+                .routeParameters();
+        if (routeParameters != null && !routeParameters.isEmpty()
+                && routeParameters.values().stream().anyMatch(
+                        paramType -> paramType == RouteParamType.REQUIRED)) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Check view against authentication state.
      * <p>
@@ -466,6 +573,16 @@ public class MenuRegistry {
      */
     public static boolean hasClientRoute(String route) {
         return hasClientRoute(route, false);
+    }
+
+    /**
+     * For internal use only.
+     * <p>
+     * Clears file routes cache when running in production. Only used in tests
+     * and should not be needed in projects.
+     */
+    public static void clearFileRoutesCache() {
+        FileRoutesCache.INSTANCE.clear();
     }
 
     /**
@@ -523,5 +640,45 @@ public class MenuRegistry {
             return ordersCompareTo != 0 ? ordersCompareTo
                     : collator.compare(o1.route(), o2.route());
         };
+    }
+
+    private static String getMenuLink(AvailableViewInfo info,
+            String defaultMenuLink) {
+        if (info.routeParameters() == null
+                || info.routeParameters().isEmpty()) {
+            return (defaultMenuLink.startsWith("/")) ? defaultMenuLink
+                    : "/" + defaultMenuLink;
+        }
+        // menu link with omitted route parameters
+        final var parameterNames = info.routeParameters().keySet();
+        return Stream.of(defaultMenuLink.split("/")).filter(
+                part -> parameterNames.stream().noneMatch(part::startsWith))
+                .collect(Collectors.joining("/"));
+    }
+
+    private static void filterMenuItems(
+            Map<String, AvailableViewInfo> menuRoutes) {
+        for (var path : new HashSet<>(menuRoutes.keySet())) {
+            if (!menuRoutes.containsKey(path)) {
+                continue;
+            }
+            var viewInfo = menuRoutes.get(path);
+            // Remove following, including nested ones:
+            // - routes with required parameters
+            // - routes with exclude=true
+            // Remove following without including nested ones:
+            // - routes with undefined title and icon
+            if (viewInfo.menu().isExclude() || hasRequiredParameter(viewInfo)) {
+                menuRoutes.remove(path);
+                if (viewInfo.children() != null) {
+                    removeChildren(menuRoutes, viewInfo, path);
+                }
+            } else if (viewInfo.menu().getIcon() == null) {
+                if (viewInfo.menu().title() == null
+                        && viewInfo.title() == null) {
+                    menuRoutes.remove(path);
+                }
+            }
+        }
     }
 }

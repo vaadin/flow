@@ -1,7 +1,6 @@
 {
-  "name": "flow-vite-dependencies",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "A ",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,11 +10,11 @@
   "dependencies": {},
   "devDependencies": {
     "vite": "6.0.0-beta.3",
-    "@vitejs/plugin-react": "4.3.1",
+    "@vitejs/plugin-react": "4.3.2",
     "@preact/signals-react-transform": "0.4.0",
     "@rollup/plugin-replace": "6.0.1",
     "@rollup/pluginutils": "5.1.2",
-    "@babel/preset-react": "7.24.7",
+    "@babel/preset-react": "7.25.7",
     "rollup-plugin-visualizer": "5.12.0",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.8.0",

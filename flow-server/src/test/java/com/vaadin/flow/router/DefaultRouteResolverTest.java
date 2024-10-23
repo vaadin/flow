@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +39,9 @@ import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.menu.MenuRegistry;
+import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.RouteParamType;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {
 
@@ -131,14 +138,151 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class)) {
-            menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
-                    .thenReturn(true);
-
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+                    .thenReturn(Collections.singletonMap("/route",
+                            new AvailableViewInfo("", null, false, "/route",
+                                    false, false, null, null, null, true)));
             NavigationState greeting = resolveNavigationState(path);
             Assert.assertEquals(
                     "Layout should be returned for a non server route when matching @Layout exists",
                     DefaultLayout.class, greeting.getRouteTarget().getTarget());
         }
+    }
+
+    @Test
+    public void clientRouteRequest_withRouteParameters_getDefinedLayout() {
+        router.getRegistry().setLayout(DefaultLayout.class);
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+            // @formatter:off
+                    .thenReturn(buildClientRoutes(
+                            "/route/:param",
+                            "/opt_route/:param?",
+                            "/wildcard_route/:param*",
+                            "/one/:param/two/:param2",
+                            "/foo/:param?/bar/:param2?"));
+            Stream.of(
+                    "route/1",
+                            "/route/abc",
+                            "/opt_route",
+                            "/opt_route/",
+                            "/opt_route/1",
+                            "/wildcard_route",
+                            "wildcard_route",
+                            "wildcard_route/",
+                            "wildcard_route/1",
+                            "/wildcard_route/1/2",
+                            "one/1/two/2",
+                            "foo/bar",
+                            "foo/a/bar",
+                            "foo/bar/b",
+                            "foo/a/bar/b")
+                    // @formatter:on
+                    .forEach(path -> {
+                        String msg = String.format(
+                                "Layout should be returned for path '%s' a non server route when matching @Layout exists",
+                                path);
+                        var state = resolveNavigationState(path);
+                        Assert.assertNotNull(msg, state);
+                        Assert.assertEquals(msg, DefaultLayout.class,
+                                resolveNavigationState(path).getRouteTarget()
+                                        .getTarget());
+                    });
+        }
+    }
+
+    @Test
+    public void clientRouteRequest_withRouteParameters_noLayout() {
+        router.getRegistry().setLayout(DefaultLayout.class);
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+            // @formatter:off
+                    .thenReturn(buildClientRoutes(
+                            "/route/:param",
+                            "/opt_route/:param?",
+                            "/wildcard_route/:param*",
+                            "/one/:param/two/:param2",
+                            "/foo/:param?/bar/:param2?"));
+            // @formatter:off
+            Stream.of(
+                            "route",
+                            "/route/abc/def",
+                            "/unknown_route",
+                            "/opt_route/1/2",
+                            "/",
+                            "",
+                            "one/1/two/2/3",
+                            "one/two/2",
+                            "one/two/",
+                            "foo",
+                            "foo/foo/foo/bar/bar/")
+                    // @formatter:on
+                    .forEach(path -> {
+                        Assert.assertNull(String.format(
+                                "Layout should not be returned for a non server route '%s' when matching @Layout doesn't exist",
+                                path), resolveNavigationState(path));
+                    });
+        }
+    }
+
+    /**
+     * Ambiguous routes should be resolved by the order they were added to the
+     * RouteModel. First added wins. Ambiguous route is detected by
+     * AmbiguousRouteConfigurationException.
+     */
+    @Test
+    public void clientRouteRequest_withRouteParameters_ambiguousRoutesFirstAddedWins() {
+        router.getRegistry().setLayout(DefaultLayout.class);
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+            // @formatter:off
+                    .thenReturn(buildClientRoutes(
+                            "/route",
+                            "/route/:param?",
+                            "/foo",
+                            "/foo/:param*"));
+            // @formatter:off
+            Stream.of(
+                    "route",
+                            "foo",
+                            "foo/1"
+                            )
+                    // @formatter:on
+                    .forEach(path -> {
+                        String msg = String.format(
+                                "Layout should be returned for path '%s' a non server route when matching @Layout exists",
+                                path);
+                        var state = resolveNavigationState(path);
+                        Assert.assertNotNull(msg, state);
+                        Assert.assertEquals(msg, DefaultLayout.class,
+                                resolveNavigationState(path).getRouteTarget()
+                                        .getTarget());
+                    });
+            Stream.of("route/1").forEach(path -> {
+                Assert.assertNull(String.format(
+                        "Layout should not be returned for a non server route '%s' when matching @Layout doesn't exist",
+                        path), resolveNavigationState(path));
+            });
+        }
+    }
+
+    private Map<String, AvailableViewInfo> buildClientRoutes(String... routes) {
+        Map<String, AvailableViewInfo> clientRoutes = new LinkedHashMap<>();
+        for (String route : routes) {
+            clientRoutes.put(route, createAvailableViewInfo(route));
+        }
+        return clientRoutes;
+    }
+
+    private AvailableViewInfo createAvailableViewInfo(String route) {
+        return new AvailableViewInfo("", null, false, route, false, false, null,
+                null, null, true);
     }
 
     @Test
@@ -150,9 +294,10 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class)) {
-            menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
-                    .thenReturn(true);
-
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+                    .thenReturn(Collections.singletonMap("/route",
+                            new AvailableViewInfo("", null, false, "/route",
+                                    false, false, null, null, null, true)));
             NavigationState greeting = resolveNavigationState(path);
         }
     }

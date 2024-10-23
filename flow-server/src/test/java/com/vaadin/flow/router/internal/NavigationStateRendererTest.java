@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -58,6 +57,7 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
@@ -81,8 +81,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
-import com.vaadin.flow.server.menu.MenuRegistry;
-import com.vaadin.flow.server.menu.RouteParamType;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -848,7 +847,8 @@ public class NavigationStateRendererTest {
     public void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
-
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setReactEnabled(false);
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
@@ -1029,5 +1029,82 @@ public class NavigationStateRendererTest {
 
         Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
                 .getName().equals(Constants.STATISTICS_FLOW_ROUTER)));
+    }
+
+    @Layout
+    @Tag("div")
+    public static class MainLayout extends Component implements RouterLayout {
+        private final Element element = new Element("div");
+
+        @Override
+        public Element getElement() {
+            return element;
+        }
+    }
+
+    @Test
+    public void handle_clientNavigationToFlowLayout_setTitleFromClientRoute() {
+        testClientNavigationTitle("Client", true);
+    }
+
+    @Test
+    public void handle_clientNavigation_doNotSetTitleFromClientRoute() {
+        testClientNavigationTitle(null, false);
+    }
+
+    private void testClientNavigationTitle(String expectedDocumentTitle,
+            boolean clientRouteHasFlowLayout) {
+        UI ui = createTestClientNavigationTitleUIForTitleTests();
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
+                    .thenReturn(Collections.singletonMap("/client-route",
+                            new AvailableViewInfo("Client", null, false,
+                                    "/client-route", false, false, null, null,
+                                    null, clientRouteHasFlowLayout)));
+
+            NavigationEvent event = new NavigationEvent(
+                    new Router(new TestRouteRegistry()),
+                    new Location("client-route"), ui,
+                    NavigationTrigger.UI_NAVIGATE);
+            NavigationStateRenderer renderer = new NavigationStateRenderer(
+                    new NavigationStateBuilder(router)
+                            .withTarget(MainLayout.class)
+                            .withPath("client-route").build());
+
+            renderer.handle(event);
+
+            Assert.assertNotNull(ui.getPage());
+            if (expectedDocumentTitle == null) {
+                Mockito.verify(ui.getPage(), Mockito.never())
+                        .setTitle("Client");
+            } else {
+                Mockito.verify(ui.getPage()).setTitle(expectedDocumentTitle);
+            }
+        }
+    }
+
+    private UI createTestClientNavigationTitleUIForTitleTests() {
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                service) {
+            @Override
+            public DeploymentConfiguration getConfiguration() {
+                return configuration;
+            }
+        };
+        Mockito.when(configuration.isReactEnabled()).thenReturn(false);
+        Page page = Mockito.mock(Page.class);
+        Mockito.when(page.getHistory()).thenReturn(Mockito.mock(History.class));
+        return new MockUI(session) {
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
     }
 }

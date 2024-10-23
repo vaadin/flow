@@ -16,7 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
@@ -25,11 +25,9 @@ import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
-import com.vaadin.flow.server.menu.MenuRegistry;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
@@ -50,18 +48,31 @@ public class DefaultRouteResolver implements RouteResolver {
                 .getNavigationRouteTarget(path);
 
         if (!navigationResult.hasTarget()) {
-            if (MenuRegistry.hasClientRoute(path)) {
-                Class<? extends Component> layout = (Class<? extends Component>) registry
-                        .getLayout(path);
-                if (layout == null) {
-                    throw new NotFoundException(
-                            "No layout for client path '%s'".formatted(path));
+            Optional<String> clientNavigationTargetPath = RouteUtil
+                    .getClientNavigationRouteTargetTemplate(path);
+            if (clientNavigationTargetPath.isPresent()) {
+                String clientPath = clientNavigationTargetPath.get();
+                AvailableViewInfo viewInfo = MenuRegistry.getClientRoutes(false)
+                        .get(clientPath.isEmpty() ? clientPath
+                                : clientPath.startsWith("/") ? clientPath
+                                        : "/" + clientPath);
+                if (viewInfo != null && viewInfo.flowLayout()) {
+
+                    Class<? extends Component> layout = (Class<? extends Component>) registry
+                            .getLayout(path);
+                    if (layout == null) {
+                        throw new NotFoundException(
+                                "No layout for client path '%s'"
+                                        .formatted(path));
+                    }
+                    RouteTarget target = new RouteTarget(layout,
+                            Collections.emptyList());
+                    navigationResult = new NavigationRouteTarget(
+                            navigationResult.getPath(), target,
+                            Collections.emptyMap());
+                } else {
+                    return null;
                 }
-                RouteTarget target = new RouteTarget(layout,
-                        Collections.emptyList());
-                navigationResult = new NavigationRouteTarget(
-                        navigationResult.getPath(), target,
-                        Collections.emptyMap());
             } else {
                 return null;
             }

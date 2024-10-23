@@ -48,6 +48,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.NetworkUtil;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -55,6 +56,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -614,12 +616,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        return handleRequestInternal(request, response, devServerStartFuture,
-                isDevServerFailedToStart);
+        return handleRequestInternal(session, request, response,
+                devServerStartFuture, isDevServerFailedToStart);
     }
 
-    static boolean handleRequestInternal(VaadinRequest request,
-            VaadinResponse response, CompletableFuture<?> devServerStartFuture,
+    static boolean handleRequestInternal(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            CompletableFuture<?> devServerStartFuture,
             AtomicBoolean isDevServerFailedToStart) throws IOException {
         if (devServerStartFuture.isDone()) {
             // The server has started, check for any exceptions in the startup
@@ -637,6 +640,15 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 response.setHeader("Cache-Control", "no-cache");
                 return true;
             }
+            try {
+                session.getLockInstance().lock();
+                VaadinService service = session.getService();
+                RouteUtil.checkForClientRouteCollisions(service, service
+                        .getRouter().getRegistry().getRegisteredRoutes());
+            } finally {
+                session.getLockInstance().unlock();
+            }
+
             return false;
         } else {
             if (request.getHeader("X-DevModePoll") == null) {
