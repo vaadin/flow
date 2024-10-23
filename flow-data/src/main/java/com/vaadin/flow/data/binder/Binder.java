@@ -1147,7 +1147,7 @@ public class Binder<BEAN> implements Serializable {
             ValueProvider<BEAN, ?> getter = definition.getGetter();
             Setter<BEAN, ?> setter = readOnly ? null
                     : definition.getSetter().orElse(null);
-            if (!readOnly && setter == null) {
+            if (!readOnly && setter == null && !binder.isRecord) {
                 getLogger().info(
                         propertyName + " does not have an accessible setter");
             }

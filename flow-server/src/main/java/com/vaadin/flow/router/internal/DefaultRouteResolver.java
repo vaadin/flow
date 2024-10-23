@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
@@ -47,10 +48,14 @@ public class DefaultRouteResolver implements RouteResolver {
                 .getNavigationRouteTarget(path);
 
         if (!navigationResult.hasTarget()) {
-            if (MenuRegistry.hasClientRoute(path)) {
+            Optional<String> clientNavigationTargetPath = RouteUtil
+                    .getClientNavigationRouteTargetTemplate(path);
+            if (clientNavigationTargetPath.isPresent()) {
+                String clientPath = clientNavigationTargetPath.get();
                 AvailableViewInfo viewInfo = MenuRegistry.getClientRoutes(false)
-                        .get(path.isEmpty() ? path
-                                : path.startsWith("/") ? path : "/" + path);
+                        .get(clientPath.isEmpty() ? clientPath
+                                : clientPath.startsWith("/") ? clientPath
+                                        : "/" + clientPath);
                 if (viewInfo != null && viewInfo.flowLayout()) {
 
                     Class<? extends Component> layout = (Class<? extends Component>) registry
