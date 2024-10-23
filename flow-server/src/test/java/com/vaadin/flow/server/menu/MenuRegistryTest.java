@@ -48,6 +48,8 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -57,6 +59,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.JsonArray;
@@ -84,6 +87,8 @@ public class MenuRegistryTest {
 
     private AutoCloseable closeable;
 
+    private MockedStatic<FrontendUtils> frontendUtils;
+
     @Before
     public void init() {
         closeable = MockitoAnnotations.openMocks(this);
@@ -103,6 +108,10 @@ public class MenuRegistryTest {
         Mockito.when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.getRoot());
 
+        frontendUtils = Mockito.mockStatic(FrontendUtils.class);
+        frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                .thenReturn(true);
+
         VaadinService.setCurrent(vaadinService);
 
         session = new MockVaadinSession(vaadinService) {
@@ -120,6 +129,7 @@ public class MenuRegistryTest {
 
     @After
     public void cleanup() throws Exception {
+        frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
     }
@@ -163,6 +173,40 @@ public class MenuRegistryTest {
         Assert.assertEquals(11, menuItems.size());
         // Validate as if logged in as all routes should be available
         assertClientRoutes(menuItems, true, true, false);
+    }
+
+    @Test
+    public void testNonCollidingServerAndClientRoutesDoesNotThrow()
+            throws IOException {
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MyRoute.class, MyInfo.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+                .getMenuItems(false);
+        Assert.assertEquals(13, menuItems.size());
+
+        RouteUtil.checkForClientRouteCollisions(vaadinService,
+                routeConfiguration.getAvailableRoutes());
+    }
+
+    @Test(expected = InvalidRouteConfigurationException.class)
+    public void testCollidingServerAndClientRouteDoesThrow()
+            throws IOException {
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MyRoute.class, MyInfo.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+        routeConfiguration.setAnnotatedRoute(ConflictRoute.class);
     }
 
     @Test
@@ -531,6 +575,12 @@ public class MenuRegistryTest {
     @Route("info")
     @Menu
     public static class MyInfo extends Component {
+    }
+
+    @Tag("div")
+    @Route("hilla")
+    @Menu(title = "hilla")
+    public static class ConflictRoute extends Component {
     }
 
     @Tag("div")
