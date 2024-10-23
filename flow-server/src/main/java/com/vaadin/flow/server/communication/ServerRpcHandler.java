@@ -298,6 +298,14 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().info(
                         "Ignoring old duplicate message from the client. Expected: "
                                 + expectedId + ", got: " + requestId);
+            } else if (rpcRequest.isUnloadBeaconRequest()) {
+                getLogger().debug(
+                        "Ignoring unexpected message id from the client on UNLOAD request. "
+                                + "This could happen for example during login process, if concurrent requests "
+                                + "are sent to the server and one of those changes the session identifier, "
+                                + "causing an UIDL request to be rejected because of session expiration. "
+                                + "Expected sync id: {}, got {}.",
+                        expectedId, requestId);
             } else {
                 /*
                  * If the reason for ending up here is intermittent, then we
