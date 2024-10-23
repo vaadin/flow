@@ -263,7 +263,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             registry.getMessageSender().send(payload);
         } else {
             // Use heartbeat
-            Console.log("Trying to re-establish server connection...");
+            Console.debug("Trying to re-establish server connection...");
             registry.getHeartbeat().send();
         }
     }
@@ -450,7 +450,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         reconnectAttempt = 0;
         ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
-        Console.log("Re-established connection to server");
+        Console.debug("Re-established connection to server");
     }
 
     @Override
@@ -477,7 +477,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void pushReconnectPending(PushConnection pushConnection) {
         debug("pushReconnectPending(" + pushConnection.getTransportType()
                 + ")");
-        Console.log("Reopening push connection");
+        Console.debug("Reopening push connection");
         if (pushConnection.isBidirectional()) {
             // Lost connection for a connection which will tell us when the
             // connection is available again
@@ -514,7 +514,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void pushClosed(PushConnection pushConnection,
             JavaScriptObject response) {
         debug("pushClosed()");
-        Console.log("Push connection closed");
+        Console.debug("Push connection closed");
     }
 
     private void pauseHeartbeats() {
