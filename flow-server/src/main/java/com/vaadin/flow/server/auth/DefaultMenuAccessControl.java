@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.auth;
 
-import java.util.Optional;
-
 /**
  * Default implementation of {@link MenuAccessControl}.
  */
