@@ -26,13 +26,16 @@ import elemental.json.JsonObject;
  *
  * @since 24.2
  */
-public record WebPushMessage(String title, String body) implements Serializable {
+public record WebPushMessage(String title,
+        String body) implements Serializable {
 
     /**
      * Creates a new Web Push notification message with title and body.
      *
-     * @param title notification title
-     * @param body  notification body
+     * @param title
+     *            notification title
+     * @param body
+     *            notification body
      */
     public WebPushMessage {
     }

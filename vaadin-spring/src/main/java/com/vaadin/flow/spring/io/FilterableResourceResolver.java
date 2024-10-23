@@ -119,7 +119,8 @@ public class FilterableResourceResolver
     private List<String> blockedJarsList;
 
     private record PackageInfo(Set<String> allowedPackages,
-            Set<String> blockedPackages, boolean blockedJar) implements Serializable {
+            Set<String> blockedPackages,
+            boolean blockedJar) implements Serializable {
     }
 
     /**
