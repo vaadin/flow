@@ -130,6 +130,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         fireFilteringOrSortingChangeEvent(filter,
                 (SerializableComparator<T>) DataViewUtils
                         .getComponentSortComparator(component).orElse(null));
+        refreshAll();
         return this;
     }
 
@@ -142,6 +143,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 (SerializablePredicate<T>) DataViewUtils
                         .getComponentFilter(component).orElse(null),
                 sortComparator);
+        refreshAll();
         return this;
     }
 
