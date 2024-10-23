@@ -15,14 +15,19 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
+import java.net.URLClassLoader;
+
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
+
+import com.vaadin.flow.plugin.base.ConvertPolymerCommand;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * A Maven goal that converts Polymer-based source files to Lit.
  */
-@Mojo(name = "convert-polymer")
-public class ConvertPolymerMojo extends FlowModeAbstractMojo {
+public class ConvertPolymerTask extends FlowModeAbstractTask {
 
     /**
      * A path to a specific file or directory that needs to be converted. By
@@ -30,26 +35,38 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
      * {@code *.java} files in the project except for the {@code node_modules}
      * folder.
      */
-    @Parameter(property = "vaadin.path")
     private String path;
 
     /**
      * Whether to enforce Lit 1 compatible imports.
      */
-    @Parameter(property = "vaadin.useLit1", defaultValue = "${false}")
     private boolean useLit1;
 
     /**
      * Whether to disable the usage of the JavaScript optional chaining operator
      * (?.) in the output.
      */
-    @Parameter(property = "vaadin.disableOptionalChaining", defaultValue = "${false}")
     private boolean disableOptionalChaining;
 
-    @Override
-    protected Class<?> taskClass(Reflector reflector)
-            throws ClassNotFoundException {
-        return reflector.loadClass(ConvertPolymerTask.class.getName());
+    public ConvertPolymerTask(MavenProject project, ClassFinder classFinder,
+            Log logger) {
+        super(project, classFinder, logger);
     }
 
+    @Override
+    public void execute() throws MojoFailureException {
+        if (isHillaUsed(frontendDirectory())) {
+            logWarn("""
+                    The 'convert-polymer' goal is not meant to be used in Hilla projects as polymer templates are not supported.
+                    """
+                    .stripIndent());
+        }
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(this,
+                path, useLit1, disableOptionalChaining)) {
+            command.execute();
+        } catch (Exception e) {
+            throw new MojoFailureException(
+                    "Could not execute convert-polymer goal.", e);
+        }
+    }
 }

@@ -33,7 +33,7 @@ import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 /**
  * A test factory that creates endpoint tasks.
  *
- * @see BuildFrontendMojoTest
+ * @see BuildFrontendTaskTest
  */
 public class TestEndpointGeneratorTaskFactory
         implements EndpointGeneratorTaskFactory {

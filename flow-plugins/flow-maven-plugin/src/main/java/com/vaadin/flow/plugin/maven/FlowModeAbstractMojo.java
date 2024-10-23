@@ -16,51 +16,55 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.ContextEnabled;
+import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.plugin.base.BuildFrontendUtil;
-import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
+import com.vaadin.flow.utils.FlowFileUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
  *
  * @since 2.0
  */
-public abstract class FlowModeAbstractMojo extends AbstractMojo
-        implements PluginAdapterBase {
+public abstract class FlowModeAbstractMojo extends AbstractMojo {
 
     /**
      * Additionally include compile-time-only dependencies matching the pattern.
+     *
+     * @deprecated use {@link Reflector#INCLUDE_FROM_COMPILE_DEPS_REGEX}
      */
+    @Deprecated(forRemoval = true)
     public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
 
     /**
@@ -172,6 +176,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
+    @Parameter(defaultValue = "${mojoExecution}")
+    MojoExecution mojoExecution;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -262,7 +269,91 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
     private String applicationIdentifier;
 
-    private ClassFinder classFinder;
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
+                .getPluginDescriptor();
+        checkFlowCompatibility(pluginDescriptor);
+
+        Reflector reflector = getOrCreateReflector();
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread()
+                .setContextClassLoader(reflector.getTaskClassLoader());
+        try {
+            List<Class<?>> paramTypes = new ArrayList<>();
+            List<Object> paramValues = new ArrayList<>();
+            taskParameters(reflector, paramTypes, paramValues);
+
+            Mojo task = reflector.createTask(this, paramTypes, paramValues);
+            task.execute();
+        } catch (MojoExecutionException | MojoFailureException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MojoFailureException(e.getMessage(), e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(tccl);
+        }
+    }
+
+    private Reflector getOrCreateReflector() {
+        return getOrCreateReflector(this, project, mojoExecution);
+    }
+
+    private static Reflector getOrCreateReflector(Mojo mojo,
+            MavenProject project, MojoExecution mojoExecution) {
+        Map<String, Object> pluginContext = (mojo instanceof ContextEnabled ctx)
+                ? ctx.getPluginContext()
+                : null;
+        String pluginKey = mojoExecution.getPlugin().getKey();
+        String reflectorKey = Reflector.class.getName() + "-" + pluginKey + "-"
+                + mojoExecution.getLifecyclePhase();
+        if (pluginContext != null && pluginContext
+                .get(reflectorKey) instanceof Reflector cachedReflector) {
+
+            mojo.getLog().debug("Using cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+            return cachedReflector;
+        }
+        Reflector reflector = Reflector.of(project, mojoExecution);
+        if (pluginContext != null) {
+            pluginContext.put(reflectorKey, reflector);
+            mojo.getLog().debug("Cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+        }
+        return reflector;
+    }
+
+    protected Class<?> taskClass(Reflector reflector)
+            throws ClassNotFoundException {
+        String taskClassName = getClass().getName().replace("Mojo", "Task");
+        return reflector.loadClass(taskClassName);
+    }
+
+    /**
+     * Provides additional types and values to lookup and invoke task
+     * constructor.
+     * <p>
+     * </p>
+     * {@link FlowModeAbstractTask} subclasses defining a constructor with
+     * additional parameters should fill the {@code paramTypes} and
+     * {@code values} accordingly. Parameter and values for the base
+     * {@link FlowModeAbstractTask(MavenProject, URLClassLoader, System.Logger)}
+     * constructor are provided automatically and must not be added by this
+     * method.
+     *
+     * @param reflector
+     *            Reflector instance to load classes from the task classloader.
+     * @param paramTypes
+     *            mutable list of constructor parameter types.
+     * @param values
+     *            mutable list of constructor parameter values.
+     * @throws ClassNotFoundException
+     *             if a required class is not available in the task classloader.
+     */
+    protected void taskParameters(Reflector reflector,
+            List<Class<?>> paramTypes, List<Object> values)
+            throws ClassNotFoundException {
+    }
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -293,37 +384,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Checks if Hilla is available based on the Maven project's classpath.
      *
-     * @return true if Hilla is available, false otherwise
-     */
-    public boolean isHillaAvailable() {
-        return getClassFinder().getResource(
-                "com/vaadin/hilla/EndpointController.class") != null;
-    }
-
-    /**
-     * Checks if Hilla is available based on the Maven project's classpath.
-     *
      * @param mavenProject
      *            Target Maven project
      * @return true if Hilla is available, false otherwise
      */
     public static boolean isHillaAvailable(MavenProject mavenProject) {
-        return createClassFinder(mavenProject).getResource(
+        return Reflector.of(mavenProject, null).getResource(
+                // return createClassFinder(mavenProject).getResource(
                 "com/vaadin/hilla/EndpointController.class") != null;
-    }
-
-    /**
-     * Checks if Hilla is available and Hilla views are used in the Maven
-     * project based on what is in routes.ts or routes.tsx file.
-     *
-     * @param frontendDirectory
-     *            Target frontend directory.
-     * @return {@code true} if Hilla is available and Hilla views are used,
-     *         {@code false} otherwise
-     */
-    public boolean isHillaUsed(File frontendDirectory) {
-        return isHillaAvailable()
-                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     /**
@@ -343,265 +411,57 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
-    @Override
-    public File applicationProperties() {
-
-        return applicationProperties;
-    }
-
-    @Override
-    public boolean eagerServerLoad() {
-
-        return eagerServerLoad;
-    }
-
-    @Override
-    public File frontendDirectory() {
-        return frontendDirectory;
-    }
-
-    @Override
-    public File generatedTsFolder() {
-        if (generatedTsFolder != null) {
-            return generatedTsFolder;
-        }
-        return new File(frontendDirectory(), GENERATED);
-    }
-
-    @Override
-    public ClassFinder getClassFinder() {
-        if (classFinder == null) {
-            classFinder = createClassFinder(project);
-        }
-        return classFinder;
-    }
-
     private static ClassFinder createClassFinder(MavenProject project) {
         List<String> classpathElements = getClasspathElements(project);
-        return BuildFrontendUtil.getClassFinder(classpathElements);
+        URL[] urls = classpathElements.stream().distinct().map(File::new)
+                .map(FlowFileUtils::convertToUrl).toArray(URL[]::new);
+
+        // A custom class loader that reverts the order for resources lookup
+        // by first searching self and then delegating to the parent.
+        // This hack is required to prevent resources being loaded from the
+        // flow-server artifact the plugin depends on, giving priority to the
+        // flow-server version defined by the project.
+        // On the contrary, classes will be loaded first from the parent class
+        // loader, that should be the maven plugin class loader, but augmented
+        // with the project artifacts. This prevents class cast exceptions at
+        // runtime caused by classes loaded both from the plugin class loader
+        // and by the class loader used by Lookup (e.g.
+        // EndpointGeneratorTaskFactoryImpl from Hilla could not be cast to
+        // EndpointGeneratorTaskFactory because the interface is loaded by both
+        // the classloaders)
+        ClassLoader classLoader = new URLClassLoader(urls,
+                Thread.currentThread().getContextClassLoader()) {
+            @Override
+            public URL getResource(String name) {
+                URL resource = findResource(name);
+                if (resource == null) {
+                    resource = super.getResource(name);
+                }
+                return resource;
+            }
+
+        };
+        return new ReflectionsClassFinder(classLoader, urls);
     }
 
-    @Override
-    public Set<File> getJarFiles() {
-
-        return project.getArtifacts().stream()
-                .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(Artifact::getFile).collect(Collectors.toSet());
-
-    }
-
-    @Override
-    public boolean isDebugEnabled() {
-
-        return getLog().isDebugEnabled();
-    }
-
-    @Override
-    public File javaSourceFolder() {
-
-        return javaSourceFolder;
-    }
-
-    @Override
-    public File javaResourceFolder() {
-
-        return javaResourceFolder;
-    }
-
-    @Override
-    public void logDebug(CharSequence debugMessage) {
-
-        getLog().debug(debugMessage);
-
-    }
-
-    @Override
-    public void logDebug(CharSequence debugMessage, Throwable e) {
-
-        getLog().debug(debugMessage, e);
-
-    }
-
-    @Override
-    public void logInfo(CharSequence infoMessage) {
-
-        getLog().info(infoMessage);
-
-    }
-
-    @Override
-    public void logWarn(CharSequence warning) {
-
-        getLog().warn(warning);
-    }
-
-    @Override
-    public void logError(CharSequence error) {
-
-        getLog().error(error);
-    }
-
-    @Override
-    public void logWarn(CharSequence warning, Throwable e) {
-
-        getLog().warn(warning, e);
-
-    }
-
-    @Override
-    public void logError(CharSequence error, Throwable e) {
-
-        getLog().error(error, e);
-
-    }
-
-    @Override
-    public URI nodeDownloadRoot() throws URISyntaxException {
-        if (nodeDownloadRoot == null) {
-            nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
-        }
-        try {
-            return new URI(nodeDownloadRoot);
-        } catch (URISyntaxException e) {
-            logError("Failed to parse nodeDownloadRoot uri", e);
-            throw new URISyntaxException(nodeDownloadRoot,
-                    "Failed to parse nodeDownloadRoot uri");
+    private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
+        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin"
+                .equals(artifact.getGroupId())
+                && "flow-server".equals(artifact.getArtifactId());
+        String projectFlowVersion = project.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .orElse(null);
+        String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .orElse(null);
+        if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+            getLog().warn(
+                    "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
+                            + "Flow version for project is "
+                            + projectFlowVersion
+                            + ", Vaadin plugin is built for Flow version "
+                            + pluginFlowVersion + ".");
         }
     }
 
-    @Override
-    public boolean nodeAutoUpdate() {
-        return nodeAutoUpdate;
-    }
-
-    @Override
-    public String nodeVersion() {
-
-        return nodeVersion;
-    }
-
-    @Override
-    public File npmFolder() {
-
-        return npmFolder;
-    }
-
-    @Override
-    public File openApiJsonFile() {
-
-        return openApiJsonFile;
-    }
-
-    @Override
-    public boolean pnpmEnable() {
-
-        return pnpmEnable;
-    }
-
-    @Override
-    public boolean bunEnable() {
-
-        return bunEnable;
-    }
-
-    @Override
-    public boolean useGlobalPnpm() {
-
-        return useGlobalPnpm;
-    }
-
-    @Override
-    public Path projectBaseDirectory() {
-
-        return projectBasedir.toPath();
-    }
-
-    @Override
-    public boolean requireHomeNodeExec() {
-
-        return requireHomeNodeExec;
-    }
-
-    @Override
-    public File servletResourceOutputDirectory() {
-
-        return resourceOutputDirectory;
-    }
-
-    @Override
-    public File webpackOutputDirectory() {
-
-        return webpackOutputDirectory;
-    }
-
-    @Override
-    public boolean isJarProject() {
-        return "jar".equals(project.getPackaging());
-    }
-
-    @Override
-    public String buildFolder() {
-        if (projectBuildDir.startsWith(projectBasedir.toString())) {
-            return projectBaseDirectory().relativize(Paths.get(projectBuildDir))
-                    .toString();
-        }
-        return projectBuildDir;
-    }
-
-    @Override
-    public List<String> postinstallPackages() {
-        return postinstallPackages;
-    }
-
-    @Override
-    public boolean isFrontendHotdeploy() {
-        if (frontendHotdeploy != null) {
-            return frontendHotdeploy;
-        }
-        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return isHillaUsed(frontendDirectory);
-    }
-
-    @Override
-    public boolean skipDevBundleBuild() {
-        return skipDevBundleRebuild;
-    }
-
-    @Override
-    public boolean isPrepareFrontendCacheDisabled() {
-        return false;
-    }
-
-    @Override
-    public boolean isReactEnabled() {
-        if (reactEnable != null) {
-            return reactEnable;
-        }
-        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return FrontendUtils.isReactRouterRequired(frontendDirectory);
-    }
-
-    @Override
-    public String applicationIdentifier() {
-        if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
-            return applicationIdentifier;
-        }
-        return "app-" + StringUtil.getHash(
-                project.getGroupId() + ":" + project.getArtifactId(),
-                StandardCharsets.UTF_8);
-    }
-
-    @Override
-    public List<String> frontendExtraFileExtensions() {
-        if (frontendExtraFileExtensions != null) {
-            return frontendExtraFileExtensions;
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isNpmExcludeWebComponents() {
-        return npmExcludeWebComponents;
-    }
 }

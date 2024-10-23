@@ -15,28 +15,10 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.util.Properties;
-
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.invoker.DefaultInvoker;
-import org.apache.maven.shared.invoker.InvocationRequest;
-import org.apache.maven.shared.invoker.InvocationResult;
-import org.apache.maven.shared.invoker.Invoker;
-import org.apache.maven.shared.invoker.MavenInvocationException;
-
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.server.frontend.Options;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Goal that generates a CycloneDX SBOM file focused on frontend dependencies.
@@ -138,85 +120,9 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     private String specVersion;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
-        InvocationRequest request = requestBuilder.groupId(GROUP)
-                .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
-                .createInvocationRequest();
-
-        var properties = getProperties();
-        request.setProperties(properties);
-
-        Invoker invoker = new DefaultInvoker();
-        try {
-            // the execution will fail if the directory does not exist
-            createDirectoryIfNotExists();
-
-            // node_modules dir is required
-            File nodeModulesDir = new File(this.npmFolder(), "/node_modules");
-            if (!nodeModulesDir.exists()) {
-                logInfo("No node_modules directory found. Running npm install.");
-                ClassFinder classFinder = getClassFinder();
-                Lookup lookup = createLookup(classFinder);
-                File jarFrontendResourcesFolder = new File(
-                        new File(frontendDirectory(), FrontendUtils.GENERATED),
-                        FrontendUtils.JAR_RESOURCES_FOLDER);
-                Options options = new Options(lookup, npmFolder())
-                        .withFrontendDirectory(frontendDirectory())
-                        .withBuildDirectory(buildFolder())
-                        .withJarFrontendResourcesFolder(
-                                jarFrontendResourcesFolder)
-                        .createMissingPackageJson(true)
-                        .enableImportsUpdate(true).enablePackagesUpdate(true)
-                        .withRunNpmInstall(true)
-                        .withFrontendGeneratedFolder(generatedTsFolder())
-                        .withNodeVersion(nodeVersion())
-                        .withNodeDownloadRoot(nodeDownloadRoot())
-                        .setNodeAutoUpdate(nodeAutoUpdate())
-                        .withHomeNodeExecRequired(requireHomeNodeExec())
-                        .setJavaResourceFolder(javaResourceFolder())
-                        .withProductionMode(productionMode)
-                        .withReact(isReactEnabled())
-                        .withNpmExcludeWebComponents(
-                                isNpmExcludeWebComponents());
-                new NodeTasks(options).execute();
-                logInfo("SBOM generation created node_modules and all needed metadata. "
-                        + "If you don't need it, please run mvn vaadin:clean-frontend");
-            }
-
-            InvocationResult result = invoker.execute(request);
-            if (result.getExitCode() != 0) {
-                throw new MojoFailureException(
-                        "Frontend SBOM generation failed.",
-                        result.getExecutionException());
-            }
-        } catch (MavenInvocationException | ExecutionFailedException
-                | URISyntaxException e) {
-            throw new MojoExecutionException(
-                    "Error during Frontend SBOM generation", e);
-        }
+    protected Class<?> taskClass(Reflector reflector)
+            throws ClassNotFoundException {
+        return reflector.loadClass(GenerateNpmBOMTask.class.getName());
     }
 
-    private Properties getProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("exec.executable", "npx");
-        properties.setProperty("exec.args", "@cyclonedx/cyclonedx-npm"
-                + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
-                + (packageLockOnly ? " --package-lock-only" : "")
-                + (flattenComponents ? " --flatten-components" : "")
-                + (shortPURLs ? " --short-PURLs" : "")
-                + (outputReproducible ? " --output-reproducible" : "")
-                + (validate ? " --validate" : " --no-validate") + " --mc-type "
-                + mcType + " --omit " + omit + " --spec-version " + specVersion
-                + " --output-file " + outputFilePath + " --output-format "
-                + outputFormat + " -- " + packageManifest);
-        return properties;
-    }
-
-    private boolean createDirectoryIfNotExists() {
-        int lastIndex = outputFilePath
-                .lastIndexOf(FrontendUtils.isWindows() ? '\\' : '/');
-        File directory = new File(outputFilePath.substring(0, lastIndex));
-        return directory.exists() || directory.mkdirs();
-    }
 }

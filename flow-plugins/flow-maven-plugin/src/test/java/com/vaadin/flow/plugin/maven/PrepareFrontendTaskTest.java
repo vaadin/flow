@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
@@ -48,24 +49,25 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
-import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
-import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
+import static com.vaadin.flow.plugin.maven.BuildFrontendTaskTest.assertContainsPackage;
+import static com.vaadin.flow.plugin.maven.BuildFrontendTaskTest.createMavenProject;
+import static com.vaadin.flow.plugin.maven.BuildFrontendTaskTest.createTaskClassFinder;
+import static com.vaadin.flow.plugin.maven.BuildFrontendTaskTest.getPackageJson;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
-public class PrepareFrontendMojoTest {
+public class PrepareFrontendTaskTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
+    private PrepareFrontendTask task;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
@@ -84,7 +86,10 @@ public class PrepareFrontendMojoTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        project = Mockito.mock(MavenProject.class);
+        project = createMavenProject(projectBase);
+        task = Mockito.spy(new PrepareFrontendTask(project,
+                createTaskClassFinder(projectBase), new SystemStreamLog(),
+                null));
 
         List<String> packages = Arrays
                 .stream(System.getProperty("java.class.path")
@@ -105,48 +110,46 @@ public class PrepareFrontendMojoTest {
         generatedTsFolder = new File(projectBase,
                 "src/main/frontend/generated");
 
-        ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
+        ReflectionUtils.setVariableValueInObject(task, Constants.NPM_TOKEN,
                 projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+        ReflectionUtils.setVariableValueInObject(task, "webpackOutputDirectory",
                 webpackOutputDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo,
+        ReflectionUtils.setVariableValueInObject(task,
                 "resourceOutputDirectory", resourceOutputDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+        ReflectionUtils.setVariableValueInObject(task, "frontendDirectory",
                 new File(projectBase, "src/main/frontend"));
 
-        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+        ReflectionUtils.setVariableValueInObject(task, "openApiJsonFile",
                 new File(projectBase,
                         "target/generated-resources/openapi.json"));
-        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+        ReflectionUtils.setVariableValueInObject(task, "applicationProperties",
                 new File(projectBase,
                         "src/main/resources/application.properties"));
-        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+        ReflectionUtils.setVariableValueInObject(task, "javaSourceFolder",
                 defaultJavaSource);
-        ReflectionUtils.setVariableValueInObject(mojo, "javaResourceFolder",
+        ReflectionUtils.setVariableValueInObject(task, "javaResourceFolder",
                 defaultJavaResource);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+        ReflectionUtils.setVariableValueInObject(task, "generatedTsFolder",
                 generatedTsFolder);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable",
+        ReflectionUtils.setVariableValueInObject(task, "pnpmEnable",
                 Constants.ENABLE_PNPM_DEFAULT);
-        ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
+        ReflectionUtils.setVariableValueInObject(task, "requireHomeNodeExec",
                 true);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
+        ReflectionUtils.setVariableValueInObject(task, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
+        ReflectionUtils.setVariableValueInObject(task, "nodeDownloadRoot",
                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+        ReflectionUtils.setVariableValueInObject(task, "projectBasedir",
                 projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+        ReflectionUtils.setVariableValueInObject(task, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
-
-        setProject(mojo, projectBase);
     }
 
     @Test
     public void tokenFileShouldExist_noHotdeployTokenVisible()
             throws IOException, MojoExecutionException, MojoFailureException {
-        mojo.execute();
+        task.execute();
         Assert.assertTrue("No token file could be found", tokenFile.exists());
 
         String json = org.apache.commons.io.FileUtils
@@ -162,9 +165,9 @@ public class PrepareFrontendMojoTest {
     public void tokenFileShouldExist_hotdeployIsTrueTokenVisible()
             throws IOException, MojoExecutionException, MojoFailureException,
             IllegalAccessException {
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendHotdeploy",
+        ReflectionUtils.setVariableValueInObject(task, "frontendHotdeploy",
                 Boolean.TRUE);
-        mojo.execute();
+        task.execute();
         Assert.assertTrue("No token file could be found", tokenFile.exists());
 
         String json = org.apache.commons.io.FileUtils
@@ -185,7 +188,7 @@ public class PrepareFrontendMojoTest {
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
 
-        mojo.execute();
+        task.execute();
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
@@ -200,7 +203,7 @@ public class PrepareFrontendMojoTest {
     public void writeTokenFile_devModePropertiesAreWritten()
             throws IOException, MojoExecutionException, MojoFailureException {
 
-        mojo.execute();
+        task.execute();
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
@@ -225,7 +228,7 @@ public class PrepareFrontendMojoTest {
     public void mavenGoal_when_packageJsonMissing_shouldNotGenerateDefault()
             throws Exception {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
-        mojo.execute();
+        task.execute();
         Assert.assertFalse(FileUtils.fileExists(packageJson));
     }
 
@@ -245,7 +248,7 @@ public class PrepareFrontendMojoTest {
         }
         ;
 
-        mojo.execute();
+        task.execute();
         Assert.assertTrue("Missing generated folder",
                 generatedTsFolder.exists());
         Assert.assertFalse("Old file should have been removed",
@@ -259,7 +262,7 @@ public class PrepareFrontendMojoTest {
         json.put("dependencies", Json.createObject());
         json.getObject("dependencies").put("foo", "bar");
         FileUtils.fileWrite(packageJson, json.toJson());
-        mojo.execute();
+        task.execute();
         assertPackageJsonContent();
 
         JsonObject packageJsonObject = getPackageJson(packageJson);
@@ -273,9 +276,9 @@ public class PrepareFrontendMojoTest {
             IllegalAccessException {
         Mockito.when(project.getPackaging()).thenReturn("jar");
 
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+        ReflectionUtils.setVariableValueInObject(task, "project", project);
 
-        mojo.execute();
+        task.execute();
 
         Mockito.verify(project, Mockito.atLeastOnce()).getArtifacts();
     }

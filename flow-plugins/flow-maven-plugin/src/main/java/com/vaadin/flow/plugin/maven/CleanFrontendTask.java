@@ -15,8 +15,16 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
+import java.net.URLClassLoader;
+
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
+
+import com.vaadin.flow.plugin.base.CleanFrontendUtil;
+import com.vaadin.flow.plugin.base.CleanFrontendUtil.CleanFrontendException;
+import com.vaadin.flow.plugin.base.CleanOptions;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Goal that cleans the frontend files to a clean state.
@@ -29,15 +37,21 @@ import org.apache.maven.plugins.annotations.Mojo;
  * <li>package-lock.json
  * </ul>
  *
- * @since 9.0
+ * @since 24.6
  */
-@Mojo(name = "clean-frontend", defaultPhase = LifecyclePhase.PRE_CLEAN)
-public class CleanFrontendMojo extends FlowModeAbstractMojo {
+public class CleanFrontendTask extends FlowModeAbstractTask {
 
-    @Override
-    protected Class<?> taskClass(Reflector reflector)
-            throws ClassNotFoundException {
-        return reflector.loadClass(CleanFrontendTask.class.getName());
+    public CleanFrontendTask(MavenProject project, ClassFinder classFinder,
+            Log logger) {
+        super(project, classFinder, logger);
+    }
+
+    public void execute() throws MojoFailureException {
+        try {
+            CleanFrontendUtil.runCleaning(this, new CleanOptions());
+        } catch (CleanFrontendException e) {
+            throw new MojoFailureException(e.getMessage(), e.getCause());
+        }
     }
 
 }

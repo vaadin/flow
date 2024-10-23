@@ -16,18 +16,14 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.build.BuildContext;
-
-import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 
 /**
  * This goal checks that node and npm tools are installed and creates or updates
@@ -45,28 +41,17 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private BuildContext buildContext; // m2eclipse integration
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (productionMode != null) {
-            logWarn("The <productionMode>" + productionMode
-                    + "</productionMode> Maven parameter no longer has any effect and can be removed. Production mode is automatically enabled when you run the build-frontend target.");
-        }
+    protected void taskParameters(Reflector reflector,
+            List<Class<?>> paramTypes, List<Object> values) {
+        paramTypes.add(Consumer.class);
+        Consumer<File> bc = buildContext != null ? buildContext::refresh : null;
+        values.add(bc);
+    }
 
-        // propagate info via System properties and token file
-        File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
-
-        // Inform m2eclipse that the directory containing the token file has
-        // been updated in order to trigger server re-deployment (#6103)
-        if (buildContext != null) {
-            buildContext.refresh(tokenFile.getParentFile());
-        }
-
-        try {
-            BuildFrontendUtil.prepareFrontend(this);
-        } catch (Exception exception) {
-            throw new MojoFailureException(
-                    "Could not execute prepare-frontend goal.", exception);
-        }
-
+    @Override
+    protected Class<?> taskClass(Reflector reflector)
+            throws ClassNotFoundException {
+        return reflector.loadClass(PrepareFrontendTask.class.getName());
     }
 
 }

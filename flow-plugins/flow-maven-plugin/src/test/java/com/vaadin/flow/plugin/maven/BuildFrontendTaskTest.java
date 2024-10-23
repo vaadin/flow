@@ -34,24 +34,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.After;
@@ -62,7 +55,22 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import static java.io.File.pathSeparator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
+import com.vaadin.flow.utils.FlowFileUtils;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -79,10 +87,12 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
+import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class BuildFrontendMojoTest {
+public class BuildFrontendTaskTest {
     public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -103,7 +113,7 @@ public class BuildFrontendMojoTest {
     private File tokenFile;
     private File jarResourcesSource;
 
-    private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
+    private BuildFrontendTask task;
     private Lookup lookup;
     private File frontendDirectory;
 
@@ -146,49 +156,52 @@ public class BuildFrontendMojoTest {
                 new File(projectFrontendResourcesDirectory,
                         TEST_PROJECT_RESOURCE_JS).createNewFile());
 
-        ReflectionUtils.setVariableValueInObject(mojo,
+        MavenProject project = createMavenProject(npmFolder);
+        ClassFinder taskClassFinder = createTaskClassFinder(npmFolder);
+        task = spy(new BuildFrontendTask(project, taskClassFinder,
+                new SystemStreamLog()));
+
+        ReflectionUtils.setVariableValueInObject(task,
                 "frontendResourcesDirectory",
                 projectFrontendResourcesDirectory);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+        ReflectionUtils.setVariableValueInObject(task, "webpackOutputDirectory",
                 webpackOutputDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo,
+        ReflectionUtils.setVariableValueInObject(task,
                 "resourceOutputDirectory", resourceOutputDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+        ReflectionUtils.setVariableValueInObject(task, "frontendDirectory",
                 frontendDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo,
+        ReflectionUtils.setVariableValueInObject(task,
                 "generateEmbeddableWebComponents", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
-        ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "forceProductionBuild",
+        ReflectionUtils.setVariableValueInObject(task, "npmFolder", npmFolder);
+        ReflectionUtils.setVariableValueInObject(task, "generateBundle", false);
+        ReflectionUtils.setVariableValueInObject(task, "runNpmInstall", false);
+        ReflectionUtils.setVariableValueInObject(task, "optimizeBundle", true);
+        ReflectionUtils.setVariableValueInObject(task, "forceProductionBuild",
                 false);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+        ReflectionUtils.setVariableValueInObject(task, "openApiJsonFile",
                 openApiJsonFile);
-        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+        ReflectionUtils.setVariableValueInObject(task, "applicationProperties",
                 new File(npmFolder,
                         "src/main/resources/application.properties"));
-        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+        ReflectionUtils.setVariableValueInObject(task, "javaSourceFolder",
                 defaultJavaSource);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+        ReflectionUtils.setVariableValueInObject(task, "generatedTsFolder",
                 generatedTsFolder);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
+        ReflectionUtils.setVariableValueInObject(task, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
+        ReflectionUtils.setVariableValueInObject(task, "nodeDownloadRoot",
                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+        ReflectionUtils.setVariableValueInObject(task, "projectBasedir",
                 projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+        ReflectionUtils.setVariableValueInObject(task, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
-        ReflectionUtils.setVariableValueInObject(mojo, "postinstallPackages",
+        ReflectionUtils.setVariableValueInObject(task, "postinstallPackages",
                 Collections.emptyList());
         Mockito.doReturn(
                 Set.of(jarResourcesSource.getParentFile().getParentFile()))
-                .when(mojo).getJarFiles();
-
-        setProject(mojo, npmFolder);
+                .when(task).getJarFiles();
 
         // Install all imports used in the tests on node_modules so as we don't
         // need to run `npm install`
@@ -203,7 +216,16 @@ public class BuildFrontendMojoTest {
             Mockito.doReturn((ClassFinder) invocation.getArguments()[0])
                     .when(lookup).lookup(ClassFinder.class);
             return lookup;
-        }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
+        }).when(task).createLookup(Mockito.any(ClassFinder.class));
+    }
+
+    static ClassFinder createTaskClassFinder(File projectBase) {
+        URLClassLoader urlClassLoader = new URLClassLoader(
+                getClassPath(projectBase.toPath()).stream().distinct()
+                        .map(File::new).map(FlowFileUtils::convertToUrl)
+                        .toArray(URL[]::new));
+        return new ReflectionsClassFinder(urlClassLoader,
+                urlClassLoader.getURLs());
     }
 
     @After
@@ -219,8 +241,7 @@ public class BuildFrontendMojoTest {
         }
     }
 
-    static void setProject(AbstractMojo mojo, File baseFolder)
-            throws Exception {
+    static MavenProject createMavenProject(File baseFolder) throws Exception {
         Build buildMock = mock(Build.class);
         when(buildMock.getFinalName()).thenReturn("finalName");
         MavenProject project = mock(MavenProject.class);
@@ -228,22 +249,41 @@ public class BuildFrontendMojoTest {
         Mockito.when(project.getArtifactId()).thenReturn("my-application");
         when(project.getBasedir()).thenReturn(baseFolder);
         when(project.getBuild()).thenReturn(buildMock);
-        when(project.getRuntimeClasspathElements())
-                .thenReturn(getClassPath(baseFolder.toPath()));
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+
+        List<String> classPath = getClassPath(baseFolder.toPath());
+        when(project.getRuntimeClasspathElements()).thenReturn(classPath);
+        return project;
+    }
+
+    static void setProject(AbstractMojo mojo, File baseFolder)
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "project",
+                createMavenProject(baseFolder));
+
+        PluginDescriptor pluginDescriptor = new PluginDescriptor();
+        pluginDescriptor.setArtifacts(List.of());
+        pluginDescriptor.setClassRealm(
+                new ClassRealm(new ClassWorld("test-world", null), "test-realm",
+                        new URLClassLoader(new URL[] {},
+                                ClassLoader.getPlatformClassLoader())));
+        MojoDescriptor mojoDescriptor = new MojoDescriptor();
+        mojoDescriptor.setPluginDescriptor(pluginDescriptor);
+        MojoExecution mojoExecution = new MojoExecution(mojoDescriptor);
+        ReflectionUtils.setVariableValueInObject(mojo, "mojoExecution",
+                mojoExecution);
     }
 
     @Test
     public void should_generateViteConfig() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(viteConfig));
-        mojo.execute();
+        task.execute();
         Assert.assertTrue(FileUtils.fileExists(viteConfig));
     }
 
     @Test
     public void should_generateViteGeneratedConfig() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(viteGenerated));
-        mojo.execute();
+        task.execute();
         Assert.assertTrue(FileUtils.fileExists(viteGenerated));
     }
 
@@ -255,7 +295,7 @@ public class BuildFrontendMojoTest {
         initialFiles.forEach(file -> Assert.assertFalse(String.format(
                 "Test resource shouldn't exist before running mojo.", file),
                 TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
-        mojo.execute();
+        task.execute();
 
         Set<String> projectFrontendResources = Stream
                 .of(projectFrontendResourcesDirectory.listFiles())
@@ -284,16 +324,16 @@ public class BuildFrontendMojoTest {
         openApiJsonFile = new File(projectBase,
                 "build/generated-resources/openapi.json");
 
-        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+        ReflectionUtils.setVariableValueInObject(task, "openApiJsonFile",
                 openApiJsonFile);
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+        ReflectionUtils.setVariableValueInObject(task, "projectBuildDir",
                 "build");
 
         List<File> initialFiles = gatherFiles(jarResourcesFolder);
         initialFiles.forEach(file -> Assert.assertFalse(String.format(
                 "Test resource shouldn't exist before running mojo.", file),
                 TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
-        mojo.execute();
+        task.execute();
 
         Set<String> projectFrontendResources = Stream
                 .of(projectFrontendResourcesDirectory.listFiles())
@@ -331,7 +371,7 @@ public class BuildFrontendMojoTest {
 
         List<String> expectedLines = getExpectedImports();
 
-        mojo.execute();
+        task.execute();
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
@@ -342,12 +382,12 @@ public class BuildFrontendMojoTest {
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
 
-        mojo.execute();
+        task.execute();
         long timestamp1 = importsFile.lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
-        mojo.execute();
+        task.execute();
         long timestamp2 = importsFile.lastModified();
 
         Assert.assertEquals(timestamp1, timestamp2);
@@ -355,7 +395,7 @@ public class BuildFrontendMojoTest {
 
     @Test
     public void should_ContainLumoThemeFiles() throws Exception {
-        mojo.execute();
+        task.execute();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
@@ -367,7 +407,7 @@ public class BuildFrontendMojoTest {
 
     @Test
     public void shouldNot_ContainExternalUrls() throws Exception {
-        mojo.execute();
+        task.execute();
 
         assertContainsImports(false, "https://foo.com/bar.js");
         assertContainsImports(false, "//foo.com/bar.js");
@@ -375,30 +415,30 @@ public class BuildFrontendMojoTest {
 
     @Test
     public void should_AddImports() throws Exception {
-        mojo.execute();
+        task.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-template.js");
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-template.js");
 
-        mojo.execute();
+        task.execute();
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-template.js");
     }
 
     @Test
     public void should_removeImports() throws Exception {
-        mojo.execute();
+        task.execute();
         addImports("./added-import.js");
         assertContainsImports(true, "./added-import.js");
 
-        mojo.execute();
+        task.execute();
         assertContainsImports(false, "./added-import.js");
     }
 
     @Test
     public void should_AddRemove_Imports() throws Exception {
-        mojo.execute();
+        task.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-template.js");
@@ -408,7 +448,7 @@ public class BuildFrontendMojoTest {
                 "./local-template.js");
         assertContainsImports(true, "./added-import.js");
 
-        mojo.execute();
+        task.execute();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-template.js");
@@ -428,7 +468,7 @@ public class BuildFrontendMojoTest {
         json.put("dependencies", dependencies);
         FileUtils.fileWrite(packageJson, "UTF-8", json.toJson());
 
-        mojo.execute();
+        task.execute();
         JsonObject packageJsonObject = getPackageJson(packageJson);
         dependencies = packageJsonObject.getObject("dependencies");
 
@@ -452,9 +492,9 @@ public class BuildFrontendMojoTest {
         File resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+        ReflectionUtils.setVariableValueInObject(task, "webpackOutputDirectory",
                 webpackOutputDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo,
+        ReflectionUtils.setVariableValueInObject(task,
                 "resourceOutputDirectory", resourceOutputDirectory);
 
         JsonObject initialBuildInfo = Json.createObject();
@@ -473,7 +513,7 @@ public class BuildFrontendMojoTest {
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
 
-        mojo.execute();
+        task.execute();
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
@@ -527,7 +567,7 @@ public class BuildFrontendMojoTest {
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
 
-        mojo.execute();
+        task.execute();
         Assert.assertTrue("No token file could be found", tokenFile.exists());
 
         String json = org.apache.commons.io.FileUtils
@@ -543,7 +583,7 @@ public class BuildFrontendMojoTest {
             throws IOException, MojoExecutionException, MojoFailureException,
             IllegalAccessException {
         String appId = "MY-APP-ID";
-        ReflectionUtils.setVariableValueInObject(mojo, "applicationIdentifier",
+        ReflectionUtils.setVariableValueInObject(task, "applicationIdentifier",
                 appId);
 
         JsonObject initialBuildInfo = Json.createObject();
@@ -562,7 +602,7 @@ public class BuildFrontendMojoTest {
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
 
-        mojo.execute();
+        task.execute();
         Assert.assertTrue("No token file could be found", tokenFile.exists());
 
         String json = org.apache.commons.io.FileUtils
@@ -576,7 +616,7 @@ public class BuildFrontendMojoTest {
     @Test
     public void noTokenFile_noTokenFileShouldBeCreated()
             throws MojoExecutionException, MojoFailureException {
-        mojo.execute();
+        task.execute();
 
         Assert.assertFalse(tokenFile.exists());
     }
@@ -602,7 +642,7 @@ public class BuildFrontendMojoTest {
 
         Assert.assertFalse(
                 FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
-        mojo.execute();
+        task.execute();
         Assert.assertTrue(
                 FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
     }
@@ -631,7 +671,7 @@ public class BuildFrontendMojoTest {
 
         Assert.assertFalse(connectClientApi.exists());
         Assert.assertFalse(endpointClientApi.exists());
-        mojo.execute();
+        task.execute();
         Assert.assertTrue(connectClientApi.exists());
         Assert.assertTrue(endpointClientApi.exists());
     }

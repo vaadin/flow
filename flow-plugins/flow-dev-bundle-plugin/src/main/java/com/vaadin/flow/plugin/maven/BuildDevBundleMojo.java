@@ -17,12 +17,17 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -32,16 +37,25 @@ import java.util.stream.Stream;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.DefaultPluginRealmCache;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.PluginRealmCache;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
+import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.plugin.base.PluginAdapterBuild;
@@ -53,7 +67,9 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.utils.FlowFileUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -131,6 +147,12 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
+    @Component
+    MojoExecution mojoExecution;
+
+    @Component
+    PluginRealmCache pluginRealmCache;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -175,9 +197,13 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
     private boolean npmExcludeWebComponents;
 
+    private ClassFinder classFinder;
+
     @Override
     public void execute() throws MojoFailureException {
         long start = System.nanoTime();
+
+        Runnable cleaner = augmentPluginClassloader();
 
         try {
             BuildFrontendUtil.runDevBuildNodeUpdater(this);
@@ -186,6 +212,8 @@ public class BuildDevBundleMojo extends AbstractMojo
                 | URISyntaxException exception) {
             throw new MojoFailureException(
                     "Could not execute build-dev-bundle goal", exception);
+        } finally {
+            cleaner.run();
         }
 
         long ms = (System.nanoTime() - start) / 1000000;
@@ -286,11 +314,43 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public ClassFinder getClassFinder() {
+        if (classFinder == null) {
+            classFinder = createClassFinder(project);
+        }
+        return classFinder;
+    }
 
+    private static ClassFinder createClassFinder(MavenProject project) {
         List<String> classpathElements = getClasspathElements(project);
+        URL[] urls = classpathElements.stream().distinct().map(File::new)
+                .map(FlowFileUtils::convertToUrl).toArray(URL[]::new);
 
-        return BuildFrontendUtil.getClassFinder(classpathElements);
+        // A custom class loader that reverts the order for resources lookup
+        // by first searching self and then delegating to the parent.
+        // This hack is required to prevent resources being loaded from the
+        // flow-server artifact the plugin depends on, giving priority to the
+        // flow-server version defined by the project.
+        // On the contrary, classes will be loaded first from the parent class
+        // loader, that should be the maven plugin class loader, but augmented
+        // with the project artifacts. This prevents class cast exceptions at
+        // runtime caused by classes loaded both from the plugin class loader
+        // and by the class loader used by Lookup (e.g.
+        // EndpointGeneratorTaskFactoryImpl from Hilla could not be cast to
+        // EndpointGeneratorTaskFactory because the interface is loaded by both
+        // the classloaders)
+        ClassLoader classLoader = new URLClassLoader(urls,
+                Thread.currentThread().getContextClassLoader()) {
+            @Override
+            public URL getResource(String name) {
+                URL resource = findResource(name);
+                if (resource == null) {
+                    resource = super.getResource(name);
+                }
+                return resource;
+            }
 
+        };
+        return new ReflectionsClassFinder(classLoader, urls);
     }
 
     @Override
@@ -483,4 +543,53 @@ public class BuildDevBundleMojo extends AbstractMojo
     public boolean isNpmExcludeWebComponents() {
         return npmExcludeWebComponents;
     }
+
+    /**
+     * Adds project artifacts to the plugin class loader to prevent class cast
+     * exceptions caused by plugin and Lookup loading separately the same
+     * classes.
+     */
+    protected Runnable augmentPluginClassloader() {
+        PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
+                .getPluginDescriptor();
+        ClassRealm classRealm = pluginDescriptor.getClassRealm();
+        if (classRealm != null) {
+            List<String> classpathElements = getClasspathElements(project);
+            classpathElements.stream().distinct().map(File::new)
+                    .map(FlowFileUtils::convertToUrl)
+                    .forEach(classRealm::addURL);
+            // Plugin ClassRealm class loader is the same for all projects
+            // in the reactor. Flushing the cache to make sure a new realm
+            // is created for plugin every execution
+            return () -> resetPluginClassLoader(classRealm);
+        }
+        return () -> {
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resetPluginClassLoader(ClassRealm classRealm) {
+        if (pluginRealmCache instanceof DefaultPluginRealmCache cache) {
+            logDebug("Removing plugin realm from cache");
+            try {
+                Field field = DefaultPluginRealmCache.class
+                        .getDeclaredField("cache");
+                var cacheMap = (Map<PluginRealmCache.Key, PluginRealmCache.CacheRecord>) ReflectTools
+                        .getJavaFieldValue(cache, field);
+                List<PluginRealmCache.Key> keys = cacheMap.entrySet().stream()
+                        .filter(entry -> entry.getValue()
+                                .getRealm() == classRealm)
+                        .map(Map.Entry::getKey).toList();
+                keys.forEach(cacheMap::remove);
+                ClassWorld world = classRealm.getWorld();
+                world.disposeRealm(classRealm.getId());
+                mojoExecution.getMojoDescriptor().getPluginDescriptor()
+                        .setClassRealm(null);
+            } catch (NoSuchFieldException | IllegalAccessException
+                    | InvocationTargetException | NoSuchRealmException e) {
+                logWarn("Cannot reset plugin classloader", e);
+            }
+        }
+    }
+
 }
