@@ -51,6 +51,7 @@ public final class FlowDauIntegration {
                 + Instant.now().toEpochMilli();
         Cookie cookie = new Cookie(DAU_COOKIE_NAME, cookieValue);
         cookie.setHttpOnly(true);
+        cookie.setSecure(request.isSecure());
         cookie.setMaxAge(DAU_COOKIE_MAX_AGE_IN_SECONDS);
         cookie.setPath("/");
         return cookie;

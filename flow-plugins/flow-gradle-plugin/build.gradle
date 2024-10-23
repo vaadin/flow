@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 /***********************************************************************************************************************
  *
  * Plugins
@@ -196,14 +198,9 @@ functionalTest {
 }
 
 kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
     explicitApi()
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-}

@@ -180,7 +180,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * @return {@code true} to remove created files, {@code false} to keep files
      */
     protected boolean cleanFrontendFiles() {
-        if (isHillaUsed(project, frontendDirectory())) {
+        if (isHillaUsed(frontendDirectory())) {
             /*
              * Override this to not clean generated frontend files after the
              * build. For Hilla, the generated files can still be useful for

@@ -51,7 +51,7 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        if (isHillaUsed(project, frontendDirectory())) {
+        if (isHillaUsed(frontendDirectory())) {
             getLog().warn(
                     """
                             The 'convert-polymer' goal is not meant to be used in Hilla projects as polymer templates are not supported.

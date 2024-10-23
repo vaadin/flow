@@ -17,8 +17,9 @@ package com.vaadin.flow.internal;
 
 import org.atmosphere.cpr.AtmosphereResource;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.FragmentedMessageHolder;
+
+import elemental.json.JsonObject;
 
 /**
  * Provides a way to reload browser tabs via web socket connection passed as a
@@ -116,5 +117,15 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the received message
      */
     void onMessage(AtmosphereResource resource, String msg);
+
+    /**
+     * Send a client side HMR event.
+     *
+     * @param event
+     *            the event name
+     * @param eventData
+     *            the event data
+     */
+    void sendHmrEvent(String event, JsonObject eventData);
 
 }

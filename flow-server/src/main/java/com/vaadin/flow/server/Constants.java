@@ -265,6 +265,24 @@ public final class Constants implements Serializable {
     public static final String STATISTIC_HAS_FLOW_ROUTE = "has-flow-route";
 
     /**
+     * UsageEntry name for automatic layout. Marked used, if Layout annotation
+     * is used or RouteRegistry#setLayout is used directly.
+     */
+    public static final String STATISTIC_HAS_AUTO_LAYOUT = "has-auto-layout";
+
+    /**
+     * UsageEntry name for client route using automatic layout. Marked used, if
+     * AvailableViewInfo#flowLayout is true for any client route.
+     */
+    public static final String STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT = "has-auto-layout/client";
+
+    /**
+     * UsageEntry name for server route using automatic layout. Marked used, if
+     * any server route's layout matches Layout annotated layout.
+     */
+    public static final String STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT = "has-auto-layout/server";
+
+    /**
      * UsageEntry name for exported web components. Marked used, if either
      * WebComponentExporter or WebComponentExporterFactory is found in a project
      */

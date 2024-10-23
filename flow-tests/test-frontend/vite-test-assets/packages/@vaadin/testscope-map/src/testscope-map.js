@@ -1,4 +1,4 @@
-import { default as lib } from '@testscope/map/src/lib.js';
+import { default as lib } from '@vaadin/testscope-map/src/lib.js';
 
 export class Map extends HTMLElement {
   static get is() {

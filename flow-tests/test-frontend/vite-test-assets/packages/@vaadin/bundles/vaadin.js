@@ -29,28 +29,28 @@ function internalImport(module) {
   return moduleMap[module]();
 }
 
-defineModule("./node_modules/@testscope/all", async () => {
+defineModule("./node_modules/@vaadin/testscope-all", async () => {
   // re-export from package alias
-  return internalImport("./node_modules/@testscope/all/all.js");
+  return internalImport("./node_modules/@vaadin/testscope-all/all.js");
 });
 
-defineModule("./node_modules/@testscope/all/all.js", async () => {
+defineModule("./node_modules/@vaadin/testscope-all/all.js", async () => {
   // imports package for side effects, empty export
-  await internalImport("./node_modules/@testscope/button");
+  await internalImport("./node_modules/@vaadin/testscope-button");
   return {};
 });
 
-defineModule("./node_modules/@testscope/button", async () => {
+defineModule("./node_modules/@vaadin/testscope-button", async () => {
   // re-export from package alias
-  return internalImport("./node_modules/@testscope/button/testscope-button.js");
+  return internalImport("./node_modules/@vaadin/testscope-button/testscope-button.js");
 });
 
-defineModule("./node_modules/@testscope/button/testscope-button.js", async () => {
+defineModule("./node_modules/@vaadin/testscope-button/testscope-button.js", async () => {
   // re-export from another module
-  return internalImport("./node_modules/@testscope/button/src/testscope-button.js");
+  return internalImport("./node_modules/@vaadin/testscope-button/src/testscope-button.js");
 });
 
-defineModule("./node_modules/@testscope/button/src/testscope-button.js", async () => {
+defineModule("./node_modules/@vaadin/testscope-button/src/testscope-button.js", async () => {
   class Button extends HTMLElement {
     static get is() {
       return 'testscope-button';
@@ -73,7 +73,7 @@ defineModule("./node_modules/@testscope/button/src/testscope-button.js", async (
   return { Button };
 });
 
-defineModule("./node_modules/@testscope/map/src/lib.js", async () => {
+defineModule("./node_modules/@vaadin/testscope-map/src/lib.js", async () => {
   return {
     default: {
       MAP: 'map',
@@ -81,21 +81,21 @@ defineModule("./node_modules/@testscope/map/src/lib.js", async () => {
   };
 });
 
-defineModule("./node_modules/@testscope/map", async () => {
+defineModule("./node_modules/@vaadin/testscope-map", async () => {
   // re-export from package alias
-  return internalImport("./node_modules/@testscope/map/testscope-map.js");
+  return internalImport("./node_modules/@vaadin/testscope-map/testscope-map.js");
 });
 
-defineModule("./node_modules/@testscope/map/testscope-map.js", async () => {
+defineModule("./node_modules/@vaadin/testscope-map/testscope-map.js", async () => {
   // re-export from another module
-  return internalImport("./node_modules/@testscope/map/src/testscope-map.js");
+  return internalImport("./node_modules/@vaadin/testscope-map/src/testscope-map.js");
 });
 
-defineModule("./node_modules/@testscope/map/src/testscope-map.js", async () => {
+defineModule("./node_modules/@vaadin/testscope-map/src/testscope-map.js", async () => {
   // Async import instead of `internalImport` is necessary to verify imports
   // of default library export through the bundle resolver and response.
   // See https://github.com/vaadin/flow/issues/14355
-  const {default: lib} = await import('@testscope/map/src/lib.js');
+  const {default: lib} = await import('@vaadin/testscope-map/src/lib.js');
 
   class Map extends HTMLElement {
     static get is() {

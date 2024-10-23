@@ -2,8 +2,6 @@ import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import typescript from '@rollup/plugin-typescript';
 
-const { execSync } = require('child_process');
-
 export default defineConfig({
   build: {
     // Write output to resources to include it in Maven package
@@ -27,5 +25,7 @@ export default defineConfig({
         /^@vaadin.*/,
       ]
     }
-  }
+  },
+  // Preserve import.meta.hot in the built file so it can be replaced in the application instead
+  define: { 'import.meta.hot': 'import.meta.hot' }
 });

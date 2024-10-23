@@ -50,7 +50,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.spring.SpringVaadinSession;
 import com.vaadin.flow.spring.annotation.RouteScopeOwner;
 
 /**
@@ -72,22 +71,13 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
 
         private final VaadinSession session;
 
-        private final Registration sessionDestroyListenerRegistration;
-
         private final Map<String, RouteBeanStore> routeStores;
 
         private RouteStoreWrapper(VaadinSession session) {
             assert session.hasLock();
             this.session = session;
+            session.addSessionDestroyListener(event -> destroy());
             routeStores = new HashMap<>();
-            if (session instanceof SpringVaadinSession) {
-                sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
-            } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
-            }
         }
 
         private RouteBeanStore getBeanStore(UI ui) {
@@ -146,9 +136,6 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
                 routeStores.clear();
             } finally {
                 session.unlock();
-                if (sessionDestroyListenerRegistration != null) {
-                    sessionDestroyListenerRegistration.remove();
-                }
             }
         }
 

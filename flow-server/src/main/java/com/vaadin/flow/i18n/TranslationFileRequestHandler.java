@@ -21,6 +21,8 @@ import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.JsonConstants;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.slf4j.Logger;
@@ -106,6 +108,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         response.setStatus(HttpStatusCode.OK.getCode());
         response.setHeader(RETRIEVED_LOCALE_HEADER_NAME,
                 translationPropertyFile.getLocale().toLanguageTag());
+        response.setHeader("Content-Type", JsonConstants.JSON_CONTENT_TYPE);
         writeFileToResponse(response, translationPropertyFile);
     }
 

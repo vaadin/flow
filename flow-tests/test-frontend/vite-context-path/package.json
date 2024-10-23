@@ -1,12 +1,12 @@
 {
-  "name": "no-name",
+  "private": true,
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.1",
-    "@testscope/all": "../vite-test-assets/packages/@testscope/all",
-    "@testscope/button": "../vite-test-assets/packages/@testscope/button",
-    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
+    "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
+    "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
+    "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.19",
     "@vaadin/polymer-legacy-adapter": "24.4.9",

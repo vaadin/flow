@@ -1,20 +1,13 @@
 {
-  "name": "flow-default-react-router-dependencies",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "Apache-2.0",
+  "private": true,
+  "description": "A list of Flow dependencies when using React router",
   "dependencies": {
     "react": "19.0.0-rc-1460d67c-20241003",
     "react-dom": "19.0.0-rc-1460d67c-20241003",
     "react-router-dom": "6.26.2"
   },
   "devDependencies": {
-    "@types/react": "18.3.9",
+    "@types/react": "18.3.11",
     "@types/react-dom": "18.3.0"
   }
 }

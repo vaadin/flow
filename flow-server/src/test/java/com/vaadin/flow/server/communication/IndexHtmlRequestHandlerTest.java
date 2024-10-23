@@ -53,6 +53,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -126,6 +127,8 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(context.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(applicationConfiguration);
+
+        MenuRegistry.clearFileRoutesCache();
     }
 
     @Test

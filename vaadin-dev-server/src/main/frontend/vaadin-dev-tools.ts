@@ -77,6 +77,10 @@ type DevToolsConf = {
   liveReloadPort: number;
   token?: string;
 };
+
+// @ts-ignore
+const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
+
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   unhandledMessages: ServerMessage[] = [];
@@ -711,10 +715,20 @@ export class VaadinDevTools extends LitElement {
   }
   handleFrontendMessage(message: ServerMessage) {
     if (message.command === 'featureFlags') {
-    } else if (handleLicenseMessage(message)) {
+    } else if (handleLicenseMessage(message) || this.handleHmrMessage(message)) {
     } else {
       this.unhandledMessages.push(message);
     }
+  }
+
+  handleHmrMessage(message: ServerMessage): boolean {
+    if (message.command !== 'hmr') {
+      return false;
+    }
+    if (hmrClient) {
+      hmrClient.notifyListeners(message.data.event, message.data.eventData);
+    }
+    return true;
   }
 
   getDedicatedWebSocketUrl(): string | undefined {

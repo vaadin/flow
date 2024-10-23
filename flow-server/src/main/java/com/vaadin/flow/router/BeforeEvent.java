@@ -615,11 +615,11 @@ public abstract class BeforeEvent extends EventObject {
      */
     public void forwardTo(String locationString,
             QueryParameters queryParameters) {
-        final Optional<Class<? extends Component>> target = getSource()
-                .getRegistry().getNavigationTarget(locationString);
+        final Optional<NavigationState> navigationState = getSource()
+                .resolveNavigationTarget(new Location(locationString));
         this.redirectQueryParameters = queryParameters;
-        if (target.isPresent()) {
-            forwardTo(getNavigationState(locationString, List.of()));
+        if (navigationState.isPresent()) {
+            forwardTo(navigationState.get());
         } else {
             // Inform that forward target location is not known.
             unknownForward = PathUtil.trimPath(locationString);
@@ -910,12 +910,11 @@ public abstract class BeforeEvent extends EventObject {
      *            query parameters for the target
      */
     public void rerouteTo(String route, QueryParameters queryParameters) {
-        final Optional<Class<? extends Component>> target = getSource()
-                .getRegistry().getNavigationTarget(route);
-
+        final Optional<NavigationState> navigationState = getSource()
+                .resolveNavigationTarget(new Location(route));
         this.redirectQueryParameters = queryParameters;
-        if (target.isPresent()) {
-            rerouteTo(getNavigationState(route, List.of()));
+        if (navigationState.isPresent()) {
+            rerouteTo(navigationState.get());
         } else {
             // Inform that reroute target location is not known.
             unknownReroute = PathUtil.trimPath(route);
