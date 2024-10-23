@@ -39,6 +39,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.KEYBOARD_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.LEMON_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.LUMO_BORDER_DIV;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
@@ -269,6 +270,18 @@ public class ThemeIT extends ChromeBrowserTest {
                 "Expecting relative asset URL to be resolved as "
                         + expectedIconsURL + "/sun.svg but was " + imageUrl,
                 imageUrl.matches(String.format(expectedIconsURL, "sun.svg")));
+    }
+
+    /**
+     * Main theme.json does not include utility Lumo import which has border
+     * styling etc. Parent theme.json does include Lumo utility import.
+     */
+    @Test
+    public void parentTheme_lumoStyleAppliedFromParentTheme() {
+        open();
+        WebElement cssNodeLumoBorderDiv = findElement(By.id(LUMO_BORDER_DIV));
+        String border = cssNodeLumoBorderDiv.getCssValue("border");
+        Assert.assertEquals("0.8px solid rgba(26, 57, 96, 0.1)", border);
     }
 
     @Override
