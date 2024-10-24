@@ -280,8 +280,15 @@ public class ThemeIT extends ChromeBrowserTest {
     public void parentTheme_lumoStyleAppliedFromParentTheme() {
         open();
         WebElement cssNodeLumoBorderDiv = findElement(By.id(LUMO_BORDER_DIV));
-        String border = cssNodeLumoBorderDiv.getCssValue("border");
-        Assert.assertEquals("0.8px solid rgba(26, 57, 96, 0.1)", border);
+        // getCssValue doesn't support reliably shorthand properties (e.g.
+        // border).
+        // It's enough to assert only border-top-* properties here.
+        Assert.assertEquals("solid",
+                cssNodeLumoBorderDiv.getCssValue("border-top-style"));
+        Assert.assertEquals("0.8px",
+                cssNodeLumoBorderDiv.getCssValue("border-top-width"));
+        Assert.assertEquals("rgba(26, 57, 96, 0.1)",
+                cssNodeLumoBorderDiv.getCssValue("border-top-color"));
     }
 
     @Override
