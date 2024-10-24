@@ -131,7 +131,7 @@ public class Heartbeat {
      *            new interval in seconds.
      */
     public final void setInterval(int heartbeatInterval) {
-        Console.log(
+        Console.debug(
                 "Setting heartbeat interval to " + heartbeatInterval + "sec.");
         interval = heartbeatInterval;
         schedule();

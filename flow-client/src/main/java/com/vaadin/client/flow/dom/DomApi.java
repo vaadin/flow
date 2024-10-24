@@ -77,7 +77,7 @@ public class DomApi {
 
     private static void polymerMicroLoaded() {
         polymerMicroLoaded = true;
-        Console.log("Polymer micro is now loaded, using Polymer DOM API");
+        Console.debug("Polymer micro is now loaded, using Polymer DOM API");
         impl = new PolymerDomApiImpl();
     }
 

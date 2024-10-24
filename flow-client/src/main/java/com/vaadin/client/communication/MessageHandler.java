@@ -252,7 +252,7 @@ public class MessageHandler {
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
             // is triggered by forceHandleMessage)
-            Console.log("Received resync message with id " + serverId
+            Console.debug("Received resync message with id " + serverId
                     + " while waiting for " + getExpectedServerId());
             lastSeenServerSyncId = serverId - 1;
             removeOldPendingMessages();
@@ -268,7 +268,7 @@ public class MessageHandler {
                 // Some component is doing something that can't be interrupted
                 // (e.g. animation that should be smooth). Enqueue the UIDL
                 // message for later processing.
-                Console.log("Postponing UIDL handling due to lock...");
+                Console.debug("Postponing UIDL handling due to lock...");
             } else {
                 // Unexpected server id
                 if (serverId <= lastSeenServerSyncId) {
@@ -281,7 +281,7 @@ public class MessageHandler {
                 }
 
                 // We are waiting for an earlier message...
-                Console.log("Received message with server id " + serverId
+                Console.debug("Received message with server id " + serverId
                         + " but expected " + getExpectedServerId()
                         + ". Postponing handling until the missing message(s) have been received");
             }
@@ -319,7 +319,7 @@ public class MessageHandler {
         final Object lock = new Object();
         suspendReponseHandling(lock);
 
-        Console.log("Handling message from server");
+        Console.debug("Handling message from server");
         registry.getRequestResponseTracker()
                 .fireEvent(new ResponseHandlingStartedEvent());
         // Client id must be updated before server id, as server id update can
@@ -342,7 +342,7 @@ public class MessageHandler {
         // Handle redirect
         if (valueMap.containsKey("redirect")) {
             String url = valueMap.getValueMap("redirect").getString("url");
-            Console.log("redirecting to " + url);
+            Console.debug("redirecting to " + url);
             WidgetUtil.redirect(url);
             return;
         }
@@ -386,7 +386,7 @@ public class MessageHandler {
     }
 
     private void handleDependencies(JsonObject inputJson) {
-        Console.log("Handling dependencies");
+        Console.debug("Handling dependencies");
         JsMap<LoadMode, JsonArray> dependencies = JsCollections.map();
         for (LoadMode loadMode : LoadMode.values()) {
             if (inputJson.hasKey(loadMode.name())) {
@@ -441,7 +441,7 @@ public class MessageHandler {
                                         JsonConstants.UIDL_KEY_EXECUTE))));
             }
 
-            Console.log("handleUIDLMessage: "
+            Console.debug("handleUIDLMessage: "
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
@@ -485,7 +485,7 @@ public class MessageHandler {
                 if (fetchStart != 0) {
                     int time = (int) (Duration.currentTimeMillis()
                             - fetchStart);
-                    Console.log("First response processed " + time
+                    Console.debug("First response processed " + time
                             + " ms after fetchStart");
                 }
 
@@ -496,7 +496,7 @@ public class MessageHandler {
             }
 
         } finally {
-            Console.log(" Processing time was "
+            Console.debug(" Processing time was "
                     + String.valueOf(lastProcessingTime) + "ms");
 
             endRequestIfResponse(valueMap);
@@ -520,8 +520,8 @@ public class MessageHandler {
         if (!registry.getApplicationConfiguration().isProductionMode()) {
             try {
                 JsonObject debugJson = tree.getRootNode().getDebugJson();
-                Console.log("StateTree after applying changes:");
-                Console.log(debugJson);
+                Console.debug("StateTree after applying changes:");
+                Console.debug(debugJson);
             } catch (Exception e) {
                 Console.error("Failed to log state tree");
                 Console.error(e);
@@ -657,7 +657,7 @@ public class MessageHandler {
             forceHandleMessage.cancel();
 
             if (!pendingUIDLMessages.isEmpty()) {
-                Console.log(
+                Console.debug(
                         "No more response handling locks, handling pending requests.");
                 handlePendingMessages();
             }
@@ -713,7 +713,7 @@ public class MessageHandler {
             PendingUIDLMessage m = pendingUIDLMessages.get(i);
             int serverId = getServerId(m.json);
             if (serverId != -1 && serverId < getExpectedServerId()) {
-                Console.log("Removing old message with id " + serverId);
+                Console.debug("Removing old message with id " + serverId);
 
                 pendingUIDLMessages.remove(i);
                 i--;
@@ -808,7 +808,7 @@ public class MessageHandler {
         final double start = Profiler.getRelativeTimeMillis();
         try {
             ValueMap json = parseJSONResponse(jsonText);
-            Console.log("JSON parsing took "
+            Console.debug("JSON parsing took "
                     + Profiler.getRelativeTimeString(start) + "ms");
             return json;
         } catch (final Exception e) {
