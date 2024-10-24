@@ -2445,7 +2445,7 @@ public class Binder<BEAN> implements Serializable {
     public void readRecord(BEAN record) {
         if (!isRecord) {
             throw new IllegalArgumentException(
-                    "readRecord methods can't be used with beans, call readBean instead");
+                    "readRecord method can't be used with beans, call readBean instead");
         }
         readBean(record);
     }
