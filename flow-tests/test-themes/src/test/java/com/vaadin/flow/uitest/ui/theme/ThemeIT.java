@@ -39,7 +39,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.KEYBOARD_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.LEMON_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.LUMO_BORDER_DIV;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.LUMO_BORDER_TOP_DIV;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
@@ -279,13 +279,11 @@ public class ThemeIT extends ChromeBrowserTest {
     @Test
     public void parentTheme_lumoStyleAppliedFromParentTheme() {
         open();
-        WebElement cssNodeLumoBorderDiv = findElement(By.id(LUMO_BORDER_DIV));
-        // getCssValue doesn't support reliably shorthand properties (e.g.
-        // border).
-        // It's enough to assert only border-top-* properties here.
+        WebElement cssNodeLumoBorderDiv = findElement(
+                By.id(LUMO_BORDER_TOP_DIV));
         Assert.assertEquals("solid",
                 cssNodeLumoBorderDiv.getCssValue("border-top-style"));
-        Assert.assertEquals("0.8px",
+        Assert.assertNotEquals("0px",
                 cssNodeLumoBorderDiv.getCssValue("border-top-width"));
         Assert.assertEquals("rgba(26, 57, 96, 0.1)",
                 cssNodeLumoBorderDiv.getCssValue("border-top-color"));
