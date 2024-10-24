@@ -581,8 +581,8 @@ public class MenuRegistryTest {
     }
 
     @Tag("div")
-    @Route("hilla")
-    @Menu(title = "hilla")
+    @Route("about")
+    @Menu(title = "about")
     public static class ConflictRoute extends Component {
     }
 
