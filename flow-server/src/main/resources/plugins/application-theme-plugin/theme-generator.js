@@ -133,8 +133,8 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   }
 
   /* Theme */
+  globalFileContent.push(parentThemeGlobalImport);
   if (useDevServerOrInProductionMode) {
-    globalFileContent.push(parentThemeGlobalImport);
     globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
 
     imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
