@@ -15,7 +15,7 @@
     </description>
 
     <properties>
-        <vaadin.version>24.6-SNAPSHOT</vaadin.version>
+        <vaadin.version>@project.version@</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
         <maven.test.skip>true</maven.test.skip>
@@ -38,7 +38,7 @@
         <profile>
             <id>fake-flow-resources</id>
             <build>
-                <finalName>fake-resources-${version}</finalName>
+                <finalName>fake-resources-${project.version}</finalName>
                 <resources>
                     <resource>
                         <directory>${project.basedir}/src/main/fake-resources</directory>
