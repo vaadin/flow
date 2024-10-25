@@ -349,8 +349,21 @@ export class Flow {
       script.onload = () => resolve();
       script.onerror = reject;
       script.src = url;
+      const nonce = this.findNonce();
+      if (nonce !== undefined) {
+        script.setAttribute('nonce', nonce);
+      }
       document.body.appendChild(script);
     });
+  }
+
+  private findNonce(): string | undefined {
+    let nonce;
+    const scriptTags = document.head.getElementsByTagName('script');
+    if (scriptTags.length > 0) {
+      nonce = scriptTags[0].nonce;
+    }
+    return nonce;
   }
 
   private injectAppIdScript(appId: string) {
@@ -358,6 +371,10 @@ export class Flow {
     const scriptAppId = document.createElement('script');
     scriptAppId.type = 'module';
     scriptAppId.setAttribute('data-app-id', appIdWithoutHashCode);
+    const nonce = this.findNonce();
+    if (nonce !== undefined) {
+      scriptAppId.setAttribute('nonce', nonce);
+    }
     document.body.append(scriptAppId);
   }
 
