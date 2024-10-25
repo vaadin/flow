@@ -18,14 +18,10 @@ package com.vaadin.flow.internal.menu;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -479,7 +474,7 @@ public class MenuRegistry {
                     configuration.getBuildFolder(), FILE_ROUTES_JSON_NAME);
         } catch (IOException e) {
             LoggerFactory.getLogger(MenuRegistry.class).warn(
-                    "Failed to find {} under frontend/generated",
+                    "Failed to find {} in frontend/generated or dev-bundle folder",
                     FILE_ROUTES_JSON_NAME, e);
             throw new RuntimeException(e);
         }
