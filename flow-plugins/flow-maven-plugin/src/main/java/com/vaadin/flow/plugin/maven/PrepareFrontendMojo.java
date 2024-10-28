@@ -49,22 +49,26 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     + "</productionMode> Maven parameter no longer has any effect and can be removed. Production mode is automatically enabled when you run the build-frontend target.");
         }
 
-        augmentPluginClassloader();
-
-        // propagate info via System properties and token file
-        File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
-
-        // Inform m2eclipse that the directory containing the token file has
-        // been updated in order to trigger server re-deployment (#6103)
-        if (buildContext != null) {
-            buildContext.refresh(tokenFile.getParentFile());
-        }
+        Runnable cleaner = augmentPluginClassloader();
 
         try {
-            BuildFrontendUtil.prepareFrontend(this);
-        } catch (Exception exception) {
-            throw new MojoFailureException(
-                    "Could not execute prepare-frontend goal.", exception);
+            // propagate info via System properties and token file
+            File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
+
+            // Inform m2eclipse that the directory containing the token file has
+            // been updated in order to trigger server re-deployment (#6103)
+            if (buildContext != null) {
+                buildContext.refresh(tokenFile.getParentFile());
+            }
+
+            try {
+                BuildFrontendUtil.prepareFrontend(this);
+            } catch (Exception exception) {
+                throw new MojoFailureException(
+                        "Could not execute prepare-frontend goal.", exception);
+            }
+        } finally {
+            cleaner.run();
         }
 
     }

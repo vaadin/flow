@@ -16,6 +16,8 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -24,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -33,14 +36,20 @@ import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.DefaultPluginRealmCache;
 import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
+import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
@@ -181,8 +190,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
-    @Component
+    @Parameter(defaultValue = "${mojoExecution}")
     MojoExecution mojoExecution;
+
+    // @Component
+    @Parameter(defaultValue = "${session}")
+    MavenSession session;
+
+    @Component
+    PluginRealmCache pluginRealmCache;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -407,7 +423,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * exceptions caused by plugin and Lookup loading separately the same
      * classes.
      */
-    protected void augmentPluginClassloader() {
+    protected Runnable augmentPluginClassloader() {
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
                 .getPluginDescriptor();
         checkFlowCompatibility(pluginDescriptor);
@@ -417,6 +433,44 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             classpathElements.stream().distinct().map(File::new)
                     .map(FlowFileUtils::convertToUrl)
                     .forEach(classRealm::addURL);
+            // Plugin ClassRealm class loader is the same for all projects
+            // in the reactor. Flushing the cache to make sure a new realm
+            // is created for plugin every execution
+            return () -> resetPluginClassLoader(classRealm);
+        }
+        return () -> {
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resetPluginClassLoader(ClassRealm classRealm) {
+        if (pluginRealmCache instanceof DefaultPluginRealmCache cache) {
+            logDebug("Removing plugin realm from cache");
+            try {
+                Field field = DefaultPluginRealmCache.class
+                        .getDeclaredField("cache");
+                var cacheMap = (Map<PluginRealmCache.Key, PluginRealmCache.CacheRecord>) ReflectTools
+                        .getJavaFieldValue(cache, field);
+                /*
+                 * PluginRealmCache.Key key = pluginRealmCache.createKey(
+                 * mojoExecution.getPlugin(), null,
+                 * classRealm.getImportRealms(), null,
+                 * project.getRemotePluginRepositories(),
+                 * session.getRepositorySession());
+                 */
+                List<PluginRealmCache.Key> keys = cacheMap.entrySet().stream()
+                        .filter(entry -> entry.getValue()
+                                .getRealm() == classRealm)
+                        .map(Map.Entry::getKey).toList();
+                keys.forEach(cacheMap::remove);
+                ClassWorld world = classRealm.getWorld();
+                world.disposeRealm(classRealm.getId());
+                mojoExecution.getMojoDescriptor().getPluginDescriptor()
+                        .setClassRealm(null);
+            } catch (NoSuchFieldException | IllegalAccessException
+                    | InvocationTargetException | NoSuchRealmException e) {
+                logWarn("Cannot reset plugin classloader", e);
+            }
         }
     }
 

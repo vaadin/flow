@@ -135,34 +135,38 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
-        augmentPluginClassloader();
+        Runnable cleaner = augmentPluginClassloader();
 
-        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
-                npmFolder(), frontendDirectory(), getClassFinder());
         try {
-            BuildFrontendUtil.runNodeUpdater(this);
-        } catch (ExecutionFailedException | URISyntaxException exception) {
-            throw new MojoFailureException(
-                    "Could not execute build-frontend goal", exception);
-        }
-
-        if (generateBundle() && BundleValidationUtil
-                .needsBundleBuild(servletResourceOutputDirectory())) {
+            TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
+                    npmFolder(), frontendDirectory(), getClassFinder());
             try {
-                BuildFrontendUtil.runFrontendBuild(this);
-                if (cleanFrontendFiles()) {
-                    cleanTask.execute();
-                }
-            } catch (URISyntaxException | TimeoutException
-                    | ExecutionFailedException exception) {
-                throw new MojoExecutionException(exception.getMessage(),
-                        exception);
+                BuildFrontendUtil.runNodeUpdater(this);
+            } catch (ExecutionFailedException | URISyntaxException exception) {
+                throw new MojoFailureException(
+                        "Could not execute build-frontend goal", exception);
             }
-        }
-        LicenseChecker.setStrictOffline(true);
-        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
 
-        BuildFrontendUtil.updateBuildFile(this, licenseRequired);
+            if (generateBundle() && BundleValidationUtil
+                    .needsBundleBuild(servletResourceOutputDirectory())) {
+                try {
+                    BuildFrontendUtil.runFrontendBuild(this);
+                    if (cleanFrontendFiles()) {
+                        cleanTask.execute();
+                    }
+                } catch (URISyntaxException | TimeoutException
+                        | ExecutionFailedException exception) {
+                    throw new MojoExecutionException(exception.getMessage(),
+                            exception);
+                }
+            }
+            LicenseChecker.setStrictOffline(true);
+            boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
+
+            BuildFrontendUtil.updateBuildFile(this, licenseRequired);
+        } finally {
+            cleaner.run();
+        }
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");
