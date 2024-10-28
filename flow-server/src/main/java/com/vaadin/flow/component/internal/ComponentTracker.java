@@ -219,8 +219,7 @@ public class ComponentTracker {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         Location[] relevantLocations = findRelevantLocations(stack);
         Location location = findRelevantLocation(component.getClass(),
-                relevantLocations,
-                null);
+                relevantLocations, null);
         if (isNavigatorCreate(location)) {
             location = findRelevantLocation(null, relevantLocations, null);
         }
@@ -270,8 +269,7 @@ public class ComponentTracker {
         // where the component was created and not in a generic layout class
         Location[] relevantLocations = findRelevantLocations(stack);
         Location location = findRelevantLocation(component.getClass(),
-                relevantLocations,
-                findCreate(component));
+                relevantLocations, findCreate(component));
         if (isNavigatorCreate(location)) {
             // For routes, we can just show the init location as we have nothing
             // better
@@ -315,17 +313,15 @@ public class ComponentTracker {
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
-    private static Location[] findRelevantLocations(
-            StackTraceElement[] stack) {
-        return Stream.of(stack)
-                .filter(e -> {
-                    for (String prefixToSkip : prefixesToSkip) {
-                        if (e.getClassName().startsWith(prefixToSkip)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }).map(ComponentTracker::toLocation).toArray(Location[]::new);
+    private static Location[] findRelevantLocations(StackTraceElement[] stack) {
+        return Stream.of(stack).filter(e -> {
+            for (String prefixToSkip : prefixesToSkip) {
+                if (e.getClassName().startsWith(prefixToSkip)) {
+                    return false;
+                }
+            }
+            return true;
+        }).map(ComponentTracker::toLocation).toArray(Location[]::new);
     }
 
     private static Location findRelevantLocation(
