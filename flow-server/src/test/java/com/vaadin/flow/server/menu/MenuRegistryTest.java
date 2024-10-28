@@ -48,6 +48,8 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -57,6 +59,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.JsonArray;
@@ -84,6 +87,8 @@ public class MenuRegistryTest {
 
     private AutoCloseable closeable;
 
+    private MockedStatic<FrontendUtils> frontendUtils;
+
     @Before
     public void init() {
         closeable = MockitoAnnotations.openMocks(this);
@@ -102,6 +107,14 @@ public class MenuRegistryTest {
 
         Mockito.when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getProjectFolder())
+                .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getBuildFolder())
+                .thenReturn("build");
+
+        frontendUtils = Mockito.mockStatic(FrontendUtils.class);
+        frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                .thenReturn(true);
 
         VaadinService.setCurrent(vaadinService);
 
@@ -120,6 +133,7 @@ public class MenuRegistryTest {
 
     @After
     public void cleanup() throws Exception {
+        frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
     }
@@ -133,7 +147,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(8, menuItems.size());
+        Assert.assertEquals(10, menuItems.size());
         assertClientRoutes(menuItems);
     }
 
@@ -160,9 +174,43 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(false);
 
-        Assert.assertEquals(11, menuItems.size());
+        Assert.assertEquals(13, menuItems.size());
         // Validate as if logged in as all routes should be available
         assertClientRoutes(menuItems, true, true, false);
+    }
+
+    @Test
+    public void testNonCollidingServerAndClientRoutesDoesNotThrow()
+            throws IOException {
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MyRoute.class, MyInfo.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+                .getMenuItems(false);
+        Assert.assertEquals(15, menuItems.size());
+
+        RouteUtil.checkForClientRouteCollisions(vaadinService,
+                routeConfiguration.getAvailableRoutes());
+    }
+
+    @Test(expected = InvalidRouteConfigurationException.class)
+    public void testCollidingServerAndClientRouteDoesThrow()
+            throws IOException {
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MyRoute.class, MyInfo.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+        routeConfiguration.setAnnotatedRoute(ConflictRoute.class);
     }
 
     @Test
@@ -187,7 +235,7 @@ public class MenuRegistryTest {
             Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                     .getMenuItems(true);
 
-            Assert.assertEquals(8, menuItems.size());
+            Assert.assertEquals(10, menuItems.size());
             assertClientRoutes(menuItems);
         }
     }
@@ -221,7 +269,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(10, menuItems.size());
+        Assert.assertEquals(12, menuItems.size());
         assertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
     }
@@ -262,7 +310,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(11, menuItems.size());
+        Assert.assertEquals(13, menuItems.size());
         assertClientRoutes(menuItems, true, true, false);
 
         // Verify that getMenuItemsList returns the same data
@@ -271,8 +319,10 @@ public class MenuRegistryTest {
         Assert.assertEquals(
                 "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
                 7, menuItemsList.size());
-        assertOrder(menuItemsList, new String[] { "/", "/about", "/hilla",
-                "/hilla/sub", "/opt_params", "/params", "/wc_params" });
+        assertOrder(menuItemsList,
+                new String[] { "/", "/about", "/hilla", "/hilla/sub",
+                        "/opt_params", "/params_with_opt_children",
+                        "/wc_params" });
     }
 
     @Test
@@ -289,7 +339,7 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
                 .getMenuItems(true);
 
-        Assert.assertEquals(9, menuItems.size());
+        Assert.assertEquals(11, menuItems.size());
         assertClientRoutes(menuItems, true, false, false);
     }
 
@@ -310,7 +360,8 @@ public class MenuRegistryTest {
         Assert.assertEquals(8, menuItems.size());
         assertOrder(menuItems,
                 new String[] { "/", "/home", "/info", "/opt_params", "/param",
-                        "/param/varargs", "/params", "/wc_params" });
+                        "/param/varargs", "/params_with_opt_children",
+                        "/wc_params" });
         // verifying that data is same as with collectMenuItems
         Map<String, AvailableViewInfo> mapMenuItems = menuItems.stream()
                 .collect(Collectors.toMap(AvailableViewInfo::route,
@@ -534,6 +585,12 @@ public class MenuRegistryTest {
     }
 
     @Tag("div")
+    @Route("about")
+    @Menu(title = "about")
+    public static class ConflictRoute extends Component {
+    }
+
+    @Tag("div")
     @Route("param/:param")
     @Menu
     public static class MyRequiredParamRoute extends Component {
@@ -659,6 +716,20 @@ public class MenuRegistryTest {
                     "title": "opt_params path is included in menu"
                   },
                   {
+                    "route": "params_with_opt_children",
+                    "loginRequired": false,
+                    "children": [
+                        {
+                            "route": ":param?",
+                            "loginRequired": false,
+                            "params": {
+                               ":param": "opt"
+                            },
+                            "title": "params_with_opt_children/:param? path is included in menu"
+                        }
+                    ]
+                  },
+                  {
                     "route": "req_params/:param",
                     "loginRequired": false,
                     "params": {
@@ -669,7 +740,7 @@ public class MenuRegistryTest {
                   {
                     "route": "params",
                     "loginRequired": false,
-                    "title": "params path is shown in menu",
+                    "title": null,
                     "children": [
                       {
                         "route": ":param",

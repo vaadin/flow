@@ -106,6 +106,10 @@ public class MenuConfigurationTest {
 
         Mockito.when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getProjectFolder())
+                .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getBuildFolder())
+                .thenReturn("build");
 
         VaadinService.setCurrent(vaadinService);
 
@@ -144,8 +148,10 @@ public class MenuConfigurationTest {
         Assert.assertEquals(
                 "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
                 7, menuEntries.size());
-        assertOrder(menuEntries, new String[] { "/", "/about", "/hilla",
-                "/hilla/sub", "/opt_params", "/params", "/wc_params" });
+        assertOrder(menuEntries,
+                new String[] { "/", "/about", "/hilla", "/hilla/sub",
+                        "/opt_params", "/params_with_opt_children",
+                        "/wc_params" });
     }
 
     @Test
@@ -169,7 +175,8 @@ public class MenuConfigurationTest {
         Assert.assertEquals(8, menuEntries.size());
         assertOrder(menuEntries,
                 new String[] { "/", "/home", "/info", "/opt_params", "/param",
-                        "/param/varargs", "/params", "/wc_params" });
+                        "/param/varargs", "/params_with_opt_children",
+                        "/wc_params" });
 
         Map<String, MenuEntry> mapMenuItems = menuEntries.stream()
                 .collect(Collectors.toMap(MenuEntry::path, item -> item));
