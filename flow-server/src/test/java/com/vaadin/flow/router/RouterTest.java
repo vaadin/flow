@@ -3770,6 +3770,9 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getFrontendFolder())
                 .thenReturn(new File("front"));
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(new File("./"));
+        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
@@ -3799,6 +3802,9 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getFrontendFolder())
                 .thenReturn(new File("front"));
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(new File("./"));
+        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";
