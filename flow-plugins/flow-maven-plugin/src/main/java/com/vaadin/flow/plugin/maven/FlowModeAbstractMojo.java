@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.DefaultPluginRealmCache;
 import org.apache.maven.plugin.MojoExecution;
@@ -192,10 +191,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Parameter(defaultValue = "${mojoExecution}")
     MojoExecution mojoExecution;
-
-    // @Component
-    @Parameter(defaultValue = "${session}")
-    MavenSession session;
 
     @Component
     PluginRealmCache pluginRealmCache;
@@ -451,13 +446,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                         .getDeclaredField("cache");
                 var cacheMap = (Map<PluginRealmCache.Key, PluginRealmCache.CacheRecord>) ReflectTools
                         .getJavaFieldValue(cache, field);
-                /*
-                 * PluginRealmCache.Key key = pluginRealmCache.createKey(
-                 * mojoExecution.getPlugin(), null,
-                 * classRealm.getImportRealms(), null,
-                 * project.getRemotePluginRepositories(),
-                 * session.getRepositorySession());
-                 */
                 List<PluginRealmCache.Key> keys = cacheMap.entrySet().stream()
                         .filter(entry -> entry.getValue()
                                 .getRealm() == classRealm)
