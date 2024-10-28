@@ -52,6 +52,7 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
@@ -640,7 +641,9 @@ public class RouteUtil {
         List<String> collisions = MenuRegistry
                 .collectClientMenuItems(false,
                         service.getDeploymentConfiguration())
-                .keySet().stream().map(PathUtil::trimPath)
+                .entrySet().stream()
+                .filter(entry -> entry.getValue().children() == null)
+                .map(Map.Entry::getKey).map(PathUtil::trimPath)
                 .filter(clientRoute -> Arrays.stream(flowRouteTemplates)
                         .map(PathUtil::trimPath).anyMatch(clientRoute::equals))
                 .toList();
@@ -725,5 +728,35 @@ public class RouteUtil {
                 .filter(HasDynamicTitle.class::isInstance)
                 .map(element -> ((HasDynamicTitle) element).getPageTitle())
                 .filter(Objects::nonNull).findFirst();
+    }
+
+    /**
+     * Search for a client route using given navigation url and return target
+     * template.
+     *
+     * @param url
+     *            the navigation url used to search a route target.
+     *
+     * @return a {@link Optional} containing the template of the client route
+     *         target or an empty {@link Optional}.
+     */
+    public static Optional<String> getClientNavigationRouteTargetTemplate(
+            String url) {
+        if (url == null) {
+            return Optional.empty();
+        }
+        RouteModel routeModel = RouteModel.create(true);
+        MenuRegistry.getClientRoutes(false).forEach((key, value) -> {
+            try {
+                routeModel.addRoute(key, new ClientTarget(key));
+            } catch (AmbiguousRouteConfigurationException tolerate) {
+                // tolerate ambiguous routes. First added route wins and
+                // declares returned template.
+            }
+        });
+        url = url.isEmpty() ? url : url.startsWith("/") ? url : "/" + url;
+        return Optional.ofNullable(routeModel.getNavigationRouteTarget(url))
+                .map(NavigationRouteTarget::getRouteTarget)
+                .map(ClientTarget.class::cast).map(ClientTarget::getTemplate);
     }
 }

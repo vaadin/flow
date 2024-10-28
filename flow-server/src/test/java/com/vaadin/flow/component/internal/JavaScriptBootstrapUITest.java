@@ -1,10 +1,5 @@
 package com.vaadin.flow.component.internal;
 
-import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Optional;
@@ -33,6 +28,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -46,8 +42,12 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class JavaScriptBootstrapUITest {
 
