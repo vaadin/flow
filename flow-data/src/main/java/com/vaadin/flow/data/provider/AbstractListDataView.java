@@ -106,11 +106,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addFilter(SerializablePredicate<T> filter) {
         Objects.requireNonNull(filter, "Filter to add cannot be null");
-        Optional<SerializablePredicate<T>> originalFilter = DataViewUtils
-                .getComponentFilter(component);
-        SerializablePredicate<T> newFilter = originalFilter.isPresent()
-                ? item -> originalFilter.get().test(item) && filter.test(item)
-                : filter;
+        SerializablePredicate<T> newFilter = DataViewUtils
+                .<T> getComponentFilter(component)
+                .map(originalFilter -> originalFilter.and(filter))
+                .orElse(filter);
         return setFilter(newFilter);
     }
 
