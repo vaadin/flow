@@ -362,8 +362,11 @@ export class Flow {
   private findNonce(): string | undefined {
     let nonce;
     const scriptTags = document.head.getElementsByTagName('script');
-    if (scriptTags.length > 0) {
-      nonce = scriptTags[0].nonce;
+    for (const scriptTag of scriptTags) {
+      if (scriptTag.nonce) {
+        nonce = scriptTag.nonce;
+        break;
+      }
     }
     return nonce;
   }
