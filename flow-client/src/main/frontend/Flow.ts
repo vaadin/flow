@@ -373,7 +373,7 @@ export class Flow {
     const scriptAppId = document.createElement('script');
     scriptAppId.type = 'module';
     scriptAppId.setAttribute('data-app-id', appIdWithoutHashCode);
-    const nonce = this.findNonce();
+    const nonce = $wnd.Vaadin.Flow.nonce;
     if (nonce !== undefined) {
       scriptAppId.setAttribute('nonce', nonce);
     }
