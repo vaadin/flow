@@ -273,8 +273,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 hotSwapper.onHotswapComplete(event);
             } catch (Exception ex) {
                 LOGGER.debug("Hotswap complete event handling failed for {}",
-                        hotSwapper,
-                        ex);
+                        hotSwapper, ex);
             }
         }
     }

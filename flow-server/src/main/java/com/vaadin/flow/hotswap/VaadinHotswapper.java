@@ -98,7 +98,7 @@ public interface VaadinHotswapper {
         return false;
     }
 
-     /**
+    /**
      * Called by Vaadin hotswap entry point after all hotswap related operations
      * have been completed.
      *

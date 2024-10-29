@@ -23,7 +23,7 @@ public class HotswapCompleteEvent {
 
     /**
      * Gets the classes that were updated.
-     * 
+     *
      * @return the updated classes
      */
     public Set<Class<?>> getClasses() {
@@ -32,7 +32,7 @@ public class HotswapCompleteEvent {
 
     /**
      * Checks if the classes were redefined (as opposed to being new classes).
-     * 
+     *
      * @return {@literal true} if the classes have been redefined by hotswap
      */
     public boolean isRedefined() {
@@ -41,7 +41,7 @@ public class HotswapCompleteEvent {
 
     /**
      * Gets the Vaadin service.
-     * 
+     *
      * @return the vaadin service
      */
     public VaadinService getService() {
