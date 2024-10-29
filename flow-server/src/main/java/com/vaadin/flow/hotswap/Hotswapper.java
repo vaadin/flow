@@ -265,6 +265,18 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         if (forceBrowserReload || uiTreeNeedsRefresh) {
             triggerClientUpdate(refreshActions, forceBrowserReload);
         }
+
+        HotswapCompleteEvent event = new HotswapCompleteEvent(vaadinService,
+                classes, redefined);
+        for (VaadinHotswapper hotSwapper : hotSwappers) {
+            try {
+                hotSwapper.onHotswapComplete(event);
+            } catch (Exception ex) {
+                LOGGER.debug("Hotswap complete event handling failed for {}",
+                        hotSwapper,
+                        ex);
+            }
+        }
     }
 
     /**
