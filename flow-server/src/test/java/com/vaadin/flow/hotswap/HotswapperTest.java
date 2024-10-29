@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -157,6 +158,14 @@ public class HotswapperTest {
         Mockito.verify(hillaHotswapper, never()).onClassLoadEvent(
                 isA(VaadinSession.class), anySet(), anyBoolean());
 
+        var eventArgumentCaptor = ArgumentCaptor
+                .forClass(HotswapCompleteEvent.class);
+        Mockito.verify(flowHotswapper)
+                .onHotswapComplete(eventArgumentCaptor.capture());
+        HotswapCompleteEvent completeEvent = eventArgumentCaptor.getValue();
+        Assert.assertEquals(service, completeEvent.getService());
+        Assert.assertEquals(classes, completeEvent.getClasses());
+        Assert.assertFalse(completeEvent.isRedefined());
     }
 
     @Test
@@ -222,6 +231,14 @@ public class HotswapperTest {
         Mockito.verify(hillaHotswapper, never()).onClassLoadEvent(
                 isA(VaadinSession.class), anySet(), anyBoolean());
 
+        var eventArgumentCaptor = ArgumentCaptor
+                .forClass(HotswapCompleteEvent.class);
+        Mockito.verify(flowHotswapper)
+                .onHotswapComplete(eventArgumentCaptor.capture());
+        HotswapCompleteEvent completeEvent = eventArgumentCaptor.getValue();
+        Assert.assertEquals(service, completeEvent.getService());
+        Assert.assertEquals(classes, completeEvent.getClasses());
+        Assert.assertTrue(completeEvent.isRedefined());
     }
 
     @Test
