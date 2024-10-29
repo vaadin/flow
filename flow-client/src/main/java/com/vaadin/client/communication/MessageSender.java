@@ -127,7 +127,7 @@ public class MessageSender {
         JsonObject extraJson = Json.createObject();
         if (resynchronizationState == ResynchronizationState.SEND_TO_SERVER) {
             resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
-            Console.log("Resynchronizing from server");
+            Console.warn("Resynchronizing from server");
             extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
         if (showLoadingIndicator) {
