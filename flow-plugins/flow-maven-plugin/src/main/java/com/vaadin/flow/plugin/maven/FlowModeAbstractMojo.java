@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -442,24 +444,57 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (pluginRealmCache instanceof DefaultPluginRealmCache cache) {
             logDebug("Removing plugin realm from cache");
             try {
-                Field field = DefaultPluginRealmCache.class
-                        .getDeclaredField("cache");
-                var cacheMap = (Map<PluginRealmCache.Key, PluginRealmCache.CacheRecord>) ReflectTools
-                        .getJavaFieldValue(cache, field);
-                List<PluginRealmCache.Key> keys = cacheMap.entrySet().stream()
-                        .filter(entry -> entry.getValue()
-                                .getRealm() == classRealm)
-                        .map(Map.Entry::getKey).toList();
-                keys.forEach(cacheMap::remove);
-                ClassWorld world = classRealm.getWorld();
-                world.disposeRealm(classRealm.getId());
+
+                boolean isMvnd = pluginRealmCache.getClass().getName().equals(
+                        "org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache");
+                if (isMvnd) {
+                    Field field = pluginRealmCache.getClass()
+                            .getDeclaredField("cache");
+                    var cacheStorage = ReflectTools.getJavaFieldValue(cache,
+                            field);
+                    BiPredicate<PluginRealmCache.Key, ?> removePredicate = (key,
+                            mvndCacheRecord) -> {
+                        try {
+                            Class<?> mvndCacheRecordClass = mvndCacheRecord
+                                    .getClass();
+                            Field recordField = mvndCacheRecordClass
+                                    .getDeclaredField("record");
+                            var cacheRecord = (PluginRealmCache.CacheRecord) ReflectTools
+                                    .getJavaFieldValue(mvndCacheRecord,
+                                            recordField);
+                            return cacheRecord.getRealm() == classRealm;
+                        } catch (Exception e) {
+                            logWarn("Cannot reset plugin classloader", e);
+                        }
+                        return false;
+                    };
+                    Method removeIf = cacheStorage.getClass()
+                            .getMethod("removeIf", BiPredicate.class);
+                    removeIf.setAccessible(true);
+                    removeIf.invoke(cacheStorage, removePredicate);
+                } else {
+                    Field field = DefaultPluginRealmCache.class
+                            .getDeclaredField("cache");
+                    var cacheMap = (Map<PluginRealmCache.Key, PluginRealmCache.CacheRecord>) ReflectTools
+                            .getJavaFieldValue(cache, field);
+                    List<PluginRealmCache.Key> keys = cacheMap.entrySet()
+                            .stream()
+                            .filter(entry -> entry.getValue()
+                                    .getRealm() == classRealm)
+                            .map(Map.Entry::getKey).toList();
+                    keys.forEach(cacheMap::remove);
+                    ClassWorld world = classRealm.getWorld();
+                    world.disposeRealm(classRealm.getId());
+                }
                 mojoExecution.getMojoDescriptor().getPluginDescriptor()
                         .setClassRealm(null);
             } catch (NoSuchFieldException | IllegalAccessException
-                    | InvocationTargetException | NoSuchRealmException e) {
+                    | InvocationTargetException | NoSuchRealmException
+                    | NoSuchMethodException e) {
                 logWarn("Cannot reset plugin classloader", e);
             }
         }
+
     }
 
     private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
