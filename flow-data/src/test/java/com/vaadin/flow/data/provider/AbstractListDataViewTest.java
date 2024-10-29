@@ -27,23 +27,26 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializablePredicate;
-import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
-import org.mockito.Mockito;
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.tests.data.bean.Item;
+
+import static com.vaadin.flow.tests.server.ClassesSerializableUtils.serializeAndDeserialize;
+import static org.junit.Assert.assertNotNull;
 
 public class AbstractListDataViewTest {
 
@@ -1235,6 +1238,18 @@ public class AbstractListDataViewTest {
         exceptionRule.expectMessage(
                 "Filter or Sorting Change Callback cannot be empty");
         new ListDataViewImpl(() -> dataProvider, component, null);
+    }
+
+    @Test
+    public void addFilter_serialize_dataViewSerializable() throws Throwable {
+        DataViewUtils.setComponentFilter(component, term -> true);
+        ListDataProvider<String> dp = DataProvider.ofCollection(Set.of("A"));
+        ListDataViewImpl listDataView = new ListDataViewImpl(() -> dp,
+                component, (filter, sort) -> {
+                });
+        listDataView.addFilter(term -> true);
+        ListDataViewImpl out = serializeAndDeserialize(listDataView);
+        assertNotNull(out);
     }
 
     private static class ListDataViewImpl extends AbstractListDataView<String> {
