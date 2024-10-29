@@ -289,6 +289,8 @@ export class Flow {
   private async flowInit(): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.isFlowClientLoaded()) {
+      $wnd.Vaadin.Flow.nonce = this.findNonce();
+
       // show flow progress indicator
       this.loadingStarted();
 
@@ -349,7 +351,7 @@ export class Flow {
       script.onload = () => resolve();
       script.onerror = reject;
       script.src = url;
-      const nonce = this.findNonce();
+      const nonce = $wnd.Vaadin.Flow.nonce;
       if (nonce !== undefined) {
         script.setAttribute('nonce', nonce);
       }
