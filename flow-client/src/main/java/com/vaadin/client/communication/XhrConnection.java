@@ -114,7 +114,7 @@ public class XhrConnection {
 
         @Override
         public void onSuccess(XMLHttpRequest xhr) {
-            Console.log("Server visit took "
+            Console.debug("Server visit took "
                     + Profiler.getRelativeTimeString(requestStartTime) + "ms");
 
             // for(;;);["+ realJson +"]"
@@ -129,7 +129,7 @@ public class XhrConnection {
             }
 
             registry.getConnectionStateHandler().xhrOk();
-            Console.log("Received xhr message: " + responseText);
+            Console.debug("Received xhr message: " + responseText);
             registry.getMessageHandler().handleMessage(json);
         }
 
@@ -161,7 +161,7 @@ public class XhrConnection {
         XMLHttpRequest xhr = Xhr.post(getUri(), payloadJson,
                 JsonConstants.JSON_CONTENT_TYPE, responseHandler);
 
-        Console.log("Sending xhr message to server: " + payloadJson);
+        Console.debug("Sending xhr message to server: " + payloadJson);
 
         if (webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
             final int retryTimeout = 250;
