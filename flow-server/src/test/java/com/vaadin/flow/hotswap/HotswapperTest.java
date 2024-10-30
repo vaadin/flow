@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -157,6 +158,10 @@ public class HotswapperTest {
         Mockito.verify(hillaHotswapper, never()).onClassLoadEvent(
                 isA(VaadinSession.class), anySet(), anyBoolean());
 
+        HotswapCompleteEvent hotswapCompleteEvent = new HotswapCompleteEvent(
+                service, classes, false);
+        assertOnHotswapCompleteInvoked(flowHotswapper, hotswapCompleteEvent);
+        assertOnHotswapCompleteInvoked(hillaHotswapper, hotswapCompleteEvent);
     }
 
     @Test
@@ -222,6 +227,10 @@ public class HotswapperTest {
         Mockito.verify(hillaHotswapper, never()).onClassLoadEvent(
                 isA(VaadinSession.class), anySet(), anyBoolean());
 
+        HotswapCompleteEvent hotswapCompleteEvent = new HotswapCompleteEvent(
+                service, classes, true);
+        assertOnHotswapCompleteInvoked(flowHotswapper, hotswapCompleteEvent);
+        assertOnHotswapCompleteInvoked(hillaHotswapper, hotswapCompleteEvent);
     }
 
     @Test
@@ -788,6 +797,18 @@ public class HotswapperTest {
                 uiInitInstalled.get());
     }
 
+    private void assertOnHotswapCompleteInvoked(VaadinHotswapper hotswapper,
+            HotswapCompleteEvent event) {
+        var eventArgumentCaptor = ArgumentCaptor
+                .forClass(HotswapCompleteEvent.class);
+        Mockito.verify(hotswapper)
+                .onHotswapComplete(eventArgumentCaptor.capture());
+        HotswapCompleteEvent capturedEvent = eventArgumentCaptor.getValue();
+        Assert.assertEquals(event.getService(), capturedEvent.getService());
+        Assert.assertEquals(event.getClasses(), capturedEvent.getClasses());
+        Assert.assertEquals(event.isRedefined(), capturedEvent.isRedefined());
+    }
+
     @Tag("my-route")
     public static class MyRoute extends Component {
 
@@ -796,6 +817,7 @@ public class HotswapperTest {
     @Tag("my-route-with-child")
     public static class MyRouteWithChild extends Component
             implements HasComponents {
+
         public MyRouteWithChild() {
             add(new MyComponent());
         }
@@ -803,6 +825,7 @@ public class HotswapperTest {
 
     @Tag("my-layout")
     public static class MyLayout extends Component implements RouterLayout {
+
     }
 
     @Tag("my-layout-with-child")
@@ -819,11 +842,13 @@ public class HotswapperTest {
     @Tag("my-nested-layout")
     public static class MyNestedLayout extends Component
             implements RouterLayout {
+
     }
 
     @Tag("my-nested-layout-with-child")
     public static class MyNestedLayoutWithChild extends Component
             implements HasComponents, RouterLayout {
+
         @Override
         public void showRouterLayoutContent(HasElement content) {
             RouterLayout.super.showRouterLayoutContent(content);

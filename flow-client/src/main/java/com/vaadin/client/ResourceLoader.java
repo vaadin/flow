@@ -772,7 +772,7 @@ public class ResourceLoader {
     }
 
     private void fireLoad(ResourceLoadEvent event) {
-        Console.log("Loaded " + event.getResourceData());
+        Console.debug("Loaded " + event.getResourceData());
         String resource = event.getResourceData();
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
         loadedResources.add(resource);

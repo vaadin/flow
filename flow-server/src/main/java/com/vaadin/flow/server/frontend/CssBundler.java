@@ -221,20 +221,27 @@ public class CssBundler {
         boolean potentialAsset = false;
         if (!assetAliases.isEmpty()) {
             Path themeFolderPath = themeFolder.toPath().normalize();
-            Path normalized = themeFolderPath.resolve(potentialFile.toPath())
-                    .normalize();
-            if (normalized.startsWith(themeFolderPath)) {
-                // path is relative to theme folder, check if it matches an
-                // asset
-                String relativePath = themeFolderPath.relativize(normalized)
-                        .toString().replaceAll("\\\\", "/");
-                potentialAsset = assetAliases.stream()
-                        .anyMatch(relativePath::startsWith);
-                if (potentialAsset) {
-                    getLogger().debug(
-                            "Considering '{}' a potential asset of theme '{}'",
-                            relativePath, themeFolder.getName());
+            try {
+                Path normalized = themeFolderPath
+                        .resolve(potentialFile.toPath()).normalize();
+                if (normalized.startsWith(themeFolderPath)) {
+                    // path is relative to theme folder, check if it matches an
+                    // asset
+                    String relativePath = themeFolderPath.relativize(normalized)
+                            .toString().replaceAll("\\\\", "/");
+                    potentialAsset = assetAliases.stream()
+                            .anyMatch(relativePath::startsWith);
+                    if (potentialAsset) {
+                        getLogger().debug(
+                                "Considering '{}' a potential asset of theme '{}'",
+                                relativePath, themeFolder.getName());
+                    }
                 }
+            } catch (IllegalArgumentException e) {
+                getLogger().debug(
+                        "Unresolvable path '{}'. Not considered as a asset of theme '{}'",
+                        potentialFile, themeFolder.getName());
+                return false;
             }
         }
         return potentialAsset;
