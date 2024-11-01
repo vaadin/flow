@@ -71,7 +71,7 @@ public class ApplicationConnection {
         rootNode.setDomNode(body);
         Binder.bind(rootNode, body);
 
-        Console.log("Starting application "
+        Console.debug("Starting application "
                 + applicationConfiguration.getApplicationId());
 
         String appRootPanelName = applicationConfiguration.getApplicationId();
@@ -88,7 +88,7 @@ public class ApplicationConnection {
                     .getServletVersion();
             publishDevelopmentModeJavascriptMethods(appRootPanelName,
                     servletVersion);
-            Console.log(
+            Console.debug(
                     "Vaadin application servlet version: " + servletVersion);
         }
 
