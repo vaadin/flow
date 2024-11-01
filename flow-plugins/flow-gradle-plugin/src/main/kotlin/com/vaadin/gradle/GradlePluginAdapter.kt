@@ -218,7 +218,7 @@ internal class GradlePluginAdapter(
 
     override fun applicationIdentifier(): String = config.applicationIdentifier.get()
 
-    override fun includeWebComponentNpmPackages(): Boolean = config.includeWebComponentNpmPackages.get()
+    override fun isIncludeWebComponentNpmPackages(): Boolean = config.includeWebComponentNpmPackages.get()
 
     override fun checkRuntimeDependency(
         groupId: String,
