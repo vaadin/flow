@@ -31,11 +31,13 @@ public record WebPushMessage(String title, ObjectNode options) implements Serial
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Creates a new Web Push notification message with title and various options being fetched from a given arbitrary Java Object.
+     * Creates a new Web Push notification message with the specified title and various options
+     * fetched from a given Java object.
      *
-     * @param title notification title
-     * @param options any Serializable Java Object representing custom settings that you want to apply to the notification
-     * @see <a href=https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification#parameters</a>
+     * @param title   the notification title
+     * @param options any {@code Serializable} Java object representing custom settings to apply to the notification
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification#parameters">
+     *      showNotification parameters</a>
      */
     public WebPushMessage(String title, Serializable options) {
         this(title, objectMapper.convertValue(options, ObjectNode.class));
