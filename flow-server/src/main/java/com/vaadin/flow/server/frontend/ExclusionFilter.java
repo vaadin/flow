@@ -43,6 +43,8 @@ public class ExclusionFilter implements Serializable {
 
     private final boolean reactEnabled;
 
+    private final boolean includeWebComponentNpmPackages;
+
     /**
      * Create a new exclusion filter.
      *
@@ -50,10 +52,14 @@ public class ExclusionFilter implements Serializable {
      *            the class finder to use
      * @param reactEnabled
      *            whether React is enabled
+     * @param includeWebComponentNpmPackages
+     *            whether to include web component npm packages
      */
-    public ExclusionFilter(ClassFinder finder, boolean reactEnabled) {
+    public ExclusionFilter(ClassFinder finder, boolean reactEnabled,
+            boolean includeWebComponentNpmPackages) {
         this.finder = finder;
         this.reactEnabled = reactEnabled;
+        this.includeWebComponentNpmPackages = includeWebComponentNpmPackages;
     }
 
     /**
@@ -92,11 +98,27 @@ public class ExclusionFilter implements Serializable {
 
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    reactEnabled);
-            return convert.getExclusions();
+            if (!includeWebComponentNpmPackages) {
+                // By default get excluded dependencies for react mode, plus
+                // include all react mode dependencies to get a full list of web
+                // component dependencies for both lit and react mode.
+                VersionsJsonConverter convert = new VersionsJsonConverter(
+                        Json.parse(IOUtils.toString(content,
+                                StandardCharsets.UTF_8)),
+                        true, true);
+                convert.getExclusions().addAll(convert.getDependenciesForMode(
+                        VersionsJsonConverter.MODE_REACT));
+                // always exclude @vaadin/bundles
+                convert.getExclusions()
+                        .add(VersionsJsonConverter.VAADIN_BUNDLES);
+                return convert.getExclusions();
+            } else {
+                VersionsJsonConverter convert = new VersionsJsonConverter(
+                        Json.parse(IOUtils.toString(content,
+                                StandardCharsets.UTF_8)),
+                        reactEnabled, true);
+                return convert.getExclusions();
+            }
         }
     }
 }

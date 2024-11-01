@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -42,6 +45,7 @@ import elemental.json.JsonValue;
 class VersionsJsonConverter {
 
     static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
+    static final String VAADIN_BUNDLES = "@vaadin/bundles";
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
@@ -74,16 +78,22 @@ class VersionsJsonConverter {
 
     private boolean reactEnabled;
 
+    private boolean includeWebComponents;
+
     private Set<String> exclusions;
+
+    private Map<String, Set<String>> dependenciesForModes;
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
 
-    VersionsJsonConverter(JsonObject platformVersions,
-            boolean collectReactComponents) {
-        this.reactEnabled = collectReactComponents;
+    VersionsJsonConverter(JsonObject platformVersions, boolean reactEnabled,
+            boolean includeWebComponents) {
+        this.reactEnabled = reactEnabled;
+        this.includeWebComponents = includeWebComponents;
         exclusions = new HashSet<>();
+        dependenciesForModes = new HashMap<>();
         convertedObject = Json.createObject();
 
         collectDependencies(platformVersions);
@@ -107,6 +117,12 @@ class VersionsJsonConverter {
      */
     Set<String> getExclusions() {
         return exclusions;
+    }
+
+    Set<String> getDependenciesForMode(String mode) {
+        return dependenciesForModes.get(mode) != null
+                ? dependenciesForModes.get(mode)
+                : Collections.emptySet();
     }
 
     private void collectDependencies(JsonObject obj) {
@@ -135,6 +151,8 @@ class VersionsJsonConverter {
     private boolean isIncludedByMode(String mode) {
         if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
             return true;
+        } else if (!includeWebComponents) {
+            return false;
         } else if (reactEnabled) {
             return MODE_REACT.equalsIgnoreCase(mode);
         } else {
@@ -151,6 +169,9 @@ class VersionsJsonConverter {
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
             return;
         }
+        if (!includeWebComponents && Objects.equals(npmName, VAADIN_BUNDLES)) {
+            return;
+        }
         if (!isIncludedByMode(mode)) {
             return;
         }
@@ -165,6 +186,7 @@ class VersionsJsonConverter {
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
         convertedObject.put(npmName, version);
+        dependenciesForModes.getOrDefault(mode, new HashSet<>()).add(npmName);
 
         if (obj.hasKey(EXCLUSIONS)) {
             JsonArray array = obj.getArray(EXCLUSIONS);

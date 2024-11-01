@@ -285,4 +285,9 @@ public class InitParameters implements Serializable {
      */
     public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
 
+    /**
+     * Configuration name for including npm packages for web components.
+     */
+    public static final String INCLUDE_WEB_COMPONENT_NPM_PACKAGES = "include.web.component.npm.packages";
+
 }

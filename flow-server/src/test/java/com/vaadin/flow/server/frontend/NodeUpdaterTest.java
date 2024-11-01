@@ -470,6 +470,62 @@ public class NodeUpdaterTest {
     @Test
     public void testGetPlatformPinnedDependencies_reactAvailable_containsReactComponents()
             throws IOException, ClassNotFoundException {
+        generateTestDataForReactComponents();
+
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/react-components"));
+        Assert.assertTrue(
+                pinnedVersions.hasKey("@vaadin/react-components-pro"));
+    }
+
+    @Test
+    public void testGetPlatformPinnedDependencies_reactAvailable_excludeWebComponents()
+            throws IOException, ClassNotFoundException {
+        options.withIncludeWebComponentNpmPackages(false);
+        try {
+            generateTestDataForReactComponents();
+
+            JsonObject pinnedVersions = nodeUpdater
+                    .getPlatformPinnedDependencies();
+
+            // @vaadin/button doesn't have 'mode' set, so it should be included
+            Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+            Assert.assertFalse(
+                    pinnedVersions.hasKey("@vaadin/react-components"));
+            Assert.assertFalse(
+                    pinnedVersions.hasKey("@vaadin/react-components-pro"));
+        } finally {
+            options.withIncludeWebComponentNpmPackages(true);
+        }
+    }
+
+    @Test
+    public void testGetPlatformPinnedDependencies_reactDisabled_excludeWebComponents()
+            throws IOException, ClassNotFoundException {
+        options.withReact(false);
+        options.withIncludeWebComponentNpmPackages(false);
+        try {
+            generateTestDataForReactComponents();
+
+            JsonObject pinnedVersions = nodeUpdater
+                    .getPlatformPinnedDependencies();
+
+            // @vaadin/button doesn't have 'mode' set, so it should be included
+            Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+            Assert.assertFalse(
+                    pinnedVersions.hasKey("@vaadin/react-components"));
+            Assert.assertFalse(
+                    pinnedVersions.hasKey("@vaadin/react-components-pro"));
+        } finally {
+            options.withReact(true);
+            options.withIncludeWebComponentNpmPackages(true);
+        }
+    }
+
+    private void generateTestDataForReactComponents()
+            throws IOException, ClassNotFoundException {
         File coreVersionsFile = File.createTempFile("vaadin-core-versions",
                 ".json", temporaryFolder.newFolder());
         File vaadinVersionsFile = File.createTempFile("vaadin-versions",
@@ -514,13 +570,6 @@ public class NodeUpdaterTest {
         Class clazz = FeatureFlags.class; // actual class doesn't matter
         Mockito.doReturn(clazz).when(finder).loadClass(
                 "com.vaadin.flow.component.react.ReactAdapterComponent");
-
-        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
-
-        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
-        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/react-components"));
-        Assert.assertTrue(
-                pinnedVersions.hasKey("@vaadin/react-components-pro"));
     }
 
     @Test
