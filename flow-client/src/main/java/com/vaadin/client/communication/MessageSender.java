@@ -16,8 +16,9 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.GWT;
-import com.vaadin.client.Console;
+
 import com.vaadin.client.ConnectionIndicator;
+import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -91,10 +92,14 @@ public class MessageSender {
             return;
         }
 
-        if (registry.getRequestResponseTracker().hasActiveRequest()
-                || (push != null && !push.isActive())) {
+        boolean hasActiveRequest = registry.getRequestResponseTracker()
+                .hasActiveRequest();
+        if (hasActiveRequest || (push != null && !push.isActive())) {
             // There is an active request or push is enabled but not active
             // -> send when current request completes or push becomes active
+            Console.debug("Postpone sending invocations to server because of "
+                    + (hasActiveRequest ? "active request"
+                            : "PUSH not active"));
         } else {
             doSendInvocationsToServer();
         }
@@ -200,9 +205,11 @@ public class MessageSender {
             // server after a reconnection.
             // Reference will be cleaned up once the server confirms it has
             // seen this message
+            Console.debug("send PUSH");
             pushPendingMessage = payload;
             push.push(payload);
         } else {
+            Console.log("send XHR");
             registry.getXhrConnection().send(payload);
         }
     }
@@ -215,7 +222,22 @@ public class MessageSender {
      *            <code>false</code> to disable the push connection.
      */
     public void setPushEnabled(boolean enabled) {
-        if (enabled && push == null) {
+        setPushEnabled(enabled, true);
+    }
+
+    /**
+     * Sets the status for the push connection.
+     *
+     * @param enabled
+     *            <code>true</code> to enable the push connection;
+     *            <code>false</code> to disable the push connection.
+     * @param reEnableIfNeeded
+     *            <code>true</code> if push should be re-enabled after
+     *            disconnection if configuration changed; <code>false</code> to
+     *            prevent reconnection.
+     */
+    public void setPushEnabled(boolean enabled, boolean reEnableIfNeeded) {
+        if (enabled && (push == null || !push.isActive())) {
             push = pushConnectionFactory.create(registry);
         } else if (!enabled && push != null && push.isActive()) {
             push.disconnect(() -> {
@@ -225,7 +247,8 @@ public class MessageSender {
                  * old connection to disconnect, now is the right time to open a
                  * new connection
                  */
-                if (registry.getPushConfiguration().isPushEnabled()) {
+                if (reEnableIfNeeded
+                        && registry.getPushConfiguration().isPushEnabled()) {
                     setPushEnabled(true);
                 }
 

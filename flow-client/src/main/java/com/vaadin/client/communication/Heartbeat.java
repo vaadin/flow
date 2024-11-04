@@ -17,6 +17,7 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
@@ -74,8 +75,13 @@ public class Heartbeat {
      */
     public void send() {
         timer.cancel();
+        if (interval < 0) {
+            Console.debug("Heartbeat terminated, skipping request");
+            return;
+        }
 
         Console.debug("Sending heartbeat request...");
+
         Xhr.post(uri, null, "text/plain; charset=utf-8", new Xhr.Callback() {
 
             @Override
@@ -86,12 +92,19 @@ public class Heartbeat {
 
             @Override
             public void onFail(XMLHttpRequest xhr, Exception e) {
-
                 // Handler should stop the application if heartbeat should no
                 // longer be sent
                 if (e == null) {
-                    registry.getConnectionStateHandler()
-                            .heartbeatInvalidStatusCode(xhr);
+                    // Heartbeat has been terminated before response processing.
+                    // Most likely a session expiration happened, and it has
+                    // already been handled by another component.
+                    if (interval < 0) {
+                        Console.debug(
+                                "Heartbeat terminated, ignoring failure.");
+                    } else {
+                        registry.getConnectionStateHandler()
+                                .heartbeatInvalidStatusCode(xhr);
+                    }
                 } else {
                     registry.getConnectionStateHandler().heartbeatException(xhr,
                             e);
