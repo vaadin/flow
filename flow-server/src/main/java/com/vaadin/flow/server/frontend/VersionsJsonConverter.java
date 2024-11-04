@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -186,7 +187,9 @@ class VersionsJsonConverter {
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
         convertedObject.put(npmName, version);
-        dependenciesForModes.getOrDefault(mode, new HashSet<>()).add(npmName);
+        dependenciesForModes.compute(mode,
+                (key, value) -> (value == null) ? new HashSet<>() : value);
+        dependenciesForModes.get(mode).add(npmName);
 
         if (obj.hasKey(EXCLUSIONS)) {
             JsonArray array = obj.getArray(EXCLUSIONS);
