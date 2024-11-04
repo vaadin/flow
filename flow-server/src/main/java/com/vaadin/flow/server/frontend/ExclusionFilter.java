@@ -52,6 +52,18 @@ public class ExclusionFilter implements Serializable {
      *            the class finder to use
      * @param reactEnabled
      *            whether React is enabled
+     */
+    public ExclusionFilter(ClassFinder finder, boolean reactEnabled) {
+        this(finder, reactEnabled, true);
+    }
+
+    /**
+     * Create a new exclusion filter.
+     *
+     * @param finder
+     *            the class finder to use
+     * @param reactEnabled
+     *            whether React is enabled
      * @param includeWebComponentNpmPackages
      *            whether to include web component npm packages
      */
