@@ -285,4 +285,5 @@ public class InitParameters implements Serializable {
      */
     public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
 
+    public static final String FRONTEND_EXTRA_EXTENSIONS = "frontendExtraFileExtensions";
 }

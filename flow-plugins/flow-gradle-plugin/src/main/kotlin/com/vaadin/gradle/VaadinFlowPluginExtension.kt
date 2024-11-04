@@ -287,7 +287,7 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * Hashes are calculated for these files as part of detecting if a new prod
      * bundle should be generated.
      */
-    public abstract val extraProjectFileExtensions: ListProperty<String>
+    public abstract val frontendExtraFileExtensions: ListProperty<String>
 
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
@@ -446,10 +446,8 @@ public class PluginEffectiveConfiguration(
             ))
         .overrideWithSystemProperty("vaadin.${InitParameters.APPLICATION_IDENTIFIER}")
 
-    public val projectFileExtensions: ListProperty<String> = extension.projectFileExtensions
-            .convention(listOf(".js", ".js.map", ".ts", ".ts.map", ".tsx", ".tsx.map", ".css", ".css.map"))
-
-    public val extraProjectFileExtensions: ListProperty<String> = extension.extraProjectFileExtensions
+    // TODO: Possibly get value from system param InitParameters.FRONTEND_EXTRA_EXTENSIONS
+    public val frontendExtraFileExtensions: ListProperty<String> = extension.frontendExtraFileExtensions
             .convention(emptyList())
 
     /**
@@ -513,7 +511,7 @@ public class PluginEffectiveConfiguration(
             "frontendHotdeploy=${frontendHotdeploy.get()}," +
             "reactEnable=${reactEnable.get()}," +
             "cleanFrontendFiles=${cleanFrontendFiles.get()}" +
-            "extraProjectFileExtensions=${extraProjectFileExtensions.get()}" +
+            "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}" +
             ")"
     public companion object {
         public fun get(project: Project): PluginEffectiveConfiguration =

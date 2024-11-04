@@ -235,8 +235,22 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
 
-    @Parameter(defaultValue = "${null}")
-    private List<String> extraProjectFileExtensions;
+    /**
+     * Parameter for adding file extensions to handle during frontend tasks.
+     * <p>
+     * From the commandline use space separated list
+     * {@code -DfrontendExtraFileExtensions="svg ico"}
+     * <p>
+     * </p>
+     * In plugin configuration
+     *
+     * <configuration> <frontendExtraFileExtensions> <extension>svg</extension>
+     * <extension>ico</extension> </frontendExtraFileExtensions>
+     * </configuration>
+     *
+     */
+    @Parameter(property = InitParameters.FRONTEND_EXTRA_EXTENSIONS, defaultValue = "${null}")
+    private List<String> frontendExtraFileExtensions;
 
     /**
      * Identifier for the application.
@@ -576,9 +590,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public List<String> extraProjectFileExtensions() {
-        if (extraProjectFileExtensions != null) {
-            return extraProjectFileExtensions;
+    public List<String> frontendExtraFileExtensions() {
+        if (frontendExtraFileExtensions != null) {
+            return frontendExtraFileExtensions;
         }
 
         return Collections.emptyList();

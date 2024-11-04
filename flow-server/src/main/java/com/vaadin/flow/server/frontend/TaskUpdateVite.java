@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.atmosphere.util.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,16 +131,12 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                         webComponentTags == null || webComponentTags.isEmpty()
                                 ? ""
                                 : String.join(";", webComponentTags))
-                .replace("#extraProjectFileExtensions#", Optional
-                        .ofNullable(options.getExtraProjectFileExtensions())
-                        .orElse(Collections.emptyList()).stream().map(ext -> {
-                            try {
-                                return "'" + StringEscapeUtils.escapeJava(ext)
-                                        + "'";
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        }).collect(Collectors.joining(", ")));
+                .replace("#frontendExtraFileExtensions#", Optional
+                        .ofNullable(options.getFrontendExtraFileExtensions())
+                        .orElse(Collections.emptyList()).stream()
+                        .map(ext -> ext.replace("'", "\\'"))
+                        .map(ext -> ext.startsWith(".") ? ext : "." + ext)
+                        .collect(Collectors.joining("', '", ", '", "'")));
         template = updateFileSystemRouterVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);

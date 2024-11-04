@@ -84,7 +84,7 @@ public class Options implements Serializable {
 
     private boolean compressBundle = true;
 
-    private List<String> extraProjectFileExtensions = null;
+    private List<String> frontendExtraFileExtensions = null;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -971,15 +971,15 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets the extra project file extensions.
+     * Sets the extra file extensions used in the project.
      *
-     * @param extraProjectFileExtensions
-     *            the project file extensions
+     * @param frontendExtraFileExtensions
+     *            the file extensions to add for the project
      * @return this builder
      */
-    public Options withExtraProjectFileExtensions(
-            List<String> extraProjectFileExtensions) {
-        this.extraProjectFileExtensions = extraProjectFileExtensions;
+    public Options withExtraFrontendFileExtensions(
+            List<String> frontendExtraFileExtensions) {
+        this.frontendExtraFileExtensions = frontendExtraFileExtensions;
         return this;
     }
 
@@ -988,7 +988,7 @@ public class Options implements Serializable {
      *
      * @return the project file extensions
      */
-    public List<String> getExtraProjectFileExtensions() {
-        return extraProjectFileExtensions;
+    public List<String> getFrontendExtraFileExtensions() {
+        return frontendExtraFileExtensions;
     }
 }
