@@ -52,8 +52,8 @@ public class ComponentTracker {
     private static String[] prefixesToSkip = new String[] {
             "com.vaadin.flow.component.", "com.vaadin.flow.di.",
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
-            "com.vaadin.flow.spring.", "java.", "jdk.",
-            "org.springframework.beans.", };
+            "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
+            "org.springframework.beans.", "org.jboss.weld.", };
 
     /**
      * Represents a location in the source code.
