@@ -445,7 +445,12 @@ public class MessageHandler {
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
-            Reactive.flush();
+            if (json.hasKey("changes")
+                    || json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
+                Reactive.flush();
+            } else {
+                Reactive.clear();
+            }
 
             ValueMap meta = valueMap.getValueMap("meta");
 

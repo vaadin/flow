@@ -234,4 +234,8 @@ public class Reactive {
         postFlushListeners = null;
     }
 
+    public static void clear() {
+        flushListeners = null;
+        postFlushListeners = null;
+    }
 }
