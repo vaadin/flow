@@ -111,9 +111,9 @@ public class ExclusionFilter implements Serializable {
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
             if (!includeWebComponentNpmPackages) {
-                // By default get excluded dependencies for react mode, plus
-                // include all react mode dependencies to get a full list of web
-                // component dependencies for both lit and react mode.
+                // Full list of web component dependencies is a union of all
+                // 'react' mode dependencies and dependencies of exclusion
+                // lists for react dependencies.
                 VersionsJsonConverter convert = new VersionsJsonConverter(
                         Json.parse(IOUtils.toString(content,
                                 StandardCharsets.UTF_8)),
