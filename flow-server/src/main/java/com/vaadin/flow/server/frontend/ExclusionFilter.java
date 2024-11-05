@@ -110,27 +110,11 @@ public class ExclusionFilter implements Serializable {
 
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
-            if (!includeWebComponentNpmPackages) {
-                // Full list of web component dependencies is a union of all
-                // 'react' mode dependencies and dependencies of exclusion
-                // lists for react dependencies.
-                VersionsJsonConverter convert = new VersionsJsonConverter(
-                        Json.parse(IOUtils.toString(content,
-                                StandardCharsets.UTF_8)),
-                        true, true);
-                convert.getExclusions().addAll(convert.getDependenciesForMode(
-                        VersionsJsonConverter.MODE_REACT));
-                // always exclude @vaadin/bundles
-                convert.getExclusions()
-                        .add(VersionsJsonConverter.VAADIN_BUNDLES);
-                return convert.getExclusions();
-            } else {
-                VersionsJsonConverter convert = new VersionsJsonConverter(
-                        Json.parse(IOUtils.toString(content,
-                                StandardCharsets.UTF_8)),
-                        reactEnabled, true);
-                return convert.getExclusions();
-            }
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    Json.parse(
+                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    reactEnabled, includeWebComponentNpmPackages);
+            return convert.getExclusions();
         }
     }
 }
