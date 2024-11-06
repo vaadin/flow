@@ -164,8 +164,10 @@ class VersionsJsonConverter {
         if (!isIncludedByMode(mode)) {
             if (excludeWebComponents) {
                 // collecting exclusions also from non-included dependencies
-                // with a mode (lit/react), when web components are not wanted.
-                exclusions.add(npmName);
+                // with a mode (react), when web components are not wanted.
+                if (MODE_REACT.equalsIgnoreCase(mode)) {
+                    exclusions.add(npmName);
+                }
                 collectExclusions(obj);
             }
             return;

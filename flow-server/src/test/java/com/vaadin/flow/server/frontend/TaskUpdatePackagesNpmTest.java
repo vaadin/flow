@@ -862,8 +862,8 @@ public class TaskUpdatePackagesNpmTest {
         execTaskUpdatePackages(createApplicationDependencies(), options);
         JsonObject pkgJson = getOrCreatePackageJson();
 
-        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
-        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
         assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
         assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
         assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
@@ -929,8 +929,8 @@ public class TaskUpdatePackagesNpmTest {
         execTaskUpdatePackages(createApplicationDependencies(), options);
         JsonObject pkgJson = getOrCreatePackageJson();
 
-        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
-        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
         assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
         assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
         assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
