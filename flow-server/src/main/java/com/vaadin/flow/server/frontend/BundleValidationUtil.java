@@ -317,7 +317,7 @@ public final class BundleValidationUtil {
                     options.getClassFinder(),
                     options.isReactEnabled()
                             && FrontendUtils.isReactModuleAvailable(options),
-                    options.isIncludeWebComponentNpmPackages())
+                    options.isNpmExcludeWebComponents())
                     .exclude(applicationDependencies);
 
             // Add application dependencies

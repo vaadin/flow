@@ -483,7 +483,7 @@ public class NodeUpdaterTest {
     @Test
     public void testGetPlatformPinnedDependencies_reactAvailable_excludeWebComponents()
             throws IOException, ClassNotFoundException {
-        options.withIncludeWebComponentNpmPackages(false);
+        options.withNpmExcludeWebComponents(true);
         generateTestDataForReactComponents();
 
         JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
@@ -499,7 +499,7 @@ public class NodeUpdaterTest {
     public void testGetPlatformPinnedDependencies_reactDisabled_excludeWebComponents()
             throws IOException, ClassNotFoundException {
         options.withReact(false);
-        options.withIncludeWebComponentNpmPackages(false);
+        options.withNpmExcludeWebComponents(true);
         generateTestDataForReactComponents();
 
         JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();

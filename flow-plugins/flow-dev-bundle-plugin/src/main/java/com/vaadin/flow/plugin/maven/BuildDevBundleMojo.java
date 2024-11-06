@@ -171,8 +171,8 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
 
-    @Parameter(property = InitParameters.INCLUDE_WEB_COMPONENT_NPM_PACKAGES, defaultValue = "true")
-    private boolean includeWebComponentNpmPackages;
+    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    private boolean npmExcludeWebComponents;
 
     @Override
     public void execute() throws MojoFailureException {
@@ -474,7 +474,7 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isIncludeWebComponentNpmPackages() {
-        return includeWebComponentNpmPackages;
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
     }
 }

@@ -125,7 +125,7 @@ public class Options implements Serializable {
 
     private boolean reactEnable = true;
 
-    private boolean includeWebComponentNpmPackages = true;
+    private boolean npmExcludeWebComponents = false;
 
     /**
      * Removes generated files from a previous execution that are no more
@@ -971,23 +971,23 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets whether to include web component npm packages in packages.json.
+     * Sets whether to exclude web component npm packages in packages.json.
      *
      * @return this builder
      */
-    public boolean isIncludeWebComponentNpmPackages() {
-        return includeWebComponentNpmPackages;
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
     }
 
     /**
-     * Sets whether to include web component npm packages in packages.json.
+     * Sets whether to exclude web component npm packages in packages.json.
      *
-     * @param include
-     *            whether to include web component npm packages
+     * @param exclude
+     *            whether to exclude web component npm packages
      * @return this builder
      */
-    public Options withIncludeWebComponentNpmPackages(boolean include) {
-        this.includeWebComponentNpmPackages = include;
+    public Options withNpmExcludeWebComponents(boolean exclude) {
+        this.npmExcludeWebComponents = exclude;
         return this;
     }
 }

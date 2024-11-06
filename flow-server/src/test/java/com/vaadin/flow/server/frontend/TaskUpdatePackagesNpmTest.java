@@ -857,7 +857,7 @@ public class TaskUpdatePackagesNpmTest {
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(false)
-                .withIncludeWebComponentNpmPackages(false);
+                .withNpmExcludeWebComponents(true);
         // with scanned application dependencies
         execTaskUpdatePackages(createApplicationDependencies(), options);
         JsonObject pkgJson = getOrCreatePackageJson();
@@ -890,7 +890,7 @@ public class TaskUpdatePackagesNpmTest {
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(false)
-                .withIncludeWebComponentNpmPackages(false);
+                .withNpmExcludeWebComponents(true);
 
         // with scanned application dependencies
         execTaskUpdatePackages(createApplicationDependencies(), options);
@@ -923,7 +923,7 @@ public class TaskUpdatePackagesNpmTest {
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true)
-                .withIncludeWebComponentNpmPackages(false);
+                .withNpmExcludeWebComponents(true);
 
         // with scanned application dependencies
         execTaskUpdatePackages(createApplicationDependencies(), options);
@@ -957,7 +957,7 @@ public class TaskUpdatePackagesNpmTest {
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true)
-                .withIncludeWebComponentNpmPackages(false);
+                .withNpmExcludeWebComponents(true);
 
         // with scanned application dependencies
         execTaskUpdatePackages(createApplicationDependencies(), options);

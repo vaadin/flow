@@ -143,7 +143,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getApplicationIdentifier(): Provider<String> = config.applicationIdentifier
 
     @Input
-    public fun getIncludeWebComponentNpmPackages(): Provider<Boolean> = config.includeWebComponentNpmPackages
+    public fun getNpmExcludeWebComponents(): Provider<Boolean> = config.npmExcludeWebComponents
 
     @Input
     @Optional

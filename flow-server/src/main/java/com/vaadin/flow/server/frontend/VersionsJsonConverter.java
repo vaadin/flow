@@ -75,7 +75,7 @@ class VersionsJsonConverter {
 
     private boolean reactEnabled;
 
-    private boolean includeWebComponents;
+    private boolean excludeWebComponents;
 
     private Set<String> exclusions;
 
@@ -84,9 +84,9 @@ class VersionsJsonConverter {
     }
 
     VersionsJsonConverter(JsonObject platformVersions, boolean reactEnabled,
-            boolean includeWebComponents) {
+            boolean excludeWebComponents) {
         this.reactEnabled = reactEnabled;
-        this.includeWebComponents = includeWebComponents;
+        this.excludeWebComponents = excludeWebComponents;
         exclusions = new HashSet<>();
         convertedObject = Json.createObject();
 
@@ -139,7 +139,7 @@ class VersionsJsonConverter {
     private boolean isIncludedByMode(String mode) {
         if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
             return true;
-        } else if (!includeWebComponents) {
+        } else if (excludeWebComponents) {
             return false;
         } else if (reactEnabled) {
             return MODE_REACT.equalsIgnoreCase(mode);
@@ -157,12 +157,12 @@ class VersionsJsonConverter {
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
             return;
         }
-        if (!includeWebComponents && Objects.equals(npmName, VAADIN_BUNDLES)) {
+        if (excludeWebComponents && Objects.equals(npmName, VAADIN_BUNDLES)) {
             exclusions.add(npmName);
             return;
         }
         if (!isIncludedByMode(mode)) {
-            if (!includeWebComponents) {
+            if (excludeWebComponents) {
                 // collecting exclusions also from non-included dependencies
                 // with a mode (lit/react), when web components are not wanted.
                 exclusions.add(npmName);

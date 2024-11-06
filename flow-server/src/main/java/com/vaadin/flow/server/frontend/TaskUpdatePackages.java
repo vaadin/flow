@@ -218,7 +218,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 finder,
                 options.isReactEnabled()
                         && FrontendUtils.isReactModuleAvailable(options),
-                options.isIncludeWebComponentNpmPackages())
+                options.isNpmExcludeWebComponents())
                 .exclude(applicationDependencies);
 
         // Add application dependencies

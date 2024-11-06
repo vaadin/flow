@@ -64,7 +64,7 @@ public class VersionsJsonConverterTest {
         // @formatter:on
 
         VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), false, true);
+                Json.parse(json), false, false);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -278,7 +278,7 @@ public class VersionsJsonConverterTest {
 
         // react enabled
         VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), true, true);
+                Json.parse(json), true, false);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -296,7 +296,7 @@ public class VersionsJsonConverterTest {
         Assert.assertFalse(convertedJson.hasKey("react-components-pro"));
 
         // react enabled, exclude web components
-        convert = new VersionsJsonConverter(Json.parse(json), true, false);
+        convert = new VersionsJsonConverter(Json.parse(json), true, true);
         convertedJson = convert.getConvertedJson();
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -315,7 +315,7 @@ public class VersionsJsonConverterTest {
         Assert.assertFalse(convertedJson.hasKey("react-components-pro"));
 
         // react disabled
-        convert = new VersionsJsonConverter(Json.parse(json), false, true);
+        convert = new VersionsJsonConverter(Json.parse(json), false, false);
         convertedJson = convert.getConvertedJson();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -333,7 +333,7 @@ public class VersionsJsonConverterTest {
         Assert.assertFalse(convertedJson.hasKey("react-components"));
 
         // react disabled, exclude web components
-        convert = new VersionsJsonConverter(Json.parse(json), false, false);
+        convert = new VersionsJsonConverter(Json.parse(json), false, true);
         convertedJson = convert.getConvertedJson();
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -408,7 +408,7 @@ public class VersionsJsonConverterTest {
 
         // react enabled
         VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), true, true);
+                Json.parse(json), true, false);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -427,7 +427,7 @@ public class VersionsJsonConverterTest {
         Assert.assertFalse(convertedJson.hasKey("react-components-pro"));
 
         // react disabled
-        convert = new VersionsJsonConverter(Json.parse(json), false, true);
+        convert = new VersionsJsonConverter(Json.parse(json), false, false);
         convertedJson = convert.getConvertedJson();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));

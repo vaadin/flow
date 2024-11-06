@@ -81,7 +81,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.INCLUDE_WEB_COMPONENT_NPM_PACKAGES;
+import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
@@ -271,8 +271,8 @@ public class DevModeInitializer implements Serializable {
         boolean reactEnable = config.getBooleanProperty(REACT_ENABLE,
                 FrontendUtils
                         .isReactRouterRequired(options.getFrontendDirectory()));
-        boolean includeWebComponentNpmPackages = config
-                .getBooleanProperty(INCLUDE_WEB_COMPONENT_NPM_PACKAGES, true);
+        boolean npmExcludeWebComponents = config
+                .getBooleanProperty(NPM_EXCLUDE_WEB_COMPONENTS, false);
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -292,8 +292,8 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
-                .withReact(reactEnable).withIncludeWebComponentNpmPackages(
-                        includeWebComponentNpmPackages);
+                .withReact(reactEnable)
+                .withNpmExcludeWebComponents(npmExcludeWebComponents);
 
         NodeTasks tasks = new NodeTasks(options);
 

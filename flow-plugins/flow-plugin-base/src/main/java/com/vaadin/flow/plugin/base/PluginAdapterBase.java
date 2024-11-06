@@ -343,5 +343,5 @@ public interface PluginAdapterBase {
      *
      * @return {@code true} to include web component npm packages.
      */
-    boolean isIncludeWebComponentNpmPackages();
+    boolean isNpmExcludeWebComponents();
 }
