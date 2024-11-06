@@ -147,7 +147,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         if (frontendExtraFileExtensions.isPresent()
                 && frontendExtraFileExtensions.get().size() > 0) {
             return frontendExtraFileExtensions.get().stream()
-                    .map(ext -> ext.replace("'", "\\'"))
+                    .map(ext -> ext.replace("'", "\\'")).map(ext -> ext.trim())
                     .map(ext -> ext.startsWith(".") ? ext : "." + ext)
                     .collect(Collectors.joining("', '", ", '", "'"));
         }

@@ -284,7 +284,7 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     /**
      * The list of extra file extensions that are considered project files.
-     * Hashes are calculated for these files as part of detecting if a new prod
+     * Hashes are calculated for these files as part of detecting if a new
      * bundle should be generated.
      */
     public abstract val frontendExtraFileExtensions: ListProperty<String>
