@@ -122,8 +122,6 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .getResource(FrontendUtils.VITE_GENERATED_CONFIG);
         String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
 
-        System.out.println(
-                "=== '" + options.getFrontendExtraFileExtensions() + "'");
         template = template
                 .replace("#settingsImport#",
                         "./" + options.getBuildDirectoryName() + "/"
