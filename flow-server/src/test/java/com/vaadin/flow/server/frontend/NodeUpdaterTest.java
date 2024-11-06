@@ -484,21 +484,15 @@ public class NodeUpdaterTest {
     public void testGetPlatformPinnedDependencies_reactAvailable_excludeWebComponents()
             throws IOException, ClassNotFoundException {
         options.withIncludeWebComponentNpmPackages(false);
-        try {
-            generateTestDataForReactComponents();
+        generateTestDataForReactComponents();
 
-            JsonObject pinnedVersions = nodeUpdater
-                    .getPlatformPinnedDependencies();
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
-            // @vaadin/button doesn't have 'mode' set, so it should be included
-            Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
-            Assert.assertFalse(
-                    pinnedVersions.hasKey("@vaadin/react-components"));
-            Assert.assertFalse(
-                    pinnedVersions.hasKey("@vaadin/react-components-pro"));
-        } finally {
-            options.withIncludeWebComponentNpmPackages(true);
-        }
+        // @vaadin/button doesn't have 'mode' set, so it should be included
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertFalse(pinnedVersions.hasKey("@vaadin/react-components"));
+        Assert.assertFalse(
+                pinnedVersions.hasKey("@vaadin/react-components-pro"));
     }
 
     @Test
@@ -506,22 +500,15 @@ public class NodeUpdaterTest {
             throws IOException, ClassNotFoundException {
         options.withReact(false);
         options.withIncludeWebComponentNpmPackages(false);
-        try {
-            generateTestDataForReactComponents();
+        generateTestDataForReactComponents();
 
-            JsonObject pinnedVersions = nodeUpdater
-                    .getPlatformPinnedDependencies();
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
-            // @vaadin/button doesn't have 'mode' set, so it should be included
-            Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
-            Assert.assertFalse(
-                    pinnedVersions.hasKey("@vaadin/react-components"));
-            Assert.assertFalse(
-                    pinnedVersions.hasKey("@vaadin/react-components-pro"));
-        } finally {
-            options.withReact(true);
-            options.withIncludeWebComponentNpmPackages(true);
-        }
+        // @vaadin/button doesn't have 'mode' set, so it should be included
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertFalse(pinnedVersions.hasKey("@vaadin/react-components"));
+        Assert.assertFalse(
+                pinnedVersions.hasKey("@vaadin/react-components-pro"));
     }
 
     private void generateTestDataForReactComponents()
