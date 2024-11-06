@@ -33,6 +33,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -74,6 +75,7 @@ import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_EXTRA_EXTENSIONS;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
@@ -166,7 +168,7 @@ public class BuildFrontendUtil {
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
                 .withProductionMode(false).withReact(adapter.isReactEnabled())
-                .withExtraFrontendFileExtensions(
+                .withFrontendExtraFileExtensions(
                         adapter.frontendExtraFileExtensions());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
@@ -265,6 +267,12 @@ public class BuildFrontendUtil {
         }
 
         buildInfo.put(REACT_ENABLE, adapter.isReactEnabled());
+
+        if (!adapter.frontendExtraFileExtensions().isEmpty()) {
+            buildInfo.put(FRONTEND_EXTRA_EXTENSIONS,
+                    adapter.frontendExtraFileExtensions().stream()
+                            .collect(Collectors.joining(",")));
+        }
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
@@ -408,7 +416,7 @@ public class BuildFrontendUtil {
                     .skipDevBundleBuild(adapter.skipDevBundleBuild())
                     .withCompressBundle(adapter.compressBundle())
                     .withReact(adapter.isReactEnabled())
-                    .withExtraFrontendFileExtensions(
+                    .withFrontendExtraFileExtensions(
                             adapter.frontendExtraFileExtensions());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
@@ -743,6 +751,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(FRONTEND_HOTDEPLOY);
+            buildInfo.remove(FRONTEND_EXTRA_EXTENSIONS);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_BUN);
             buildInfo.remove(InitParameters.CI_BUILD);

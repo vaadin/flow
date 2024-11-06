@@ -265,11 +265,11 @@ public class DevModeInitializer implements Serializable {
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
-        JsonObject tokenFileData = Json.createObject();
         Mode mode = config.getMode();
         boolean reactEnable = config.getBooleanProperty(REACT_ENABLE,
                 FrontendUtils
                         .isReactRouterRequired(options.getFrontendDirectory()));
+
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -279,7 +279,6 @@ public class DevModeInitializer implements Serializable {
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
                 .withRunNpmInstall(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
-                .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
                 .withEnableBun(enableBun).useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
@@ -289,12 +288,13 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
-                .withReact(reactEnable);
+                .withReact(reactEnable).withFrontendExtraFileExtensions(
+                        getFrontendExtraFileExtensions(config));
 
+        // Do not execute inside runnable thread as static mocking doesn't work.
         NodeTasks tasks = new NodeTasks(options);
-
         Runnable runnable = () -> {
-            runNodeTasks(context, tokenFileData, tasks);
+            runNodeTasks(tasks);
             if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
@@ -329,6 +329,14 @@ public class DevModeInitializer implements Serializable {
         }
     }
 
+    private static List<String> getFrontendExtraFileExtensions(
+            ApplicationConfiguration config) {
+        List<String> stringProperty = Arrays.asList(config
+                .getStringProperty(InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")
+                .split(","));
+        return stringProperty;
+    }
+
     private static Logger log() {
         return LoggerFactory.getLogger(DevModeStartupListener.class);
     }
@@ -350,8 +358,7 @@ public class DevModeInitializer implements Serializable {
         return frontendFiles;
     }
 
-    private static void runNodeTasks(VaadinContext vaadinContext,
-            JsonObject tokenFileData, NodeTasks tasks) {
+    private static void runNodeTasks(NodeTasks tasks) {
         try {
             tasks.execute();
         } catch (ExecutionFailedException exception) {

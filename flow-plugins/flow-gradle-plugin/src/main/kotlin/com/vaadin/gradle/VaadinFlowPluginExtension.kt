@@ -510,7 +510,7 @@ public class PluginEffectiveConfiguration(
             "alwaysExecutePrepareFrontend=${alwaysExecutePrepareFrontend.get()}, " +
             "frontendHotdeploy=${frontendHotdeploy.get()}," +
             "reactEnable=${reactEnable.get()}," +
-            "cleanFrontendFiles=${cleanFrontendFiles.get()}" +
+            "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
             "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}" +
             ")"
     public companion object {

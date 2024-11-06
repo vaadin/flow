@@ -179,7 +179,7 @@ public class TaskUpdateViteTest {
     @Test
     public void generatedTemplate_extraFrontendExtension_addedToViteConfiguration()
             throws IOException {
-        options.withExtraFrontendFileExtensions(
+        options.withFrontendExtraFileExtensions(
                 Arrays.asList(".svg", ".ico", "png"));
         TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
@@ -196,6 +196,27 @@ public class TaskUpdateViteTest {
         Assert.assertEquals(
                 "Extra frontend extensions should be added to vite configuration, but was not.",
                 "'.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map', '.svg', '.ico', '.png'",
+                matcher.group(1));
+    }
+
+    @Test
+    public void generatedTemplate_noEraFrontendExtension_viteConfigurationWithoutExtraSelections()
+            throws IOException {
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        task.execute();
+
+        File configFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
+
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+        Pattern matchSelection = Pattern
+                .compile("const projectFileExtensions = \\[(.*)];");
+        Matcher matcher = matchSelection.matcher(template);
+        Assert.assertTrue("No projectFileExtensions found", matcher.find());
+        Assert.assertEquals(
+                "Extra frontend extensions should be added to vite configuration, but was not.",
+                "'.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'",
                 matcher.group(1));
     }
 }

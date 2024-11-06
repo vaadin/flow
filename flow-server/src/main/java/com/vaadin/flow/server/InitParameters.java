@@ -180,6 +180,12 @@ public class InitParameters implements Serializable {
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 
     /**
+     * Configuration parameter name for adding extra file extensions for stats
+     * bundle to generate hashes for.
+     */
+    public static final String FRONTEND_EXTRA_EXTENSIONS = "devmode.frontendExtraFileExtensions";
+
+    /**
      * I18N provider property.
      */
     public static final String I18N_PROVIDER = "i18n.provider";
@@ -285,5 +291,4 @@ public class InitParameters implements Serializable {
      */
     public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
 
-    public static final String FRONTEND_EXTRA_EXTENSIONS = "frontendExtraFileExtensions";
 }

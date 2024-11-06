@@ -238,14 +238,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Parameter for adding file extensions to handle during frontend tasks.
      * <p>
-     * From the commandline use space separated list
-     * {@code -DfrontendExtraFileExtensions="svg ico"}
+     * From the commandline use comma separated list
+     * {@code -Ddevmode.frontendExtraFileExtensions="svg,ico"}
      * <p>
-     * </p>
-     * In plugin configuration
+     * In plugin configuration use comma separated values
      *
-     * <configuration> <frontendExtraFileExtensions> <extension>svg</extension>
-     * <extension>ico</extension> </frontendExtraFileExtensions>
+     * <configuration>
+     * <frontendExtraFileExtensions>svg,ico</frontendExtraFileExtensions>
      * </configuration>
      *
      */

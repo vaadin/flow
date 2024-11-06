@@ -187,6 +187,11 @@ public class AbstractConfigurationFactory implements Serializable {
                     String.valueOf(buildInfo.getBoolean(PREMIUM_FEATURES)));
         }
 
+        if (buildInfo.hasKey(InitParameters.FRONTEND_EXTRA_EXTENSIONS)) {
+            params.put(InitParameters.FRONTEND_EXTRA_EXTENSIONS, buildInfo
+                    .getString(InitParameters.FRONTEND_EXTRA_EXTENSIONS));
+        }
+
         setDevModePropertiesUsingTokenData(params, buildInfo);
         return params;
     }

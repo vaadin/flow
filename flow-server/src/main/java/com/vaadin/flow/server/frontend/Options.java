@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -977,7 +978,7 @@ public class Options implements Serializable {
      *            the file extensions to add for the project
      * @return this builder
      */
-    public Options withExtraFrontendFileExtensions(
+    public Options withFrontendExtraFileExtensions(
             List<String> frontendExtraFileExtensions) {
         this.frontendExtraFileExtensions = frontendExtraFileExtensions;
         return this;
