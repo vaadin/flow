@@ -285,4 +285,9 @@ public class InitParameters implements Serializable {
      */
     public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
 
+    /**
+     * Configuration name for excluding npm packages for web components.
+     */
+    public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
+
 }

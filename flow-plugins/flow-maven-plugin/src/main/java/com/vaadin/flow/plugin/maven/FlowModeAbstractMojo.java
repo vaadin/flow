@@ -234,6 +234,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
 
+    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    private boolean npmExcludeWebComponents;
+
     /**
      * Identifier for the application.
      * <p>
@@ -569,5 +572,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         return "app-" + StringUtil.getHash(
                 project.getGroupId() + ":" + project.getArtifactId(),
                 StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
     }
 }

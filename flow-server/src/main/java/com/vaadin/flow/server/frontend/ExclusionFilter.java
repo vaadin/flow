@@ -43,6 +43,8 @@ public class ExclusionFilter implements Serializable {
 
     private final boolean reactEnabled;
 
+    private final boolean excludeWebComponentNpmPackages;
+
     /**
      * Create a new exclusion filter.
      *
@@ -52,8 +54,24 @@ public class ExclusionFilter implements Serializable {
      *            whether React is enabled
      */
     public ExclusionFilter(ClassFinder finder, boolean reactEnabled) {
+        this(finder, reactEnabled, false);
+    }
+
+    /**
+     * Create a new exclusion filter.
+     *
+     * @param finder
+     *            the class finder to use
+     * @param reactEnabled
+     *            whether React is enabled
+     * @param excludeWebComponentNpmPackages
+     *            whether to exclude web component npm packages
+     */
+    public ExclusionFilter(ClassFinder finder, boolean reactEnabled,
+            boolean excludeWebComponentNpmPackages) {
         this.finder = finder;
         this.reactEnabled = reactEnabled;
+        this.excludeWebComponentNpmPackages = excludeWebComponentNpmPackages;
     }
 
     /**
@@ -95,7 +113,7 @@ public class ExclusionFilter implements Serializable {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    reactEnabled);
+                    reactEnabled, excludeWebComponentNpmPackages);
             return convert.getExclusions();
         }
     }

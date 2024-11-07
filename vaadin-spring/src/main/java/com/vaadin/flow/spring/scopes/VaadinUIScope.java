@@ -108,7 +108,7 @@ public class VaadinUIScope extends AbstractScope {
     @Override
     protected BeanStore getBeanStore() {
         final VaadinSession session = getVaadinSession();
-        session.lock();
+        session.getLockInstance().lock();
         try {
             UIStoreWrapper wrapper = session.getAttribute(UIStoreWrapper.class);
             if (wrapper == null) {
@@ -117,7 +117,7 @@ public class VaadinUIScope extends AbstractScope {
             }
             return wrapper.getBeanStore(getUI());
         } finally {
-            session.unlock();
+            session.getLockInstance().unlock();
         }
     }
 
