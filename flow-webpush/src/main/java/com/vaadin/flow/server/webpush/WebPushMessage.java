@@ -82,12 +82,10 @@ public record WebPushMessage(String title, ObjectNode options) implements Serial
     }
 
     private static ObjectNode getBodyOption(String body) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
         if (body != null) {
-            ObjectNode objectNode = objectMapper.createObjectNode();
             objectNode.put("body", body);
-            return objectNode;
-        } else {
-            return objectMapper.createObjectNode();
         }
+        return objectNode;
     }
 }
