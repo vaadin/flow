@@ -171,6 +171,9 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
 
+    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    private boolean npmExcludeWebComponents;
+
     @Override
     public void execute() throws MojoFailureException {
         long start = System.nanoTime();
@@ -468,5 +471,10 @@ public class BuildDevBundleMojo extends AbstractMojo
     public boolean checkRuntimeDependency(String groupId, String artifactId,
             Consumer<String> missingDependencyMessageConsumer) {
         return false;
+    }
+
+    @Override
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
     }
 }

@@ -218,6 +218,8 @@ internal class GradlePluginAdapter(
 
     override fun applicationIdentifier(): String = config.applicationIdentifier.get()
 
+    override fun isNpmExcludeWebComponents(): Boolean = config.npmExcludeWebComponents.get()
+
     override fun checkRuntimeDependency(
         groupId: String,
         artifactId: String,

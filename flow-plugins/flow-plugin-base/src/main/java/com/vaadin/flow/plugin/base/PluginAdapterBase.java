@@ -337,4 +337,11 @@ public interface PluginAdapterBase {
      *         {@literal blank}.
      */
     String applicationIdentifier();
+
+    /**
+     * Whether to include web component npm packages in packages.json.
+     *
+     * @return {@code true} to include web component npm packages.
+     */
+    boolean isNpmExcludeWebComponents();
 }
