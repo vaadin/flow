@@ -15,7 +15,7 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.function.BiConsumer;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -737,26 +737,23 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
             Object domValue = WidgetUtil.getJsProperty(element, name);
-            Object preServerRoundTripDomValue = mapProperty
+            Optional<Object> previousDomValue = mapProperty
                     .getPreviousDomValue();
 
-            if (mapProperty.isPreviousDomValueSet() && !WidgetUtil
-                    .equals(domValue, preServerRoundTripDomValue)) {
-                // User has modified DOM value during round-trip. Preserve the
-                // modified value.
-                return;
-            }
+            // Check for if User has modified DOM value during round-trip.
+            // Preserve the modified value.
+            boolean updatedDuringRoundTrip = previousDomValue.isPresent()
+                    && !WidgetUtil.equals(domValue, previousDomValue.get());
 
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
-            if (WidgetUtil.isUndefined(domValue)
-                    || !WidgetUtil.equals(domValue, treeValue)) {
+            if (!updatedDuringRoundTrip && (WidgetUtil.isUndefined(domValue)
+                    || !WidgetUtil.equals(domValue, treeValue))) {
                 Reactive.runWithComputation(null,
                         () -> WidgetUtil.setJsProperty(element, name,
                                 PolymerUtils.createModelTree(treeValue)));
             }
-            mapProperty.clearPreviousDomValue();
         } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
             WidgetUtil.deleteJsProperty(element, name);
         } else {
@@ -764,6 +761,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // the value
             WidgetUtil.setJsProperty(element, name, null);
         }
+        mapProperty.clearPreviousDomValue();
     }
 
     private void updateStyleProperty(MapProperty mapProperty, Element element) {

@@ -17,6 +17,7 @@ package com.vaadin.client.flow.nodefeature;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
@@ -65,8 +66,7 @@ public class MapProperty implements ReactiveValue {
     private boolean hasValue = false;
 
     private final boolean forceValueUpdate;
-    private Object previousDomValue;
-    private boolean previousDomValueSet;
+    private Optional<Object> previousDomValue;
 
     /**
      * Creates a new property.
@@ -336,21 +336,33 @@ public class MapProperty implements ReactiveValue {
         return NO_OP;
     }
 
+    /**
+     * Stores previous DOM value of this property for detection of value
+     * modification by the user during the server round-trip.
+     *
+     * @param previousDomValue
+     *            DOM value of property prior to server round-trip start. Can be
+     *            <code>null</code>;
+     */
     public void setPreviousDomValue(Object previousDomValue) {
-        this.previousDomValue = previousDomValue;
-        previousDomValueSet = true;
+        this.previousDomValue = Optional.ofNullable(previousDomValue);
     }
 
-    public Object getPreviousDomValue() {
+    /**
+     * Returns previous DOM value of this property for detection of value
+     * modification by the user during the server round-trip.
+     *
+     * @return Optional of previous DOM value. Empty optional is returned if
+     *         previous value has not been stored.
+     */
+    public Optional<Object> getPreviousDomValue() {
         return previousDomValue;
     }
 
-    public boolean isPreviousDomValueSet() {
-        return previousDomValueSet;
-    }
-
+    /**
+     * Clears the previous DOM value of this property.
+     */
     public void clearPreviousDomValue() {
-        this.previousDomValue = null;
-        previousDomValueSet = false;
+        this.previousDomValue = Optional.empty();
     }
 }
