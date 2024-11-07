@@ -77,6 +77,7 @@ import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -265,6 +266,10 @@ public class BuildFrontendUtil {
         }
 
         buildInfo.put(REACT_ENABLE, adapter.isReactEnabled());
+        if (adapter.isNpmExcludeWebComponents()) {
+            buildInfo.put(NPM_EXCLUDE_WEB_COMPONENTS,
+                    adapter.isNpmExcludeWebComponents());
+        }
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
