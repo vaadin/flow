@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionBindingEvent;
 import jakarta.servlet.http.HttpSessionBindingListener;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -1097,6 +1098,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
+            // Add-ons may have Listener classes that nullify themselves during
+            // serialization (e.g. Collaboration Kit) and restore instances in
+            // some custom way later on.
+            // Removing null elements prevents application to fail if restore
+            // actions are not applied eagerly
+            requestHandlers.remove(null);
+            destroyListeners.remove(null);
+
             uIs = (Map<Integer, UI>) stream.readObject();
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
@@ -1107,27 +1116,33 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
-        boolean serializeUIs = true;
+        Map<Class<?>, CurrentInstance> instanceMap = CurrentInstance
+                .setCurrent(this);
+        try {
+            boolean serializeUIs = true;
 
-        // If service is null it has just been deserialized and should be
-        // serialized in
-        // the same way again
-        if (getService() != null) {
-            ApplicationConfiguration appConfiguration = ApplicationConfiguration
-                    .get(getService().getContext());
-            if (!appConfiguration.isProductionMode() && !appConfiguration
-                    .isDevModeSessionSerializationEnabled()) {
-                serializeUIs = false;
+            // If service is null it has just been deserialized and should be
+            // serialized in
+            // the same way again
+            if (getService() != null) {
+                ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                        .get(getService().getContext());
+                if (!appConfiguration.isProductionMode() && !appConfiguration
+                        .isDevModeSessionSerializationEnabled()) {
+                    serializeUIs = false;
+                }
             }
-        }
 
-        stream.defaultWriteObject();
-        if (serializeUIs) {
-            stream.writeObject(uIs);
-            stream.writeObject(resourceRegistry);
-        } else {
-            stream.writeObject(new HashMap<>());
-            stream.writeObject(new StreamResourceRegistry(this));
+            stream.defaultWriteObject();
+            if (serializeUIs) {
+                stream.writeObject(uIs);
+                stream.writeObject(resourceRegistry);
+            } else {
+                stream.writeObject(new HashMap<>());
+                stream.writeObject(new StreamResourceRegistry(this));
+            }
+        } finally {
+            CurrentInstance.restoreInstances(instanceMap);
         }
     }
 
