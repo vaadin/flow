@@ -101,7 +101,7 @@
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
         <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.5.1</maven.failsafe.plugin.version>
+        <maven.failsafe.plugin.version>3.5.2</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
@@ -241,7 +241,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.15.7</version>
+                <version>1.15.10</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
@@ -348,7 +348,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
