@@ -66,7 +66,7 @@ public class MapProperty implements ReactiveValue {
     private boolean hasValue = false;
 
     private final boolean forceValueUpdate;
-    private Optional<Object> previousDomValue;
+    private Optional<Object> previousDomValue = Optional.empty();
 
     /**
      * Creates a new property.
