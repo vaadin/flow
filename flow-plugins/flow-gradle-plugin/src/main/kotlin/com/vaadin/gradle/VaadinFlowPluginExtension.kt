@@ -448,7 +448,7 @@ public class PluginEffectiveConfiguration(
 
     // TODO: Possibly get value from system param InitParameters.FRONTEND_EXTRA_EXTENSIONS
     public val frontendExtraFileExtensions: ListProperty<String> = extension.frontendExtraFileExtensions
-            .convention(emptyList())
+            .convention(listOf())
 
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
