@@ -19,7 +19,6 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * Implementation of Spring's
@@ -67,7 +66,7 @@ public class VaadinSessionScope extends AbstractScope {
     @Override
     protected BeanStore getBeanStore() {
         final VaadinSession session = getVaadinSession();
-        session.lock();
+        session.getLockInstance().lock();
         try {
             BeanStore beanStore = session.getAttribute(BeanStore.class);
             if (beanStore == null) {
@@ -76,7 +75,7 @@ public class VaadinSessionScope extends AbstractScope {
             }
             return beanStore;
         } finally {
-            session.unlock();
+            session.getLockInstance().unlock();
         }
     }
 

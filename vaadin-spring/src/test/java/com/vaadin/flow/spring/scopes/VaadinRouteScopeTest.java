@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
@@ -57,7 +58,10 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
     @Override
     protected VaadinRouteScope getScope() {
-        return new VaadinRouteScope();
+        VaadinRouteScope scope = new VaadinRouteScope();
+        scope.postProcessBeanFactory(
+                Mockito.mock(ConfigurableListableBeanFactory.class));
+        return scope;
     }
 
     @Test
@@ -148,7 +152,8 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
 
-        scope.uiInit(new UIInitEvent(ui, ui.getSession().getService()));
+        new VaadinRouteScope.NavigationListenerRegistrar()
+                .uiInit(new UIInitEvent(ui, ui.getSession().getService()));
 
         navigateTo(ui, new NavigationTarget());
 
@@ -195,7 +200,8 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
 
-        scope.uiInit(new UIInitEvent(ui, ui.getSession().getService()));
+        new VaadinRouteScope.NavigationListenerRegistrar()
+                .uiInit(new UIInitEvent(ui, ui.getSession().getService()));
 
         navigateTo(ui, new NavigationTarget());
 
@@ -243,7 +249,8 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         VaadinRouteScope scope = getScope();
         scope.getBeanStore();
 
-        scope.uiInit(new UIInitEvent(ui, ui.getSession().getService()));
+        new VaadinRouteScope.NavigationListenerRegistrar()
+                .uiInit(new UIInitEvent(ui, ui.getSession().getService()));
         return scope;
     }
 
