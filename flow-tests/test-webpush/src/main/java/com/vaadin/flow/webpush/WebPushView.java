@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.webpush;
 
+import java.util.List;
+
 import nl.martijndwars.webpush.Subscription;
 
 import com.vaadin.flow.component.Text;
@@ -44,6 +46,12 @@ public class WebPushView extends Div {
     WebPush webPush;
 
     private final Div log;
+    private final WebPushAction webPushAction = new WebPushAction(
+            "dashboard",
+            "Open Dashboard",
+            "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png"
+    );
+
     private Subscription subscription;
 
     public WebPushView() {
@@ -73,8 +81,25 @@ public class WebPushView extends Div {
 
         notify = new NativeButton("Notify", event -> {
             if (subscription != null) {
+                WebPushOptions webPushOptions = new WebPushOptions(
+                        List.of(webPushAction),
+                        "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
+                        "Testing notification",
+                        "This is my data!",
+                        "rtl",
+                        "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
+                        "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
+                        "de-DE",
+                        true,
+                        true,
+                        false,
+                        "My Notification",
+                        System.currentTimeMillis(),
+                        List.of(500, 500, 500)
+                );
+
                 webPush.sendNotification(subscription,
-                        new WebPushMessage(TEST_TITLE, "Testing notification"));
+                        new WebPushMessage(TEST_TITLE, webPushOptions));
                 addLogEntry("Sent notification");
             } else {
                 addLogEntry("No notification sent due to missing subscription");

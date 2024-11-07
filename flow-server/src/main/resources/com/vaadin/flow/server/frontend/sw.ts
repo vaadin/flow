@@ -149,9 +149,7 @@ self.addEventListener('message', (event) => {
 self.addEventListener('push', (e) => {
   const data = e.data?.json();
   if (data) {
-    self.registration.showNotification(data.title, {
-      body: data.body,
-    });
+    self.registration.showNotification(data.title, data.options);
   }
 });
 
