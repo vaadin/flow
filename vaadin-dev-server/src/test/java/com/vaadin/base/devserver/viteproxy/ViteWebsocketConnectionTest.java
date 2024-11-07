@@ -91,8 +91,10 @@ public class ViteWebsocketConnectionTest {
                 "Should not have been blocked too long after connection (elapsed time: "
                         + elapsedTime + ")",
                 elapsedTime < 1000);
-        viteConnection.close();
-        closeLatch.await(2, TimeUnit.SECONDS);
+        if (!closeLatch.await(500, TimeUnit.MILLISECONDS)) {
+            viteConnection.close();
+            closeLatch.await(500, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Test
