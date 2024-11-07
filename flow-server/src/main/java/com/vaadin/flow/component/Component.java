@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -32,6 +37,7 @@ import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
@@ -818,6 +824,40 @@ public abstract class Component
      */
     public void removeFromParent() {
         getElement().removeFromParent();
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        if (this instanceof UI ui) {
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .setCurrent(ui);
+            try {
+                out.defaultWriteObject();
+            } finally {
+                CurrentInstance.restoreInstances(instances);
+            }
+        } else {
+            out.defaultWriteObject();
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        if (this instanceof UI ui) {
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .getInstances();
+            // Cannot use CurrentInstance.setCurrent(this) because it will try
+            // to get VaadinSession from UI.internals that is not yet available
+            CurrentInstance.set(UI.class, ui);
+            try {
+                in.defaultReadObject();
+            } finally {
+                CurrentInstance.restoreInstances(instances);
+            }
+        } else {
+            in.defaultReadObject();
+        }
     }
 
 }
