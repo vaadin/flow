@@ -177,7 +177,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
                     options.isReactEnabled()
-                            && FrontendUtils.isReactModuleAvailable(options));
+                            && FrontendUtils.isReactModuleAvailable(options),
+                    options.isNpmExcludeWebComponents());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
@@ -617,6 +618,10 @@ public abstract class NodeUpdater implements FallibleCommand {
             if (options.isReactEnabled()) {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/react", packageJsonKey));
+                if (options.isNpmExcludeWebComponents()) {
+                    // remove dependencies that depends on web components
+                    dependencies.remove("@vaadin/hilla-react-crud");
+                }
             } else {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/lit", packageJsonKey));
