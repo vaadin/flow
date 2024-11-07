@@ -737,6 +737,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
             Object domValue = WidgetUtil.getJsProperty(element, name);
+            Object preServerRoundTripDomValue = mapProperty.getPreviousDomValue();
+
+            if (mapProperty.isPreviousDomValueSet() && !WidgetUtil.equals(domValue, preServerRoundTripDomValue)) {
+                // User has modified DOM value during round-trip. Preserve the modified value.
+                return;
+            }
+
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
@@ -746,6 +753,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                         () -> WidgetUtil.setJsProperty(element, name,
                                 PolymerUtils.createModelTree(treeValue)));
             }
+            mapProperty.clearPreviousDomValue();
         } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
             WidgetUtil.deleteJsProperty(element, name);
         } else {
@@ -1317,6 +1325,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 eventData.put(expressionString, expressionValue);
             }
         }
+        synchronizeProperties.forEach(name -> {
+            NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+            MapProperty mapProperty = map.getProperty(name);
+            Object domValue = WidgetUtil.getJsProperty(element, name);
+            mapProperty.setPreviousDomValue(domValue);
+        });
 
         JsMap<String, Runnable> commands = JsCollections.map();
         synchronizeProperties.forEach(name -> commands.set(name,

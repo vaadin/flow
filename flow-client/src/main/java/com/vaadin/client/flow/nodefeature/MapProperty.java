@@ -65,6 +65,8 @@ public class MapProperty implements ReactiveValue {
     private boolean hasValue = false;
 
     private final boolean forceValueUpdate;
+    private Object previousDomValue;
+    private boolean previousDomValueSet;
 
     /**
      * Creates a new property.
@@ -332,5 +334,23 @@ public class MapProperty implements ReactiveValue {
             }
         }
         return NO_OP;
+    }
+
+    public void setPreviousDomValue(Object previousDomValue) {
+        this.previousDomValue = previousDomValue;
+        previousDomValueSet = true;
+    }
+
+    public Object getPreviousDomValue() {
+        return previousDomValue;
+    }
+
+    public boolean isPreviousDomValueSet() {
+        return previousDomValueSet;
+    }
+
+    public void clearPreviousDomValue() {
+        this.previousDomValue = null;
+        previousDomValueSet = false;
     }
 }
