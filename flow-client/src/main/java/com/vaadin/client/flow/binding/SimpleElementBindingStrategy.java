@@ -737,10 +737,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
             Object domValue = WidgetUtil.getJsProperty(element, name);
-            Object preServerRoundTripDomValue = mapProperty.getPreviousDomValue();
+            Object preServerRoundTripDomValue = mapProperty
+                    .getPreviousDomValue();
 
-            if (mapProperty.isPreviousDomValueSet() && !WidgetUtil.equals(domValue, preServerRoundTripDomValue)) {
-                // User has modified DOM value during round-trip. Preserve the modified value.
+            if (mapProperty.isPreviousDomValueSet() && !WidgetUtil
+                    .equals(domValue, preServerRoundTripDomValue)) {
+                // User has modified DOM value during round-trip. Preserve the
+                // modified value.
                 return;
             }
 
