@@ -5,19 +5,29 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -28,6 +38,30 @@ import com.vaadin.tests.util.MockUI;
 import static org.mockito.Mockito.withSettings;
 
 public class SerializationTest {
+
+    Runnable cleaner;
+
+    @Before
+    public void enabledSerializationDebugInfo() {
+        String extendedDebugInfo = System
+                .getProperty("sun.io.serialization.extendedDebugInfo");
+        System.setProperty("sun.io.serialization.extendedDebugInfo", "true");
+        cleaner = () -> {
+            if (extendedDebugInfo != null) {
+                System.setProperty("sun.io.serialization.extendedDebugInfo",
+                        extendedDebugInfo);
+            } else {
+                System.clearProperty("sun.io.serialization.extendedDebugInfo");
+            }
+        };
+    }
+
+    @After
+    public void restore() {
+        if (cleaner != null) {
+            cleaner.run();
+        }
+    }
 
     @Test
     public void testSerializeVaadinSession_accessQueueIsRecreated()
@@ -123,8 +157,119 @@ public class SerializationTest {
         Assert.assertNull(againSerializedAndDeserializedSession.getService());
     }
 
+    @Test
+    // Covers serialization of UI scoped beans, e.g. in Kubernetes Kit
+    // https://github.com/vaadin/flow/issues/19967
+    // https://github.com/vaadin/kubernetes-kit/issues/140
+    public void serializeUI_currentUI_availableDuringSerialization()
+            throws Exception {
+        VaadinSession deserializeSession = serializeAndDeserializeWithUI(true,
+                true, ui -> ui.add(new MyComponent()));
+        MyComponent deserializedComponent = deserializeSession.getUIs()
+                .iterator().next().getChildren()
+                .filter(MyComponent.class::isInstance)
+                .map(MyComponent.class::cast).findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "Custom component has not been deserialized"));
+
+        deserializedComponent.checker.assertInstancesAvailable();
+    }
+
+    @Test
+    // Covers serialization of UI scoped beans, e.g. in Kubernetes Kit
+    // https://github.com/vaadin/flow/issues/19967
+    // https://github.com/vaadin/kubernetes-kit/issues/140
+    public void serializeUI_currentVaadinSession_availableDuringSerialization()
+            throws Exception {
+        VaadinSession deserializeSession = serializeAndDeserializeWithUI(true,
+                true,
+                ui -> ui.getSession().addRequestHandler(new MyListener()));
+
+        MyListener deserializedListener = deserializeSession
+                .getRequestHandlers().stream()
+                .filter(MyListener.class::isInstance)
+                .map(MyListener.class::cast).findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "Session request listener has not been deserialized"));
+
+        deserializedListener.checker.assertSessionAvailable();
+    }
+
+    private static class SerializationInstancesChecker implements Serializable {
+        private boolean uiAvailableOnRead = false;
+        private boolean sessionAvailableOnRead = false;
+        private boolean uiAvailableOnWrite = false;
+        private boolean sessionAvailableOnWrite = false;
+
+        @Serial
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            uiAvailableOnWrite = UI.getCurrent() != null;
+            sessionAvailableOnWrite = VaadinSession.getCurrent() != null;
+            out.defaultWriteObject();
+        }
+
+        @Serial
+        private void readObject(ObjectInputStream in)
+                throws IOException, ClassNotFoundException {
+            in.defaultReadObject();
+            uiAvailableOnRead = UI.getCurrent() != null;
+            sessionAvailableOnRead = VaadinSession.getCurrent() != null;
+        }
+
+        void assertInstancesAvailable() {
+            assertUIAvailable();
+            assertSessionAvailable();
+        }
+
+        void assertUIAvailable() {
+            Assert.assertTrue(
+                    "Expecting serialization hook to be called with UI thread local set",
+                    uiAvailableOnWrite);
+            Assert.assertTrue(
+                    "Expecting deserialization hook to be called with UI thread local set",
+                    uiAvailableOnRead);
+        }
+
+        void assertSessionAvailable() {
+            Assert.assertTrue(
+                    "Expecting serialization hook to be called with VaadinSession thread local set",
+                    sessionAvailableOnWrite);
+            Assert.assertTrue(
+                    "Expecting deserialization hook to be called with VaadinSession thread local set",
+                    sessionAvailableOnRead);
+        }
+
+    }
+
+    @Tag("my-component")
+    private static class MyComponent extends Component {
+
+        private final SerializationInstancesChecker checker = new SerializationInstancesChecker();
+
+    }
+
+    private static class MyListener implements RequestHandler {
+
+        private final SerializationInstancesChecker checker = new SerializationInstancesChecker();
+
+        @Override
+        public boolean handleRequest(VaadinSession session,
+                VaadinRequest request, VaadinResponse response)
+                throws IOException {
+            return false;
+        }
+    }
+
     private static VaadinSession serializeAndDeserializeWithUI(
-            boolean serializeUI) throws IOException, ClassNotFoundException {
+            boolean serializeUI) throws Exception {
+        return serializeAndDeserializeWithUI(serializeUI, false, ui -> {
+        });
+    }
+
+    private static VaadinSession serializeAndDeserializeWithUI(
+            boolean serializeUI, boolean background, Consumer<UI> uiConsumer)
+            throws Exception {
+
         VaadinService vaadinService = new MockVaadinService(false, serializeUI);
         VaadinSession session = new VaadinSession(vaadinService);
         // This is done only for test purpose to init the session lock,
@@ -136,13 +281,25 @@ public class SerializationTest {
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42);
         session.addUI(ui);
+        uiConsumer.accept(ui);
 
-        session = serializeAndDeserialize(session);
+        VaadinSession deserializedSession;
+        if (background) {
+            deserializedSession = CompletableFuture.supplyAsync(() -> {
+                try {
+                    return serializeAndDeserialize(session);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }).get();
+        } else {
+            deserializedSession = serializeAndDeserialize(session);
+        }
         // This is done only for test purpose to refresh the session lock,
         // should be called by Flow internally as soon as the session has
         // been retrieved from http session.
-        session.refreshTransients(null, vaadinService);
-        return session;
+        deserializedSession.refreshTransients(null, vaadinService);
+        return deserializedSession;
     }
 
     private static <S extends Serializable> S serializeAndDeserialize(S s)

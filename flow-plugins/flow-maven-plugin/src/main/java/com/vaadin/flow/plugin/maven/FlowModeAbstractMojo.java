@@ -235,6 +235,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
 
+    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    private boolean npmExcludeWebComponents;
+
     /**
      * Parameter for adding file extensions to handle during frontend tasks.
      * <p>
@@ -597,4 +600,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         return Collections.emptyList();
     }
 
+    @Override
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
+    }
 }

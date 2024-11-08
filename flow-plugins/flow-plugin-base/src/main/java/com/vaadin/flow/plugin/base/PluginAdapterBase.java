@@ -347,4 +347,11 @@ public interface PluginAdapterBase {
      * @return list of project file extensions
      */
     List<String> frontendExtraFileExtensions();
+
+    /**
+     * Whether to include web component npm packages in packages.json.
+     *
+     * @return {@code true} to include web component npm packages.
+     */
+    boolean isNpmExcludeWebComponents();
 }

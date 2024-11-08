@@ -128,6 +128,8 @@ public class Options implements Serializable {
 
     private boolean reactEnable = true;
 
+    private boolean npmExcludeWebComponents = false;
+
     /**
      * Removes generated files from a previous execution that are no more
      * created.
@@ -991,5 +993,26 @@ public class Options implements Serializable {
      */
     public List<String> getFrontendExtraFileExtensions() {
         return frontendExtraFileExtensions;
+    }
+
+    /**
+     * Sets whether to exclude web component npm packages in packages.json.
+     *
+     * @return this builder
+     */
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
+    }
+
+    /**
+     * Sets whether to exclude web component npm packages in packages.json.
+     *
+     * @param exclude
+     *            whether to exclude web component npm packages
+     * @return this builder
+     */
+    public Options withNpmExcludeWebComponents(boolean exclude) {
+        this.npmExcludeWebComponents = exclude;
+        return this;
     }
 }
