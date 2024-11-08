@@ -189,9 +189,8 @@ public class AbstractConfigurationFactory implements Serializable {
         }
 
         if (buildInfo.hasKey(InitParameters.FRONTEND_EXTRA_EXTENSIONS)) {
-            params.put(InitParameters.FRONTEND_EXTRA_EXTENSIONS,
-                    buildInfo.getString(
-                            InitParameters.FRONTEND_EXTRA_EXTENSIONS));
+            params.put(InitParameters.FRONTEND_EXTRA_EXTENSIONS, buildInfo
+                    .getString(InitParameters.FRONTEND_EXTRA_EXTENSIONS));
         }
 
         if (buildInfo.hasKey(NPM_EXCLUDE_WEB_COMPONENTS)) {
