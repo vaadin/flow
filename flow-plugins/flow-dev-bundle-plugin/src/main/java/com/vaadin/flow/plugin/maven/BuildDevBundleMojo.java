@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -465,6 +466,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public String applicationIdentifier() {
         return project.getGroupId() + ":" + project.getArtifactId();
+    }
+
+    @Override
+    public List<String> frontendExtraFileExtensions() {
+        return Collections.emptyList();
     }
 
     @Override

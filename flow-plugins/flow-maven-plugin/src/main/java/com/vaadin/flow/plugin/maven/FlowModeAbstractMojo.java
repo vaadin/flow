@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -236,6 +237,22 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
     private boolean npmExcludeWebComponents;
+
+    /**
+     * Parameter for adding file extensions to handle during frontend tasks.
+     * <p>
+     * From the commandline use comma separated list
+     * {@code -Ddevmode.frontendExtraFileExtensions="svg,ico"}
+     * <p>
+     * In plugin configuration use comma separated values
+     *
+     * <configuration>
+     * <frontendExtraFileExtensions>svg,ico</frontendExtraFileExtensions>
+     * </configuration>
+     *
+     */
+    @Parameter(property = InitParameters.FRONTEND_EXTRA_EXTENSIONS, defaultValue = "${null}")
+    private List<String> frontendExtraFileExtensions;
 
     /**
      * Identifier for the application.
@@ -572,6 +589,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         return "app-" + StringUtil.getHash(
                 project.getGroupId() + ":" + project.getArtifactId(),
                 StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public List<String> frontendExtraFileExtensions() {
+        if (frontendExtraFileExtensions != null) {
+            return frontendExtraFileExtensions;
+        }
+
+        return Collections.emptyList();
     }
 
     @Override

@@ -350,7 +350,8 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.COMPILED_WEB_COMPONENTS_PATH,
                 InitParameters.NODE_VERSION, InitParameters.NODE_DOWNLOAD_ROOT,
                 InitParameters.BUILD_FOLDER,
-                InitParameters.APPLICATION_IDENTIFIER));
+                InitParameters.APPLICATION_IDENTIFIER,
+                InitParameters.FRONTEND_EXTRA_EXTENSIONS));
         Field[] initParamFields = InitParameters.class.getDeclaredFields();
         String mockTokenJsonString = generateJsonStringFromFields(
                 initParamFields, stringParams);

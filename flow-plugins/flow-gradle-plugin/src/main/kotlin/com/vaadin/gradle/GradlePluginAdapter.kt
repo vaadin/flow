@@ -241,4 +241,7 @@ internal class GradlePluginAdapter(
         }
         return dependencyAbsent
     }
+
+    override fun frontendExtraFileExtensions(): List<String> =
+        config.frontendExtraFileExtensions.get()
 }

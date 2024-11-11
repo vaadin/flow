@@ -99,6 +99,12 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <frontendExtraFileExtensions>
+                        <extension>swg</extension>
+                        <extension>ico</extension>
+                    </frontendExtraFileExtensions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
