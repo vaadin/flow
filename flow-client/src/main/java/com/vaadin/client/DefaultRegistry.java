@@ -79,7 +79,8 @@ public class DefaultRegistry extends Registry {
         set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));
 
         // Classes with dependencies, in correct order
-        set(Heartbeat.class, new Heartbeat(this));
+        Supplier<Heartbeat> heartbeatSupplier = () -> new Heartbeat(this);
+        set(Heartbeat.class, heartbeatSupplier);
         set(ConnectionStateHandler.class,
                 new DefaultConnectionStateHandler(this));
         set(XhrConnection.class, new XhrConnection(this));
