@@ -15,21 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ClientSideValueChangeView", layout = ViewTestLayout.class)
 public class ClientSideValueChangeView extends AbstractDivView {
-
-    public static final String TEXT = "This is the basic component view text component with some tags: <b><html></body>";
-    public static final String BUTTON_TEXT = "Click me";
-    public static final String DIV_TEXT = "Hello world";
 
     @Override
     protected void onShow() {
@@ -48,6 +40,23 @@ public class ClientSideValueChangeView extends AbstractDivView {
         });
 
         add(input);
+
+        Input input2 = new Input();
+        input2.setId("inputfieldserversetsvalue");
+
+        input2.addValueChangeListener(e -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+            input2.setValue("fromserver");
+            Span span = new Span("done");
+            span.setId("statusserversetsvalue");
+            add(span);
+        });
+
+        add(input2);
     }
 
 }

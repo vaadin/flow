@@ -741,14 +741,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     .getPreviousDomValue();
 
             // Check for if User has modified DOM value during round-trip.
-            // Preserve the modified value.
-            boolean updatedDuringRoundTrip = previousDomValue.isPresent()
-                    && !WidgetUtil.equals(domValue, previousDomValue.get());
+            // Preserve the modified value, if it has been changed by the user
+            // and has not been changed on the server.
+            boolean updateToTreeValue = previousDomValue
+                    .map(o -> !WidgetUtil.equals(domValue, o)
+                            && !WidgetUtil.equals(treeValue, o))
+                    .orElse(true);
 
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
-            if (!updatedDuringRoundTrip && (WidgetUtil.isUndefined(domValue)
+            if (updateToTreeValue && (WidgetUtil.isUndefined(domValue)
                     || !WidgetUtil.equals(domValue, treeValue))) {
                 Reactive.runWithComputation(null,
                         () -> WidgetUtil.setJsProperty(element, name,

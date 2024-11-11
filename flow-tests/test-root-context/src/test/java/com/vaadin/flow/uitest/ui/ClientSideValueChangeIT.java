@@ -42,4 +42,24 @@ public class ClientSideValueChangeIT extends ChromeBrowserTest {
                 "abc123",
                 $(InputTextElement.class).id("inputfield").getValue());
     }
+
+    @Test
+    public void clientSideValueEntryDuringRoundTrip_serverChangesValue_serverValueShouldBeUsed() {
+        open();
+
+        getCommandExecutor().disableWaitForVaadin();
+
+        InputTextElement input = $(InputTextElement.class)
+                .id("inputfieldserversetsvalue");
+        input.setValue("abc");
+        input.sendKeys("123");
+
+        waitUntil(ExpectedConditions
+                .presenceOfElementLocated(By.id("statusserversetsvalue")));
+
+        Assert.assertEquals(
+                "Value set by server during round-trip was unexpectedly overridden",
+                "fromserver", $(InputTextElement.class)
+                        .id("inputfieldserversetsvalue").getValue());
+    }
 }
