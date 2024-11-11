@@ -641,7 +641,9 @@ public class RouteUtil {
         List<String> collisions = MenuRegistry
                 .collectClientMenuItems(false,
                         service.getDeploymentConfiguration())
-                .keySet().stream().map(PathUtil::trimPath)
+                .entrySet().stream()
+                .filter(entry -> entry.getValue().children() == null)
+                .map(Map.Entry::getKey).map(PathUtil::trimPath)
                 .filter(clientRoute -> Arrays.stream(flowRouteTemplates)
                         .map(PathUtil::trimPath).anyMatch(clientRoute::equals))
                 .toList();

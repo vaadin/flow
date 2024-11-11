@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -170,6 +171,9 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
+
+    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    private boolean npmExcludeWebComponents;
 
     @Override
     public void execute() throws MojoFailureException {
@@ -465,8 +469,18 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public List<String> frontendExtraFileExtensions() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public boolean checkRuntimeDependency(String groupId, String artifactId,
             Consumer<String> missingDependencyMessageConsumer) {
         return false;
+    }
+
+    @Override
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
     }
 }

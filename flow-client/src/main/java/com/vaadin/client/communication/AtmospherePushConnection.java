@@ -186,7 +186,6 @@ public class AtmospherePushConnection implements PushConnection {
             } else {
                 config.setStringValue(key, value);
             }
-
         });
 
         String pushServletMapping = getPushConfiguration()
@@ -243,7 +242,7 @@ public class AtmospherePushConnection implements PushConnection {
                     ApplicationConstants.PUSH_ID_PARAMETER, pushId);
         }
 
-        Console.log("Establishing push connection");
+        Console.debug("Establishing push connection");
         pushUri = pushUrl;
         socket = doConnect(pushUrl, getConfig());
     }
@@ -291,7 +290,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
         if (state == State.CONNECTED) {
             String messageJson = WidgetUtil.stringify(message);
-            Console.log("Sending push (" + transport + ") message to server: "
+            Console.debug("Sending push (" + transport + ") message to server: "
                     + messageJson);
 
             if (transport.equals("websocket")) {
@@ -319,13 +318,13 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     protected void onReopen(AtmosphereResponse response) {
-        Console.log("Push connection re-established using "
+        Console.debug("Push connection re-established using "
                 + response.getTransport());
         onConnect(response);
     }
 
     protected void onOpen(AtmosphereResponse response) {
-        Console.log(
+        Console.debug(
                 "Push connection established using " + response.getTransport());
         onConnect(response);
     }
@@ -372,7 +371,7 @@ public class AtmospherePushConnection implements PushConnection {
             break;
         case CONNECTED:
             // Normal disconnect
-            Console.log("Closing push connection");
+            Console.debug("Closing push connection");
             doDisconnect(pushUri);
             state = State.DISCONNECTED;
             command.execute();
@@ -398,7 +397,7 @@ public class AtmospherePushConnection implements PushConnection {
             getConnectionStateHandler().pushInvalidContent(this, message);
             return;
         } else {
-            Console.log("Received push (" + getTransportType() + ") message: "
+            Console.debug("Received push (" + getTransportType() + ") message: "
                     + message);
             registry.getMessageHandler().handleMessage(json);
         }
@@ -686,6 +685,8 @@ public class AtmospherePushConnection implements PushConnection {
             fallbackTransport: 'long-polling',
             contentType: 'application/json; charset=UTF-8',
             reconnectInterval: 5000,
+            withCredentials: true,
+            maxWebsocketErrorRetries: 12,
             timeout: -1,
             maxReconnectOnClose: 10000000,
             trackMessageLength: true,
@@ -756,7 +757,7 @@ public class AtmospherePushConnection implements PushConnection {
         } else {
             final String pushJs = getVersionedPushJs();
 
-            Console.log("Loading " + pushJs);
+            Console.debug("Loading " + pushJs);
             ResourceLoader loader = registry.getResourceLoader();
             String pushScriptUrl = registry.getApplicationConfiguration()
                     .getServiceUrl() + pushJs;
@@ -764,7 +765,7 @@ public class AtmospherePushConnection implements PushConnection {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
                     if (isAtmosphereLoaded()) {
-                        Console.log(pushJs + " loaded");
+                        Console.debug(pushJs + " loaded");
                         command.execute();
                     } else {
                         // If bootstrap tried to load

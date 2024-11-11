@@ -16,8 +16,9 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.GWT;
-import com.vaadin.client.Console;
+
 import com.vaadin.client.ConnectionIndicator;
+import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -64,6 +65,8 @@ public class MessageSender {
 
     private ResynchronizationState resynchronizationState = ResynchronizationState.NOT_ACTIVE;
 
+    private JsonObject pushPendingMessage;
+
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -89,10 +92,14 @@ public class MessageSender {
             return;
         }
 
-        if (registry.getRequestResponseTracker().hasActiveRequest()
-                || (push != null && !push.isActive())) {
+        boolean hasActiveRequest = registry.getRequestResponseTracker()
+                .hasActiveRequest();
+        if (hasActiveRequest || (push != null && !push.isActive())) {
             // There is an active request or push is enabled but not active
             // -> send when current request completes or push becomes active
+            Console.debug("Postpone sending invocations to server because of "
+                    + (hasActiveRequest ? "active request"
+                            : "PUSH not active"));
         } else {
             doSendInvocationsToServer();
         }
@@ -104,6 +111,17 @@ public class MessageSender {
      *
      */
     private void doSendInvocationsToServer() {
+        // If there's a stored message, resend it and postpone processing the
+        // rest of the queued messages to prevent resynchronization issues.
+        if (pushPendingMessage != null) {
+            Console.log("Sending pending push message "
+                    + pushPendingMessage.toJson());
+            JsonObject payload = pushPendingMessage;
+            pushPendingMessage = null;
+            registry.getRequestResponseTracker().startRequest();
+            send(payload);
+            return;
+        }
 
         ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
         if (serverRpcQueue.isEmpty()
@@ -127,7 +145,7 @@ public class MessageSender {
         JsonObject extraJson = Json.createObject();
         if (resynchronizationState == ResynchronizationState.SEND_TO_SERVER) {
             resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
-            Console.log("Resynchronizing from server");
+            Console.warn("Resynchronizing from server");
             extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
         if (showLoadingIndicator) {
@@ -181,8 +199,17 @@ public class MessageSender {
      */
     public void send(final JsonObject payload) {
         if (push != null && push.isBidirectional()) {
+            // When using bidirectional transport, the payload is not resent
+            // to the server during reconnection attempts.
+            // Keep a copy of the message, so that it could be resent to the
+            // server after a reconnection.
+            // Reference will be cleaned up once the server confirms it has
+            // seen this message
+            Console.debug("send PUSH");
+            pushPendingMessage = payload;
             push.push(payload);
         } else {
+            Console.log("send XHR");
             registry.getXhrConnection().send(payload);
         }
     }
@@ -195,7 +222,22 @@ public class MessageSender {
      *            <code>false</code> to disable the push connection.
      */
     public void setPushEnabled(boolean enabled) {
-        if (enabled && push == null) {
+        setPushEnabled(enabled, true);
+    }
+
+    /**
+     * Sets the status for the push connection.
+     *
+     * @param enabled
+     *            <code>true</code> to enable the push connection;
+     *            <code>false</code> to disable the push connection.
+     * @param reEnableIfNeeded
+     *            <code>true</code> if push should be re-enabled after
+     *            disconnection if configuration changed; <code>false</code> to
+     *            prevent reconnection.
+     */
+    public void setPushEnabled(boolean enabled, boolean reEnableIfNeeded) {
+        if (enabled && (push == null || !push.isActive())) {
             push = pushConnectionFactory.create(registry);
         } else if (!enabled && push != null && push.isActive()) {
             push.disconnect(() -> {
@@ -205,7 +247,8 @@ public class MessageSender {
                  * old connection to disconnect, now is the right time to open a
                  * new connection
                  */
-                if (registry.getPushConfiguration().isPushEnabled()) {
+                if (reEnableIfNeeded
+                        && registry.getPushConfiguration().isPushEnabled()) {
                     setPushEnabled(true);
                 }
 
@@ -260,11 +303,18 @@ public class MessageSender {
      */
     public void setClientToServerMessageId(int nextExpectedId, boolean force) {
         if (nextExpectedId == clientToServerMessageId) {
-            // No op as everything matches they way it should
+            // Everything matches they way it should
+            // Remove potential pending PUSH message if it has already been seen
+            // by the server.
+            if (pushPendingMessage != null
+                    && (int) pushPendingMessage.getNumber(
+                            ApplicationConstants.CLIENT_TO_SERVER_ID) < nextExpectedId) {
+                pushPendingMessage = null;
+            }
             return;
         }
         if (force) {
-            Console.log(
+            Console.debug(
                     "Forced update of clientId to " + clientToServerMessageId);
             clientToServerMessageId = nextExpectedId;
             return;
@@ -275,8 +325,8 @@ public class MessageSender {
                 // We have never sent a message to the server, so likely the
                 // server knows better (typical case is that we refreshed a
                 // @PreserveOnRefresh UI)
-                Console.log("Updating client-to-server id to " + nextExpectedId
-                        + " based on server");
+                Console.debug("Updating client-to-server id to "
+                        + nextExpectedId + " based on server");
             } else {
                 Console.warn("Server expects next client-to-server id to be "
                         + nextExpectedId + " but we were going to use "
@@ -300,7 +350,7 @@ public class MessageSender {
     boolean requestResynchronize() {
         switch (resynchronizationState) {
         case NOT_ACTIVE:
-            Console.log("Resynchronize from server requested");
+            Console.debug("Resynchronize from server requested");
             resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
             return true;
         case SEND_TO_SERVER:

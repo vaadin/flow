@@ -140,7 +140,13 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getReactEnable(): Provider<Boolean> = config.reactEnable
 
     @Input
+    public fun getFrontendExtraFileExtensions(): ListProperty<String> = config.frontendExtraFileExtensions
+
+    @Input
     public fun getApplicationIdentifier(): Provider<String> = config.applicationIdentifier
+
+    @Input
+    public fun getNpmExcludeWebComponents(): Provider<Boolean> = config.npmExcludeWebComponents
 
     @Input
     @Optional

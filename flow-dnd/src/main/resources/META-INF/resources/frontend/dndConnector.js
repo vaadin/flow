@@ -68,7 +68,7 @@ window.Vaadin.Flow.dndConnector = {
     if (element['__active']) {
       element.addEventListener('dragenter', this.__ondragenterListener, false);
       element.addEventListener('dragover', this.__ondragoverListener, false);
-      element.addEventListener('dragleave', this.__ondragleaveListener, false);
+      element.addEventListener('dragleave', this.__ondragleaveListener, true);
       element.addEventListener('drop', this.__ondropListener, false);
     } else {
       element.removeEventListener('dragenter', this.__ondragenterListener, false);

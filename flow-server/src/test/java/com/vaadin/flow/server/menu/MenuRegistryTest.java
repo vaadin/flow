@@ -107,6 +107,10 @@ public class MenuRegistryTest {
 
         Mockito.when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getProjectFolder())
+                .thenReturn(tmpDir.getRoot());
+        Mockito.when(deploymentConfiguration.getBuildFolder())
+                .thenReturn("build");
 
         frontendUtils = Mockito.mockStatic(FrontendUtils.class);
         frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
@@ -581,8 +585,8 @@ public class MenuRegistryTest {
     }
 
     @Tag("div")
-    @Route("hilla")
-    @Menu(title = "hilla")
+    @Route("about")
+    @Menu(title = "about")
     public static class ConflictRoute extends Component {
     }
 
