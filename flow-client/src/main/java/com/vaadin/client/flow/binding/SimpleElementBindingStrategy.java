@@ -740,13 +740,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Optional<Object> previousDomValue = mapProperty
                     .getPreviousDomValue();
 
-            // Check for if User has modified DOM value during round-trip.
-            // Preserve the modified value, if it has been changed by the user
-            // and has not been changed on the server.
+            // User might have modified DOM value during server round-trip.
+            // That is why we only want to update to the tree value if the tree
+            // value is different from the pre-server-round-trip DOM value.
             boolean updateToTreeValue = previousDomValue
-                    .map(o -> !WidgetUtil.equals(domValue, o)
-                            && !WidgetUtil.equals(treeValue, o))
-                    .orElse(true);
+                    .map(o -> !WidgetUtil.equals(treeValue, o)).orElse(true);
 
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
