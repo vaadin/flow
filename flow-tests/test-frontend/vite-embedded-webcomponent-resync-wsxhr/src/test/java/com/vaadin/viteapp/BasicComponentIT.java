@@ -74,6 +74,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
         waitUntil(ExpectedConditions.stalenessOf(input));
 
         waitForElementPresent(By.tagName("login-form"));
+        waitUntil(d -> "".equals(getAuthenticationResult()));
 
         // check if web component works again
         setUsername("admin");
