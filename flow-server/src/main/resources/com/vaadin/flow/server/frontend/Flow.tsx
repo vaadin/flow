@@ -273,6 +273,7 @@ function Flow() {
     });
     const location = useLocation();
     const navigated = useRef<boolean>(false);
+    const blockerHandled = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
@@ -360,9 +361,18 @@ function Flow() {
     }, []);
 
     useEffect(() => {
+        if(blockerHandled.current) {
+            // blocker is handled and no new navigation is accepted.
+            // This will cancel multiple navigate calls, but not multiple calls
+            // from the server as those are queued. #20404
+            return;
+        }
         if (blocker.state === 'blocked') {
+            blockerHandled.current = true;
             let blockingPromise: any;
             roundTrip.current = new Promise<void>((resolve,reject) => blockingPromise = {resolve:resolve,reject:reject});
+            // Release blocker handling after promise is fulfilled
+            roundTrip.current.then(() => blockerHandled.current = false, () => blockerHandled.current = false);
 
             // Proceed to the blocked location, unless the navigation originates from a click on a link.
             // In that case continue with function execution and perform a server round-trip
