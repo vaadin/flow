@@ -418,9 +418,14 @@ public class MessageHandler {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
                     } else if (uiState != UIState.TERMINATED) {
-                        registry.getSystemErrorHandler()
-                                .handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
+                        // Delay the session expiration handling to prevent
+                        // canceling potential ongoing page redirect/reload
+                        Scheduler.get().scheduleFixedDelay(() -> {
+                            registry.getSystemErrorHandler()
+                                    .handleSessionExpiredError(null);
+                            return false;
+                        }, 250);
                     }
                 } else if (meta.containsKey("appError")
                         && uiState != UIState.TERMINATED) {

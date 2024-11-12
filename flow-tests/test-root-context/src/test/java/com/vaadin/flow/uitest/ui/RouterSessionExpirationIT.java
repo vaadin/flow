@@ -22,21 +22,23 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void navigationAfterSessionExpired() {
+    public void should_HaveANewSessionId_when_NavigationAfterSessionExpired() {
         openUrl("/new-router-session/NormalView");
 
         navigateToAnotherView();
         String sessionId = getSessionId();
         navigateToFirstView();
         Assert.assertEquals(sessionId, getSessionId());
+
         navigateToSesssionExpireView();
         // expired session causes page reload, after the page reload there will
         // be a new session
-        Assert.assertNotEquals(sessionId, getSessionId());
-        sessionId = getSessionId();
-        navigateToFirstView();
+        waitUntil(d -> !sessionId.equals(getSessionId()));
+
+        String newSessionId = getSessionId();
+        navigateToAnotherView();
         // session is preserved
-        Assert.assertEquals(sessionId, getSessionId());
+        Assert.assertEquals(newSessionId, getSessionId());
     }
 
     @Test
@@ -66,7 +68,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     private void navigateToSesssionExpireView() {
-        navigateTo("ViewWhichInvalidatesSession");
+        findElement(By.linkText("ViewWhichInvalidatesSession")).click();
     }
 
     private void navigateToInternalErrorView() {
@@ -76,8 +78,12 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     private void navigateTo(String linkText) {
         findElement(By.linkText(linkText)).click();
+        assertTextAvailableInView(linkText);
+
+    }
+
+    private void assertTextAvailableInView(String linkText) {
         Assert.assertNotNull(
                 findElement(By.xpath("//strong[text()='" + linkText + "']")));
-
     }
 }
