@@ -21,10 +21,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class BasicComponentIT extends ChromeDeviceTest {
 
@@ -50,18 +53,20 @@ public class BasicComponentIT extends ChromeDeviceTest {
         Assert.assertEquals("Authentication failure",
                 getAuthenticationResult());
 
+        TestBenchElement input = $("login-form").first().$("input").first();
+
         // simulate expired session by invalidating current session
         session.invalidate();
 
         // init request to resynchronize expired session and recreate components
         clickButton();
 
-        try {
-            // it seems WebDriver needs also sync to new session
-            setUsername("");
-        } catch (StaleElementReferenceException ex) {
-            // NOP
-        }
+        // Wait for web component to be detached, session expiration message
+        // should be delivered by PUSH long polling connection
+        waitUntil(ExpectedConditions.stalenessOf(input));
+
+        waitForElementPresent(By.tagName("login-form"));
+        waitUntil(d -> "".equals(getAuthenticationResult()));
 
         // check if web component works again
         setUsername("admin");
