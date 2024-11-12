@@ -149,11 +149,11 @@ class BeanStore implements Serializable {
         if (session.hasLock()) {
             return supplier.get();
         } else {
-            session.lock();
+            session.getLockInstance().lock();
             try {
                 return supplier.get();
             } finally {
-                session.unlock();
+                session.getLockInstance().unlock();
             }
         }
     }

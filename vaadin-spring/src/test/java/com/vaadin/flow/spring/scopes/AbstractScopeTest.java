@@ -171,6 +171,8 @@ public abstract class AbstractScopeTest {
         when(session.getConfiguration()).thenReturn(config);
 
         VaadinSession.setCurrent(session);
+        ReentrantLock lock = new ReentrantLock();
+        when(session.getLockInstance()).thenReturn(lock);
         when(session.hasLock()).thenReturn(true);
 
         // keep a reference to the session so that it cannot be GCed.
