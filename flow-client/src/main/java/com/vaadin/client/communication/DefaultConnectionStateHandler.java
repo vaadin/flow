@@ -534,8 +534,11 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private void resumeHeartbeats() {
-        registry.getHeartbeat().setInterval(
-                registry.getApplicationConfiguration().getHeartbeatInterval());
+        // Resume heart beat only if it was not terminated (interval == -1)
+        if (registry.getHeartbeat().getInterval() >= 0) {
+            registry.getHeartbeat().setInterval(registry
+                    .getApplicationConfiguration().getHeartbeatInterval());
+        }
     }
 
     private boolean redirectIfRefreshToken(String message) {
