@@ -186,7 +186,6 @@ public class AtmospherePushConnection implements PushConnection {
             } else {
                 config.setStringValue(key, value);
             }
-
         });
 
         String pushServletMapping = getPushConfiguration()
@@ -686,6 +685,7 @@ public class AtmospherePushConnection implements PushConnection {
             fallbackTransport: 'long-polling',
             contentType: 'application/json; charset=UTF-8',
             reconnectInterval: 5000,
+            withCredentials: true,
             maxWebsocketErrorRetries: 12,
             timeout: -1,
             maxReconnectOnClose: 10000000,
