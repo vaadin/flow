@@ -60,6 +60,38 @@ public final class Reflector {
         this.isolatedClassLoader = isolatedClassLoader;
     }
 
+    private Reflector(URLClassLoader isolatedClassLoader, Object classFinder) {
+        this.isolatedClassLoader = isolatedClassLoader;
+        this.classFinder = classFinder;
+    }
+
+    static Reflector adapt(Object reflector) {
+        if (reflector instanceof Reflector sameClassLoader) {
+            return sameClassLoader;
+        } else if (Reflector.class.getName()
+                .equals(reflector.getClass().getName())) {
+            Class<?> reflectorClass = reflector.getClass();
+            try {
+                URLClassLoader classLoader = (URLClassLoader) ReflectTools
+                        .getJavaFieldValue(reflector,
+                                findField(reflectorClass,
+                                        "isolatedClassLoader"),
+                                URLClassLoader.class);
+                Object classFinder = ReflectTools.getJavaFieldValue(reflector,
+                        findField(reflectorClass, "classFinder"));
+                return new Reflector(classLoader, classFinder);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Object of type " + reflector.getClass().getName()
+                                + " is not a compatible Reflector",
+                        e);
+            }
+        }
+        throw new IllegalArgumentException(
+                "Object of type " + reflector.getClass().getName()
+                        + " is not a compatible Reflector");
+    }
+
     /**
      * Gets the isolated class loader.
      *
