@@ -29,6 +29,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -229,6 +230,8 @@ public class BuildFrontendMojoTest {
 
     static void setProject(AbstractMojo mojo, File baseFolder)
             throws Exception {
+        mojo.setPluginContext(new HashMap<>());
+
         MavenProject project = new MavenProject();
         project.setGroupId("com.vaadin.testing");
         project.setArtifactId("my-application");
@@ -236,7 +239,11 @@ public class BuildFrontendMojoTest {
         project.setBuild(new Build());
         project.getBuild().setFinalName("finalName");
 
-        List<String> classPath = getClassPath(baseFolder.toPath());
+        List<String> classPath = getClassPath(baseFolder.toPath()).stream()
+                // Exclude maven jars so classes will be loaded by them fake
+                // maven.api realm that will be the same for the test class
+                // and the mojo execution
+                .filter(path -> !path.matches(".*/maven-.*\\.jar")).toList();
         AtomicInteger dependencyCounter = new AtomicInteger();
         project.setArtifacts(classPath.stream().map(path -> {
             DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler();
@@ -250,15 +257,13 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
 
         ClassWorld classWorld = new ClassWorld();
-        classWorld.newRealm("maven.api");
-        ClassRealm pluginClassRealm = classWorld.newRealm("flow-plugin");
+        ClassRealm mavenApiRealm = classWorld.newRealm("maven.api", null);
+        mavenApiRealm.importFrom(MavenProject.class.getClassLoader(), "");
+        ClassRealm pluginClassRealm = classWorld.newRealm("flow-plugin", null);
 
         PluginDescriptor pluginDescriptor = new PluginDescriptor();
         pluginDescriptor.setArtifacts(List.of());
-        pluginDescriptor.setClassRealm(
-                new ClassRealm(new ClassWorld("test-world", null), "test-realm",
-                        new URLClassLoader(new URL[] {},
-                                ClassLoader.getPlatformClassLoader())));
+        pluginDescriptor.setClassRealm(pluginClassRealm);
         pluginDescriptor.setPlugin(new Plugin());
         pluginDescriptor.setClassRealm(pluginClassRealm);
         MojoDescriptor mojoDescriptor = new MojoDescriptor();

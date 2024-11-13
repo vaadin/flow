@@ -38,7 +38,6 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -165,14 +164,19 @@ public class ReflectorTest {
                         true)));
         ClassWorld classWorld = new ClassWorld("maven.api", null);
         classWorld.getRealm("maven.api")
-                .addURL(new URL("file:///some/flat/maven-repo/maven-api.jar"));
+                .addURL(Path
+                        .of("src", "test", "resources",
+                                "jar-without-frontend-resources.jar")
+                        .toUri().toURL());
+        // .addURL(new URL("file:///some/flat/maven-repo/maven-api.jar"));
         pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
 
         Reflector execReflector = Reflector.of(project, mojoExecution);
 
-        URLClassLoader taskClassLoader = execReflector.getIsolatedClassLoader();
+        URLClassLoader isolatedClassLoader = execReflector
+                .getIsolatedClassLoader();
 
-        Set<String> urlSet = Arrays.stream(taskClassLoader.getURLs())
+        Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::getFile).collect(Collectors.toSet());
         Assert.assertEquals(4, urlSet.size());
         Assert.assertTrue(urlSet.contains(outputDirectory));
@@ -183,14 +187,14 @@ public class ReflectorTest {
         Assert.assertTrue(urlSet.contains(
                 "/some/flat/maven-repo/com.vaadin.test-plugin-1.0.jar"));
 
-        ClassLoader parentClassloader = taskClassLoader.getParent();
-        Assert.assertTrue(parentClassloader instanceof ClassRealm);
-        ClassRealm mavenApi = (ClassRealm) parentClassloader;
-        Assert.assertEquals("maven.api", mavenApi.getId());
-        Assert.assertEquals(1, mavenApi.getURLs().length);
-        Assert.assertEquals("/some/flat/maven-repo/maven-api.jar",
-                mavenApi.getURLs()[0].getFile());
-
+        // from platform class loader
+        Assert.assertNotNull(
+                isolatedClassLoader.loadClass("java.net.http.HttpClient"));
+        // from maven.api class loader
+        Assert.assertNotNull(
+                isolatedClassLoader.getResource("org/json/CookieList.class"));
+        Assert.assertNotNull(
+                isolatedClassLoader.loadClass("org.json.CookieList"));
     }
 
     private Artifact createArtifact(String groupId, String artifactId,

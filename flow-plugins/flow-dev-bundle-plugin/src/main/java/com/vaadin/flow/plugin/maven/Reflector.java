@@ -17,14 +17,18 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -214,8 +218,61 @@ public final class Reflector {
                 }
             }
         }
-        return new URLClassLoader(urls.toArray(URL[]::new),
+        return new CombinedClassLoader(urls.toArray(new URL[0]),
                 mavenApiClassLoader);
+    }
+
+    // Tries to load class from the give class loader and fallbacks
+    // to Platform class loader in case of failure.
+    private static class CombinedClassLoader extends URLClassLoader {
+        private final ClassLoader delegate;
+
+        private CombinedClassLoader(URL[] urls, ClassLoader delegate) {
+            super(urls, null);
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Class<?> loadClass(String name) throws ClassNotFoundException {
+            try {
+                return super.loadClass(name);
+            } catch (ClassNotFoundException e) {
+                // ignore and continue with delegate class loader
+            }
+            if (delegate != null) {
+                try {
+                    return delegate.loadClass(name);
+                } catch (ClassNotFoundException e) {
+                    // ignore and continue with platform class loader
+                }
+            }
+            return ClassLoader.getPlatformClassLoader().loadClass(name);
+        }
+
+        @Override
+        public URL getResource(String name) {
+            URL url = super.getResource(name);
+            if (url == null && delegate != null) {
+                url = delegate.getResource(name);
+            }
+            if (url == null) {
+                url = ClassLoader.getPlatformClassLoader().getResource(name);
+            }
+            return url;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            Enumeration<URL> resources = super.getResources(name);
+            if (!resources.hasMoreElements() && delegate != null) {
+                resources = delegate.getResources(name);
+            }
+            if (!resources.hasMoreElements()) {
+                resources = ClassLoader.getPlatformClassLoader()
+                        .getResources(name);
+            }
+            return resources;
+        }
     }
 
     private void copyFields(BuildDevBundleMojo sourceMojo, Object targetMojo)
