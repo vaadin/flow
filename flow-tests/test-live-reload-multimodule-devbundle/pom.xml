@@ -42,9 +42,9 @@
     </dependencies>
 
     <modules>
-        <module>library/pom-devbundle.xml</module>
-        <module>ui/pom-devbundle.xml</module>
-        <module>theme/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/library/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/ui/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/theme/pom-devbundle.xml</module>
     </modules>
 
 </project>
