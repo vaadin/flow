@@ -618,12 +618,10 @@ public class BuildDevBundleMojo extends AbstractMojo
         String pluginKey = mojoExecution.getPlugin().getKey();
         String reflectorKey = Reflector.class.getName() + "-" + pluginKey + "-"
                 + mojoExecution.getLifecyclePhase();
-        if (pluginContext != null && pluginContext
-                .get(reflectorKey) instanceof Reflector cachedReflector) {
-
+        if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
             getLog().debug("Using cached Reflector for plugin " + pluginKey
                     + " and phase " + mojoExecution.getLifecyclePhase());
-            return cachedReflector;
+            return Reflector.adapt(pluginContext.get(reflectorKey));
         }
         Reflector reflector = Reflector.of(project, mojoExecution);
         if (pluginContext != null) {

@@ -23,12 +23,10 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,6 +60,38 @@ public final class Reflector {
      */
     public Reflector(URLClassLoader isolatedClassLoader) {
         this.isolatedClassLoader = isolatedClassLoader;
+    }
+
+    private Reflector(URLClassLoader isolatedClassLoader, Object classFinder) {
+        this.isolatedClassLoader = isolatedClassLoader;
+        this.classFinder = classFinder;
+    }
+
+    static Reflector adapt(Object reflector) {
+        if (reflector instanceof Reflector sameClassLoader) {
+            return sameClassLoader;
+        } else if (Reflector.class.getName()
+                .equals(reflector.getClass().getName())) {
+            Class<?> reflectorClass = reflector.getClass();
+            try {
+                URLClassLoader classLoader = (URLClassLoader) ReflectTools
+                        .getJavaFieldValue(reflector,
+                                findField(reflectorClass,
+                                        "isolatedClassLoader"),
+                                URLClassLoader.class);
+                Object classFinder = ReflectTools.getJavaFieldValue(reflector,
+                        findField(reflectorClass, "classFinder"));
+                return new Reflector(classLoader, classFinder);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Object of type " + reflector.getClass().getName()
+                                + " is not a compatible Reflector",
+                        e);
+            }
+        }
+        throw new IllegalArgumentException(
+                "Object of type " + reflector.getClass().getName()
+                        + " is not a compatible Reflector");
     }
 
     /**
@@ -287,8 +317,6 @@ public final class Reflector {
                 sourceField.setAccessible(true);
                 Object value = sourceField.get(sourceMojo);
                 if (value == null) {
-                    sourceMojo.logDebug(
-                            "Skipping null field " + sourceField.getName());
                     continue;
                 }
                 Field targetField;
@@ -311,7 +339,11 @@ public final class Reflector {
                             + " in class " + targetClass.getName() + " of type "
                             + targetFieldType.getName()
                             + " is loaded from different class loaders."
-                            + " This is likely a bug in the Vaadin Maven plugin."
+                            + " Source class loader: "
+                            + sourceField.getType().getClassLoader()
+                            + ", Target class loader: "
+                            + targetFieldType.getClassLoader()
+                            + ". This is likely a bug in the Vaadin Maven plugin."
                             + " Please, report the error on the issue tracker.";
                     sourceMojo.logError(message);
                     throw new NoSuchFieldException(message);
