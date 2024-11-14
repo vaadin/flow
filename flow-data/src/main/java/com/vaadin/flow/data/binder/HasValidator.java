@@ -75,9 +75,8 @@ public interface HasValidator<V> extends Serializable {
      *
      *     // Each web component has a way to communicate its validation status
      *     // to its server-side component instance. The following
-     *     // clientSideValid
-     *     // state is introduced here just for the sake of simplicity of this
-     *     // code
+     *     // clientSideValid state is introduced here just for the sake of
+     *     // simplicity of this code snippet:
      *     // snippet:
      *     boolean clientSideValid = true;
      *
