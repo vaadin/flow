@@ -43,5 +43,6 @@ import com.vaadin.flow.component.Component;
  *            Hilla/TypeScript client views.
  */
 public record MenuEntry(String path, String title, Double order,
-                        boolean exclude, String icon, Class<? extends Component> menuClass) implements Serializable  {
+        boolean exclude, String icon,
+        Class<? extends Component> menuClass) implements Serializable {
 }
