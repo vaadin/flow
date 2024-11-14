@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
@@ -28,6 +30,8 @@ import java.io.IOException;
  */
 public abstract class SynchronizedRequestHandler implements RequestHandler {
 
+    private static final int MAX_BUFFER_SIZE = 64 * 1024;
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -35,11 +39,21 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             return false;
         }
 
-        session.lock();
         try {
-            return synchronizedHandleRequest(session, request, response);
+            if (isReadMessageFirstEnabled()) {
+                BufferedReader reader = request.getReader();
+                String message = reader == null ? null : getMessage(reader);
+                session.lock();
+                return synchronizedHandleRequest(session, request, response,
+                        message);
+            } else {
+                session.lock();
+                return synchronizedHandleRequest(session, request, response);
+            }
         } finally {
-            session.unlock();
+            if (session.hasLock()) {
+                session.unlock();
+            }
         }
     }
 
@@ -49,7 +63,6 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * except the {@link VaadinSession} is locked before this is called and
      * unlocked after this has completed.
      *
-     * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      * @param session
      *            The session for the request
      * @param request
@@ -58,12 +71,54 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The response object to which a response can be written.
      * @return true if a response has been written and no further request
      *         handlers should be called, otherwise false
-     *
      * @throws IOException
      *             If an IO error occurred
+     * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      */
     public abstract boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException;
+
+    /**
+     * Returns {@literal true} if
+     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse, String)}
+     * should be called. Returns {@literal false} if
+     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+     * should be called.
+     *
+     * @return if message should be read before calling
+     *         synchronizedHandleRequest
+     */
+    public boolean isReadMessageFirstEnabled() {
+        return false;
+    }
+
+    /**
+     * Identical to
+     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+     * except the {@link VaadinSession} is locked before this is called and the
+     * response message has been read before locking the session and is provided
+     * as a separate parameter. Implementations should also take care to unlock
+     * the session before writing to the response object.
+     *
+     * @param session
+     *            The session for the request
+     * @param request
+     *            The request to handle
+     * @param response
+     *            The response object to which a response can be written.
+     * @param message
+     *            Message pre-read from the request object
+     * @return true if a response has been written and no further request
+     *         handlers should be called, otherwise false
+     * @throws IOException
+     *             If an IO error occurred
+     * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
+     */
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response, String message)
+            throws IOException, UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Check whether a request may be handled by this handler. This can be used
@@ -85,4 +140,18 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         return true;
     }
 
+    public static String getMessage(Reader reader) throws IOException {
+        StringBuilder sb = new StringBuilder(MAX_BUFFER_SIZE);
+        char[] buffer = new char[MAX_BUFFER_SIZE];
+
+        while (true) {
+            int read = reader.read(buffer);
+            if (read == -1) {
+                break;
+            }
+            sb.append(buffer, 0, read);
+        }
+
+        return sb.toString();
+    }
 }

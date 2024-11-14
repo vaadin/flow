@@ -102,6 +102,20 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        String message = SynchronizedRequestHandler
+                .getMessage(request.getReader());
+        return synchronizedHandleRequest(session, request, response, message);
+    }
+
+    @Override
+    public boolean isReadMessageFirstEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response, String message)
+            throws IOException, UnsupportedOperationException {
         UI uI = session.getService().findUI(request);
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
@@ -114,17 +128,19 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         StringWriter stringWriter = new StringWriter();
 
         try {
-            getRpcHandler(session).handleRpc(uI, request.getReader(), request);
+            getRpcHandler(session).handleRpc(uI, message, request);
             writeUidl(uI, stringWriter, false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
+            session.unlock();
             writeRefresh(response);
             return true;
         } catch (InvalidUIDLSecurityKeyException e) {
             getLogger().warn("Invalid security key received from {}",
                     request.getRemoteHost());
             // Refresh on client side
+            session.unlock();
             writeRefresh(response);
             return true;
         } catch (DauEnforcementException e) {
@@ -133,6 +149,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             response.setHeader(DAUUtils.STATUS_CODE_KEY, String
                     .valueOf(HttpStatusCode.SERVICE_UNAVAILABLE.getCode()));
             String json = DAUUtils.jsonEnforcementResponse(request, e);
+            session.unlock();
             commitJsonResponse(response, json);
             return true;
         } catch (ResynchronizationRequiredException e) { // NOSONAR
@@ -142,6 +159,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             stringWriter.close();
         }
 
+        session.unlock();
         commitJsonResponse(response, stringWriter.toString());
         return true;
     }

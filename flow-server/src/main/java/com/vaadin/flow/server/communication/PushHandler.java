@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -56,7 +57,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.communication.PushMode;
-
 import elemental.json.JsonException;
 
 /**
@@ -164,7 +164,9 @@ public class PushHandler {
         assert vaadinRequest != null;
 
         try {
-            new ServerRpcHandler().handleRpc(ui, reader, vaadinRequest);
+            new ServerRpcHandler().handleRpc(ui,
+                    SynchronizedRequestHandler.getMessage(reader),
+                    vaadinRequest);
             connection.push(false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
