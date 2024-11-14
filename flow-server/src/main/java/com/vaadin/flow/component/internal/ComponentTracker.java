@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,10 @@ public class ComponentTracker {
     private static Map<Component, Location> createLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
     private static Map<Component, Location> attachLocation = Collections
+            .synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, Location[]> createLocations = Collections
+            .synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, Location[]> attachLocations = Collections
             .synchronizedMap(new WeakHashMap<>());
 
     private static Boolean disabled = null;
@@ -191,6 +196,18 @@ public class ComponentTracker {
     }
 
     /**
+     * Finds the locations related to where the given component instance was
+     * created.
+     *
+     * @param component
+     *            the component to find
+     * @return the locations involved in creating the component
+     */
+    public static Location[] findCreateLocations(Component component) {
+        return createLocations.get(component);
+    }
+
+    /**
      * Tracks the location where the component was created. This should be
      * called from the Component constructor so that the creation location can
      * be found from the current stacktrace.
@@ -203,12 +220,14 @@ public class ComponentTracker {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        Location location = findRelevantLocation(component.getClass(), stack,
-                null);
+        Location[] relevantLocations = findRelevantLocations(stack);
+        Location location = findRelevantLocation(component.getClass(),
+                relevantLocations, null);
         if (isNavigatorCreate(location)) {
-            location = findRelevantLocation(null, stack, null);
+            location = findRelevantLocation(null, relevantLocations, null);
         }
         createLocation.put(component, location);
+        createLocations.put(component, relevantLocations);
     }
 
     /**
@@ -221,6 +240,18 @@ public class ComponentTracker {
      */
     public static Location findAttach(Component component) {
         return attachLocation.get(component);
+    }
+
+    /**
+     * Finds the locations related to where the given component instance was
+     * attached to a parent.
+     *
+     * @param component
+     *            the component to find
+     * @return the locations involved in creating the component
+     */
+    public static Location[] findAttachLocations(Component component) {
+        return attachLocations.get(component);
     }
 
     /**
@@ -239,14 +270,16 @@ public class ComponentTracker {
 
         // In most cases the interesting attach call is found in the same class
         // where the component was created and not in a generic layout class
-        Location location = findRelevantLocation(component.getClass(), stack,
-                findCreate(component));
+        Location[] relevantLocations = findRelevantLocations(stack);
+        Location location = findRelevantLocation(component.getClass(),
+                relevantLocations, findCreate(component));
         if (isNavigatorCreate(location)) {
             // For routes, we can just show the init location as we have nothing
             // better
             location = createLocation.get(component);
         }
         attachLocation.put(component, location);
+        attachLocations.put(component, relevantLocations);
     }
 
     /**
@@ -283,30 +316,41 @@ public class ComponentTracker {
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
+    private static Location[] findRelevantLocations(StackTraceElement[] stack) {
+        return Stream.of(stack).filter(e -> {
+            for (String prefixToSkip : prefixesToSkip) {
+                if (e.getClassName().startsWith(prefixToSkip)) {
+                    return false;
+                }
+            }
+            return true;
+        }).map(ComponentTracker::toLocation).toArray(Location[]::new);
+    }
+
     private static Location findRelevantLocation(
-            Class<? extends Component> excludeClass, StackTraceElement[] stack,
+            Class<? extends Component> excludeClass, Location[] locations,
             Location preferredClass) {
-        List<StackTraceElement> candidates = Stream.of(stack)
-                .filter(e -> excludeClass == null
-                        || !e.getClassName().equals(excludeClass.getName()))
-                .filter(e -> {
+        List<Location> candidates = Arrays.stream(locations)
+                .filter(location -> excludeClass == null
+                        || !location.className().equals(excludeClass.getName()))
+                .filter(location -> {
                     for (String prefixToSkip : prefixesToSkip) {
-                        if (e.getClassName().startsWith(prefixToSkip)) {
+                        if (location.className().startsWith(prefixToSkip)) {
                             return false;
                         }
                     }
                     return true;
                 }).collect(Collectors.toList());
         if (preferredClass != null) {
-            Optional<StackTraceElement> preferredCandidate = candidates.stream()
-                    .filter(e -> e.getClassName()
+            Optional<Location> preferredCandidate = candidates.stream()
+                    .filter(location -> location.className()
                             .equals(preferredClass.className()))
                     .findFirst();
             if (preferredCandidate.isPresent()) {
-                return toLocation(preferredCandidate.get());
+                return preferredCandidate.get();
             }
         }
-        return toLocation(candidates.stream().findFirst().orElse(null));
+        return candidates.isEmpty() ? null : candidates.get(0);
     }
 
     /**
