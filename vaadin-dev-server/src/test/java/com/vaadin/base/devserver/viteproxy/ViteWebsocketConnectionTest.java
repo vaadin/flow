@@ -18,6 +18,7 @@ package com.vaadin.base.devserver.viteproxy;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.http.WebSocket;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,9 +57,10 @@ public class ViteWebsocketConnectionTest {
         }
     }
 
-    @Test(timeout = 2000)
+    @Test(timeout = 5000)
     public void waitForConnection_clientWebsocketAvailable_blocksUntilConnectionIsEstablished()
             throws ExecutionException, InterruptedException {
+        CountDownLatch connectionLatch = new CountDownLatch(1);
         CountDownLatch closeLatch = new CountDownLatch(1);
         handlerSupplier = (exchange) -> {
             // Simulate connection delay
@@ -66,13 +68,19 @@ public class ViteWebsocketConnectionTest {
             handshake(exchange);
         };
         long startTime = System.nanoTime();
-        new ViteWebsocketConnection(httpServer.getAddress().getPort(),
-                "/VAADIN", "proto", x -> {
+        ViteWebsocketConnection viteConnection = new ViteWebsocketConnection(
+                httpServer.getAddress().getPort(), "/VAADIN", "proto", x -> {
                 }, () -> {
                     closeLatch.countDown();
                 }, err -> {
-                });
-        closeLatch.await(2, TimeUnit.SECONDS);
+                }) {
+            @Override
+            public void onOpen(WebSocket webSocket) {
+                super.onOpen(webSocket);
+                connectionLatch.countDown();
+            }
+        };
+        connectionLatch.await(2, TimeUnit.SECONDS);
         long elapsedTime = Duration.ofNanos(System.nanoTime() - startTime)
                 .toMillis();
         Assert.assertTrue(
@@ -83,7 +91,10 @@ public class ViteWebsocketConnectionTest {
                 "Should not have been blocked too long after connection (elapsed time: "
                         + elapsedTime + ")",
                 elapsedTime < 1000);
-
+        if (!closeLatch.await(500, TimeUnit.MILLISECONDS)) {
+            viteConnection.close();
+            closeLatch.await(500, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Test

@@ -316,7 +316,8 @@ public final class BundleValidationUtil {
             Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
                     options.getClassFinder(),
                     options.isReactEnabled()
-                            && FrontendUtils.isReactModuleAvailable(options))
+                            && FrontendUtils.isReactModuleAvailable(options),
+                    options.isNpmExcludeWebComponents())
                     .exclude(applicationDependencies);
 
             // Add application dependencies

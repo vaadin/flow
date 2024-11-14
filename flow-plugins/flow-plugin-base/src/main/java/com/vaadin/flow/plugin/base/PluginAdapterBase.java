@@ -337,4 +337,21 @@ public interface PluginAdapterBase {
      *         {@literal blank}.
      */
     String applicationIdentifier();
+
+    /**
+     * Get the list of project file extensions.
+     * <p>
+     * File extensions are given with or without . prefix eg "png" and ".png"
+     * are both accepted.
+     *
+     * @return list of project file extensions
+     */
+    List<String> frontendExtraFileExtensions();
+
+    /**
+     * Whether to include web component npm packages in packages.json.
+     *
+     * @return {@code true} to include web component npm packages.
+     */
+    boolean isNpmExcludeWebComponents();
 }

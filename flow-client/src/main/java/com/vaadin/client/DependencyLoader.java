@@ -171,7 +171,7 @@ public class DependencyLoader {
         if (!lazyDependencies.isEmpty()) {
             runWhenEagerDependenciesLoaded(
                     () -> Scheduler.get().scheduleDeferred(() -> {
-                        Console.log(
+                        Console.debug(
                                 "Finished loading eager dependencies, loading lazy.");
                         lazyDependencies.forEach((loader,
                                 url) -> loadLazyDependency(url, loader));

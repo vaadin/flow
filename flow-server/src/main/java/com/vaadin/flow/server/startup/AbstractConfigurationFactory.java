@@ -52,6 +52,7 @@ import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
@@ -185,6 +186,16 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(PREMIUM_FEATURES)) {
             params.put(PREMIUM_FEATURES,
                     String.valueOf(buildInfo.getBoolean(PREMIUM_FEATURES)));
+        }
+
+        if (buildInfo.hasKey(InitParameters.FRONTEND_EXTRA_EXTENSIONS)) {
+            params.put(InitParameters.FRONTEND_EXTRA_EXTENSIONS, buildInfo
+                    .getString(InitParameters.FRONTEND_EXTRA_EXTENSIONS));
+        }
+
+        if (buildInfo.hasKey(NPM_EXCLUDE_WEB_COMPONENTS)) {
+            params.put(NPM_EXCLUDE_WEB_COMPONENTS, String
+                    .valueOf(buildInfo.getBoolean(NPM_EXCLUDE_WEB_COMPONENTS)));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

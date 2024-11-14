@@ -90,6 +90,8 @@ public class InternalErrorIT extends ChromeBrowserTest {
         // Just click on any button to make a request after killing the session
         clickButton(CLOSE_SESSION);
 
+        waitUntil(d -> isSessionExpiredNotificationPresent());
+
         Assert.assertTrue("After enabling the 'Session Expired' notification, "
                 + "the page should not be refreshed "
                 + "after killing the session", isMessageUpdated());

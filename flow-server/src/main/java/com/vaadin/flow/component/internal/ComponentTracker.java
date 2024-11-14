@@ -57,8 +57,8 @@ public class ComponentTracker {
     private static String[] prefixesToSkip = new String[] {
             "com.vaadin.flow.component.", "com.vaadin.flow.di.",
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
-            "com.vaadin.flow.spring.", "java.", "jdk.",
-            "org.springframework.beans.", };
+            "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
+            "org.springframework.beans.", "org.jboss.weld.", };
 
     /**
      * Represents a location in the source code.
@@ -152,9 +152,12 @@ public class ComponentTracker {
             }
 
             File src = configuration.getJavaSourceFolder();
-            if (ext.equals(".kt") && src.getPath().endsWith("/java")) {
-                src = new File(src.getPath().substring(0,
-                        src.getPath().lastIndexOf("/java")) + "/kotlin");
+
+            // Windows path is with '\' and not '/'. normalize path for check.
+            String path = src.getPath().replaceAll("\\\\", "/");
+            if (ext.equals(".kt") && path.endsWith("/java")) {
+                src = new File(path.substring(0, path.lastIndexOf("/java"))
+                        + "/kotlin");
             }
             File javaFile = new File(src,
                     cls.replace(".", File.separator) + ext);
