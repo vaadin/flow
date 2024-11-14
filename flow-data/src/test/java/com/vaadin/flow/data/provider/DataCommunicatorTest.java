@@ -1266,14 +1266,18 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_maxLimitValue_pagesCalculatedProperly() {
-        AbstractDataProvider<Item,Object>dataProvider=createDataProvider(42);dataProvider=Mockito.spy(dataProvider);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                42);
+        dataProvider = Mockito.spy(dataProvider);
 
-        dataCommunicator.setDataProvider(dataProvider,null);dataCommunicator.setPageSize(2_000_000_000);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(2_000_000_000);
         // We check the page number calculation does not lead to integer
         // overflow, and not throw thus
-        dataCommunicator.fetchFromProvider(0,Integer.MAX_VALUE);
+        dataCommunicator.fetchFromProvider(0, Integer.MAX_VALUE);
 
-        Mockito.verify(dataProvider,Mockito.times(1)).fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider, Mockito.times(1))
+                .fetch(Mockito.any(Query.class));
     }
 
     @Test
