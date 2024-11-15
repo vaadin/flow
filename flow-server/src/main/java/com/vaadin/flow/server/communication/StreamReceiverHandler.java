@@ -632,11 +632,22 @@ public class StreamReceiverHandler implements Serializable {
 
     protected FileItemIterator getItemIterator(VaadinRequest request)
             throws FileUploadException, IOException {
+        ServletFileUpload upload = createServletFileUpload(request);
+        return upload.getItemIterator((HttpServletRequest) request);
+    }
+
+    // protected for testing purposes only
+    protected ServletFileUpload createServletFileUpload(VaadinRequest request) {
         ServletFileUpload upload = new ServletFileUpload();
         upload.setSizeMax(requestSizeMax);
         upload.setFileSizeMax(fileSizeMax);
         upload.setFileCountMax(fileCountMax);
-        return upload.getItemIterator((HttpServletRequest) request);
+        if (request.getCharacterEncoding() == null) {
+            // Request body's file upload headers are expected to be encoded in
+            // UTF-8 if not explicitly set otherwise in the request.
+            upload.setHeaderEncoding(StandardCharsets.UTF_8.name());
+        }
+        return upload;
     }
 
     public void setRequestSizeMax(long requestSizeMax) {
