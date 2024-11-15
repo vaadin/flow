@@ -132,8 +132,8 @@ public final class Reflector {
      * classloader.
      * <p>
      * </p>
-     * Loads the given mojo class from the isolated class loader and the creates
-     * a new instance for it and fills all field copying values from the
+     * Loads the given mojo class from the isolated class loader and then
+     * creates a new instance for it and fills all field copying values from the
      * original mojo. The input mojo must have a public no-args constructor.
      * Mojo fields must reference types that can be safely loaded be the
      * isolated class loader, such as JDK or Maven core API. It also creates and
