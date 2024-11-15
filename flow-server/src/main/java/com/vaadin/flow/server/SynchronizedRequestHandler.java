@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
@@ -30,7 +32,12 @@ import java.io.Reader;
  */
 public abstract class SynchronizedRequestHandler implements RequestHandler {
 
-    private static final int MAX_BUFFER_SIZE = 64 * 1024;
+    public static final int MAX_BUFFER_SIZE = 64 * 1024;
+
+    @FunctionalInterface
+    public interface ResponseWriter extends Serializable {
+        void writeResponse() throws IOException;
+    }
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
@@ -45,8 +52,13 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                 String requestBody = reader == null ? null
                         : getRequestBody(reader);
                 session.lock();
-                return synchronizedHandleRequest(session, request, response,
-                        requestBody);
+                Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
+                        session, request, response, requestBody);
+                session.unlock();
+                if (responseWriter.isPresent()) {
+                    responseWriter.get().writeResponse();
+                }
+                return responseWriter.isPresent();
             } else {
                 session.lock();
                 return synchronizedHandleRequest(session, request, response);
@@ -109,14 +121,19 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The response object to which a response can be written.
      * @param requestBody
      *            Request body pre-read from the request object
-     * @return true if a response has been written and no further request
-     *         handlers should be called, otherwise false
+     * @return if this handler has handled the request and no further request
+     *         handlers should be called an {@link Optional} of
+     *         {@link ResponseWriter} is returned and it must be run after
+     *         releasing the lock on {@link VaadinSession}. Otherwise an empty
+     *         {@link Optional} is returned.
+     *
      * @throws IOException
      *             If an IO error occurred
      * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      */
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response, String requestBody)
+    public Optional<ResponseWriter> synchronizedHandleRequest(
+            VaadinSession session, VaadinRequest request,
+            VaadinResponse response, String requestBody)
             throws IOException, UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }

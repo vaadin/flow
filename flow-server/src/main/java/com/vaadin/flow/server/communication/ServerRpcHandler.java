@@ -569,6 +569,23 @@ public class ServerRpcHandler implements Serializable {
         ui.getSession().getErrorHandler().error(event);
     }
 
+    protected String getMessage(Reader reader) throws IOException {
+
+        StringBuilder sb = new StringBuilder(
+                SynchronizedRequestHandler.MAX_BUFFER_SIZE);
+        char[] buffer = new char[SynchronizedRequestHandler.MAX_BUFFER_SIZE];
+
+        while (true) {
+            int read = reader.read(buffer);
+            if (read == -1) {
+                break;
+            }
+            sb.append(buffer, 0, read);
+        }
+
+        return sb.toString();
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ServerRpcHandler.class.getName());
     }

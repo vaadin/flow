@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -112,10 +114,11 @@ public class UidlRequestHandlerTest {
 
         when(service.findUI(request)).thenReturn(null);
 
-        boolean result = handler.synchronizedHandleRequest(session, request,
-                response, null);
-        Assert.assertTrue("Result should be true", result);
-
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, null);
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
@@ -229,37 +232,36 @@ public class UidlRequestHandlerTest {
         Assert.assertFalse(out.contains("history.pushState"));
     }
 
-    // TODO Teppo: Fix test
-    // @Test
-    // public void
-    // synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
-    // throws IOException {
-    // VaadinService service = mock(VaadinService.class);
-    // VaadinSession session = mock(VaadinSession.class);
-    // when(session.getService()).thenReturn(service);
-    // UI ui = Mockito.mock(UI.class);
-    //
-    // when(service.findUI(request)).thenReturn(ui);
-    //
-    // ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
-    // @Override
-    // public void handleRpc(UI ui, Reader reader, VaadinRequest request) {
-    // throw new DauEnforcementException(
-    // new EnforcementException("test"));
-    // }
-    // };
-    //
-    // UidlRequestHandler handler = new UidlRequestHandler() {
-    // @Override
-    // protected ServerRpcHandler createRpcHandler() {
-    // return serverRpcHandler;
-    // }
-    // };
-    //
-    // handler.synchronizedHandleRequest(session, request, response);
-    //
-    // Mockito.verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
-    // }
+    @Test
+    public void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, String requestBody,
+                    VaadinRequest request) {
+                throw new DauEnforcementException(
+                        new EnforcementException("test"));
+            }
+        };
+
+        UidlRequestHandler handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        handler.synchronizedHandleRequest(session, request, response, "");
+
+        Mockito.verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
+    }
 
     private JsonObject generateUidl(boolean withLocation, boolean withHash) {
 
