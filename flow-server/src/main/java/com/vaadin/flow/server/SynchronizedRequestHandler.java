@@ -34,6 +34,14 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
 
     public static final int MAX_BUFFER_SIZE = 64 * 1024;
 
+    /**
+     * ResponseWriter is optionally returned by request handlers which implement
+     * {@link SynchronizedRequestHandler#synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse, String)}
+     *
+     * The ResponseWriter will be executed by
+     * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+     * without holding Vaadin session lock.
+     */
     @FunctionalInterface
     public interface ResponseWriter extends Serializable {
         void writeResponse() throws IOException;
@@ -73,8 +81,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
     /**
      * Identical to
      * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
-     * except the {@link VaadinSession} is locked before this is called and
-     * unlocked after this has completed.
+     * except the request body is read before locking the VaadinSession and
+     * calling this method.
      *
      * @param session
      *            The session for the request
@@ -92,14 +100,14 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException;
 
     /**
-     * Returns {@literal true} if
-     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse, String)}
-     * should be called. Returns {@literal false} if
-     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
-     * should be called.
+     * Gets if request body should be read before calling
+     * synchronizedHandleRequest.
      *
-     * @return if request body should be read before calling
-     *         synchronizedHandleRequest
+     * @return {@literal true} if
+     *         {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse, String)}
+     *         should be called. Returns {@literal false} if
+     *         {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+     *         should be called.
      */
     public boolean isReadRequestBodyFirstEnabled() {
         return false;
@@ -110,8 +118,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * except the {@link VaadinSession} is locked before this is called and the
      * response requestBody has been read before locking the session and is
-     * provided as a separate parameter. Implementations should also take care
-     * to unlock the session before writing to the response object.
+     * provided as a separate parameter.
      *
      * @param session
      *            The session for the request
@@ -121,11 +128,10 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The response object to which a response can be written.
      * @param requestBody
      *            Request body pre-read from the request object
-     * @return if this handler has handled the request and no further request
-     *         handlers should be called an {@link Optional} of
-     *         {@link ResponseWriter} is returned and it must be run after
-     *         releasing the lock on {@link VaadinSession}. Otherwise an empty
-     *         {@link Optional} is returned.
+     * @return a ReponseWriter wrapped into an Optional, if this handler will
+     *         write the response and no further request handlers should be
+     *         called, otherwise an empty Optional. The ResponseWrited will be
+     *         executed after the VaadinSession is unlocked.
      *
      * @throws IOException
      *             If an IO error occurred
