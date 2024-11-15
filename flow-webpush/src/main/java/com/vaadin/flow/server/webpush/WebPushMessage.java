@@ -26,17 +26,22 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  *
  * @since 24.2
  */
-public record WebPushMessage(String title, ObjectNode options) implements Serializable {
+public record WebPushMessage(String title,
+        ObjectNode options) implements Serializable {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Creates a new Web Push notification message with the specified title and various options
-     * fetched from a given Java object.
+     * Creates a new Web Push notification message with the specified title and
+     * various options fetched from a given Java object.
      *
-     * @param title   the notification title
-     * @param options any {@code Serializable} Java object representing custom settings to apply to the notification
-     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification#parameters">
+     * @param title
+     *            the notification title
+     * @param options
+     *            any {@code Serializable} Java object representing custom
+     *            settings to apply to the notification
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification#parameters">
      *      showNotification parameters</a>
      */
     public WebPushMessage(String title, Serializable options) {
@@ -46,8 +51,10 @@ public record WebPushMessage(String title, ObjectNode options) implements Serial
     /**
      * Creates a new Web Push notification message with just a title and body.
      *
-     * @param title notification title
-     * @param body notification body
+     * @param title
+     *            notification title
+     * @param body
+     *            notification body
      */
     public WebPushMessage(String title, String body) {
         this(title, getBodyOption(body));
@@ -56,7 +63,8 @@ public record WebPushMessage(String title, ObjectNode options) implements Serial
     /**
      * Creates a new Web Push notification message with just a title.
      *
-     * @param title notification title
+     * @param title
+     *            notification title
      */
     public WebPushMessage(String title) {
         this(title, (ObjectNode) null);

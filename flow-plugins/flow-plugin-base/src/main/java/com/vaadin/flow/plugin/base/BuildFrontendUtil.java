@@ -33,6 +33,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -74,9 +75,11 @@ import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_EXTRA_EXTENSIONS;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -165,7 +168,11 @@ public class BuildFrontendUtil {
                 .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
-                .withProductionMode(false).withReact(adapter.isReactEnabled());
+                .withProductionMode(false).withReact(adapter.isReactEnabled())
+                .withFrontendExtraFileExtensions(
+                        adapter.frontendExtraFileExtensions())
+                .withNpmExcludeWebComponents(
+                        adapter.isNpmExcludeWebComponents());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -263,6 +270,16 @@ public class BuildFrontendUtil {
         }
 
         buildInfo.put(REACT_ENABLE, adapter.isReactEnabled());
+        if (adapter.isNpmExcludeWebComponents()) {
+            buildInfo.put(NPM_EXCLUDE_WEB_COMPONENTS,
+                    adapter.isNpmExcludeWebComponents());
+        }
+
+        if (!adapter.frontendExtraFileExtensions().isEmpty()) {
+            buildInfo.put(FRONTEND_EXTRA_EXTENSIONS,
+                    adapter.frontendExtraFileExtensions().stream()
+                            .collect(Collectors.joining(",")));
+        }
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
@@ -339,7 +356,9 @@ public class BuildFrontendUtil {
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withCiBuild(adapter.ciBuild())
                     .withForceProductionBuild(adapter.forceProductionBuild())
-                    .withReact(adapter.isReactEnabled());
+                    .withReact(adapter.isReactEnabled())
+                    .withNpmExcludeWebComponents(
+                            adapter.isNpmExcludeWebComponents());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -405,7 +424,11 @@ public class BuildFrontendUtil {
                     .withBundleBuild(true)
                     .skipDevBundleBuild(adapter.skipDevBundleBuild())
                     .withCompressBundle(adapter.compressBundle())
-                    .withReact(adapter.isReactEnabled());
+                    .withReact(adapter.isReactEnabled())
+                    .withFrontendExtraFileExtensions(
+                            adapter.frontendExtraFileExtensions())
+                    .withNpmExcludeWebComponents(
+                            adapter.isNpmExcludeWebComponents());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -739,6 +762,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(FRONTEND_HOTDEPLOY);
+            buildInfo.remove(FRONTEND_EXTRA_EXTENSIONS);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_BUN);
             buildInfo.remove(InitParameters.CI_BUILD);
@@ -751,6 +775,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
+            buildInfo.remove(InitParameters.NPM_EXCLUDE_WEB_COMPONENTS);
             // Premium features flag is always true, because Vaadin CI server
             // uses Enterprise sub, thus it's always true.
             // Thus, resets the premium feature flag and DAU flag before asking

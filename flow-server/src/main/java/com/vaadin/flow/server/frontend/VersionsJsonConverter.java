@@ -42,6 +42,7 @@ import elemental.json.JsonValue;
 class VersionsJsonConverter {
 
     static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
+    static final String VAADIN_BUNDLES = "@vaadin/bundles";
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
@@ -74,15 +75,18 @@ class VersionsJsonConverter {
 
     private boolean reactEnabled;
 
+    private boolean excludeWebComponents;
+
     private Set<String> exclusions;
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
 
-    VersionsJsonConverter(JsonObject platformVersions,
-            boolean collectReactComponents) {
-        this.reactEnabled = collectReactComponents;
+    VersionsJsonConverter(JsonObject platformVersions, boolean reactEnabled,
+            boolean excludeWebComponents) {
+        this.reactEnabled = reactEnabled;
+        this.excludeWebComponents = excludeWebComponents;
         exclusions = new HashSet<>();
         convertedObject = Json.createObject();
 
@@ -135,6 +139,8 @@ class VersionsJsonConverter {
     private boolean isIncludedByMode(String mode) {
         if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
             return true;
+        } else if (excludeWebComponents) {
+            return false;
         } else if (reactEnabled) {
             return MODE_REACT.equalsIgnoreCase(mode);
         } else {
@@ -151,7 +157,19 @@ class VersionsJsonConverter {
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
             return;
         }
+        if (excludeWebComponents && Objects.equals(npmName, VAADIN_BUNDLES)) {
+            exclusions.add(npmName);
+            return;
+        }
         if (!isIncludedByMode(mode)) {
+            if (excludeWebComponents) {
+                // collecting exclusions also from non-included dependencies
+                // with a mode (react), when web components are not wanted.
+                if (MODE_REACT.equalsIgnoreCase(mode)) {
+                    exclusions.add(npmName);
+                }
+                collectExclusions(obj);
+            }
             return;
         }
         if (obj.hasKey(NPM_VERSION)) {
@@ -166,6 +184,12 @@ class VersionsJsonConverter {
         }
         convertedObject.put(npmName, version);
 
+        collectExclusions(obj);
+        getLogger().debug("versions.json adds dependency {} with version {}{}",
+                npmName, version, (mode != null ? " for mode " + mode : ""));
+    }
+
+    private void collectExclusions(JsonObject obj) {
         if (obj.hasKey(EXCLUSIONS)) {
             JsonArray array = obj.getArray(EXCLUSIONS);
             if (array != null) {
@@ -173,8 +197,6 @@ class VersionsJsonConverter {
                         .forEach(i -> exclusions.add(array.getString(i)));
             }
         }
-        getLogger().debug("versions.json adds dependency {} with version {}{}",
-                npmName, version, (mode != null ? " for mode " + mode : ""));
     }
 
 }

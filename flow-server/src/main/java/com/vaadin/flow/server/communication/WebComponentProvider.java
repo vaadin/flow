@@ -229,7 +229,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                         const delay = 200;
                         const poll = async () => {
                           try {
-                            const response = await fetch(bootstrapSrc, { method: 'HEAD', headers: { 'X-DevModePoll': 'true' } });
+                            const response = await fetch(bootstrapSrc, { method: 'HEAD', credentials: 'include', headers: { 'X-DevModePoll': 'true' } });
                             if (response.headers.has('X-DevModePending')) {
                               setTimeout(poll, delay);
                             } else {

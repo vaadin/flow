@@ -176,7 +176,9 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withHomeNodeExecRequired(requireHomeNodeExec())
                         .setJavaResourceFolder(javaResourceFolder())
                         .withProductionMode(productionMode)
-                        .withReact(isReactEnabled());
+                        .withReact(isReactEnabled())
+                        .withNpmExcludeWebComponents(
+                                isNpmExcludeWebComponents());
                 new NodeTasks(options).execute();
                 logInfo("SBOM generation created node_modules and all needed metadata. "
                         + "If you don't need it, please run mvn vaadin:clean-frontend");
