@@ -298,7 +298,7 @@ function statsExtracterPlugin(): PluginOption {
 
       const frontendFiles: Record<string, string> = {};
 
-      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'];
+      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'#frontendExtraFileExtensions#];
 
       const isThemeComponentsResource = (id: string) =>
           id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))

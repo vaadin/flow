@@ -26,7 +26,8 @@ import com.vaadin.flow.component.Component;
  * <p>
  * Only for read as data is immutable.
  */
-public record MenuData(String title, Double order, boolean exclude, String icon, Class<? extends Component> menuClass) implements Serializable {
+public record MenuData(String title, Double order, boolean exclude, String icon,
+        Class<? extends Component> menuClass) implements Serializable {
 
     /**
      * MenuData constructor.

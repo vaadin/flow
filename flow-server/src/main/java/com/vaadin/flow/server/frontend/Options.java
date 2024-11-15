@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -83,6 +84,8 @@ public class Options implements Serializable {
     private boolean skipDevBundle = false;
 
     private boolean compressBundle = true;
+
+    private List<String> frontendExtraFileExtensions = null;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -968,6 +971,28 @@ public class Options implements Serializable {
      */
     public boolean isCleanOldGeneratedFiles() {
         return cleanOldGeneratedFiles;
+    }
+
+    /**
+     * Sets the extra file extensions used in the project.
+     *
+     * @param frontendExtraFileExtensions
+     *            the file extensions to add for the project
+     * @return this builder
+     */
+    public Options withFrontendExtraFileExtensions(
+            List<String> frontendExtraFileExtensions) {
+        this.frontendExtraFileExtensions = frontendExtraFileExtensions;
+        return this;
+    }
+
+    /**
+     * Gets the project file extensions.
+     *
+     * @return the project file extensions
+     */
+    public List<String> getFrontendExtraFileExtensions() {
+        return frontendExtraFileExtensions;
     }
 
     /**

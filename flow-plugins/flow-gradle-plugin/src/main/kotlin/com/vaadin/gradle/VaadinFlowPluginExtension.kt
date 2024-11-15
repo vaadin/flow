@@ -282,6 +282,16 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     public abstract val applicationIdentifier: Property<String>
 
+    /**
+     * The list of extra file extensions that are considered project files.
+     * Hashes are calculated for these files as part of detecting if a new
+     * bundle should be generated.
+     */
+    public abstract val frontendExtraFileExtensions: ListProperty<String>
+
+    /**
+     * Whether to include web component npm packages in packages.json
+     */
     public abstract val npmExcludeWebComponents: Property<Boolean>
 
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
@@ -441,6 +451,10 @@ public class PluginEffectiveConfiguration(
             ))
         .overrideWithSystemProperty("vaadin.${InitParameters.APPLICATION_IDENTIFIER}")
 
+    // TODO: Possibly get value from system param InitParameters.FRONTEND_EXTRA_EXTENSIONS
+    public val frontendExtraFileExtensions: ListProperty<String> = extension.frontendExtraFileExtensions
+            .convention(listOf())
+
     public val npmExcludeWebComponents: Provider<Boolean> = extension
             .npmExcludeWebComponents.convention(false)
 
@@ -505,6 +519,7 @@ public class PluginEffectiveConfiguration(
             "frontendHotdeploy=${frontendHotdeploy.get()}," +
             "reactEnable=${reactEnable.get()}," +
             "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
+            "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}," +
             "npmExcludeWebComponents=${npmExcludeWebComponents.get()}" +
             ")"
     public companion object {

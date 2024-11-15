@@ -16,6 +16,7 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 
