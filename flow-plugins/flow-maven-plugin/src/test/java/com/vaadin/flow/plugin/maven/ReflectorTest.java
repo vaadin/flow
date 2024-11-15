@@ -22,10 +22,8 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -47,6 +45,7 @@ import org.junit.Test;
 import com.vaadin.flow.utils.FlowFileUtils;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getClassPath;
+import static com.vaadin.flow.utils.FlowFileUtils.convertToUrl;
 
 public class ReflectorTest {
 
@@ -176,16 +175,16 @@ public class ReflectorTest {
         URLClassLoader isolatedClassLoader = execReflector
                 .getIsolatedClassLoader();
 
-        Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
-                .map(URL::getFile).collect(Collectors.toSet());
+        Set<URL> urlSet = Set.of(isolatedClassLoader.getURLs());
         Assert.assertEquals(4, urlSet.size());
-        Assert.assertTrue(urlSet.contains(outputDirectory));
-        Assert.assertTrue(urlSet.contains(
-                "/some/flat/maven-repo/com.vaadin.test-compile-1.0.jar"));
-        Assert.assertTrue(urlSet.contains(
-                "/some/flat/maven-repo/com.vaadin.test-system-1.0.jar"));
-        Assert.assertTrue(urlSet.contains(
-                "/some/flat/maven-repo/com.vaadin.test-plugin-1.0.jar"));
+        Assert.assertTrue(
+                urlSet.contains(convertToUrl(new File(outputDirectory))));
+        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
+                "/some/flat/maven-repo/com.vaadin.test-compile-1.0.jar"))));
+        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
+                "/some/flat/maven-repo/com.vaadin.test-system-1.0.jar"))));
+        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
+                "/some/flat/maven-repo/com.vaadin.test-plugin-1.0.jar"))));
 
         // from platform class loader
         Assert.assertNotNull(
