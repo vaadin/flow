@@ -243,7 +243,8 @@ public class BuildFrontendMojoTest {
                 // Exclude maven jars so classes will be loaded by them fake
                 // maven.api realm that will be the same for the test class
                 // and the mojo execution
-                .filter(path -> !path.matches(".*/maven-.*\\.jar")).toList();
+                .filter(path -> !path.matches(".*([\\\\/])maven-.*\\.jar"))
+                .toList();
         AtomicInteger dependencyCounter = new AtomicInteger();
         project.setArtifacts(classPath.stream().map(path -> {
             DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler();
