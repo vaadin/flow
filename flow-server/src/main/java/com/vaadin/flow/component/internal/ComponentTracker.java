@@ -294,20 +294,56 @@ public class ComponentTracker {
      */
     public static void refreshLocation(Location location, int offset) {
         refreshLocation(createLocation, location, offset);
+        refreshLocations(createLocations, location, offset);
         refreshLocation(attachLocation, location, offset);
+        refreshLocations(attachLocations, location, offset);
+    }
+
+    private static boolean needsUpdate(Location l, Location referenceLocation) {
+        return Objects.equals(l.className, referenceLocation.className)
+                && l.lineNumber > referenceLocation.lineNumber;
+    }
+
+    private static Location updateLocation(Location l, int offset) {
+        return new Location(l.className, l.filename, l.methodName,
+                l.lineNumber + offset);
     }
 
     private static void refreshLocation(Map<Component, Location> targetRef,
-            Location location, int offset) {
+            Location referenceLocation, int offset) {
         Map<Component, Location> updatedLocations = new HashMap<>();
-        targetRef.entrySet().stream().filter(
-                e -> Objects.equals(e.getValue().className, location.className))
-                .filter(e -> e.getValue().lineNumber > location.lineNumber)
-                .forEach(e -> {
-                    Location l = e.getValue();
-                    updatedLocations.put(e.getKey(), new Location(l.className,
-                            l.filename, l.methodName, l.lineNumber + offset));
-                });
+        for (Component c : targetRef.keySet()) {
+            Location l = targetRef.get(c);
+            if (needsUpdate(l, referenceLocation)) {
+                updatedLocations.put(c, updateLocation(l, offset));
+            }
+        }
+
+        targetRef.putAll(updatedLocations);
+    }
+
+    private static void refreshLocations(Map<Component, Location[]> targetRef,
+            Location referenceLocation, int offset) {
+        Map<Component, Location[]> updatedLocations = new HashMap<>();
+        for (Component c : targetRef.keySet()) {
+            Location[] locations = targetRef.get(c);
+            Location[] newLocations = new Location[locations.length];
+
+            for (int i = 0; i < locations.length; i++) {
+                boolean updated = false;
+                if (needsUpdate(locations[i], referenceLocation)) {
+                    updated = true;
+                    newLocations[i] = updateLocation(locations[i], offset);
+                } else {
+                    newLocations[i] = locations[i];
+                }
+
+                if (updated) {
+                    updatedLocations.put(c, newLocations);
+                }
+            }
+        }
+
         targetRef.putAll(updatedLocations);
     }
 
