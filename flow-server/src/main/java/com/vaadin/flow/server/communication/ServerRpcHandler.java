@@ -254,7 +254,8 @@ public class ServerRpcHandler implements Serializable {
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException {
-        handleRpc(ui, SynchronizedRequestHandler.getMessage(reader), request);
+        handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
+                request);
     }
 
     /**

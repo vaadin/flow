@@ -165,7 +165,7 @@ public class PushHandler {
 
         try {
             new ServerRpcHandler().handleRpc(ui,
-                    SynchronizedRequestHandler.getMessage(reader),
+                    SynchronizedRequestHandler.getRequestBody(reader),
                     vaadinRequest);
             connection.push(false);
         } catch (JsonException e) {

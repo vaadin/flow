@@ -40,12 +40,13 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         }
 
         try {
-            if (isReadMessageFirstEnabled()) {
+            if (isReadRequestBodyFirstEnabled()) {
                 BufferedReader reader = request.getReader();
-                String message = reader == null ? null : getMessage(reader);
+                String requestBody = reader == null ? null
+                        : getRequestBody(reader);
                 session.lock();
                 return synchronizedHandleRequest(session, request, response,
-                        message);
+                        requestBody);
             } else {
                 session.lock();
                 return synchronizedHandleRequest(session, request, response);
@@ -85,10 +86,10 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * should be called.
      *
-     * @return if message should be read before calling
+     * @return if request body should be read before calling
      *         synchronizedHandleRequest
      */
-    public boolean isReadMessageFirstEnabled() {
+    public boolean isReadRequestBodyFirstEnabled() {
         return false;
     }
 
@@ -96,9 +97,9 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * Identical to
      * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * except the {@link VaadinSession} is locked before this is called and the
-     * response message has been read before locking the session and is provided
-     * as a separate parameter. Implementations should also take care to unlock
-     * the session before writing to the response object.
+     * response requestBody has been read before locking the session and is
+     * provided as a separate parameter. Implementations should also take care
+     * to unlock the session before writing to the response object.
      *
      * @param session
      *            The session for the request
@@ -106,8 +107,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The request to handle
      * @param response
      *            The response object to which a response can be written.
-     * @param message
-     *            Message pre-read from the request object
+     * @param requestBody
+     *            Request body pre-read from the request object
      * @return true if a response has been written and no further request
      *         handlers should be called, otherwise false
      * @throws IOException
@@ -115,7 +116,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      */
     public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response, String message)
+            VaadinRequest request, VaadinResponse response, String requestBody)
             throws IOException, UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -140,7 +141,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         return true;
     }
 
-    public static String getMessage(Reader reader) throws IOException {
+    public static String getRequestBody(Reader reader) throws IOException {
         StringBuilder sb = new StringBuilder(MAX_BUFFER_SIZE);
         char[] buffer = new char[MAX_BUFFER_SIZE];
 

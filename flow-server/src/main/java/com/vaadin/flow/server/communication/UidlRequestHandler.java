@@ -102,19 +102,20 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        String message = SynchronizedRequestHandler
-                .getMessage(request.getReader());
-        return synchronizedHandleRequest(session, request, response, message);
+        String requestBody = SynchronizedRequestHandler
+                .getRequestBody(request.getReader());
+        return synchronizedHandleRequest(session, request, response,
+                requestBody);
     }
 
     @Override
-    public boolean isReadMessageFirstEnabled() {
+    public boolean isReadRequestBodyFirstEnabled() {
         return true;
     }
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response, String message)
+            VaadinRequest request, VaadinResponse response, String requestBody)
             throws IOException, UnsupportedOperationException {
         UI uI = session.getService().findUI(request);
         if (uI == null) {
@@ -128,7 +129,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         StringWriter stringWriter = new StringWriter();
 
         try {
-            getRpcHandler(session).handleRpc(uI, message, request);
+            getRpcHandler(session).handleRpc(uI, requestBody, request);
             writeUidl(uI, stringWriter, false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
