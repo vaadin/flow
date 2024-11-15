@@ -83,18 +83,18 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        assertCreateLocation(c1, 81, getClass().getName());
+        assertCreateLocation(c1, 80, getClass().getName());
 
         layout.add(c2);
 
-        assertAttachLocation(c2, 89, getClass().getName());
+        assertAttachLocation(c2, 88, getClass().getName());
 
         // Last attach is tracked
         layout.add(c3);
         layout.remove(c3);
         layout.add(c3);
 
-        assertAttachLocation(c3, 96, getClass().getName());
+        assertAttachLocation(c3, 95, getClass().getName());
     }
 
     @Test
@@ -103,15 +103,15 @@ public class ComponentTrackerTest {
         Component c2 = new Component1();
         Component c3 = new Component1();
 
-        assertCreateLocation(c1, 103, getClass().getName());
+        assertCreateLocation(c1, 102, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c1), 3);
 
-        assertCreateLocation(c2, 104 + 3, getClass().getName());
+        assertCreateLocation(c2, 103 + 3, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c2), 1);
 
-        assertCreateLocation(c3, 105 + 3 + 1, getClass().getName());
+        assertCreateLocation(c3, 104 + 3 + 1, getClass().getName());
     }
 
     @Test
