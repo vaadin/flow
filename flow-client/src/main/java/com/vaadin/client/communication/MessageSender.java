@@ -209,7 +209,7 @@ public class MessageSender {
             pushPendingMessage = payload;
             push.push(payload);
         } else {
-            Console.log("send XHR");
+            Console.debug("send XHR");
             registry.getXhrConnection().send(payload);
         }
     }
