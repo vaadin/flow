@@ -114,7 +114,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     @Override
-    public boolean isReadRequestBodyFirstEnabled() {
+    public boolean isReadAndWriteOutsideSessionLock() {
         return true;
     }
 

@@ -55,7 +55,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         }
 
         try {
-            if (isReadRequestBodyFirstEnabled()) {
+            if (isReadAndWriteOutsideSessionLock()) {
                 BufferedReader reader = request.getReader();
                 String requestBody = reader == null ? null
                         : getRequestBody(reader);
@@ -100,8 +100,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException;
 
     /**
-     * Gets if request body should be read before calling
-     * synchronizedHandleRequest.
+     * Gets if request body should be read and the response written without
+     * holding {@link VaadinSession} lock
      *
      * @return {@literal true} if
      *         {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse, String)}
@@ -109,7 +109,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *         {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      *         should be called.
      */
-    public boolean isReadRequestBodyFirstEnabled() {
+    public boolean isReadAndWriteOutsideSessionLock() {
         return false;
     }
 
@@ -128,9 +128,9 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The response object to which a response can be written.
      * @param requestBody
      *            Request body pre-read from the request object
-     * @return a ReponseWriter wrapped into an Optional, if this handler will
+     * @return a ResponseWriter wrapped into an Optional, if this handler will
      *         write the response and no further request handlers should be
-     *         called, otherwise an empty Optional. The ResponseWrited will be
+     *         called, otherwise an empty Optional. The ResponseWriter will be
      *         executed after the VaadinSession is unlocked.
      *
      * @throws IOException
