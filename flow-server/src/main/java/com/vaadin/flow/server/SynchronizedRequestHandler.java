@@ -95,7 +95,6 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *         handlers should be called, otherwise false
      * @throws IOException
      *             If an IO error occurred
-     * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      */
     public abstract boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException;
