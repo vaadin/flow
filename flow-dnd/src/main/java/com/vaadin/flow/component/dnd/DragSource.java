@@ -396,6 +396,7 @@ public interface DragSource<T extends Component> extends HasElement {
             style.set("position", "absolute");
             style.set("top", "-100px");
             style.set("left", "-100px");
+            style.set("display", "none");
         }
     }
 
