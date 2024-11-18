@@ -193,6 +193,8 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
     private boolean npmExcludeWebComponents;
 
+    static final String CLASSFINDER_FIELD_NAME = "classfinder";
+
     private ClassFinder classFinder;
 
     @Override

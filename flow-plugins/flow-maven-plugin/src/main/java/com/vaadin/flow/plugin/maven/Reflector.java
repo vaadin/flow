@@ -67,6 +67,26 @@ public final class Reflector {
         this.classFinder = classFinder;
     }
 
+    /**
+     * Gets a {@link Reflector} instance usable with the caller class loader.
+     * <p>
+     * </p>
+     * Reflector instances are cached in Maven plugin context, but instances
+     * might be associated to the plugin class loader, thus not working with
+     * classes loaded by the isolated class loader. This method returns the
+     * input object if it is compatible with the class loader, otherwise it
+     * creates a copy referencing the same isolated class loader and
+     * {@link ClassFinder}.
+     *
+     * @param reflector
+     *            the {@link Reflector} instance.
+     * @return a {@link Reflector} instance compatible with the current class
+     *         loader.
+     * @throws IllegalArgumentException
+     *             if the input object is not a {@link Reflector} instance or if
+     *             it is not possible to make a copy for it due to class
+     *             definition incompatibilities.
+     */
     static Reflector adapt(Object reflector) {
         if (reflector instanceof Reflector sameClassLoader) {
             return sameClassLoader;
@@ -150,7 +170,8 @@ public final class Reflector {
         Class<?> targetMojoClass = loadClass(sourceMojo.getClass().getName());
         Object targetMojo = targetMojoClass.getConstructor().newInstance();
         copyFields(sourceMojo, targetMojo);
-        Field classFinderField = findField(targetMojoClass, "classFinder");
+        Field classFinderField = findField(targetMojoClass,
+                FlowModeAbstractMojo.CLASSFINDER_FIELD_NAME);
         ReflectTools.setJavaFieldValue(targetMojo, classFinderField,
                 getOrCreateClassFinder());
         return (Mojo) targetMojo;
@@ -311,49 +332,54 @@ public final class Reflector {
         Class<?> targetClass = targetMojo.getClass();
         while (sourceClass != null && sourceClass != Object.class) {
             for (Field sourceField : sourceClass.getDeclaredFields()) {
-                if (Modifier.isStatic(sourceField.getModifiers())) {
-                    continue;
-                }
-                sourceField.setAccessible(true);
-                Object value = sourceField.get(sourceMojo);
-                if (value == null) {
-                    continue;
-                }
-                Field targetField;
-                try {
-                    targetField = targetClass
-                            .getDeclaredField(sourceField.getName());
-                } catch (NoSuchFieldException ex) {
-                    // Should never happen, since the class definition should be
-                    // the same
-                    String message = "Field " + sourceField.getName()
-                            + " defined in " + sourceClass.getName()
-                            + " is missing in " + targetClass.getName();
-                    sourceMojo.logError(message, ex);
-                    throw ex;
-                }
-
-                Class<?> targetFieldType = targetField.getType();
-                if (!targetFieldType.isAssignableFrom(sourceField.getType())) {
-                    String message = "Field " + targetFieldType.getName()
-                            + " in class " + targetClass.getName() + " of type "
-                            + targetFieldType.getName()
-                            + " is loaded from different class loaders."
-                            + " Source class loader: "
-                            + sourceField.getType().getClassLoader()
-                            + ", Target class loader: "
-                            + targetFieldType.getClassLoader()
-                            + ". This is likely a bug in the Vaadin Maven plugin."
-                            + " Please, report the error on the issue tracker.";
-                    sourceMojo.logError(message);
-                    throw new NoSuchFieldException(message);
-                }
-                targetField.setAccessible(true);
-                targetField.set(targetMojo, value);
+                copyField(sourceMojo, targetMojo, sourceField, targetClass);
             }
             targetClass = targetClass.getSuperclass();
             sourceClass = sourceClass.getSuperclass();
         }
+    }
+
+    private static void copyField(FlowModeAbstractMojo sourceMojo,
+            Object targetMojo, Field sourceField, Class<?> targetClass)
+            throws IllegalAccessException, NoSuchFieldException {
+        if (Modifier.isStatic(sourceField.getModifiers())) {
+            return;
+        }
+        sourceField.setAccessible(true);
+        Object value = sourceField.get(sourceMojo);
+        if (value == null) {
+            return;
+        }
+        Field targetField;
+        try {
+            targetField = targetClass.getDeclaredField(sourceField.getName());
+        } catch (NoSuchFieldException ex) {
+            // Should never happen, since the class definition should be
+            // the same
+            String message = "Field " + sourceField.getName() + " defined in "
+                    + sourceField.getDeclaringClass().getName()
+                    + " is missing in " + targetClass.getName();
+            sourceMojo.logError(message, ex);
+            throw ex;
+        }
+
+        Class<?> targetFieldType = targetField.getType();
+        if (!targetFieldType.isAssignableFrom(sourceField.getType())) {
+            String message = "Field " + targetFieldType.getName() + " in class "
+                    + targetClass.getName() + " of type "
+                    + targetFieldType.getName()
+                    + " is loaded from different class loaders."
+                    + " Source class loader: "
+                    + sourceField.getType().getClassLoader()
+                    + ", Target class loader: "
+                    + targetFieldType.getClassLoader()
+                    + ". This is likely a bug in the Vaadin Maven plugin."
+                    + " Please, report the error on the issue tracker.";
+            sourceMojo.logError(message);
+            throw new NoSuchFieldException(message);
+        }
+        targetField.setAccessible(true);
+        targetField.set(targetMojo, value);
     }
 
     private static Field findField(Class<?> clazz, String fieldName)
