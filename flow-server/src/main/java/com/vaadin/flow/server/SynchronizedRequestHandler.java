@@ -84,6 +84,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * except the {@link VaadinSession} is locked before this is called and
      * unlocked after this has completed.
      *
+     * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      * @param session
      *            The session for the request
      * @param request
