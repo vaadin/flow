@@ -93,6 +93,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The response object to which a response can be written.
      * @return true if a response has been written and no further request
      *         handlers should be called, otherwise false
+     *
      * @throws IOException
      *             If an IO error occurred
      */
