@@ -13,24 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
 
 /**
- * Callback for receiving web push subscription details
+ * Holds the keys that used to encrypt the Web Push notification payload, so
+ * that only the current browser can read (decrypt) the content of
+ * notifications.
  *
- * @since 24.2
+ * @param p256dh
+ *            public key on the P-256 curve.
+ * @param auth
+ *            An authentication secret.
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription/getKey">PushSubscription
+ *      Keys mdn web docs</a>
  */
-@FunctionalInterface
-public interface WebPushSubscriptionResponse extends Serializable {
-
-    /**
-     * Invoked when the client-side details are available.
-     *
-     * @param subscription
-     *            web push subscription object
-     */
-    void subscription(WebPushSubscription subscription);
+public record WebPushKeys(String p256dh, String auth) implements Serializable {
 }
