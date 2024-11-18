@@ -67,11 +67,6 @@ public class FeatureFlags implements Serializable {
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
 
-    public static final Feature WEB_PUSH = new Feature(
-            "Server side WebPush API", "webPush",
-            "https://vaadin.com/docs/latest/configuration/setting-up-webpush",
-            true, "com.vaadin.flow.server.webpush.WebPush");
-
     public static final Feature FORM_FILLER_ADDON = new Feature(
             "Form Filler Add-on", "formFillerAddon",
             "https://github.com/vaadin/form-filler-addon", true,
@@ -112,7 +107,6 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));

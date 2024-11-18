@@ -18,14 +18,13 @@ package com.vaadin.flow.webpush;
 
 import java.util.List;
 
-import nl.martijndwars.webpush.Subscription;
-
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.webpush.WebPush;
 import com.vaadin.flow.server.webpush.WebPushMessage;
+import com.vaadin.flow.server.webpush.WebPushSubscription;
 
 @Route("")
 public class WebPushView extends Div {
@@ -52,7 +51,7 @@ public class WebPushView extends Div {
             "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png"
     );
 
-    private Subscription subscription;
+    private WebPushSubscription subscription;
 
     public WebPushView() {
         webPush = new WebPush(PUBLIC_KEY, PRIVATE_KEY, "test");
