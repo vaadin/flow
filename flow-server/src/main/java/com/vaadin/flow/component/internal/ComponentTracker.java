@@ -327,19 +327,10 @@ public class ComponentTracker {
         Map<Component, Location[]> updatedLocations = new HashMap<>();
         for (Component c : targetRef.keySet()) {
             Location[] locations = targetRef.get(c);
-            Location[] newLocations = new Location[locations.length];
 
             for (int i = 0; i < locations.length; i++) {
-                boolean updated = false;
                 if (needsUpdate(locations[i], referenceLocation)) {
-                    updated = true;
-                    newLocations[i] = updateLocation(locations[i], offset);
-                } else {
-                    newLocations[i] = locations[i];
-                }
-
-                if (updated) {
-                    updatedLocations.put(c, newLocations);
+                    locations[i] = updateLocation(locations[i], offset);
                 }
             }
         }
