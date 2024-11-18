@@ -656,9 +656,11 @@ export class VaadinDevTools extends LitElement {
             .filter((key) => key !== 'TypeScript')
             .map((id) => anyVaadin.Flow.clients[id])
             .forEach((client) => {
-              client.sendEventMessage(1, "ui-refresh", {
-                fullRefresh: strategy === 'full-refresh'
-              })
+              if (client.sendEventMessage) {
+                client.sendEventMessage(1, "ui-refresh", {
+                  fullRefresh: strategy === 'full-refresh'
+               })
+              }
             });
       } else {
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
