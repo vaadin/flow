@@ -81,8 +81,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
     /**
      * Identical to
      * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
-     * except the request body is read before locking the VaadinSession and
-     * calling this method.
+     * except the {@link VaadinSession} is locked before this is called and
+     * unlocked after this has completed.
      *
      * @param session
      *            The session for the request
