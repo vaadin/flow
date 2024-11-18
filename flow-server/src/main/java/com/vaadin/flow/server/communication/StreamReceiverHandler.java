@@ -38,6 +38,8 @@ import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.core.FileUploadFileCountLimitException;
 import org.apache.commons.fileupload2.core.FileUploadSizeException;
 import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -630,11 +632,22 @@ public class StreamReceiverHandler implements Serializable {
 
     protected FileItemInputIterator getItemIterator(VaadinRequest request)
             throws FileUploadException, IOException {
+        JakartaServletFileUpload upload = createServletFileUpload(request);
+        return upload.getItemIterator((HttpServletRequest) request);
+    }
+
+    // protected for testing purposes only
+    protected JakartaServletFileUpload createServletFileUpload(VaadinRequest request) {
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
         upload.setSizeMax(requestSizeMax);
         upload.setFileSizeMax(fileSizeMax);
         upload.setFileCountMax(fileCountMax);
-        return upload.getItemIterator((HttpServletRequest) request);
+        if (request.getCharacterEncoding() == null) {
+            // Request body's file upload headers are expected to be encoded in
+            // UTF-8 if not explicitly set otherwise in the request.
+            upload.setHeaderCharset(StandardCharsets.UTF_8);
+        }
+        return upload;
     }
 
     public void setRequestSizeMax(long requestSizeMax) {
