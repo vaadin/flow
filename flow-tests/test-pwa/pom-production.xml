@@ -27,11 +27,11 @@
             <version>0.1.2</version>
             <scope>test</scope>
         </dependency>
-        <!-- To be removed after chrome used by CI gets upgraded to 124 or later -->
+        <!-- To be removed after chrome used by CI gets upgraded to 128 or later -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v123</artifactId>
-            <version>4.21.0</version>
+            <artifactId>selenium-devtools-v127</artifactId>
+            <version>4.25.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
