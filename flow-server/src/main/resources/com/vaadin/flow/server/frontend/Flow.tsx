@@ -361,13 +361,14 @@ function Flow() {
     }, []);
 
     useEffect(() => {
-        if(blockerHandled.current) {
-            // blocker is handled and no new navigation is accepted.
-            // This will cancel multiple navigate calls, but not multiple calls
-            // from the server as those are queued. #20404
-            return;
-        }
         if (blocker.state === 'blocked') {
+            if(blockerHandled.current) {
+                // Blocker is handled and the new navigation
+                // gets queued to be executed after the current handling ends.
+                const {pathname, state} = blocker.location;
+                queuedNavigate(pathname, true, { state: state, replace: true });
+                return;
+            }
             blockerHandled.current = true;
             let blockingPromise: any;
             roundTrip.current = new Promise<void>((resolve,reject) => blockingPromise = {resolve:resolve,reject:reject});
