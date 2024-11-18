@@ -660,6 +660,8 @@ export class VaadinDevTools extends LitElement {
                 client.sendEventMessage(1, "ui-refresh", {
                   fullRefresh: strategy === 'full-refresh'
                })
+              } else {
+                console.warn("Ignoring ui-refresh event for application ",id);
               }
             });
       } else {
