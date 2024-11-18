@@ -280,7 +280,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
     private String applicationIdentifier;
 
-    static final String CLASSFINDER_FIELD_NAME = "classfinder";
+    static final String CLASSFINDER_FIELD_NAME = "classFinder";
     private ClassFinder classFinder;
 
     private Consumer<File> buildContextRefresher;
