@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -144,9 +146,21 @@ public class ViteWebsocketConnection implements Listener {
      */
     public void close() throws InterruptedException, ExecutionException {
         getLogger().debug("Closing the connection");
-        CompletableFuture<WebSocket> closeRequest = clientWebsocket.get()
-                .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
-        closeRequest.get();
+        if (clientWebsocket.isDone()) {
+            WebSocket client = clientWebsocket.get();
+            if (!client.isOutputClosed()) {
+                CompletableFuture<WebSocket> closeRequest = client
+                        .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
+                try {
+                    closeRequest.get(500, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    getLogger().debug("Timed out waiting for close request");
+                }
+            }
+        } else {
+            // Websocket client has not
+            clientWebsocket.cancel(true);
+        }
     }
 
     @Override
