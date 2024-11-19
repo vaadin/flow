@@ -158,7 +158,7 @@ public class ViteWebsocketConnection implements Listener {
                 }
             }
         } else {
-            // Websocket client has not
+            // Websocket client connection has not been established
             clientWebsocket.cancel(true);
         }
     }
