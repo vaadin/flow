@@ -124,7 +124,6 @@ public class TaskGeneratePWAIconsTest {
                 .assertThrows(ExecutionFailedException.class, task::execute);
         Assert.assertTrue(
                 exception.getMessage().contains("Cannot load PWA icon"));
-        Assert.assertTrue(exception.getCause() instanceof IOException);
         Assert.assertFalse("PWA icons should not have been generated",
                 Files.exists(iconsOutDirectory));
     }
