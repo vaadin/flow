@@ -389,7 +389,7 @@ public interface DragSource<T extends Component> extends HasElement {
         if (dragElement.getTag().equals("img")) {
             getDraggableElement().appendVirtualChild(dragElement);
         } else {
-            LoggerFactory.getLogger(DragSource.class).info(
+            LoggerFactory.getLogger(DragSource.class).debug(
                     "Attaching child to dom in position -100,-100. Consider adding the component manually to not get overlapping components on drag for element.");
             getDraggableElement().appendChild(dragElement);
             Style style = dragElement.getStyle();
