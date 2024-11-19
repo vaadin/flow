@@ -29,6 +29,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
@@ -82,6 +83,11 @@ public class ServerRpcHandler implements Serializable {
          *            the request through which the JSON was received
          */
         public RpcRequest(String jsonString, VaadinRequest request) {
+            this(jsonString, request.getService().getDeploymentConfiguration()
+                    .isSyncIdCheckEnabled());
+        }
+
+        public RpcRequest(String jsonString, boolean isSyncIdCheckEnabled) {
             json = JsonUtil.parse(jsonString);
 
             JsonValue token = json.get(ApplicationConstants.CSRF_TOKEN);
@@ -95,8 +101,7 @@ public class ServerRpcHandler implements Serializable {
                 this.csrfToken = csrfToken;
             }
 
-            if (request.getService().getDeploymentConfiguration()
-                    .isSyncIdCheckEnabled()) {
+            if (isSyncIdCheckEnabled) {
                 syncId = (int) json
                         .getNumber(ApplicationConstants.SERVER_SYNC_ID);
             } else {
@@ -188,8 +193,6 @@ public class ServerRpcHandler implements Serializable {
 
     }
 
-    private static final int MAX_BUFFER_SIZE = 64 * 1024;
-
     /**
      * Exception thrown then the security key sent by the client does not match
      * the expected one.
@@ -240,16 +243,35 @@ public class ServerRpcHandler implements Serializable {
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException {
+        handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
+                request);
+    }
+
+    /**
+     * Reads JSON containing zero or more serialized RPC calls (including legacy
+     * variable changes) and executes the calls.
+     *
+     * @param ui
+     *            The {@link UI} receiving the calls. Cannot be null.
+     * @param message
+     *            The JSON message from the request.
+     * @param request
+     *            The request through which the RPC was received
+     * @throws InvalidUIDLSecurityKeyException
+     *             If the received security key does not match the one stored in
+     *             the session.
+     */
+    public void handleRpc(UI ui, String message, VaadinRequest request)
+            throws InvalidUIDLSecurityKeyException {
         ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
 
-        String changeMessage = getMessage(reader);
-
-        if (changeMessage == null || changeMessage.equals("")) {
+        if (message == null || message.isEmpty()) {
             // The client sometimes sends empty messages, this is probably a bug
             return;
         }
 
-        RpcRequest rpcRequest = new RpcRequest(changeMessage, request);
+        RpcRequest rpcRequest = new RpcRequest(message, request.getService()
+                .getDeploymentConfiguration().isSyncIdCheckEnabled());
 
         // Security: double cookie submission pattern unless disabled by
         // property
@@ -257,9 +279,9 @@ public class ServerRpcHandler implements Serializable {
             throw new InvalidUIDLSecurityKeyException();
         }
 
-        String hashMessage = changeMessage;
+        String hashMessage = message;
         if (hashMessage.length() > 64 * 1024) {
-            hashMessage = changeMessage.substring(0, 64 * 1024);
+            hashMessage = message.substring(0, 64 * 1024);
         }
         byte[] messageHash = MessageDigestUtil.sha256(hashMessage);
 
@@ -361,7 +383,6 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().debug("UI closed with a beacon request");
             }
         }
-
     }
 
     // Kind of same as in AbstractNavigationStateRenderer, but gets
@@ -476,8 +497,9 @@ public class ServerRpcHandler implements Serializable {
 
     protected String getMessage(Reader reader) throws IOException {
 
-        StringBuilder sb = new StringBuilder(MAX_BUFFER_SIZE);
-        char[] buffer = new char[MAX_BUFFER_SIZE];
+        StringBuilder sb = new StringBuilder(
+                SynchronizedRequestHandler.MAX_BUFFER_SIZE);
+        char[] buffer = new char[SynchronizedRequestHandler.MAX_BUFFER_SIZE];
 
         while (true) {
             int read = reader.read(buffer);

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -23,6 +24,7 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -99,10 +101,11 @@ public class UidlRequestHandlerTest {
 
         when(service.findUI(request)).thenReturn(null);
 
-        boolean result = handler.synchronizedHandleRequest(session, request,
-                response);
-        Assert.assertTrue("Result should be true", result);
-
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, null);
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
