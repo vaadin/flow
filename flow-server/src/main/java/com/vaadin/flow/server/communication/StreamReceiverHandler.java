@@ -635,7 +635,8 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     // protected for testing purposes only
-    protected JakartaServletFileUpload createServletFileUpload(VaadinRequest request) {
+    protected JakartaServletFileUpload createServletFileUpload(
+            VaadinRequest request) {
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
         upload.setSizeMax(requestSizeMax);
         upload.setFileSizeMax(fileSizeMax);

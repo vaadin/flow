@@ -10,13 +10,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -300,23 +301,23 @@ public class StreamReceiverHandlerTest {
 
     @Test
     public void createServletFileUpload_useUTF8HeaderCharacterEncodingWhenRequestCharEncodingIsNotSet() {
-        ServletFileUpload servletFileUpload = handler
+        JakartaServletFileUpload servletFileUpload = handler
                 .createServletFileUpload(request);
         Assert.assertNotNull(servletFileUpload);
         Assert.assertEquals(
                 "Header encoding should be UTF-8 when request character encoding is null",
-                "UTF-8", servletFileUpload.getHeaderEncoding());
+                StandardCharsets.UTF_8, servletFileUpload.getHeaderCharset());
     }
 
     @Test
     public void createServletFileUpload_dontSetHeaderCharEncodingWhenRequestCharEncodingIsSet() {
         requestCharacterEncoding = "ASCII";
-        ServletFileUpload servletFileUpload = handler
+        JakartaServletFileUpload servletFileUpload = handler
                 .createServletFileUpload(request);
         Assert.assertNotNull(servletFileUpload);
         Assert.assertNull(
                 "Header encoding should not be set by Flow when request character encoding is set",
-                servletFileUpload.getHeaderEncoding());
+                servletFileUpload.getHeaderCharset());
     }
 
     @Test
