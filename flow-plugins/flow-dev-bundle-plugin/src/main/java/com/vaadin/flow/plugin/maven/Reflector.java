@@ -223,6 +223,10 @@ public final class Reflector {
 
         Map<String, Artifact> projectDependencies = new HashMap<>(project
                 .getArtifacts().stream()
+                // Exclude all maven artifact to prevent class loading clash
+                // with maven.api class realm
+                .filter(artifact -> !"org.apache.maven"
+                        .equals(artifact.getGroupId()))
                 .filter(artifact -> artifact.getFile() != null
                         && artifact.getArtifactHandler().isAddedToClasspath()
                         && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
