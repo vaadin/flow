@@ -15,26 +15,42 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import javax.inject.Inject;
+
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.build.BuildContext;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
@@ -45,6 +61,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -168,6 +185,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
+    @Parameter(defaultValue = "${mojoExecution}")
+    MojoExecution mojoExecution;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -231,6 +251,69 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
 
+    static final String CLASSFINDER_FIELD_NAME = "classFinder";
+    private ClassFinder classFinder;
+
+    private Consumer<File> buildContextRefresher;
+
+    @Inject
+    void setBuildContext(BuildContext buildContext) {
+        buildContextRefresher = buildContext::refresh;
+    }
+
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
+                .getPluginDescriptor();
+        checkFlowCompatibility(pluginDescriptor);
+
+        Reflector reflector = getOrCreateReflector();
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread()
+                .setContextClassLoader(reflector.getIsolatedClassLoader());
+        try {
+            Mojo task = reflector.createMojo(this);
+            findExecuteMethod(task.getClass()).invoke(task);
+        } catch (MojoExecutionException | MojoFailureException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MojoFailureException(e.getMessage(), e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(tccl);
+        }
+    }
+
+    /**
+     * Perform whatever build-process behavior this <code>Mojo</code>
+     * implements.<br>
+     * This is the main trigger for the <code>Mojo</code> inside the
+     * <code>Maven</code> system, and allows the <code>Mojo</code> to
+     * communicate errors.
+     *
+     * @throws MojoExecutionException
+     *             if an unexpected problem occurs. Throwing this exception
+     *             causes a "BUILD ERROR" message to be displayed.
+     * @throws MojoFailureException
+     *             if an expected problem (such as a compilation failure)
+     *             occurs. Throwing this exception causes a "BUILD FAILURE"
+     *             message to be displayed.
+     */
+    protected abstract void executeInternal()
+            throws MojoExecutionException, MojoFailureException;
+
+    /**
+     * Indicates that the file or folder content has been modified during the
+     * build.
+     *
+     * @param file
+     *            a {@link java.io.File} object.
+     */
+    protected void triggerRefresh(File file) {
+        if (buildContextRefresher != null) {
+            buildContextRefresher.accept(file);
+        }
+    }
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -238,14 +321,19 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @param project
      *            a given MavenProject
      * @return List of ClasspathElements
+     * @deprecated will be removed without replacement.
      */
+    @Deprecated(forRemoval = true)
     public static List<String> getClasspathElements(MavenProject project) {
 
         try {
-            final Stream<String> classpathElements = Stream.concat(
-                    project.getRuntimeClasspathElements().stream(),
-                    project.getCompileClasspathElements().stream().filter(
-                            s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+            final Stream<String> classpathElements = Stream
+                    .of(project.getRuntimeClasspathElements().stream(),
+                            project.getSystemClasspathElements().stream(),
+                            project.getCompileClasspathElements().stream()
+                                    .filter(s -> s.matches(
+                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
+                    .flatMap(Function.identity());
             return classpathElements.collect(Collectors.toList());
         } catch (DependencyResolutionRequiredException e) {
             throw new IllegalStateException(String.format(
@@ -257,15 +345,37 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Checks if Hilla is available based on the Maven project's classpath.
      *
+     * @return true if Hilla is available, false otherwise
+     */
+    public boolean isHillaAvailable() {
+        return getOrCreateReflector().getResource(
+                "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available based on the Maven project's classpath.
+     *
      * @param mavenProject
      *            Target Maven project
      * @return true if Hilla is available, false otherwise
      */
     public static boolean isHillaAvailable(MavenProject mavenProject) {
-        List<String> classpathElements = FlowModeAbstractMojo
-                .getClasspathElements(mavenProject);
-        return BuildFrontendUtil.getClassFinder(classpathElements).getResource(
+        return Reflector.of(mavenProject, null).getResource(
                 "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available and Hilla views are used in the Maven
+     * project based on what is in routes.ts or routes.tsx file.
+     *
+     * @param frontendDirectory
+     *            Target frontend directory.
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public boolean isHillaUsed(File frontendDirectory) {
+        return isHillaAvailable()
+                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     /**
@@ -312,11 +422,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public ClassFinder getClassFinder() {
-
-        List<String> classpathElements = getClasspathElements(project);
-
-        return BuildFrontendUtil.getClassFinder(classpathElements);
-
+        if (classFinder == null) {
+            URLClassLoader classLoader = getOrCreateReflector()
+                    .getIsolatedClassLoader();
+            classFinder = new ReflectionsClassFinder(classLoader,
+                    classLoader.getURLs());
+        }
+        return classFinder;
     }
 
     @Override
@@ -497,7 +609,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             return frontendHotdeploy;
         }
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return isHillaUsed(project, frontendDirectory);
+        return isHillaUsed(frontendDirectory);
     }
 
     @Override
@@ -517,5 +629,62 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         }
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
         return FrontendUtils.isReactRouterRequired(frontendDirectory);
+    }
+
+    private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
+        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin"
+                .equals(artifact.getGroupId())
+                && "flow-server".equals(artifact.getArtifactId());
+        String projectFlowVersion = project.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .orElse(null);
+        String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .orElse(null);
+        if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+            getLog().warn(
+                    "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
+                            + "Flow version for project is "
+                            + projectFlowVersion
+                            + ", Vaadin plugin is built for Flow version "
+                            + pluginFlowVersion + ".");
+        }
+    }
+
+    private Method findExecuteMethod(Class<?> taskClass)
+            throws NoSuchMethodException {
+
+        while (taskClass != null && taskClass != Object.class) {
+            try {
+                Method executeInternal = taskClass
+                        .getDeclaredMethod("executeInternal");
+                executeInternal.setAccessible(true);
+                return executeInternal;
+            } catch (NoSuchMethodException e) {
+                // ignore
+            }
+            taskClass = taskClass.getSuperclass();
+        }
+        throw new NoSuchMethodException(
+                "Method executeInternal not found in " + getClass().getName());
+    }
+
+    private Reflector getOrCreateReflector() {
+        Map<String, Object> pluginContext = getPluginContext();
+        String pluginKey = mojoExecution.getPlugin().getKey();
+        String reflectorKey = Reflector.class.getName() + "-" + pluginKey + "-"
+                + mojoExecution.getLifecyclePhase();
+        if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
+            getLog().debug("Using cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+            return Reflector.adapt(pluginContext.get(reflectorKey));
+        }
+        Reflector reflector = Reflector.of(project, mojoExecution);
+        if (pluginContext != null) {
+            pluginContext.put(reflectorKey, reflector);
+            getLog().debug("Cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+        }
+        return reflector;
     }
 }
