@@ -40,7 +40,7 @@ import com.vaadin.flow.plugin.base.CleanOptions;
 public class CleanFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
-    public void execute() throws MojoFailureException {
+    protected void executeInternal() throws MojoFailureException {
         try {
             CleanFrontendUtil.runCleaning(this, new CleanOptions());
         } catch (CleanFrontendException e) {

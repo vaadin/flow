@@ -50,7 +50,7 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
     private boolean disableOptionalChaining;
 
     @Override
-    public void execute() throws MojoFailureException {
+    protected void executeInternal() throws MojoFailureException {
         if (isHillaUsed(frontendDirectory())) {
             getLog().warn(
                     """
