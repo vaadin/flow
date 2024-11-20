@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -112,7 +113,8 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
-    public void should_removeNodeModulesFolder() throws MojoFailureException {
+    public void should_removeNodeModulesFolder()
+            throws MojoFailureException, MojoExecutionException {
         final File nodeModules = new File(projectBase, NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
                 nodeModules.mkdirs());
@@ -123,7 +125,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_notRemoveNodeModulesFolder_hilla()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         enableHilla();
         final File nodeModules = new File(projectBase, NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
@@ -135,7 +137,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeCompressedDevBundle()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File devBundleDir = new File(projectBase,
                 Constants.BUNDLE_LOCATION);
         final File devBundle = new File(projectBase,
@@ -150,7 +152,8 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
-    public void should_removeOldDevBundle() throws MojoFailureException {
+    public void should_removeOldDevBundle()
+            throws MojoFailureException, MojoExecutionException {
         final File devBundleDir = new File(projectBase, "src/main/dev-bundle/");
         Assert.assertTrue("Failed to create 'dev-bundle' folder",
                 devBundleDir.mkdirs());
@@ -161,7 +164,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeFrontendGeneratedFolder()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         Assert.assertTrue("Failed to create 'frontend/generated'",
                 frontendGenerated.mkdirs());
         FileUtils.fileWrite(new File(frontendGenerated, "my_theme.js"),
@@ -175,7 +178,8 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeGeneratedFolderForCustomFrontendFolder()
-            throws MojoFailureException, IOException, IllegalAccessException {
+            throws MojoFailureException, IOException, IllegalAccessException,
+            MojoExecutionException {
 
         File customFrontendFolder = new File(projectBase, "src/main/frontend");
         File customFrontendGenerated = new File(customFrontendFolder,
@@ -199,7 +203,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeNpmPackageLockFile()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File packageLock = new File(projectBase, "package-lock.json");
         FileUtils.fileWrite(packageLock, "{ \"fake\": \"lock\"}");
 
@@ -210,7 +214,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_notRemoveNpmPackageLockFile_hilla()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         enableHilla();
         final File packageLock = new File(projectBase, "package-lock.json");
         FileUtils.fileWrite(packageLock, "{ \"fake\": \"lock\"}");
@@ -222,7 +226,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removePnpmFile()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File pnpmFile = new File(projectBase, ".pnpmfile.cjs");
         FileUtils.fileWrite(pnpmFile, "{ \"fake\": \"pnpmfile\"}");
 
@@ -232,7 +236,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removePnpmPackageLockFile()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File pnpmLock = new File(projectBase, "pnpm-lock.yaml");
         FileUtils.fileWrite(pnpmLock, "lockVersion: -1");
         mojo.execute();
@@ -241,7 +245,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_cleanPackageJson_removeVaadinAndHashObjects()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         JsonObject json = createInitialPackageJson();
         FileUtils.fileWrite(packageJson, json.toJson());
         mojo.execute();
@@ -257,7 +261,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_cleanPackageJson_removeVaadinDependenciesInOverrides()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         JsonObject json = createInitialPackageJson(true);
         FileUtils.fileWrite(packageJson, json.toJson());
 
@@ -272,7 +276,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_keepUserDependencies_whenPackageJsonEdited()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         JsonObject json = createInitialPackageJson();
         json.put("dependencies", Json.createObject());
         json.getObject("dependencies").put("foo", "bar");

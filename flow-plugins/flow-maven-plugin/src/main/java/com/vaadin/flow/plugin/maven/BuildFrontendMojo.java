@@ -129,7 +129,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     private boolean cleanFrontendFiles;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    protected void executeInternal()
+            throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
         TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
