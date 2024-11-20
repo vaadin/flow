@@ -157,9 +157,10 @@ public class TaskGeneratePWAIconsTest {
                 .map(p -> p.getFileName().toString()).toList();
         Assert.assertFalse("Expected PWA icons to be generated",
                 generatedIcons.isEmpty());
-        Assert.assertTrue(
-                "Generated icons have invalid names: " + generatedIcons,
-                generatedIcons.stream().allMatch(iconNamePattern));
+        List<String> invalidIcons = generatedIcons.stream()
+                .filter(iconNamePattern.negate()).toList();
+        Assert.assertTrue("Generated icons have invalid names: " + invalidIcons,
+                invalidIcons.isEmpty());
 
     }
 
