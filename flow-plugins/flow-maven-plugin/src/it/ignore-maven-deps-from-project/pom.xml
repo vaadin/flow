@@ -70,15 +70,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.vaadin.test</groupId>
-                        <artifactId>fake-flow-resources</artifactId>
-                        <version>1.0.0</version>
-                        <scope>system</scope>
-                        <systemPath>${project.basedir}/../flow-addon/target/fake-resources-plugin-1.0.0.jar</systemPath>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
