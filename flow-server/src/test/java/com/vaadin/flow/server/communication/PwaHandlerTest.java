@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -132,6 +133,7 @@ public class PwaHandlerTest {
         PwaIcon icon = ctor.newInstance(size, size,
                 PwaConfiguration.DEFAULT_ICON);
         icon.setRegistry(registry);
+        icon.setImage(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB));
         return icon;
     }
 }

@@ -186,6 +186,11 @@ public final class Constants implements Serializable {
     public static final String VAADIN_WEBAPP = "webapp/";
 
     /**
+     * The generated PWA icons folder.
+     */
+    public static final String VAADIN_PWA_ICONS = "pwa-icons/";
+
+    /**
      * The path to meta-inf/VAADIN/ where static resources are put on the
      * servlet.
      */
