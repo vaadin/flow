@@ -229,6 +229,41 @@ public class VersionsJsonConverterTest {
     }
 
     @Test
+    public void reactRouterUsed_noVaadinRouterAdded() {
+        String json = """
+                {
+                  "core": {
+                    "flow": {
+                      "javaVersion": "3.0.0.alpha17"
+                    },
+                  },
+                  "vaadin-router": {
+                    "npmName": "@vaadin/router",
+                    "jsVersion": "2.0.0"
+                  },
+                  "react": {
+                    "react-components": {
+                      "jsVersion": "24.4.0-alpha7",
+                      "npmName": "@vaadin/react-components",
+                      "mode": "react"
+                    }
+                  },
+                  "platform": "foo"
+                }
+                """.formatted(VAADIN_CORE_NPM_PACKAGE);
+
+        VersionsJsonConverter convert = new VersionsJsonConverter(
+                Json.parse(json), true);
+        JsonObject convertedJson = convert.getConvertedJson();
+
+        Assert.assertFalse(
+                "Found @vaadin/router even though it should not be in use.",
+                convertedJson.hasKey("@vaadin/router"));
+        Assert.assertTrue("Missing react-components",
+                convertedJson.hasKey("@vaadin/react-components"));
+    }
+
+    @Test
     public void testModeProperty() {
         String json = """
                 {
