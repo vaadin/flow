@@ -16,16 +16,12 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.codehaus.plexus.build.BuildContext;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 
@@ -41,11 +37,9 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
-    @Component
-    private BuildContext buildContext; // m2eclipse integration
-
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    protected void executeInternal()
+            throws MojoExecutionException, MojoFailureException {
         if (productionMode != null) {
             logWarn("The <productionMode>" + productionMode
                     + "</productionMode> Maven parameter no longer has any effect and can be removed. Production mode is automatically enabled when you run the build-frontend target.");
@@ -56,9 +50,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
         // Inform m2eclipse that the directory containing the token file has
         // been updated in order to trigger server re-deployment (#6103)
-        if (buildContext != null) {
-            buildContext.refresh(tokenFile.getParentFile());
-        }
+        triggerRefresh(tokenFile.getParentFile());
 
         try {
             BuildFrontendUtil.prepareFrontend(this);
