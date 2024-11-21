@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,9 @@ import com.vaadin.flow.utils.FlowFileUtils;
 public final class Reflector {
 
     public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
+    private static final Set<String> DEPENDENCIES_GROUP_EXCLUSIONS = Set.of(
+            "org.apache.maven", "org.codehaus.plexus", "org.slf4j",
+            "org.eclipse.sisu");
 
     private final URLClassLoader isolatedClassLoader;
     private Object classFinder;
@@ -225,8 +229,8 @@ public final class Reflector {
                 .getArtifacts().stream()
                 // Exclude all maven artifacts to prevent class loading clash
                 // with maven.api class realm
-                .filter(artifact -> !"org.apache.maven"
-                        .equals(artifact.getGroupId()))
+                .filter(artifact -> !DEPENDENCIES_GROUP_EXCLUSIONS
+                        .contains(artifact.getGroupId()))
                 .filter(artifact -> artifact.getFile() != null
                         && artifact.getArtifactHandler().isAddedToClasspath()
                         && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
@@ -242,6 +246,10 @@ public final class Reflector {
         if (mojoExecution != null) {
             mojoExecution.getMojoDescriptor().getPluginDescriptor()
                     .getArtifacts().stream()
+                    // Exclude all maven artifacts to prevent class loading
+                    // clash with maven.api class realm
+                    .filter(artifact -> !DEPENDENCIES_GROUP_EXCLUSIONS
+                            .contains(artifact.getGroupId()))
                     .filter(artifact -> !projectDependencies
                             .containsKey(keyMapper.apply(artifact)))
                     .forEach(artifact -> projectDependencies
