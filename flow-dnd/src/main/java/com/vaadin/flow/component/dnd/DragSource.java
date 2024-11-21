@@ -17,6 +17,8 @@ package com.vaadin.flow.component.dnd;
 
 import java.util.Locale;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
@@ -25,6 +27,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.shared.Registration;
 
@@ -344,6 +347,10 @@ public interface DragSource<T extends Component> extends HasElement {
      *            the y-offset of the drag image
      */
     default void setDragImage(Component dragImage, int offsetX, int offsetY) {
+        if (dragImage != null && !dragImage.isVisible()) {
+            throw new IllegalStateException(
+                    "Drag image element is not visible and will not show.\nMake element visible to use as drag image!");
+        }
         if (getDragImage() != null && getDragImage() != dragImage) {
             // Remove drag image from the virtual children list if it's there.
             if (getDraggableElement().getNode()
@@ -362,14 +369,12 @@ public interface DragSource<T extends Component> extends HasElement {
                 getDragSourceComponent().addAttachListener(event -> {
                     if (!dragImage.isAttached()
                             && dragImage.getParent().isEmpty()) {
-                        getDraggableElement()
-                                .appendVirtualChild(dragImage.getElement());
+                        appendDragElement(dragImage.getElement());
                     }
                     event.unregisterListener();
                 });
             } else {
-                getDraggableElement()
-                        .appendVirtualChild(dragImage.getElement());
+                appendDragElement(dragImage.getElement());
             }
         }
         ComponentUtil.setData(getDragSourceComponent(),
@@ -378,6 +383,21 @@ public interface DragSource<T extends Component> extends HasElement {
                 "window.Vaadin.Flow.dndConnector.setDragImage($0, $1, $2, $3)",
                 dragImage, (dragImage == null ? 0 : offsetX),
                 (dragImage == null ? 0 : offsetY), getDraggableElement());
+    }
+
+    private void appendDragElement(Element dragElement) {
+        if (dragElement.getTag().equals("img")) {
+            getDraggableElement().appendVirtualChild(dragElement);
+        } else {
+            LoggerFactory.getLogger(DragSource.class).debug(
+                    "Attaching child to dom in position -100,-100. Consider adding the component manually to not get overlapping components on drag for element.");
+            getDraggableElement().appendChild(dragElement);
+            Style style = dragElement.getStyle();
+            style.set("position", "absolute");
+            style.set("top", "-100px");
+            style.set("left", "-100px");
+            style.set("display", "none");
+        }
     }
 
     /**
