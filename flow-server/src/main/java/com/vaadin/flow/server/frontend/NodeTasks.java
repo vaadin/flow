@@ -35,7 +35,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
@@ -80,6 +79,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
@@ -258,6 +258,9 @@ public class NodeTasks implements FallibleCommand {
             pwa = frontendDependencies.getPwaConfiguration();
         } else {
             pwa = new PwaConfiguration();
+        }
+        if (options.isProductionMode() && pwa.isEnabled()) {
+            commands.add(new TaskGeneratePWAIcons(options, pwa));
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.isFrontendHotdeploy() || options.isBundleBuild()) {

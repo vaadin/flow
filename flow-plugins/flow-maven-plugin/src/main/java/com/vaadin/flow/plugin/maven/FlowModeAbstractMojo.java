@@ -257,7 +257,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean npmExcludeWebComponents;
 
     /**
-     * Parameter for adding file extensions to handle during frontend tasks.
+     * Parameter for adding file extensions to handle when generating bundles.
+     * Hashes are calculated for these files as part of detecting if a new
+     * bundle should be generated.
      * <p>
      * From the commandline use comma separated list
      * {@code -Ddevmode.frontendExtraFileExtensions="svg,ico"}

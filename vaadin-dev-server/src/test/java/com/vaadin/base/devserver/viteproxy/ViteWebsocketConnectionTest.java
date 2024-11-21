@@ -17,6 +17,8 @@
 package com.vaadin.base.devserver.viteproxy;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.http.WebSocket;
 import java.nio.charset.StandardCharsets;
@@ -24,9 +26,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -34,7 +38,11 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.mockito.ThrowingConsumer;
+
+import com.vaadin.flow.internal.ReflectTools;
 
 public class ViteWebsocketConnectionTest {
 
@@ -110,6 +118,62 @@ public class ViteWebsocketConnectionTest {
         errorLatch.await(2, TimeUnit.SECONDS);
     }
 
+    @Test(timeout = 2000)
+    public void close_clientWebsocketNotAvailable_dontBlock()
+            throws ExecutionException, InterruptedException {
+        AtomicReference<Throwable> connectionError = new AtomicReference<>();
+        CountDownLatch suspendConnectionLatch = new CountDownLatch(1);
+        handlerSupplier = exchange -> {
+            suspendConnectionLatch.await();
+        };
+        ViteWebsocketConnection connection = new ViteWebsocketConnection(
+                httpServer.getAddress().getPort(), "/VAADIN", "proto", x -> {
+                }, () -> {
+                }, connectionError::set);
+        connection.close();
+        suspendConnectionLatch.countDown();
+        Assert.assertNull("Websocket connection failed", connectionError.get());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 2000)
+    public void close_clientWebsocketClose_dontBlockIndefinitely()
+            throws ExecutionException, InterruptedException,
+            NoSuchFieldException, InvocationTargetException,
+            IllegalAccessException {
+        handlerSupplier = ViteWebsocketConnectionTest::handshake;
+        AtomicReference<Throwable> connectionError = new AtomicReference<>();
+        ViteWebsocketConnection connection = new ViteWebsocketConnection(
+                httpServer.getAddress().getPort(), "/VAADIN", "proto", x -> {
+                }, () -> {
+                }, connectionError::set);
+
+        // Replace websocket with spy to mock close behavior
+        Field clientWebsocketField = ViteWebsocketConnection.class
+                .getDeclaredField("clientWebsocket");
+        CompletableFuture<WebSocket> clientWebsocketFuture = (CompletableFuture<WebSocket>) ReflectTools
+                .getJavaFieldValue(connection, clientWebsocketField);
+        WebSocket mockWebSocket = Mockito.spy(clientWebsocketFuture.get());
+        Mockito.when(mockWebSocket.sendClose(ArgumentMatchers.anyInt(),
+                ArgumentMatchers.anyString())).then(i -> {
+                    CompletableFuture<?> closeFuture = (CompletableFuture<?>) i
+                            .callRealMethod();
+                    return closeFuture.thenRunAsync(() -> {
+                        try {
+                            // Wait longer than test timeout.
+                            // Close should not wait that much
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                });
+        ReflectTools.setJavaFieldValue(connection, clientWebsocketField,
+                CompletableFuture.completedFuture(mockWebSocket));
+        connection.close();
+        Assert.assertNull("Websocket connection failed", connectionError.get());
+    }
+
     private static void handshake(HttpExchange exchange) throws IOException {
         Headers requestHeaders = exchange.getRequestHeaders();
         if ("GET".equalsIgnoreCase(exchange.getRequestMethod()) && "upgrade"
@@ -131,4 +195,5 @@ public class ViteWebsocketConnectionTest {
             exchange.sendResponseHeaders(101, -1);
         }
     }
+
 }
