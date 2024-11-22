@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.6-SNAPSHOT</version>
+        <version>24.7-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -429,6 +429,23 @@
                 <groups>${excludedGroups}</groups>
                 <excludedGroups></excludedGroups>
             </properties>
+        </profile>
+        <profile>
+            <!-- To be removed after chrome used by CI gets upgraded to 128 or later -->
+            <id>ci-devtools</id>
+            <activation>
+                <property>
+                    <name>teamcity.build.id</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.seleniumhq.selenium</groupId>
+                    <artifactId>selenium-devtools-v127</artifactId>
+                    <version>4.25.0</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>deepClean</id>

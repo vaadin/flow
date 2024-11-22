@@ -1,0 +1,7 @@
+**/src/main/bundles
+**/src/main/frontend/generated
+**/src/main/frontend/index.html
+**/package*.json
+**/tsconfig.json
+**/types.d.ts
+**/vite.*.ts
