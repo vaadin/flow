@@ -99,9 +99,9 @@ public class ServerRpcHandlerTest {
         Mockito.verify(dependencyList).clearPendingSendToClient();
     }
 
-    @Test
-    public void handleRpc_duplicateMessage_doNotThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+    @Test(expected = ServerRpcHandler.ResendPayloadException.class)
+    public void handleRpc_duplicateMessage_throwsResendPayload()
+            throws InvalidUIDLSecurityKeyException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
         ServerRpcHandler handler = new ServerRpcHandler();
 

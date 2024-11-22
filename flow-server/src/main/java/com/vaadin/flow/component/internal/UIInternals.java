@@ -215,6 +215,8 @@ public class UIInternals implements Serializable {
 
     private byte[] lastProcessedMessageHash = null;
 
+    private String lastRequestResponse = "for(;;);[{}]";
+
     private String contextRootRelativePath;
 
     private String appId;
@@ -303,6 +305,25 @@ public class UIInternals implements Serializable {
             byte[] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
         this.lastProcessedMessageHash = lastProcessedMessageHash;
+    }
+
+    /**
+     * Sets the response created for the last UIDL request.
+     *
+     * @param lastRequestResponse
+     *            The request that was sent for the last UIDL request.
+     */
+    public void setLastRequestResponse(String lastRequestResponse) {
+        this.lastRequestResponse = lastRequestResponse;
+    }
+
+    /**
+     * Returns the response created for the last UIDL request.
+     *
+     * @return The request that was sent for the last UIDL request.
+     */
+    public String getLastRequestResponse() {
+        return lastRequestResponse;
     }
 
     /**
