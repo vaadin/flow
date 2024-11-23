@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { ReactAdapterElement } from "Frontend/generated/flow/ReactAdapter.js";
 import React from "react";
 

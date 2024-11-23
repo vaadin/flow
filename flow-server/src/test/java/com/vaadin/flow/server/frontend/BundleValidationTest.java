@@ -2135,7 +2135,7 @@ public class BundleValidationTest {
         FileUtils.write(packageJson,
                 "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
                         + "    \"react-dom\": \"18.2.0\",\n"
-                        + "    \"react-router-dom\": \"6.18.0\"}, "
+                        + "    \"react-router\": \"7.0.0\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -2171,7 +2171,7 @@ public class BundleValidationTest {
         FileUtils.write(packageJson,
                 "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
                         + "    \"react-dom\": \"18.2.0\",\n"
-                        + "    \"react-router-dom\": \"6.18.0\"}, "
+                        + "    \"react-router\": \"7.0.0\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 

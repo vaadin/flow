@@ -29,8 +29,8 @@ import {
     useLocation,
     useNavigate,
     type NavigateOptions,
-} from "react-router-dom";
-import type { AgnosticRouteObject } from '@remix-run/router';
+} from "react-router";
+import type { AgnosticRouteObject } from 'react-router';
 import { createPortal } from "react-dom";
 
 const flow = new _Flow({

@@ -188,7 +188,7 @@ public class TaskGenerateReactFilesTest {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import { tea, serverSideRoutes, coffee } from "Frontend/generated/flow/Flow";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -223,7 +223,7 @@ public class TaskGenerateReactFilesTest {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import { tea, coffee } from "Frontend/generated/flow/Flow";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -260,7 +260,7 @@ public class TaskGenerateReactFilesTest {
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -298,7 +298,7 @@ public class TaskGenerateReactFilesTest {
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 

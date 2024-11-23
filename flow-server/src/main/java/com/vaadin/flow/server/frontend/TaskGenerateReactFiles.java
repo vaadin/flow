@@ -78,7 +78,7 @@ public class TaskGenerateReactFiles
 
                 OR
 
-                import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                import { createBrowserRouter, RouteObject } from 'react-router';
                 import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
 
                 function build() {
