@@ -28,7 +28,7 @@ import {
     useBlocker,
     useLocation,
     useNavigate,
-    type NavigateOptions,
+    type NavigateOptions, useHref,
 } from "react-router-dom";
 import type { AgnosticRouteObject } from '@remix-run/router';
 import { createPortal } from "react-dom";
@@ -278,6 +278,7 @@ function Flow() {
     const containerRef = useRef<RouterContainer | undefined>(undefined);
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
     const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
+    const basename = useHref('/');
 
     // portalsReducer function is used as state outside the Flow component.
     const [portals, dispatchPortalAction] = useReducer(portalsReducer, []);
@@ -366,7 +367,7 @@ function Flow() {
                 // Blocker is handled and the new navigation
                 // gets queued to be executed after the current handling ends.
                 const {pathname, state} = blocker.location;
-                queuedNavigate(pathname, true, { state: state, replace: true });
+                queuedNavigate(pathname.substring(basename.length), true, { state: state, replace: true });
                 return;
             }
             blockerHandled.current = true;
