@@ -290,7 +290,7 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val frontendExtraFileExtensions: ListProperty<String>
 
     /**
-     * Whether to include web component npm packages in packages.json
+     * Whether to exclude Vaadin web component npm packages in packages.json
      */
     public abstract val npmExcludeWebComponents: Property<Boolean>
 
