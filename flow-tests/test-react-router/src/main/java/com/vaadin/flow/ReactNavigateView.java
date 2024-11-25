@@ -22,9 +22,8 @@ import com.vaadin.flow.component.react.ReactAdapterComponent;
 import com.vaadin.flow.router.Route;
 
 /**
- * Test view for vaadin/flow#20404
- * Set network to slow 4G and quickly click on button.
- * No console exceptions should be shown.
+ * Test view for vaadin/flow#20404 Set network to slow 4G and quickly click on
+ * button. No console exceptions should be shown.
  */
 @Route("com.vaadin.flow.ReactNavigateView")
 @Tag("navigate-view")
