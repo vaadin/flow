@@ -69,6 +69,7 @@ class VersionsJsonConverter {
      * Mode value for dependency for all modes.
      */
     public static final String MODE_ALL = "all"; // same as empty string
+    private static final Object VAADIN_ROUTER = "@vaadin/router";
 
     private final JsonObject convertedObject;
 
@@ -149,6 +150,10 @@ class VersionsJsonConverter {
         String version;
         // #11025
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
+            return;
+        }
+        if (reactEnabled && Objects.equals(npmName, VAADIN_ROUTER)) {
+            exclusions.add(npmName);
             return;
         }
         if (!isIncludedByMode(mode)) {
