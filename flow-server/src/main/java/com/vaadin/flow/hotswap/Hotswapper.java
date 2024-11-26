@@ -349,13 +349,14 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                                 .isAssignableFrom(chainItem.getClass())))
                 .distinct().toList();
 
+        UIRefreshStrategy refreshStrategy;
         // A full chain refresh should be triggered if there are modal
         // components, since they could be attached to UI or parent layouts
-        boolean hasModalComponents = ui.hasModalComponent();
-        UIRefreshStrategy refreshStrategy;
-        if (!targetChainChangedItems.isEmpty()) {
-            refreshStrategy = targetChainChangedItems.stream().allMatch(
-                    chainItem -> chainItem == route && !hasModalComponents)
+        if (ui.hasModalComponent()) {
+            refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+        } else if (!targetChainChangedItems.isEmpty()) {
+            refreshStrategy = targetChainChangedItems.stream()
+                    .allMatch(chainItem -> chainItem == route)
                             ? UIRefreshStrategy.PUSH_REFRESH_ROUTE
                             : UIRefreshStrategy.PUSH_REFRESH_CHAIN;
         } else {
@@ -365,6 +366,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             refreshStrategy = computeRefreshStrategyForUITree(ui,
                     changedClasses, targetsChain, route);
         }
+
         // A different layout might have been applied after hotswap
         if (refreshStrategy == UIRefreshStrategy.SKIP) {
             RouteRegistry registry = ui.getInternals().getRouter()
