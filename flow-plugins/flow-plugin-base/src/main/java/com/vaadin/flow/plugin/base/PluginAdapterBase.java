@@ -349,9 +349,9 @@ public interface PluginAdapterBase {
     List<String> frontendExtraFileExtensions();
 
     /**
-     * Whether to include web component npm packages in packages.json.
+     * Whether to exclude Vaadin web component npm packages in packages.json.
      *
-     * @return {@code true} to include web component npm packages.
+     * @return {@code true} to exclude Vaadin web component npm packages.
      */
     boolean isNpmExcludeWebComponents();
 }

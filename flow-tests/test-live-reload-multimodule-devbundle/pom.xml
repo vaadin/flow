@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.6-SNAPSHOT</version>
+        <version>24.7-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-live-reload-multimodule-devbundle</artifactId>
     <name>The main module for a live reload multi module project (dev bundle)</name>
@@ -42,9 +42,9 @@
     </dependencies>
 
     <modules>
-        <module>library/pom-devbundle.xml</module>
-        <module>ui/pom-devbundle.xml</module>
-        <module>theme/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/library/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/ui/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/theme/pom-devbundle.xml</module>
     </modules>
 
 </project>

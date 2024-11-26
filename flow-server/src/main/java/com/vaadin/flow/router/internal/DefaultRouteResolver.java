@@ -25,6 +25,7 @@ import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
@@ -58,15 +59,16 @@ public class DefaultRouteResolver implements RouteResolver {
                                         : "/" + clientPath);
                 if (viewInfo != null && viewInfo.flowLayout()) {
 
-                    Class<? extends Component> layout = (Class<? extends Component>) registry
+                    Class<? extends RouterLayout> layout = registry
                             .getLayout(path);
                     if (layout == null) {
                         throw new NotFoundException(
                                 "No layout for client path '%s'"
                                         .formatted(path));
                     }
-                    RouteTarget target = new RouteTarget(layout,
-                            Collections.emptyList());
+                    RouteTarget target = new RouteTarget(
+                            (Class<? extends Component>) layout, RouteUtil
+                                    .getParentLayoutsForNonRouteTarget(layout));
                     navigationResult = new NavigationRouteTarget(
                             navigationResult.getPath(), target,
                             Collections.emptyMap());

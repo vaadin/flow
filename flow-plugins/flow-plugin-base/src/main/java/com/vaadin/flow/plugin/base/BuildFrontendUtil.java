@@ -358,7 +358,9 @@ public class BuildFrontendUtil {
                     .withForceProductionBuild(adapter.forceProductionBuild())
                     .withReact(adapter.isReactEnabled())
                     .withNpmExcludeWebComponents(
-                            adapter.isNpmExcludeWebComponents());
+                            adapter.isNpmExcludeWebComponents())
+                    .withFrontendExtraFileExtensions(
+                            adapter.frontendExtraFileExtensions());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

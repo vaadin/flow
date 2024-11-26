@@ -12,12 +12,12 @@ Ask questions about Vaadin Flow in our [forum](https://vaadin.com/forum/c/flow/8
 
 Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and minor versions are aligned with platform versions:
 
-| Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
-|--------|-----------------------------------------------------------------|---------------------------------------------------------|
-| 1.0    | 10 (LTS)                                                        | 1.0                                                     |
-| 2.10   | 14.11 (LATEST free with Java 8+ support and Servlet)            | 2.10                                                    |
-| 2.11   | 14.12 (LATEST commercial with Java 8+ support and Servlet 3)    | 2.11                                                    |
-| 23.4   | 23.4 (LATEST free with Java 11+ support and Servlet 3)          | 23.4                                                    |
-| 23.5   | 23.5 (LATEST commercial with Java 11+ support and Servlet 3)    | 23.5                                                    |
-| 24.5   | 24.5 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)   | 24.5                                                    |
-| main   | 24.6 (Vaadin 24.6 preparations)                                 | 24.6                                                    |
+| Branch | [Platform Version](https://github.com/vaadin/platform/releases)         | [Flow Version](https://github.com/vaadin/flow/releases) |
+|--------|-------------------------------------------------------------------------|---------------------------------------------------------|
+| 1.0    | 10 (LTS)                                                                | 1.0                                                     |
+| 2.11   | 14.12 (LATEST commercial with Java 8+ support and Servlet 3)            | 2.11                                                    |
+| 23.5   | 23.5 (LATEST commercial with Java 11+ support and Servlet 3)            | 23.5                                                    |
+| 24.4   | 24.4 (maintained minor release, Java 17+, Jakarta EE 10, Spring-boot 3) | 24.4                                                    |
+| 24.5   | 24.5 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)           | 24.5                                                    |
+| 24.6   | 24.6 (Vaadin 24.6 pre-release)                                          | 24.6                                                    |
+| main   | 24.7 (Vaadin 24.7 preparations)                                         | 24.7                                                    |

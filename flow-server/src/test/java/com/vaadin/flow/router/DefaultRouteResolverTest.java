@@ -15,16 +15,13 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +38,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
-import com.vaadin.flow.server.menu.RouteParamType;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {
 
@@ -146,6 +142,34 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
             Assert.assertEquals(
                     "Layout should be returned for a non server route when matching @Layout exists",
                     DefaultLayout.class, greeting.getRouteTarget().getTarget());
+        }
+    }
+
+    @Test
+    public void clientRouteRequest_getDefinedLayoutAndParentLayouts() {
+        String path = "route";
+
+        router.getRegistry().setLayout(DefaultWithParentLayout.class);
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+                    .thenReturn(Collections.singletonMap("/route",
+                            new AvailableViewInfo("", null, false, "/route",
+                                    false, false, null, null, null, true)));
+            NavigationState greeting = resolveNavigationState(path);
+            Assert.assertEquals(
+                    "Layout should be returned for a non server route when matching @Layout exists",
+                    DefaultWithParentLayout.class,
+                    greeting.getRouteTarget().getTarget());
+            Assert.assertEquals(
+                    "@ParentLayout annotation should be followed. @Layout class should not be in parent layout list.",
+                    1, greeting.getRouteTarget().getParentLayouts().size());
+            Assert.assertEquals(
+                    "@ParentLayout annotation should be followed. @Layout class should not be in parent layout list.",
+                    DefaultParentLayout.class,
+                    greeting.getRouteTarget().getParentLayouts().get(0));
+
         }
     }
 
@@ -305,6 +329,18 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
     @Tag("div")
     @Layout
     private static class DefaultLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag("div")
+    @Layout
+    @ParentLayout(DefaultParentLayout.class)
+    private static class DefaultWithParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag("div")
+    private static class DefaultParentLayout extends Component
             implements RouterLayout {
     }
 

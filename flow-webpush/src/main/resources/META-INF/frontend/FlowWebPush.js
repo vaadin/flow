@@ -30,8 +30,6 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
                     });
 
                     if (subscription) {
-                        console.log(subscription);
-                        // console.log(JSON.parse(JSON.stringify(subscription)));
                         return JSON.parse(JSON.stringify(subscription));
                     }
                     throw new Error("Subscription failed. See console for exception.");
