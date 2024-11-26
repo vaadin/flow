@@ -215,7 +215,7 @@ public class UIInternals implements Serializable {
 
     private byte[] lastProcessedMessageHash = null;
 
-    private String lastRequestResponse = "for(;;);[{}]";
+    private String lastRequestResponse;
 
     private String contextRootRelativePath;
 

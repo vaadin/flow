@@ -1,7 +1,6 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 
 import org.junit.Assert;
@@ -99,7 +98,7 @@ public class ServerRpcHandlerTest {
         Mockito.verify(dependencyList).clearPendingSendToClient();
     }
 
-    @Test(expected = ServerRpcHandler.ResendPayloadException.class)
+    @Test(expected = ServerRpcHandler.ClientResentPayloadException.class)
     public void handleRpc_duplicateMessage_throwsResendPayload()
             throws InvalidUIDLSecurityKeyException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";

@@ -237,14 +237,14 @@ public class ServerRpcHandler implements Serializable {
     }
 
     /**
-     * Exception thrown then the client side re-sent the same request.
+     * Exception thrown when the client side re-sends the same request.
      */
-    public static class ResendPayloadException extends RuntimeException {
+    public static class ClientResentPayloadException extends RuntimeException {
 
         /**
          * Default constructor for the exception.
          */
-        public ResendPayloadException() {
+        public ClientResentPayloadException() {
             super();
         }
     }
@@ -334,7 +334,7 @@ public class ServerRpcHandler implements Serializable {
                         "Received old duplicate message from the client. Expected: "
                                 + expectedId + ", got: " + requestId
                                 + ". Resending previous response.");
-                throw new ResendPayloadException();
+                throw new ClientResentPayloadException();
             } else if (rpcRequest.isUnloadBeaconRequest()) {
                 getLogger().debug(
                         "Ignoring unexpected message id from the client on UNLOAD request. "
