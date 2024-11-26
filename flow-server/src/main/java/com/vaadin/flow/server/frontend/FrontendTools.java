@@ -856,7 +856,6 @@ public class FrontendTools {
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
         returnCommand.add("--scripts-prepend-node-path=true");
-        returnCommand.add("--legacy-peer-deps");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.
