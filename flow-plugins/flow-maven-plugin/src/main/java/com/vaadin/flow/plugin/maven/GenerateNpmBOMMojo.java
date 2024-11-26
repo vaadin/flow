@@ -138,7 +138,8 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     private String specVersion;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    protected void executeInternal()
+            throws MojoExecutionException, MojoFailureException {
         InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
         InvocationRequest request = requestBuilder.groupId(GROUP)
                 .artifactId(ARTIFACT).version(VERSION).goal(GOAL)

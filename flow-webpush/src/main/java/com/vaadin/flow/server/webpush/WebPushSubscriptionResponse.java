@@ -18,8 +18,6 @@ package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
 
-import nl.martijndwars.webpush.Subscription;
-
 /**
  * Callback for receiving web push subscription details
  *
@@ -34,5 +32,5 @@ public interface WebPushSubscriptionResponse extends Serializable {
      * @param subscription
      *            web push subscription object
      */
-    void subscription(Subscription subscription);
+    void subscription(WebPushSubscription subscription);
 }

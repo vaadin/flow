@@ -93,6 +93,10 @@ window.Vaadin.Flow.dndConnector = {
       event.currentTarget.classList.add('v-dragged');
     }
     if(event.currentTarget.__dragImage) {
+      if(event.currentTarget.__dragImage.style.display === "none") {
+        event.currentTarget.__dragImage.style.display = "block";
+        event.currentTarget.classList.add('shown');
+      }
       event.dataTransfer.setDragImage(
         event.currentTarget.__dragImage,
         event.currentTarget.__dragImageOffsetX,
@@ -102,6 +106,10 @@ window.Vaadin.Flow.dndConnector = {
 
   __dragendListener: function (event) {
     event.currentTarget.classList.remove('v-dragged');
+    if(event.currentTarget.classList.contains('shown')) {
+      event.currentTarget.classList.remove('shown');
+      event.currentTarget.__dragImage.style.display = "none";
+    }
   },
 
   updateDragSource: function (element) {
