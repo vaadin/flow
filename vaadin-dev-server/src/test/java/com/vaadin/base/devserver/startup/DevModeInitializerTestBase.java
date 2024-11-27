@@ -1,5 +1,6 @@
 package com.vaadin.base.devserver.startup;
 
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletRegistration;
 import java.io.File;
@@ -87,6 +88,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .createTaskGenerateEndpoint(any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any());
+
+        final EndpointUsageDetector endpointUsageDetector = Mockito
+                .mock(EndpointUsageDetector.class);
+        Mockito.when(endpointUsageDetector.areEndpointsUsed(Mockito.any()))
+                .thenReturn(true);
+        Mockito.when(lookup.lookup(EndpointUsageDetector.class))
+                .thenReturn(endpointUsageDetector);
 
         classes = new HashSet<>();
         classes.add(this.getClass());

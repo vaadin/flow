@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import jakarta.servlet.ServletRegistration;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
@@ -67,6 +68,13 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
 
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
+
+        final EndpointUsageDetector endpointUsageDetector = Mockito
+                .mock(EndpointUsageDetector.class);
+        Mockito.when(endpointUsageDetector.areEndpointsUsed(Mockito.any()))
+                .thenReturn(true);
+        Mockito.when(lookup.lookup(EndpointUsageDetector.class))
+                .thenReturn(endpointUsageDetector);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
