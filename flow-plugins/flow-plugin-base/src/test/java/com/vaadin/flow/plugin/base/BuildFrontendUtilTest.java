@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.frontend.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -38,13 +39,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FileIOUtils;
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -135,6 +129,13 @@ public class BuildFrontendUtilTest {
         MockedConstruction<TaskRunNpmInstall> construction = Mockito
                 .mockConstruction(TaskRunNpmInstall.class);
 
+        final EndpointUsageDetector endpointUsageDetector = Mockito
+                .mock(EndpointUsageDetector.class);
+        Mockito.doReturn(true).when(endpointUsageDetector)
+                .areEndpointsUsed(Mockito.any());
+        Mockito.doReturn(endpointUsageDetector).when(lookup)
+                .lookup(EndpointUsageDetector.class);
+
         final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito
                 .mock(EndpointGeneratorTaskFactory.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
@@ -158,6 +159,7 @@ public class BuildFrontendUtilTest {
             BuildFrontendUtil.runNodeUpdater(adapter);
         }
 
+        Mockito.verify(lookup).lookup(EndpointUsageDetector.class);
         Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
                 .lookup(TaskGenerateOpenAPI.class);
