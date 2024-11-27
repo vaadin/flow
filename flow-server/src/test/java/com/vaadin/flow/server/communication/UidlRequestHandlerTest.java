@@ -19,7 +19,6 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Optional;
@@ -31,6 +30,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -46,6 +46,7 @@ import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
+import com.vaadin.tests.util.MockUI;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -129,8 +130,72 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
+    public void clientRequestsPreviousIdAndPayload_resendPreviousResponse()
+            throws IOException {
+
+        UI ui = getUi();
+        VaadinSession session = ui.getSession();
+        VaadinService service = session.getService();
+        DeploymentConfiguration conf = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
+        Mockito.when(conf.isRequestTiming()).thenReturn(false);
+
+        String requestBody = """
+                {
+                   "csrfToken": "d1f44a6f-bbe5-4493-a8a9-3f5f234a2a93",
+                   "rpc": [
+                     {
+                       "type": "mSync",
+                       "node": 12,
+                       "feature": 1,
+                       "property": "value",
+                       "value": "a"
+                     },
+                     {
+                       "type": "event",
+                       "node": 12,
+                       "event": "change",
+                       "data": {}
+                     }
+                   ],
+                   "syncId": 0,
+                   "clientId": 0
+                 }
+                """;
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(conf.isSyncIdCheckEnabled()).thenReturn(true);
+
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response,
+                        requestBody);
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
+        String responseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // Init clean response
+        response = Mockito.mock(VaadinResponse.class);
+        outputStream = Mockito.mock(OutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+
+        result = handler.synchronizedHandleRequest(session, request, response,
+                requestBody);
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
+        String resendResponseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // response shouldn't contain async
+        Assert.assertEquals("Server should send same content again",
+                responseContent, resendResponseContent);
+    }
+
+    @Test
     public void should_modifyUidl_when_MPR() throws Exception {
-        UI ui = mock(UI.class);
+        UI ui = getUi();
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -151,7 +216,7 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void should_changeURL_when_v7LocationProvided() throws Exception {
-        UI ui = mock(UI.class);
+        UI ui = getUi();
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -172,7 +237,7 @@ public class UidlRequestHandlerTest {
     @Test
     public void should_updateHash_when_v7LocationNotProvided()
             throws Exception {
-        UI ui = mock(UI.class);
+        UI ui = getUi();
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -192,7 +257,7 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void should_not_modify_non_MPR_Uidl() throws Exception {
-        UI ui = mock(UI.class);
+        UI ui = getUi();
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -217,7 +282,7 @@ public class UidlRequestHandlerTest {
     @Test
     public void should_not_update_browser_history_if_no_hash_in_location()
             throws Exception {
-        UI ui = mock(UI.class);
+        UI ui = getUi();
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -351,4 +416,29 @@ public class UidlRequestHandlerTest {
         // @formatter:on
     }
 
+    /**
+     * Mock ui with session.
+     *
+     * @return
+     */
+    private static UI getUi() {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = new VaadinSession(service) {
+            @Override
+            public boolean hasLock() {
+                return true;
+            }
+
+            @Override
+            public VaadinService getService() {
+                return service;
+            }
+        };
+
+        UI ui = new MockUI(session);
+
+        when(service.findUI(Mockito.any())).thenReturn(ui);
+
+        return ui;
+    }
 }

@@ -39,6 +39,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.ClientResentPayloadException;
 import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
@@ -134,8 +135,10 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         StringWriter stringWriter = new StringWriter();
 
         try {
-            getRpcHandler(session).handleRpc(uI, requestBody, request);
+            getRpcHandler().handleRpc(uI, requestBody, request);
             writeUidl(uI, stringWriter, false);
+        } catch (ClientResentPayloadException e) {
+            stringWriter.write(uI.getInternals().getLastRequestResponse());
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
@@ -176,6 +179,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
         // some dirt to prevent cross site scripting
         String responseString = "for(;;);[" + uidl.toJson() + "]";
+        ui.getInternals().setLastRequestResponse(responseString);
         writer.write(responseString);
     }
 
@@ -208,7 +212,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return true;
     }
 
-    private ServerRpcHandler getRpcHandler(VaadinSession session) {
+    private ServerRpcHandler getRpcHandler() {
         ServerRpcHandler handler = rpcHandler.get();
         if (handler == null) {
             rpcHandler.compareAndSet(null, createRpcHandler());
