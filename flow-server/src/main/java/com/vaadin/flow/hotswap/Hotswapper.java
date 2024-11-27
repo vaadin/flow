@@ -469,7 +469,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         try {
             return Class.forName(className, false,
                     Thread.currentThread().getContextClassLoader());
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
             LOGGER.debug("Cannot resolve class {}", className, e);
         }
         return null;
