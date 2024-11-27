@@ -28,7 +28,7 @@ import {
     useBlocker,
     useLocation,
     useNavigate,
-    type NavigateOptions,
+    type NavigateOptions, useHref,
 } from "react-router";
 import { createPortal } from "react-dom";
 
@@ -272,10 +272,12 @@ function Flow() {
     });
     const location = useLocation();
     const navigated = useRef<boolean>(false);
+    const blockerHandled = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
     const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
+    const basename = useHref('/');
 
     // portalsReducer function is used as state outside the Flow component.
     const [portals, dispatchPortalAction] = useReducer(portalsReducer, []);
@@ -360,8 +362,18 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            if(blockerHandled.current) {
+                // Blocker is handled and the new navigation
+                // gets queued to be executed after the current handling ends.
+                const {pathname, state} = blocker.location;
+                queuedNavigate(pathname.substring(basename.length), true, { state: state, replace: true });
+                return;
+            }
+            blockerHandled.current = true;
             let blockingPromise: any;
             roundTrip.current = new Promise<void>((resolve,reject) => blockingPromise = {resolve:resolve,reject:reject});
+            // Release blocker handling after promise is fulfilled
+            roundTrip.current.then(() => blockerHandled.current = false, () => blockerHandled.current = false);
 
             // Proceed to the blocked location, unless the navigation originates from a click on a link.
             // In that case continue with function execution and perform a server round-trip
