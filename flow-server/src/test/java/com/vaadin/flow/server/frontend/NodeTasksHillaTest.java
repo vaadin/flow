@@ -67,6 +67,9 @@ public class NodeTasksHillaTest {
     @Mock
     private TaskGenerateEndpoint taskGenerateEndpoint;
 
+    @Mock
+    private EndpointUsageDetector endpointUsageDetector;
+
     @Before
     public void setup() throws Exception {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
@@ -106,7 +109,7 @@ public class NodeTasksHillaTest {
     }
 
     @Test
-    public void should_useHillaEngine_whenEnabled()
+    public void should_useHillaEngine_whenEndpointsAreDetected()
             throws ExecutionFailedException, IOException {
         Options options = createOptions();
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
@@ -116,6 +119,10 @@ public class NodeTasksHillaTest {
                 .createTaskGenerateEndpoint(any());
         Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
                 .lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(true).when(endpointUsageDetector)
+                .areEndpointsUsed(any());
+        Mockito.doReturn(endpointUsageDetector).when(options.getLookup())
+                .lookup(EndpointUsageDetector.class);
 
         try (MockedStatic<FrontendUtils> util = Mockito
                 .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
@@ -126,6 +133,33 @@ public class NodeTasksHillaTest {
         }
 
         verifyHillaEngine(true);
+    }
+
+    @Test
+    public void should_notUseHillaEngine_whenEndpointsAreDetected()
+            throws ExecutionFailedException, IOException {
+        Options options = createOptions();
+        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateOpenAPI(any());
+        Mockito.doReturn(taskGenerateEndpoint)
+                .when(endpointGeneratorTaskFactory)
+                .createTaskGenerateEndpoint(any());
+        Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
+                .lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(false).when(endpointUsageDetector)
+                .areEndpointsUsed(any());
+        Mockito.doReturn(endpointUsageDetector).when(options.getLookup())
+                .lookup(EndpointUsageDetector.class);
+
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
+
+            new NodeTasks(options).execute();
+        }
+
+        verifyHillaEngine(false);
     }
 
     @Test
