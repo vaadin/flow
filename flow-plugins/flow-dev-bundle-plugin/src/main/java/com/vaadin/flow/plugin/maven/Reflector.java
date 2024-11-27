@@ -223,7 +223,10 @@ public final class Reflector {
         }
 
         Function<Artifact, String> keyMapper = artifact -> artifact.getGroupId()
-                + ":" + artifact.getArtifactId();
+                + ":" + artifact.getArtifactId() + ":" + artifact.getType()
+                + ((artifact.getClassifier() != null)
+                        ? ":" + artifact.getClassifier()
+                        : "");
 
         Map<String, Artifact> projectDependencies = new HashMap<>(project
                 .getArtifacts().stream()
