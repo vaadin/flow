@@ -227,7 +227,7 @@ public class ComponentTracker {
             location = findRelevantLocation(null, relevantLocations, null);
         }
         createLocation.put(component, location);
-        createLocations.put(component, relevantLocations);
+        createLocations.put(component, Stream.of(stack).map(ComponentTracker::toLocation).toArray(Location[]::new));
     }
 
     /**
@@ -279,7 +279,7 @@ public class ComponentTracker {
             location = createLocation.get(component);
         }
         attachLocation.put(component, location);
-        attachLocations.put(component, relevantLocations);
+        attachLocations.put(component, Stream.of(stack).map(ComponentTracker::toLocation).toArray(Location[]::new));
     }
 
     /**
