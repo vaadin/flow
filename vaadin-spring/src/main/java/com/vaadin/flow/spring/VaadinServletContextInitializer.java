@@ -941,7 +941,8 @@ public class VaadinServletContextInitializer
             List<Class<?>> superTypes) {
         HandlesTypes handlesTypes = clazz.getAnnotation(HandlesTypes.class);
         assert handlesTypes != null;
-        collectHandleTypes(handlesTypes.value(), annotations, superTypes, false);
+        collectHandleTypes(handlesTypes.value(), annotations, superTypes,
+                false);
     }
 
     private static void collectHandleTypes(Class<?>[] handleTypes,
@@ -956,7 +957,8 @@ public class VaadinServletContextInitializer
             }
         }
         if (addHillaEndpointTypes) {
-            annotations.addAll(EndpointRequestUtil.getHillaEndpointAnnotations());
+            annotations
+                    .addAll(EndpointRequestUtil.getHillaEndpointAnnotations());
         }
     }
 
