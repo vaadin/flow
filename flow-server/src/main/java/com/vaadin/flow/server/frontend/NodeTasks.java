@@ -321,6 +321,7 @@ public class NodeTasks implements FallibleCommand {
                 .lookup(EndpointUsageDetector.class);
         if (endpointUsageDetector == null
                 || !endpointUsageDetector.areEndpointsUsed(options)) {
+            System.err.println("***** NOT GENERATING ENDPOINTS *****");
             return;
         }
 
@@ -331,11 +332,13 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
                     .createTaskGenerateOpenAPI(options);
             commands.add(taskGenerateOpenAPI);
+            System.err.println("***** GENERATING OPEN API *****");
 
             if (options.getFrontendGeneratedFolder() != null) {
                 TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
                         .createTaskGenerateEndpoint(options);
                 commands.add(taskGenerateEndpoint);
+                System.err.println("***** GENERATING ENDPOINTS *****");
             }
         }
     }
