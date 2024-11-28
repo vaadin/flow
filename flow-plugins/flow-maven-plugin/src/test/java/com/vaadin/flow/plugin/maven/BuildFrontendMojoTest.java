@@ -65,11 +65,11 @@ import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -206,6 +206,9 @@ public class BuildFrontendMojoTest {
                 TestUtils.getInitialPackageJson().toJson());
 
         lookup = Mockito.mock(Lookup.class);
+
+        Mockito.doReturn(new TestEndpointUsageDetector()).when(lookup)
+                .lookup(EndpointUsageDetector.class);
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doAnswer(invocation -> {
