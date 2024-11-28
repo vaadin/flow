@@ -15,19 +15,20 @@
  */
 package com.vaadin.flow;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.internal.ComponentTracker;
-import com.vaadin.flow.component.internal.ComponentTracker.Location;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.util.Map;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.internal.ComponentTracker;
+import com.vaadin.flow.component.internal.ComponentTracker.Location;
 
 /**
  * Note that this is intentionally in the "wrong" package as internal packages
@@ -70,9 +71,10 @@ public class ComponentTrackerTest {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
+        int c1Line = 71;
 
-        assertCreateLocation(c1, 70, getClass().getName());
-        assertCreateLocation(c2, 72, getClass().getName());
+        assertCreateLocation(c1, c1Line, getClass().getName());
+        assertCreateLocation(c2, c1Line + 2, getClass().getName());
     }
 
     @Test
@@ -83,18 +85,20 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        assertCreateLocation(c1, 80, getClass().getName());
+        int c1Line = 82;
+
+        assertCreateLocation(c1, c1Line, getClass().getName());
 
         layout.add(c2);
 
-        assertAttachLocation(c2, 88, getClass().getName());
+        assertAttachLocation(c2, c1Line + 10, getClass().getName());
 
         // Last attach is tracked
         layout.add(c3);
         layout.remove(c3);
         layout.add(c3);
 
-        assertAttachLocation(c3, 95, getClass().getName());
+        assertAttachLocation(c3, c1Line + 17, getClass().getName());
     }
 
     @Test
@@ -103,15 +107,16 @@ public class ComponentTrackerTest {
         Component c2 = new Component1();
         Component c3 = new Component1();
 
-        assertCreateLocation(c1, 102, getClass().getName());
+        int c1Line = 106;
+        assertCreateLocation(c1, c1Line, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c1), 3);
 
-        assertCreateLocation(c2, 103 + 3, getClass().getName());
+        assertCreateLocation(c2, c1Line + 1 + 3, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c2), 1);
 
-        assertCreateLocation(c3, 104 + 3 + 1, getClass().getName());
+        assertCreateLocation(c3, c1Line + 2 + 3 + 1, getClass().getName());
     }
 
     @Test
@@ -170,9 +175,10 @@ public class ComponentTrackerTest {
         Assert.assertEquals(lineNumber, location.lineNumber());
         Assert.assertEquals(name, location.className());
 
-        Location[] locations = ComponentTracker.findCreateLocations(c);
-        Assert.assertEquals(lineNumber, locations[1].lineNumber());
-        Assert.assertEquals(name, locations[1].className());
+        Location locationFromArray = getLocationFromArray(
+                ComponentTracker.findCreateLocations(c));
+        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
+        Assert.assertEquals(name, locationFromArray.className());
     }
 
     private void assertAttachLocation(Component c, int lineNumber,
@@ -181,9 +187,17 @@ public class ComponentTrackerTest {
         Assert.assertEquals(lineNumber, location.lineNumber());
         Assert.assertEquals(name, location.className());
 
-        Location[] locations = ComponentTracker.findAttachLocations(c);
-        Assert.assertEquals(lineNumber, locations[0].lineNumber());
-        Assert.assertEquals(name, locations[0].className());
+        Location locationFromArray = getLocationFromArray(
+                ComponentTracker.findAttachLocations(c));
+
+        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
+        Assert.assertEquals(name, locationFromArray.className());
     }
 
+    private Location getLocationFromArray(Location[] locations) {
+        return Stream.of(locations).filter(
+                l -> l.className().equals(ComponentTrackerTest.class.getName()))
+                .findFirst().orElseThrow();
+
+    }
 }
