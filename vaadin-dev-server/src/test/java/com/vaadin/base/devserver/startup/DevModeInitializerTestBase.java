@@ -1,6 +1,5 @@
 package com.vaadin.base.devserver.startup;
 
-import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletRegistration;
 import java.io.File;
@@ -23,11 +22,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
