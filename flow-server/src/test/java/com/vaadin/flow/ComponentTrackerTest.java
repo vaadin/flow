@@ -195,10 +195,8 @@ public class ComponentTrackerTest {
     }
 
     private Location getLocationFromArray(Location[] locations) {
-        return Stream
-                .of(locations)
-                .filter(l -> l.className()
-                        .equals(ComponentTrackerTest.class.getName()))
+        return Stream.of(locations).filter(
+                l -> l.className().equals(ComponentTrackerTest.class.getName()))
                 .findFirst().orElseThrow();
 
     }
