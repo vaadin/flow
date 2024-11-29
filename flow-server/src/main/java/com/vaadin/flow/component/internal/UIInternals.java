@@ -77,7 +77,6 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -1115,6 +1114,12 @@ public class UIInternals implements Serializable {
     /**
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
+     * <p>
+     * </p>
+     * If modal components are currently defined for the UI, the whole route
+     * chain will be refreshed regardless the {@code refreshRouteChain}
+     * parameter, because otherwise it would not be possible to preserve the
+     * correct modality cardinality and order.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
@@ -1126,8 +1131,8 @@ public class UIInternals implements Serializable {
                     + "Unable to refresh the current route.");
         } else {
             getRouter().navigate(ui, locationForRefresh,
-                    NavigationTrigger.PROGRAMMATIC, null, true,
-                    refreshRouteChain);
+                    NavigationTrigger.REFRESH_ROUTE, null, true,
+                    refreshRouteChain || hasModalComponent());
         }
     }
 
