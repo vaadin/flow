@@ -38,6 +38,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -281,6 +283,21 @@ public class HotswapperTest {
     }
 
     @Test
+    public void onHotswap_pushDisabled_routeClassChanged_modalComponents_UINotRefreshedButLiveReloadFullRefreshTriggered()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+        RefreshTestingUI ui = initUIAndNavigateTo(session,
+                MyRouteWithModal.class);
+
+        hotswapper.onHotswap(new String[] { MyRouteWithModal.class.getName() },
+                true);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload).refresh(true);
+    }
+
+    @Test
     public void onHotswap_pushDisabled_autoLayout_classUnrelatedToUIChanged_noReload()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
@@ -466,6 +483,24 @@ public class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
         ui.assertRouteRefreshed();
+        Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
+    public void onHotswap_pushEnabled_routeClassChanged_modalComponent_activeChainRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session,
+                MyRouteWithModal.class);
+        ui.enablePush();
+
+        hotswapper.onHotswap(new String[] { MyRouteWithModal.class.getName() },
+                true);
+
+        ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
         Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
@@ -823,6 +858,17 @@ public class HotswapperTest {
         }
     }
 
+    @Tag("my-route-with-modal")
+    public static class MyRouteWithModal extends Component
+            implements HasComponents, AfterNavigationObserver {
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            event.getLocationChangeEvent().getUI().addModal(new MyComponent());
+        }
+
+    }
+
     @Tag("my-layout")
     public static class MyLayout extends Component implements RouterLayout {
 
@@ -903,7 +949,11 @@ public class HotswapperTest {
         @Override
         public void refreshCurrentRoute(boolean refreshRouteChain) {
             refreshRouteChainRequested = refreshRouteChain;
-            super.refreshCurrentRoute(refreshRouteChain);
+            // No need to perform real navigation, tests only need to know if
+            // the method has been invoked.
+            // Navigation would fail anyway because of usage of method scoped
+            // classes. Blocking navigation prevents logs to be bloated by
+            // exception stack traces.
         }
 
         void assertNotRefreshed() {
