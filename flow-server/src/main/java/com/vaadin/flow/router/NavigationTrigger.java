@@ -66,5 +66,12 @@ public enum NavigationTrigger {
     /**
      * Navigation is for a reload event on a preserveOnRefresh route.
      */
-    REFRESH
+    REFRESH,
+
+    /**
+     * Navigation was triggered via {@link UI#refreshCurrentRoute(boolean)}.
+     * It's for internal use only.
+     */
+    REFRESH_ROUTE,
+
 }
