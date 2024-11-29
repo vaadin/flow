@@ -136,7 +136,7 @@ public class NodeTasksHillaTest {
     }
 
     @Test
-    public void should_notUseHillaEngine_whenEndpointsAreDetected()
+    public void should_notUseHillaEngine_whenEndpointsAreNotDetected()
             throws ExecutionFailedException, IOException {
         Options options = createOptions();
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
