@@ -19,7 +19,6 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.HandlesTypes;
 import jakarta.servlet.annotation.WebListener;
-
 import java.io.Serializable;
 import java.util.Set;
 
@@ -47,7 +46,6 @@ import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import com.vaadin.flow.server.frontend.TypeScriptBootstrapModifier;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.VaadinServletContextStartupInitializer;
