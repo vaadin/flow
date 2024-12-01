@@ -72,15 +72,21 @@ public class ViteWebsocketConnection implements Listener {
         this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + path);
-        clientWebsocket = HttpClient.newHttpClient().newWebSocketBuilder()
+        clientWebsocket = new CompletableFuture<>();
+        HttpClient.newHttpClient().newWebSocketBuilder()
                 .subprotocols(subProtocol).buildAsync(uri, this)
                 .whenComplete(((webSocket, failure) -> {
                     if (failure == null) {
                         getLogger().debug(
                                 "Connection to {} using the {} protocol established",
                                 uri, webSocket.getSubprotocol());
+                        if (clientWebsocket.complete(webSocket)) {
+                            getLogger().trace(
+                                    "Websocket future completed in client build completion");
+                        }
                     } else {
                         getLogger().debug("Failed to connect to {}", uri);
+                        clientWebsocket.completeExceptionally(failure);
                         onConnectionFailure.accept(failure);
                     }
                 }));
@@ -90,6 +96,9 @@ public class ViteWebsocketConnection implements Listener {
     public void onOpen(WebSocket webSocket) {
         getLogger().debug("Connected using the {} protocol",
                 webSocket.getSubprotocol());
+        if (clientWebsocket.complete(webSocket)) {
+            getLogger().trace("Websocket future completed in onOpen");
+        }
         Listener.super.onOpen(webSocket);
     }
 
