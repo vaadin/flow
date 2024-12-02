@@ -16,7 +16,7 @@ import { RouterProvider } from 'react-router';
 import { router } from '%routesJsImportPath%';
 
 function App() {
-    return <RouterProvider router={router} future={{ v7_startTransition: true }} />;
+    return <RouterProvider router={router} />;
 }
 
 const outlet = document.getElementById('outlet')!;
