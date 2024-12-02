@@ -72,7 +72,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
-                "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
+                "org.zeroturnaround.jrebel.vaadin.JRebelInitializer"));
         IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
                 "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
         IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
