@@ -178,6 +178,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
                     ms);
+        } catch (IllegalArgumentException ex) {
+            StackTraceElement[] stackTrace = ex.getStackTrace();
+            if (ex.getMessage() != null
+                    && ex.getMessage().startsWith("Unsupported api ")
+                    && stackTrace.length > 0 && stackTrace[0].getClassName()
+                            .equals("org.objectweb.asm.ClassVisitor")) {
+                log().error(
+                        "Invalid asm library version. Please make sure that the project does not override org.ow2.asm:asm dependency defined by Vaadin with an incompatible version.");
+            }
+            throw ex;
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
