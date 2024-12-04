@@ -129,17 +129,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
         String command = getInstallCommand();
 
         if (ciBuild || packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log()
-                    .info("Running `" + toolName + " " + command
-                            + "` to resolve and "
-                            + "optionally download frontend dependencies. "
-                            + "This may take a moment, please stand by...");
+            packageUpdater.log().info("Running `{} {}` to resolve and " +
+                            "optionally download frontend dependencies. " +
+                            "This may take a moment, please stand by...", toolName,
+                    command);
             runNpmInstall();
 
             updateLocalHash();
         } else {
             packageUpdater.log()
-                    .info("Skipping `{} {}}` because the frontend packages "
+                    .info("Skipping `{} {}` because the frontend packages "
                             + "are already installed in the folder '{}' and "
                             + "the hash in the file '{}' is the same as in '{}'",
                             toolName, command,
