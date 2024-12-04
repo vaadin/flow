@@ -315,15 +315,10 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
-        Lookup lookup = options.getLookup();
-
-        EndpointUsageDetector endpointUsageDetector = lookup
-                .lookup(EndpointUsageDetector.class);
-        if (endpointUsageDetector == null
-                || !endpointUsageDetector.areEndpointsUsed(options)) {
+        if (!FrontendUtils.areEndpointsUsed(options)) {
             return;
         }
-
+        Lookup lookup = options.getLookup();
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
