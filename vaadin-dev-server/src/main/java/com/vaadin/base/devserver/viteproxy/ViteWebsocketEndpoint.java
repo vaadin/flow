@@ -85,8 +85,10 @@ public class ViteWebsocketEndpoint extends Endpoint {
     public void onOpen(Session session, EndpointConfig config) {
         getLogger().debug("Browser ({}) connected to Vite proxy",
                 session.getId());
-        // Vite pings every 30s but while you debug in the browser, the pings will be prevented.
-        // When you resume after debugging, the page will reload if the timeout was hit, so it is 0 == disabled
+        // Vite pings every 30s but while you debug in the browser, the pings
+        // will be prevented.
+        // When you resume after debugging, the page will reload if the timeout
+        // was hit, so it is 0 == disabled
         session.setMaxIdleTimeout(0);
 
         ViteHandler viteHandler = (ViteHandler) config.getUserProperties()
