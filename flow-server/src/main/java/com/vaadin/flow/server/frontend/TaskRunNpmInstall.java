@@ -129,10 +129,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
         String command = getInstallCommand();
 
         if (ciBuild || packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info("Running `{} {}` to resolve and " +
-                            "optionally download frontend dependencies. " +
-                            "This may take a moment, please stand by...", toolName,
-                    command);
+            packageUpdater.log()
+                    .info("Running `{} {}` to resolve and "
+                            + "optionally download frontend dependencies. "
+                            + "This may take a moment, please stand by...",
+                            toolName, command);
             runNpmInstall();
 
             updateLocalHash();
