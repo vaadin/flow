@@ -28,6 +28,7 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
     final static String NAVIGATE_ID = "navigate";
     final static String REFRESH_ID = "refresh";
     final static String REFRESH_LAYOUTS_ID = "refreshlayouts";
+    final static String OPEN_MODALS_ID = "openmodals";
 
     private int attach, detach, afterNav, beforeEnter, beforeLeave;
     private final Div id, attachCounter, detachCounter, afterNavCounter,
@@ -58,6 +59,11 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
                 e -> UI.getCurrent().refreshCurrentRoute(true));
         refresh.setId(REFRESH_LAYOUTS_ID);
         add(refresh);
+
+        NativeButton openModals = new NativeButton("Open modal components",
+                e -> openModals());
+        openModals.setId(OPEN_MODALS_ID);
+        add(openModals);
     }
 
     protected String getNavigationTarget() {
@@ -72,6 +78,12 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
         return counter;
     }
 
+    private void openModals() {
+        new Dialog(1).open();
+        new Dialog(2).open();
+        new Dialog(3).open();
+    }
+
     @Override
     protected void onAttach(AttachEvent event) {
         super.onAttach(event);
@@ -81,6 +93,8 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         afterNavCounter.setText(Integer.toString(++afterNav));
+        event.getLocationChangeEvent().getQueryParameter("modal")
+                .ifPresent(unused -> openModals());
     }
 
     @Override
@@ -98,4 +112,38 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
         super.onDetach(event);
         detachCounter.setText(Integer.toString(++detach));
     }
+
+    public static class Dialog extends Div {
+
+        public Dialog(int dialogId) {
+            setId("modal-" + dialogId);
+            add(new Div("modal " + dialogId));
+            NativeButton button = new NativeButton("Refresh route",
+                    ev -> UI.getCurrent().refreshCurrentRoute(false));
+            button.setId("modal-" + dialogId + "-" + REFRESH_ID);
+            add(button);
+
+            button = new NativeButton("Refresh all",
+                    ev -> UI.getCurrent().refreshCurrentRoute(false));
+            button.setId("modal-" + dialogId + "-" + REFRESH_LAYOUTS_ID);
+            add(button);
+
+            button = new NativeButton("Close", ev -> close());
+            button.setId("modal-" + dialogId + "-close");
+            add(button);
+            getStyle().set("position", "fixed").set("inset", "10% 10%")
+                    .setWidth("50%").setHeight("50%")
+                    .setBackgroundColor("green").setBorder("1px solid black")
+                    .setZIndex(dialogId);
+        }
+
+        public void open() {
+            UI.getCurrent().addModal(this);
+        }
+
+        public void close() {
+            UI.getCurrent().remove(this);
+        }
+    }
+
 }

@@ -1,0 +1,15 @@
+import java.nio.file.*;
+
+flowTsx = basedir.toPath().resolve("build.log");
+if ( !Files.exists(flowTsx, new LinkOption[0]) )
+{
+    throw new RuntimeException("build.log not found");
+}
+
+lines = Files.readString(flowTsx);
+if (
+    !lines.contains("Found dependencies defined with different versions in project and Vaadin maven plugin") &&
+    !lines.matches("^commons-io:commons-io.*\\[2\\.6\\],.*")
+    ) {
+    throw new RuntimeException("Offending commons-io 2.6 dependency not detected");
+}

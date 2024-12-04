@@ -210,7 +210,7 @@ public class DebugWindowConnectionTest {
                     protected Class<?> findClass(String name)
                             throws ClassNotFoundException {
                         switch (name) {
-                        case "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener":
+                        case "org.zeroturnaround.jrebel.vaadin.JRebelInitializer":
                             return JRebelInitializer.class;
                         default:
                             throw new ClassNotFoundException();

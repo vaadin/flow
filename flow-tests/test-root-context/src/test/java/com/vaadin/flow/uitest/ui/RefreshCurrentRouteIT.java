@@ -13,6 +13,7 @@ import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.BEFORELEAVECOUNT
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.DETACHCOUNTER_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.NAVIGATE_ID;
+import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.OPEN_MODALS_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_LAYOUTS_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteLayout.ROUTER_LAYOUT_ID;
@@ -79,6 +80,40 @@ public class RefreshCurrentRouteIT extends AbstractStreamResourceIT {
 
         // Event counters should equal original values
         assertInitialEventCounters();
+    }
+
+    public void refreshCurrentRoute_modalComponents_newRouteAndLayout() {
+        open("modal=true");
+
+        final String originalId = getString(ID);
+        final String originalLayoutId = getString(ROUTER_LAYOUT_ID);
+
+        assertInitialEventCounters();
+
+        waitForElementPresent(By.id("modal-1"));
+        waitForElementPresent(By.id("modal-2"));
+        waitForElementPresent(By.id("modal-3"));
+        $(NativeButtonElement.class).id("modal-3-refresh").click();
+
+        // UUID should be new since refresh creates new instance
+        Assert.assertNotEquals(getString(ID), originalId);
+        // UUID should be new since new layout instances were requested
+        Assert.assertNotEquals(getString(ROUTER_LAYOUT_ID), originalLayoutId);
+
+        // Event counters should equal original values
+        assertInitialEventCounters();
+
+        waitForElementPresent(By.id("modal-1"));
+        waitForElementPresent(By.id("modal-2"));
+        waitForElementPresent(By.id("modal-3"));
+
+        $(NativeButtonElement.class).id("modal-3-close").click();
+        $(NativeButtonElement.class).id("modal-2-close").click();
+        $(NativeButtonElement.class).id("modal-1-refresh").click();
+
+        waitForElementPresent(By.id("modal-1"));
+        waitForElementPresent(By.id("modal-2"));
+        waitForElementPresent(By.id("modal-3"));
     }
 
     private void assertInitialEventCounters() {

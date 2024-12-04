@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import javax.inject.Inject;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -52,6 +53,7 @@ import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -305,13 +307,35 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         try {
             Mojo task = reflector.createMojo(this);
             findExecuteMethod(task.getClass()).invoke(task);
+            reflector.logIncompatibilities(getLog()::debug);
         } catch (MojoExecutionException | MojoFailureException e) {
+            logTroubleshootingHints(reflector, e);
             throw e;
         } catch (Exception e) {
+            logTroubleshootingHints(reflector, e);
             throw new MojoFailureException(e.getMessage(), e);
         } finally {
             Thread.currentThread().setContextClassLoader(tccl);
         }
+    }
+
+    private void logTroubleshootingHints(Reflector reflector, Throwable ex) {
+        reflector.logIncompatibilities(getLog()::warn);
+        if (ex instanceof InvocationTargetException) {
+            ex = ex.getCause();
+        }
+        StringBuilder errorMessage = new StringBuilder(ex.getMessage());
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (cause.getMessage() != null) {
+                errorMessage.append(" ").append(cause.getMessage());
+            }
+            cause = cause.getCause();
+        }
+        getLog().error(
+                "The build process encountered an error: " + errorMessage);
+        logError(
+                "To diagnose the issue, please re-run Maven with the -X option to enable detailed debug logging and identify the root cause.");
     }
 
     /**
@@ -691,10 +715,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 .equals(artifact.getGroupId())
                 && "flow-server".equals(artifact.getArtifactId());
         String projectFlowVersion = project.getArtifacts().stream()
-                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
                 .orElse(null);
         String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
-                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
                 .orElse(null);
         if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
             getLog().warn(

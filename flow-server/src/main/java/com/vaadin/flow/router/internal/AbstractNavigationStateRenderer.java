@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -41,6 +40,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -51,7 +51,6 @@ import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
-import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
@@ -62,7 +61,6 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -70,7 +68,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
@@ -257,6 +254,19 @@ public abstract class AbstractNavigationStateRenderer
         @SuppressWarnings("unchecked")
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
+
+        // If a route refresh has been requested, remove all modal components.
+        // This is necessary because maintaining the correct modality
+        // cardinality and order is not feasible without knowing who opened them
+        // and when.
+        if (ui.hasModalComponent()
+                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
+            Component modalComponent;
+            while ((modalComponent = ui.getInternals()
+                    .getActiveModalComponent()) != null) {
+                modalComponent.removeFromParent();
+            }
+        }
 
         // Change the UI according to the navigation Component chain.
         ui.getInternals().showRouteTarget(event.getLocation(),

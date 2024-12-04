@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,8 +53,13 @@ public final class Reflector {
     private static final Set<String> DEPENDENCIES_GROUP_EXCLUSIONS = Set.of(
             "org.apache.maven", "org.codehaus.plexus", "org.slf4j",
             "org.eclipse.sisu");
+    // Dependency required by the plugin but not provided by Flow at runtime
+    private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
+            "org.reflections:reflections:jar",
+            "org.zeroturnaround:zt-exec:jar");
 
     private final URLClassLoader isolatedClassLoader;
+    private List<String> dependenciesIncompatibility;
     private Object classFinder;
 
     /**
@@ -66,9 +72,11 @@ public final class Reflector {
         this.isolatedClassLoader = isolatedClassLoader;
     }
 
-    private Reflector(URLClassLoader isolatedClassLoader, Object classFinder) {
+    private Reflector(URLClassLoader isolatedClassLoader, Object classFinder,
+            List<String> dependenciesIncompatibility) {
         this.isolatedClassLoader = isolatedClassLoader;
         this.classFinder = classFinder;
+        this.dependenciesIncompatibility = dependenciesIncompatibility;
     }
 
     /**
@@ -91,6 +99,7 @@ public final class Reflector {
      *             it is not possible to make a copy for it due to class
      *             definition incompatibilities.
      */
+    @SuppressWarnings("unchecked")
     static Reflector adapt(Object reflector) {
         if (reflector instanceof Reflector sameClassLoader) {
             return sameClassLoader;
@@ -103,9 +112,13 @@ public final class Reflector {
                                 findField(reflectorClass,
                                         "isolatedClassLoader"),
                                 URLClassLoader.class);
+                List<String> dependenciesIncompatibility = (List<String>) ReflectTools
+                        .getJavaFieldValue(reflector, findField(reflectorClass,
+                                "dependenciesIncompatibility"));
                 Object classFinder = ReflectTools.getJavaFieldValue(reflector,
                         findField(reflectorClass, "classFinder"));
-                return new Reflector(classLoader, classFinder);
+                return new Reflector(classLoader, classFinder,
+                        dependenciesIncompatibility);
             } catch (Exception e) {
                 throw new IllegalArgumentException(
                         "Object of type " + reflector.getClass().getName()
@@ -198,9 +211,27 @@ public final class Reflector {
      */
     public static Reflector of(MavenProject project,
             MojoExecution mojoExecution) {
+        List<String> dependenciesIncompatibility = new ArrayList<>();
         URLClassLoader classLoader = createIsolatedClassLoader(project,
-                mojoExecution);
-        return new Reflector(classLoader);
+                mojoExecution, dependenciesIncompatibility);
+        Reflector reflector = new Reflector(classLoader);
+        reflector.dependenciesIncompatibility = dependenciesIncompatibility;
+        return reflector;
+    }
+
+    void logIncompatibilities(Consumer<String> logger) {
+        if (dependenciesIncompatibility != null) {
+            logger.accept(
+                    """
+                            Found dependencies defined with different versions in project and Vaadin maven plugin.
+                            Project dependencies are used, but plugin execution could fail if the versions are incompatible.
+                            In case of build failure please analyze the project dependencies and update versions or configure exclusions for potential offending transitive dependencies.
+                            You can use 'mvn dependency:tree -Dincludes=groupId:artifactId' to detect where the dependency is defined in the project.
+
+                            """
+                            + String.join(System.lineSeparator(),
+                                    dependenciesIncompatibility));
+        }
     }
 
     private synchronized Object getOrCreateClassFinder() throws Exception {
@@ -215,7 +246,8 @@ public final class Reflector {
     }
 
     private static URLClassLoader createIsolatedClassLoader(
-            MavenProject project, MojoExecution mojoExecution) {
+            MavenProject project, MojoExecution mojoExecution,
+            List<String> dependenciesIncompatibility) {
         List<URL> urls = new ArrayList<>();
         String outputDirectory = project.getBuild().getOutputDirectory();
         if (outputDirectory != null) {
@@ -246,17 +278,61 @@ public final class Reflector {
                                         && artifact.getFile().getPath().matches(
                                                 INCLUDE_FROM_COMPILE_DEPS_REGEX))))
                 .collect(Collectors.toMap(keyMapper, Function.identity())));
+
         if (mojoExecution != null) {
-            mojoExecution.getMojoDescriptor().getPluginDescriptor()
-                    .getArtifacts().stream()
+
+            List<Artifact> pluginDependencies = mojoExecution
+                    .getMojoDescriptor().getPluginDescriptor().getArtifacts()
+                    .stream()
                     // Exclude all maven artifacts to prevent class loading
                     // clash with maven.api class realm
                     .filter(artifact -> !DEPENDENCIES_GROUP_EXCLUSIONS
                             .contains(artifact.getGroupId()))
-                    .filter(artifact -> !projectDependencies
-                            .containsKey(keyMapper.apply(artifact)))
-                    .forEach(artifact -> projectDependencies
-                            .put(keyMapper.apply(artifact), artifact));
+                    .toList();
+
+            // Exclude project artifact that are also defined as mandatory
+            // plugin dependencies. The version provided by the plugin will be
+            // used to prevent failures during maven build.
+            pluginDependencies.stream().map(keyMapper)
+                    .filter(REQUIRED_PLUGIN_DEPENDENCIES::contains)
+                    .forEach(projectDependencies::remove);
+
+            // Preserve required plugin dependency that are not provided by Flow
+            // -1: dependency defined on both plugin and project, with different
+            // version
+            // 0: dependency defined on both plugin and project, with same
+            // version
+            // 1: dependency defined by the plugin only
+            Map<Integer, List<Artifact>> potentialDuplicates = pluginDependencies
+                    .stream().collect(Collectors.groupingBy(pluginArtifact -> {
+                        Artifact projectArtifact = projectDependencies
+                                .get(keyMapper.apply(pluginArtifact));
+                        if (projectArtifact == null) {
+                            return 1;
+                        } else if (projectArtifact.getId()
+                                .equals(pluginArtifact.getId())) {
+                            return 0;
+                        }
+                        return -1;
+                    }));
+            // Log potential plugin and project dependency versions
+            // incompatibilities.
+            if (potentialDuplicates.containsKey(-1)) {
+                potentialDuplicates.get(-1).stream().map(pluginArtifact -> {
+                    String key = keyMapper.apply(pluginArtifact);
+                    return String.format(
+                            "%s: project version [%s], plugin version [%s]",
+                            key, projectDependencies.get(key).getBaseVersion(),
+                            pluginArtifact.getBaseVersion());
+                }).forEach(dependenciesIncompatibility::add);
+            }
+
+            // Add dependencies defined only by the plugin
+            if (potentialDuplicates.containsKey(1)) {
+                potentialDuplicates.get(1)
+                        .forEach(artifact -> projectDependencies
+                                .put(keyMapper.apply(artifact), artifact));
+            }
         }
 
         projectDependencies.values().stream()
