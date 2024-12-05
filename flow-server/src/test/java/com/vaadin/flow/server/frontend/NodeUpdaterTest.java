@@ -685,6 +685,37 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void getDefaultDependencies_endpointsAreUsed_addsHillaPackages() {
+        try (MockedStatic<FrontendUtils> utilsMock = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utilsMock.when(
+                    () -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
+                            Mockito.any(ClassFinder.class)))
+                    .thenReturn(false);
+
+            utilsMock
+                    .when(() -> FrontendUtils
+                            .areEndpointsUsed(Mockito.any(Options.class)))
+                    .thenReturn(false);
+            Map<String, String> defaultDeps = nodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertFalse(
+                    "Hilla dev dependency added unexpectedly when no endpoints are used",
+                    defaultDeps.containsKey("react-dev-dependency"));
+
+            utilsMock
+                    .when(() -> FrontendUtils
+                            .areEndpointsUsed(Mockito.any(Options.class)))
+                    .thenReturn(true);
+            Map<String, String> defaultDevDeps = nodeUpdater
+                    .getDefaultDevDependencies();
+            Assert.assertTrue(
+                    "Hilla dev dependency is expected when endpoints are used",
+                    defaultDevDeps.containsKey("react-dev-dependency"));
+        }
+    }
+
+    @Test
     public void readPackageJson_nonExistingFile_doesNotThrow()
             throws IOException {
         nodeUpdater.readPackageJson("non-existing-folder");
