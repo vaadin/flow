@@ -79,6 +79,18 @@ public interface Validator<T>
     }
 
     /**
+     * Returns a validator that fails on any value.
+     *
+     * @param <T>
+     *            the value type
+     * @return an always-failing validator
+     */
+    static <T> Validator<T> alwaysFail(String errorMessage) {
+        Objects.requireNonNull(errorMessage);
+        return (value, context) -> ValidationResult.error(errorMessage);
+    }
+
+    /**
      * Builds a validator out of a conditional function and an error message. If
      * the function returns true, the validator returns {@code Result.ok()}; if
      * it returns false or throws an exception,
