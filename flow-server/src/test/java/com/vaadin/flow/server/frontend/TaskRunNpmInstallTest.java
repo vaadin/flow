@@ -58,7 +58,7 @@ public class TaskRunNpmInstallTest {
 
     private ClassFinder finder;
 
-    protected Logger logger = Mockito.mock(Logger.class);
+    protected MockLogger logger;
 
     private File generatedFolder;
 
@@ -68,6 +68,7 @@ public class TaskRunNpmInstallTest {
 
     @Before
     public void setUp() throws IOException {
+        logger = new MockLogger();
         generatedFolder = temporaryFolder.newFolder();
         npmFolder = temporaryFolder.newFolder();
         File generatedPath = new File(npmFolder, "generated");
@@ -107,7 +108,7 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
@@ -121,7 +122,7 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
@@ -165,7 +166,7 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
@@ -180,12 +181,13 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
     public void runNpmInstall_matchingHash_npmInstallIsNotExecuted()
             throws IOException, ExecutionFailedException {
+        logger = Mockito.mock(MockLogger.class);
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
 
@@ -202,7 +204,7 @@ public class TaskRunNpmInstallTest {
                         "\\\\\\\\")),
                 Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
         Assert.assertEquals(
-                "Skipping `{} {}}` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
+                "Skipping `{} {}` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                 captor.getValue());
     }
 
@@ -217,7 +219,7 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
@@ -232,13 +234,13 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
 
         task.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
 
         deleteDirectory(nodeModules);
 
         task = createTask(true);
         task.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
@@ -276,7 +278,7 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
@@ -286,7 +288,7 @@ public class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test(expected = ExecutionFailedException.class)
@@ -338,11 +340,11 @@ public class TaskRunNpmInstallTest {
                 packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
 
         getNodeUpdater().writePackageFile(packageJson);
-        logger = Mockito.mock(Logger.class);
+        logger = new MockLogger();
 
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Test
@@ -411,9 +413,9 @@ public class TaskRunNpmInstallTest {
     }
 
     protected String getRunningMsg() {
-        return "Running `" + getToolName() + " " + getCommand() + "` to "
-                + "resolve and optionally download frontend dependencies. "
-                + "This may take a moment, please stand by...";
+        return String.format(
+                "Running `%s %s` to resolve and optionally download frontend dependencies. This may take a moment, please stand by...",
+                getToolName(), getCommand());
     }
 
     private String getCommand() {
