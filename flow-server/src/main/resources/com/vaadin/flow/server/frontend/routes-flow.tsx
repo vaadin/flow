@@ -6,7 +6,7 @@
  * `src/main/frontend/views/` directory, this route configuration is
  * re-generated automatically by Vaadin.
  ******************************************************************************/
-import { createBrowserRouter, RouteObject } from 'react-router-dom';
+import { createBrowserRouter, RouteObject } from 'react-router';
 import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
 
 function build() {

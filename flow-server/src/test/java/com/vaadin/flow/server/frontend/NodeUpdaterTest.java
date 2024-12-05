@@ -120,7 +120,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("lit");
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
-        expectedDependencies.add("react-router-dom");
+        expectedDependencies.add("react-router");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 

@@ -143,7 +143,7 @@ public class FrontendUtilsTest {
                 import MainLayout from 'Frontend/views/MainLayout';
                 import ContactsView from 'Frontend/views/ContactsView';
                 import AboutView from 'Frontend/views/AboutView';
-                import { RouteObject } from 'react-router-dom';
+                import { RouteObject } from 'react-router';
 
                 export const routes: RouteObject[] = [
                       {
@@ -163,7 +163,7 @@ public class FrontendUtilsTest {
                 import MainLayout from 'Frontend/views/MainLayout';
                 import ContactsView from 'Frontend/views/ContactsView';
                 import AboutView from 'Frontend/views/AboutView';
-                import { RouteObject } from 'react-router-dom';
+                import { RouteObject } from 'react-router';
 
                 export const routes: RouteObject[] = [
                       {

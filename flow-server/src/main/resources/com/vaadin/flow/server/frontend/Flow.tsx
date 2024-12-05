@@ -29,8 +29,7 @@ import {
     useLocation,
     useNavigate,
     type NavigateOptions, useHref,
-} from "react-router-dom";
-import type { AgnosticRouteObject } from '@remix-run/router';
+} from "react-router";
 import { createPortal } from "react-dom";
 
 const flow = new _Flow({
@@ -385,7 +384,7 @@ function Flow() {
             }
             fromAnchor.current = false;
             const {pathname, search} = blocker.location;
-            const routes = ((window as any)?.Vaadin?.routesConfig || []) as AgnosticRouteObject[];
+            const routes = ((window as any)?.Vaadin?.routesConfig || []) as any[];
             let matched = matchRoutes(Array.from(routes), pathname);
 
             // Navigation between server routes
