@@ -613,7 +613,9 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     private void putHillaComponentsDependencies(
             Map<String, String> dependencies, String packageJsonKey) {
-        if (FrontendUtils.areEndpointsUsed(options)) {
+        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())
+                || FrontendUtils.areEndpointsUsed(options)) {
             if (options.isReactEnabled()) {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/react", packageJsonKey));
