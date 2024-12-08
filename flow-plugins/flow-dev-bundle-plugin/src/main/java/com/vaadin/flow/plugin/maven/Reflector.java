@@ -220,7 +220,8 @@ public final class Reflector {
     }
 
     void logIncompatibilities(Consumer<String> logger) {
-        if (dependenciesIncompatibility != null) {
+        if (dependenciesIncompatibility != null
+                && !dependenciesIncompatibility.isEmpty()) {
             logger.accept(
                     """
                             Found dependencies defined with different versions in project and Vaadin maven plugin.
