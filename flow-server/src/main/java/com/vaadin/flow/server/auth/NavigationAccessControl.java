@@ -34,6 +34,8 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -369,7 +371,19 @@ public class NavigationAccessControl implements BeforeEnterListener {
      */
     protected String getRequestURL(VaadinRequest vaadinRequest) {
         if (vaadinRequest instanceof VaadinServletRequest httpRequest) {
-            return httpRequest.getRequestURL().toString();
+            String url = httpRequest.getRequestURL().toString();
+            System.out.println(
+                    "======================================= Computing REDIRECT URL "
+                            + url);
+            if (HandlerHelper.isRequestType(vaadinRequest,
+                    HandlerHelper.RequestType.PUSH)
+                    && url.endsWith(Constants.PUSH_MAPPING)) {
+                url = url.substring(0, url.indexOf(Constants.PUSH_MAPPING));
+                System.out.println(
+                        "======================================= Hey, it is PUSH, lets use "
+                                + url);
+            }
+            return url;
         }
         return "";
     }
