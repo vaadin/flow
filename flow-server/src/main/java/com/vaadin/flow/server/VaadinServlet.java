@@ -623,10 +623,13 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        if (getService() != null) {
-            getService().destroy();
+        try {
+            if (getService() != null) {
+                getService().destroy();
+            }
+        } finally {
+            isServletInitialized = false;
         }
-        isServletInitialized = false;
     }
 
     private VaadinServletContext initializeContext() {
