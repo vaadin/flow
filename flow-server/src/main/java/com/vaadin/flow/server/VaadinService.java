@@ -2148,8 +2148,21 @@ public abstract class VaadinService implements Serializable {
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
-        serviceDestroyListeners
-                .forEach(listener -> listener.serviceDestroy(event));
+        RuntimeException exception = null;
+        for (ServiceDestroyListener listener : serviceDestroyListeners) {
+            try {
+                listener.serviceDestroy(event);
+            } catch (RuntimeException e) {
+                if (exception == null) {
+                    exception = e;
+                } else {
+                    e.addSuppressed(e);
+                }
+            }
+        }
+        if (exception != null) {
+            throw exception;
+        }
     }
 
     /**
