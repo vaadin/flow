@@ -315,8 +315,7 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
-        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                options.getClassFinder())) {
+        if (!FrontendUtils.areEndpointsUsed(options)) {
             return;
         }
         Lookup lookup = options.getLookup();
