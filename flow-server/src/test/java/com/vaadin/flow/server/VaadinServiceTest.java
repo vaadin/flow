@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import net.jcip.annotations.NotThreadSafe;
@@ -24,10 +26,12 @@ import jakarta.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -214,6 +218,64 @@ public class VaadinServiceTest {
 
         Assert.assertEquals("ErrorHandler not called exactly once", 1,
                 errorCount.get());
+
+        Assert.assertEquals("SessionDestroyListener not called exactly once", 1,
+                listener.callCount);
+    }
+
+    @Test
+    public void testSessionDestroyListenerCalled_andOtherUiDetachCalled_whenUiClosingThrows()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        TestSessionDestroyListener listener = new TestSessionDestroyListener();
+
+        service.addSessionDestroyListener(listener);
+
+        final AtomicBoolean secondUiDetached = new AtomicBoolean();
+        List<UI> UIs = new ArrayList<>();
+        MockVaadinSession vaadinSession = new MockVaadinSession(service) {
+            @Override
+            public Collection<UI> getUIs() {
+                return UIs;
+            }
+        };
+        vaadinSession.lock();
+        UI throwingUI = new UI() {
+            @Override
+            protected void onDetach(DetachEvent detachEvent) {
+                throw new RuntimeException();
+            }
+
+            @Override
+            public VaadinSession getSession() {
+                return vaadinSession;
+            }
+        };
+
+        throwingUI.getInternals().setSession(vaadinSession);
+        UIs.add(throwingUI);
+
+        UI detachingUI = new UI() {
+            @Override
+            protected void onDetach(DetachEvent detachEvent) {
+                secondUiDetached.set(true);
+            }
+
+            @Override
+            public VaadinSession getSession() {
+                return vaadinSession;
+            }
+        };
+        detachingUI.getInternals().setSession(vaadinSession);
+        UIs.add(detachingUI);
+
+        vaadinSession.unlock();
+
+        service.fireSessionDestroy(vaadinSession);
+
+        Assert.assertTrue("Second UI detach not called properly",
+                secondUiDetached.get());
 
         Assert.assertEquals("SessionDestroyListener not called exactly once", 1,
                 listener.callCount);
