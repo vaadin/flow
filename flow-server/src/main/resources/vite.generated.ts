@@ -106,7 +106,7 @@ function injectManifestToSWPlugin(): rollup.Plugin {
         const { manifestEntries } = await getManifest({
           globDirectory: buildOutputFolder,
           globPatterns: ['**/*'],
-          globIgnores: ['**/*.br'],
+          globIgnores: ['**/*.br', 'pwa-icons/**'],
           manifestTransforms: [rewriteManifestIndexHtmlUrl],
           maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
         });
