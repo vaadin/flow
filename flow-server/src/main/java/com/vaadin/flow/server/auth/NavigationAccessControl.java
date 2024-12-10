@@ -372,16 +372,10 @@ public class NavigationAccessControl implements BeforeEnterListener {
     protected String getRequestURL(VaadinRequest vaadinRequest) {
         if (vaadinRequest instanceof VaadinServletRequest httpRequest) {
             String url = httpRequest.getRequestURL().toString();
-            System.out.println(
-                    "======================================= Computing REDIRECT URL "
-                            + url);
             if (HandlerHelper.isRequestType(vaadinRequest,
                     HandlerHelper.RequestType.PUSH)
                     && url.endsWith(Constants.PUSH_MAPPING)) {
                 url = url.substring(0, url.indexOf(Constants.PUSH_MAPPING));
-                System.out.println(
-                        "======================================= Hey, it is PUSH, lets use "
-                                + url);
             }
             return url;
         }
