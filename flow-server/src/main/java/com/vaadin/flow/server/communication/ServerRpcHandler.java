@@ -326,7 +326,7 @@ public class ServerRpcHandler implements Serializable {
                                 + "This could happen for example during login process, if concurrent requests "
                                 + "are sent to the server and one of those changes the session identifier, "
                                 + "causing an UIDL request to be rejected because of session expiration. "
-                                + "Expected sync id: {}, got {}.",
+                                + "Expected client id: {}, got {}.",
                         expectedId, requestId);
             } else {
                 /*
@@ -342,12 +342,12 @@ public class ServerRpcHandler implements Serializable {
                  */
                 String messageDetails = getMessageDetails(rpcRequest);
                 getLogger().debug("Unexpected message id from the client."
-                        + " Expected sync id: " + expectedId + ", got "
+                        + " Expected client id: " + expectedId + ", got "
                         + requestId + ". Message start: " + messageDetails);
                 throw new UnsupportedOperationException(
                         "Unexpected message id from the client."
-                                + " Expected sync id: " + expectedId + ", got "
-                                + requestId
+                                + " Expected client id: " + expectedId
+                                + ", got " + requestId
                                 + ". more details logged on DEBUG level.");
             }
         } else {
