@@ -93,7 +93,8 @@ public class BrowserDetails implements Serializable {
 
         isSafari = !isChrome && !isIE && !isOpera
                 && userAgent.contains("safari");
-        isFirefox = userAgent.contains(" firefox/");
+        isFirefox = userAgent.contains(" firefox/")
+                || userAgent.contains("fxios/");
         if (userAgent.contains(" edge/") || userAgent.contains(" edg/")
                 || userAgent.contains(" edga/")
                 || userAgent.contains(" edgios/")) {
@@ -166,7 +167,13 @@ public class BrowserDetails implements Serializable {
                     parseVersionString(ieVersionString, userAgent);
                 }
             } else if (isFirefox) {
-                int i = userAgent.indexOf(" firefox/") + 9;
+                int i = userAgent.indexOf(" fxios/");
+                if (i != -1) {
+                    // Version present in Opera 10 and newer
+                    i = userAgent.indexOf(" fxios/") + 7;
+                } else {
+                    i = userAgent.indexOf(" firefox/") + 9;
+                }
                 parseVersionString(
                         safeSubstring(userAgent, i,
                                 i + getVersionStringLength(userAgent, i)),
@@ -625,6 +632,15 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isIPhone() {
         return isIPhone;
+    }
+
+    /**
+     * Tests if the browser is run on iPad.
+     *
+     * @return true if run on iPad, false otherwise
+     */
+    public boolean isIPad() {
+        return isIPad;
     }
 
     /**

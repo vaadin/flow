@@ -16,8 +16,16 @@
 
 package com.vaadin.flow.shared;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import junit.framework.TestCase;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+
+import com.vaadin.flow.server.frontend.TaskGenerateTsConfigTest;
 
 public class BrowserDetailsTest extends TestCase {
 
@@ -716,6 +724,88 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 604.3f);
     }
 
+    public void testCommonDesktopUserAgents() throws IOException {
+        UserAgent[] agents = getUserAgentDetails(
+                "common-desktop-useragents.json");
+
+        assertAgentDetails(agents);
+    }
+
+    public void testMobileUserAgents() throws IOException {
+        UserAgent[] agents = getUserAgentDetails("mobile-useragents.json");
+
+        assertAgentDetails(agents);
+    }
+
+    private static UserAgent[] getUserAgentDetails(String agentFile)
+            throws IOException {
+        String userAgents = IOUtils.toString(
+                Objects.requireNonNull(TaskGenerateTsConfigTest.class
+                        .getClassLoader().getResourceAsStream(agentFile)),
+                StandardCharsets.UTF_8);
+        ObjectMapper mapper = new ObjectMapper();
+
+        UserAgent agents[] = mapper.readValue(userAgents, UserAgent[].class);
+        return agents;
+    }
+
+    private void assertAgentDetails(UserAgent[] agents) {
+        for (UserAgent agent : agents) {
+            BrowserDetails bd = new BrowserDetails(agent.ua);
+            assertOs(bd, agent.os);
+            BrowserVersion versions = getMinorMajorVersion(
+                    agent.browserVersion);
+            Assert.assertEquals(
+                    "Major version differs on userAgent " + agent.ua,
+                    versions.browserMajorVersion, bd.getBrowserMajorVersion());
+            Assert.assertEquals(
+                    "Minor version differs on userAgent " + agent.ua,
+                    versions.browserMinorVersion, bd.getBrowserMinorVersion());
+        }
+    }
+
+    private BrowserVersion getMinorMajorVersion(String browserVersion) {
+        final String[] digits = browserVersion.split("[-.]", 4);
+
+        int major = Integer.parseInt(digits[0]);
+        int minor = -1;
+        if (digits.length >= 2) {
+            minor = Integer.parseInt(digits[1]);
+        }
+        return new BrowserVersion(major, minor);
+    }
+
+    private void assertOs(BrowserDetails bd, String os) {
+        switch (os) {
+        case "LINUX":
+            assertLinux(bd);
+            break;
+        case "WINDOWS":
+            assertWindows(bd);
+            break;
+        case "MACOSX":
+            assertMacOSX(bd);
+            break;
+        case "IPAD":
+            assertIPad(bd);
+            break;
+        case "IPHONE":
+            assertIPhone(bd);
+            break;
+        case "ANDROID":
+            assertAndroid(bd);
+            break;
+        }
+    }
+
+    private record BrowserVersion(int browserMajorVersion,
+            int browserMinorVersion) {
+    }
+
+    private record UserAgent(String ua, String browser, String browserVersion,
+            String os, String device) {
+    }
+
     /*
      * Helper methods below
      */
@@ -838,13 +928,17 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isChromeOS());
     }
 
-    private void assertAndroid(BrowserDetails browserDetails, int majorVersion,
-            int minorVersion) {
+    private void assertAndroid(BrowserDetails browserDetails) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
         assertTrue(browserDetails.isAndroid());
         assertFalse(browserDetails.isChromeOS());
+    }
+
+    private void assertAndroid(BrowserDetails browserDetails, int majorVersion,
+            int minorVersion) {
+        assertAndroid(browserDetails);
 
         assertOSMajorVersion(browserDetails, majorVersion);
         assertOSMinorVersion(browserDetails, minorVersion);
@@ -852,6 +946,10 @@ public class BrowserDetailsTest extends TestCase {
 
     private void assertIPhone(BrowserDetails browserDetails) {
         assertTrue(browserDetails.isIPhone());
+    }
+
+    private void assertIPad(BrowserDetails browserDetails) {
+        assertTrue(browserDetails.isIPad());
     }
 
     private void assertWindows(BrowserDetails browserDetails) {
