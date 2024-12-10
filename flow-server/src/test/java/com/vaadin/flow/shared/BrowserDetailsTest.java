@@ -52,6 +52,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String OPERA964_WINDOWS = "Opera/9.64(Windows NT 5.1; U; en) Presto/2.1.1";
     private static final String OPERA1010_WINDOWS = "Opera/9.80 (Windows NT 5.1; U; en) Presto/2.2.15 Version/10.10";
     private static final String OPERA1050_WINDOWS = "Opera/9.80 (Windows NT 5.1; U; en) Presto/2.5.22 Version/10.50";
+    private static final String OPERA115_WINDOWS = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0";
 
     private static final String CHROME3_MAC = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_8; en-US) AppleWebKit/532.0 (KHTML, like Gecko) Chrome/3.0.198 Safari/532.0";
     private static final String CHROME4_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.89 Safari/532.5";
@@ -690,7 +691,17 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 537.36f);
         assertLinux(bd);
+    }
 
+    public void testOpera65() {
+        String userAgent = OPERA115_WINDOWS;
+        BrowserDetails bd = new BrowserDetails(userAgent);
+        assertWebKit(bd);
+        assertOpera(bd);
+        assertBrowserMajorVersion(bd, 115);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 537.36f);
+        assertWindows(bd);
     }
 
     public void testIos11FacebookBrowser() {
