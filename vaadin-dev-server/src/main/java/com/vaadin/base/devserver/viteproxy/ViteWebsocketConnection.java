@@ -42,7 +42,7 @@ public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
     private final Runnable onClose;
-    private final CompletableFuture<WebSocket> clientWebsocket;
+    private final CompletableFuture<WebSocket> clientWebsocket = new CompletableFuture<>();
     private final List<CharSequence> parts = new ArrayList<>();
 
     private static Logger getLogger() {
@@ -72,7 +72,6 @@ public class ViteWebsocketConnection implements Listener {
         this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + path);
-        clientWebsocket = new CompletableFuture<>();
         HttpClient.newHttpClient().newWebSocketBuilder()
                 .subprotocols(subProtocol).buildAsync(uri, this)
                 .whenComplete(((webSocket, failure) -> {
