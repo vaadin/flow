@@ -69,7 +69,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @Category(SlowTests.class)
 public class FrontendToolsTest {
 
-    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "18.12.0";
+    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "20.0.0";
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
