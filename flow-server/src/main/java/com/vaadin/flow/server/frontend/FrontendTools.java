@@ -117,9 +117,9 @@ public class FrontendTools {
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 18;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 12;
-    private static final int SUPPORTED_NPM_MAJOR_VERSION = 8;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 20;
+    private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
+    private static final int SUPPORTED_NPM_MAJOR_VERSION = 9;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 6;
 
     static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
