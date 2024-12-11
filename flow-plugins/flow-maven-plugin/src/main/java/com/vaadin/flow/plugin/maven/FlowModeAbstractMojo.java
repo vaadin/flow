@@ -16,7 +16,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import javax.inject.Inject;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,7 +52,6 @@ import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -271,7 +269,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <configuration>
      * <frontendExtraFileExtensions>svg,ico</frontendExtraFileExtensions>
      * </configuration>
-     *
      */
     @Parameter(property = InitParameters.FRONTEND_EXTRA_EXTENSIONS, defaultValue = "${null}")
     private List<String> frontendExtraFileExtensions;
@@ -720,7 +717,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
                 .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
                 .orElse(null);
-        if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+        if (projectFlowVersion != null
+                && !Objects.equals(projectFlowVersion, pluginFlowVersion)) {
             getLog().warn(
                     "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
                             + "Flow version for project is "
