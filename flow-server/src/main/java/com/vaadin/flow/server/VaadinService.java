@@ -702,18 +702,22 @@ public abstract class VaadinService implements Serializable {
             }
             List<UI> uis = new ArrayList<>(session.getUIs());
             for (final UI ui : uis) {
-                ui.accessSynchronously(() -> {
-                    /*
-                     * close() called here for consistency so that it is always
-                     * called before a UI is removed. UI.isClosing() is thus
-                     * always true in UI.detach() and associated detach
-                     * listeners.
-                     */
-                    if (!ui.isClosing()) {
-                        ui.close();
-                    }
-                    session.removeUI(ui);
-                });
+                try {
+                    ui.accessSynchronously(() -> {
+                        /*
+                         * close() called here for consistency so that it is
+                         * always called before a UI is removed. UI.isClosing()
+                         * is thus always true in UI.detach() and associated
+                         * detach listeners.
+                         */
+                        if (!ui.isClosing()) {
+                            ui.close();
+                        }
+                        session.removeUI(ui);
+                    });
+                } catch (Exception e) {
+                    session.getErrorHandler().error(new ErrorEvent(e));
+                }
             }
             SessionDestroyEvent event = new SessionDestroyEvent(
                     VaadinService.this, session);
@@ -2205,8 +2209,21 @@ public abstract class VaadinService implements Serializable {
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
-        serviceDestroyListeners
-                .forEach(listener -> listener.serviceDestroy(event));
+        RuntimeException exception = null;
+        for (ServiceDestroyListener listener : serviceDestroyListeners) {
+            try {
+                listener.serviceDestroy(event);
+            } catch (RuntimeException e) {
+                if (exception == null) {
+                    exception = e;
+                } else {
+                    e.addSuppressed(e);
+                }
+            }
+        }
+        if (exception != null) {
+            throw exception;
+        }
     }
 
     /**

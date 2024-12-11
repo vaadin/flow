@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import net.jcip.annotations.NotThreadSafe;
@@ -24,12 +26,15 @@ import jakarta.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -63,6 +68,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 /**
  *
@@ -96,6 +102,34 @@ public class VaadinServiceTest {
         @Override
         public void sessionDestroy(SessionDestroyEvent event) {
             callCount++;
+        }
+    }
+
+    private class ThrowingSessionDestroyListener
+            implements SessionDestroyListener {
+
+        @Override
+        public void sessionDestroy(SessionDestroyEvent event) {
+            throw new RuntimeException();
+        }
+    }
+
+    private class TestServiceDestroyListener implements ServiceDestroyListener {
+
+        int callCount = 0;
+
+        @Override
+        public void serviceDestroy(ServiceDestroyEvent event) {
+            callCount++;
+        }
+    }
+
+    private class ThrowingServiceDestroyListener
+            implements ServiceDestroyListener {
+
+        @Override
+        public void serviceDestroy(ServiceDestroyEvent event) {
+            throw new RuntimeException();
         }
     }
 
@@ -296,6 +330,106 @@ public class VaadinServiceTest {
 
         Assert.assertEquals("SessionDestroyListeners not called exactly once",
                 1, listener.callCount);
+    }
+
+    @Test
+    public void testSessionDestroyListenerCalled_whenAnotherListenerThrows()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        ThrowingSessionDestroyListener throwingListener = new ThrowingSessionDestroyListener();
+        TestSessionDestroyListener listener = new TestSessionDestroyListener();
+
+        service.addSessionDestroyListener(throwingListener);
+        service.addSessionDestroyListener(listener);
+
+        final AtomicInteger errorCount = new AtomicInteger();
+        MockVaadinSession vaadinSession = new MockVaadinSession(service);
+        vaadinSession.lock();
+        vaadinSession.setErrorHandler(e -> errorCount.getAndIncrement());
+        vaadinSession.unlock();
+        service.fireSessionDestroy(vaadinSession);
+
+        Assert.assertEquals("ErrorHandler not called exactly once", 1,
+                errorCount.get());
+
+        Assert.assertEquals("SessionDestroyListener not called exactly once", 1,
+                listener.callCount);
+    }
+
+    @Test
+    public void testSessionDestroyListenerCalled_andOtherUiDetachCalled_whenUiClosingThrows()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        TestSessionDestroyListener listener = new TestSessionDestroyListener();
+
+        service.addSessionDestroyListener(listener);
+
+        final AtomicBoolean secondUiDetached = new AtomicBoolean();
+        List<UI> UIs = new ArrayList<>();
+        MockVaadinSession vaadinSession = new MockVaadinSession(service) {
+            @Override
+            public Collection<UI> getUIs() {
+                return UIs;
+            }
+        };
+        vaadinSession.lock();
+        UI throwingUI = new UI() {
+            @Override
+            protected void onDetach(DetachEvent detachEvent) {
+                throw new RuntimeException();
+            }
+
+            @Override
+            public VaadinSession getSession() {
+                return vaadinSession;
+            }
+        };
+
+        throwingUI.getInternals().setSession(vaadinSession);
+        UIs.add(throwingUI);
+
+        UI detachingUI = new UI() {
+            @Override
+            protected void onDetach(DetachEvent detachEvent) {
+                secondUiDetached.set(true);
+            }
+
+            @Override
+            public VaadinSession getSession() {
+                return vaadinSession;
+            }
+        };
+        detachingUI.getInternals().setSession(vaadinSession);
+        UIs.add(detachingUI);
+
+        vaadinSession.unlock();
+
+        service.fireSessionDestroy(vaadinSession);
+
+        Assert.assertTrue("Second UI detach not called properly",
+                secondUiDetached.get());
+
+        Assert.assertEquals("SessionDestroyListener not called exactly once", 1,
+                listener.callCount);
+    }
+
+    @Test
+    public void testServiceDestroyListenerCalled_whenAnotherListenerThrows()
+            throws ServletException, ServiceException {
+        VaadinService service = createService();
+
+        ThrowingServiceDestroyListener throwingListener = new ThrowingServiceDestroyListener();
+        TestServiceDestroyListener listener = new TestServiceDestroyListener();
+
+        service.addServiceDestroyListener(throwingListener);
+        service.addServiceDestroyListener(listener);
+
+        assertThrows(RuntimeException.class, () -> service.destroy());
+
+        Assert.assertEquals("ServiceDestroyListener not called exactly once", 1,
+                listener.callCount);
     }
 
     @Test
