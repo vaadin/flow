@@ -64,6 +64,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -555,7 +556,7 @@ public class VaadinServletContextInitializer
             List<Class<? extends Annotation>> annotations = new ArrayList<>();
             List<Class<?>> superTypes = new ArrayList<>();
             collectHandleTypes(devModeHandlerManager.getHandlesTypes(),
-                    annotations, superTypes);
+                    annotations, superTypes, true);
 
             Set<Class<?>> classes = findClassesForDevMode(basePackages,
                     annotations, superTypes);
@@ -940,12 +941,13 @@ public class VaadinServletContextInitializer
             List<Class<?>> superTypes) {
         HandlesTypes handlesTypes = clazz.getAnnotation(HandlesTypes.class);
         assert handlesTypes != null;
-        collectHandleTypes(handlesTypes.value(), annotations, superTypes);
+        collectHandleTypes(handlesTypes.value(), annotations, superTypes,
+                false);
     }
 
     private static void collectHandleTypes(Class<?>[] handleTypes,
             List<Class<? extends Annotation>> annotations,
-            List<Class<?>> superTypes) {
+            List<Class<?>> superTypes, boolean addHillaEndpointTypes) {
         assert handleTypes != null;
         for (Class<?> type : handleTypes) {
             if (type.isAnnotation()) {
@@ -953,6 +955,10 @@ public class VaadinServletContextInitializer
             } else {
                 superTypes.add(type);
             }
+        }
+        if (addHillaEndpointTypes) {
+            annotations
+                    .addAll(EndpointRequestUtil.getHillaEndpointAnnotations());
         }
     }
 

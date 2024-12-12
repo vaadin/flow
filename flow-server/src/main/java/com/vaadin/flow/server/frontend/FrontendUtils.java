@@ -1380,6 +1380,22 @@ public class FrontendUtils {
                 && isHillaViewsUsed(frontendDirectory);
     }
 
+    /**
+     * Checks if Hilla's endpoints, i.e. {@code BrowserCallable} or
+     * {@code Endpoint} annotated classes are used in the project.
+     *
+     * @param options
+     *            frontend build options
+     * @return {@code true} if Hilla endpoints are used, {@code false} otherwise
+     */
+    public static boolean areEndpointsUsed(Options options) {
+        Lookup lookup = options.getLookup();
+        EndpointUsageDetector endpointUsageDetector = lookup
+                .lookup(EndpointUsageDetector.class);
+        return endpointUsageDetector != null
+                && endpointUsageDetector.areEndpointsUsed(options);
+    }
+
     private static boolean isRoutesContentUsingHillaViews(
             String routesContent) {
         routesContent = StringUtil.removeComments(routesContent);
