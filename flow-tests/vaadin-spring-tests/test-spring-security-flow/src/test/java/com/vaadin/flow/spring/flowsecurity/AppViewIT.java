@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
@@ -22,12 +23,12 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class AppViewIT extends AbstractIT {
 
-    private static final String LOGIN_PATH = "my/login/page";
-    private static final String USER_FULLNAME = "John the User";
-    private static final String ADMIN_FULLNAME = "Emma the Admin";
+    protected static final String LOGIN_PATH = "my/login/page";
+    protected static final String USER_FULLNAME = "John the User";
+    protected static final String ADMIN_FULLNAME = "Emma the Admin";
 
     private void logout() {
-        if (!$(ButtonElement.class).attribute("id", "logout").exists()) {
+        if (!$(ButtonElement.class).withAttribute("id", "logout").exists()) {
             open("");
             assertRootPageShown();
         }
@@ -298,7 +299,7 @@ public class AppViewIT extends AbstractIT {
 
     // https://github.com/vaadin/flow/issues/7323
     @Test
-    public void logout_via_doLogin_redirects_to_logout() {
+    public void logout_via_doLogoutURL_redirects_to_logout() {
         open(LOGIN_PATH);
         loginAdmin();
         navigateTo("admin");
@@ -340,11 +341,11 @@ public class AppViewIT extends AbstractIT {
         assertPathShown("menu-list");
     }
 
-    private void navigateTo(String path) {
+    protected void navigateTo(String path) {
         navigateTo(path, true);
     }
 
-    private void navigateTo(String path, boolean assertPathShown) {
+    protected void navigateTo(String path, boolean assertPathShown) {
         getMainView().$("a").attribute("href", path).first().click();
         if (assertPathShown) {
             assertPathShown(path);
@@ -352,6 +353,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private TestBenchElement getMainView() {
+        waitForClientRouter();
         return waitUntil(driver -> $("*").id("main-view"));
     }
 
@@ -404,6 +406,18 @@ public class AppViewIT extends AbstractIT {
                 }, 500);
                 """;
         getCommandExecutor().getDriver().executeAsyncScript(script, element);
+    }
+
+    /*
+     * The same driver is used to access both Vaadin views and static resources.
+     * Static caching done by #isClientRouter can cause some tests to be flaky.
+     */
+    protected void waitForClientRouter() {
+        boolean hasClientRouter = (boolean) executeScript(
+                "return !!window.Vaadin.Flow.clients.TypeScript");
+        if (hasClientRouter) {
+            waitForElementPresent(By.cssSelector("#outlet > *"));
+        }
     }
 
 }
