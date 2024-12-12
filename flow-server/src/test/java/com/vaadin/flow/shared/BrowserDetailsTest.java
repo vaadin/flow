@@ -16,8 +16,16 @@
 
 package com.vaadin.flow.shared;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import junit.framework.TestCase;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+
+import com.vaadin.flow.server.frontend.TaskGenerateTsConfigTest;
 
 public class BrowserDetailsTest extends TestCase {
 
@@ -52,6 +60,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String OPERA964_WINDOWS = "Opera/9.64(Windows NT 5.1; U; en) Presto/2.1.1";
     private static final String OPERA1010_WINDOWS = "Opera/9.80 (Windows NT 5.1; U; en) Presto/2.2.15 Version/10.10";
     private static final String OPERA1050_WINDOWS = "Opera/9.80 (Windows NT 5.1; U; en) Presto/2.5.22 Version/10.50";
+    private static final String OPERA115_WINDOWS = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0";
 
     private static final String CHROME3_MAC = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_8; en-US) AppleWebKit/532.0 (KHTML, like Gecko) Chrome/3.0.198 Safari/532.0";
     private static final String CHROME4_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.89 Safari/532.5";
@@ -690,7 +699,17 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 537.36f);
         assertLinux(bd);
+    }
 
+    public void testOpera65() {
+        String userAgent = OPERA115_WINDOWS;
+        BrowserDetails bd = new BrowserDetails(userAgent);
+        assertWebKit(bd);
+        assertOpera(bd);
+        assertBrowserMajorVersion(bd, 115);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 537.36f);
+        assertWindows(bd);
     }
 
     public void testIos11FacebookBrowser() {
@@ -703,6 +722,88 @@ public class BrowserDetailsTest extends TestCase {
         BrowserDetails bd = new BrowserDetails(IPHONE_IOS_11_FIREFOX);
         assertWebKit(bd);
         assertEngineVersion(bd, 604.3f);
+    }
+
+    public void testCommonDesktopUserAgents() throws IOException {
+        UserAgent[] agents = getUserAgentDetails(
+                "common-desktop-useragents.json");
+
+        assertAgentDetails(agents);
+    }
+
+    public void testMobileUserAgents() throws IOException {
+        UserAgent[] agents = getUserAgentDetails("mobile-useragents.json");
+
+        assertAgentDetails(agents);
+    }
+
+    private static UserAgent[] getUserAgentDetails(String agentFile)
+            throws IOException {
+        String userAgents = IOUtils.toString(
+                Objects.requireNonNull(TaskGenerateTsConfigTest.class
+                        .getClassLoader().getResourceAsStream(agentFile)),
+                StandardCharsets.UTF_8);
+        ObjectMapper mapper = new ObjectMapper();
+
+        UserAgent agents[] = mapper.readValue(userAgents, UserAgent[].class);
+        return agents;
+    }
+
+    private void assertAgentDetails(UserAgent[] agents) {
+        for (UserAgent agent : agents) {
+            BrowserDetails bd = new BrowserDetails(agent.ua);
+            assertOs(bd, agent.os);
+            BrowserVersion versions = getMinorMajorVersion(
+                    agent.browserVersion);
+            Assert.assertEquals(
+                    "Major version differs on userAgent " + agent.ua,
+                    versions.browserMajorVersion, bd.getBrowserMajorVersion());
+            Assert.assertEquals(
+                    "Minor version differs on userAgent " + agent.ua,
+                    versions.browserMinorVersion, bd.getBrowserMinorVersion());
+        }
+    }
+
+    private BrowserVersion getMinorMajorVersion(String browserVersion) {
+        final String[] digits = browserVersion.split("[-.]", 4);
+
+        int major = Integer.parseInt(digits[0]);
+        int minor = -1;
+        if (digits.length >= 2) {
+            minor = Integer.parseInt(digits[1]);
+        }
+        return new BrowserVersion(major, minor);
+    }
+
+    private void assertOs(BrowserDetails bd, String os) {
+        switch (os) {
+        case "LINUX":
+            assertLinux(bd);
+            break;
+        case "WINDOWS":
+            assertWindows(bd);
+            break;
+        case "MACOSX":
+            assertMacOSX(bd);
+            break;
+        case "IPAD":
+            assertIPad(bd);
+            break;
+        case "IPHONE":
+            assertIPhone(bd);
+            break;
+        case "ANDROID":
+            assertAndroid(bd);
+            break;
+        }
+    }
+
+    private record BrowserVersion(int browserMajorVersion,
+            int browserMinorVersion) {
+    }
+
+    private record UserAgent(String ua, String browser, String browserVersion,
+            String os, String device) {
     }
 
     /*
@@ -827,13 +928,17 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isChromeOS());
     }
 
-    private void assertAndroid(BrowserDetails browserDetails, int majorVersion,
-            int minorVersion) {
+    private void assertAndroid(BrowserDetails browserDetails) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
         assertTrue(browserDetails.isAndroid());
         assertFalse(browserDetails.isChromeOS());
+    }
+
+    private void assertAndroid(BrowserDetails browserDetails, int majorVersion,
+            int minorVersion) {
+        assertAndroid(browserDetails);
 
         assertOSMajorVersion(browserDetails, majorVersion);
         assertOSMinorVersion(browserDetails, minorVersion);
@@ -841,6 +946,10 @@ public class BrowserDetailsTest extends TestCase {
 
     private void assertIPhone(BrowserDetails browserDetails) {
         assertTrue(browserDetails.isIPhone());
+    }
+
+    private void assertIPad(BrowserDetails browserDetails) {
+        assertTrue(browserDetails.isIPad());
     }
 
     private void assertWindows(BrowserDetails browserDetails) {
