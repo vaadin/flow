@@ -200,7 +200,7 @@
                         </httpConnector>
                         <stopPort>${server.stop.port}</stopPort>
                         <stopKey>foo</stopKey>
-                        <stopWait>20</stopWait>
+                        <stopWait>5</stopWait>
                     </configuration>
                 </plugin>
             </plugins>
