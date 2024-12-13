@@ -29,10 +29,12 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.model.Build;
+import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -54,10 +56,15 @@ public class ReflectorTest {
     @Before
     public void setUp() {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
-        URLClassLoader urlClassLoader = new URLClassLoader(
+        ReflectorIsolatedClassLoader urlClassLoader = new ReflectorIsolatedClassLoader(
                 getClassPath(Path.of(".")).stream().distinct().map(File::new)
                         .map(FlowFileUtils::convertToUrl).toArray(URL[]::new),
                 ClassLoader.getPlatformClassLoader()) {
+            @Override
+            public URL[] urlsToScan() {
+                return getURLs();
+            }
+
             @Override
             protected Class<?> findClass(String name)
                     throws ClassNotFoundException {
@@ -69,14 +76,14 @@ public class ReflectorTest {
                 return super.findClass(name);
             }
         };
-        reflector = new Reflector(urlClassLoader);
+        reflector = new DefaultReflector(urlClassLoader);
     }
 
     @Test
     public void createMojo_createInstanceAndCopyFields() throws Exception {
         MyMojo source = new MyMojo();
         source.fillFields();
-        Mojo target = reflector.createMojo(source);
+        Mojo target = reflector.createIsolatedMojo(source, Set.of());
         MatcherAssert.assertThat("foo field", target,
                 Matchers.hasProperty("foo", Matchers.equalTo(source.foo)));
         MatcherAssert.assertThat("bar field", target,
@@ -98,7 +105,7 @@ public class ReflectorTest {
             throws Exception {
         SubClassMojo source = new SubClassMojo();
         source.fillFields();
-        Mojo target = reflector.createMojo(source);
+        Mojo target = reflector.createIsolatedMojo(source, Set.of());
         MatcherAssert.assertThat("foo field", target,
                 Matchers.hasProperty("foo", Matchers.equalTo(source.foo)));
         MatcherAssert.assertThat("bar field", target,
@@ -123,7 +130,7 @@ public class ReflectorTest {
         IncompatibleFieldsMojo source = new IncompatibleFieldsMojo();
         source.fillFields();
         NoSuchFieldException exception = Assert.assertThrows(
-                NoSuchFieldException.class, () -> reflector.createMojo(source));
+                NoSuchFieldException.class, () -> reflector.createIsolatedMojo(source, Set.of()));
         Assert.assertTrue(
                 "Expected exception to be thrown because of class loader mismatch",
                 exception.getMessage()
@@ -170,13 +177,16 @@ public class ReflectorTest {
         // .addURL(new URL("file:///some/flat/maven-repo/maven-api.jar"));
         pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
 
-        Reflector execReflector = Reflector.of(project, mojoExecution);
+        Reflector execReflector = new DefaultReflectorController(
+                new FastReflectorIsolationConfig(),
+                new SystemStreamLog())
+                .of(project, mojoExecution);
 
         URLClassLoader isolatedClassLoader = execReflector
                 .getIsolatedClassLoader();
 
         Set<URL> urlSet = Set.of(isolatedClassLoader.getURLs());
-        Assert.assertEquals(4, urlSet.size());
+        Assert.assertEquals(5, urlSet.size());
         Assert.assertTrue(
                 urlSet.contains(convertToUrl(new File(outputDirectory))));
         Assert.assertTrue(urlSet.contains(convertToUrl(new File(
@@ -185,6 +195,8 @@ public class ReflectorTest {
                 "/some/flat/maven-repo/com.vaadin.test-system-1.0.jar"))));
         Assert.assertTrue(urlSet.contains(convertToUrl(new File(
                 "/some/flat/maven-repo/com.vaadin.test-plugin-1.0.jar"))));
+        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
+                "/my/project/target"))));
 
         // from platform class loader
         Assert.assertNotNull(
