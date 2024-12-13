@@ -614,7 +614,8 @@ public class BuildDevBundleMojo extends AbstractMojo
         String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
                 .filter(isFlowServer).map(Artifact::getVersion).findFirst()
                 .orElse(null);
-        if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+        if (projectFlowVersion != null
+                && !Objects.equals(projectFlowVersion, pluginFlowVersion)) {
             getLog().warn(
                     "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
                             + "Flow version for project is "
