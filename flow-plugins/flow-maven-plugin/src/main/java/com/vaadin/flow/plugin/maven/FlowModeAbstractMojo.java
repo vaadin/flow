@@ -305,7 +305,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * </p>
      */
     @Parameter(defaultValue = "true")
-    protected boolean checkPluginFlowCompatibility;
+    protected boolean checkPluginFlowCompatibility = true;
 
     /**
      * Should support for
@@ -319,7 +319,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * </p>
      */
     @Parameter(defaultValue = "true")
-    protected boolean supportDAU;
+    protected boolean supportDAU = true;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     protected ClassFinder classFinder;
