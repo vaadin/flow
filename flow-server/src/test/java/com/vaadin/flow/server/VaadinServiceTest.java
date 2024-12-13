@@ -15,15 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.i18n.DefaultI18NProvider;
-import com.vaadin.flow.i18n.I18NProvider;
-import net.jcip.annotations.NotThreadSafe;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpSessionBindingEvent;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,16 +30,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.DefaultI18NProvider;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -60,6 +59,8 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 /**
  *
@@ -125,6 +126,98 @@ public class VaadinServiceTest {
                 throws ServiceException {
             return super.createRequestHandlers();
         }
+    }
+
+    @Test
+    public void requestEnd_serviceFailure_threadLocalsCleared() {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            void cleanupSession(VaadinSession session) {
+                throw new RuntimeException("BOOM");
+            }
+        };
+        service.init();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        service.requestStart(request, response);
+
+        Assert.assertSame(service, VaadinService.getCurrent());
+        Assert.assertSame(request, VaadinRequest.getCurrent());
+        Assert.assertSame(response, VaadinResponse.getCurrent());
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession.setCurrent(session);
+
+        try {
+            service.requestEnd(request, response, session);
+            Assert.fail("Should have thrown an exception");
+        } catch (Exception e) {
+            Assert.assertNull("VaadinService.current",
+                    VaadinService.getCurrent());
+            Assert.assertNull("VaadinSession.current",
+                    VaadinSession.getCurrent());
+            Assert.assertNull("VaadinRequest.current",
+                    VaadinRequest.getCurrent());
+            Assert.assertNull("VaadinResponse.current",
+                    VaadinResponse.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    public void requestEnd_interceptorFailure_allInterceptorsInvoked_doNotThrowAndThreadLocalsCleared() {
+        VaadinRequestInterceptor interceptor1 = Mockito
+                .mock(VaadinRequestInterceptor.class);
+        VaadinRequestInterceptor interceptor2 = Mockito
+                .mock(VaadinRequestInterceptor.class);
+        Mockito.doThrow(new RuntimeException("BOOM")).when(interceptor2)
+                .requestEnd(any(), any(), any());
+        VaadinRequestInterceptor interceptor3 = Mockito
+                .mock(VaadinRequestInterceptor.class);
+
+        VaadinServiceInitListener initListener = event -> {
+            event.addVaadinRequestInterceptor(interceptor1);
+            event.addVaadinRequestInterceptor(interceptor2);
+            event.addVaadinRequestInterceptor(interceptor3);
+        };
+        MockInstantiator instantiator = new MockInstantiator(initListener);
+        MockVaadinServletService service = new MockVaadinServletService();
+        service.init(instantiator);
+
+        Map<String, Object> attributes = new HashMap<>();
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getAttribute(anyString()))
+                .then(i -> attributes.get(i.getArgument(0, String.class)));
+        Mockito.doAnswer(i -> attributes.put(i.getArgument(0, String.class),
+                i.getArgument(1))).when(request)
+                .setAttribute(anyString(), any());
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        service.requestStart(request, response);
+
+        Assert.assertSame(service, VaadinService.getCurrent());
+        Assert.assertSame(request, VaadinRequest.getCurrent());
+        Assert.assertSame(response, VaadinResponse.getCurrent());
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession.setCurrent(session);
+
+        try {
+            service.requestEnd(request, response, session);
+
+            Assert.assertNull("VaadinService.current",
+                    VaadinService.getCurrent());
+            Assert.assertNull("VaadinSession.current",
+                    VaadinSession.getCurrent());
+            Assert.assertNull("VaadinRequest.current",
+                    VaadinRequest.getCurrent());
+            Assert.assertNull("VaadinResponse.current",
+                    VaadinResponse.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+
     }
 
     @Test
@@ -601,7 +694,7 @@ public class VaadinServiceTest {
         InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when((factory.createInstantitor(Mockito.any())))
+        Mockito.when((factory.createInstantitor(any())))
                 .thenReturn(instantiator);
 
         return factory;
