@@ -45,6 +45,7 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
@@ -284,7 +285,12 @@ public class ComponentUtil {
         }
 
         DetachEvent detachEvent = new DetachEvent(component);
-        component.onDetach(detachEvent);
+        try {
+            component.onDetach(detachEvent);
+        } catch (RuntimeException e) {
+            VaadinSession.getCurrent().getErrorHandler()
+                    .error(new ErrorEvent(e));
+        }
         fireEvent(component, detachEvent);
 
         // inform component about onEnabledState if parent and child states
