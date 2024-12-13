@@ -275,8 +275,24 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
     protected String applicationIdentifier;
 
+    @Parameter
+    protected FastReflectorIsolationConfig fastReflectorIsolation;
+
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     protected ClassFinder classFinder;
+
+    protected ReflectorController getNewReflectorController()
+    {
+        return new DefaultReflectorController(fastReflectorIsolation, getLog());
+    }
+
+    /**
+     * Field names specified here will not be copied over to the isolated mojo.
+     */
+    protected Set<String> isolatedMojoIgnoreFields()
+    {
+        return Set.of("fastReflectorIsolation");
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -288,44 +304,32 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 .getPluginDescriptor();
         checkFlowCompatibility(pluginDescriptor);
 
-        Reflector reflector = getOrCreateReflector();
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread()
-                .setContextClassLoader(reflector.getIsolatedClassLoader());
-        try {
-            Mojo task = reflector.createMojo(this);
-            findExecuteMethod(task.getClass()).invoke(task);
-            reflector.logIncompatibilities(getLog()::debug);
+        final long prepareIsolatedStart = System.nanoTime();
+
+        Reflector reflector = getOrCreateReflector(getNewReflectorController());
+        ClassLoader originalCl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(reflector.getIsolatedClassLoader());
+        try
+        {
+            Mojo task = reflector.createIsolatedMojo(this, isolatedMojoIgnoreFields());
+            Method mExec = ReflectTools.findMethodAndMakeAccessible(task.getClass(), "executeInternal");
+
+            getLog().info("Preparations for isolated execution finished, took "
+                    + msSince(prepareIsolatedStart) + " ms");
+
+            final long isolatedStart = System.nanoTime();
+            mExec.invoke(task);
+
+            getLog().info("Isolated execution finished, took " + msSince(isolatedStart) + " ms");
         } catch (MojoExecutionException | MojoFailureException e) {
-            logTroubleshootingHints(reflector, e);
             throw e;
         } catch (Exception e) {
-            logTroubleshootingHints(reflector, e);
             throw new MojoFailureException(e.getMessage(), e);
         } finally {
-            Thread.currentThread().setContextClassLoader(tccl);
+            Thread.currentThread().setContextClassLoader(originalCl);
         }
 
         getLog().info(goal + " finished, took " + msSince(start) + " ms");
-    }
-
-    protected void logTroubleshootingHints(Reflector reflector, Throwable ex) {
-        reflector.logIncompatibilities(getLog()::warn);
-        if (ex instanceof InvocationTargetException) {
-            ex = ex.getCause();
-        }
-        StringBuilder errorMessage = new StringBuilder(ex.getMessage());
-        Throwable cause = ex.getCause();
-        while (cause != null) {
-            if (cause.getMessage() != null) {
-                errorMessage.append(" ").append(cause.getMessage());
-            }
-            cause = cause.getCause();
-        }
-        getLog().error(
-                "The build process encountered an error: " + errorMessage);
-        logError(
-                "To diagnose the issue, please re-run Maven with the -X option to enable detailed debug logging and identify the root cause.");
     }
 
     /**
@@ -380,19 +384,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return true if Hilla is available, false otherwise
      */
     public boolean isHillaAvailable() {
-        return getOrCreateReflector().getResource(
-                "com/vaadin/hilla/EndpointController.class") != null;
-    }
-
-    /**
-     * Checks if Hilla is available based on the Maven project's classpath.
-     *
-     * @param mavenProject
-     *            Target Maven project
-     * @return true if Hilla is available, false otherwise
-     */
-    public static boolean isHillaAvailable(MavenProject mavenProject) {
-        return Reflector.of(mavenProject, null).getResource(
+        return getClassFinder().getResource(
                 "com/vaadin/hilla/EndpointController.class") != null;
     }
 
@@ -407,23 +399,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     public boolean isHillaUsed(File frontendDirectory) {
         return isHillaAvailable()
-                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
-    }
-
-    /**
-     * Checks if Hilla is available and Hilla views are used in the Maven
-     * project based on what is in routes.ts or routes.tsx file.
-     *
-     * @param mavenProject
-     *            Target Maven project
-     * @param frontendDirectory
-     *            Target frontend directory.
-     * @return {@code true} if Hilla is available and Hilla views are used,
-     *         {@code false} otherwise
-     */
-    public static boolean isHillaUsed(MavenProject mavenProject,
-            File frontendDirectory) {
-        return isHillaAvailable(mavenProject)
                 && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
@@ -454,13 +429,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public ClassFinder getClassFinder() {
-        if (classFinder == null) {
-            URLClassLoader classLoader = getOrCreateReflector()
-                    .getIsolatedClassLoader();
-            classFinder = new ReflectionsClassFinder(classLoader,
-                    classLoader.getURLs());
-        }
-        return classFinder;
+        return Objects.requireNonNull(classFinder, "ClassFinder is null. Ensure that you are in the isolated Mojo");
     }
 
     @Override
@@ -726,18 +695,40 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 "Method executeInternal not found in " + getClass().getName());
     }
 
-    protected Reflector getOrCreateReflector() {
-        Map<String, Object> pluginContext = getPluginContext();
-        String pluginKey = mojoExecution.getPlugin().getKey();
-        String reflectorKey = Reflector.class.getName() + "-" + pluginKey + "-"
+    protected Reflector getOrCreateReflector(final ReflectorController reflectorController) {
+        final Map<String, Object> pluginContext = getPluginContext();
+        final String pluginKey = mojoExecution.getPlugin().getKey();
+        final String reflectorKey = reflectorController.getReflectorClassIdentifier() + "-" + pluginKey + "-"
                 + mojoExecution.getLifecyclePhase();
-        if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
+        if(pluginContext != null && pluginContext.containsKey(reflectorKey))
+        {
             getLog().debug("Using cached Reflector for plugin " + pluginKey
                     + " and phase " + mojoExecution.getLifecyclePhase());
-            return Reflector.adapt(pluginContext.get(reflectorKey));
+            try
+            {
+                final long start = System.nanoTime();
+
+                final Reflector reused = reflectorController.adaptFrom(pluginContext.get(reflectorKey));
+
+                getLog().info("Adapted from cached Reflector, took " + msSince(start) + "ms");
+
+                return reused;
+            }
+            catch(final RuntimeException rex)
+            {
+                getLog().warn("Failed to reuse cached reflector", rex);
+            }
         }
-        Reflector reflector = Reflector.of(project, mojoExecution);
-        if (pluginContext != null) {
+
+        final long start = System.nanoTime();
+
+        final Reflector reflector = reflectorController.of(project, mojoExecution);
+        getLog().info("Created new Reflector[urlsOnIsolatedClassLoader="
+                + reflector.getIsolatedClassLoader().getURLs().length
+                + "x], took " + msSince(start) + "ms");
+
+        if(pluginContext != null)
+        {
             pluginContext.put(reflectorKey, reflector);
             getLog().debug("Cached Reflector for plugin " + pluginKey
                     + " and phase " + mojoExecution.getLifecyclePhase());
