@@ -45,6 +45,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.util.Assert;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.shared.ui.Transport;
@@ -131,8 +132,10 @@ public class AuthenticationContext {
      */
     public void logout() {
         final UI ui = UI.getCurrent();
-        if (ui.getPushConfiguration().getTransport() == Transport.WEBSOCKET
-                && ui.getInternals().getPushConnection().isConnected()) {
+        boolean pushWebsocketConnected = ui.getPushConfiguration()
+                .getTransport() == Transport.WEBSOCKET
+                && ui.getInternals().getPushConnection().isConnected();
+        if (pushWebsocketConnected) {
             // WEBSOCKET transport mode would not log out properly after session
             // invalidation. Switching to WEBSOCKET_XHR for a single request
             // to do the logout.
@@ -151,6 +154,11 @@ public class AuthenticationContext {
                 ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
                 doLogout(ui);
             });
+        } else if (VaadinRequest.getCurrent() == null) {
+            // Logout started from a background thread, force client to send
+            // a request
+            ui.getPage().executeJs("return true").then(ignored -> doLogout(ui),
+                    error -> doLogout(ui));
         } else {
             doLogout(ui);
         }
@@ -496,7 +504,7 @@ public class AuthenticationContext {
         private boolean isContinueToNextHandler(HttpServletRequest request,
                 LogoutHandler handler) {
             return handler instanceof SecurityContextLogoutHandler
-                    && (request.getSession() == null
+                    && (request.getSession(false) == null
                             || !request.isRequestedSessionIdValid());
         }
     }

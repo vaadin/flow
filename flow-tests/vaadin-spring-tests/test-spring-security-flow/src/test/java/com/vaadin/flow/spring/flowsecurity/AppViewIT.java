@@ -304,6 +304,16 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
+    public void logout_server_initiated_redirects_to_logout() {
+        open(LOGIN_PATH);
+        loginAdmin();
+        navigateTo("admin");
+        assertAdminPageShown(ADMIN_FULLNAME);
+        getMainView().$(ButtonElement.class).id("logout-server").click();
+        assertRootPageShown();
+    }
+
+    @Test
     public void client_menu_routes_correct_for_anonymous() {
         navigateToClientMenuList();
         assertMenuListContains("PublicView");
