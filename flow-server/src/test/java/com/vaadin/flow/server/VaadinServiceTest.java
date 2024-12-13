@@ -12,7 +12,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,6 +83,44 @@ public class VaadinServiceTest {
         protected List<RequestHandler> createRequestHandlers()
                 throws ServiceException {
             return super.createRequestHandlers();
+        }
+    }
+
+    @Test
+    public void requestEnd_serviceFailure_threadLocalsCleared() {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            void cleanupSession(VaadinSession session) {
+                throw new RuntimeException("BOOM");
+            }
+        };
+        service.init();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        service.requestStart(request, response);
+
+        Assert.assertSame(service, VaadinService.getCurrent());
+        Assert.assertSame(request, VaadinRequest.getCurrent());
+        Assert.assertSame(response, VaadinResponse.getCurrent());
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession.setCurrent(session);
+
+        try {
+            service.requestEnd(request, response, session);
+            Assert.fail("Should have thrown an exception");
+        } catch (Exception e) {
+            Assert.assertNull("VaadinService.current",
+                    VaadinService.getCurrent());
+            Assert.assertNull("VaadinSession.current",
+                    VaadinSession.getCurrent());
+            Assert.assertNull("VaadinRequest.current",
+                    VaadinRequest.getCurrent());
+            Assert.assertNull("VaadinResponse.current",
+                    VaadinResponse.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
         }
     }
 
