@@ -140,7 +140,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * </p>
      */
     @Parameter(defaultValue = "true")
-    protected boolean performLicenseCheck;
+    protected boolean performLicenseCheck = true;
 
     /**
      * Determines if the runtime dependencies should be checked.
@@ -149,7 +149,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * </p>
      */
     @Parameter(defaultValue = "true")
-    protected boolean checkRuntimeDependency;
+    protected boolean checkRuntimeDependency = true;
 
     @Override
     protected void executeInternal()
