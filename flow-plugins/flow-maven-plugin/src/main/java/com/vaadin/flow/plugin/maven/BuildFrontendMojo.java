@@ -70,20 +70,20 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * Whether to generate a bundle from the project frontend sources or not.
      */
     @Parameter(defaultValue = "true")
-    private boolean generateBundle;
+    protected boolean generateBundle;
 
     /**
      * Whether to run <code>npm install</code> after updating dependencies.
      */
     @Parameter(defaultValue = "true")
-    private boolean runNpmInstall;
+    protected boolean runNpmInstall;
 
     /**
      * Whether to generate embeddable web components from WebComponentExporter
      * inheritors.
      */
     @Parameter(defaultValue = "true")
-    private boolean generateEmbeddableWebComponents;
+    protected boolean generateEmbeddableWebComponents;
 
     /**
      * Defines the project frontend directory from where resources should be
@@ -91,14 +91,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      */
     @Parameter(defaultValue = "${project.basedir}/"
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
-    private File frontendResourcesDirectory;
+    protected File frontendResourcesDirectory;
 
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
      */
     @Parameter(defaultValue = "true")
-    private boolean optimizeBundle;
+    protected boolean optimizeBundle;
 
     /**
      * Setting this to true will run {@code npm ci} instead of
@@ -111,7 +111,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * overwritten and production builds are reproducible.
      */
     @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
-    private boolean ciBuild;
+    protected boolean ciBuild;
 
     /**
      * Setting this to {@code true} will force a build of the production build
@@ -121,7 +121,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * {@link #optimizeBundle} parameter.
      */
     @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
-    private boolean forceProductionBuild;
+    protected boolean forceProductionBuild;
 
     /**
      * Control cleaning of generated frontend files when executing
@@ -130,7 +130,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * Mainly this is wanted to be true which it is by default.
      */
     @Parameter(property = InitParameters.CLEAN_BUILD_FRONTEND_FILES, defaultValue = "true")
-    private boolean cleanFrontendFiles;
+    protected boolean cleanFrontendFiles;
 
     @Override
     protected void executeInternal()

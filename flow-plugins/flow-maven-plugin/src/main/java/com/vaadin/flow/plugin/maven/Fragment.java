@@ -25,8 +25,8 @@ import java.util.Set;
  * @since 1.0.
  */
 public class Fragment {
-    private String name;
-    private final Set<String> files = new HashSet<>();
+    protected String name;
+    protected final Set<String> files = new HashSet<>();
 
     /**
      * Gets the name of a fragment.

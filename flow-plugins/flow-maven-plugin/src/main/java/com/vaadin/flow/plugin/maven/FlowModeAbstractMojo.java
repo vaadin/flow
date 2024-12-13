@@ -84,38 +84,38 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Application properties file in Spring project.
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/resources/application.properties")
-    private File applicationProperties;
+    protected File applicationProperties;
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
     @Parameter(defaultValue = "${vaadin."
             + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
-    private boolean eagerServerLoad;
+    protected boolean eagerServerLoad;
 
     /**
      * A directory with project's frontend source files.
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
-    private File frontendDirectory;
+    protected File frontendDirectory;
 
     /**
      * The folder where flow will put TS API files for client projects.
      */
     @Parameter(defaultValue = "${null}")
-    private File generatedTsFolder;
+    protected File generatedTsFolder;
 
     /**
      * Java source folders for scanning.
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/java")
-    private File javaSourceFolder;
+    protected File javaSourceFolder;
 
     /**
      * Java resource folder.
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/resources")
-    private File javaResourceFolder;
+    protected File javaResourceFolder;
 
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
@@ -127,7 +127,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)
-    private String nodeDownloadRoot;
+    protected String nodeDownloadRoot;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -135,7 +135,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
     @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
-    private String nodeVersion;
+    protected String nodeVersion;
 
     /**
      * Setting defining if the automatically installed node version may be
@@ -143,34 +143,34 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
             + Constants.DEFAULT_NODE_AUTO_UPDATE)
-    private boolean nodeAutoUpdate;
+    protected boolean nodeAutoUpdate;
 
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
      */
     @Parameter(defaultValue = "${project.basedir}")
-    private File npmFolder;
+    protected File npmFolder;
 
     /**
      * Default generated path of the OpenAPI json.
      */
     @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json")
-    private File openApiJsonFile;
+    protected File openApiJsonFile;
 
     /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
     @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = ""
             + Constants.ENABLE_PNPM_DEFAULT)
-    private boolean pnpmEnable;
+    protected boolean pnpmEnable;
 
     /**
      * Instructs to use bun for installing npm frontend resources.
      */
     @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = ""
             + Constants.ENABLE_BUN_DEFAULT)
-    private boolean bunEnable;
+    protected boolean bunEnable;
 
     /**
      * Instructs to use globally installed pnpm tool or the default supported
@@ -178,7 +178,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, defaultValue = ""
             + Constants.GLOBAL_PNPM_DEFAULT)
-    private boolean useGlobalPnpm;
+    protected boolean useGlobalPnpm;
 
     /**
      * Whether or not we are running in productionMode.
@@ -197,7 +197,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * dir.
      */
     @Parameter(defaultValue = "${project.basedir}")
-    private File projectBasedir;
+    protected File projectBasedir;
 
     /**
      * Whether vaadin home node executable usage is forced. If it's set to
@@ -207,7 +207,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
             + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
-    private boolean requireHomeNodeExec;
+    protected boolean requireHomeNodeExec;
 
     /**
      * Defines the output directory for generated non-served resources, such as
@@ -215,7 +215,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
             + VAADIN_SERVLET_RESOURCES)
-    private File resourceOutputDirectory;
+    protected File resourceOutputDirectory;
 
     /**
      * The folder where the frontend build tool should output index.js and other
@@ -223,13 +223,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
             + VAADIN_WEBAPP_RESOURCES)
-    private File webpackOutputDirectory;
+    protected File webpackOutputDirectory;
 
     /**
      * Build directory for the project.
      */
     @Parameter(property = "build.folder", defaultValue = "${project.build.directory}")
-    private String projectBuildDir;
+    protected String projectBuildDir;
 
     /**
      * Additional npm packages to run post install scripts for.
@@ -238,7 +238,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * post install scripts to work, e.g. esbuild.
      */
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
-    private List<String> postinstallPackages;
+    protected List<String> postinstallPackages;
 
     /**
      * Parameter to control if frontend development server should be used in
@@ -247,16 +247,16 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * By default, the frontend server is not used.
      */
     @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "${null}")
-    private Boolean frontendHotdeploy;
+    protected Boolean frontendHotdeploy;
 
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
-    private boolean skipDevBundleRebuild;
+    protected boolean skipDevBundleRebuild;
 
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
-    private Boolean reactEnable;
+    protected Boolean reactEnable;
 
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
-    private boolean npmExcludeWebComponents;
+    protected boolean npmExcludeWebComponents;
 
     /**
      * Parameter for adding file extensions to handle when generating bundles.
@@ -274,7 +274,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      *
      */
     @Parameter(property = InitParameters.FRONTEND_EXTRA_EXTENSIONS, defaultValue = "${null}")
-    private List<String> frontendExtraFileExtensions;
+    protected List<String> frontendExtraFileExtensions;
 
     /**
      * Identifier for the application.
@@ -282,12 +282,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * If not specified, defaults to '{@literal groupId:artifactId}'.
      */
     @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
-    private String applicationIdentifier;
+    protected String applicationIdentifier;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
-    private ClassFinder classFinder;
+    protected ClassFinder classFinder;
 
-    private Consumer<File> buildContextRefresher;
+    protected Consumer<File> buildContextRefresher;
 
     @Inject
     void setBuildContext(BuildContext buildContext) {
@@ -319,7 +319,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         }
     }
 
-    private void logTroubleshootingHints(Reflector reflector, Throwable ex) {
+    protected void logTroubleshootingHints(Reflector reflector, Throwable ex) {
         reflector.logIncompatibilities(getLog()::warn);
         if (ex instanceof InvocationTargetException) {
             ex = ex.getCause();
@@ -710,7 +710,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         return npmExcludeWebComponents;
     }
 
-    private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
+    protected void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
         Predicate<Artifact> isFlowServer = artifact -> "com.vaadin"
                 .equals(artifact.getGroupId())
                 && "flow-server".equals(artifact.getArtifactId());
@@ -730,7 +730,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         }
     }
 
-    private Method findExecuteMethod(Class<?> taskClass)
+    protected Method findExecuteMethod(Class<?> taskClass)
             throws NoSuchMethodException {
 
         while (taskClass != null && taskClass != Object.class) {
@@ -748,7 +748,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 "Method executeInternal not found in " + getClass().getName());
     }
 
-    private Reflector getOrCreateReflector() {
+    protected Reflector getOrCreateReflector() {
         Map<String, Object> pluginContext = getPluginContext();
         String pluginKey = mojoExecution.getPlugin().getKey();
         String reflectorKey = Reflector.class.getName() + "-" + pluginKey + "-"
