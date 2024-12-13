@@ -9,7 +9,7 @@
         <version>24.7-SNAPSHOT</version>
     </parent>
 
-    <artifactId>flow-signals</artifactId>
+    <artifactId>signals</artifactId>
     <name>Full-Stack Signals Commons</name>
     <description>Full-Stack Signals common library for Flow and Hilla</description>
     <packaging>jar</packaging>
@@ -20,9 +20,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -18,7 +18,6 @@
         <module>flow</module>
         <module>flow-server</module>
         <module>flow-react</module>
-        <module>flow-signals</module>
         <module>flow-polymer-template</module>
         <module>flow-lit-template</module>
         <module>flow-push</module>
@@ -38,6 +37,7 @@
         <module>flow-jandex</module>
         <module>vaadin-spring</module>
         <module>flow-polymer2lit</module>
+        <module>signals</module>
     </modules>
 
     <organization>

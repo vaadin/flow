@@ -60,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-signals</artifactId>
+            <artifactId>signals</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
