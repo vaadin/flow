@@ -348,8 +348,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         Reflector reflector = getOrCreateReflector(getNewReflectorController());
         ClassLoader originalCl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(reflector.getIsolatedClassLoader());
-        try
-        {
+        try {
             Mojo task = reflector.createIsolatedMojo(this, isolatedMojoIgnoreFields());
             Method mExec = ReflectTools.findMethodAndMakeAccessible(task.getClass(), "executeInternal");
 
@@ -400,7 +399,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Deprecated(forRemoval = true)
     public static List<String> getClasspathElements(MavenProject project) {
-
         try {
             final Stream<String> classpathElements = Stream
                     .of(project.getRuntimeClasspathElements().stream(),
@@ -447,13 +445,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File applicationProperties() {
-
         return applicationProperties;
     }
 
     @Override
     public boolean eagerServerLoad() {
-
         return eagerServerLoad;
     }
 
@@ -477,11 +473,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public Set<File> getJarFiles() {
-
         return project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
-
     }
 
     @Override
@@ -492,35 +486,27 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File javaSourceFolder() {
-
         return javaSourceFolder;
     }
 
     @Override
     public File javaResourceFolder() {
-
         return javaResourceFolder;
     }
 
     @Override
     public void logDebug(CharSequence debugMessage) {
-
         getLog().debug(debugMessage);
-
     }
 
     @Override
     public void logDebug(CharSequence debugMessage, Throwable e) {
-
         getLog().debug(debugMessage, e);
-
     }
 
     @Override
     public void logInfo(CharSequence infoMessage) {
-
         getLog().info(infoMessage);
-
     }
 
     @Override
@@ -531,22 +517,17 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public void logError(CharSequence error) {
-
         getLog().error(error);
     }
 
     @Override
     public void logWarn(CharSequence warning, Throwable e) {
-
         getLog().warn(warning, e);
-
     }
 
     @Override
     public void logError(CharSequence error, Throwable e) {
-
         getLog().error(error, e);
-
     }
 
     @Override
@@ -570,61 +551,51 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public String nodeVersion() {
-
         return nodeVersion;
     }
 
     @Override
     public File npmFolder() {
-
         return npmFolder;
     }
 
     @Override
     public File openApiJsonFile() {
-
         return openApiJsonFile;
     }
 
     @Override
     public boolean pnpmEnable() {
-
         return pnpmEnable;
     }
 
     @Override
     public boolean bunEnable() {
-
         return bunEnable;
     }
 
     @Override
     public boolean useGlobalPnpm() {
-
         return useGlobalPnpm;
     }
 
     @Override
     public Path projectBaseDirectory() {
-
         return projectBasedir.toPath();
     }
 
     @Override
     public boolean requireHomeNodeExec() {
-
         return requireHomeNodeExec;
     }
 
     @Override
     public File servletResourceOutputDirectory() {
-
         return resourceOutputDirectory;
     }
 
     @Override
     public File webpackOutputDirectory() {
-
         return webpackOutputDirectory;
     }
 
@@ -652,8 +623,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (frontendHotdeploy != null) {
             return frontendHotdeploy;
         }
-        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return isHillaUsed(frontendDirectory);
+        return isHillaUsed(BuildFrontendUtil.getFrontendDirectory(this));
     }
 
     @Override
@@ -671,8 +641,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (reactEnable != null) {
             return reactEnable;
         }
-        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return FrontendUtils.isReactRouterRequired(frontendDirectory);
+        return FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getFrontendDirectory(this));
     }
 
     @Override
@@ -680,7 +649,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
             return applicationIdentifier;
         }
-        return "app-" + StringUtil.getHash(
         return supportDAU
                 ? "app-" + StringUtil.getHash(
                 project.getGroupId() + ":" + project.getArtifactId(),
@@ -690,11 +658,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public List<String> frontendExtraFileExtensions() {
-        if (frontendExtraFileExtensions != null) {
-            return frontendExtraFileExtensions;
-        }
-
-        return Collections.emptyList();
+        return Objects.requireNonNullElse(frontendExtraFileExtensions, Collections.emptyList());
     }
 
     @Override
@@ -702,7 +666,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         return npmExcludeWebComponents;
     }
 
-    protected void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
     protected void checkFlowCompatibility() {
         if (!checkPluginFlowCompatibility) {
             getLog().info("Vaadin flow compatibility between plugin and project is not checked");
@@ -748,12 +711,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         final String pluginKey = mojoExecution.getPlugin().getKey();
         final String reflectorKey = reflectorController.getReflectorClassIdentifier() + "-" + pluginKey + "-"
                 + mojoExecution.getLifecyclePhase();
-        if(pluginContext != null && pluginContext.containsKey(reflectorKey))
-        {
+        if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
             getLog().debug("Using cached Reflector for plugin " + pluginKey
                     + " and phase " + mojoExecution.getLifecyclePhase());
-            try
-            {
+            try {
                 final long start = System.nanoTime();
 
                 final Reflector reused = reflectorController.adaptFrom(pluginContext.get(reflectorKey));
@@ -761,9 +722,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 getLog().info("Adapted from cached Reflector, took " + msSince(start) + "ms");
 
                 return reused;
-            }
-            catch(final RuntimeException rex)
-            {
+            } catch (final RuntimeException rex) {
                 getLog().warn("Failed to reuse cached reflector", rex);
             }
         }
@@ -775,8 +734,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 + reflector.getIsolatedClassLoader().getURLs().length
                 + "x], took " + msSince(start) + "ms");
 
-        if(pluginContext != null)
-        {
+        if (pluginContext != null) {
             pluginContext.put(reflectorKey, reflector);
             getLog().debug("Cached Reflector for plugin " + pluginKey
                     + " and phase " + mojoExecution.getLifecyclePhase());
