@@ -37,6 +37,7 @@
         <module>flow-jandex</module>
         <module>vaadin-spring</module>
         <module>flow-polymer2lit</module>
+        <module>signals</module>
     </modules>
 
     <organization>
