@@ -212,31 +212,26 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     @Override
     public File frontendResourcesDirectory() {
-
         return frontendResourcesDirectory;
     }
 
     @Override
     public boolean generateBundle() {
-
         return generateBundle;
     }
 
     @Override
     public boolean generateEmbeddableWebComponents() {
-
         return generateEmbeddableWebComponents;
     }
 
     @Override
     public boolean optimizeBundle() {
-
         return optimizeBundle;
     }
 
     @Override
     public boolean runNpmInstall() {
-
         return runNpmInstall;
     }
 
