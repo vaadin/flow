@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -735,6 +736,76 @@ public class ComponentTest {
 
         child.assertDetachEvents(1);
         parent.assertDetachEvents(1);
+    }
+
+    @Test
+    public void testDetach_failingListeners_allListenersInvokedAndExceptionHandled() {
+        Set<Throwable> expectedExceptions = new HashSet<>();
+        Set<Throwable> handledExceptions = new HashSet<>();
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService());
+        session.setErrorHandler(
+                event -> handledExceptions.add(event.getThrowable()));
+        VaadinSession.setCurrent(session);
+        try {
+            UI ui = new UI();
+            TestComponentContainer parent = new TestComponentContainer() {
+                @Override
+                protected void onDetach(DetachEvent detachEvent) {
+                    getDetachEvents().incrementAndGet();
+                    UnsupportedOperationException exception = new UnsupportedOperationException(
+                            "ON-DETACH-1");
+                    expectedExceptions.add(exception);
+                    throw exception;
+                }
+            };
+            TestComponent child = new TestComponent() {
+                @Override
+                protected void onDetach(DetachEvent detachEvent) {
+                    getDetachEvents().incrementAndGet();
+                    UnsupportedOperationException exception = new UnsupportedOperationException(
+                            "ON-DETACH-2");
+                    expectedExceptions.add(exception);
+                    throw exception;
+                }
+            };
+            child.track();
+            parent.track();
+
+            child.addDetachListener(event -> {
+                if (event.getSource() instanceof TracksAttachDetach track) {
+                    track.getDetachEvents().incrementAndGet();
+                }
+                UnsupportedOperationException exception = new UnsupportedOperationException(
+                        "DETACH-LISTENER-1");
+                expectedExceptions.add(exception);
+                throw exception;
+            });
+            parent.addDetachListener(event -> {
+                if (event.getSource() instanceof TracksAttachDetach track) {
+                    track.getDetachEvents().incrementAndGet();
+                }
+                UnsupportedOperationException exception = new UnsupportedOperationException(
+                        "DETACH-LISTENER-2");
+                expectedExceptions.add(exception);
+                throw exception;
+            });
+
+            parent.add(child);
+            ui.add(parent);
+
+            child.assertDetachEvents(0);
+            parent.assertDetachEvents(0);
+
+            ui.remove(parent);
+
+            child.assertDetachEvents(3);
+            parent.assertDetachEvents(3);
+
+            Assert.assertEquals(expectedExceptions, handledExceptions);
+        } finally {
+            VaadinSession.setCurrent(null);
+        }
     }
 
     @Test
