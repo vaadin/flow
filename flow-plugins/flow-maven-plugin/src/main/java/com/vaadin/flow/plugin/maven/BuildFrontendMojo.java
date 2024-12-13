@@ -171,13 +171,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                     cleanTask.execute();
                 }
             } catch (URISyntaxException | TimeoutException
-                    | ExecutionFailedException exception) {
+                     | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
         }
 
-        if(performLicenseCheck) {
+        if (performLicenseCheck) {
             LicenseChecker.setStrictOffline(true);
         }
         boolean licenseRequired = performLicenseCheck && BuildFrontendUtil.validateLicenses(this);
@@ -252,9 +252,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     @Override
     public boolean checkRuntimeDependency(String groupId, String artifactId,
-            Consumer<String> missingDependencyMessage) {
-        if(!checkRuntimeDependency)
-        {
+                                          Consumer<String> missingDependencyMessage) {
+        if (!checkRuntimeDependency) {
             getLog().info("Ignoring runtime dependency check");
             return true;
         }
@@ -266,38 +265,35 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 .filter(artifact -> groupId.equals(artifact.getGroupId())
                         && artifactId.equals(artifact.getArtifactId()))
                 .toList();
-        if(deps.isEmpty())
-        {
+        if (deps.isEmpty()) {
             Optional.ofNullable(missingDependencyMessage)
                     .ifPresent(c -> c.accept(String.format(
                             """
-                                The dependency %1$s:%2$s has not been found in the project configuration.
-                                Please add the following dependency to your POM file:
-                                
-                                <dependency>
-                                    <groupId>%1$s</groupId>
-                                    <artifactId>%2$s</artifactId>
-                                    <scope>runtime</scope>
-                                </dependency>
-                                """,
+                                    The dependency %1$s:%2$s has not been found in the project configuration.
+                                    Please add the following dependency to your POM file:
+                                    
+                                    <dependency>
+                                        <groupId>%1$s</groupId>
+                                        <artifactId>%2$s</artifactId>
+                                        <scope>runtime</scope>
+                                    </dependency>
+                                    """,
                             groupId, artifactId)));
             return false;
-        }
-        else if(deps.stream().noneMatch(artifact -> !artifact.isOptional()
+        } else if (deps.stream().noneMatch(artifact -> !artifact.isOptional()
                 && artifact.getArtifactHandler().isAddedToClasspath()
                 && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
                 || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
                 || Artifact.SCOPE_RUNTIME
-                .equals(artifact.getScope()))))
-        {
+                .equals(artifact.getScope())))) {
             Optional.ofNullable(missingDependencyMessage)
                     .ifPresent(c -> c.accept(String.format(
                             """
-                                The dependency %1$s:%2$s has been found in the project configuration,
-                                but with a scope that does not guarantee its presence at runtime.
-                                Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
-                                To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
-                                """,
+                                    The dependency %1$s:%2$s has been found in the project configuration,
+                                    but with a scope that does not guarantee its presence at runtime.
+                                    Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
+                                    To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
+                                    """,
                             groupId, artifactId)));
             return false;
         }
