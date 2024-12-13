@@ -30,13 +30,11 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -53,9 +51,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
@@ -75,9 +70,6 @@ import com.vaadin.flow.plugin.base.PluginAdapterBuild;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.utils.FlowFileUtils;
@@ -611,7 +603,8 @@ public class BuildDevBundleMojo extends AbstractMojo
         String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
                 .filter(isFlowServer).map(Artifact::getVersion).findFirst()
                 .orElse(null);
-        if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+        if (projectFlowVersion != null
+                && !Objects.equals(projectFlowVersion, pluginFlowVersion)) {
             getLog().warn(
                     "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
                             + "Flow version for project is "

@@ -28,7 +28,6 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLClassLoader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -56,7 +55,6 @@ import org.codehaus.plexus.build.BuildContext;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -665,7 +663,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
                 .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
                 .orElse(null);
-        if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+        if (projectFlowVersion != null
+                && !Objects.equals(projectFlowVersion, pluginFlowVersion)) {
             getLog().warn(
                     "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
                             + "Flow version for project is "
