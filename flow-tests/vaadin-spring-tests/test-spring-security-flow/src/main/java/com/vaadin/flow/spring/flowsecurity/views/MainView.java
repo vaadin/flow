@@ -1,9 +1,14 @@
 package com.vaadin.flow.spring.flowsecurity.views;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -96,6 +101,18 @@ public class MainView extends AppLayout {
                 securityUtils.logout();
             });
             layout.add(logout);
+
+            Button logoutFromServer = new Button("Logout from server");
+            logoutFromServer.setId("logout-server");
+            logoutFromServer.addClickListener(e -> {
+                UI ui = UI.getCurrent();
+                Runnable action = ui.accessLater(() -> securityUtils.logout(),
+                        null);
+                CompletableFuture.runAsync(action,
+                        new DelegatingSecurityContextExecutor(CompletableFuture
+                                .delayedExecutor(1, TimeUnit.SECONDS)));
+            });
+            layout.add(logoutFromServer);
 
             Anchor logoutWithUrl = new Anchor("doLogout", "Logout with URL");
             logoutWithUrl.getElement().setAttribute("router-ignore", true);
