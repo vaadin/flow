@@ -180,12 +180,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             + Constants.GLOBAL_PNPM_DEFAULT)
     protected boolean useGlobalPnpm;
 
-    /**
-     * Whether or not we are running in productionMode.
-     */
-    @Parameter(defaultValue = "${null}")
-    protected Boolean productionMode;
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
