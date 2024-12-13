@@ -1466,19 +1466,23 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
-        if (session != null) {
-            assert VaadinSession.getCurrent() == session;
-            session.lock();
-            try {
-                cleanupSession(session);
-                final long duration = (System.nanoTime() - (Long) request
-                        .getAttribute(REQUEST_START_TIME_ATTRIBUTE)) / 1000000;
-                session.setLastRequestDuration(duration);
-            } finally {
-                session.unlock();
+        try {
+            if (session != null) {
+                assert VaadinSession.getCurrent() == session;
+                session.lock();
+                try {
+                    cleanupSession(session);
+                    final long duration = (System.nanoTime() - (Long) request
+                            .getAttribute(REQUEST_START_TIME_ATTRIBUTE))
+                            / 1000000;
+                    session.setLastRequestDuration(duration);
+                } finally {
+                    session.unlock();
+                }
             }
+        } finally {
+            CurrentInstance.clearAll();
         }
-        CurrentInstance.clearAll();
     }
 
     /**
