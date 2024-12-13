@@ -283,6 +283,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        final String goal = mojoExecution.getMojoDescriptor().getGoal();
+        getLog().info("Running " + goal);
+        final long start = System.nanoTime();
+
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
                 .getPluginDescriptor();
         checkFlowCompatibility(pluginDescriptor);
@@ -304,6 +308,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         } finally {
             Thread.currentThread().setContextClassLoader(tccl);
         }
+
+        getLog().info(goal + " finished, took " + msSince(start) + " ms");
     }
 
     protected void logTroubleshootingHints(Reflector reflector, Throwable ex) {
@@ -739,5 +745,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     + " and phase " + mojoExecution.getLifecyclePhase());
         }
         return reflector;
+    }
+
+    @SuppressWarnings("checkstyle:MagicNumber")
+    protected static long msSince(final long startNanos) {
+        return (System.nanoTime() - startNanos) / 1000000;
     }
 }
