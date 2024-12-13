@@ -284,13 +284,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     protected ClassFinder classFinder;
 
-    protected Consumer<File> buildContextRefresher;
-
-    @Inject
-    void setBuildContext(BuildContext buildContext) {
-        buildContextRefresher = buildContext::refresh;
-    }
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
@@ -352,19 +345,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     protected abstract void executeInternal()
             throws MojoExecutionException, MojoFailureException;
-
-    /**
-     * Indicates that the file or folder content has been modified during the
-     * build.
-     *
-     * @param file
-     *            a {@link java.io.File} object.
-     */
-    protected void triggerRefresh(File file) {
-        if (buildContextRefresher != null) {
-            buildContextRefresher.accept(file);
-        }
-    }
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a

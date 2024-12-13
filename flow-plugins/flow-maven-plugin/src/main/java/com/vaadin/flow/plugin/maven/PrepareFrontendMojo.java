@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.util.function.Consumer;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -24,6 +25,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
+import org.codehaus.plexus.build.BuildContext;
+
+import javax.inject.Inject;
 
 /**
  * This goal checks that node and npm tools are installed and creates or updates
@@ -36,6 +40,13 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil;
  */
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class PrepareFrontendMojo extends FlowModeAbstractMojo {
+
+    protected Consumer<File> buildContextRefresher;
+
+    @Inject
+    void setBuildContext(BuildContext buildContext) {
+        buildContextRefresher = buildContext::refresh;
+    }
 
     @Override
     protected void executeInternal()
@@ -58,7 +69,19 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             throw new MojoFailureException(
                     "Could not execute prepare-frontend goal.", exception);
         }
+    }
 
+    /**
+     * Indicates that the file or folder content has been modified during the
+     * build.
+     *
+     * @param file
+     *            a {@link java.io.File} object.
+     */
+    protected void triggerRefresh(File file) {
+        if (buildContextRefresher != null) {
+            buildContextRefresher.accept(file);
+        }
     }
 
 }
