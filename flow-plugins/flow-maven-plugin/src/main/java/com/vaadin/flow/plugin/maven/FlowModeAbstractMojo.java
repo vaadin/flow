@@ -679,24 +679,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         }
     }
 
-    protected Method findExecuteMethod(Class<?> taskClass)
-            throws NoSuchMethodException {
-
-        while (taskClass != null && taskClass != Object.class) {
-            try {
-                Method executeInternal = taskClass
-                        .getDeclaredMethod("executeInternal");
-                executeInternal.setAccessible(true);
-                return executeInternal;
-            } catch (NoSuchMethodException e) {
-                // ignore
-            }
-            taskClass = taskClass.getSuperclass();
-        }
-        throw new NoSuchMethodException(
-                "Method executeInternal not found in " + getClass().getName());
-    }
-
     protected Reflector getOrCreateReflector(final ReflectorController reflectorController) {
         final Map<String, Object> pluginContext = getPluginContext();
         final String pluginKey = mojoExecution.getPlugin().getKey();
