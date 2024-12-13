@@ -135,8 +135,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
-        long start = System.nanoTime();
-
         TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
                 npmFolder(), frontendDirectory(), getClassFinder());
         try {
@@ -163,9 +161,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired);
-
-        long ms = (System.nanoTime() - start) / 1000000;
-        getLog().info("Build frontend completed in " + ms + " ms.");
     }
 
     /**
