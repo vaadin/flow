@@ -50,17 +50,17 @@ import com.vaadin.flow.utils.FlowFileUtils;
 public final class Reflector {
 
     public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
-    private static final Set<String> DEPENDENCIES_GROUP_EXCLUSIONS = Set.of(
+    protected static final Set<String> DEPENDENCIES_GROUP_EXCLUSIONS = Set.of(
             "org.apache.maven", "org.codehaus.plexus", "org.slf4j",
             "org.eclipse.sisu");
     // Dependency required by the plugin but not provided by Flow at runtime
-    private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
+    protected static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
             "org.reflections:reflections:jar",
             "org.zeroturnaround:zt-exec:jar");
 
-    private final URLClassLoader isolatedClassLoader;
-    private List<String> dependenciesIncompatibility;
-    private Object classFinder;
+    protected final URLClassLoader isolatedClassLoader;
+    protected List<String> dependenciesIncompatibility;
+    protected Object classFinder;
 
     /**
      * Creates a new reflector instance for the given classloader.
@@ -72,7 +72,7 @@ public final class Reflector {
         this.isolatedClassLoader = isolatedClassLoader;
     }
 
-    private Reflector(URLClassLoader isolatedClassLoader, Object classFinder,
+    protected Reflector(URLClassLoader isolatedClassLoader, Object classFinder,
             List<String> dependenciesIncompatibility) {
         this.isolatedClassLoader = isolatedClassLoader;
         this.classFinder = classFinder;
@@ -235,7 +235,7 @@ public final class Reflector {
         }
     }
 
-    private synchronized Object getOrCreateClassFinder() throws Exception {
+    protected synchronized Object getOrCreateClassFinder() throws Exception {
         if (classFinder == null) {
             Class<?> classFinderImplClass = loadClass(
                     ReflectionsClassFinder.class.getName());
@@ -246,7 +246,7 @@ public final class Reflector {
         return classFinder;
     }
 
-    private static URLClassLoader createIsolatedClassLoader(
+    protected static URLClassLoader createIsolatedClassLoader(
             MavenProject project, MojoExecution mojoExecution,
             List<String> dependenciesIncompatibility) {
         List<URL> urls = new ArrayList<>();
@@ -367,10 +367,10 @@ public final class Reflector {
 
     // Tries to load class from the give class loader and fallbacks
     // to Platform class loader in case of failure.
-    private static class CombinedClassLoader extends URLClassLoader {
-        private final ClassLoader delegate;
+    protected static class CombinedClassLoader extends URLClassLoader {
+        protected final ClassLoader delegate;
 
-        private CombinedClassLoader(URL[] urls, ClassLoader delegate) {
+        protected CombinedClassLoader(URL[] urls, ClassLoader delegate) {
             super(urls, null);
             this.delegate = delegate;
         }
@@ -418,7 +418,7 @@ public final class Reflector {
         }
     }
 
-    private void copyFields(FlowModeAbstractMojo sourceMojo, Object targetMojo)
+    protected void copyFields(FlowModeAbstractMojo sourceMojo, Object targetMojo)
             throws IllegalAccessException, NoSuchFieldException {
         Class<?> sourceClass = sourceMojo.getClass();
         Class<?> targetClass = targetMojo.getClass();
@@ -431,7 +431,7 @@ public final class Reflector {
         }
     }
 
-    private static void copyField(FlowModeAbstractMojo sourceMojo,
+    protected static void copyField(FlowModeAbstractMojo sourceMojo,
             Object targetMojo, Field sourceField, Class<?> targetClass)
             throws IllegalAccessException, NoSuchFieldException {
         if (Modifier.isStatic(sourceField.getModifiers())) {
@@ -474,7 +474,7 @@ public final class Reflector {
         targetField.set(targetMojo, value);
     }
 
-    private static Field findField(Class<?> clazz, String fieldName)
+    protected static Field findField(Class<?> clazz, String fieldName)
             throws NoSuchFieldException {
         while (clazz != null && !clazz.equals(Object.class)) {
             try {
