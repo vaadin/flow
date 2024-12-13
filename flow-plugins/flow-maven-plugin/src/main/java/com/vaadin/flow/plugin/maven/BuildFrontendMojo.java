@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
@@ -132,6 +133,24 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(property = InitParameters.CLEAN_BUILD_FRONTEND_FILES, defaultValue = "true")
     protected boolean cleanFrontendFiles;
 
+    /**
+     * <b>Only disable this if you have nothing from Vaadin to license!</b>
+     * <p>
+     * Otherwise there might be unexpected build problems and you will get into legal trouble.
+     * </p>
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean performLicenseCheck;
+
+    /**
+     * Determines if the runtime dependencies should be checked.
+     * <p>
+     * Usually the check is only required after a Vaadin version update.
+     * </p>
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean checkRuntimeDependency;
+
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
@@ -157,8 +176,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                         exception);
             }
         }
-        LicenseChecker.setStrictOffline(true);
-        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
+
+        if(performLicenseCheck) {
+            LicenseChecker.setStrictOffline(true);
+        }
+        boolean licenseRequired = performLicenseCheck && BuildFrontendUtil.validateLicenses(this);
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired);
     }
@@ -236,45 +258,52 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public boolean checkRuntimeDependency(String groupId, String artifactId,
             Consumer<String> missingDependencyMessage) {
-        Objects.requireNonNull(groupId, "groupId cannot be null");
-        Objects.requireNonNull(artifactId, "artifactId cannot be null");
-        if (missingDependencyMessage == null) {
-            missingDependencyMessage = text -> {
-            };
+        if(!checkRuntimeDependency)
+        {
+            getLog().info("Ignoring runtime dependency check");
+            return true;
         }
 
-        List<Artifact> deps = project.getArtifacts().stream()
+        Objects.requireNonNull(groupId, "groupId cannot be null");
+        Objects.requireNonNull(artifactId, "artifactId cannot be null");
+
+        final List<Artifact> deps = project.getArtifacts().stream()
                 .filter(artifact -> groupId.equals(artifact.getGroupId())
                         && artifactId.equals(artifact.getArtifactId()))
                 .toList();
-        if (deps.isEmpty()) {
-            missingDependencyMessage.accept(String.format(
-                    """
-                            The dependency %1$s:%2$s has not been found in the project configuration.
-                            Please add the following dependency to your POM file:
-
-                            <dependency>
-                                <groupId>%1$s</groupId>
-                                <artifactId>%2$s</artifactId>
-                                <scope>runtime</scope>
-                            </dependency>
-                            """,
-                    groupId, artifactId));
+        if(deps.isEmpty())
+        {
+            Optional.ofNullable(missingDependencyMessage)
+                    .ifPresent(c -> c.accept(String.format(
+                            """
+                                The dependency %1$s:%2$s has not been found in the project configuration.
+                                Please add the following dependency to your POM file:
+                                
+                                <dependency>
+                                    <groupId>%1$s</groupId>
+                                    <artifactId>%2$s</artifactId>
+                                    <scope>runtime</scope>
+                                </dependency>
+                                """,
+                            groupId, artifactId)));
             return false;
-        } else if (deps.stream().noneMatch(artifact -> !artifact.isOptional()
+        }
+        else if(deps.stream().noneMatch(artifact -> !artifact.isOptional()
                 && artifact.getArtifactHandler().isAddedToClasspath()
                 && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
-                        || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
-                        || Artifact.SCOPE_RUNTIME
-                                .equals(artifact.getScope())))) {
-            missingDependencyMessage.accept(String.format(
-                    """
-                            The dependency %1$s:%2$s has been found in the project configuration,
-                            but with a scope that does not guarantee its presence at runtime.
-                            Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
-                            To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
-                            """,
-                    groupId, artifactId));
+                || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+                || Artifact.SCOPE_RUNTIME
+                .equals(artifact.getScope()))))
+        {
+            Optional.ofNullable(missingDependencyMessage)
+                    .ifPresent(c -> c.accept(String.format(
+                            """
+                                The dependency %1$s:%2$s has been found in the project configuration,
+                                but with a scope that does not guarantee its presence at runtime.
+                                Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
+                                To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
+                                """,
+                            groupId, artifactId)));
             return false;
         }
         return true;
