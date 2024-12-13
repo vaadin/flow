@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -278,22 +279,60 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
     protected String applicationIdentifier;
 
+    /**
+     * If set to <code>false</code> the version of frontend executables like Node, NPM, ... will not be checked.
+     * <p>
+     * Usually the checks can be ignored and are only required after a Vaadin version update.
+     * </p>
+     */
+    @Parameter(defaultValue = "${null}")
+    protected Boolean frontendIgnoreVersionChecks;
+
     @Parameter
     protected FastReflectorIsolationConfig fastReflectorIsolation;
+
+    /**
+     * If this is set to a non-null value, the plugin will not use classpath-scanning to detect
+     * if Hilla is present or not.
+     */
+    @Parameter(defaultValue = "${null}")
+    protected Boolean hillaAvailable;
+
+    /**
+     * If this is set to <code>false</code> the compatibility between the Flow dependencies
+     * of the project and the plugin will not be checked.
+     * <p>
+     * Usually the check is only required after a Vaadin version update.
+     * </p>
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean checkPluginFlowCompatibility;
+
+    /**
+     * Should support for
+     * <a href="https://vaadin.com/docs/latest/flow/configuration/licenses/daily-active-users">Vaadin
+     * DAU</a> be enabled.
+     * <p>
+     * This includes:
+     *     <ul>
+     *         <li>Shipping the application name with the flow-build-info.json, hashed as SHA256</li>
+     *     </ul>
+     * </p>
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean supportDAU;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     protected ClassFinder classFinder;
 
-    protected ReflectorController getNewReflectorController()
-    {
+    protected ReflectorController getNewReflectorController() {
         return new DefaultReflectorController(fastReflectorIsolation, getLog());
     }
 
     /**
      * Field names specified here will not be copied over to the isolated mojo.
      */
-    protected Set<String> isolatedMojoIgnoreFields()
-    {
+    protected Set<String> isolatedMojoIgnoreFields() {
         return Set.of("fastReflectorIsolation");
     }
 
@@ -303,9 +342,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         getLog().info("Running " + goal);
         final long start = System.nanoTime();
 
-        PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
-                .getPluginDescriptor();
-        checkFlowCompatibility(pluginDescriptor);
+        applyFrontendIgnoreVersionChecks();
+
+        checkFlowCompatibility();
 
         final long prepareIsolatedStart = System.nanoTime();
 
@@ -387,6 +426,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return true if Hilla is available, false otherwise
      */
     public boolean isHillaAvailable() {
+        if (hillaAvailable != null) {
+            return hillaAvailable;
+        }
+
         return getClassFinder().getResource(
                 "com/vaadin/hilla/EndpointController.class") != null;
     }
@@ -641,8 +684,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             return applicationIdentifier;
         }
         return "app-" + StringUtil.getHash(
+        return supportDAU
+                ? "app-" + StringUtil.getHash(
                 project.getGroupId() + ":" + project.getArtifactId(),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8)
+                : "-";
     }
 
     @Override
@@ -660,14 +706,26 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     protected void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
-        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin"
-                .equals(artifact.getGroupId())
+    protected void checkFlowCompatibility() {
+        if (!checkPluginFlowCompatibility) {
+            getLog().info("Vaadin flow compatibility between plugin and project is not checked");
+            return;
+        }
+
+        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin".equals(artifact.getGroupId())
                 && "flow-server".equals(artifact.getArtifactId());
         String projectFlowVersion = project.getArtifacts().stream()
-                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
+                .filter(isFlowServer)
+                .map(Artifact::getBaseVersion)
+                .findFirst()
                 .orElse(null);
-        String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
-                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
+        String pluginFlowVersion = this.mojoExecution.getMojoDescriptor()
+                .getPluginDescriptor()
+                .getArtifacts()
+                .stream()
+                .filter(isFlowServer)
+                .map(Artifact::getBaseVersion)
+                .findFirst()
                 .orElse(null);
         if (!Objects.equals(projectFlowVersion, pluginFlowVersion)) {
             getLog().warn(
@@ -677,6 +735,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                             + ", Vaadin plugin is built for Flow version "
                             + pluginFlowVersion + ".");
         }
+    }
+
+    protected void applyFrontendIgnoreVersionChecks() {
+        Optional.ofNullable(this.frontendIgnoreVersionChecks)
+                .ifPresent(ignore -> {
+                    this.getLog().info("Set " + FrontendUtils.PARAM_IGNORE_VERSION_CHECKS + " to " + ignore);
+                    System.setProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, String.valueOf(ignore));
+                });
     }
 
     protected Reflector getOrCreateReflector(final ReflectorController reflectorController) {
