@@ -201,6 +201,9 @@
                         <stopPort>${server.stop.port}</stopPort>
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
+                        <server>
+                            <stopTimeout>4</stopTimeout>
+                        </server>
                     </configuration>
                 </plugin>
             </plugins>
