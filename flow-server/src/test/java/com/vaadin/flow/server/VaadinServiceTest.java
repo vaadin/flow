@@ -79,6 +79,44 @@ public class VaadinServiceTest {
     }
 
     @Test
+    public void requestEnd_serviceFailure_threadLocalsCleared() {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            void cleanupSession(VaadinSession session) {
+                throw new RuntimeException("BOOM");
+            }
+        };
+        service.init();
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        service.requestStart(request, response);
+
+        Assert.assertSame(service, VaadinService.getCurrent());
+        Assert.assertSame(request, VaadinRequest.getCurrent());
+        Assert.assertSame(response, VaadinResponse.getCurrent());
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession.setCurrent(session);
+
+        try {
+            service.requestEnd(request, response, session);
+            Assert.fail("Should have thrown an exception");
+        } catch (Exception e) {
+            Assert.assertNull("VaadinService.current",
+                    VaadinService.getCurrent());
+            Assert.assertNull("VaadinSession.current",
+                    VaadinSession.getCurrent());
+            Assert.assertNull("VaadinRequest.current",
+                    VaadinRequest.getCurrent());
+            Assert.assertNull("VaadinResponse.current",
+                    VaadinResponse.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
     public void testFireSessionDestroy()
             throws ServletException, ServiceException {
         VaadinService service = createService();
