@@ -61,9 +61,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
         try {
             BuildFrontendUtil.prepareFrontend(this);
-        } catch (Exception exception) {
-            throw new MojoFailureException(
-                    "Could not execute prepare-frontend goal.", exception);
+        } catch (Exception ex) {
+            throw new MojoFailureException("Could not execute prepare-frontend goal", ex);
         }
     }
 
