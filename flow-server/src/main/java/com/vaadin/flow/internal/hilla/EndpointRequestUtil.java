@@ -79,11 +79,6 @@ public interface EndpointRequestUtil extends Serializable {
      * @return true if Hilla is available, false otherwise
      */
     static boolean isHillaAvailable(ClassFinder classFinder) {
-        try {
-            classFinder.loadClass(HILLA_ENDPOINT_CLASS);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+        return classFinder.getResource(HILLA_ENDPOINT_CLASS.replace('.', '/') + ".class") != null;
     }
 }
