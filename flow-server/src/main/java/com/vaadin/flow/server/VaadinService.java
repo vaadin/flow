@@ -1508,22 +1508,32 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
-        vaadinRequestInterceptors
-                .forEach(requestInterceptor -> requestInterceptor
-                        .requestEnd(request, response, session));
-        if (session != null) {
-            assert VaadinSession.getCurrent() == session;
-            session.lock();
+        vaadinRequestInterceptors.forEach(requestInterceptor -> {
             try {
-                cleanupSession(session);
-                final long duration = (System.nanoTime() - (Long) request
-                        .getAttribute(REQUEST_START_TIME_ATTRIBUTE)) / 1000000;
-                session.setLastRequestDuration(duration);
-            } finally {
-                session.unlock();
+                requestInterceptor.requestEnd(request, response, session);
+            } catch (Exception ex) {
+                getLogger().error(
+                        "Error occurred while processing Vaadin request interceptor {}",
+                        requestInterceptor.getClass().getName(), ex);
             }
+        });
+        try {
+            if (session != null) {
+                assert VaadinSession.getCurrent() == session;
+                session.lock();
+                try {
+                    cleanupSession(session);
+                    final long duration = (System.nanoTime() - (Long) request
+                            .getAttribute(REQUEST_START_TIME_ATTRIBUTE))
+                            / 1000000;
+                    session.setLastRequestDuration(duration);
+                } finally {
+                    session.unlock();
+                }
+            }
+        } finally {
+            CurrentInstance.clearAll();
         }
-        CurrentInstance.clearAll();
     }
 
     /**
