@@ -27,6 +27,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import org.codehaus.plexus.build.BuildContext;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -44,8 +45,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     protected Consumer<File> buildContextRefresher;
 
     @Inject
-    void setBuildContext(BuildContext buildContext) {
-        buildContextRefresher = buildContext::refresh;
+    protected void setBuildContext(@Nullable BuildContext buildContext) {
+        buildContextRefresher = buildContext != null ? buildContext::refresh : null;
     }
 
     @Override
