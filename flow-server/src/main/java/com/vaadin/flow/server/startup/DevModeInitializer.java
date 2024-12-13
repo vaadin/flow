@@ -312,14 +312,12 @@ public class DevModeInitializer
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
 
-        // Only run npm install if no handler is already running.
-        boolean runNpmInstall = DevModeHandler.getDevModeHandler() == null;
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .copyResources(frontendLocations)
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
-                .enableImportsUpdate(true).runNpmInstall(runNpmInstall)
+                .enableImportsUpdate(true).runNpmInstall(true)
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
