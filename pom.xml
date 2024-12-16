@@ -97,6 +97,7 @@
         <jaxb.version>4.0.5</jaxb.version>
         <guava.version>33.1.0-jre</guava.version>
         <jakarta.websocket.version>2.1.1</jakarta.websocket.version>
+        <javassist.version>3.30.2-GA</javassist.version>
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
