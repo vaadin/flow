@@ -4,19 +4,21 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.WebDriver;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.AdminView;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
 import com.vaadin.testbench.TestBenchElement;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class AppViewIT extends AbstractIT {
 
@@ -258,7 +260,8 @@ public class AppViewIT extends AbstractIT {
                 .getResourceAsStream("image.png");
         IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
         tmpFile.deleteOnExit();
-        upload.upload(tmpFile);
+        upload.upload(tmpFile, 0);
+        waitForUploads(upload, 60);
 
         TestBenchElement text = $("p").id("uploadText");
         TestBenchElement img = $("img").id("uploadImage");
@@ -272,6 +275,7 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void navigate_in_thread_without_access() {
         open("");
+        waitForClientRouter();
         $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
 
         // This waits for longer than the delay in the UI so we do not need a
@@ -379,6 +383,27 @@ public class AppViewIT extends AbstractIT {
             }
             return new MenuItem(href, text, available);
         }).collect(Collectors.toList());
+    }
+
+    // Workaround for https://github.com/vaadin/flow-components/issues/3646
+    // The issue causes the upload test to be flaky
+    private void waitForUploads(UploadElement element, int maxSeconds) {
+        WebDriver.Timeouts timeouts = getDriver().manage().timeouts();
+        timeouts.scriptTimeout(Duration.ofSeconds(maxSeconds));
+
+        String script = """
+                var callback = arguments[arguments.length - 1];
+                var upload = arguments[0];
+                let intervalId;
+                intervalId = window.setInterval(function() {
+                  var inProgress = upload.files.filter(function(file) { return file.uploading;}).length >0;
+                  if (!inProgress) {
+                    window.clearInterval(intervalId);
+                    callback();
+                  }
+                }, 500);
+                """;
+        getCommandExecutor().getDriver().executeAsyncScript(script, element);
     }
 
 }
