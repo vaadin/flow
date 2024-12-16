@@ -65,6 +65,7 @@ public class UIAccessContextIT extends AbstractIT {
     }
 
     private void loginAdmin(HasElementQuery adminContext) {
+        waitForClientRouter();
         LoginFormElement form = adminContext.$(LoginOverlayElement.class)
                 .first().getLoginForm();
         form.getUsernameField().setValue("emma");

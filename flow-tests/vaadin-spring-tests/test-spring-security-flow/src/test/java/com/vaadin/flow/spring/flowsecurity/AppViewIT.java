@@ -4,9 +4,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
@@ -14,18 +21,14 @@ import com.vaadin.flow.spring.flowsecurity.views.AdminView;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
 import com.vaadin.testbench.TestBenchElement;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
 public class AppViewIT extends AbstractIT {
 
-    private static final String LOGIN_PATH = "my/login/page";
-    private static final String USER_FULLNAME = "John the User";
-    private static final String ADMIN_FULLNAME = "Emma the Admin";
+    protected static final String LOGIN_PATH = "my/login/page";
+    protected static final String USER_FULLNAME = "John the User";
+    protected static final String ADMIN_FULLNAME = "Emma the Admin";
 
     private void logout() {
-        if (!$(ButtonElement.class).attribute("id", "logout").exists()) {
+        if (!$(ButtonElement.class).withAttribute("id", "logout").exists()) {
             open("");
             assertRootPageShown();
         }
@@ -258,7 +261,8 @@ public class AppViewIT extends AbstractIT {
                 .getResourceAsStream("image.png");
         IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
         tmpFile.deleteOnExit();
-        upload.upload(tmpFile);
+        upload.upload(tmpFile, 0);
+        waitForUploads(upload, 60);
 
         TestBenchElement text = $("p").id("uploadText");
         TestBenchElement img = $("img").id("uploadImage");
@@ -272,6 +276,7 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void navigate_in_thread_without_access() {
         open("");
+        waitForClientRouter();
         $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
 
         // This waits for longer than the delay in the UI so we do not need a
@@ -294,7 +299,7 @@ public class AppViewIT extends AbstractIT {
 
     // https://github.com/vaadin/flow/issues/7323
     @Test
-    public void logout_via_doLogin_redirects_to_logout() {
+    public void logout_via_doLogoutURL_redirects_to_logout() {
         open(LOGIN_PATH);
         loginAdmin();
         navigateTo("admin");
@@ -346,11 +351,11 @@ public class AppViewIT extends AbstractIT {
         assertPathShown("menu-list");
     }
 
-    private void navigateTo(String path) {
+    protected void navigateTo(String path) {
         navigateTo(path, true);
     }
 
-    private void navigateTo(String path, boolean assertPathShown) {
+    protected void navigateTo(String path, boolean assertPathShown) {
         getMainView().$("a").attribute("href", path).first().click();
         if (assertPathShown) {
             assertPathShown(path);
@@ -358,6 +363,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private TestBenchElement getMainView() {
+        waitForClientRouter();
         return waitUntil(driver -> $("*").id("main-view"));
     }
 
@@ -389,6 +395,39 @@ public class AppViewIT extends AbstractIT {
             }
             return new MenuItem(href, text, available);
         }).collect(Collectors.toList());
+    }
+
+    // Workaround for https://github.com/vaadin/flow-components/issues/3646
+    // The issue causes the upload test to be flaky
+    private void waitForUploads(UploadElement element, int maxSeconds) {
+        WebDriver.Timeouts timeouts = getDriver().manage().timeouts();
+        timeouts.scriptTimeout(Duration.ofSeconds(maxSeconds));
+
+        String script = """
+                var callback = arguments[arguments.length - 1];
+                var upload = arguments[0];
+                let intervalId;
+                intervalId = window.setInterval(function() {
+                  var inProgress = upload.files.filter(function(file) { return file.uploading;}).length >0;
+                  if (!inProgress) {
+                    window.clearInterval(intervalId);
+                    callback();
+                  }
+                }, 500);
+                """;
+        getCommandExecutor().getDriver().executeAsyncScript(script, element);
+    }
+
+    /*
+     * The same driver is used to access both Vaadin views and static resources.
+     * Static caching done by #isClientRouter can cause some tests to be flaky.
+     */
+    protected void waitForClientRouter() {
+        boolean hasClientRouter = (boolean) executeScript(
+                "return !!window.Vaadin.Flow.clients.TypeScript");
+        if (hasClientRouter) {
+            waitForElementPresent(By.cssSelector("#outlet > *"));
+        }
     }
 
 }
