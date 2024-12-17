@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,11 +37,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -61,6 +64,7 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -77,6 +81,22 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 2.0
  */
 public class FrontendUtils {
+
+    private static ExecutorService executorService;
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (executorService != null) {
+                executorService.shutdown();
+            }
+        }));
+    }
+
+    private static synchronized ExecutorService getExecutorService() {
+        if (executorService == null) {
+            executorService = Executors.newFixedThreadPool(4);
+        }
+        return executorService;
+    }
 
     public static final String PROJECT_BASEDIR = "project.basedir";
 
@@ -908,10 +928,11 @@ public class FrontendUtils {
      */
     public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
             Process process) {
-        CompletableFuture<String> stdOut = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getInputStream()));
-        CompletableFuture<String> stdErr = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getErrorStream()));
+        ExecutorService executor = getExecutorService();
+        CompletableFuture<String> stdOut = CompletableFuture.supplyAsync(
+                () -> streamToString(process.getInputStream()), executor);
+        CompletableFuture<String> stdErr = CompletableFuture.supplyAsync(
+                () -> streamToString(process.getErrorStream()), executor);
         return CompletableFuture.allOf(stdOut, stdErr).thenApply(
                 unused -> new Pair<>(stdOut.getNow(""), stdErr.getNow("")));
     }
