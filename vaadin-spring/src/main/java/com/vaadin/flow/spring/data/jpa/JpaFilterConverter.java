@@ -29,8 +29,8 @@ public class JpaFilterConverter {
     }
 
     /**
-     * Converts the given filter specification into a JPA filter
-     * specification for the specified entity class.
+     * Converts the given filter specification into a JPA filter specification
+     * for the specified entity class.
      * <p>
      * If the filter contains {@link PropertyStringFilter} instances, their
      * properties, or nested property paths, need to match the structure of the
@@ -60,8 +60,8 @@ public class JpaFilterConverter {
                     filter.getPropertyId());
             return new PropertyStringFilterSpecification<>(filter, javaType);
         } else {
-            throw new IllegalArgumentException("Unknown filter type "
-                    + rawFilter.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Unknown filter type " + rawFilter.getClass().getName());
         }
     }
 
@@ -69,8 +69,8 @@ public class JpaFilterConverter {
             String propertyId) {
         if (propertyId.contains(".")) {
             String[] parts = propertyId.split("\\.");
-            Root<?> root = entityManager.getCriteriaBuilder().createQuery(entity)
-                    .from(entity);
+            Root<?> root = entityManager.getCriteriaBuilder()
+                    .createQuery(entity).from(entity);
             Path<?> path = root.get(parts[0]);
             int i = 1;
             while (i < parts.length) {
@@ -79,8 +79,8 @@ public class JpaFilterConverter {
             }
             return path.getJavaType();
         } else {
-            return entityManager.getMetamodel().entity(entity).getAttribute(propertyId)
-                    .getJavaType();
+            return entityManager.getMetamodel().entity(entity)
+                    .getAttribute(propertyId).getJavaType();
         }
     }
 
