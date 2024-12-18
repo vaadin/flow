@@ -34,7 +34,7 @@ import com.vaadin.client.flow.collection.JsMap;
  * @author Vaadin Ltd
  *
  */
-public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
+public class GwtAtmospherePushConnectionTest extends ClientEngineTestBase {
 
     private Registry registry;
 
@@ -67,7 +67,7 @@ public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
 
     }
 
-    public void testDicsonnect_disconnectUrlIsSameAsInConnect() {
+    public void testDisconnect_disconnectUrlIsSameAsInConnect() {
         setUpAtmosphere();
 
         registry.getApplicationConfiguration().setServiceUrl("context://foo");
@@ -82,8 +82,8 @@ public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
         connection.onConnect(response);
         connection.disconnect(() -> {
         });
-        assertTrue(getUnsubscriveUri().startsWith("bar/"));
-        assertEquals(pushUri, getUnsubscriveUri());
+        assertTrue(getUnsubscribeUri().startsWith("bar/"));
+        assertEquals(pushUri, getUnsubscribeUri());
     }
 
     private native void setUpAtmosphere()/*-{
@@ -101,7 +101,7 @@ public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
                                       return $wnd.subscribeUrl ;
                                       }-*/;
 
-    private native String getUnsubscriveUri()/*-{
+    private native String getUnsubscribeUri()/*-{
                                              return $wnd.unsubscribeUri ;
                                              }-*/;
 
