@@ -1,5 +1,9 @@
 package com.vaadin.flow.spring.data.jpa;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +19,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.FluentQuery;
 import org.springframework.stereotype.Repository;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import com.vaadin.flow.spring.data.jpa.CrudRepositoryService;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring.data.filter;
+package com.vaadin.flow.spring.data.jpa;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

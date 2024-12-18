@@ -6,8 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 
-import com.vaadin.flow.spring.data.filter.SecondLevelNestedObject;
-
 @Entity
 public class NestedObject {
 

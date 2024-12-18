@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.vaadin.flow.spring.data.filter.PropertyStringFilter.Matcher;
 import com.vaadin.flow.spring.data.jpa.JpaFilterConverter;
 import com.vaadin.flow.spring.data.jpa.NestedObject;
+import com.vaadin.flow.spring.data.jpa.SecondLevelNestedObject;
 import com.vaadin.flow.spring.data.jpa.TestEnum;
 import com.vaadin.flow.spring.data.jpa.TestObject;
 import com.vaadin.flow.spring.data.jpa.TestRepository;
