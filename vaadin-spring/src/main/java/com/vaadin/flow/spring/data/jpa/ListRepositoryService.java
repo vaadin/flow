@@ -1,17 +1,19 @@
-package com.vaadin.flow.spring.data;
+package com.vaadin.flow.spring.data.jpa;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import com.vaadin.flow.Nullable;
+import com.vaadin.flow.spring.data.CountService;
+import com.vaadin.flow.spring.data.GetService;
+import com.vaadin.flow.spring.data.ListService;
 import com.vaadin.flow.spring.data.filter.Filter;
 
 /**
