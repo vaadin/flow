@@ -1,6 +1,6 @@
 package com.vaadin.flow.spring.data;
 
-import com.vaadin.flow.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A service that can create, update, and delete a given type of object.

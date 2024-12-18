@@ -1,6 +1,6 @@
 package com.vaadin.flow.spring.data;
 
-import com.vaadin.flow.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.spring.data.filter.Filter;
 
