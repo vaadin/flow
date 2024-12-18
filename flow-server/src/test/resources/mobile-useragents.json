@@ -1,0 +1,73 @@
+[
+  {
+    "ua": "Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/132.0 Mobile/15E148 Safari/605.1.15",
+    "browser": "Firefox",
+    "browserVersion": "132.0",
+    "os": "IPAD"
+  },
+  {
+    "ua": "Mozilla/5.0 (iPad; CPU OS 17_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+    "browser": "Safari",
+    "browserVersion": "18.0",
+    "os": "IPAD"
+  },
+  {
+    "ua": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.102 Mobile Safari/537.36",
+    "browser": "Chrome",
+    "browserVersion": "130.0.6723.102",
+    "os": "ANDROID",
+    "device": "K"
+  },
+  {
+    "ua": "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0",
+    "browser": "Firefox",
+    "browserVersion": "132.0",
+    "os": "ANDROID",
+    "device": "Generic android"
+  },
+  {
+    "ua": "Mozilla/5.0 (Linux; Android 10; VOG-L29) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.102 Mobile Safari/537.36 OPR/76.2.4027.73374",
+    "browser": "Opera",
+    "browserVersion": "76.2.4027.73374",
+    "os": "ANDROID",
+    "device": "Huawei"
+  },
+  {
+    "ua": "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.102 Mobile Safari/537.36 OPR/76.2.4027.73374",
+    "browser": "Opera",
+    "browserVersion": "76.2.4027.73374",
+    "os": "ANDROID",
+    "device": "Samsung"
+  },
+  {
+    "ua": "Mozilla/5.0 (Linux; Android 10; SM-N975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.102 Mobile Safari/537.36 OPR/76.2.4027.73374",
+    "browser": "Opera",
+    "browserVersion": "76.2.4027.73374",
+    "os": "ANDROID",
+    "device": "Samsung"
+  },
+  {
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/131.0.6778.31 Mobile/15E148 Safari/604.1",
+    "browser": "Chrome",
+    "browserVersion": "131.0.6778",
+    "os": "IPHONE"
+  },
+  {
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 EdgiOS/130.2849.68 Mobile/15E148 Safari/605.1.15",
+    "browser": "Edge",
+    "browserVersion": "130.2849.68",
+    "os": "IPHONE"
+  },
+  {
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/132.0 Mobile/15E148 Safari/605.1.15",
+    "browser": "Firefox",
+    "browserVersion": "132.0",
+    "os": "IPHONE"
+  },
+  {
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+    "browser": "Safari",
+    "browserVersion": "18.0",
+    "os": "IPHONE"
+  }
+]

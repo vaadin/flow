@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -38,7 +40,14 @@ public interface DetachNotifier extends Serializable {
             ComponentEventListener<DetachEvent> listener) {
         if (this instanceof Component) {
             return ComponentUtil.addListener((Component) this,
-                    DetachEvent.class, listener);
+                    DetachEvent.class, event -> {
+                        try {
+                            listener.onComponentEvent(event);
+                        } catch (RuntimeException e) {
+                            VaadinSession.getCurrent().getErrorHandler()
+                                    .error(new ErrorEvent(e));
+                        }
+                    });
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "

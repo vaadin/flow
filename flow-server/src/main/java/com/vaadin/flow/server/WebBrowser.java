@@ -19,6 +19,8 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.Locale;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.shared.BrowserDetails;
 
 /**
@@ -65,7 +67,13 @@ public class WebBrowser implements Serializable {
 
         if (agent != null) {
             browserApplication = agent;
-            browserDetails = new BrowserDetails(agent);
+            browserDetails = new BrowserDetails(agent) {
+                @Override
+                protected void log(String error, Exception e) {
+                    LoggerFactory.getLogger(BrowserDetails.class).error(error,
+                            e);
+                }
+            };
         }
     }
 

@@ -49,6 +49,8 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
  */
 public final class BundleValidationUtil {
 
+    private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
+
     /**
      * Checks if an application needs a new frontend bundle.
      *
@@ -217,6 +219,20 @@ public final class BundleValidationUtil {
             // are found missing in bundle.
             return true;
         }
+
+        // In dev mode index html is served from frontend folder, not from
+        // dev-bundle, so rebuild is not required for custom content.
+        if (options.isProductionMode() && BundleValidationUtil
+                .hasCustomIndexHtml(options, statsJson)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-custom-index-html",
+                    null);
+            return true;
+        }
+        // index.html hash has already been checked, if needed.
+        // removing it from hashes map to prevent other unnecessary checks
+        statsJson.getObject(FRONTEND_HASHES_STATS_KEY)
+                .remove(FrontendUtils.INDEX_HTML);
+
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
                 frontendDependencies)) {
             UsageStatistics.markAsUsed(
@@ -648,7 +664,8 @@ public final class BundleValidationUtil {
                         FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
                 .collect(Collectors.toList());
 
-        final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
+        final JsonObject frontendHashes = statsJson
+                .getObject(FRONTEND_HASHES_STATS_KEY);
         List<String> faultyContent = new ArrayList<>();
 
         for (String jarImport : jarImports) {
@@ -694,6 +711,27 @@ public final class BundleValidationUtil {
         }
 
         return true;
+    }
+
+    private static boolean hasCustomIndexHtml(Options options,
+            JsonObject statsJson) throws IOException {
+        File indexHtml = new File(options.getFrontendDirectory(),
+                FrontendUtils.INDEX_HTML);
+        if (indexHtml.exists()) {
+            final JsonObject frontendHashes = statsJson
+                    .getObject(FRONTEND_HASHES_STATS_KEY);
+            String frontendFileContent = FileUtils.readFileToString(indexHtml,
+                    StandardCharsets.UTF_8);
+            List<String> faultyContent = new ArrayList<>();
+            compareFrontendHashes(frontendHashes, faultyContent,
+                    FrontendUtils.INDEX_HTML, frontendFileContent);
+            if (!faultyContent.isEmpty()) {
+                logChangedFiles(faultyContent,
+                        "Detected changed content for frontend files:");
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean indexFileAddedOrDeleted(Options options,

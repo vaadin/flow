@@ -25,7 +25,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -44,6 +43,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 
 @RunWith(Parameterized.class)
 public class BundleValidationTest {
@@ -1725,6 +1725,101 @@ public class BundleValidationTest {
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertTrue("'index.ts' delete should require re-bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void indexHtmlNotChanged_rebuildNotRequired() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
+        indexHtml.createNewFile();
+        String defaultIndexHtml = new String(TaskGenerateIndexHtml.class
+                .getResourceAsStream(INDEX_HTML).readAllBytes(),
+                StandardCharsets.UTF_8);
+        FileUtils.write(indexHtml, defaultIndexHtml, StandardCharsets.UTF_8);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(FRONTEND_HASHES).put(INDEX_HTML,
+                BundleValidationUtil.calculateHash(defaultIndexHtml));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse("Default 'index.html' should not require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void indexHtmlChanged_productionMode_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
+        indexHtml.createNewFile();
+        String defaultIndexHtml = new String(
+                getClass().getResourceAsStream(INDEX_HTML).readAllBytes(),
+                StandardCharsets.UTF_8);
+        String customIndexHtml = defaultIndexHtml.replace("<body>",
+                "<body><div>custom content</div>");
+        FileUtils.write(indexHtml, customIndexHtml, StandardCharsets.UTF_8);
+        JsonObject stats = getBasicStats();
+        stats.getObject(FRONTEND_HASHES).put(INDEX_HTML,
+                BundleValidationUtil.calculateHash(defaultIndexHtml));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In production mode, custom 'index.html' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void indexHtmlChanged_developmentMode_rebuildNotRequired()
+            throws IOException {
+        Assume.assumeFalse(mode.isProduction());
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
+        indexHtml.createNewFile();
+        String defaultIndexHtml = new String(
+                getClass().getResourceAsStream(INDEX_HTML).readAllBytes(),
+                StandardCharsets.UTF_8);
+        String customIndexHtml = defaultIndexHtml.replace("<body>",
+                "<body><div>custom content</div>");
+        FileUtils.write(indexHtml, customIndexHtml, StandardCharsets.UTF_8);
+        JsonObject stats = getBasicStats();
+        stats.getObject(FRONTEND_HASHES).put(INDEX_HTML,
+                BundleValidationUtil.calculateHash(defaultIndexHtml));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse(
+                "In dev mode, custom 'index.html' should not require bundling",
                 needsBuild);
     }
 

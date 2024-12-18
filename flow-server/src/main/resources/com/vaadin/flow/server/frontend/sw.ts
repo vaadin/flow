@@ -1,5 +1,7 @@
 /// <reference lib="webworker" />
 
+self.__WB_DISABLE_DEV_LOGS = true; 
+
 importScripts('sw-runtime-resources-precache.js');
 import { clientsClaim, cacheNames, WorkboxPlugin } from 'workbox-core';
 import { matchPrecache, precacheAndRoute, getCacheKeyForURL } from 'workbox-precaching';
@@ -9,6 +11,7 @@ import { NetworkOnly, NetworkFirst } from 'workbox-strategies';
 
 declare var self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<PrecacheEntry>;
+  __WB_DISABLE_DEV_LOGS: boolean;
   additionalManifestEntries?: Array<PrecacheEntry>;
 };
 
