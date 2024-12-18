@@ -22,7 +22,7 @@ import com.vaadin.flow.spring.data.filter.Filter;
 public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaSpecificationExecutor<T>>
         implements ListService<T>, GetService<T, ID>, CountService {
 
-    private final R repository;
+    private R repository;
 
     private final Class<T> entityClass;
 
@@ -44,6 +44,12 @@ public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaS
      */
     protected R getRepository() {
         return repository;
+    }
+
+    @Deprecated
+    protected void internalSetRepository(R repository) {
+        // Only for Hilla backwards compatibility
+        this.repository = repository;
     }
 
     @Override
