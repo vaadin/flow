@@ -16,19 +16,6 @@ public class CrudRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaS
         extends ListRepositoryService<T, ID, R> implements CrudService<T, ID> {
 
     /**
-     * Creates the service using the given repository and filter converter.
-     *
-     * @param repository
-     *            the JPA repository
-     * @param jpaFilterConverter
-     *            the JPA filter converter
-     */
-    public CrudRepositoryService(R repository,
-            JpaFilterConverter jpaFilterConverter) {
-        super(repository, jpaFilterConverter);
-    }
-
-    /**
      * Creates the service using the given repository.
      *
      * @param repository

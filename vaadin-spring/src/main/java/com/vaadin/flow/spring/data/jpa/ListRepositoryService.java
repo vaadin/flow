@@ -22,8 +22,6 @@ import com.vaadin.flow.spring.data.filter.Filter;
 public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaSpecificationExecutor<T>>
         implements ListService<T>, GetService<T, ID>, CountService {
 
-    private final JpaFilterConverter jpaFilterConverter;
-
     private final R repository;
 
     private final Class<T> entityClass;
@@ -33,24 +31,10 @@ public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaS
      *
      * @param repository
      *            the JPA repository
-     * @param jpaFilterConverter
-     *            the JPA filter converter
-     */
-    public ListRepositoryService(R repository,
-            JpaFilterConverter jpaFilterConverter) {
-        this.jpaFilterConverter = jpaFilterConverter;
-        this.repository = repository;
-        this.entityClass = resolveEntityClass();
-    }
-
-    /**
-     * Creates the service using the given repository.
-     *
-     * @param repository
-     *            the JPA repository
      */
     public ListRepositoryService(R repository) {
-        this(repository, new JpaFilterConverter());
+        this.repository = repository;
+        this.entityClass = resolveEntityClass();
     }
 
     /**
@@ -98,7 +82,7 @@ public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaS
      * @return a JPA specification
      */
     protected Specification<T> toSpec(@Nullable Filter filter) {
-        return jpaFilterConverter.toSpec(filter, entityClass);
+        return JpaFilterConverter.toSpec(filter, entityClass);
     }
 
     @SuppressWarnings("unchecked")
