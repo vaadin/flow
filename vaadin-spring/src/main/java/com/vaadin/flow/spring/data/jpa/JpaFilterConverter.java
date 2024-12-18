@@ -1,9 +1,5 @@
 package com.vaadin.flow.spring.data.jpa;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Root;
-
 import org.springframework.data.jpa.domain.Specification;
 
 import com.vaadin.flow.spring.data.filter.AndFilter;
@@ -14,19 +10,11 @@ import com.vaadin.flow.spring.data.filter.PropertyStringFilter;
 /**
  * Utility class for converting Hilla {@link Filter} specifications into JPA
  * filter specifications. This class can be used to implement filtering for
- * custom {@link ListService} or {@link CrudService} implementations that use
- * JPA as the data source.
+ * custom {@link com.vaadin.flow.spring.data.ListService} or
+ * {@link com.vaadin.flow.spring.data.CrudService} implementations that use JPA
+ * as the data source.
  */
 public class JpaFilterConverter {
-
-    private EntityManager entityManager;
-
-    /**
-     * Creates a new converter using the given entity manager.
-     */
-    public JpaFilterConverter(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
 
     /**
      * Converts the given filter specification into a JPA filter specification
@@ -56,32 +44,10 @@ public class JpaFilterConverter {
             return Specification.anyOf(filter.getChildren().stream()
                     .map(f -> toSpec(f, entity)).toList());
         } else if (rawFilter instanceof PropertyStringFilter filter) {
-            Class<?> javaType = extractPropertyJavaType(entity,
-                    filter.getPropertyId());
-            return new PropertyStringFilterSpecification<>(filter, javaType);
+            return new PropertyStringFilterSpecification<>(filter);
         } else {
             throw new IllegalArgumentException(
                     "Unknown filter type " + rawFilter.getClass().getName());
         }
     }
-
-    private Class<?> extractPropertyJavaType(Class<?> entity,
-            String propertyId) {
-        if (propertyId.contains(".")) {
-            String[] parts = propertyId.split("\\.");
-            Root<?> root = entityManager.getCriteriaBuilder()
-                    .createQuery(entity).from(entity);
-            Path<?> path = root.get(parts[0]);
-            int i = 1;
-            while (i < parts.length) {
-                path = path.get(parts[i]);
-                i++;
-            }
-            return path.getJavaType();
-        } else {
-            return entityManager.getMetamodel().entity(entity)
-                    .getAttribute(propertyId).getJavaType();
-        }
-    }
-
 }
