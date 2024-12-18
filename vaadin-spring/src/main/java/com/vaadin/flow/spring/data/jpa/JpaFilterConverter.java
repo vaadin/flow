@@ -8,9 +8,9 @@ import com.vaadin.flow.spring.data.filter.OrFilter;
 import com.vaadin.flow.spring.data.filter.PropertyStringFilter;
 
 /**
- * Utility class for converting {@link Filter} specifications into JPA
- * filter specifications. This class can be used to implement filtering for
- * custom {@link com.vaadin.flow.spring.data.ListService} or
+ * Utility class for converting {@link Filter} specifications into JPA filter
+ * specifications. This class can be used to implement filtering for custom
+ * {@link com.vaadin.flow.spring.data.ListService} or
  * {@link com.vaadin.flow.spring.data.CrudService} implementations that use JPA
  * as the data source.
  */
@@ -19,6 +19,7 @@ public final class JpaFilterConverter {
     private JpaFilterConverter() {
         // Utilities only
     }
+
     /**
      * Converts the given filter specification into a JPA filter specification
      * for the specified entity class.
@@ -36,7 +37,8 @@ public final class JpaFilterConverter {
      *            the entity class
      * @return a JPA filter specification for the given filter
      */
-    public static <T> Specification<T> toSpec(Filter rawFilter, Class<T> entity) {
+    public static <T> Specification<T> toSpec(Filter rawFilter,
+            Class<T> entity) {
         if (rawFilter == null) {
             return Specification.anyOf();
         }
