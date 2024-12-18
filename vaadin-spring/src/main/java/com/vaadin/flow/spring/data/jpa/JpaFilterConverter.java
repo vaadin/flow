@@ -14,7 +14,7 @@ import com.vaadin.flow.spring.data.filter.PropertyStringFilter;
  * {@link com.vaadin.flow.spring.data.CrudService} implementations that use JPA
  * as the data source.
  */
-public class JpaFilterConverter {
+public final class JpaFilterConverter {
 
     private JpaFilterConverter() {
         // Utilities only
