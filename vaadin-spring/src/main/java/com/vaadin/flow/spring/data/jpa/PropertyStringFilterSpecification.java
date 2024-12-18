@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring.data;
+package com.vaadin.flow.spring.data.jpa;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring.data;
+package com.vaadin.flow.spring.data.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import com.vaadin.flow.Nullable;
+import com.vaadin.flow.spring.data.CrudService;
 
 /**
  * A service that delegates crud operations to a JPA repository.

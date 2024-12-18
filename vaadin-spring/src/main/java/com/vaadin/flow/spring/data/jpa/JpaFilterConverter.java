@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring.data;
+package com.vaadin.flow.spring.data.jpa;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.Path;
