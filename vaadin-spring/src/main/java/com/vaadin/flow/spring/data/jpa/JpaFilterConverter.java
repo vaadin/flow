@@ -16,6 +16,9 @@ import com.vaadin.flow.spring.data.filter.PropertyStringFilter;
  */
 public class JpaFilterConverter {
 
+    private JpaFilterConverter() {
+        // Utilities only
+    }
     /**
      * Converts the given filter specification into a JPA filter specification
      * for the specified entity class.
