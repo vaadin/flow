@@ -59,6 +59,7 @@ import com.vaadin.base.devserver.viteproxy.ViteWebsocketEndpoint;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
@@ -130,8 +131,11 @@ public class DevModeInitializer implements Serializable {
         private static Set<String> calculateApplicableClassNames() {
             HandlesTypes handlesTypes = DevModeStartupListener.class
                     .getAnnotation(HandlesTypes.class);
-            return Stream.of(handlesTypes.value()).map(Class::getName)
-                    .collect(Collectors.toSet());
+            return Stream
+                    .concat(Stream.of(handlesTypes.value()),
+                            EndpointRequestUtil.getHillaEndpointAnnotations()
+                                    .stream())
+                    .map(Class::getName).collect(Collectors.toSet());
         }
     }
 

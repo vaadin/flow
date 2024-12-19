@@ -39,6 +39,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -52,7 +53,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -135,6 +135,13 @@ public class BuildFrontendUtilTest {
         MockedConstruction<TaskRunNpmInstall> construction = Mockito
                 .mockConstruction(TaskRunNpmInstall.class);
 
+        final EndpointUsageDetector endpointUsageDetector = Mockito
+                .mock(EndpointUsageDetector.class);
+        Mockito.doReturn(true).when(endpointUsageDetector)
+                .areEndpointsUsed(Mockito.any());
+        Mockito.doReturn(endpointUsageDetector).when(lookup)
+                .lookup(EndpointUsageDetector.class);
+
         final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito
                 .mock(EndpointGeneratorTaskFactory.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
@@ -158,6 +165,7 @@ public class BuildFrontendUtilTest {
             BuildFrontendUtil.runNodeUpdater(adapter);
         }
 
+        Mockito.verify(lookup).lookup(EndpointUsageDetector.class);
         Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
                 .lookup(TaskGenerateOpenAPI.class);

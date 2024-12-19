@@ -1,13 +1,6 @@
 package com.vaadin.base.devserver;
 
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import jakarta.servlet.ServletRegistration;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -16,7 +9,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.servlet.ServletRegistration;
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
@@ -25,16 +24,16 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
-import net.jcip.annotations.NotThreadSafe;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class DevModeEndpointTest extends AbstractDevModeTest {
@@ -67,6 +66,13 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
 
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
+
+        final EndpointUsageDetector endpointUsageDetector = Mockito
+                .mock(EndpointUsageDetector.class);
+        Mockito.when(endpointUsageDetector.areEndpointsUsed(Mockito.any()))
+                .thenReturn(true);
+        Mockito.when(lookup.lookup(EndpointUsageDetector.class))
+                .thenReturn(endpointUsageDetector);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);

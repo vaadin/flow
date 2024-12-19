@@ -43,6 +43,7 @@ import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
@@ -55,7 +56,7 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
  */
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
         DeprecatedPolymerPublishedEventHandler.class,
-        EndpointGeneratorTaskFactory.class,
+        EndpointGeneratorTaskFactory.class, EndpointUsageDetector.class,
         ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
         AppShellPredicate.class, StaticFileHandlerFactory.class,
         DevModeHandlerManager.class, BrowserLiveReloadAccessor.class,
