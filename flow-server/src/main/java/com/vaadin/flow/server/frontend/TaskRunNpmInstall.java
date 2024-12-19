@@ -75,6 +75,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
             + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
             + "%n======================================================================================================%n";
+    public static final String INSTALLING = "installing";
 
     private final NodeUpdater packageUpdater;
 
@@ -130,16 +131,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         if (ciBuild || packageUpdater.modified || shouldRunNpmInstall()) {
             packageUpdater.log()
-                    .info("Running `" + toolName + " " + command
-                            + "` to resolve and "
+                    .info("Running `{} {}` to resolve and "
                             + "optionally download frontend dependencies. "
-                            + "This may take a moment, please stand by...");
+                            + "This may take a moment, please stand by...",
+                            toolName, command);
+            updateLocalHashForInstall();
+
             runNpmInstall();
 
             updateLocalHash();
         } else {
             packageUpdater.log()
-                    .info("Skipping `{} {}}` because the frontend packages "
+                    .info("Skipping `{} {}` because the frontend packages "
                             + "are already installed in the folder '{}' and "
                             + "the hash in the file '{}' is the same as in '{}'",
                             toolName, command,
@@ -169,6 +172,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             final JsonObject localHash = Json.createObject();
             localHash.put(HASH_KEY, hash);
+
+            final File localHashFile = getLocalHashFile();
+            FileUtils.forceMkdirParent(localHashFile);
+            String content = stringify(localHash, 2) + "\n";
+            FileUtils.writeStringToFile(localHashFile, content, UTF_8.name());
+
+        } catch (IOException e) {
+            packageUpdater.log().warn("Failed to update node_modules hash.", e);
+        }
+    }
+
+    private void updateLocalHashForInstall() {
+        try {
+            final JsonObject localHash = Json.createObject();
+            localHash.put(HASH_KEY, INSTALLING);
 
             final File localHashFile = getLocalHashFile();
             FileUtils.forceMkdirParent(localHashFile);
@@ -274,7 +292,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             // Only flow-frontend installed
             return true;
         } else {
-            return isVaadinHashUpdated();
+            return !isVaadinHashUpdated();
         }
     }
 
@@ -288,7 +306,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 if (content.hasKey(HASH_KEY)) {
                     final JsonObject packageJson = packageUpdater
                             .getPackageJson();
-                    return !content.getString(HASH_KEY).equals(packageJson
+                    if (content.get(HASH_KEY).asString().equals(INSTALLING)) {
+                        return true;
+                    }
+                    return content.getString(HASH_KEY).equals(packageJson
                             .getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
                 }
             } catch (IOException e) {
@@ -296,7 +317,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         .warn("Failed to load hashes forcing npm execution", e);
             }
         }
-        return true;
+        return false;
     }
 
     /**

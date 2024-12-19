@@ -589,13 +589,13 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         getNodeUpdater().modified = false;
 
         task.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
 
         deleteDirectory(nodeModules);
 
         TaskRunNpmInstall ciTask = createTask(true);
         ciTask.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        Assert.assertTrue(logger.getLogs().contains(getRunningMsg()));
     }
 
     @Override
