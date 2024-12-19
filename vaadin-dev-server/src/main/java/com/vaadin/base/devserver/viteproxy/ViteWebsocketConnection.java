@@ -42,8 +42,8 @@ public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
     private final Runnable onClose;
-    private final CompletableFuture<WebSocket> clientWebsocket = new CompletableFuture<>();
     private final List<CharSequence> parts = new ArrayList<>();
+    private CompletableFuture<WebSocket> clientWebsocket = new CompletableFuture<>();
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ViteWebsocketConnection.class);
@@ -169,6 +169,9 @@ public class ViteWebsocketConnection implements Listener {
             // Websocket client connection has not been established
             clientWebsocket.cancel(true);
         }
+        // release HttpClient reference, so its internal executor can be
+        // properly stopped
+        clientWebsocket = null;
     }
 
     @Override
