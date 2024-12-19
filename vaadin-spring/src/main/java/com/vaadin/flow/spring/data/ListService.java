@@ -2,7 +2,6 @@ package com.vaadin.flow.spring.data;
 
 import java.util.List;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 
@@ -22,7 +21,6 @@ public interface ListService<T> {
      *            the filter to apply or {@code null} to not filter
      * @return a list of objects or an empty list if no objects were found
      */
-    @NonNull
-    List<@NonNull T> list(Pageable pageable, @Nullable Filter filter);
+    List<T> list(Pageable pageable, @Nullable Filter filter);
 
 }
