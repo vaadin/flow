@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
@@ -70,20 +71,20 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * Whether to generate a bundle from the project frontend sources or not.
      */
     @Parameter(defaultValue = "true")
-    private boolean generateBundle;
+    protected boolean generateBundle;
 
     /**
      * Whether to run <code>npm install</code> after updating dependencies.
      */
     @Parameter(defaultValue = "true")
-    private boolean runNpmInstall;
+    protected boolean runNpmInstall;
 
     /**
      * Whether to generate embeddable web components from WebComponentExporter
      * inheritors.
      */
     @Parameter(defaultValue = "true")
-    private boolean generateEmbeddableWebComponents;
+    protected boolean generateEmbeddableWebComponents;
 
     /**
      * Defines the project frontend directory from where resources should be
@@ -91,14 +92,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      */
     @Parameter(defaultValue = "${project.basedir}/"
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
-    private File frontendResourcesDirectory;
+    protected File frontendResourcesDirectory;
 
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
      */
     @Parameter(defaultValue = "true")
-    private boolean optimizeBundle;
+    protected boolean optimizeBundle;
 
     /**
      * Setting this to true will run {@code npm ci} instead of
@@ -111,7 +112,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * overwritten and production builds are reproducible.
      */
     @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
-    private boolean ciBuild;
+    protected boolean ciBuild;
 
     /**
      * Setting this to {@code true} will force a build of the production build
@@ -121,7 +122,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * {@link #optimizeBundle} parameter.
      */
     @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
-    private boolean forceProductionBuild;
+    protected boolean forceProductionBuild;
 
     /**
      * Control cleaning of generated frontend files when executing
@@ -130,13 +131,29 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * Mainly this is wanted to be true which it is by default.
      */
     @Parameter(property = InitParameters.CLEAN_BUILD_FRONTEND_FILES, defaultValue = "true")
-    private boolean cleanFrontendFiles;
+    protected boolean cleanFrontendFiles;
+
+    /**
+     * <b>Only disable this if you have nothing from Vaadin to license!</b>
+     * <p>
+     * Otherwise there might be unexpected build problems and you will get into legal trouble.
+     * </p>
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean performLicenseCheck = true;
+
+    /**
+     * Determines if the runtime dependencies should be checked.
+     * <p>
+     * Usually the check is only required after a Vaadin version update.
+     * </p>
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean checkRuntimeDependency = true;
 
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
-        long start = System.nanoTime();
-
         TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
                 npmFolder(), frontendDirectory(), getClassFinder());
         try {
@@ -154,18 +171,18 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                     cleanTask.execute();
                 }
             } catch (URISyntaxException | TimeoutException
-                    | ExecutionFailedException exception) {
+                     | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
         }
-        LicenseChecker.setStrictOffline(true);
-        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
+
+        if (performLicenseCheck) {
+            LicenseChecker.setStrictOffline(true);
+        }
+        boolean licenseRequired = performLicenseCheck && BuildFrontendUtil.validateLicenses(this);
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired);
-
-        long ms = (System.nanoTime() - start) / 1000000;
-        getLog().info("Build frontend completed in " + ms + " ms.");
     }
 
     /**
@@ -195,31 +212,26 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     @Override
     public File frontendResourcesDirectory() {
-
         return frontendResourcesDirectory;
     }
 
     @Override
     public boolean generateBundle() {
-
         return generateBundle;
     }
 
     @Override
     public boolean generateEmbeddableWebComponents() {
-
         return generateEmbeddableWebComponents;
     }
 
     @Override
     public boolean optimizeBundle() {
-
         return optimizeBundle;
     }
 
     @Override
     public boolean runNpmInstall() {
-
         return runNpmInstall;
     }
 
@@ -240,46 +252,49 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     @Override
     public boolean checkRuntimeDependency(String groupId, String artifactId,
-            Consumer<String> missingDependencyMessage) {
-        Objects.requireNonNull(groupId, "groupId cannot be null");
-        Objects.requireNonNull(artifactId, "artifactId cannot be null");
-        if (missingDependencyMessage == null) {
-            missingDependencyMessage = text -> {
-            };
+                                          Consumer<String> missingDependencyMessage) {
+        if (!checkRuntimeDependency) {
+            getLog().info("Ignoring runtime dependency check");
+            return true;
         }
 
-        List<Artifact> deps = project.getArtifacts().stream()
+        Objects.requireNonNull(groupId, "groupId cannot be null");
+        Objects.requireNonNull(artifactId, "artifactId cannot be null");
+
+        final List<Artifact> deps = project.getArtifacts().stream()
                 .filter(artifact -> groupId.equals(artifact.getGroupId())
                         && artifactId.equals(artifact.getArtifactId()))
                 .toList();
         if (deps.isEmpty()) {
-            missingDependencyMessage.accept(String.format(
-                    """
-                            The dependency %1$s:%2$s has not been found in the project configuration.
-                            Please add the following dependency to your POM file:
-
-                            <dependency>
-                                <groupId>%1$s</groupId>
-                                <artifactId>%2$s</artifactId>
-                                <scope>runtime</scope>
-                            </dependency>
-                            """,
-                    groupId, artifactId));
+            Optional.ofNullable(missingDependencyMessage)
+                    .ifPresent(c -> c.accept(String.format(
+                            """
+                                    The dependency %1$s:%2$s has not been found in the project configuration.
+                                    Please add the following dependency to your POM file:
+                                    
+                                    <dependency>
+                                        <groupId>%1$s</groupId>
+                                        <artifactId>%2$s</artifactId>
+                                        <scope>runtime</scope>
+                                    </dependency>
+                                    """,
+                            groupId, artifactId)));
             return false;
         } else if (deps.stream().noneMatch(artifact -> !artifact.isOptional()
                 && artifact.getArtifactHandler().isAddedToClasspath()
                 && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
-                        || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
-                        || Artifact.SCOPE_RUNTIME
-                                .equals(artifact.getScope())))) {
-            missingDependencyMessage.accept(String.format(
-                    """
-                            The dependency %1$s:%2$s has been found in the project configuration,
-                            but with a scope that does not guarantee its presence at runtime.
-                            Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
-                            To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
-                            """,
-                    groupId, artifactId));
+                || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+                || Artifact.SCOPE_RUNTIME
+                .equals(artifact.getScope())))) {
+            Optional.ofNullable(missingDependencyMessage)
+                    .ifPresent(c -> c.accept(String.format(
+                            """
+                                    The dependency %1$s:%2$s has been found in the project configuration,
+                                    but with a scope that does not guarantee its presence at runtime.
+                                    Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
+                                    To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
+                                    """,
+                            groupId, artifactId)));
             return false;
         }
         return true;

@@ -44,17 +44,17 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 @Mojo(name = "generate-npm-sbom", requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
 
-    private static final String GROUP = "org.codehaus.mojo";
-    private static final String ARTIFACT = "exec-maven-plugin";
-    private static final String VERSION = "1.3.2";
-    private static final String GOAL = "exec";
+    protected static final String GROUP = "org.codehaus.mojo";
+    protected static final String ARTIFACT = "exec-maven-plugin";
+    protected static final String VERSION = "1.3.2";
+    protected static final String GOAL = "exec";
 
     /**
      * Whether to ignore errors of NPM. This might be used, if "npm install" was
      * run with "--force" or "--legacy-peer-deps".
      */
     @Parameter(defaultValue = "false")
-    private boolean ignoreNpmErrors;
+    protected boolean ignoreNpmErrors;
 
     /**
      * Whether to only use the lock file, ignoring "node_modules". This means
@@ -63,7 +63,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
      * than the contents of "node_modules" directory.
      */
     @Parameter(defaultValue = "false")
-    private boolean packageLockOnly;
+    protected boolean packageLockOnly;
 
     /**
      * Dependency types to omit from the installation tree. (can be set multiple
@@ -71,21 +71,21 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
      * NODE_ENV environment variable is set to "production", otherwise empty)
      */
     @Parameter(defaultValue = "dev")
-    private String omit;
+    protected String omit;
 
     /**
      * Whether to flatten the components. This means the actual nesting of node
      * packages is not represented in the SBOM result.
      */
     @Parameter(defaultValue = "false")
-    private boolean flattenComponents;
+    protected boolean flattenComponents;
 
     /**
      * Omit all qualifiers from PackageURLs. This causes information loss in
      * trade-off shorter PURLs, which might improve ingesting these strings.
      */
     @Parameter(defaultValue = "false")
-    private boolean shortPURLs;
+    protected boolean shortPURLs;
 
     /**
      * Whether to go the extra mile and make the output reproducible. This
@@ -93,49 +93,49 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
      * random-based-values.
      */
     @Parameter(defaultValue = "false")
-    private boolean outputReproducible;
+    protected boolean outputReproducible;
 
     /**
      * Validate resulting BOM before outputting. Validation is skipped, if
      * requirements not met.
      */
     @Parameter(defaultValue = "true")
-    private boolean validate;
+    protected boolean validate;
 
     /**
      * Mark as production mode.
      */
     @Parameter(defaultValue = "false")
-    private boolean productionMode;
+    protected boolean productionMode;
 
     /**
      * Type of the main component. (choices: "application", "firmware",
      * "library")
      */
     @Parameter(defaultValue = "application")
-    private String mcType;
+    protected String mcType;
 
     /**
      * The CycloneDX output format that should be generated (<code>xml</code>,
      * <code>json</code> or <code>all</code>).
      */
     @Parameter(defaultValue = "json")
-    private String outputFormat;
+    protected String outputFormat;
 
     /**
      * The path to the file to be generated.
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/resources/bom-npm.json")
-    private String outputFilePath;
+    protected String outputFilePath;
 
     /**
      * The path to the package.json file to read.
      */
     @Parameter(defaultValue = "./package.json")
-    private String packageManifest;
+    protected String packageManifest;
 
     @Parameter(defaultValue = "1.4")
-    private String specVersion;
+    protected String specVersion;
 
     @Override
     protected void executeInternal()
@@ -198,7 +198,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         }
     }
 
-    private Properties getProperties() {
+    protected Properties getProperties() {
         Properties properties = new Properties();
         properties.setProperty("exec.executable", "npx");
         properties.setProperty("exec.args", "@cyclonedx/cyclonedx-npm"
@@ -214,7 +214,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         return properties;
     }
 
-    private boolean createDirectoryIfNotExists() {
+    protected boolean createDirectoryIfNotExists() {
         int lastIndex = outputFilePath
                 .lastIndexOf(FrontendUtils.isWindows() ? '\\' : '/');
         File directory = new File(outputFilePath.substring(0, lastIndex));
