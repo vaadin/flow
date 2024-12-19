@@ -295,10 +295,10 @@ public class MessageHandler {
         }
 
         /**
-         * Should only prepare resync after the if (locked ||
+         * Should only prepare resync after the (locked ||
          * !isNextExpectedMessage(serverId)) {...} since
          * stateTree.repareForResync() will remove the nodes, and if locked is
-         * true, it will return without handling the message, thus won't adding
+         * true, it will return without handling the message, thus won't add
          * nodes back.
          *
          * This is related to https://github.com/vaadin/flow/issues/8699 It
