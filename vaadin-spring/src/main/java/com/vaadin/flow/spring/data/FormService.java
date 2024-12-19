@@ -17,7 +17,6 @@ public interface FormService<T, ID> {
      *            the object to save
      * @return the fresh object; will never be {@literal null}.
      */
-    @Nullable
     T save(T value);
 
     /**
