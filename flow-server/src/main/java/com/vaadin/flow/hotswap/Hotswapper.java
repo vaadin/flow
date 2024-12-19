@@ -260,7 +260,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             }
         }
         EnumMap<UIRefreshStrategy, List<UI>> refreshActions = computeRefreshStrategies(
-                vaadinSessions, classes);
+                classes, redefined);
         boolean uiTreeNeedsRefresh = !refreshActions.isEmpty();
         if (forceBrowserReload || uiTreeNeedsRefresh) {
             triggerClientUpdate(refreshActions, forceBrowserReload);
@@ -306,13 +306,12 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     }
 
     private EnumMap<UIRefreshStrategy, List<UI>> computeRefreshStrategies(
-            Set<VaadinSession> vaadinSessions, Set<Class<?>> changedClasses) {
+            Set<Class<?>> changedClasses, boolean redefined) {
         EnumMap<UIRefreshStrategy, List<UI>> uisToRefresh = new EnumMap<>(
                 UIRefreshStrategy.class);
-        forEachActiveUI(ui -> uisToRefresh
-                .computeIfAbsent(computeRefreshStrategy(ui, changedClasses),
-                        k -> new ArrayList<>())
-                .add(ui));
+        forEachActiveUI(ui -> uisToRefresh.computeIfAbsent(
+                computeRefreshStrategy(ui, changedClasses, redefined),
+                k -> new ArrayList<>()).add(ui));
 
         uisToRefresh.remove(UIRefreshStrategy.SKIP);
         return uisToRefresh;
@@ -331,7 +330,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     }
 
     private UIRefreshStrategy computeRefreshStrategy(UI ui,
-            Set<Class<?>> changedClasses) {
+            Set<Class<?>> changedClasses, boolean redefined) {
         List<HasElement> targetsChain = new ArrayList<>(
                 ui.getActiveRouterTargetsChain());
         if (targetsChain.isEmpty()) {
@@ -350,21 +349,30 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 .distinct().toList();
 
         UIRefreshStrategy refreshStrategy;
-        // A full chain refresh should be triggered if there are modal
-        // components, since they could be attached to UI or parent layouts
-        if (ui.hasModalComponent()) {
-            refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
-        } else if (!targetChainChangedItems.isEmpty()) {
-            refreshStrategy = targetChainChangedItems.stream()
-                    .allMatch(chainItem -> chainItem == route)
-                            ? UIRefreshStrategy.PUSH_REFRESH_ROUTE
-                            : UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+        if (redefined) {
+            // A full chain refresh should be triggered if there are modal
+            // components, since they could be attached to UI or parent layouts
+            if (ui.hasModalComponent()) {
+                refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+            } else if (!targetChainChangedItems.isEmpty()) {
+                refreshStrategy = targetChainChangedItems.stream()
+                        .allMatch(chainItem -> chainItem == route)
+                                ? UIRefreshStrategy.PUSH_REFRESH_ROUTE
+                                : UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+            } else {
+                // Look into the UI tree to find if any component is instance of
+                // a changed class. If so, detect its parent route or layout to
+                // determine the refresh strategy.
+                refreshStrategy = computeRefreshStrategyForUITree(ui,
+                        changedClasses, targetsChain, route);
+            }
         } else {
-            // Look into the UI tree to find if any component is instance of
-            // a changed class. If so, detect its parent route or layout to
-            // determine the refresh strategy.
-            refreshStrategy = computeRefreshStrategyForUITree(ui,
-                    changedClasses, targetsChain, route);
+            // prevent refresh for classes loaded for the first time since
+            // it shouldn't impact current view, unless they are newly defined
+            // auto layouts.
+            // For example, it prevents refresh caused by Dialog related classes
+            // loaded for the first time when the dialog is opened
+            refreshStrategy = UIRefreshStrategy.SKIP;
         }
 
         // A different layout might have been applied after hotswap
@@ -374,20 +382,21 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             String currentPath = ui.getActiveViewLocation().getPath();
             RouteTarget routeTarget = registry
                     .getNavigationRouteTarget(currentPath).getRouteTarget();
-            if (routeTarget != null && (
-            // parent layout changed
-            routeTarget.getParentLayouts().stream()
-                    .anyMatch(changedClasses::contains) ||
-            // applied auto layout changed
-                    RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(),
-                            currentPath)
-                            && registry.hasLayout(currentPath)
-                            && RouteUtil
-                                    .collectRouteParentLayouts(
-                                            registry.getLayout(currentPath))
-                                    .stream()
-                                    .anyMatch(changedClasses::contains))) {
-                refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+            if (routeTarget != null) {
+                // parent layout changed
+                if ((redefined && routeTarget.getParentLayouts().stream()
+                        .anyMatch(changedClasses::contains)) ||
+                // applied auto layout changed or added
+                        RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(),
+                                currentPath)
+                                && registry.hasLayout(currentPath)
+                                && RouteUtil
+                                        .collectRouteParentLayouts(
+                                                registry.getLayout(currentPath))
+                                        .stream()
+                                        .anyMatch(changedClasses::contains)) {
+                    refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+                }
             }
         }
 
