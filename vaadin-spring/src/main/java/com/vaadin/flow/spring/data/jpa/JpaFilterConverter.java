@@ -1,5 +1,8 @@
 package com.vaadin.flow.spring.data.jpa;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.vaadin.flow.spring.data.filter.AndFilter;
@@ -35,21 +38,27 @@ public final class JpaFilterConverter {
      *            the filter to convert
      * @param entity
      *            the entity class
+     * @param propertyStringFilterSupplier
+     *            a function that can convert a PropertyStringFilter into a JPA
+     *            filter specification
      * @return a JPA filter specification for the given filter
      */
     public static <T> Specification<T> toSpec(Filter rawFilter,
-            Class<T> entity) {
+            Class<T> entity,
+            Function<PropertyStringFilter, Specification<T>> propertyStringFilterSupplier) {
         if (rawFilter == null) {
             return Specification.anyOf();
         }
         if (rawFilter instanceof AndFilter filter) {
             return Specification.allOf(filter.getChildren().stream()
-                    .map(f -> toSpec(f, entity)).toList());
+                    .map(f -> toSpec(f, entity, propertyStringFilterSupplier))
+                    .toList());
         } else if (rawFilter instanceof OrFilter filter) {
             return Specification.anyOf(filter.getChildren().stream()
-                    .map(f -> toSpec(f, entity)).toList());
+                    .map(f -> toSpec(f, entity, propertyStringFilterSupplier))
+                    .toList());
         } else if (rawFilter instanceof PropertyStringFilter filter) {
-            return new PropertyStringFilterSpecification<>(filter);
+            return propertyStringFilterSupplier.apply(filter);
         } else {
             throw new IllegalArgumentException(
                     "Unknown filter type " + rawFilter.getClass().getName());

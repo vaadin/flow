@@ -88,7 +88,8 @@ public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaS
      * @return a JPA specification
      */
     protected Specification<T> toSpec(@Nullable Filter filter) {
-        return JpaFilterConverter.toSpec(filter, entityClass);
+        return JpaFilterConverter.toSpec(filter, entityClass,
+                PropertyStringFilterSpecification::new);
     }
 
     @SuppressWarnings("unchecked")
