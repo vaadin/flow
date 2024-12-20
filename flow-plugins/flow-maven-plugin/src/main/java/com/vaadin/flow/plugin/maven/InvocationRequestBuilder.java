@@ -27,10 +27,10 @@ import org.apache.maven.shared.invoker.InvocationRequest;
  */
 class InvocationRequestBuilder {
 
-    private String groupId;
-    private String artifactId;
-    private String version;
-    private String goal;
+    protected String groupId;
+    protected String artifactId;
+    protected String version;
+    protected String goal;
 
     InvocationRequestBuilder() {
     }
