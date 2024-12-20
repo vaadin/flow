@@ -18,6 +18,9 @@ package com.vaadin.flow.internal.hilla;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -32,6 +35,10 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 public interface EndpointRequestUtil extends Serializable {
 
     String HILLA_ENDPOINT_CLASS = "com.vaadin.hilla.EndpointController";
+
+    String HILLA_ENDPOINT_ANNOTATION = "com.vaadin.hilla.Endpoint";
+
+    String HILLA_BROWSER_CALLABLE_ANNOTATION = "com.vaadin.hilla.BrowserCallable";
 
     /**
      * Checks if the request is for an endpoint.
@@ -85,5 +92,20 @@ public interface EndpointRequestUtil extends Serializable {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    static List<Class<? extends Annotation>> getHillaEndpointAnnotations() {
+        List<Class<? extends Annotation>> result = new ArrayList<>();
+        try {
+            if (isHillaAvailable()) {
+                result.add((Class<? extends Annotation>) Class
+                        .forName(HILLA_ENDPOINT_ANNOTATION));
+                result.add((Class<? extends Annotation>) Class
+                        .forName(HILLA_BROWSER_CALLABLE_ANNOTATION));
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 }

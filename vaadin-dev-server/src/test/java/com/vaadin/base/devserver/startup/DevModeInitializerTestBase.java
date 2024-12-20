@@ -22,11 +22,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.EndpointUsageDetector;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -87,6 +88,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .createTaskGenerateEndpoint(any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any());
+
+        final EndpointUsageDetector endpointUsageDetector = Mockito
+                .mock(EndpointUsageDetector.class);
+        Mockito.when(endpointUsageDetector.areEndpointsUsed(Mockito.any()))
+                .thenReturn(true);
+        Mockito.when(lookup.lookup(EndpointUsageDetector.class))
+                .thenReturn(endpointUsageDetector);
 
         classes = new HashSet<>();
         classes.add(this.getClass());
