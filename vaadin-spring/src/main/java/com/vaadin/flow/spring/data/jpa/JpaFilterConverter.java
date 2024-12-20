@@ -43,8 +43,7 @@ public final class JpaFilterConverter {
      *            filter specification
      * @return a JPA filter specification for the given filter
      */
-    public static <T> Specification<T> toSpec(Filter rawFilter,
-            Class<T> entity,
+    public static <T> Specification<T> toSpec(Filter rawFilter, Class<T> entity,
             Function<PropertyStringFilter, Specification<T>> propertyStringFilterSupplier) {
         if (rawFilter == null) {
             return Specification.anyOf();
