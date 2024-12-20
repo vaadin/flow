@@ -139,6 +139,12 @@ export abstract class ReactAdapterElement extends HTMLElement {
 
     #unmountComplete = Promise.resolve();
 
+    // NOTE: Separate element used as a portal outlet in React. Allows to avoid
+    // removal conflicts when Flow and React clear or remove it simultaneously,
+    // e. g., when navigating away from  the `ReactRouterOutlet`. See also:
+    // https://github.com/vaadin/hilla/issues/3002
+    #portalOutlet: HTMLElement | null = null;
+
     constructor() {
         super();
         this.#renderHooks = {
@@ -151,9 +157,14 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     public async connectedCallback() {
+        if (this.#portalOutlet === null) {
+            this.#portalOutlet = document.createElement('flow-portal-outlet');
+            this.#portalOutlet.style.display = 'contents';
+            this.appendChild(this.#portalOutlet);
+        }
         await this.#unmountComplete;
         this.#rendering = createElement(this.#Wrapper);
-        const createNewRoot = this.dispatchEvent(new CustomEvent('flow-portal-add', {
+        const createNewRoot = this.#portalOutlet!.dispatchEvent(new CustomEvent('flow-portal-add', {
             bubbles: true,
             cancelable: true,
             composed: true,
@@ -167,7 +178,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
             return;
         }
 
-        this.#root = createRoot(this);
+        this.#root = createRoot(this.#portalOutlet!);
         this.#maybeRenderRoot();
         this.#root.render(this.#rendering);
     }
@@ -187,7 +198,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     public async disconnectedCallback() {
-        this.dispatchEvent(new CustomEvent('flow-portal-remove', {
+        this.#portalOutlet!.dispatchEvent(new CustomEvent('flow-portal-remove', {
             bubbles: true,
             cancelable: true,
             composed: true,
