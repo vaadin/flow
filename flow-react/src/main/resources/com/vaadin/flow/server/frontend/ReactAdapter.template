@@ -170,7 +170,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
             composed: true,
             detail: {
                 children: this.#rendering,
-                domNode: this,
+                domNode: this.#portalOutlet!,
             }
         }));
 
@@ -204,7 +204,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
             composed: true,
             detail: {
                 children: this.#rendering,
-                domNode: this,
+                domNode: this.#portalOutlet!,
             }
         }));
         this.#unmountComplete = Promise.resolve();
