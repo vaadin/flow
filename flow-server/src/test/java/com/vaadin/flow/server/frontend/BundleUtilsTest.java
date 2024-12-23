@@ -2,6 +2,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -238,8 +239,8 @@ public class BundleUtilsTest {
         FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
 
         Mockito.when(options.getClassFinder()
-                .loadClass("com.vaadin.hilla.EndpointController"))
-                .thenReturn(Object.class);
+                .getResource("com/vaadin/hilla/EndpointController.class"))
+                .thenReturn(new URL("file://something"));
         Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
