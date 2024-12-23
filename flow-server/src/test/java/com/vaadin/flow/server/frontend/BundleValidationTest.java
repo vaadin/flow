@@ -48,8 +48,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 @RunWith(Parameterized.class)
 public class BundleValidationTest {
 
-    public static final String BLANK_PACKAGE_JSON_WITH_HASH = "{\n \"dependencies\": {},"
-            + "\"vaadin\": { \"hash\": \"a5\"} \n}";
+    public static final String BLANK_PACKAGE_JSON_WITH_HASH = "{\n \"dependencies\": {}, \"vaadin\": { \"hash\": \"a5\"} \n}";
 
     public static final String PACKAGE_JSON_DEPENDENCIES = "packageJsonDependencies";
     public static final String ENTRY_SCRIPTS = "entryScripts";
@@ -158,6 +157,7 @@ public class BundleValidationTest {
                 Mockito.mock(FrontendDependenciesScanner.class), options) {
             @Override
             public void execute() {
+                // NO-OP
             }
         };
 
@@ -361,10 +361,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -372,18 +378,18 @@ public class BundleValidationTest {
         File versions = new File(temporaryFolder.getRoot(),
                 Constants.VAADIN_CORE_VERSIONS_JSON);
         versions.createNewFile();
-        // @formatter:off
-        FileUtils.write(versions, "{"
-                + "  \"core\": {\n"
-                + "    \"vaadin-router\": {\n"
-                + "      \"jsVersion\": \"2.0.3\",\n"
-                + "      \"npmName\": \"@vaadin/router\",\n"
-                + "      \"releasenotes\": true\n"
-                + "    },"
-                + "  },"
-                + "  \"platform\": \"123-SNAPSHOT\""
-                + "}");
-        // @formatter:on
+        FileUtils.write(versions, """
+                {
+                  \"core\": {
+                    \"vaadin-router\": {
+                      \"jsVersion\": \"2.0.3\",
+                      \"npmName\": \"@vaadin/router\",
+                      \"releasenotes\": true
+                    },
+                  },
+                  \"platform\": \"123-SNAPSHOT\"
+                }
+                """, StandardCharsets.UTF_8);
 
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
@@ -408,11 +414,15 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\",\n"
-                        + "\"@vaadin/text\": \"1.0.0\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"1.7.5\",
+                    \"@vaadin/text\": \"1.0.0\"},
+                    \"vaadin\": { \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -442,11 +452,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
-                + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
-                + "  \"devDependencies\": {\n" + "  }\n" + "}",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"name\": \"no-name\",
+                  \"license\": \"UNLICENSED\",
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"1.7.5\"
+                  },
+                  \"devDependencies\": {}
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -478,11 +493,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
-                + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
-                + "  \"devDependencies\": {\n" + "  }\n" + "}",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"name\": \"no-name\",
+                  \"license\": \"UNLICENSED\",
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"1.7.5\"
+                  },
+                  \"devDependencies\": {}
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -509,10 +529,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -539,10 +565,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"~1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"~1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -577,10 +609,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -616,14 +654,21 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {\"@polymer/iron-list\": \"3.1.0\", "
-                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
-                        + "\"vaadin\": { \"dependencies\": {"
-                        + "\"@polymer/iron-list\": \"3.1.0\", "
-                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
-                        + "\"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@polymer/iron-list\": \"3.1.0\",
+                    \"@vaadin/vaadin-accordion\": \"23.3.7\"
+                  },
+                  \"vaadin\": {
+                    \"dependencies\": {
+                      \"@polymer/iron-list\": \"3.1.0\",
+                      \"@vaadin/vaadin-accordion\": \"23.3.7\"
+                    },
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -727,10 +772,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -765,10 +816,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -807,10 +864,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -851,10 +914,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -890,10 +959,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -933,10 +1008,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1184,13 +1265,18 @@ public class BundleValidationTest {
                 .mock(FrontendDependenciesScanner.class);
 
         JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
-                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
-                + "  \"assets\": {\n"
-                + "    \"@fortawesome/fontawesome-free\": {\n"
-                + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
-                + "      \"webfonts/**\": \"webfonts\"\n" + "    }\n" + "  }\n"
-                + "}");
+        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme",
+                """
+                        {
+                          \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],
+                          \"assets\": {
+                            \"@fortawesome/fontawesome-free\": {
+                              \"svgs/brands/**\": \"fontawesome/svgs/brands\",
+                              \"webfonts/**\": \"webfonts\"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
@@ -1214,16 +1300,22 @@ public class BundleValidationTest {
                 .mock(FrontendDependenciesScanner.class);
 
         JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
-                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
-                + "  \"assets\": {\n"
-                + "    \"@fortawesome/fontawesome-free\": {\n"
-                + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
-                + "      \"webfonts/**\": \"webfonts\"\n" + "    },\n"
-                + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                + "    }\n" + "  }\n" + "}\n");
+        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme",
+                """
+                        {
+                          \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],
+                          \"assets\": {
+                            \"@fortawesome/fontawesome-free\": {
+                              \"svgs/brands/**\": \"fontawesome/svgs/brands\",
+                              \"webfonts/**\": \"webfonts\"
+                            },
+                            \"line-awesome\": {
+                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
+                              \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
@@ -1323,13 +1415,17 @@ public class BundleValidationTest {
     public void themeJsonUpdates_statsAndProjectThemeJsonEquals_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub(
-                "{\n" + "  \"boolean-property\": true,\n"
-                        + "  \"numeric-property\": 42.42,\n"
-                        + "  \"string-property\": \"foo\",\n"
-                        + "  \"array-property\": [\"one\", \"two\"],\n"
-                        + "  \"object-property\": { \"foo\": \"bar\" }\n" + "}",
-                "my-theme");
+        createProjectThemeJsonStub("""
+                {
+                  \"boolean-property\": true,
+                  \"numeric-property\": 42.42,
+                  \"string-property\": \"foo\",
+                  \"array-property\": [\"one\", \"two\"],
+                  \"object-property\": {
+                    \"foo\": \"bar\"
+                  }
+                }
+                """, "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1340,13 +1436,22 @@ public class BundleValidationTest {
                 .thenReturn(themeDefinition);
 
         JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
-                "{\n\n\n\n\n\n" + "  \"boolean-property\": true,\n"
-                        + "  \"numeric-property\": 42.42,\n"
-                        + "  \"string-property\": \"foo\",\n"
-                        + "  \"array-property\": [\"one\", \"two\"],\n"
-                        + "  \"object-property\": { \"foo\": \"bar\" }\n"
-                        + "}");
+        stats.getObject(THEME_JSON_CONTENTS).put("my-theme", """
+                {
+
+
+
+
+
+                  \"boolean-property\": true,
+                  \"numeric-property\": 42.42,
+                  \"string-property\": \"foo\",
+                  \"array-property\": [\"one\", \"two\"],
+                  \"object-property\": {
+                    \"foo\": \"bar\"
+                  }
+                }
+                """);
 
         setupFrontendUtilsMock(stats);
 
@@ -1361,11 +1466,18 @@ public class BundleValidationTest {
     public void themeJsonUpdates_bundleMissesSomeEntries_bundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\n"
-                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.css\"],"
-                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "    }\n  }\n}", "my-theme");
+        createProjectThemeJsonStub(
+                """
+                        {
+                          \"importCss\": [\"@fortawesome/fontawesome-free/css/all.css\"],
+                          \"assets\": {
+                            \"line-awesome\": {
+                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
+                            }
+                          }
+                        }
+                        """,
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1376,12 +1488,18 @@ public class BundleValidationTest {
                 .thenReturn(themeDefinition);
 
         JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, "{\n"
-                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
-                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                + "    }\n" + "  }\n" + "}");
+        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+                """
+                        {
+                          \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],
+                          \"assets\": {
+                            \"line-awesome\": {
+                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
+                              \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
@@ -1396,9 +1514,13 @@ public class BundleValidationTest {
     public void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\n"
-                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"]\n"
-                + "}", "my-theme");
+        createProjectThemeJsonStub(
+                """
+                        {
+                          \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"]
+                        }
+                        """,
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1409,12 +1531,18 @@ public class BundleValidationTest {
                 .thenReturn(themeDefinition);
 
         JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, "{\n"
-                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
-                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                + "    }\n" + "  }\n" + "}");
+        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+                """
+                        {
+                          \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],
+                          \"assets\": {
+                            \"line-awesome\": {
+                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
+                              \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
@@ -1675,8 +1803,8 @@ public class BundleValidationTest {
 
     @Test
     public void changeInIndexTs_rebuildRequired() throws IOException {
-        createPackageJsonStub("{\"dependencies\": {}, "
-                + "\"vaadin\": { \"hash\": \"aHash\"} }");
+        createPackageJsonStub(
+                "{\"dependencies\": {}, \"vaadin\": { \"hash\": \"aHash\"} }");
         File frontendFolder = temporaryFolder
                 .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
 
@@ -1989,10 +2117,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"}, "
-                + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2031,10 +2165,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2064,7 +2204,7 @@ public class BundleValidationTest {
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson());
+        FileUtils.write(statsFile, stats.toJson(), StandardCharsets.UTF_8);
 
         DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
                 bundleSourceFolder);
@@ -2083,10 +2223,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2116,7 +2262,7 @@ public class BundleValidationTest {
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson());
+        FileUtils.write(statsFile, stats.toJson(), StandardCharsets.UTF_8);
 
         ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
                 bundleSourceFolder);
@@ -2133,10 +2279,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"@vaadin/router\": \"^1.7.5\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2166,7 +2318,7 @@ public class BundleValidationTest {
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson());
+        FileUtils.write(statsFile, stats.toJson(), StandardCharsets.UTF_8);
 
         if (mode.isProduction()) {
             ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
@@ -2227,12 +2379,18 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
-                        + "    \"react-dom\": \"18.2.0\",\n"
-                        + "    \"react-router\": \"7.0.0\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"react\": \"18.2.0\",
+                    \"react-dom\": \"18.2.0\",
+                    \"react-router\": \"7.0.0\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2263,12 +2421,18 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
-                        + "    \"react-dom\": \"18.2.0\",\n"
-                        + "    \"react-router\": \"7.0.0\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  \"dependencies\": {
+                    \"react\": \"18.2.0\",
+                    \"react-dom\": \"18.2.0\",
+                    \"react-router\": \"7.0.0\"
+                  },
+                  \"vaadin\": {
+                    \"hash\": \"aHash\"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2278,25 +2442,25 @@ public class BundleValidationTest {
         File versions = new File(temporaryFolder.getRoot(),
                 Constants.VAADIN_CORE_VERSIONS_JSON);
         versions.createNewFile();
-        // @formatter:off
-        FileUtils.write(versions, "{"
-                + "  \"core\": {\n"
-                + "    \"vaadin-button\": {\n"
-                + "      \"jsVersion\": \"2.0.0\",\n"
-                + "      \"npmName\": \"@vaadin/button\",\n"
-                + "    },"
-                + "  },"
-                + "  react: {\n"
-                + "    \"react-components\": {\n"
-                + "         \"exclusions\": [\"@vaadin/button\"],\n"
-                + "         \"jsVersion\": \"24.4.0\",\n"
-                + "         \"mode\": \"react\",\n"
-                + "         \"npmName\": \"@vaadin/react-components\"\n"
-                + "    }"
-                + "  },\n"
-                + "  \"platform\": \"123-SNAPSHOT\""
-                + "}");
-        // @formatter:on
+        FileUtils.write(versions, """
+                {
+                  \"core\": {
+                    \"vaadin-button\": {
+                      \"jsVersion\": \"2.0.0\",
+                      \"npmName\": \"@vaadin/button\",
+                    },
+                  },
+                  react: {
+                    \"react-components\": {
+                      \"exclusions\": [\"@vaadin/button\"],
+                      \"jsVersion\": \"24.4.0\",
+                      \"mode\": \"react\",
+                      \"npmName\": \"@vaadin/react-components\"
+                    }
+                  },
+                  \"platform\": \"123-SNAPSHOT\"
+                }
+                """, StandardCharsets.UTF_8);
 
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
