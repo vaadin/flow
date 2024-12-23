@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 public class ReactAdapterIT extends ChromeBrowserTest {
 
@@ -23,12 +22,6 @@ public class ReactAdapterIT extends ChromeBrowserTest {
         $(NativeButtonElement.class).id("getValueButton").click();
         Assert.assertEquals("initialValue",
                 $(SpanElement.class).id("getOutput").getText());
-
-        var adapterFirstChild = getAdapterElement().findElement(By.xpath("./child::*"));
-        Assert.assertEquals("Missing <flow-portal-outlet> React root wrapper", "flow-portal-outlet", adapterFirstChild.getTagName());
-        var nativeInputElement = adapterFirstChild.findElement(By.xpath("./child::*"));
-        Assert.assertNotNull(nativeInputElement);
-        Assert.assertEquals("Unexpected <flow-portal-outlet> first child", getReactElement(), nativeInputElement);
     }
 
     @Test
