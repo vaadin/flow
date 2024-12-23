@@ -90,6 +90,11 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/platform/issues/6626", true,
             "com.vaadin.flow.component.dashboard.Dashboard");
 
+    public static final Feature CARD_COMPONENT = new Feature("Card component",
+            "cardComponent",
+            "https://github.com/vaadin/web-components/issues/5340", true,
+            "com.vaadin.flow.component.card.Card");
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -117,6 +122,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
         features.add(new Feature(COPILOT_EXPERIMENTAL));
         features.add(new Feature(DASHBOARD_COMPONENT));
+        features.add(new Feature(CARD_COMPONENT));
         loadProperties();
     }
 
