@@ -206,9 +206,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -236,9 +235,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -270,9 +268,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -301,10 +298,17 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"}, "
-                + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5",
+                    "@vaadin/text":"1.0.0"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -330,9 +334,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -363,11 +366,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -380,14 +383,14 @@ public class BundleValidationTest {
         versions.createNewFile();
         FileUtils.write(versions, """
                 {
-                  \"core\": {
-                    \"vaadin-router\": {
-                      \"jsVersion\": \"2.0.3\",
-                      \"npmName\": \"@vaadin/router\",
-                      \"releasenotes\": true
+                  "core": {
+                    "vaadin-router": {
+                      "jsVersion": "2.0.3",
+                      "npmName": "@vaadin/router",
+                      "releasenotes": true
                     },
                   },
-                  \"platform\": \"123-SNAPSHOT\"
+                  "platform": "123-SNAPSHOT"
                 }
                 """, StandardCharsets.UTF_8);
 
@@ -416,10 +419,12 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"1.7.5\",
-                    \"@vaadin/text\": \"1.0.0\"},
-                    \"vaadin\": { \"hash\": \"aHash\"
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5",
+                    "@vaadin/text": "1.0.0"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -454,12 +459,12 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"name\": \"no-name\",
-                  \"license\": \"UNLICENSED\",
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"1.7.5\"
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5"
                   },
-                  \"devDependencies\": {}
+                  "devDependencies": {}
                 }
                 """, StandardCharsets.UTF_8);
 
@@ -495,12 +500,12 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"name\": \"no-name\",
-                  \"license\": \"UNLICENSED\",
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"1.7.5\"
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5"
                   },
-                  \"devDependencies\": {}
+                  "devDependencies": {}
                 }
                 """, StandardCharsets.UTF_8);
 
@@ -531,11 +536,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -567,11 +572,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"~1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "~1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -611,11 +616,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -656,16 +661,16 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@polymer/iron-list\": \"3.1.0\",
-                    \"@vaadin/vaadin-accordion\": \"23.3.7\"
+                  "dependencies": {
+                    "@polymer/iron-list": "3.1.0",
+                    "@vaadin/vaadin-accordion": "23.3.7"
                   },
-                  \"vaadin\": {
-                    \"dependencies\": {
-                      \"@polymer/iron-list\": \"3.1.0\",
-                      \"@vaadin/vaadin-accordion\": \"23.3.7\"
+                  "vaadin": {
+                    "dependencies": {
+                      "@polymer/iron-list": "3.1.0",
+                      "@vaadin/vaadin-accordion": "23.3.7"
                     },
-                    \"hash\": \"aHash\"
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -774,11 +779,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -818,11 +823,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -866,11 +871,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -916,11 +921,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -961,11 +966,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -1010,11 +1015,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -1268,11 +1273,11 @@ public class BundleValidationTest {
         stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme",
                 """
                         {
-                          \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],
-                          \"assets\": {
-                            \"@fortawesome/fontawesome-free\": {
-                              \"svgs/brands/**\": \"fontawesome/svgs/brands\",
-                              \"webfonts/**\": \"webfonts\"
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.min.css"],
+                          "assets": {
+                            "@fortawesome/fontawesome-free": {
+                              "svgs/brands/**": "fontawesome/svgs/brands",
+                              "webfonts/**": "webfonts"
                             }
                           }
                         }
@@ -1303,15 +1308,15 @@ public class BundleValidationTest {
         stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme",
                 """
                         {
-                          \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],
-                          \"assets\": {
-                            \"@fortawesome/fontawesome-free\": {
-                              \"svgs/brands/**\": \"fontawesome/svgs/brands\",
-                              \"webfonts/**\": \"webfonts\"
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.min.css"],
+                          "assets": {
+                            "@fortawesome/fontawesome-free": {
+                              "svgs/brands/**": "fontawesome/svgs/brands",
+                              "webfonts/**": "webfonts"
                             },
-                            \"line-awesome\": {
-                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
-                              \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
+                              "dist/line-awesome/fonts/**": "line-awesome/dist/line-awesome/fonts"
                             }
                           }
                         }
@@ -1417,12 +1422,12 @@ public class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("""
                 {
-                  \"boolean-property\": true,
-                  \"numeric-property\": 42.42,
-                  \"string-property\": \"foo\",
-                  \"array-property\": [\"one\", \"two\"],
-                  \"object-property\": {
-                    \"foo\": \"bar\"
+                  "boolean-property": true,
+                  "numeric-property": 42.42,
+                  "string-property": "foo",
+                  "array-property": ["one", "two"],
+                  "object-property": {
+                    "foo": "bar"
                   }
                 }
                 """, "my-theme");
@@ -1443,12 +1448,12 @@ public class BundleValidationTest {
 
 
 
-                  \"boolean-property\": true,
-                  \"numeric-property\": 42.42,
-                  \"string-property\": \"foo\",
-                  \"array-property\": [\"one\", \"two\"],
-                  \"object-property\": {
-                    \"foo\": \"bar\"
+                  "boolean-property": true,
+                  "numeric-property": 42.42,
+                  "string-property": "foo",
+                  "array-property": ["one", "two"],
+                  "object-property": {
+                    "foo": "bar"
                   }
                 }
                 """);
@@ -1469,10 +1474,10 @@ public class BundleValidationTest {
         createProjectThemeJsonStub(
                 """
                         {
-                          \"importCss\": [\"@fortawesome/fontawesome-free/css/all.css\"],
-                          \"assets\": {
-                            \"line-awesome\": {
-                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
+                          "assets": {
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
                             }
                           }
                         }
@@ -1491,11 +1496,11 @@ public class BundleValidationTest {
         stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
                 """
                         {
-                          \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],
-                          \"assets\": {
-                            \"line-awesome\": {
-                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
-                              \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"
+                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "assets": {
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
+                              "dist/line-awesome/fonts/**": "line-awesome/dist/line-awesome/fonts"
                             }
                           }
                         }
@@ -1517,7 +1522,7 @@ public class BundleValidationTest {
         createProjectThemeJsonStub(
                 """
                         {
-                          \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"]
+                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"]
                         }
                         """,
                 "my-theme");
@@ -1534,11 +1539,11 @@ public class BundleValidationTest {
         stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
                 """
                         {
-                          \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],
-                          \"assets\": {
-                            \"line-awesome\": {
-                              \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",
-                              \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"
+                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "assets": {
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
+                              "dist/line-awesome/fonts/**": "line-awesome/dist/line-awesome/fonts"
                             }
                           }
                         }
@@ -2119,11 +2124,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5", "@vaadin/text":"1.0.0"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -2167,11 +2172,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -2225,11 +2230,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -2281,11 +2286,11 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"@vaadin/router\": \"^1.7.5\"
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -2381,13 +2386,13 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"react\": \"18.2.0\",
-                    \"react-dom\": \"18.2.0\",
-                    \"react-router\": \"7.0.0\"
+                  "dependencies": {
+                    "react": "18.2.0",
+                    "react-dom": "18.2.0",
+                    "react-router": "7.0.0"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -2423,13 +2428,13 @@ public class BundleValidationTest {
 
         FileUtils.write(packageJson, """
                 {
-                  \"dependencies\": {
-                    \"react\": \"18.2.0\",
-                    \"react-dom\": \"18.2.0\",
-                    \"react-router\": \"7.0.0\"
+                  "dependencies": {
+                    "react": "18.2.0",
+                    "react-dom": "18.2.0",
+                    "react-router": "7.0.0"
                   },
-                  \"vaadin\": {
-                    \"hash\": \"aHash\"
+                  "vaadin": {
+                    "hash": "aHash"
                   }
                 }
                 """, StandardCharsets.UTF_8);
@@ -2444,21 +2449,21 @@ public class BundleValidationTest {
         versions.createNewFile();
         FileUtils.write(versions, """
                 {
-                  \"core\": {
-                    \"vaadin-button\": {
-                      \"jsVersion\": \"2.0.0\",
-                      \"npmName\": \"@vaadin/button\",
+                  "core": {
+                    "vaadin-button": {
+                      "jsVersion": "2.0.0",
+                      "npmName": "@vaadin/button",
                     },
                   },
                   react: {
-                    \"react-components\": {
-                      \"exclusions\": [\"@vaadin/button\"],
-                      \"jsVersion\": \"24.4.0\",
-                      \"mode\": \"react\",
-                      \"npmName\": \"@vaadin/react-components\"
+                    "react-components": {
+                      "exclusions": ["@vaadin/button"],
+                      "jsVersion": "24.4.0",
+                      "mode": "react",
+                      "npmName": "@vaadin/react-components"
                     }
                   },
-                  \"platform\": \"123-SNAPSHOT\"
+                  "platform": "123-SNAPSHOT"
                 }
                 """, StandardCharsets.UTF_8);
 

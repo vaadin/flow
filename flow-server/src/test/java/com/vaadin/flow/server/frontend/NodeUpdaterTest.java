@@ -319,10 +319,15 @@ public class NodeUpdaterTest {
     public void removedAllOldAndExistingPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);
-        packageJsonWriter.write("{\"devDependencies\": {"
-                + "\"@vaadin/some-old-plugin\": \"./target/plugins/some-old-plugin\","
-                + "\"@vaadin/application-theme-plugin\": \"./target/plugins/application-theme-plugin\"}"
-                + "}");
+        packageJsonWriter
+                .write("""
+                        {
+                          "devDependencies": {
+                            "@vaadin/some-old-plugin": "./target/plugins/some-old-plugin",
+                            "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin"
+                          }
+                        }
+                        """);
         packageJsonWriter.close();
         JsonObject actualDevDeps = nodeUpdater.getPackageJson()
                 .getObject(NodeUpdater.DEV_DEPENDENCIES);
@@ -348,35 +353,36 @@ public class NodeUpdaterTest {
         // Write package json file
         // @formatter:off
         FileUtils.write(packageJson,
-            "{"
-                + "\"vaadin\": {"
-                  + "\"dependencies\": {"
-                    + "\"lit\": \"2.0.0\","
-                    + "\"@vaadin/router\": \"1.7.5\","
-                    + "\"@polymer/polymer\": \"3.4.1\","
-                  + "},"
-                  + "\"devDependencies\": {"
-                    + "\"css-loader\": \"4.2.1\","
-                    + "\"file-loader\": \"6.1.0\""
-                  + "}"
-                + "},"
-                + "\"dependencies\": {"
-                  + "\"lit\": \"2.0.0\","
-                  + "\"@vaadin/router\": \"1.7.5\","
-                  + "\"@polymer/polymer\": \"3.4.1\","
-                + "},"
-                + "\"devDependencies\": {"
-                  + "\"css-loader\": \"4.2.1\","
-                  + "\"file-loader\": \"6.1.0\""
-                + "}"
-            + "}", StandardCharsets.UTF_8);
+            """
+                {
+                  "vaadin": {
+                    "dependencies": {
+                      "lit": "2.0.0",
+                      "@vaadin/router": "1.7.5",
+                      "@polymer/polymer": "3.4.1",
+                    },
+                    "devDependencies": {
+                      "css-loader": "4.2.1",
+                      "file-loader": "6.1.0"
+                    }
+                  },
+                  "dependencies": {
+                    "lit": "2.0.0",
+                    "@vaadin/router": "1.7.5",
+                    "@polymer/polymer": "3.4.1",
+                  },
+                  "devDependencies": {
+                    "css-loader": "4.2.1",
+                    "file-loader": "6.1.0"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
         // @formatter:on
 
         nodeUpdater.generateVersionsJson(Json.parse(FileUtils
                 .readFileToString(packageJson, StandardCharsets.UTF_8)));
         Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.5\","
-                        + "\"@polymer/polymer\":\"3.4.1\"" + "}",
+                "{\"lit\":\"2.0.0\",\"@vaadin/router\":\"1.7.5\",\"@polymer/polymer\":\"3.4.1\"}",
                 nodeUpdater.versionsJson.toJson());
     }
 
@@ -739,39 +745,39 @@ public class NodeUpdaterTest {
         return Json.parse(
                 """
                 {
-                    \"bundles\": {
-                        \"vaadin\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/bundles\"
+                    "bundles": {
+                        "vaadin": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/bundles"
                         },
                     },
-                    \"core\": {
-                        \"accordion\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/accordion\"
+                    "core": {
+                        "accordion": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/accordion"
                         },
-                        \"app-layout\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/app-layout\"
+                        "app-layout": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/app-layout"
                         },
-                        \"avatar\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/avatar\"
+                        "avatar": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/avatar"
                         },
-                        \"avatar-group\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/avatar-group\"
+                        "avatar-group": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/avatar-group"
                         },
-                        \"button\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/button\"
+                        "button": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/button"
                         },
-                        \"checkbox\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/checkbox\"
+                        "checkbox": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/checkbox"
                         },
                     },
-                    \"platform\": \"23.2.0\"
+                    "platform": "23.2.0"
                 }
                 """
         );
@@ -783,42 +789,42 @@ public class NodeUpdaterTest {
         return Json.parse(
                 """
                 {
-                    \"vaadin\": {
-                        \"board\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/board\"
+                    "vaadin": {
+                        "board": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/board"
                         },
-                        \"charts\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/charts\"
+                        "charts": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/charts"
                         },
-                        \"grid-pro\": {
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/grid-pro\"
+                        "grid-pro": {
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/grid-pro"
                         },
-                        \"vaadin-board\": {
-                            \"component\": true,
-                            \"javaVersion\": \"23.2.0\",
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/vaadin-board\",
-                            \"pro\": true
+                        "vaadin-board": {
+                            "component": true,
+                            "javaVersion": "23.2.0",
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/vaadin-board",
+                            "pro": true
                         },
-                        \"vaadin-charts\": {
-                            \"component\": true,
-                            \"javaVersion\": \"23.2.0\",
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/vaadin-charts\",
-                            \"pro\": true
+                        "vaadin-charts": {
+                            "component": true,
+                            "javaVersion": "23.2.0",
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/vaadin-charts",
+                            "pro": true
                         },
-                        \"vaadin-grid-pro\": {
-                            \"component\": true,
-                            \"javaVersion\": \"23.2.0\",
-                            \"jsVersion\": \"23.2.0\",
-                            \"npmName\": \"@vaadin/vaadin-grid-pro\",
-                            \"pro\": true
+                        "vaadin-grid-pro": {
+                            "component": true,
+                            "javaVersion": "23.2.0",
+                            "jsVersion": "23.2.0",
+                            "npmName": "@vaadin/vaadin-grid-pro",
+                            "pro": true
                         },
                     },
-                    \"platform\": \"23.2.0\"
+                    "platform": "23.2.0"
                 }
                 """
         );
