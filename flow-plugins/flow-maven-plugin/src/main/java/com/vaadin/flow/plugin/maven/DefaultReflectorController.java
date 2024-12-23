@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public class DefaultReflectorController implements ReflectorController {
     protected static final Set<String> MAVEN_CLASSLOADER_RESERVED_GROUP_IDS = Set.of(
             "org.apache.maven",
-            "org.codehaus.plexus",
+            //"org.codehaus.plexus",
             "org.slf4j",
             "org.eclipse.sisu"
     );
@@ -87,7 +87,7 @@ public class DefaultReflectorController implements ReflectorController {
                 )
                 .toList();
 
-        if (log.isDebugEnabled()) {
+        if (log != null && log.isDebugEnabled()) {
             log.debug("Isolated classloader will use:"
                     + System.lineSeparator()
                     + urlInfo.stream()
@@ -253,7 +253,7 @@ public class DefaultReflectorController implements ReflectorController {
     }
 
     protected void logArtifactInclusionOrExclusion(final Artifact artifact, final boolean include, final String reason) {
-        if (log.isDebugEnabled()) {
+        if (log != null && log.isDebugEnabled()) {
             log.debug(
                     (include ? "In" : "Ex") + "cluding project artifact "
                             + artifact.getGroupId() + ":" + artifact.getArtifactId()
