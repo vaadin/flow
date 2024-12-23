@@ -366,7 +366,9 @@ public class PwaRegistry implements Serializable {
         URLConnection logoResource = logo != null ? logo.openConnection()
                 : BootstrapHandler.class.getResource("default-logo.png")
                         .openConnection();
-        return ImageIO.read(logoResource.getInputStream());
+        try (InputStream inputStream = logoResource.getInputStream()) {
+            return ImageIO.read(inputStream);
+        }
     }
 
     /**
