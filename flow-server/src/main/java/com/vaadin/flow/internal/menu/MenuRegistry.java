@@ -70,9 +70,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  */
 public class MenuRegistry {
 
-    private static final Logger log = LoggerFactory
-            .getLogger(MenuRegistry.class);
-
     /**
      * File routes lazy loading and caching.
      */

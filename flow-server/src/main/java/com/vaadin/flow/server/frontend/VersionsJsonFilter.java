@@ -33,7 +33,6 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 class VersionsJsonFilter {
 
     private final JsonObject userManagedDependencies;
-    private final JsonObject vaadinVersions;
 
     private final String dependenciesKey;
 
@@ -42,7 +41,6 @@ class VersionsJsonFilter {
     VersionsJsonFilter(JsonObject packageJson, String dependenciesKey) {
         this.dependenciesKey = dependenciesKey;
         userManagedDependencies = collectUserManagedDependencies(packageJson);
-        vaadinVersions = collectFrameworkVersions(packageJson);
     }
 
     /**

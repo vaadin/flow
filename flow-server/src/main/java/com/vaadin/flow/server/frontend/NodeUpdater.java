@@ -583,11 +583,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      * defined packages.
      *
      * @return versions Json based on package.json
-     * @throws IOException
-     *             If reading package.json fails
      */
-    private JsonObject generateVersionsFromPackageJson(JsonObject packageJson)
-            throws IOException {
+    private JsonObject generateVersionsFromPackageJson(JsonObject packageJson) {
         JsonObject versionsJson = Json.createObject();
         // if we don't have versionsJson lock package dependency versions.
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);

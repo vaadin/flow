@@ -180,8 +180,6 @@ public class ServletDeployer implements ServletContextListener {
             logger.warn(servletCreationMessage);
         } else {
             logger.info(servletCreationMessage);
-            ServletRegistration vaadinServlet = findVaadinServlet(
-                    servletContext);
         }
     }
 

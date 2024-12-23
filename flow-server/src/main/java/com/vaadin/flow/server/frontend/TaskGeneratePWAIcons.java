@@ -182,13 +182,6 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         });
     }
 
-    private BufferedImage getBaseImage(URL logo) throws IOException {
-        URLConnection logoResource = logo != null ? logo.openConnection()
-                : BootstrapHandler.class.getResource("default-logo.png")
-                        .openConnection();
-        return ImageIO.read(logoResource.getInputStream());
-    }
-
     private static class InternalPwaIcon extends PwaIcon {
         private final BufferedImage baseImage;
 
