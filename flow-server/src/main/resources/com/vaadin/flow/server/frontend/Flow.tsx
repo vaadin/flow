@@ -196,7 +196,7 @@ function FlowPortal({children, domNode, onRemove}: FlowPortalProps) {
   }, []);
 
   useEffect(() => {
-    domNode.rendered();
+    domNode.dispatchEvent(new Event('flow-portal-remove-done'));
   }, [rendered]);
 
   return createPortal(children, domNode);

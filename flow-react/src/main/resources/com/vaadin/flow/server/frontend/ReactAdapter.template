@@ -136,7 +136,6 @@ export abstract class ReactAdapterElement extends HTMLElement {
     readonly #Wrapper: () => ReactElement | null;
 
     #unmounting = Promise.resolve();
-    #resolveUnmounting = () => {};
 
     constructor() {
         super();
@@ -196,17 +195,15 @@ export abstract class ReactAdapterElement extends HTMLElement {
             }
         }));
         this.#unmounting = new Promise<void>((resolve) => {
-          this.#resolveUnmounting = resolve;
+          this.addEventListener('flow-portal-remove-done', () => {
+            resolve();
+          }, {once: true});
         });
         await this.#unmounting;
         this.#root?.unmount();
         this.#root = undefined;
         this.#rootRendered = false;
         this.#rendering = undefined;
-    }
-
-    rendered() {
-      this.#resolveUnmounting();
     }
 
     /**
