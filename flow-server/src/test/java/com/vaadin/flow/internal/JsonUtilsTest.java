@@ -270,6 +270,10 @@ public class JsonUtilsTest {
 
     public static class ChildBean {
         private String childValue = "child";
+
+        public String getChildValue() {
+            return childValue;
+        }
     }
 
     public static class BeanWithTemporalFields {
@@ -315,6 +319,22 @@ public class JsonUtilsTest {
             childBeanList.add(secondChild);
         }
 
+        // these getters are needed for bean serialization:
+        public Map<String, Integer> getIntegerMap() {
+            return integerMap;
+        }
+
+        public List<ChildBean> getChildBeanList() {
+            return childBeanList;
+        }
+
+        public List<Integer> getIntegerList() {
+            return integerList;
+        }
+
+        public Map<String, ChildBean> getChildBeanMap() {
+            return childBeanMap;
+        }
     }
 
     @Test
