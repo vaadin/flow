@@ -270,9 +270,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     protected String applicationIdentifier;
 
     /**
-     * If set to <code>false</code> the version of frontend executables like Node, NPM, ... will not be checked.
+     * If set to <code>false</code> the version of frontend executables like
+     * Node, NPM, ... will not be checked.
      * <p>
-     * Usually the checks can be ignored and are only required after a Vaadin version update.
+     * Usually the checks can be ignored and are only required after a Vaadin
+     * version update.
      * </p>
      */
     @Parameter(defaultValue = "${null}")
@@ -282,15 +284,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     protected FastReflectorIsolationConfig fastReflectorIsolation;
 
     /**
-     * If this is set to a non-null value, the plugin will not use classpath-scanning to detect
-     * if Hilla is present or not.
+     * If this is set to a non-null value, the plugin will not use
+     * classpath-scanning to detect if Hilla is present or not.
      */
     @Parameter(defaultValue = "${null}")
     protected Boolean hillaAvailable;
 
     /**
-     * If this is set to <code>false</code> the compatibility between the Flow dependencies
-     * of the project and the plugin will not be checked.
+     * If this is set to <code>false</code> the compatibility between the Flow
+     * dependencies of the project and the plugin will not be checked.
      * <p>
      * Usually the check is only required after a Vaadin version update.
      * </p>
@@ -299,14 +301,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     protected boolean checkPluginFlowCompatibility = true;
 
     /**
-     * Should support for
-     * <a href="https://vaadin.com/docs/latest/flow/configuration/licenses/daily-active-users">Vaadin
+     * Should support for <a href=
+     * "https://vaadin.com/docs/latest/flow/configuration/licenses/daily-active-users">Vaadin
      * DAU</a> be enabled.
      * <p>
      * This includes:
-     *     <ul>
-     *         <li>Shipping the application name with the flow-build-info.json, hashed as SHA256</li>
-     *     </ul>
+     * <ul>
+     * <li>Shipping the application name with the flow-build-info.json, hashed
+     * as SHA256</li>
+     * </ul>
      * </p>
      */
     @Parameter(defaultValue = "true")
@@ -340,10 +343,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
         Reflector reflector = getOrCreateReflector(getNewReflectorController());
         ClassLoader originalCl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(reflector.getIsolatedClassLoader());
+        Thread.currentThread()
+                .setContextClassLoader(reflector.getIsolatedClassLoader());
         try {
-            Mojo task = reflector.createIsolatedMojo(this, isolatedMojoIgnoreFields());
-            Method mExec = ReflectTools.findMethodAndMakeAccessible(task.getClass(), "executeInternal");
+            Mojo task = reflector.createIsolatedMojo(this,
+                    isolatedMojoIgnoreFields());
+            Method mExec = ReflectTools.findMethodAndMakeAccessible(
+                    task.getClass(), "executeInternal");
 
             getLog().info("Preparations for isolated execution finished, took "
                     + msSince(prepareIsolatedStart) + " ms");
@@ -351,7 +357,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             final long isolatedStart = System.nanoTime();
             mExec.invoke(task);
 
-            getLog().info("Isolated execution finished, took " + msSince(isolatedStart) + " ms");
+            getLog().info("Isolated execution finished, took "
+                    + msSince(isolatedStart) + " ms");
         } catch (MojoExecutionException | MojoFailureException e) {
             throw e;
         } catch (Exception e) {
@@ -432,7 +439,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public static boolean isHillaAvailable(MavenProject mavenProject) {
         return new DefaultReflectorController(null, null).of(mavenProject, null)
                 .getIsolatedClassLoader().getResource(
-                "com/vaadin/hilla/EndpointController.class") != null;
+                        "com/vaadin/hilla/EndpointController.class") != null;
     }
 
     /**
@@ -474,7 +481,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public ClassFinder getClassFinder() {
-        return Objects.requireNonNull(classFinder, "ClassFinder is null. Ensure that you are in the isolated Mojo");
+        return Objects.requireNonNull(classFinder,
+                "ClassFinder is null. Ensure that you are in the isolated Mojo");
     }
 
     @Override
@@ -647,7 +655,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (reactEnable != null) {
             return reactEnable;
         }
-        return FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getFrontendDirectory(this));
+        return FrontendUtils.isReactRouterRequired(
+                BuildFrontendUtil.getFrontendDirectory(this));
     }
 
     @Override
@@ -655,16 +664,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
             return applicationIdentifier;
         }
-        return supportDAU
-                ? "app-" + StringUtil.getHash(
+        return supportDAU ? "app-" + StringUtil.getHash(
                 project.getGroupId() + ":" + project.getArtifactId(),
-                StandardCharsets.UTF_8)
-                : "-";
+                StandardCharsets.UTF_8) : "-";
     }
 
     @Override
     public List<String> frontendExtraFileExtensions() {
-        return Objects.requireNonNullElse(frontendExtraFileExtensions, Collections.emptyList());
+        return Objects.requireNonNullElse(frontendExtraFileExtensions,
+                Collections.emptyList());
     }
 
     @Override
@@ -674,24 +682,20 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     protected void checkFlowCompatibility() {
         if (!checkPluginFlowCompatibility) {
-            getLog().info("Vaadin flow compatibility between plugin and project is not checked");
+            getLog().info(
+                    "Vaadin flow compatibility between plugin and project is not checked");
             return;
         }
 
-        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin".equals(artifact.getGroupId())
+        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin"
+                .equals(artifact.getGroupId())
                 && "flow-server".equals(artifact.getArtifactId());
         String projectFlowVersion = project.getArtifacts().stream()
-                .filter(isFlowServer)
-                .map(Artifact::getBaseVersion)
-                .findFirst()
+                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
                 .orElse(null);
         String pluginFlowVersion = this.mojoExecution.getMojoDescriptor()
-                .getPluginDescriptor()
-                .getArtifacts()
-                .stream()
-                .filter(isFlowServer)
-                .map(Artifact::getBaseVersion)
-                .findFirst()
+                .getPluginDescriptor().getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
                 .orElse(null);
         if (projectFlowVersion != null
                 && !Objects.equals(projectFlowVersion, pluginFlowVersion)) {
@@ -707,15 +711,22 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     protected void applyFrontendIgnoreVersionChecks() {
         Optional.ofNullable(this.frontendIgnoreVersionChecks)
                 .ifPresent(ignore -> {
-                    this.getLog().info("Set " + FrontendUtils.PARAM_IGNORE_VERSION_CHECKS + " to " + ignore);
-                    System.setProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, String.valueOf(ignore));
+                    this.getLog()
+                            .info("Set "
+                                    + FrontendUtils.PARAM_IGNORE_VERSION_CHECKS
+                                    + " to " + ignore);
+                    System.setProperty(
+                            FrontendUtils.PARAM_IGNORE_VERSION_CHECKS,
+                            String.valueOf(ignore));
                 });
     }
 
-    protected Reflector getOrCreateReflector(final ReflectorController reflectorController) {
+    protected Reflector getOrCreateReflector(
+            final ReflectorController reflectorController) {
         final Map<String, Object> pluginContext = getPluginContext();
         final String pluginKey = mojoExecution.getPlugin().getKey();
-        final String reflectorKey = reflectorController.getReflectorClassIdentifier() + "-" + pluginKey + "-"
+        final String reflectorKey = reflectorController
+                .getReflectorClassIdentifier() + "-" + pluginKey + "-"
                 + mojoExecution.getLifecyclePhase();
         if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
             getLog().debug("Using cached Reflector for plugin " + pluginKey
@@ -723,9 +734,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             try {
                 final long start = System.nanoTime();
 
-                final Reflector reused = reflectorController.adaptFrom(pluginContext.get(reflectorKey));
+                final Reflector reused = reflectorController
+                        .adaptFrom(pluginContext.get(reflectorKey));
 
-                getLog().info("Adapted from cached Reflector, took " + msSince(start) + "ms");
+                getLog().info("Adapted from cached Reflector, took "
+                        + msSince(start) + "ms");
 
                 return reused;
             } catch (final RuntimeException rex) {
@@ -735,7 +748,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
         final long start = System.nanoTime();
 
-        final Reflector reflector = reflectorController.of(project, mojoExecution);
+        final Reflector reflector = reflectorController.of(project,
+                mojoExecution);
         getLog().info("Created new Reflector[urlsOnIsolatedClassLoader="
                 + reflector.getIsolatedClassLoader().getURLs().length
                 + "x], took " + msSince(start) + "ms");

@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class FastReflectorIsolationConfig {
     private boolean enabled = true;
     private boolean includeFromTargetDirectory = true;
@@ -25,7 +24,8 @@ public class FastReflectorIsolationConfig {
         return this.includeFromTargetDirectory;
     }
 
-    public void setIncludeFromTargetDirectory(final boolean includeFromTargetDirectory) {
+    public void setIncludeFromTargetDirectory(
+            final boolean includeFromTargetDirectory) {
         this.includeFromTargetDirectory = includeFromTargetDirectory;
     }
 
@@ -65,21 +65,22 @@ public class FastReflectorIsolationConfig {
             return this.additional;
         }
 
-        public void setAdditional(@Nonnull final List<ArtifactSelector> additional) {
+        public void setAdditional(
+                @Nonnull final List<ArtifactSelector> additional) {
             this.additional = additional;
         }
     }
-
 
     public static class ArtifactSelector {
         private String groupId;
         private String artifactId;
 
         /**
-         * Determines if the selector should also be applied for scanning using the reflections library.
+         * Determines if the selector should also be applied for scanning using
+         * the reflections library.
          * <p>
-         * This should be set to <code>false</code> when No-Vaadin specific code like Vaadin annotations are present.
-         * To improve the scanning speed.
+         * This should be set to <code>false</code> when No-Vaadin specific code
+         * like Vaadin annotations are present. To improve the scanning speed.
          * </p>
          * <p>
          * Please note that this only works for inclusions, not exclusions.
@@ -125,8 +126,7 @@ public class FastReflectorIsolationConfig {
 
         @Override
         public String toString() {
-            return (this.groupId != null ? this.groupId : "*")
-                    + ":"
+            return (this.groupId != null ? this.groupId : "*") + ":"
                     + (this.artifactId != null ? this.artifactId : "*")
                     + (!this.scan ? " NO_SCAN" : "");
         }

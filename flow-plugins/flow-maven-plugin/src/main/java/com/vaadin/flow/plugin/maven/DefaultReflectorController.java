@@ -17,42 +17,39 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
 public class DefaultReflectorController implements ReflectorController {
-    protected static final Set<String> MAVEN_CLASSLOADER_RESERVED_GROUP_IDS = Set.of(
-            "org.apache.maven",
-            //"org.codehaus.plexus",
-            "org.slf4j",
-            "org.eclipse.sisu"
-    );
+    protected static final Set<String> MAVEN_CLASSLOADER_RESERVED_GROUP_IDS = Set
+            .of("org.apache.maven",
+                    // "org.codehaus.plexus",
+                    "org.slf4j", "org.eclipse.sisu");
 
     private static final Set<String> MANDATORY_PLUGIN_DEPENDENCIES = Set.of(
             "org.reflections:reflections:jar",
-            "org.zeroturnaround:zt-exec:jar"
-    );
+            "org.zeroturnaround:zt-exec:jar");
 
-    protected static final Set<String> DEFAULT_PROJECT_ARTIFACT_SCOPES_INCLUSION = Set.of(
-            Artifact.SCOPE_COMPILE,
-            Artifact.SCOPE_RUNTIME,
-            Artifact.SCOPE_SYSTEM,
-            Artifact.SCOPE_PROVIDED
-    );
+    protected static final Set<String> DEFAULT_PROJECT_ARTIFACT_SCOPES_INCLUSION = Set
+            .of(Artifact.SCOPE_COMPILE, Artifact.SCOPE_RUNTIME,
+                    Artifact.SCOPE_SYSTEM, Artifact.SCOPE_PROVIDED);
 
-    protected final Set<FastReflectorIsolationConfig.ArtifactSelector> fastDefaultExcludes = new HashSet<>(Set.of(
-            new FastReflectorIsolationConfig.ArtifactSelector("com.vaadin.external*")
-    ));
+    protected final Set<FastReflectorIsolationConfig.ArtifactSelector> fastDefaultExcludes = new HashSet<>(
+            Set.of(new FastReflectorIsolationConfig.ArtifactSelector(
+                    "com.vaadin.external*")));
 
-    protected final Set<FastReflectorIsolationConfig.ArtifactSelector> fastDefaultIncludes = new HashSet<>(Set.of(
-            new FastReflectorIsolationConfig.ArtifactSelector("*vaadin*"),
-            new FastReflectorIsolationConfig.ArtifactSelector(null, "*vaadin*")
-    ));
+    protected final Set<FastReflectorIsolationConfig.ArtifactSelector> fastDefaultIncludes = new HashSet<>(
+            Set.of(new FastReflectorIsolationConfig.ArtifactSelector(
+                    "*vaadin*"),
+                    new FastReflectorIsolationConfig.ArtifactSelector(null,
+                            "*vaadin*")));
 
     protected final FastReflectorIsolationConfig fastReflectorIsolationConfig;
     protected final Log log;
 
-    public DefaultReflectorController(final FastReflectorIsolationConfig fastReflectorIsolationConfig, final Log log) {
-        this.fastReflectorIsolationConfig =
-                Objects.requireNonNullElseGet(fastReflectorIsolationConfig, FastReflectorIsolationConfig::new);
+    public DefaultReflectorController(
+            final FastReflectorIsolationConfig fastReflectorIsolationConfig,
+            final Log log) {
+        this.fastReflectorIsolationConfig = Objects.requireNonNullElseGet(
+                fastReflectorIsolationConfig,
+                FastReflectorIsolationConfig::new);
         this.log = log;
     }
 
@@ -65,123 +62,129 @@ public class DefaultReflectorController implements ReflectorController {
     public Reflector adaptFrom(final Object reflector) {
         if (reflector instanceof final DefaultReflector onSameClassLoader) {
             return onSameClassLoader;
-        } else if (DefaultReflector.class.getName().equals(reflector.getClass().getName())) {
+        } else if (DefaultReflector.class.getName()
+                .equals(reflector.getClass().getName())) {
             return new DefaultReflector(reflector);
         }
 
         throw new IllegalArgumentException(
-                "Object of type " + reflector.getClass().getName() + " is not a compatible Reflector");
+                "Object of type " + reflector.getClass().getName()
+                        + " is not a compatible Reflector");
     }
 
     @Override
-    public Reflector of(final MavenProject project, final MojoExecution mojoExecution) {
-        return new DefaultReflector(createIsolatedClassLoader(project, mojoExecution));
+    public Reflector of(final MavenProject project,
+            final MojoExecution mojoExecution) {
+        return new DefaultReflector(
+                createIsolatedClassLoader(project, mojoExecution));
     }
 
     protected ReflectorIsolatedClassLoader createIsolatedClassLoader(
-            final MavenProject project,
-            final MojoExecution mojoExecution) {
-        final List<URLWrapper> urlInfo = Stream.concat(
-                        getOutputDirectoryLocation(project),
-                        getArtifactLocations(project, mojoExecution)
-                )
+            final MavenProject project, final MojoExecution mojoExecution) {
+        final List<URLWrapper> urlInfo = Stream
+                .concat(getOutputDirectoryLocation(project),
+                        getArtifactLocations(project, mojoExecution))
                 .toList();
 
         if (log != null && log.isDebugEnabled()) {
-            log.debug("Isolated classloader will use:"
-                    + System.lineSeparator()
-                    + urlInfo.stream()
-                    .map(w -> " - " + w.toString())
-                    .sorted()
-                    .collect(Collectors.joining(System.lineSeparator())));
+            log.debug("Isolated classloader will use:" + System.lineSeparator()
+                    + urlInfo.stream().map(w -> " - " + w.toString()).sorted()
+                            .collect(Collectors
+                                    .joining(System.lineSeparator())));
         }
 
         return new CombinedClassLoader(
-                urlInfo.stream()
-                        .map(URLWrapper::url)
-                        .toArray(URL[]::new),
+                urlInfo.stream().map(URLWrapper::url).toArray(URL[]::new),
                 getMavenApiClassLoader(mojoExecution),
-                urlInfo.stream()
-                        .filter(URLWrapper::scan)
-                        .map(URLWrapper::url)
+                urlInfo.stream().filter(URLWrapper::scan).map(URLWrapper::url)
                         .toArray(URL[]::new));
     }
 
-    protected Stream<URLWrapper> getOutputDirectoryLocation(final MavenProject project) {
+    protected Stream<URLWrapper> getOutputDirectoryLocation(
+            final MavenProject project) {
         return Optional.ofNullable(project.getBuild().getOutputDirectory())
-                .map(File::new)
-                .stream()
-                .map(this::convertToUrl)
+                .map(File::new).stream().map(this::convertToUrl)
                 .map(url -> new URLWrapper(url, true));
     }
 
-    protected Stream<URLWrapper> getArtifactLocations(final MavenProject project, final MojoExecution mojoExecution) {
-        final Function<Artifact, String> keyMapper =
-                artifact -> artifact.getGroupId() + ":" + artifact.getArtifactId()
-                        + (artifact.getClassifier() != null
+    protected Stream<URLWrapper> getArtifactLocations(
+            final MavenProject project, final MojoExecution mojoExecution) {
+        final Function<Artifact, String> keyMapper = artifact -> artifact
+                .getGroupId()
+                + ":" + artifact.getArtifactId()
+                + (artifact.getClassifier() != null
                         ? ":" + artifact.getClassifier()
                         : "");
 
-        final Map<String, ArtifactWrapper> projectDependencies = new HashMap<>(project
-                .getArtifacts().stream()
-                .filter(this::shouldIncludeArtifact)
-                .map(this::shouldIncludeProjectArtifact)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(a -> keyMapper.apply(a.artifact()), Function.identity())));
+        final Map<String, ArtifactWrapper> projectDependencies = new HashMap<>(
+                project.getArtifacts().stream()
+                        .filter(this::shouldIncludeArtifact)
+                        .map(this::shouldIncludeProjectArtifact)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toMap(
+                                a -> keyMapper.apply(a.artifact()),
+                                Function.identity())));
 
         if (mojoExecution != null) {
-            final List<Artifact> pluginDependencies = mojoExecution.getMojoDescriptor().getPluginDescriptor()
-                    .getArtifacts().stream()
-                    .filter(this::shouldIncludeArtifact)
-                    .toList();
+            final List<Artifact> pluginDependencies = mojoExecution
+                    .getMojoDescriptor().getPluginDescriptor().getArtifacts()
+                    .stream().filter(this::shouldIncludeArtifact).toList();
 
             // Exclude project artifact that are also defined as mandatory
             // plugin dependencies. The version provided by the plugin will be
             // used to prevent failures during maven build.
             MANDATORY_PLUGIN_DEPENDENCIES.stream()
                     .map(projectDependencies::remove)
-                    .filter(a -> log.isDebugEnabled())
-                    .filter(Objects::nonNull)
+                    .filter(a -> log.isDebugEnabled()).filter(Objects::nonNull)
                     .map(ArtifactWrapper::artifact)
-                    .forEach(a ->
-                            log.debug("Using plugin version of " + a.getGroupId() + ":" + a.getArtifactId()
-                                    + " instead of project version"));
+                    .forEach(a -> log.debug("Using plugin version of "
+                            + a.getGroupId() + ":" + a.getArtifactId()
+                            + " instead of project version"));
 
             // Preserve required plugin dependency that are not provided by Flow
-            // -1: dependency defined on both plugin and project, with different version
-            // 0: dependency defined on both plugin and project, with same version
+            // -1: dependency defined on both plugin and project, with different
+            // version
+            // 0: dependency defined on both plugin and project, with same
+            // version
             // 1: dependency defined by the plugin only
             final Map<Integer, List<Artifact>> potentialDuplicates = pluginDependencies
                     .stream().collect(Collectors.groupingBy(pluginArtifact -> {
-                        final ArtifactWrapper projectWrapper = projectDependencies.get(keyMapper.apply(pluginArtifact));
+                        final ArtifactWrapper projectWrapper = projectDependencies
+                                .get(keyMapper.apply(pluginArtifact));
                         if (projectWrapper == null) {
                             return 1;
-                        } else if (projectWrapper.artifact().getId().equals(pluginArtifact.getId())) {
+                        } else if (projectWrapper.artifact().getId()
+                                .equals(pluginArtifact.getId())) {
                             return 0;
                         }
                         return -1;
                     }));
 
-            // Report potential plugin and project dependency versions incompatibilities.
+            // Report potential plugin and project dependency versions
+            // incompatibilities.
             if (potentialDuplicates.containsKey(-1)) {
-                log.warn("""
-                        Found dependencies defined with different versions in project and maven plugin.
-                        Project dependencies are used, but plugin execution could fail if the versions are incompatible.
-                        In case of build failure please analyze the project dependencies and update versions or \
-                        configure exclusions for potential offending transitive dependencies.
-                        Affected dependencies:
+                log.warn(
                         """
-                        + potentialDuplicates.get(-1)
-                        .stream()
-                        .map(pluginArtifact -> {
-                            final String key = keyMapper.apply(pluginArtifact);
-                            return String.format(
-                                    "%s: project version [%s], plugin version [%s]",
-                                    key,
-                                    projectDependencies.get(key).artifact().getBaseVersion(),
-                                    pluginArtifact.getBaseVersion());
-                        })
-                        .collect(Collectors.joining(System.lineSeparator())));
+                                Found dependencies defined with different versions in project and maven plugin.
+                                Project dependencies are used, but plugin execution could fail if the versions are incompatible.
+                                In case of build failure please analyze the project dependencies and update versions or \
+                                configure exclusions for potential offending transitive dependencies.
+                                Affected dependencies:
+                                """
+                                + potentialDuplicates.get(-1).stream()
+                                        .map(pluginArtifact -> {
+                                            final String key = keyMapper
+                                                    .apply(pluginArtifact);
+                                            return String.format(
+                                                    "%s: project version [%s], plugin version [%s]",
+                                                    key,
+                                                    projectDependencies.get(key)
+                                                            .artifact()
+                                                            .getBaseVersion(),
+                                                    pluginArtifact
+                                                            .getBaseVersion());
+                                        }).collect(Collectors.joining(
+                                                System.lineSeparator())));
             }
 
             // Add dependencies defined only by the plugin
@@ -190,26 +193,30 @@ public class DefaultReflectorController implements ReflectorController {
                         .forEach(artifact -> projectDependencies.put(
                                 keyMapper.apply(artifact),
                                 // Plugin-only artifacts require no scanning
-                                new ArtifactWrapper(artifact, false)
-                        ));
+                                new ArtifactWrapper(artifact, false)));
             }
         }
 
         return projectDependencies.values().stream()
-                .map(w -> new URLWrapper(convertToUrl(w.artifact().getFile()), w.scan()));
+                .map(w -> new URLWrapper(convertToUrl(w.artifact().getFile()),
+                        w.scan()));
     }
 
     protected boolean shouldIncludeArtifact(final Artifact artifact) {
         // Exclude all maven artifacts to prevent class loading
         // clash with maven.api class realm
-        return !MAVEN_CLASSLOADER_RESERVED_GROUP_IDS.contains(artifact.getGroupId());
+        return !MAVEN_CLASSLOADER_RESERVED_GROUP_IDS
+                .contains(artifact.getGroupId());
     }
 
-    protected ArtifactWrapper shouldIncludeProjectArtifact(final Artifact artifact) {
+    protected ArtifactWrapper shouldIncludeProjectArtifact(
+            final Artifact artifact) {
         if (!(artifact.getFile() != null
                 && artifact.getArtifactHandler().isAddedToClasspath()
-                && DEFAULT_PROJECT_ARTIFACT_SCOPES_INCLUSION.contains(artifact.getScope()))) {
-            logArtifactInclusionOrExclusion(artifact, false, "Vaadin default filter");
+                && DEFAULT_PROJECT_ARTIFACT_SCOPES_INCLUSION
+                        .contains(artifact.getScope()))) {
+            logArtifactInclusionOrExclusion(artifact, false,
+                    "Vaadin default filter");
             return null;
         }
 
@@ -219,32 +226,34 @@ public class DefaultReflectorController implements ReflectorController {
         }
 
         // Fast code starts here
-        final Optional<FastReflectorIsolationConfig.ArtifactSelector> excludeSelector =
-                checkIfArtifactSelectorsMatches(
-                        fastReflectorIsolationConfig.getExcludes(),
-                        fastDefaultExcludes,
-                        artifact);
+        final Optional<FastReflectorIsolationConfig.ArtifactSelector> excludeSelector = checkIfArtifactSelectorsMatches(
+                fastReflectorIsolationConfig.getExcludes(), fastDefaultExcludes,
+                artifact);
         if (excludeSelector.isPresent()) {
-            final FastReflectorIsolationConfig.ArtifactSelector selector = excludeSelector.get();
-            logArtifactInclusionOrExclusion(artifact, false, "in excludes [" + selector + "]");
+            final FastReflectorIsolationConfig.ArtifactSelector selector = excludeSelector
+                    .get();
+            logArtifactInclusionOrExclusion(artifact, false,
+                    "in excludes [" + selector + "]");
             return null;
         }
 
-        final Optional<FastReflectorIsolationConfig.ArtifactSelector> includeSelector =
-                checkIfArtifactSelectorsMatches(
-                        fastReflectorIsolationConfig.getIncludes(),
-                        fastDefaultIncludes,
-                        artifact);
+        final Optional<FastReflectorIsolationConfig.ArtifactSelector> includeSelector = checkIfArtifactSelectorsMatches(
+                fastReflectorIsolationConfig.getIncludes(), fastDefaultIncludes,
+                artifact);
         if (includeSelector.isPresent()) {
-            final FastReflectorIsolationConfig.ArtifactSelector selector = includeSelector.get();
-            logArtifactInclusionOrExclusion(artifact, true, "in includes [" + selector + "]");
+            final FastReflectorIsolationConfig.ArtifactSelector selector = includeSelector
+                    .get();
+            logArtifactInclusionOrExclusion(artifact, true,
+                    "in includes [" + selector + "]");
             return new ArtifactWrapper(artifact, selector.isScan());
         }
 
         // If a jar is inside a target folder, it's likely a sibling project
         if (fastReflectorIsolationConfig.isIncludeFromTargetDirectory()
-                && "target".equals(artifact.getFile().getParentFile().getName())) {
-            logArtifactInclusionOrExclusion(artifact, true, "source=target directory");
+                && "target"
+                        .equals(artifact.getFile().getParentFile().getName())) {
+            logArtifactInclusionOrExclusion(artifact, true,
+                    "source=target directory");
             return new ArtifactWrapper(artifact, true);
         }
 
@@ -252,13 +261,13 @@ public class DefaultReflectorController implements ReflectorController {
         return null;
     }
 
-    protected void logArtifactInclusionOrExclusion(final Artifact artifact, final boolean include, final String reason) {
+    protected void logArtifactInclusionOrExclusion(final Artifact artifact,
+            final boolean include, final String reason) {
         if (log != null && log.isDebugEnabled()) {
-            log.debug(
-                    (include ? "In" : "Ex") + "cluding project artifact "
-                            + artifact.getGroupId() + ":" + artifact.getArtifactId()
-                            + " from isolated classloader"
-                            + (reason != null ? " due to '" + reason + "'" : ""));
+            log.debug((include ? "In" : "Ex") + "cluding project artifact "
+                    + artifact.getGroupId() + ":" + artifact.getArtifactId()
+                    + " from isolated classloader"
+                    + (reason != null ? " due to '" + reason + "'" : ""));
         }
     }
 
@@ -266,9 +275,8 @@ public class DefaultReflectorController implements ReflectorController {
             final FastReflectorIsolationConfig.ArtifactSelectors selectors,
             final Set<FastReflectorIsolationConfig.ArtifactSelector> defaults,
             final Artifact artifact) {
-        return Stream.concat(
-                        defaults.stream(),
-                        selectors.getAdditional().stream())
+        return Stream
+                .concat(defaults.stream(), selectors.getAdditional().stream())
                 .filter(sel -> checkIfArtifactSelectorMatches(sel, artifact))
                 .findFirst();
     }
@@ -276,22 +284,27 @@ public class DefaultReflectorController implements ReflectorController {
     protected boolean checkIfArtifactSelectorMatches(
             final FastReflectorIsolationConfig.ArtifactSelector selector,
             final Artifact artifact) {
-        if (selector.getGroupId() != null && !compareSelector(selector.getGroupId(), artifact.getGroupId())) {
+        if (selector.getGroupId() != null
+                && !compareSelector(selector.getGroupId(),
+                        artifact.getGroupId())) {
             return false;
         }
-        return selector.getArtifactId() == null
-                || compareSelector(selector.getArtifactId(), artifact.getArtifactId());
+        return selector.getArtifactId() == null || compareSelector(
+                selector.getArtifactId(), artifact.getArtifactId());
     }
 
-    protected boolean compareSelector(final String selector, final String target) {
+    protected boolean compareSelector(final String selector,
+            final String target) {
         if (selector == null || target == null) {
             return false;
         }
 
         if (selector.endsWith("*") && selector.startsWith("*")) {
-            return target.contains(selector.substring(1, selector.length() - 1));
+            return target
+                    .contains(selector.substring(1, selector.length() - 1));
         } else if (selector.endsWith("*")) {
-            return target.startsWith(selector.substring(0, selector.length() - 1));
+            return target
+                    .startsWith(selector.substring(0, selector.length() - 1));
         } else if (selector.startsWith("*")) {
             return target.endsWith(selector.substring(1));
         } else {
@@ -299,10 +312,11 @@ public class DefaultReflectorController implements ReflectorController {
         }
     }
 
-    protected ClassLoader getMavenApiClassLoader(final MojoExecution mojoExecution) {
+    protected ClassLoader getMavenApiClassLoader(
+            final MojoExecution mojoExecution) {
         if (mojoExecution != null) {
-            final ClassRealm pluginClassRealm = mojoExecution.getMojoDescriptor()
-                    .getPluginDescriptor().getClassRealm();
+            final ClassRealm pluginClassRealm = mojoExecution
+                    .getMojoDescriptor().getPluginDescriptor().getClassRealm();
             try {
                 return getMavenAPIFromClassRealm(pluginClassRealm);
             } catch (final NoSuchRealmException e) {
@@ -322,7 +336,8 @@ public class DefaultReflectorController implements ReflectorController {
         return mavenApiClassLoader;
     }
 
-    protected ClassLoader getMavenAPIFromClassRealm(final ClassRealm classRealm) throws NoSuchRealmException {
+    protected ClassLoader getMavenAPIFromClassRealm(final ClassRealm classRealm)
+            throws NoSuchRealmException {
         return classRealm.getWorld().getRealm("maven.api");
     }
 
@@ -330,39 +345,38 @@ public class DefaultReflectorController implements ReflectorController {
         try {
             return file.toURI().toURL();
         } catch (final MalformedURLException e) {
-            throw new IllegalArgumentException(String.format("Failed to convert file '%s' to URL", file), e);
+            throw new IllegalArgumentException(
+                    String.format("Failed to convert file '%s' to URL", file),
+                    e);
         }
     }
 
-    public record ArtifactWrapper(
-            Artifact artifact,
-            boolean scan
-    ) {
+    public record ArtifactWrapper(Artifact artifact, boolean scan) {
 
     }
 
-    public record URLWrapper(
-            URL url,
-            boolean scan
-    ) {
+    public record URLWrapper(URL url, boolean scan) {
         @Override
         public String toString() {
             return url().toString() + (!scan() ? " NO_SCAN" : "");
         }
     }
 
-    public static class CombinedClassLoader extends ReflectorIsolatedClassLoader {
+    public static class CombinedClassLoader
+            extends ReflectorIsolatedClassLoader {
         protected final ClassLoader delegate;
         protected final URL[] urlsToScan;
 
-        public CombinedClassLoader(final URL[] urls, final ClassLoader delegate, final URL[] urlsToScan) {
+        public CombinedClassLoader(final URL[] urls, final ClassLoader delegate,
+                final URL[] urlsToScan) {
             super(urls, null);
             this.delegate = delegate;
             this.urlsToScan = urlsToScan;
         }
 
         @Override
-        public Class<?> loadClass(final String name) throws ClassNotFoundException {
+        public Class<?> loadClass(final String name)
+                throws ClassNotFoundException {
             try {
                 return super.loadClass(name);
             } catch (final ClassNotFoundException e) {
@@ -391,7 +405,8 @@ public class DefaultReflectorController implements ReflectorController {
         }
 
         @Override
-        public Enumeration<URL> getResources(final String name) throws IOException {
+        public Enumeration<URL> getResources(final String name)
+                throws IOException {
             Enumeration<URL> resources = super.getResources(name);
             if (!resources.hasMoreElements() && delegate != null) {
                 resources = delegate.getResources(name);

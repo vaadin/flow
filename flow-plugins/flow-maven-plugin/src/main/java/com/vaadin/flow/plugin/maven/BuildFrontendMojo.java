@@ -136,7 +136,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     /**
      * <b>Only disable this if you have nothing from Vaadin to license!</b>
      * <p>
-     * Otherwise there might be unexpected build problems and you will get into legal trouble.
+     * Otherwise there might be unexpected build problems and you will get into
+     * legal trouble.
      * </p>
      */
     @Parameter(defaultValue = "true")
@@ -171,7 +172,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                     cleanTask.execute();
                 }
             } catch (URISyntaxException | TimeoutException
-                     | ExecutionFailedException exception) {
+                    | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
@@ -180,7 +181,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         if (performLicenseCheck) {
             LicenseChecker.setStrictOffline(true);
         }
-        boolean licenseRequired = performLicenseCheck && BuildFrontendUtil.validateLicenses(this);
+        boolean licenseRequired = performLicenseCheck
+                && BuildFrontendUtil.validateLicenses(this);
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired);
     }
@@ -252,7 +254,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     @Override
     public boolean checkRuntimeDependency(String groupId, String artifactId,
-                                          Consumer<String> missingDependencyMessage) {
+            Consumer<String> missingDependencyMessage) {
         if (!checkRuntimeDependency) {
             getLog().info("Ignoring runtime dependency check");
             return true;
@@ -271,7 +273,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                             """
                                     The dependency %1$s:%2$s has not been found in the project configuration.
                                     Please add the following dependency to your POM file:
-                                    
+
                                     <dependency>
                                         <groupId>%1$s</groupId>
                                         <artifactId>%2$s</artifactId>
@@ -283,9 +285,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         } else if (deps.stream().noneMatch(artifact -> !artifact.isOptional()
                 && artifact.getArtifactHandler().isAddedToClasspath()
                 && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
-                || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
-                || Artifact.SCOPE_RUNTIME
-                .equals(artifact.getScope())))) {
+                        || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+                        || Artifact.SCOPE_RUNTIME
+                                .equals(artifact.getScope())))) {
             Optional.ofNullable(missingDependencyMessage)
                     .ifPresent(c -> c.accept(String.format(
                             """

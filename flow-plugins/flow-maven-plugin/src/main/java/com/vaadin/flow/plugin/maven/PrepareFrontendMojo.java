@@ -46,7 +46,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Inject
     protected void setBuildContext(@Nullable BuildContext buildContext) {
-        buildContextRefresher = buildContext != null ? buildContext::refresh : null;
+        buildContextRefresher = buildContext != null ? buildContext::refresh
+                : null;
     }
 
     @Override
@@ -62,7 +63,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             BuildFrontendUtil.prepareFrontend(this);
         } catch (Exception ex) {
-            throw new MojoFailureException("Could not execute prepare-frontend goal", ex);
+            throw new MojoFailureException(
+                    "Could not execute prepare-frontend goal", ex);
         }
     }
 

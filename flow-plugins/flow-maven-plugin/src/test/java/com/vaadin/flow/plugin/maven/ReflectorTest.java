@@ -130,7 +130,8 @@ public class ReflectorTest {
         IncompatibleFieldsMojo source = new IncompatibleFieldsMojo();
         source.fillFields();
         NoSuchFieldException exception = Assert.assertThrows(
-                NoSuchFieldException.class, () -> reflector.createIsolatedMojo(source, Set.of()));
+                NoSuchFieldException.class,
+                () -> reflector.createIsolatedMojo(source, Set.of()));
         Assert.assertTrue(
                 "Expected exception to be thrown because of class loader mismatch",
                 exception.getMessage()
@@ -178,8 +179,7 @@ public class ReflectorTest {
         pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
 
         Reflector execReflector = new DefaultReflectorController(
-                new FastReflectorIsolationConfig(),
-                new SystemStreamLog())
+                new FastReflectorIsolationConfig(), new SystemStreamLog())
                 .of(project, mojoExecution);
 
         URLClassLoader isolatedClassLoader = execReflector
@@ -195,8 +195,8 @@ public class ReflectorTest {
                 "/some/flat/maven-repo/com.vaadin.test-system-1.0.jar"))));
         Assert.assertTrue(urlSet.contains(convertToUrl(new File(
                 "/some/flat/maven-repo/com.vaadin.test-plugin-1.0.jar"))));
-        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
-                "/my/project/target"))));
+        Assert.assertTrue(
+                urlSet.contains(convertToUrl(new File("/my/project/target"))));
 
         // from platform class loader
         Assert.assertNotNull(

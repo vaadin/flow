@@ -3,7 +3,6 @@ package com.vaadin.flow.plugin.maven;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 
-
 /**
  * "Builder" for {@link Reflector}
  */
@@ -16,7 +15,8 @@ public interface ReflectorController {
     /**
      * Tries to reuse/adapt the given reflector.
      *
-     * @throws RuntimeException Might be thrown if reuse fails.
+     * @throws RuntimeException
+     *             Might be thrown if reuse fails.
      */
     Reflector adaptFrom(Object reflector);
 
