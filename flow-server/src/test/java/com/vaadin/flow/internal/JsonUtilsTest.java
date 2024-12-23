@@ -269,7 +269,7 @@ public class JsonUtilsTest {
     }
 
     public static class ChildBean {
-
+        private String childValue = "child";
     }
 
     public static class BeanWithTemporalFields {
