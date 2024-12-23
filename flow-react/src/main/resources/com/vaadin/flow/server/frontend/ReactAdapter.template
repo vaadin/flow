@@ -19,10 +19,8 @@ import {
     type Dispatch,
     type ReactElement,
     type ReactNode,
-    Ref,
     useEffect,
     useReducer,
-    useRef
 } from "react";
 
 type FlowStateKeyChangedAction<K extends string, V> = Readonly<{
@@ -137,13 +135,8 @@ export abstract class ReactAdapterElement extends HTMLElement {
 
     readonly #Wrapper: () => ReactElement | null;
 
-    #unmountComplete = Promise.resolve();
-
-    // NOTE: Separate element used as a portal outlet in React. Allows to avoid
-    // removal conflicts when Flow and React clear or remove it simultaneously,
-    // e. g., when navigating away from  the `ReactRouterOutlet`. See also:
-    // https://github.com/vaadin/hilla/issues/3002
-    #portalOutlet: HTMLElement | null = null;
+    #unmounting = Promise.resolve();
+    #resolveUnmounting = () => {};
 
     constructor() {
         super();
@@ -157,20 +150,15 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     public async connectedCallback() {
-        if (this.#portalOutlet === null) {
-            this.#portalOutlet = document.createElement('flow-portal-outlet');
-            this.#portalOutlet.style.display = 'contents';
-            this.appendChild(this.#portalOutlet);
-        }
-        await this.#unmountComplete;
+        await this.#unmounting;
         this.#rendering = createElement(this.#Wrapper);
-        const createNewRoot = this.#portalOutlet!.dispatchEvent(new CustomEvent('flow-portal-add', {
+        const createNewRoot = this.dispatchEvent(new CustomEvent('flow-portal-add', {
             bubbles: true,
             cancelable: true,
             composed: true,
             detail: {
                 children: this.#rendering,
-                domNode: this.#portalOutlet!,
+                domNode: this,
             }
         }));
 
@@ -178,7 +166,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
             return;
         }
 
-        this.#root = createRoot(this.#portalOutlet!);
+        this.#root = createRoot(this);
         this.#maybeRenderRoot();
         this.#root.render(this.#rendering);
     }
@@ -198,21 +186,27 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     public async disconnectedCallback() {
-        this.#portalOutlet!.dispatchEvent(new CustomEvent('flow-portal-remove', {
+        this.dispatchEvent(new CustomEvent('flow-portal-remove', {
             bubbles: true,
             cancelable: true,
             composed: true,
             detail: {
                 children: this.#rendering,
-                domNode: this.#portalOutlet!,
+                domNode: this,
             }
         }));
-        this.#unmountComplete = Promise.resolve();
-        await this.#unmountComplete;
+        this.#unmounting = new Promise<void>((resolve) => {
+          this.#resolveUnmounting = resolve;
+        });
+        await this.#unmounting;
         this.#root?.unmount();
         this.#root = undefined;
         this.#rootRendered = false;
         this.#rendering = undefined;
+    }
+
+    rendered() {
+      this.#resolveUnmounting();
     }
 
     /**
