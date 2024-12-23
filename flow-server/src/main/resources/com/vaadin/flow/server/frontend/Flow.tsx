@@ -185,19 +185,12 @@ type FlowPortalProps = React.PropsWithChildren<Readonly<{
 }>>;
 
 function FlowPortal({children, domNode, onRemove}: FlowPortalProps) {
-  const [rendered, setRendered] = useState(false);
-
   useEffect(() => {
     domNode.addEventListener('flow-portal-remove', (event) => {
       event.preventDefault();
       onRemove();
-      setRendered(true);
     }, {once: true});
   }, []);
-
-  useEffect(() => {
-    domNode.dispatchEvent(new Event('flow-portal-remove-done'));
-  }, [rendered]);
 
   return createPortal(children, domNode);
 }
