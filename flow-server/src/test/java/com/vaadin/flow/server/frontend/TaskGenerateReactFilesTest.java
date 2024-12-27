@@ -19,6 +19,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
@@ -100,8 +101,9 @@ public class TaskGenerateReactFilesTest {
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
         task.execute();
 
-        String layoutsContent = FileUtils.readFileToString(
-                new File(options.getFrontendGeneratedFolder(), "layouts.json"));
+        String layoutsContent = Files.readString(
+                new File(options.getFrontendGeneratedFolder(), "layouts.json")
+                        .toPath());
 
         Assert.assertEquals("[{\"path\":\"/test\"}]", layoutsContent);
 
@@ -199,7 +201,7 @@ public class TaskGenerateReactFilesTest {
 
     @Test
     public void routesMissingImportAndUsage_noBuildOrServerSideRoutes_exceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
@@ -485,7 +487,7 @@ public class TaskGenerateReactFilesTest {
 
     @Test
     public void routesContainExport_oneSingleExport_exceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
@@ -514,11 +516,16 @@ public class TaskGenerateReactFilesTest {
         Assert.assertEquals(errorMessage, exception.getMessage());
     }
 
-    private void executeTask(String content)
-            throws IOException, ExecutionFailedException {
+    private void executeTask(String content) throws IOException {
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-        task.execute();
+        try {
+            task.execute();
+        } catch (ExecutionFailedException e) {
+            throw new AssertionError(
+                    "Expected execution to complete successfully, but exception was thrown",
+                    e);
+        }
     }
 
     @Tag("div")

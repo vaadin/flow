@@ -737,8 +737,7 @@ public class BrowserDetailsTest extends TestCase {
                 StandardCharsets.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
 
-        UserAgent agents[] = mapper.readValue(userAgents, UserAgent[].class);
-        return agents;
+        return mapper.readValue(userAgents, UserAgent[].class);
     }
 
     private void assertAgentDetails(UserAgent[] agents) {

@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,7 +82,6 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -173,7 +173,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForSingle() throws Exception {
+    public void getRouterLayoutForSingle() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(RouteParentLayout.class));
 
@@ -186,7 +186,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForSingleParent() throws Exception {
+    public void getRouterLayoutForSingleParent() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -202,7 +202,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForMulipleLayers() throws Exception {
+    public void getRouterLayoutForMulipleLayers() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -220,7 +220,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void instantiatorUse() throws ServiceException {
+    public void instantiatorUse() {
 
         MockVaadinServletService service = new MockVaadinServletService();
         service.init(new MockInstantiator() {
@@ -876,8 +876,10 @@ public class NavigationStateRendererTest {
             public <T extends HasElement> T createRouteTarget(
                     Class<T> routeTargetType, NavigationEvent event) {
                 try {
-                    return routeTargetType.newInstance();
-                } catch (InstantiationException | IllegalAccessException e) {
+                    return routeTargetType.getDeclaredConstructor()
+                            .newInstance();
+                } catch (InstantiationException | IllegalAccessException
+                        | NoSuchMethodException | InvocationTargetException e) {
                     throw new RuntimeException(e);
                 }
             }

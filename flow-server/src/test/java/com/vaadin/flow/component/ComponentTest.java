@@ -187,7 +187,7 @@ public class ComponentTest {
         }
     }
 
-    public static abstract class TracksAttachDetachComponent extends Component
+    public abstract static class TracksAttachDetachComponent extends Component
             implements TracksAttachDetach {
 
         private AtomicInteger attachEvents = new AtomicInteger();
@@ -273,9 +273,6 @@ public class ComponentTest {
     }
 
     static class TestComponentContainer extends TestComponent {
-
-        public TestComponentContainer() {
-        }
 
         public void add(Component c) {
             getElement().appendChild(c.getElement());
@@ -440,8 +437,7 @@ public class ComponentTest {
 
     public static void assertChildren(Component parent,
             Component... expectedChildren) {
-        List<Component> children = parent.getChildren()
-                .collect(Collectors.toList());
+        List<Component> children = parent.getChildren().toList();
         Assert.assertArrayEquals(expectedChildren, children.toArray());
         for (Component c : children) {
             Assert.assertEquals(c.getParent().get(), parent);
@@ -491,20 +487,16 @@ public class ComponentTest {
                 child2.getElement(),
                 new Element("level1b").appendChild(child3.getElement()));
 
-        List<Component> children = parent.getChildren()
-                .collect(Collectors.toList());
         Assert.assertArrayEquals(new Component[] { child1, child2, child3 },
-                children.toArray());
+                parent.getChildren().toArray());
 
     }
 
     @Test
     public void defaultGetChildrenNoChildren() {
-        List<Component> children = parentDivComponent.getChildren()
-                .collect(Collectors.toList());
         Assert.assertArrayEquals(
                 new Component[] { child1SpanComponent, child2InputComponent },
-                children.toArray());
+                parentDivComponent.getChildren().toArray());
 
     }
 
@@ -1459,7 +1451,7 @@ public class ComponentTest {
     @Test // 3818
     public void enabledStateChangeOnAttachCalledForParentState() {
         enabledStateChangeOnAttachCalledForParentState(false,
-                (parent, child) -> parent.add(child));
+                HasComponents::add);
     }
 
     @Test // 7085
@@ -1533,8 +1525,7 @@ public class ComponentTest {
 
     @Test
     public void enabledStateChangeOnParentDetachReturnsOldState() {
-        enabledStateChangeOnParentDetachReturnsOldState(
-                (parent, child) -> parent.add(child));
+        enabledStateChangeOnParentDetachReturnsOldState(HasComponents::add);
     }
 
     @Test

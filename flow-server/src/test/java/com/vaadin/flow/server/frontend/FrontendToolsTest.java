@@ -848,8 +848,8 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void getNpmCacheDir_returnsCorrectPath() throws IOException,
-            InterruptedException, FrontendUtils.CommandExecutionException {
+    public void getNpmCacheDir_returnsCorrectPath()
+            throws IOException, FrontendUtils.CommandExecutionException {
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NPM).withCacheDir("/foo/bar")

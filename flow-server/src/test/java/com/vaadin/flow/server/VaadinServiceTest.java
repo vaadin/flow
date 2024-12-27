@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpSessionBindingEvent;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -140,7 +141,7 @@ public class VaadinServiceTest {
                 details, url);
     }
 
-    private static abstract class TestVaadinService extends VaadinService {
+    private abstract static class TestVaadinService extends VaadinService {
 
         @Override
         protected List<RequestHandler> createRequestHandlers()
@@ -400,8 +401,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testFireSessionDestroy()
-            throws ServletException, ServiceException {
+    public void testFireSessionDestroy() throws ServiceException {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -460,11 +460,11 @@ public class VaadinServiceTest {
         service.addSessionDestroyListener(listener);
 
         final AtomicBoolean secondUiDetached = new AtomicBoolean();
-        List<UI> UIs = new ArrayList<>();
+        List<UI> uis = new ArrayList<>();
         MockVaadinSession vaadinSession = new MockVaadinSession(service) {
             @Override
             public Collection<UI> getUIs() {
-                return UIs;
+                return uis;
             }
         };
         vaadinSession.lock();
@@ -481,7 +481,7 @@ public class VaadinServiceTest {
         };
 
         throwingUI.getInternals().setSession(vaadinSession);
-        UIs.add(throwingUI);
+        uis.add(throwingUI);
 
         UI detachingUI = new UI() {
             @Override
@@ -495,7 +495,7 @@ public class VaadinServiceTest {
             }
         };
         detachingUI.getInternals().setSession(vaadinSession);
-        UIs.add(detachingUI);
+        uis.add(detachingUI);
 
         vaadinSession.unlock();
 
@@ -510,7 +510,7 @@ public class VaadinServiceTest {
 
     @Test
     public void testServiceDestroyListenerCalled_whenAnotherListenerThrows()
-            throws ServletException, ServiceException {
+            throws ServiceException {
         VaadinService service = createService();
 
         ThrowingServiceDestroyListener throwingListener = new ThrowingServiceDestroyListener();
@@ -519,7 +519,7 @@ public class VaadinServiceTest {
         service.addServiceDestroyListener(throwingListener);
         service.addServiceDestroyListener(listener);
 
-        assertThrows(RuntimeException.class, () -> service.destroy());
+        assertThrows(RuntimeException.class, service::destroy);
 
         Assert.assertEquals("ServiceDestroyListener not called exactly once", 1,
                 listener.callCount);
@@ -746,7 +746,7 @@ public class VaadinServiceTest {
 
     @Test
     public void fireSessionDestroy_sessionStateIsSetToClosed()
-            throws ServletException, ServiceException {
+            throws ServiceException {
         VaadinService service = createService();
 
         AtomicReference<VaadinSessionState> stateRef = new AtomicReference<>();
@@ -834,8 +834,7 @@ public class VaadinServiceTest {
         return factory;
     }
 
-    private static VaadinService createService() throws ServiceException {
-        VaadinService service = new MockVaadinServletService();
-        return service;
+    private static VaadinService createService() {
+        return new MockVaadinServletService();
     }
 }
