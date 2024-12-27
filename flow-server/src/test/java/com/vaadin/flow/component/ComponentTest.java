@@ -71,7 +71,7 @@ import elemental.json.Json;
 
 public class ComponentTest {
 
-    private UI ui;
+    private UI testUI;
 
     @After
     public void checkThreadLocal() {
@@ -158,7 +158,7 @@ public class ComponentTest {
     private Component child2InputComponent;
     private Component shadowRootParent;
     private Component shadowChild;
-    private UI testUI;
+    // private UI testUI;
     private MockServletServiceSessionSetup mocks;
     private VaadinSession session;
 
@@ -287,14 +287,14 @@ public class ComponentTest {
     }
 
     private UI createMockedUI() {
-        UI ui = new UI() {
+        UI mockUI = new UI() {
             @Override
             public VaadinSession getSession() {
                 return session;
             }
         };
-        ui.getInternals().setSession(session);
-        return ui;
+        mockUI.getInternals().setSession(session);
+        return mockUI;
     }
 
     @Before
@@ -313,9 +313,9 @@ public class ComponentTest {
         mocks = new MockServletServiceSessionSetup();
 
         session = mocks.getSession();
-        ui = createMockedUI();
+        testUI = createMockedUI();
 
-        UI.setCurrent(ui);
+        UI.setCurrent(testUI);
     }
 
     @After
@@ -1970,16 +1970,17 @@ public class ComponentTest {
     @Test
     public void scrollIntoView() {
         EnabledDiv div = new EnabledDiv();
-        ui.add(div);
+        testUI.add(div);
         div.scrollIntoView();
 
         assertPendingJs("scrollIntoView()");
     }
 
     private void assertPendingJs(String expectedJs) {
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        testUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
 
-        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+        List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
                 .dumpPendingJavaScriptInvocations();
         Assert.assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
@@ -1990,7 +1991,7 @@ public class ComponentTest {
     @Test
     public void scrollIntoViewSmooth() {
         EnabledDiv div = new EnabledDiv();
-        ui.add(div);
+        testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
 
         assertPendingJs("scrollIntoView({\"behavior\":\"smooth\"})");
@@ -1999,7 +2000,7 @@ public class ComponentTest {
     @Test
     public void scrollIntoViewAllParams() {
         EnabledDiv div = new EnabledDiv();
-        ui.add(div);
+        testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
                 Alignment.CENTER));
 
@@ -2015,7 +2016,7 @@ public class ComponentTest {
         otherUI.add(button);
 
         IllegalStateException ex = Assert.assertThrows(
-                IllegalStateException.class, () -> ui.add(button));
+                IllegalStateException.class, () -> testUI.add(button));
         Assert.assertTrue(ex.getMessage(), ex.getMessage().startsWith(
                 "Can't move a node from one state tree to another. If this is "
                         + "intentional, first remove the node from its current "

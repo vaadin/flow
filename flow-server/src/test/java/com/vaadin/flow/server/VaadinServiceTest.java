@@ -661,7 +661,7 @@ public class VaadinServiceTest {
         VaadinService.setCurrent(null);
 
         Assert.assertEquals(1, availableRoutes.size());
-        Assert.assertEquals(availableRoutes.get(0).getTemplate(), "test");
+        Assert.assertEquals("test", availableRoutes.get(0).getTemplate());
     }
 
     @Test

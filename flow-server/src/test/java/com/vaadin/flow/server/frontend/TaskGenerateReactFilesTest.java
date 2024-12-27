@@ -139,11 +139,7 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
@@ -153,14 +149,8 @@ public class TaskGenerateReactFilesTest {
                          import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -172,14 +162,8 @@ public class TaskGenerateReactFilesTest {
                          ] as RouteObject[];
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -210,11 +194,7 @@ public class TaskGenerateReactFilesTest {
                         export default createBrowserRouter(routes);
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
@@ -244,14 +224,8 @@ public class TaskGenerateReactFilesTest {
                         export default createBrowserRouter(routes);
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -281,14 +255,8 @@ public class TaskGenerateReactFilesTest {
                         export default createBrowserRouter(routes);
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -360,14 +328,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
-                exception.getMessage());
+        assertTaskExecutionFails(content,
+                TaskGenerateReactFiles.MISSING_ROUTES_EXPORT);
     }
 
     @Test
@@ -400,14 +362,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -422,14 +378,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -443,14 +393,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -516,11 +460,7 @@ public class TaskGenerateReactFilesTest {
                         export { router, routes }
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
@@ -540,11 +480,7 @@ public class TaskGenerateReactFilesTest {
                         export {router}
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
@@ -562,16 +498,27 @@ public class TaskGenerateReactFilesTest {
                         export { routes }
                 """;
 
+        assertTaskExecutionFails(content,
+                String.format(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
+                        routesTsx.getPath()));
+    }
+
+    private void assertTaskExecutionFails(String content, String errorMessage)
+            throws IOException {
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
 
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
 
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(
-                String.format(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
-                        routesTsx.getPath()),
-                exception.getMessage());
+        Exception exception = Assert
+                .assertThrows(ExecutionFailedException.class, task::execute);
+        Assert.assertEquals(errorMessage, exception.getMessage());
+    }
+
+    private void executeTask(String content)
+            throws IOException, ExecutionFailedException {
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        task.execute();
     }
 
     @Tag("div")

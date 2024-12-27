@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -38,6 +32,7 @@ import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -52,6 +47,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.Pair;
@@ -60,10 +56,12 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.slf4j.LoggerFactory;
-
+import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -491,7 +489,7 @@ public class FrontendToolsTest {
         settings.setBaseDir(npmrc.getParent());
         settings.setAlternativeDirGetter(null);
 
-        FrontendTools tools = new FrontendTools(settings);
+        tools = new FrontendTools(settings);
 
         Properties properties = new Properties();
         properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
@@ -583,7 +581,7 @@ public class FrontendToolsTest {
         settings.setBaseDir(npmrc.getParent());
         settings.setAlternativeDirGetter(null);
 
-        FrontendTools tools = new FrontendTools(settings);
+        tools = new FrontendTools(settings);
 
         List<ProxyConfig.Proxy> proxyList = tools.getProxies();
         Assert.assertEquals(2, proxyList.size());
@@ -625,7 +623,7 @@ public class FrontendToolsTest {
         settings.setBaseDir(npmrc.getParent());
         settings.setAlternativeDirGetter(null);
 
-        FrontendTools tools = new FrontendTools(settings);
+        tools = new FrontendTools(settings);
 
         List<ProxyConfig.Proxy> proxyList = tools.getProxies();
         Assert.assertEquals(2, proxyList.size());
@@ -911,15 +909,12 @@ public class FrontendToolsTest {
         File npxJs = new File(baseDir, npxPath);
         FileUtils.forceMkdir(npxJs.getParentFile());
 
-        FileWriter fileWriter = new FileWriter(npxJs);
-        try {
+        try (FileWriter fileWriter = new FileWriter(npxJs)) {
             fileWriter.write(
                     "pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
                             + defaultPnpmVersion + "'\n"
                             + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
                             + "    console.log(pnpmVersion);\n" + "}\n");
-        } finally {
-            fileWriter.close();
         }
     }
 
