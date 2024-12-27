@@ -131,12 +131,12 @@ public abstract class AbstractRouteNotFoundError extends Component {
         routeTemplates.forEach(
                 (k, v) -> routeElements.add(routeTemplateToHtml(k, v)));
 
-        routeElements.addAll(getClientRoutes(event));
+        routeElements.addAll(getClientRoutes());
         return routeElements.stream().map(Element::outerHtml)
                 .collect(Collectors.joining());
     }
 
-    private List<Element> getClientRoutes(BeforeEnterEvent event) {
+    private List<Element> getClientRoutes() {
         return FrontendUtils.getClientRoutes().stream()
                 .filter(route -> !route.contains("$layout"))
                 .map(route -> route.replace("$index", ""))

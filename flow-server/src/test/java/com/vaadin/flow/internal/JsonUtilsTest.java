@@ -136,18 +136,6 @@ public class JsonUtilsTest {
         Assert.assertEquals(0, a.length());
     }
 
-    public void createObjectStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.objectStream(null));
-    }
-
-    public void createNumberStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.numberStream(null));
-    }
-
-    public void createStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.stream(null));
-    }
-
     @Test
     public void testStream() {
         JsonArray array = createTestArray1();
@@ -331,6 +319,7 @@ public class JsonUtilsTest {
             childBeanList.add(secondChild);
         }
 
+        // these getters are needed for bean serialization:
         public Map<String, Integer> getIntegerMap() {
             return integerMap;
         }

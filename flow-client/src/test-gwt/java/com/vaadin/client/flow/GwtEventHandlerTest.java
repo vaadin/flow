@@ -254,12 +254,6 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 expected);
     }
 
-    private void assertPolymerMethods(Element element, String[] expected) {
-        ServerEventObject object = WidgetUtil.crazyJsoCast(element);
-        assertEventHandlerMethods(() -> getPublishedServerMethods(object),
-                expected);
-    }
-
     private void assertEventHandlerMethods(
             Supplier<JsArray<String>> methodsProvider, String... expected) {
         JsArray<String> publishedServerMethods = methodsProvider.get();

@@ -50,7 +50,6 @@ public class WebComponentGenerator {
     private static final String TOKEN_ATTRIBUTE_NAME = "_AttributeName_";
     private static final String TOKEN_CHANGE_EVENT_NAME = "_ChangeEventName_";
     private static final String TOKEN_PROPERTY_NAME = "_PropertyName_";
-    private static final String HTML_TEMPLATE = "webcomponent-template.html";
     private static final String JS_TEMPLATE = "webcomponent-template.js";
     private static final String SCRIPT_TEMPLATE = "webcomponent-script-template.js";
     private static final String CODE_PROPERTY_DEFAULT = "webcomponent-property-default.js";
