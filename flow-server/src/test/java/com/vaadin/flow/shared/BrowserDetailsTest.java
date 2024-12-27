@@ -152,9 +152,6 @@ public class BrowserDetailsTest extends TestCase {
                 IPHONE_IOS_6_1_HOMESCREEN_SIMULATOR);
         assertWebKit(bd);
         // not identified as Safari, no browser version available
-        // assertSafari(bd);
-        // assertBrowserMajorVersion(bd, 6);
-        // assertBrowserMinorVersion(bd, 1);
         assertEngineVersion(bd, 536.26f);
         assertIPhone(bd);
 

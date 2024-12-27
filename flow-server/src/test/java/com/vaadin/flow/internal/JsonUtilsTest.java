@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -139,8 +138,7 @@ public class JsonUtilsTest {
     @Test
     public void testStream() {
         JsonArray array = createTestArray1();
-        List<JsonValue> list = JsonUtils.stream(array)
-                .collect(Collectors.toList());
+        List<JsonValue> list = JsonUtils.stream(array).toList();
 
         Assert.assertEquals(2, list.size());
         Assert.assertEquals("foo", list.get(0).asString());
@@ -153,8 +151,7 @@ public class JsonUtilsTest {
         JsonArray array = Stream.of(Json.createObject(), createTestObject1(),
                 createTestObject2()).collect(JsonUtils.asArray());
 
-        List<JsonObject> objects = JsonUtils.objectStream(array)
-                .collect(Collectors.toList());
+        List<JsonObject> objects = JsonUtils.objectStream(array).toList();
 
         Assert.assertEquals(3, objects.size());
         Assert.assertTrue(

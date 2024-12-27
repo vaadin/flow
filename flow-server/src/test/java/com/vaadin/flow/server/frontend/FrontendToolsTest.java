@@ -904,20 +904,6 @@ public class FrontendToolsTest {
         }
     }
 
-    private void createFakePnpm(String defaultPnpmVersion) throws Exception {
-        final String npxPath = NPM_BIN_PATH + "npx-cli.js";
-        File npxJs = new File(baseDir, npxPath);
-        FileUtils.forceMkdir(npxJs.getParentFile());
-
-        try (FileWriter fileWriter = new FileWriter(npxJs)) {
-            fileWriter.write(
-                    "pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
-                            + defaultPnpmVersion + "'\n"
-                            + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
-                            + "    console.log(pnpmVersion);\n" + "}\n");
-        }
-    }
-
     private void installGlobalPnpm(String pnpmVersion) {
         Optional<File> npmInstalled = frontendToolsLocator
                 .tryLocateTool(getCommand("npm"));

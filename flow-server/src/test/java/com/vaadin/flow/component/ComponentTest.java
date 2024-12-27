@@ -158,7 +158,6 @@ public class ComponentTest {
     private Component child2InputComponent;
     private Component shadowRootParent;
     private Component shadowChild;
-    // private UI testUI;
     private MockServletServiceSessionSetup mocks;
     private VaadinSession session;
 
@@ -734,8 +733,7 @@ public class ComponentTest {
     public void testDetach_failingListeners_allListenersInvokedAndExceptionHandled() {
         Set<Throwable> expectedExceptions = new HashSet<>();
         Set<Throwable> handledExceptions = new HashSet<>();
-        VaadinSession session = new AlwaysLockedVaadinSession(
-                new MockVaadinServletService());
+        session = new AlwaysLockedVaadinSession(new MockVaadinServletService());
         session.setErrorHandler(
                 event -> handledExceptions.add(event.getThrowable()));
         VaadinSession.setCurrent(session);
@@ -900,7 +898,7 @@ public class ComponentTest {
         });
 
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
-        VaadinSession session = new AlwaysLockedVaadinSession(
+        session = new AlwaysLockedVaadinSession(
                 new MockVaadinServletService(config));
         ui.getInternals().setSession(session);
         Assert.assertTrue(initialAttach.get());

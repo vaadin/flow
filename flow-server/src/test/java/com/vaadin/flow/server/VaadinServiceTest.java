@@ -691,7 +691,7 @@ public class VaadinServiceTest {
 
         service.getContext().setAttribute(Lookup.class, lookup);
 
-        InstantiatorFactory factory = createInstantiatorFactory(lookup);
+        InstantiatorFactory factory = createInstantiatorFactory();
 
         Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
                 .thenReturn(Collections.singletonList(factory));
@@ -712,8 +712,8 @@ public class VaadinServiceTest {
 
         service.getContext().setAttribute(Lookup.class, lookup);
 
-        InstantiatorFactory factory1 = createInstantiatorFactory(lookup);
-        InstantiatorFactory factory2 = createInstantiatorFactory(lookup);
+        InstantiatorFactory factory1 = createInstantiatorFactory();
+        InstantiatorFactory factory2 = createInstantiatorFactory();
 
         Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
                 .thenReturn(Arrays.asList(factory1, factory2));
@@ -818,7 +818,7 @@ public class VaadinServiceTest {
         return session;
     }
 
-    private InstantiatorFactory createInstantiatorFactory(Lookup lookup) {
+    private InstantiatorFactory createInstantiatorFactory() {
         InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
