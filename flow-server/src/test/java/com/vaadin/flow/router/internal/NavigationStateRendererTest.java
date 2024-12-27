@@ -35,9 +35,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -161,9 +159,6 @@ public class NavigationStateRendererTest {
     }
 
     private Router router;
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void init() {

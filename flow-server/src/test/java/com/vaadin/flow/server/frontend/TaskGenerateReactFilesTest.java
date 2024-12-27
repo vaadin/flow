@@ -111,7 +111,7 @@ public class TaskGenerateReactFilesTest {
 
     @Test
     public void routesContainImportAndUsage_serverSideRoutes_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
@@ -170,7 +170,7 @@ public class TaskGenerateReactFilesTest {
 
     @Test
     public void routesContainMultipleFlowImports_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
@@ -449,7 +449,7 @@ public class TaskGenerateReactFilesTest {
 
     @Test
     public void routesContainExport_noConst_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
@@ -467,7 +467,7 @@ public class TaskGenerateReactFilesTest {
 
     @Test
     public void routesContainExport_twoSingleExports_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';

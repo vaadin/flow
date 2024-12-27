@@ -401,7 +401,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testFireSessionDestroy() throws ServiceException {
+    public void testFireSessionDestroy() {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -426,8 +426,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testSessionDestroyListenerCalled_whenAnotherListenerThrows()
-            throws ServiceException {
+    public void testSessionDestroyListenerCalled_whenAnotherListenerThrows() {
         VaadinService service = createService();
 
         ThrowingSessionDestroyListener throwingListener = new ThrowingSessionDestroyListener();
@@ -451,8 +450,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testSessionDestroyListenerCalled_andOtherUiDetachCalled_whenUiClosingThrows()
-            throws ServiceException {
+    public void testSessionDestroyListenerCalled_andOtherUiDetachCalled_whenUiClosingThrows() {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -509,8 +507,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testServiceDestroyListenerCalled_whenAnotherListenerThrows()
-            throws ServiceException {
+    public void testServiceDestroyListenerCalled_whenAnotherListenerThrows() {
         VaadinService service = createService();
 
         ThrowingServiceDestroyListener throwingListener = new ThrowingServiceDestroyListener();
@@ -602,8 +599,7 @@ public class VaadinServiceTest {
                 .thenReturn(factory);
         VaadinServlet servlet = new VaadinServlet() {
             @Override
-            protected DeploymentConfiguration createDeploymentConfiguration()
-                    throws ServletException {
+            protected DeploymentConfiguration createDeploymentConfiguration() {
                 return new MockDeploymentConfiguration();
             }
         };
@@ -615,8 +611,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void currentInstancesAfterPendingAccessTasks()
-            throws ServiceException {
+    public void currentInstancesAfterPendingAccessTasks() {
         VaadinService service = createService();
 
         MockVaadinSession session = new MockVaadinSession(service);
@@ -745,8 +740,7 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void fireSessionDestroy_sessionStateIsSetToClosed()
-            throws ServiceException {
+    public void fireSessionDestroy_sessionStateIsSetToClosed() {
         VaadinService service = createService();
 
         AtomicReference<VaadinSessionState> stateRef = new AtomicReference<>();
