@@ -173,7 +173,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
     public void testClientCallableMethodInDom() {
         assertServerEventHandlerMethodInDom(
                 NodeFeatures.CLIENT_DELEGATE_HANDLERS,
-                element -> assertPublishedMethods(element,
+                el -> assertPublishedMethods(el,
                         new String[] { "publishedMethod" }),
                 "publishedMethod");
     }
@@ -237,15 +237,6 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
             return JsCollections.array();
         } else {
             return serverEventObject.getMethods();
-        }
-    }
-
-    private JsArray<String> getPublishedServerMethods(
-            ServerEventObject object) {
-        if (object == null) {
-            return JsCollections.array();
-        } else {
-            return object.getMethods();
         }
     }
 
