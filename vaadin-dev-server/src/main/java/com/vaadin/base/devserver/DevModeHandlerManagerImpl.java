@@ -126,6 +126,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private void shutdownExecutorService() {
         if (executorService != null) {
             executorService.shutdownNow();
+            executorService = null;
         }
     }
 
