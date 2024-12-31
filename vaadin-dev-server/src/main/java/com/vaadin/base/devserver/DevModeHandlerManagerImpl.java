@@ -15,18 +15,20 @@
  */
 package com.vaadin.base.devserver;
 
-import com.vaadin.flow.server.Command;
 import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,7 @@ import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -68,6 +71,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
     private final Set<Command> shutdownCommands = new HashSet<>();
+    private ExecutorService executorService;
 
     private String applicationUrl;
     private boolean fullyStarted = false;
@@ -96,8 +100,11 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     @Override
     public void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
             throws VaadinInitializerException {
-        setDevModeHandler(
-                DevModeInitializer.initDevModeHandler(classes, context));
+        shutdownExecutorService();
+        executorService = Executors.newFixedThreadPool(4,
+                new InternalThreadFactory());
+        setDevModeHandler(DevModeInitializer.initDevModeHandler(classes,
+                context, executorService));
         CompletableFuture.runAsync(() -> {
             DevModeHandler devModeHandler = getDevModeHandler();
             if (devModeHandler instanceof AbstractDevServerRunner) {
@@ -111,9 +118,16 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             startWatchingThemeFolder(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
-        });
+        }, executorService);
         setDevModeStarted(context);
         this.browserLauncher = new BrowserLauncher(context);
+    }
+
+    private void shutdownExecutorService() {
+        if (executorService != null) {
+            executorService.shutdownNow();
+            executorService = null;
+        }
     }
 
     private void watchExternalDependencies(VaadinContext context,
@@ -159,6 +173,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             devModeHandler.stop();
             devModeHandler = null;
         }
+        shutdownExecutorService();
         for (Command shutdownCommand : shutdownCommands) {
             try {
                 shutdownCommand.execute();
@@ -230,5 +245,19 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(DevModeHandlerManagerImpl.class);
+    }
+
+    private static class InternalThreadFactory implements ThreadFactory {
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+        @Override
+        public Thread newThread(Runnable runnable) {
+            String threadName = "vaadin-dev-server-"
+                    + threadNumber.getAndIncrement();
+            Thread thread = new Thread(runnable, threadName);
+            thread.setDaemon(true);
+            thread.setPriority(Thread.NORM_PRIORITY);
+            return thread;
+        }
     }
 }
