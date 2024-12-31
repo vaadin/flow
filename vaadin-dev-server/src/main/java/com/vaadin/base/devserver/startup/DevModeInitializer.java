@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -73,9 +75,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.pro.licensechecker.LicenseChecker;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
@@ -169,6 +168,12 @@ public class DevModeInitializer implements Serializable {
     /**
      * Initialize the devmode server if not in production mode or compatibility
      * mode.
+     * <p>
+     * </p>
+     * Uses common ForkJoin pool to execute asynchronous tasks. It is
+     * recommended to use
+     * {@link #initDevModeHandler(Set, VaadinContext, Executor)} and provide a a
+     * custom executor if initialization starts long-running tasks.
      *
      * @param classes
      *            classes to check for npm- and js modules
@@ -179,9 +184,34 @@ public class DevModeInitializer implements Serializable {
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
+     * @deprecated use {@link #initDevModeHandler(Set, VaadinContext, Executor)}
+     *             providing a custom executor.
      */
+    @Deprecated(forRemoval = true)
     public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
             VaadinContext context) throws VaadinInitializerException {
+        return initDevModeHandler(classes, context, ForkJoinPool.commonPool());
+    }
+
+    /**
+     * Initialize the devmode server if not in production mode or compatibility
+     * mode.
+     *
+     * @param classes
+     *            classes to check for npm- and js modules
+     * @param context
+     *            VaadinContext we are running in
+     * @param taskExecutor
+     *            the executor to use for asynchronous execution
+     * @return the initialized dev mode handler or {@code null} if none was
+     *         created
+     *
+     * @throws VaadinInitializerException
+     *             if dev mode can't be initialized
+     */
+    public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
+            VaadinContext context, Executor taskExecutor)
+            throws VaadinInitializerException {
 
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.isProductionMode()) {
@@ -317,7 +347,7 @@ public class DevModeInitializer implements Serializable {
         };
 
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
-                .runAsync(runnable);
+                .runAsync(runnable, taskExecutor);
 
         Lookup devServerLookup = Lookup.compose(lookup,
                 Lookup.of(config, ApplicationConfiguration.class));
