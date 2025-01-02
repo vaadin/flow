@@ -98,6 +98,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String FIREFOX_100_LINUX = "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0";
 
     // Web crawlers and bots
+    private static final String BYTE_SPIDER = "mozilla/5.0 (linux; android 5.0) applewebkit/537.36 (khtml, like gecko) mobile safari/537.36 (compatible; bytespider; spider-feedback@bytedance.com)";
     private static final String DUCK_DUCK_BOT = "ddg_android/5.169.0 (com.duckduckgo.mobile.android; android api 33)";
     private static final String DUCK_DUCK_BOT_2 = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.106 Mobile DuckDuckGo/5 Safari/537.36";
     private static final String DUCK_DUCK_BOT_3 = "DuckDuckGo/0.26.3 CFNetwork/1331.0.7 Darwin/21.4.0";
