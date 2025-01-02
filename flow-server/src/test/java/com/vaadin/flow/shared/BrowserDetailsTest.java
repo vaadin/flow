@@ -113,6 +113,10 @@ public class BrowserDetailsTest extends TestCase {
     private static final String FIREFOX_100_MACOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0";
     private static final String FIREFOX_100_LINUX = "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0";
 
+    // Web crawlers and bots
+    private static final String BYTE_SPIDER = "mozilla/5.0 (linux; android 5.0) applewebkit/537.36 (khtml, like gecko) mobile safari/537.36 (compatible; bytespider; spider-feedback@bytedance.com)";
+    private static final String DUCK_DUCK_BOT = "ddg_android/5.169.0 (com.duckduckgo.mobile.android; android api 33)";
+
     public void testSafari3() {
         BrowserDetails bd = new BrowserDetails(SAFARI3_WINDOWS);
         assertWebKit(bd);
@@ -737,6 +741,25 @@ public class BrowserDetailsTest extends TestCase {
         assertAgentDetails(agents);
     }
 
+    public void testByteSpiderWebCrawler() {
+        BrowserDetails bd = new BrowserDetails(BYTE_SPIDER);
+        assertWebKit(bd);
+        assertSafari(bd);
+        assertBrowserMajorVersion(bd, -1);
+        assertBrowserMinorVersion(bd, -1);
+        assertEngineVersion(bd, 537.36f);
+        assertAndroid(bd, 5, 0);
+    }
+
+    public void testDuckDuckBot() {
+        BrowserDetails bd = new BrowserDetails(DUCK_DUCK_BOT);
+        assertUnspecifiedBrowser(bd);
+        assertBrowserMajorVersion(bd, -1);
+        assertBrowserMinorVersion(bd, -1);
+        assertEngineVersion(bd, -1);
+        assertAndroid(bd, 5, 169);
+    }
+
     private static UserAgent[] getUserAgentDetails(String agentFile)
             throws IOException {
         String userAgents = IOUtils.toString(
@@ -918,6 +941,15 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isOpera());
         assertFalse(browserDetails.isSafari());
         assertTrue(browserDetails.isEdge());
+    }
+
+    private void assertUnspecifiedBrowser(BrowserDetails browserDetails) {
+        assertFalse(browserDetails.isFirefox());
+        assertFalse(browserDetails.isChrome());
+        assertFalse(browserDetails.isIE());
+        assertFalse(browserDetails.isOpera());
+        assertFalse(browserDetails.isSafari());
+        assertFalse(browserDetails.isEdge());
     }
 
     private void assertMacOSX(BrowserDetails browserDetails) {
