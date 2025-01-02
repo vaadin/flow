@@ -30,6 +30,7 @@ import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
+import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 
 import { createRequire } from 'module';
 
@@ -793,6 +794,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
             ]
           ].filter(Boolean)
         }
+      }),
+      vaadinI18n({
+        cwd: __dirname,
+        meta: {
+          output: {
+            dir: statsFolder,
+          },
+        },
       }),
       {
         name: 'vaadin:force-remove-html-middleware',
