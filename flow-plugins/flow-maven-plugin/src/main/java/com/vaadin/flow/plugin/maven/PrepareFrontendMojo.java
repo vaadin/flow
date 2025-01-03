@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.util.function.Consumer;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -24,6 +25,10 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
+import org.codehaus.plexus.build.BuildContext;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * This goal checks that node and npm tools are installed and creates or updates
@@ -37,14 +42,17 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
+    protected Consumer<File> buildContextRefresher;
+
+    @Inject
+    protected void setBuildContext(@Nullable BuildContext buildContext) {
+        buildContextRefresher = buildContext != null ? buildContext::refresh
+                : null;
+    }
+
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
-        if (productionMode != null) {
-            logWarn("The <productionMode>" + productionMode
-                    + "</productionMode> Maven parameter no longer has any effect and can be removed. Production mode is automatically enabled when you run the build-frontend target.");
-        }
-
         // propagate info via System properties and token file
         File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
 
@@ -54,11 +62,23 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
         try {
             BuildFrontendUtil.prepareFrontend(this);
-        } catch (Exception exception) {
+        } catch (Exception ex) {
             throw new MojoFailureException(
-                    "Could not execute prepare-frontend goal.", exception);
+                    "Could not execute prepare-frontend goal", ex);
         }
+    }
 
+    /**
+     * Indicates that the file or folder content has been modified during the
+     * build.
+     *
+     * @param file
+     *            a {@link java.io.File} object.
+     */
+    protected void triggerRefresh(File file) {
+        if (buildContextRefresher != null) {
+            buildContextRefresher.accept(file);
+        }
     }
 
 }
