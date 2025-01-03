@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2000-2024 Vaadin Ltd.
  *
@@ -197,7 +198,7 @@ public class UidlRequestHandlerTest {
     public void should_modifyUidl_when_MPR() throws Exception {
         UI ui = getUi();
 
-        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
         JsonObject uidl = generateUidl(true, true);
@@ -218,7 +219,7 @@ public class UidlRequestHandlerTest {
     public void should_changeURL_when_v7LocationProvided() throws Exception {
         UI ui = getUi();
 
-        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
         JsonObject uidl = generateUidl(true, true);
@@ -239,7 +240,7 @@ public class UidlRequestHandlerTest {
             throws Exception {
         UI ui = getUi();
 
-        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
         JsonObject uidl = generateUidl(false, true);
@@ -259,7 +260,7 @@ public class UidlRequestHandlerTest {
     public void should_not_modify_non_MPR_Uidl() throws Exception {
         UI ui = getUi();
 
-        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
         JsonObject uidl = generateUidl(true, true);
@@ -284,7 +285,7 @@ public class UidlRequestHandlerTest {
             throws Exception {
         UI ui = getUi();
 
-        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
         JsonObject uidl = getUidlWithNoHashInLocation();
@@ -316,7 +317,7 @@ public class UidlRequestHandlerTest {
             }
         };
 
-        UidlRequestHandler handler = new UidlRequestHandler() {
+        handler = new UidlRequestHandler() {
             @Override
             protected ServerRpcHandler createRpcHandler() {
                 return serverRpcHandler;
