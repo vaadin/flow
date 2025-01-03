@@ -19,10 +19,8 @@ import {
     type Dispatch,
     type ReactElement,
     type ReactNode,
-    Ref,
     useEffect,
     useReducer,
-    useRef
 } from "react";
 
 type FlowStateKeyChangedAction<K extends string, V> = Readonly<{
@@ -137,7 +135,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
 
     readonly #Wrapper: () => ReactElement | null;
 
-    #unmountComplete = Promise.resolve();
+    #unmounting = Promise.resolve();
 
     constructor() {
         super();
@@ -151,7 +149,6 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     public async connectedCallback() {
-        await this.#unmountComplete;
         this.#rendering = createElement(this.#Wrapper);
         const createNewRoot = this.dispatchEvent(new CustomEvent('flow-portal-add', {
             bubbles: true,
@@ -166,6 +163,8 @@ export abstract class ReactAdapterElement extends HTMLElement {
         if (!createNewRoot || this.#root) {
             return;
         }
+
+        await this.#unmounting;
 
         this.#root = createRoot(this);
         this.#maybeRenderRoot();
@@ -187,19 +186,24 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     public async disconnectedCallback() {
-        this.dispatchEvent(new CustomEvent('flow-portal-remove', {
-            bubbles: true,
-            cancelable: true,
-            composed: true,
-            detail: {
-                children: this.#rendering,
-                domNode: this,
-            }
-        }));
-        this.#unmountComplete = Promise.resolve();
-        await this.#unmountComplete;
-        this.#root?.unmount();
-        this.#root = undefined;
+        if (!this.#root) {
+          this.dispatchEvent(new CustomEvent('flow-portal-remove', {
+              bubbles: true,
+              cancelable: true,
+              composed: true,
+              detail: {
+                  children: this.#rendering,
+                  domNode: this,
+              }
+          }));
+        } else {
+          this.#unmounting = Promise.resolve();
+          await this.#unmounting;
+
+          this.#root?.unmount();
+          this.#root = undefined;
+        }
+
         this.#rootRendered = false;
         this.#rendering = undefined;
     }
