@@ -3,6 +3,11 @@ import { ReactAdapterElement } from "Frontend/generated/flow/ReactAdapter.js";
 import React from "react";
 
 class ReactRouterOutletElement extends ReactAdapterElement {
+  connectedCallback() {
+    super.connectedCallback();
+    this.style.display = 'contents';
+  }
+
   protected render(): React.ReactElement | null {
     return <Outlet />;
   }
