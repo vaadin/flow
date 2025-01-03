@@ -112,6 +112,9 @@ public class TaskGenerateReactFiles
     private static final String LAYOUTS_JSON = "layouts.json";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
+    static final String JSX_TRANSFORM_INDEX = "jsx-dev-transform/index.ts";
+    static final String JSX_TRANSFORM_RUNTIME = "jsx-dev-transform/jsx-runtime.ts";
+    static final String JSX_TRANSFORM_DEV_RUNTIME = "jsx-dev-transform/jsx-dev-runtime.ts";
     private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
 
     // matches setting the server-side routes from Flow.tsx:
@@ -164,6 +167,14 @@ public class TaskGenerateReactFiles
                 frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
             writeFile(flowTsx, getFileContent(FLOW_TSX));
+            writeFile(new File(frontendGeneratedFolder, JSX_TRANSFORM_INDEX),
+                    getFileContent(JSX_TRANSFORM_INDEX));
+            writeFile(
+                    new File(frontendGeneratedFolder,
+                            JSX_TRANSFORM_DEV_RUNTIME),
+                    getFileContent(JSX_TRANSFORM_DEV_RUNTIME));
+            writeFile(new File(frontendGeneratedFolder, JSX_TRANSFORM_RUNTIME),
+                    getFileContent(JSX_TRANSFORM_RUNTIME));
             writeFile(vaadinReactTsx,
                     getVaadinReactTsContent(routesTsx.exists()));
             writeLayoutsJson(
@@ -262,6 +273,12 @@ public class TaskGenerateReactFiles
                     frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
             File layoutsJson = new File(frontendGeneratedFolder, LAYOUTS_JSON);
             FileUtils.deleteQuietly(flowTsx);
+            FileUtils.deleteQuietly(
+                    new File(frontendGeneratedFolder, JSX_TRANSFORM_INDEX));
+            FileUtils.deleteQuietly(new File(frontendGeneratedFolder,
+                    JSX_TRANSFORM_DEV_RUNTIME));
+            FileUtils.deleteQuietly(
+                    new File(frontendGeneratedFolder, JSX_TRANSFORM_RUNTIME));
             FileUtils.deleteQuietly(layoutsJson);
             FileUtils.deleteQuietly(vaadinReactTsx);
             FileUtils.deleteQuietly(reactAdapterTsx);
