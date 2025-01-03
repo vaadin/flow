@@ -127,7 +127,13 @@ public class MessageSender {
             JsonObject payload = pushPendingMessage;
             pushPendingMessage = null;
             registry.getRequestResponseTracker().startRequest();
-            send(payload);
+            sendPayload(payload);
+            return;
+        } else if (hasQueuedMessages() && resendMessageTimer == null) {
+            if (!registry.getRequestResponseTracker().hasActiveRequest()) {
+                registry.getRequestResponseTracker().startRequest();
+            }
+            sendPayload(messageQueue.get(0));
             return;
         }
 
@@ -186,10 +192,6 @@ public class MessageSender {
             payload.put(ApplicationConstants.CSRF_TOKEN, csrfToken);
         }
         payload.put(ApplicationConstants.RPC_INVOCATIONS, reqInvocations);
-        payload.put(ApplicationConstants.SERVER_SYNC_ID,
-                registry.getMessageHandler().getLastSeenServerSyncId());
-        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
-                clientToServerMessageId++);
         if (extraJson != null) {
             for (String key : extraJson.keys()) {
                 JsonValue value = extraJson.get(key);
@@ -208,13 +210,9 @@ public class MessageSender {
      *            The contents of the request to send
      */
     public void send(final JsonObject payload) {
-        if (!registry.getRequestResponseTracker().hasActiveRequest()) {
-            // Someone called send directly as request not set active.
-            // If queue empty add message and wait to send.
-            if (!messageQueue.isEmpty()) {
-                messageQueue.add(payload);
-                return;
-            }
+        if (!messageQueue.isEmpty()) {
+            messageQueue.add(payload);
+            return;
         }
         messageQueue.add(payload);
         sendPayload(payload);
@@ -228,6 +226,11 @@ public class MessageSender {
      *            The contents of the request to send
      */
     private void sendPayload(final JsonObject payload) {
+        payload.put(ApplicationConstants.SERVER_SYNC_ID,
+                registry.getMessageHandler().getLastSeenServerSyncId());
+        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
+                clientToServerMessageId++);
+
         if (push != null && push.isBidirectional()) {
             // When using bidirectional transport, the payload is not resent
             // to the server during reconnection attempts.
@@ -247,7 +250,9 @@ public class MessageSender {
             resendMessageTimer = new Timer() {
                 @Override
                 public void run() {
-                    resendMessageTimer = null;
+                    resendMessageTimer
+                            .schedule(registry.getApplicationConfiguration()
+                                    .getMaxMessageSuspendTimeout() + 500);
                     if (!registry.getRequestResponseTracker()
                             .hasActiveRequest()) {
                         registry.getRequestResponseTracker().startRequest();
@@ -264,7 +269,6 @@ public class MessageSender {
         if (resendMessageTimer != null) {
             resendMessageTimer.cancel();
             resendMessageTimer = null;
-
         }
     }
 
@@ -376,9 +380,6 @@ public class MessageSender {
                             + 1 == nextExpectedId) {
                         resetTimer();
                         messageQueue.remove(0);
-                        if (!messageQueue.isEmpty()) {
-                            sendPayload(messageQueue.get(0));
-                        }
                     }
                 }
             }
@@ -444,5 +445,9 @@ public class MessageSender {
 
     ResynchronizationState getResynchronizationState() {
         return resynchronizationState;
+    }
+
+    public boolean hasQueuedMessages() {
+        return !messageQueue.isEmpty();
     }
 }

@@ -113,7 +113,7 @@ public class ServerRpcHandler implements Serializable {
                 this.csrfToken = csrfToken;
             }
 
-            if (isSyncIdCheckEnabled) {
+            if (isSyncIdCheckEnabled && !isUnloadBeaconRequest()) {
                 syncId = (int) json
                         .getNumber(ApplicationConstants.SERVER_SYNC_ID);
             } else {
@@ -131,7 +131,10 @@ public class ServerRpcHandler implements Serializable {
                 clientToServerMessageId = (int) json
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
             } else {
-                getLogger().warn("Server message without client id received");
+                if(!isUnloadBeaconRequest()) {
+                    getLogger().warn(
+                            "Server message without client id received");
+                }
                 clientToServerMessageId = -1;
             }
             invocations = json.getArray(ApplicationConstants.RPC_INVOCATIONS);
