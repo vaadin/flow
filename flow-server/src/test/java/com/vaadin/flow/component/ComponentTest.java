@@ -71,7 +71,7 @@ import elemental.json.Json;
 
 public class ComponentTest {
 
-    private UI ui;
+    private UI testUI;
 
     @After
     public void checkThreadLocal() {
@@ -158,7 +158,6 @@ public class ComponentTest {
     private Component child2InputComponent;
     private Component shadowRootParent;
     private Component shadowChild;
-    private UI testUI;
     private MockServletServiceSessionSetup mocks;
     private VaadinSession session;
 
@@ -187,7 +186,7 @@ public class ComponentTest {
         }
     }
 
-    public static abstract class TracksAttachDetachComponent extends Component
+    public abstract static class TracksAttachDetachComponent extends Component
             implements TracksAttachDetach {
 
         private AtomicInteger attachEvents = new AtomicInteger();
@@ -274,9 +273,6 @@ public class ComponentTest {
 
     static class TestComponentContainer extends TestComponent {
 
-        public TestComponentContainer() {
-        }
-
         public void add(Component c) {
             getElement().appendChild(c.getElement());
         }
@@ -287,14 +283,14 @@ public class ComponentTest {
     }
 
     private UI createMockedUI() {
-        UI ui = new UI() {
+        UI mockUI = new UI() {
             @Override
             public VaadinSession getSession() {
                 return session;
             }
         };
-        ui.getInternals().setSession(session);
-        return ui;
+        mockUI.getInternals().setSession(session);
+        return mockUI;
     }
 
     @Before
@@ -313,9 +309,9 @@ public class ComponentTest {
         mocks = new MockServletServiceSessionSetup();
 
         session = mocks.getSession();
-        ui = createMockedUI();
+        testUI = createMockedUI();
 
-        UI.setCurrent(ui);
+        UI.setCurrent(testUI);
     }
 
     @After
@@ -440,8 +436,7 @@ public class ComponentTest {
 
     public static void assertChildren(Component parent,
             Component... expectedChildren) {
-        List<Component> children = parent.getChildren()
-                .collect(Collectors.toList());
+        List<Component> children = parent.getChildren().toList();
         Assert.assertArrayEquals(expectedChildren, children.toArray());
         for (Component c : children) {
             Assert.assertEquals(c.getParent().get(), parent);
@@ -491,20 +486,16 @@ public class ComponentTest {
                 child2.getElement(),
                 new Element("level1b").appendChild(child3.getElement()));
 
-        List<Component> children = parent.getChildren()
-                .collect(Collectors.toList());
         Assert.assertArrayEquals(new Component[] { child1, child2, child3 },
-                children.toArray());
+                parent.getChildren().toArray());
 
     }
 
     @Test
     public void defaultGetChildrenNoChildren() {
-        List<Component> children = parentDivComponent.getChildren()
-                .collect(Collectors.toList());
         Assert.assertArrayEquals(
                 new Component[] { child1SpanComponent, child2InputComponent },
-                children.toArray());
+                parentDivComponent.getChildren().toArray());
 
     }
 
@@ -742,8 +733,7 @@ public class ComponentTest {
     public void testDetach_failingListeners_allListenersInvokedAndExceptionHandled() {
         Set<Throwable> expectedExceptions = new HashSet<>();
         Set<Throwable> handledExceptions = new HashSet<>();
-        VaadinSession session = new AlwaysLockedVaadinSession(
-                new MockVaadinServletService());
+        session = new AlwaysLockedVaadinSession(new MockVaadinServletService());
         session.setErrorHandler(
                 event -> handledExceptions.add(event.getThrowable()));
         VaadinSession.setCurrent(session);
@@ -908,7 +898,7 @@ public class ComponentTest {
         });
 
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
-        VaadinSession session = new AlwaysLockedVaadinSession(
+        session = new AlwaysLockedVaadinSession(
                 new MockVaadinServletService(config));
         ui.getInternals().setSession(session);
         Assert.assertTrue(initialAttach.get());
@@ -1459,7 +1449,7 @@ public class ComponentTest {
     @Test // 3818
     public void enabledStateChangeOnAttachCalledForParentState() {
         enabledStateChangeOnAttachCalledForParentState(false,
-                (parent, child) -> parent.add(child));
+                HasComponents::add);
     }
 
     @Test // 7085
@@ -1533,8 +1523,7 @@ public class ComponentTest {
 
     @Test
     public void enabledStateChangeOnParentDetachReturnsOldState() {
-        enabledStateChangeOnParentDetachReturnsOldState(
-                (parent, child) -> parent.add(child));
+        enabledStateChangeOnParentDetachReturnsOldState(HasComponents::add);
     }
 
     @Test
@@ -1970,16 +1959,17 @@ public class ComponentTest {
     @Test
     public void scrollIntoView() {
         EnabledDiv div = new EnabledDiv();
-        ui.add(div);
+        testUI.add(div);
         div.scrollIntoView();
 
         assertPendingJs("scrollIntoView()");
     }
 
     private void assertPendingJs(String expectedJs) {
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        testUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
 
-        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+        List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
                 .dumpPendingJavaScriptInvocations();
         Assert.assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
@@ -1990,7 +1980,7 @@ public class ComponentTest {
     @Test
     public void scrollIntoViewSmooth() {
         EnabledDiv div = new EnabledDiv();
-        ui.add(div);
+        testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
 
         assertPendingJs("scrollIntoView({\"behavior\":\"smooth\"})");
@@ -1999,7 +1989,7 @@ public class ComponentTest {
     @Test
     public void scrollIntoViewAllParams() {
         EnabledDiv div = new EnabledDiv();
-        ui.add(div);
+        testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
                 Alignment.CENTER));
 
@@ -2015,7 +2005,7 @@ public class ComponentTest {
         otherUI.add(button);
 
         IllegalStateException ex = Assert.assertThrows(
-                IllegalStateException.class, () -> ui.add(button));
+                IllegalStateException.class, () -> testUI.add(button));
         Assert.assertTrue(ex.getMessage(), ex.getMessage().startsWith(
                 "Can't move a node from one state tree to another. If this is "
                         + "intentional, first remove the node from its current "

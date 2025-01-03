@@ -216,9 +216,9 @@ public class DefaultApplicationConfigurationFactory
         if (resources.size() > 1) {
             String warningMessage = String.format(
                     "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible.%n"
+                            + "Accepting file '%s' first match of '%s' possible (%s).%n"
                             + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size());
+                    firstResource.getPath(), resources.size(), resources);
             getLogger().warn(warningMessage);
         } else {
             String debugMessage = String.format(

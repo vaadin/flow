@@ -42,6 +42,8 @@ import elemental.json.JsonObject;
  */
 public class AtmospherePushConnection implements PushConnection {
 
+    public static final String TRANSPORT_KEY = "transport";
+
     /**
      * Represents the connection state of a push connection.
      */
@@ -583,7 +585,7 @@ public class AtmospherePushConnection implements PushConnection {
          * @return the transport mechanism
          */
         public final String getTransport() {
-            return getStringValue("transport");
+            return getStringValue(TRANSPORT_KEY);
         }
 
         /**
@@ -602,7 +604,7 @@ public class AtmospherePushConnection implements PushConnection {
          *            the transport mechanism
          */
         public final void setTransport(String transport) {
-            setStringValue("transport", transport);
+            setStringValue(TRANSPORT_KEY, transport);
         }
 
         /**
@@ -667,7 +669,7 @@ public class AtmospherePushConnection implements PushConnection {
          * @return the transport
          */
         public final String getTransport() {
-            return getStringValue("transport");
+            return getStringValue(TRANSPORT_KEY);
         }
 
     }

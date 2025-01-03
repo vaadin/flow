@@ -107,8 +107,4 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
             throw new ExecutionFailedException(e);
         }
     }
-
-    Logger log() {
-        return LoggerFactory.getLogger(getClass());
-    }
 }

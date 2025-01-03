@@ -173,7 +173,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
     public void testClientCallableMethodInDom() {
         assertServerEventHandlerMethodInDom(
                 NodeFeatures.CLIENT_DELEGATE_HANDLERS,
-                element -> assertPublishedMethods(element,
+                el -> assertPublishedMethods(el,
                         new String[] { "publishedMethod" }),
                 "publishedMethod");
     }
@@ -240,23 +240,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         }
     }
 
-    private JsArray<String> getPublishedServerMethods(
-            ServerEventObject object) {
-        if (object == null) {
-            return JsCollections.array();
-        } else {
-            return object.getMethods();
-        }
-    }
-
     private void assertPublishedMethods(Element element, String[] expected) {
         assertEventHandlerMethods(() -> getPublishedServerMethods(element),
-                expected);
-    }
-
-    private void assertPolymerMethods(Element element, String[] expected) {
-        ServerEventObject object = WidgetUtil.crazyJsoCast(element);
-        assertEventHandlerMethods(() -> getPublishedServerMethods(object),
                 expected);
     }
 

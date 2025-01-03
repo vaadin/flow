@@ -22,9 +22,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -98,8 +96,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         getLogger().info(
                 "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
 
-        runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
-                "build");
+        runFrontendBuildTool("Vite", "vite/bin/vite.js", "build");
 
         copyPackageLockToBundleFolder();
 
@@ -111,8 +108,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     }
 
     private void runFrontendBuildTool(String toolName, String executable,
-            Map<String, String> environment, String... params)
-            throws ExecutionFailedException {
+            String... params) throws ExecutionFailedException {
         Logger logger = getLogger();
 
         FrontendToolsSettings settings = new FrontendToolsSettings(

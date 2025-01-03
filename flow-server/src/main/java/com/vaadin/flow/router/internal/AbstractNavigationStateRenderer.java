@@ -114,7 +114,7 @@ public abstract class AbstractNavigationStateRenderer
      * <p>
      * Override this method to control the creation of view instances.
      * <p>
-     * By default always creates new instances.
+     * By default, always creates new instances.
      *
      * @param <T>
      *            the route target type
@@ -168,56 +168,25 @@ public abstract class AbstractNavigationStateRenderer
         clearContinueNavigationAction(ui);
         checkForDuplicates(routeTargetType, routeLayoutTypes);
 
-        BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
-                event, routeTargetType, parameters, routeLayoutTypes);
-
-        Optional<Integer> result = executeBeforeLeaveNavigation(event,
-                beforeNavigationDeactivating);
+        Optional<Integer> result = handleBeforeLeaveEvents(event,
+                routeTargetType, parameters);
 
         if (result.isPresent()) {
             return result.get();
         }
 
-        // If navigation target is Hilla route, terminate Flow navigation logic
-        // here.
-        String route = event.getLocation().getPath().isEmpty()
-                ? event.getLocation().getPath()
-                : event.getLocation().getPath().startsWith("/")
-                        ? event.getLocation().getPath()
-                        : "/" + event.getLocation().getPath();
-        if (MenuRegistry.hasClientRoute(route, true) && !MenuRegistry
-                .getClientRoutes(true).get(route).flowLayout()) {
+        String route = getFormattedRoute(event);
+        if (isClientHandled(route)) {
             return HttpStatusCode.OK.getCode();
         }
 
-        final ArrayList<HasElement> chain;
+        final ArrayList<HasElement> chain = new ArrayList<>();
 
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
                 routeTargetType, routeLayoutTypes);
 
-        if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
-            final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
-                    event);
-            if (maybeChain.isEmpty()) {
-                // We're returning because the preserved chain is not ready to
-                // be used as is, and requires client data requested within
-                // `getPreservedChain`. Once the data is retrieved from the
-                // client, `handle` method will be invoked with the same
-                // `NavigationEvent` argument.
-                return HttpStatusCode.OK.getCode();
-            } else {
-                chain = maybeChain.get();
-            }
-        } else {
-
-            // Create an empty chain which gets populated later in
-            // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
-            chain = new ArrayList<>();
-
-            // Has any preserved components already been created here? If so,
-            // we don't want to navigate back to them ever so clear cache for
-            // window.
-            clearAllPreservedChains(ui);
+        if (populateChain(chain, preserveOnRefreshTarget, event)) {
+            return HttpStatusCode.OK.getCode();
         }
 
         // Set navigationTrigger to RELOAD if this is a refresh of a preserve
@@ -234,11 +203,8 @@ public abstract class AbstractNavigationStateRenderer
         // See https://github.com/vaadin/flow/issues/3619 for more info.
         pushHistoryStateIfNeeded(event, ui);
 
-        BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
-                event, routeTargetType, parameters, routeLayoutTypes);
-
-        result = createChainIfEmptyAndExecuteBeforeEnterNavigation(
-                beforeNavigationActivating, event, chain);
+        result = handleBeforeNavigationEvents(event, routeTargetType,
+                parameters, chain);
         if (result.isPresent()) {
             return result.get();
         }
@@ -255,18 +221,7 @@ public abstract class AbstractNavigationStateRenderer
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        // If a route refresh has been requested, remove all modal components.
-        // This is necessary because maintaining the correct modality
-        // cardinality and order is not feasible without knowing who opened them
-        // and when.
-        if (ui.hasModalComponent()
-                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
-            Component modalComponent;
-            while ((modalComponent = ui.getInternals()
-                    .getActiveModalComponent()) != null) {
-                modalComponent.removeFromParent();
-            }
-        }
+        cleanModalComponents(event);
 
         // Change the UI according to the navigation Component chain.
         ui.getInternals().showRouteTarget(event.getLocation(),
@@ -276,6 +231,109 @@ public abstract class AbstractNavigationStateRenderer
         validateStatusCode(statusCode, routeTargetType);
 
         // After navigation event
+        handleAfterNavigationEvents(ui, parameters);
+
+        updatePageTitle(event, componentInstance, route);
+
+        return statusCode;
+    }
+
+    /**
+     * Populate element chain from a preserved chain or give clean chain to be
+     * populated.
+     *
+     * @param chain
+     *            chain to populate
+     * @param preserveOnRefreshTarget
+     *            preserve on refresh boolean
+     * @param event
+     *            current navigation event
+     * @return {@code true} if additional client data requested, else
+     *         {@code false}
+     */
+    private boolean populateChain(ArrayList<HasElement> chain,
+            boolean preserveOnRefreshTarget, NavigationEvent event) {
+        if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
+            final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
+                    event);
+            if (maybeChain.isEmpty()) {
+                // We're returning because the preserved chain is not ready to
+                // be used as is, and requires client data requested within
+                // `getPreservedChain`. Once the data is retrieved from the
+                // client, `handle` method will be invoked with the same
+                // `NavigationEvent` argument.
+                return true;
+            }
+            chain.addAll(maybeChain.get());
+        } else {
+            // Create an empty chain which gets populated later in
+            // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
+            chain.clear();
+
+            // Has any preserved components already been created here? If so,
+            // we don't want to navigate back to them ever so clear cache for
+            // window.
+            clearAllPreservedChains(event.getUI());
+        }
+        return false;
+    }
+
+    /**
+     * Send before leave event to all listeners.
+     *
+     * @return optional return http status code
+     */
+    private Optional<Integer> handleBeforeLeaveEvents(NavigationEvent event,
+            Class<? extends Component> routeTargetType,
+            RouteParameters parameters) {
+        BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
+                event, routeTargetType, parameters, routeLayoutTypes);
+
+        return executeBeforeLeaveNavigation(event,
+                beforeNavigationDeactivating);
+    }
+
+    /**
+     * If a route refresh has been requested, remove all modal components. This
+     * is necessary because maintaining the correct modality cardinality and
+     * order is not feasible without knowing who opened them and when.
+     *
+     * @param event
+     *            navigation event
+     */
+    private static void cleanModalComponents(NavigationEvent event) {
+        if (event.getUI().hasModalComponent()
+                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
+            Component modalComponent;
+            while ((modalComponent = event.getUI().getInternals()
+                    .getActiveModalComponent()) != null) {
+                modalComponent.removeFromParent();
+            }
+        }
+    }
+
+    /**
+     * Send before navigation event to all listeners.
+     *
+     * @return optional return http status code
+     */
+    private Optional<Integer> handleBeforeNavigationEvents(
+            NavigationEvent event, Class<? extends Component> routeTargetType,
+            RouteParameters parameters, ArrayList<HasElement> chain) {
+        BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
+                event, routeTargetType, parameters, routeLayoutTypes);
+
+        return createChainIfEmptyAndExecuteBeforeEnterNavigation(
+                beforeNavigationActivating, event, chain);
+    }
+
+    /**
+     * Send after navigation event to all listeners.
+     *
+     * @return optional return http status code
+     */
+    private void handleAfterNavigationEvents(UI ui,
+            RouteParameters parameters) {
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
                 ui.getNavigationListeners(AfterNavigationHandler.class));
         afterNavigationHandlers
@@ -284,10 +342,36 @@ public abstract class AbstractNavigationStateRenderer
         fireAfterNavigationListeners(
                 new AfterNavigationEvent(locationChangeEvent, parameters),
                 afterNavigationHandlers);
+    }
 
-        updatePageTitle(event, componentInstance, route);
+    /**
+     * Check if target route is client handled and Flow should not handle
+     * rendering.
+     *
+     * @param route
+     *            formatted route target string
+     * @return {@code true} if client handled render for route
+     */
+    private boolean isClientHandled(String route) {
+        // If navigation target is Hilla route, terminate Flow navigation logic
+        // here.
+        return MenuRegistry.hasClientRoute(route, true)
+                && !MenuRegistry.getClientRoutes(true).get(route).flowLayout();
+    }
 
-        return statusCode;
+    /**
+     * Get the target location as a standardized route string.
+     *
+     * @param event
+     *            navigation event
+     * @return route string
+     */
+    private static String getFormattedRoute(NavigationEvent event) {
+        return event.getLocation().getPath().isEmpty()
+                ? event.getLocation().getPath()
+                : event.getLocation().getPath().startsWith("/")
+                        ? event.getLocation().getPath()
+                        : "/" + event.getLocation().getPath();
     }
 
     /**
@@ -315,8 +399,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
-        if (event instanceof ErrorNavigationEvent) {
-            ErrorNavigationEvent errorEvent = (ErrorNavigationEvent) event;
+        if (event instanceof ErrorNavigationEvent errorEvent) {
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
                 event.getState().ifPresent(s -> ui.getPage().executeJs(
@@ -397,7 +480,11 @@ public abstract class AbstractNavigationStateRenderer
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> routeTargetType, Router router);
 
-    // The last element in the returned list is always a Component class
+    /**
+     * Collect the element types chain for the current navigation state.
+     *
+     * @return types chain for navigation target
+     */
     private List<Class<? extends HasElement>> getTypesChain() {
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
@@ -406,10 +493,10 @@ public abstract class AbstractNavigationStateRenderer
                 this.routeLayoutTypes);
         Collections.reverse(layoutTypes);
 
-        final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>();
-        for (Class<? extends RouterLayout> parentType : layoutTypes) {
-            chain.add(parentType);
-        }
+        final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>(
+                layoutTypes);
+
+        // The last element in the returned list is always a Component class
         chain.add(routeTargetType);
         return chain;
     }
@@ -496,7 +583,7 @@ public abstract class AbstractNavigationStateRenderer
     /**
      * Inform any {@link BeforeEnterObserver}s in attaching element chain. The
      * event is sent first to the {@link BeforeEnterHandler}s registered within
-     * the {@link UI}, then to any element in the chain and to any of it's child
+     * the {@link UI}, then to any element in the chain and to any of its child
      * components in the hierarchy which implements {@link BeforeEnterHandler}
      *
      * If the <code>chain</code> argument is empty <code>chainClasses</code> is
@@ -510,7 +597,7 @@ public abstract class AbstractNavigationStateRenderer
      * @param chain
      *            the chain of {@link HasElement} instances which will be
      *            rendered. In case this is empty it'll be populated with
-     *            instances according with the navigation event's location.
+     *            instances according to the navigation event's location.
      * @return result of observer events
      */
     private Optional<Integer> createChainIfEmptyAndExecuteBeforeEnterNavigation(
@@ -614,7 +701,7 @@ public abstract class AbstractNavigationStateRenderer
 
         if (chain != null) {
             // Reverse the chain to the stored ordered, since that is different
-            // than the notification order, and also to keep
+            // from the notification order, and also to keep
             // LocationChangeEvent.getRouteTargetChain backward compatible.
             chain = new ArrayList<>(chain);
             Collections.reverse(chain);
@@ -692,8 +779,7 @@ public abstract class AbstractNavigationStateRenderer
      */
     private static boolean isComponentElementEqualsOrChild(
             BeforeEnterHandler eventHandler, Component component) {
-        if (eventHandler instanceof HasElement) {
-            HasElement hasElement = (HasElement) eventHandler;
+        if (eventHandler instanceof HasElement hasElement) {
 
             final Element componentElement = component.getElement();
 
@@ -850,11 +936,11 @@ public abstract class AbstractNavigationStateRenderer
     /**
      * Checks if there exists a cached component chain of the route location in
      * the current window.
-     *
+     * <p>
      * If retrieving the window name requires another round-trip, schedule it
      * and make a new call to the handle {@link #handle(NavigationEvent)} in the
      * callback. In this case, this method returns {@link Optional#empty()}.
-     *
+     * <p>
      * If the chain is missing and needs to be created this method returns an
      * {@link Optional} wrapping an empty {@link ArrayList}.
      */

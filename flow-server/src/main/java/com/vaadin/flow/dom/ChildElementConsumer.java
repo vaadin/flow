@@ -22,8 +22,6 @@ import java.util.function.Consumer;
  * Callback which allows to handle request to map a client side DOM element to
  * the server {@link Element} instance.
  *
- * @see Node#attachExistingElement(String, Element, ChildElementConsumer)
- *
  * @author Vaadin Ltd
  * @since 1.0
  *
