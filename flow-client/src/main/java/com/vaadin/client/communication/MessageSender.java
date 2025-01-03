@@ -15,7 +15,11 @@
  */
 package com.vaadin.client.communication;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Timer;
 
 import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Console;
@@ -66,6 +70,10 @@ public class MessageSender {
     private ResynchronizationState resynchronizationState = ResynchronizationState.NOT_ACTIVE;
 
     private JsonObject pushPendingMessage;
+
+    private List<JsonObject> messageQueue = new ArrayList<>();
+
+    private Timer resendMessageTimer;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -121,6 +129,12 @@ public class MessageSender {
             registry.getRequestResponseTracker().startRequest();
             send(payload);
             return;
+        } else if (hasQueuedMessages() && resendMessageTimer == null) {
+            if (!registry.getRequestResponseTracker().hasActiveRequest()) {
+                registry.getRequestResponseTracker().startRequest();
+            }
+            sendPayload(messageQueue.get(0));
+            return;
         }
 
         ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
@@ -146,6 +160,8 @@ public class MessageSender {
         if (resynchronizationState == ResynchronizationState.SEND_TO_SERVER) {
             resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
             Console.warn("Resynchronizing from server");
+            messageQueue.clear();
+            resetTimer();
             extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
         if (showLoadingIndicator) {
@@ -166,7 +182,6 @@ public class MessageSender {
             final JsonObject extraJson) {
         registry.getRequestResponseTracker().startRequest();
         send(preparePayload(reqInvocations, extraJson));
-
     }
 
     private JsonObject preparePayload(final JsonArray reqInvocations,
@@ -177,10 +192,6 @@ public class MessageSender {
             payload.put(ApplicationConstants.CSRF_TOKEN, csrfToken);
         }
         payload.put(ApplicationConstants.RPC_INVOCATIONS, reqInvocations);
-        payload.put(ApplicationConstants.SERVER_SYNC_ID,
-                registry.getMessageHandler().getLastSeenServerSyncId());
-        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
-                clientToServerMessageId++);
         if (extraJson != null) {
             for (String key : extraJson.keys()) {
                 JsonValue value = extraJson.get(key);
@@ -192,12 +203,34 @@ public class MessageSender {
 
     /**
      * Sends an asynchronous or synchronous UIDL request to the server using the
-     * given URI.
+     * given URI. Adds message to message queue and postpones sending if queue
+     * not empty.
      *
      * @param payload
      *            The contents of the request to send
      */
     public void send(final JsonObject payload) {
+        if (!messageQueue.isEmpty()) {
+            messageQueue.add(payload);
+            return;
+        }
+        messageQueue.add(payload);
+        sendPayload(payload);
+    }
+
+    /**
+     * Sends an asynchronous or synchronous UIDL request to the server using the
+     * given URI.
+     *
+     * @param payload
+     *            The contents of the request to send
+     */
+    private void sendPayload(final JsonObject payload) {
+        payload.put(ApplicationConstants.SERVER_SYNC_ID,
+                registry.getMessageHandler().getLastSeenServerSyncId());
+        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
+                clientToServerMessageId++);
+
         if (push != null && push.isBidirectional()) {
             // When using bidirectional transport, the payload is not resent
             // to the server during reconnection attempts.
@@ -211,6 +244,31 @@ public class MessageSender {
         } else {
             Console.debug("send XHR");
             registry.getXhrConnection().send(payload);
+
+            resetTimer();
+            // resend last payload if response hasn't come in.
+            resendMessageTimer = new Timer() {
+                @Override
+                public void run() {
+                    resendMessageTimer
+                            .schedule(registry.getApplicationConfiguration()
+                                    .getMaxMessageSuspendTimeout() + 500);
+                    if (!registry.getRequestResponseTracker()
+                            .hasActiveRequest()) {
+                        registry.getRequestResponseTracker().startRequest();
+                    }
+                    registry.getXhrConnection().send(payload);
+                }
+            };
+            resendMessageTimer.schedule(registry.getApplicationConfiguration()
+                    .getMaxMessageSuspendTimeout() + 500);
+        }
+    }
+
+    private void resetTimer() {
+        if (resendMessageTimer != null) {
+            resendMessageTimer.cancel();
+            resendMessageTimer = null;
         }
     }
 
@@ -289,6 +347,8 @@ public class MessageSender {
      */
     public void resynchronize() {
         if (requestResynchronize()) {
+            messageQueue.clear();
+            resetTimer();
             sendInvocationsToServer();
         }
     }
@@ -311,12 +371,26 @@ public class MessageSender {
                             ApplicationConstants.CLIENT_TO_SERVER_ID) < nextExpectedId) {
                 pushPendingMessage = null;
             }
+            if (!messageQueue.isEmpty()) {
+                synchronized (messageQueue) {
+                    // If queued message is the expected one. remove from queue
+                    // and sen next message if any.
+                    if (messageQueue.get(0)
+                            .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID)
+                            + 1 == nextExpectedId) {
+                        resetTimer();
+                        messageQueue.remove(0);
+                    }
+                }
+            }
             return;
         }
         if (force) {
             Console.debug(
                     "Forced update of clientId to " + clientToServerMessageId);
             clientToServerMessageId = nextExpectedId;
+            messageQueue.clear();
+            resetTimer();
             return;
         }
 
@@ -337,6 +411,7 @@ public class MessageSender {
         } else {
             // Server has not yet seen all our messages
             // Do nothing as they will arrive eventually
+            resetTimer();
         }
     }
 
@@ -371,5 +446,9 @@ public class MessageSender {
 
     ResynchronizationState getResynchronizationState() {
         return resynchronizationState;
+    }
+
+    public boolean hasQueuedMessages() {
+        return !messageQueue.isEmpty();
     }
 }
