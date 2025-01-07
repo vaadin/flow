@@ -545,8 +545,7 @@ public class PushHandler {
      *            The atmosphere resource to send refresh to
      *
      */
-    private static void sendRefreshAndDisconnect(AtmosphereResource resource)
-            throws IOException {
+    private static void sendRefreshAndDisconnect(AtmosphereResource resource) {
         sendNotificationAndDisconnect(resource, VaadinService
                 .createCriticalNotificationJSON(null, null, null, null));
     }

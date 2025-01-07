@@ -105,12 +105,11 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             }
         }
 
-        readBuildInfo(initParameters, vaadinConfig.getVaadinContext());
+        readBuildInfo(initParameters);
         return initParameters;
     }
 
-    private void readBuildInfo(Properties initParameters,
-            VaadinContext context) {
+    private void readBuildInfo(Properties initParameters) {
         String json = getTokenFileContent(initParameters::getProperty);
         // Read the json and set the appropriate system properties if not
         // already set.

@@ -226,7 +226,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void applyThemeVariant(Document indexDocument,
-            VaadinContext context) throws IOException {
+            VaadinContext context) {
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {

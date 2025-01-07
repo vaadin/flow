@@ -36,7 +36,6 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.Theme;
 
@@ -72,8 +71,6 @@ public class AppShellRegistry implements Serializable {
 
     private Class<? extends AppShellConfigurator> appShellClass;
 
-    private final Lookup lookup;
-
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
      * servlet context.
@@ -92,8 +89,7 @@ public class AppShellRegistry implements Serializable {
         }
     }
 
-    private AppShellRegistry(VaadinContext context) {
-        this.lookup = context.getAttribute(Lookup.class);
+    private AppShellRegistry() {
     }
 
     /**
@@ -109,8 +105,7 @@ public class AppShellRegistry implements Serializable {
             AppShellRegistryWrapper attribute = context
                     .getAttribute(AppShellRegistryWrapper.class);
             if (attribute == null) {
-                attribute = new AppShellRegistryWrapper(
-                        new AppShellRegistry(context));
+                attribute = new AppShellRegistryWrapper(new AppShellRegistry());
                 context.setAttribute(attribute);
             }
             return attribute.registry;
