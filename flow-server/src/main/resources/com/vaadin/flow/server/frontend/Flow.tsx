@@ -14,8 +14,6 @@
  * the License.
  */
 /// <reference lib="es2018" />
-import { nanoid } from 'nanoid';
-import type { ReactAdapterElement } from 'Frontend/generated/flow/ReactAdapter.js';
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import React, {
   useCallback,
@@ -174,6 +172,8 @@ const prevent = () => postpone;
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
+type ReactAdapterElement = HTMLElement;
+
 type PortalEntry = {
   readonly children: ReactNode,
   readonly domNode: ReactAdapterElement,
@@ -320,7 +320,7 @@ function Flow() {
   const addPortalEventHandler = useCallback((event: CustomEvent<PortalEntry>) => {
     event.preventDefault();
 
-    const key = nanoid();
+    const key = Math.random().toString(36).slice(2);
     dispatchPortalAction(
       addFlowPortal(
         <FlowPortal
