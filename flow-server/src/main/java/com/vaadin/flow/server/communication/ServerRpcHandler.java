@@ -131,9 +131,9 @@ public class ServerRpcHandler implements Serializable {
                 clientToServerMessageId = (int) json
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
             } else {
-                if(!isUnloadBeaconRequest()) {
-                    getLogger().warn(
-                            "Server message without client id received");
+                if (!isUnloadBeaconRequest()) {
+                    getLogger()
+                            .warn("Server message without client id received");
                 }
                 clientToServerMessageId = -1;
             }

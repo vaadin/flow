@@ -231,6 +231,12 @@ public class MessageSender {
         payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 clientToServerMessageId++);
 
+        if (!registry.getRequestResponseTracker().hasActiveRequest()) {
+            // Direct calls to send from outside probably have not started
+            // request.
+            registry.getRequestResponseTracker().startRequest();
+        }
+
         if (push != null && push.isBidirectional()) {
             // When using bidirectional transport, the payload is not resent
             // to the server during reconnection attempts.
