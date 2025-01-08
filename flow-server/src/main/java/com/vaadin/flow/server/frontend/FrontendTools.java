@@ -70,7 +70,7 @@ public class FrontendTools {
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "10.9.0";
+    public static final String DEFAULT_NPM_VERSION = "10.9.2";
 
     public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
