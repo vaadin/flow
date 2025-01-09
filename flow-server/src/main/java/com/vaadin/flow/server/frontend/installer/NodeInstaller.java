@@ -67,6 +67,7 @@ public class NodeInstaller {
     private static final int MAX_DOWNLOAD_ATTEMPS = 5;
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
+    public static final String ACCEPT_MISSING_SHA = "vaadin.acceptMissingSHA";
 
     private final Object lock = new Object();
 
@@ -543,10 +544,10 @@ public class NodeInstaller {
                     try {
                         Thread.sleep(DOWNLOAD_ATTEMPT_DELAY * 1000);
                     } catch (InterruptedException e1) {
-                        // NO-OP
+                        Thread.currentThread().interrupt();
                     }
                 } catch (VerificationException ve) {
-                    getLogger().info("SHA256 verification failed.");
+                    getLogger().warn("SHA256 verification failed.");
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
                         removeArchiveFile(destination);
                         throw new DownloadException(
@@ -575,7 +576,7 @@ public class NodeInstaller {
                 return;
             }
 
-            File shaSums = new File(installDirectory, SHA_SUMS_FILE);
+            File shaSums = new File(installDirectory, "node-" + SHA_SUMS_FILE);
 
             getLogger().debug("Downloading {} to {}", shaSumsURL, shaSums);
 
@@ -583,12 +584,18 @@ public class NodeInstaller {
                 fileDownloader.download(shaSumsURL, shaSums, userName, password,
                         null);
             } catch (DownloadException e) {
-                if (System.getProperties().containsKey("acceptMissingSHA")) {
-                    getLogger().info(
-                            "Could not verify SHA256 sum of downloaded node in {}",
+                if (System.getProperties()
+                        .containsKey("vaadin.acceptMissingSHA")
+                        && Boolean.parseBoolean(System
+                                .getProperty("vaadin.acceptMissingSHA"))) {
+                    getLogger().warn(
+                            "Could not verify SHA256 sum of downloaded node in {}. Accepting missing sha verification as per set system property.",
                             archive);
                     return;
                 } else {
+                    getLogger().info(
+                            "Download failed. If download failure of {} persists, use system property '{}' to skip verification or download node manually.",
+                            SHA_SUMS_FILE, ACCEPT_MISSING_SHA);
                     throw e;
                 }
             }
@@ -596,16 +603,18 @@ public class NodeInstaller {
             String archiveSHA256 = MessageDigestUtil
                     .sha256Hex(Files.readAllBytes(archive.toPath()));
 
-            String sha256sums = Files.readString(shaSums.toPath())
-                    .replaceAll("\\r\\n", "\n");
-            String archiveTargetSHA256 = Arrays.stream(sha256sums.split("\n"))
-                    .filter(sum -> sum.endsWith(archive.getName()))
-                    .map(sum -> sum.substring(0,
-                            sum.length() - archive.getName().length()))
+            List<String> sha256sums = Files.readAllLines(shaSums.toPath());
+            String archiveTargetSHA256 = sha256sums.stream()
+                    .filter(sum -> sum
+                            .endsWith(archive.getName()))
+                    .map(sum -> sum
+                            .substring(0,
+                                    sum.length() - archive.getName().length())
+                            .trim())
                     .findFirst().orElse("-1");
 
-            if (!archiveSHA256.equals(archiveTargetSHA256.trim())) {
-                getLogger().info("Expected SHA256 [{}], got [{}]",
+            if (!archiveSHA256.equals(archiveTargetSHA256)) {
+                getLogger().error("Expected SHA256 [{}], got [{}]",
                         archiveTargetSHA256, archiveSHA256);
                 throw new VerificationException(
                         "SHA256 sums did not match for downloaded node");
