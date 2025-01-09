@@ -613,6 +613,8 @@ public class NodeInstaller {
                             .trim())
                     .findFirst().orElse("-1");
 
+            shaSums.delete();
+
             if (!archiveSHA256.equals(archiveTargetSHA256)) {
                 getLogger().error("Expected SHA256 [{}], got [{}]",
                         archiveTargetSHA256, archiveSHA256);
