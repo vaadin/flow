@@ -34,6 +34,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
@@ -54,6 +55,8 @@ public class NodeInstaller {
     public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
 
     public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
+
+    public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
 
     private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
             "\\\\") + "\\node.exe";
@@ -524,6 +527,8 @@ public class NodeInstaller {
                 try {
                     fileDownloader.download(downloadUrl, destination, userName,
                             password, null);
+
+                    verifyArchive(destination);
                     return;
                 } catch (DownloadException e) {
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
@@ -538,10 +543,76 @@ public class NodeInstaller {
                     try {
                         Thread.sleep(DOWNLOAD_ATTEMPT_DELAY * 1000);
                     } catch (InterruptedException e1) {
+                        // NO-OP
+                    }
+                } catch (VerificationException ve) {
+                    getLogger().info("SHA256 verification failed.");
+                    if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
+                        removeArchiveFile(destination);
+                        throw new DownloadException(
+                                "Failed to download node matching SHA256.");
                     }
                 }
-
             }
+        } else {
+            try {
+                verifyArchive(destination);
+            } catch (VerificationException de) {
+                removeArchiveFile(destination);
+                downloadFileIfMissing(downloadUrl, destination, userName,
+                        password);
+            }
+        }
+    }
+
+    private void verifyArchive(File archive)
+            throws DownloadException, VerificationException {
+        try {
+            URI shaSumsURL = nodeDownloadRoot
+                    .resolve(nodeVersion + "/" + SHA_SUMS_FILE);
+            if ("file".equalsIgnoreCase(shaSumsURL.getScheme())) {
+                // The file is local so it can't be expected to have a SHA file
+                return;
+            }
+
+            File shaSums = new File(installDirectory, SHA_SUMS_FILE);
+
+            getLogger().debug("Downloading {} to {}", shaSumsURL, shaSums);
+
+            try {
+                fileDownloader.download(shaSumsURL, shaSums, userName, password,
+                        null);
+            } catch (DownloadException e) {
+                if (System.getProperties().containsKey("acceptMissingSHA")) {
+                    getLogger().info(
+                            "Could not verify SHA256 sum of downloaded node in {}",
+                            archive);
+                    return;
+                } else {
+                    throw e;
+                }
+            }
+
+            String archiveSHA256 = MessageDigestUtil
+                    .sha256Hex(Files.readAllBytes(archive.toPath()));
+
+            String sha256sums = Files.readString(shaSums.toPath())
+                    .replaceAll("\\r\\n", "\n");
+            String archiveTargetSHA256 = Arrays.stream(sha256sums.split("\n"))
+                    .filter(sum -> sum.endsWith(archive.getName()))
+                    .map(sum -> sum.substring(0,
+                            sum.length() - archive.getName().length()))
+                    .findFirst().orElse("-1");
+
+            if (!archiveSHA256.equals(archiveTargetSHA256.trim())) {
+                getLogger().info("Expected SHA256 [{}], got [{}]",
+                        archiveTargetSHA256, archiveSHA256);
+                throw new VerificationException(
+                        "SHA256 sums did not match for downloaded node");
+            }
+        } catch (IOException e) {
+            throw new VerificationException("Failed to validate archive hash.",
+                    e);
         }
     }
 
