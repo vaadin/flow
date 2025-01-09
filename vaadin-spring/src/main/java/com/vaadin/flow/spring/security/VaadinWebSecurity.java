@@ -55,6 +55,7 @@ import org.springframework.security.web.access.RequestMatcherDelegatingAccessDen
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -577,7 +578,10 @@ public abstract class VaadinWebSecurity {
      *         {@literal null} if a {@code ClientRegistrationRepository} bean is
      *         not registered in the application context.
      */
-    protected OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler(
+    // Using base interface as return type to avoid potential
+    // ClassNotFoundException when Spring Boot introspect configuration class
+    // during startup, if spring-security-oauth2-client is not on classpath
+    protected LogoutSuccessHandler oidcLogoutSuccessHandler(
             String postLogoutRedirectUri) {
         var clientRegistrationRepository = applicationContext
                 .getBeanProvider(ClientRegistrationRepository.class)
