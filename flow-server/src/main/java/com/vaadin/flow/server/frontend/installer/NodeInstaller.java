@@ -265,8 +265,6 @@ public class NodeInstaller {
                             + "Verify connection and proxy settings or follow the https://nodejs.org/en/download/ guide to install Node.js globally.",
                     e);
         } catch (ArchiveExtractionException e) {
-            // AArchive is broken. Remove to download again.
-            data.getArchive().delete();
             throw new InstallationException(
                     "Could not extract the Node archive", e);
         }
@@ -495,21 +493,26 @@ public class NodeInstaller {
                         "The archive file {} is corrupted and will be deleted. "
                                 + "Please run the application again.",
                         archive.getPath());
-                boolean deleted = archive.delete();
-                if (!deleted) {
-                    getLogger().error("Failed to remove archive file {}. "
-                            + "Please remove it manually and run the application.",
-                            archive.getPath());
-                }
+                removeArchiveFile(archive);
                 try {
                     FileUtils.deleteDirectory(destinationDirectory);
                 } catch (IOException ioe) {
                     getLogger().error("Failed to remove target directory '{}'",
                             destinationDirectory, ioe);
                 }
+            } else {
+                removeArchiveFile(archive);
             }
 
             throw e;
+        }
+    }
+
+    private static void removeArchiveFile(File archive) {
+        if (!archive.delete()) {
+            getLogger().error("Failed to remove archive file {}. "
+                    + "Please remove it manually and run the application.",
+                    archive.getPath());
         }
     }
 
@@ -524,6 +527,7 @@ public class NodeInstaller {
                     return;
                 } catch (DownloadException e) {
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
+                        removeArchiveFile(destination);
                         throw e;
                     }
 
