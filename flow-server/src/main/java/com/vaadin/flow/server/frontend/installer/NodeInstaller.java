@@ -265,6 +265,8 @@ public class NodeInstaller {
                             + "Verify connection and proxy settings or follow the https://nodejs.org/en/download/ guide to install Node.js globally.",
                     e);
         } catch (ArchiveExtractionException e) {
+            // AArchive is broken. Remove to download again.
+            data.getArchive().delete();
             throw new InstallationException(
                     "Could not extract the Node archive", e);
         }
