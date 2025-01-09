@@ -584,10 +584,7 @@ public class NodeInstaller {
                 fileDownloader.download(shaSumsURL, shaSums, userName, password,
                         null);
             } catch (DownloadException e) {
-                if (System.getProperties()
-                        .containsKey("vaadin.acceptMissingSHA")
-                        && Boolean.parseBoolean(System
-                                .getProperty("vaadin.acceptMissingSHA"))) {
+                if (Boolean.getBoolean(ACCEPT_MISSING_SHA)) {
                     getLogger().warn(
                             "Could not verify SHA256 sum of downloaded node in {}. Accepting missing sha verification as per set system property.",
                             archive);
