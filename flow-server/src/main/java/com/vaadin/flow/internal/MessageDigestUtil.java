@@ -76,10 +76,27 @@ public class MessageDigestUtil {
         return getSha256(salt).digest(string.getBytes(charset));
     }
 
+    /**
+     * Calculates the SHA-256 hash of the given byte array.
+     *
+     * @param content
+     *            the byte array to hash
+     *
+     * @return sha256 hash string
+     */
     public static String sha256Hex(byte[] content) {
         return sha256Hex(content, null);
     }
 
+    /**
+     * Calculates the SHA-256 hash of the given byte array with the given salt.
+     *
+     * @param content
+     *            the byte array to hash
+     * @param salt
+     *            salt to be added to the calculation
+     * @return sha256 hash string
+     */
     public static String sha256Hex(byte[] content, byte[] salt) {
         byte[] digest = getSha256(salt).digest(content);
         final StringBuilder hexString = new StringBuilder();

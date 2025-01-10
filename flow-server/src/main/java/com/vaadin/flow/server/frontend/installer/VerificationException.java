@@ -16,9 +16,7 @@
 package com.vaadin.flow.server.frontend.installer;
 
 /**
- * Exception indicating a failure during file download.
- * <p>
- * Derived from eirslett/frontend-maven-plugin
+ * Exception indicating a failure during downloaded archive verification.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

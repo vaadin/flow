@@ -67,7 +67,7 @@ public class NodeInstaller {
     private static final int MAX_DOWNLOAD_ATTEMPS = 5;
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
-    public static final String ACCEPT_MISSING_SHA = "vaadin.acceptMissingSHA";
+    public static final String ACCEPT_MISSING_SHA = "vaadin.node.download.acceptMissingSHA";
 
     private final Object lock = new Object();
 
@@ -547,7 +547,8 @@ public class NodeInstaller {
                         Thread.currentThread().interrupt();
                     }
                 } catch (VerificationException ve) {
-                    getLogger().warn("SHA256 verification failed.");
+                    getLogger().warn(
+                            "SHA256 verification of downloaded node archive failed.");
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
                         removeArchiveFile(destination);
                         throw new DownloadException(
@@ -586,12 +587,12 @@ public class NodeInstaller {
             } catch (DownloadException e) {
                 if (Boolean.getBoolean(ACCEPT_MISSING_SHA)) {
                     getLogger().warn(
-                            "Could not verify SHA256 sum of downloaded node in {}. Accepting missing sha verification as per set system property.",
-                            archive);
+                            "Could not verify SHA256 sum of downloaded node in {}. Accepting missing checksum verification as set in '{}' system property.",
+                            archive, ACCEPT_MISSING_SHA);
                     return;
                 } else {
                     getLogger().info(
-                            "Download failed. If download failure of {} persists, use system property '{}' to skip verification or download node manually.",
+                            "Download of {} failed. If failure persists, use system property '{}' to skip verification or download node manually.",
                             SHA_SUMS_FILE, ACCEPT_MISSING_SHA);
                     throw e;
                 }
@@ -613,7 +614,8 @@ public class NodeInstaller {
             shaSums.delete();
 
             if (!archiveSHA256.equals(archiveTargetSHA256)) {
-                getLogger().error("Expected SHA256 [{}], got [{}]",
+                getLogger().error(
+                        "Expected SHA256 [{}] for downloaded node archive, got [{}]",
                         archiveTargetSHA256, archiveSHA256);
                 throw new VerificationException(
                         "SHA256 sums did not match for downloaded node");
