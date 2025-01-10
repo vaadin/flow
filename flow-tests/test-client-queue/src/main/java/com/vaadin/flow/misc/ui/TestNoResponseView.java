@@ -18,6 +18,7 @@ package com.vaadin.flow.misc.ui;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 @Route("no-response")
 public class TestNoResponseView extends Div {
@@ -30,7 +31,8 @@ public class TestNoResponseView extends Div {
 
     public TestNoResponseView() {
         NativeButton delayNext = new NativeButton("\"Delay\" next response",
-                event -> CustomUidlRequestHandler.emptyResponse = true);
+                event -> CustomUidlRequestHandler.emptyResponse
+                        .add(VaadinSession.getCurrent()));
         delayNext.setId(DELAY_NEXT_RESPONSE);
 
         NativeButton addElement = new NativeButton("Add element", event -> {

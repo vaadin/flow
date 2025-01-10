@@ -16,7 +16,9 @@
 package com.vaadin.flow.misc.ui;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -25,13 +27,13 @@ import com.vaadin.flow.server.communication.UidlRequestHandler;
 
 public class CustomUidlRequestHandler extends UidlRequestHandler {
 
-    public static boolean emptyResponse = false;
+    public static Set<VaadinSession> emptyResponse = new HashSet();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        if (emptyResponse) {
-            emptyResponse = false;
+        if (emptyResponse.contains(session)) {
+            emptyResponse.remove(session);
             commitEmptyResponse(response);
             return true;
         }
@@ -44,8 +46,8 @@ public class CustomUidlRequestHandler extends UidlRequestHandler {
             VaadinResponse response, String requestBody)
             throws IOException, UnsupportedOperationException {
 
-        if (emptyResponse) {
-            emptyResponse = false;
+        if (emptyResponse.contains(session)) {
+            emptyResponse.remove(session);
             return Optional.of(() -> commitEmptyResponse(response));
         }
         return super.synchronizedHandleRequest(session, request, response,
