@@ -210,7 +210,7 @@ public class MessageSender {
      *            The contents of the request to send
      */
     public void send(final JsonObject payload) {
-        if (!messageQueue.isEmpty()) {
+        if (hasQueuedMessages()) {
             messageQueue.add(payload);
             return;
         }
@@ -238,6 +238,7 @@ public class MessageSender {
         }
 
         if (push != null && push.isBidirectional()) {
+            messageQueue.clear();
             // When using bidirectional transport, the payload is not resent
             // to the server during reconnection attempts.
             // Keep a copy of the message, so that it could be resent to the
@@ -377,7 +378,7 @@ public class MessageSender {
                             ApplicationConstants.CLIENT_TO_SERVER_ID) < nextExpectedId) {
                 pushPendingMessage = null;
             }
-            if (!messageQueue.isEmpty()) {
+            if (hasQueuedMessages()) {
                 synchronized (messageQueue) {
                     // If queued message is the expected one. remove from queue
                     // and sen next message if any.
