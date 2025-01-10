@@ -228,8 +228,11 @@ public class MessageSender {
     private void sendPayload(final JsonObject payload) {
         payload.put(ApplicationConstants.SERVER_SYNC_ID,
                 registry.getMessageHandler().getLastSeenServerSyncId());
-        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
-                clientToServerMessageId++);
+        if (!payload.hasKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
+            // We are resending the message so we should not up the clientId
+            payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
+                    clientToServerMessageId++);
+        }
 
         if (!registry.getRequestResponseTracker().hasActiveRequest()) {
             // Direct calls to send from outside probably have not started
@@ -238,7 +241,6 @@ public class MessageSender {
         }
 
         if (push != null && push.isBidirectional()) {
-            messageQueue.clear();
             // When using bidirectional transport, the payload is not resent
             // to the server during reconnection attempts.
             // Keep a copy of the message, so that it could be resent to the
