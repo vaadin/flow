@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -267,6 +268,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
 
         npmInstallCommand.add("--ignore-scripts");
+        if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
+            npmInstallCommand.add(" --legacy-peer-deps");
+        }
 
         if (options.isCiBuild()) {
             if (options.isEnablePnpm() || options.isEnableBun()) {
