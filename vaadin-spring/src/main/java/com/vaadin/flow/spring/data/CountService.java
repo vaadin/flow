@@ -1,5 +1,6 @@
 package com.vaadin.flow.spring.data;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.spring.data.filter.Filter;
@@ -10,13 +11,21 @@ import com.vaadin.flow.spring.data.filter.Filter;
 public interface CountService {
 
     /**
+     * Counts the number of items.
+     *
+     * @return
+     *           the number of items in the service
+     */
+    public long count();
+    
+    /**
      * Counts the number of items that match the given filter.
      *
      * @param filter
-     *            the filter, or {@code null} to use no filter
+     *            the filter, never {@code null}
      * @return
      *           the number of items in the service that match the filter
      */
-    public long count(@Nullable Filter filter);
+    public long count(Filter filter);
 
 }
