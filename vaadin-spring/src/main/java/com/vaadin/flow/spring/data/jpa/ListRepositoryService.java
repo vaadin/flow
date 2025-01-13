@@ -75,13 +75,15 @@ public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaS
         return getRepository().existsById(id);
     }
 
+    /**
+     * Counts the number of entities that match the given filter.
+     *
+     * @param filter
+     *            the filter, or {@code null} to use no filter
+     * @return
+     */
     @Override
-    public long count() {
-        return getRepository().count();
-    }
-
-    @Override
-    public long count(Filter filter) {
+    public long count(@Nullable Filter filter) {
         return getRepository().count(toSpec(filter));
     }
 
