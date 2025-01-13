@@ -748,7 +748,7 @@ function stubServerRemoteFunction(
         handlers.leaveNavigation();
       }
     }
-    req.respond(200, { 'content-type': 'application/json' }, 'for(;;);[{}]');
+    req.respond(200, {'content-type': 'application/json'}, 'for(;;);[{"syncId":' + (payload["syncId"] + 1) + ',"clientId":' + (payload["clientId"] + 1) + '}]');
   });
 }
 
