@@ -9,7 +9,7 @@ import com.vaadin.flow.spring.data.filter.Filter;
 
 /**
  * A service that can list the given type of object.
- * 
+ *
  * @param <T>
  *            the type of object to list
  */
