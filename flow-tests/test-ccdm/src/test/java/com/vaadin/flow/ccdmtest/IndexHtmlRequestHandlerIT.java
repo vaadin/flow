@@ -53,7 +53,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
                 By.cssSelector("meta[name=viewport]"));
         Assert.assertNotNull(metaViewPort);
         Assert.assertEquals(
-                "width=device-width, height=device-height, initial-scale=1.0, viewport-fit: cover",
+                "width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover",
                 metaViewPort.getAttribute("content"));
     }
 
