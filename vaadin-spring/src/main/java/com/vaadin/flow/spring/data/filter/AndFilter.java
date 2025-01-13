@@ -9,7 +9,25 @@ import java.util.List;
  * filters and verifying that all of them pass.
  */
 public class AndFilter extends Filter {
+
     private List<Filter> children;
+
+    /**
+     * Create an empty filter.
+     */
+    public AndFilter() {
+        // Empty constructor is needed for serialization
+    }
+
+    /**
+     * Create a filter with the given children.
+     * 
+     * @param children
+     *            the children of the filter
+     */
+    public AndFilter(Filter... children) {
+        setChildren(List.of(children));
+    }
 
     public List<Filter> getChildren() {
         return children;
@@ -21,7 +39,7 @@ public class AndFilter extends Filter {
 
     @Override
     public String toString() {
-        return "AndFilter [children=" + children + "]";
+        return getClass().getSimpleName()+" [children=" + children + "]";
     }
 
 }
