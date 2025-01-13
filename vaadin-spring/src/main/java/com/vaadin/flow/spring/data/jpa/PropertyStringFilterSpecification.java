@@ -15,10 +15,20 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.vaadin.flow.spring.data.filter.PropertyStringFilter;
 
+/**
+ * A specification that can be used to filter entities based on a
+ * {@link PropertyStringFilter}.
+ */
 public class PropertyStringFilterSpecification<T> implements Specification<T> {
 
     private final PropertyStringFilter filter;
 
+    /**
+     * Creates a new specification based on the given filter.
+     *
+     * @param filter
+     *            the filter to use
+     */
     public PropertyStringFilterSpecification(PropertyStringFilter filter) {
         this.filter = filter;
     }

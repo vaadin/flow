@@ -33,10 +33,10 @@ public class PropertyStringFilter extends Filter {
 
     /**
      * Create a filter with the given property, matcher and filter value.
-     * 
+     *
      * @param propertyId
-     *            the property id, or a nested property path where each
-     *            property is separated by a dot
+     *            the property id, or a nested property path where each property
+     *            is separated by a dot
      * @param matcher
      *            the matcher to use when comparing the property value to the
      *            filter value

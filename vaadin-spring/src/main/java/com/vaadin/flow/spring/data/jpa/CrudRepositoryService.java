@@ -11,6 +11,14 @@ import com.vaadin.flow.spring.data.CrudService;
 
 /**
  * A service that delegates crud operations to a JPA repository.
+ *
+ * @param <T>
+ *            the type of object to manage
+ * @param <ID>
+ *            the type of the object's identifier
+ * @param <R>
+ *            the type of the JPA repository
+ *
  */
 public class CrudRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaSpecificationExecutor<T>>
         extends ListRepositoryService<T, ID, R> implements CrudService<T, ID> {

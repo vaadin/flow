@@ -21,7 +21,7 @@ public class OrFilter extends Filter {
 
     /**
      * Create a filter with the given children.
-     * 
+     *
      * @param children
      *            the children of the filter
      */

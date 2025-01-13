@@ -21,7 +21,7 @@ public class AndFilter extends Filter {
 
     /**
      * Create a filter with the given children.
-     * 
+     *
      * @param children
      *            the children of the filter
      */
@@ -39,7 +39,7 @@ public class AndFilter extends Filter {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName()+" [children=" + children + "]";
+        return getClass().getSimpleName() + " [children=" + children + "]";
     }
 
 }

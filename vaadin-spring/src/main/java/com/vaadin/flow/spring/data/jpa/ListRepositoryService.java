@@ -18,6 +18,13 @@ import com.vaadin.flow.spring.data.filter.Filter;
 
 /**
  * A service that delegates list operations to a JPA repository.
+ *
+ * @param <T>
+ *            the type of object to list
+ * @param <ID>
+ *            the type of the object's identifier
+ * @param <R>
+ *            the type of the JPA repository
  */
 public class ListRepositoryService<T, ID, R extends CrudRepository<T, ID> & JpaSpecificationExecutor<T>>
         implements ListService<T>, GetService<T, ID>, CountService {
