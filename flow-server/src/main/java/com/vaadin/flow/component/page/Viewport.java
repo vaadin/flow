@@ -25,7 +25,8 @@ import java.lang.annotation.Target;
 /**
  * Defines a viewport tag that will be added to the HTML of the host page of a
  * UI class. If no viewport tag has been defined, a default of
- * <code>width=device-width, initial-scale=1.0, viewport-fit=cover</code> is used.
+ * <code>width=device-width, initial-scale=1.0, viewport-fit=cover</code> is
+ * used.
  *
  * @author Vaadin Ltd
  * @since 1.0
