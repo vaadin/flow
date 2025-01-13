@@ -130,9 +130,6 @@ public class MessageSender {
             sendPayload(payload);
             return;
         } else if (hasQueuedMessages() && resendMessageTimer == null) {
-            if (!registry.getRequestResponseTracker().hasActiveRequest()) {
-                registry.getRequestResponseTracker().startRequest();
-            }
             sendPayload(messageQueue.get(0));
             return;
         }
@@ -228,8 +225,9 @@ public class MessageSender {
     private void sendPayload(final JsonObject payload) {
         payload.put(ApplicationConstants.SERVER_SYNC_ID,
                 registry.getMessageHandler().getLastSeenServerSyncId());
+        // clientID should only be set and updated if payload doesn't contain
+        // clientID. If one exists we are probably trying to resend.
         if (!payload.hasKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
-            // We are resending the message so we should not up the clientId
             payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                     clientToServerMessageId++);
         }
@@ -381,15 +379,13 @@ public class MessageSender {
                 pushPendingMessage = null;
             }
             if (hasQueuedMessages()) {
-                synchronized (messageQueue) {
-                    // If queued message is the expected one. remove from queue
-                    // and sen next message if any.
-                    if (messageQueue.get(0)
-                            .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID)
-                            + 1 == nextExpectedId) {
-                        resetTimer();
-                        messageQueue.remove(0);
-                    }
+                // If queued message is the expected one. remove from queue
+                // and send next message if any.
+                if (messageQueue.get(0)
+                        .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID)
+                        + 1 == nextExpectedId) {
+                    resetTimer();
+                    messageQueue.remove(0);
                 }
             }
             return;
