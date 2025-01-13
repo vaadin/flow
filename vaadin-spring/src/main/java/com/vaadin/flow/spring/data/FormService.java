@@ -1,9 +1,13 @@
 package com.vaadin.flow.spring.data;
 
-import org.jspecify.annotations.Nullable;
-
 /**
- * A service that can create, update, and delete a given type of object.
+ * A service that can update and delete a given type of object.
+ * 
+ * @param <T>
+ *            the type of object to manage
+ * @param <ID>
+ *            the type of the object's identifier
+ * 
  */
 public interface FormService<T, ID> {
 

@@ -5,12 +5,12 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.spring.data.filter.Filter;
 
 /**
- * A service that can count the given type of objects with a given filter.
+ * A service that can count the number of items with a given filter.
  */
 public interface CountService {
 
     /**
-     * Counts the number of entities that match the given filter.
+     * Counts the number of items that match the given filter.
      *
      * @param filter
      *            the filter, or {@code null} to use no filter
