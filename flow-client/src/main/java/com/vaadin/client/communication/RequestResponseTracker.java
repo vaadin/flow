@@ -112,7 +112,8 @@ public class RequestResponseTracker {
         if ((registry.getUILifecycle().isRunning()
                 && registry.getServerRpcQueue().isFlushPending())
                 || registry.getMessageSender()
-                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER) {
+                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER
+                || registry.getMessageSender().hasQueuedMessages()) {
             // Send the pending RPCs immediately.
             // This might be an unnecessary optimization as ServerRpcQueue has a
             // finally scheduled command which trigger the send if we do not do

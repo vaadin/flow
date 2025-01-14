@@ -138,6 +138,15 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                 .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME));
         knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(
                 new File(TaskGenerateReactFiles.FLOW_FLOW_TSX).toPath())));
+        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(
+                new File(TaskGenerateReactFiles.JSX_TRANSFORM_DEV_RUNTIME)
+                        .toPath())));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(new File(TaskGenerateReactFiles.JSX_TRANSFORM_RUNTIME)
+                        .toPath())));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(new File(TaskGenerateReactFiles.JSX_TRANSFORM_INDEX)
+                        .toPath())));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TSX)));
         knownFiles.add(normalizePath(

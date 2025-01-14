@@ -95,6 +95,10 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/web-components/issues/5340", true,
             "com.vaadin.flow.component.card.Card");
 
+    public static final Feature REACT19 = new Feature(
+            "React 19 (default in Vaadin 25)", "react19",
+            "https://react.dev/blog/2024/12/05/react-19", true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -123,6 +127,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COPILOT_EXPERIMENTAL));
         features.add(new Feature(DASHBOARD_COMPONENT));
         features.add(new Feature(CARD_COMPONENT));
+        features.add(new Feature(REACT19));
         loadProperties();
     }
 
