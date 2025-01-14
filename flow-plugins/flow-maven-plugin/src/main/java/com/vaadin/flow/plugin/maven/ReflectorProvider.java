@@ -7,7 +7,7 @@ import org.apache.maven.project.MavenProject;
 /**
  * "Builder" for {@link Reflector}
  */
-public interface ReflectorController {
+public interface ReflectorProvider {
     /**
      * Reflector Identifier used for e.g. performing cache lookups.
      */

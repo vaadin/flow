@@ -29,7 +29,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.model.Build;
-import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
@@ -177,7 +176,7 @@ public class ReflectorTest {
         // .addURL(new URL("file:///some/flat/maven-repo/maven-api.jar"));
         pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
 
-        Reflector execReflector = new DefaultReflectorController(
+        Reflector execReflector = new DefaultReflectorProvider(
                 new FastReflectorIsolationConfig(),
                 new SystemStreamLog())
                 .of(project, mojoExecution);

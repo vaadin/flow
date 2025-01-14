@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class DefaultReflectorController implements ReflectorController {
+public class DefaultReflectorProvider implements ReflectorProvider {
     protected static final Set<String> MAVEN_CLASSLOADER_RESERVED_GROUP_IDS = Set.of(
             "org.apache.maven",
             "org.codehaus.plexus",
@@ -50,7 +50,7 @@ public class DefaultReflectorController implements ReflectorController {
     protected final FastReflectorIsolationConfig fastReflectorIsolationConfig;
     protected final Log log;
 
-    public DefaultReflectorController(final FastReflectorIsolationConfig fastReflectorIsolationConfig, final Log log) {
+    public DefaultReflectorProvider(final FastReflectorIsolationConfig fastReflectorIsolationConfig, final Log log) {
         this.fastReflectorIsolationConfig =
                 Objects.requireNonNullElseGet(fastReflectorIsolationConfig, FastReflectorIsolationConfig::new);
         this.log = log;

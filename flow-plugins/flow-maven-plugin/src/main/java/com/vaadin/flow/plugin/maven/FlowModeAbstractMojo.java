@@ -324,8 +324,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     protected ClassFinder classFinder;
 
-    protected ReflectorController getNewReflectorController() {
-        return new DefaultReflectorController(fastReflectorIsolation, getLog());
+    protected ReflectorProvider getNewReflectorController() {
+        return new DefaultReflectorProvider(fastReflectorIsolation, getLog());
     }
 
     /**
@@ -707,10 +707,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 });
     }
 
-    protected Reflector getOrCreateReflector(final ReflectorController reflectorController) {
+    protected Reflector getOrCreateReflector(final ReflectorProvider reflectorProvider) {
         final Map<String, Object> pluginContext = getPluginContext();
         final String pluginKey = mojoExecution.getPlugin().getKey();
-        final String reflectorKey = reflectorController.getReflectorClassIdentifier() + "-" + pluginKey + "-"
+        final String reflectorKey = reflectorProvider.getReflectorClassIdentifier() + "-" + pluginKey + "-"
                 + mojoExecution.getLifecyclePhase();
         if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
             getLog().debug("Using cached Reflector for plugin " + pluginKey
@@ -718,7 +718,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             try {
                 final long start = System.nanoTime();
 
-                final Reflector reused = reflectorController.adaptFrom(pluginContext.get(reflectorKey));
+                final Reflector reused = reflectorProvider.adaptFrom(pluginContext.get(reflectorKey));
 
                 getLog().info("Adapted from cached Reflector, took " + msSince(start) + "ms");
 
@@ -730,7 +730,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
         final long start = System.nanoTime();
 
-        final Reflector reflector = reflectorController.of(project, mojoExecution);
+        final Reflector reflector = reflectorProvider.of(project, mojoExecution);
         getLog().info("Created new Reflector[urlsOnIsolatedClassLoader="
                 + reflector.getIsolatedClassLoader().getURLs().length
                 + "x], took " + msSince(start) + "ms");
