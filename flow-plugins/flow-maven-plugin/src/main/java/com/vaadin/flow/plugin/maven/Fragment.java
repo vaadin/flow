@@ -23,7 +23,9 @@ import java.util.Set;
  *
  * @author Vaadin Ltd
  * @since 1.0.
+ * @deprecated Unused. Will be removed without replacement
  */
+@Deprecated(forRemoval = true)
 public class Fragment {
     protected String name;
     protected final Set<String> files = new HashSet<>();
