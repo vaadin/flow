@@ -691,11 +691,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     protected void applyFrontendIgnoreVersionChecks() {
-        Optional.ofNullable(this.frontendIgnoreVersionChecks)
-                .ifPresent(ignore -> {
-                    this.getLog().info("Set " + FrontendUtils.PARAM_IGNORE_VERSION_CHECKS + " to " + ignore);
-                    System.setProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, String.valueOf(ignore));
-                });
+        if(frontendIgnoreVersionChecks != null) {
+            this.getLog().info("Set "
+                    + FrontendUtils.PARAM_IGNORE_VERSION_CHECKS
+                    + " to "
+                    + frontendIgnoreVersionChecks);
+            System.setProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, String.valueOf(frontendIgnoreVersionChecks));
+        }
     }
 
     @SuppressWarnings("unchecked")
