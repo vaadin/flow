@@ -19,24 +19,24 @@ import java.util.stream.Stream;
 
 
 public class DefaultReflectorProvider implements ReflectorProvider {
-    protected static final Set<String> MAVEN_CLASSLOADER_RESERVED_GROUP_IDS = Set.of(
+    protected final Set<String> mavenClassloaderReservedGroupIds = new HashSet<>(Set.of(
             "org.apache.maven",
             "org.codehaus.plexus",
             "org.slf4j",
             "org.eclipse.sisu"
-    );
+    ));
 
-    private static final Set<String> MANDATORY_PLUGIN_DEPENDENCIES = Set.of(
+    protected final Set<String> mandatoryPluginDependencies = new HashSet<>(Set.of(
             "org.reflections:reflections:jar",
             "org.zeroturnaround:zt-exec:jar"
-    );
+    ));
 
-    protected static final Set<String> DEFAULT_PROJECT_ARTIFACT_SCOPES_INCLUSION = Set.of(
+    protected final Set<String> defaultProjectArtifactScopesInclusion = new HashSet<>(Set.of(
             Artifact.SCOPE_COMPILE,
             Artifact.SCOPE_RUNTIME,
             Artifact.SCOPE_SYSTEM,
             Artifact.SCOPE_PROVIDED
-    );
+    ));
 
     protected final Set<FastReflectorConfig.ArtifactSelector> fastDefaultExcludes = new HashSet<>(Set.of(
             new FastReflectorConfig.ArtifactSelector("com.vaadin.external*")
@@ -138,7 +138,7 @@ public class DefaultReflectorProvider implements ReflectorProvider {
             // Exclude project artifact that are also defined as mandatory
             // plugin dependencies. The version provided by the plugin will be
             // used to prevent failures during maven build.
-            MANDATORY_PLUGIN_DEPENDENCIES.stream()
+            mandatoryPluginDependencies.stream()
                     .map(projectDependencies::remove)
                     .filter(a -> log.isDebugEnabled())
                     .filter(Objects::nonNull)
@@ -202,13 +202,13 @@ public class DefaultReflectorProvider implements ReflectorProvider {
     protected boolean shouldIncludeArtifact(final Artifact artifact) {
         // Exclude all maven artifacts to prevent class loading
         // clash with maven.api class realm
-        return !MAVEN_CLASSLOADER_RESERVED_GROUP_IDS.contains(artifact.getGroupId());
+        return !mavenClassloaderReservedGroupIds.contains(artifact.getGroupId());
     }
 
     protected ArtifactWrapper shouldIncludeProjectArtifact(final Artifact artifact) {
         if (!(artifact.getFile() != null
                 && artifact.getArtifactHandler().isAddedToClasspath()
-                && DEFAULT_PROJECT_ARTIFACT_SCOPES_INCLUSION.contains(artifact.getScope()))) {
+                && defaultProjectArtifactScopesInclusion.contains(artifact.getScope()))) {
             logArtifactInclusionOrExclusion(artifact, false, "Vaadin default filter");
             return null;
         }
