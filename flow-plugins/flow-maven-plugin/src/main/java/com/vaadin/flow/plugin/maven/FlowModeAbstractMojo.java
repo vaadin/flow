@@ -15,14 +15,10 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import javax.inject.Inject;
-
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,23 +40,19 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.build.BuildContext;
 
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -707,6 +698,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 });
     }
 
+    @SuppressWarnings("unchecked")
     protected Reflector getOrCreateReflector(final ReflectorProvider reflectorProvider) {
         final Map<String, Object> pluginContext = getPluginContext();
         final String pluginKey = mojoExecution.getPlugin().getKey();
