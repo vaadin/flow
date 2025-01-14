@@ -55,8 +55,8 @@ public class DefaultReflector implements Reflector {
             classFinder = classFinderImplClass
                     .getConstructor(ClassLoader.class, URL[].class)
                     .newInstance(
-                            isolatedClassLoader,
-                            isolatedClassLoader.urlsToScan());
+                            getIsolatedClassLoader(),
+                            getIsolatedClassLoader().urlsToScan());
         }
     }
 
