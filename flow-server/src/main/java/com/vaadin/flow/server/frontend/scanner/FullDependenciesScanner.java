@@ -89,19 +89,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      * @param featureFlags
      *            available feature flags and their status
-     */
-    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
-        this(finder, AnnotationReader::getAnnotationsFor, featureFlags, true);
-    }
-
-    /**
-     * Creates a new scanner instance which discovers all dependencies in the
-     * classpath.
-     *
-     * @param finder
-     *            a class finder
-     * @param featureFlags
-     *            available feature flags and their status
      * @param reactEnabled
      *            true if react classes are enabled
      */

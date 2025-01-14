@@ -174,7 +174,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         return !getGeneratedFile().exists();
     }
 
-    private void overrideIfObsolete() throws ExecutionFailedException {
+    private void overrideIfObsolete() {
         try {
             // Project's TS config
             File projectTsConfigFile = new File(

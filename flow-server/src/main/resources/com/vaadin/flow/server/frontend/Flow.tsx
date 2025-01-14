@@ -14,7 +14,6 @@
  * the License.
  */
 /// <reference lib="es2018" />
-import { nanoid } from 'nanoid';
 import { Flow as _Flow } from 'Frontend/generated/jar-resources/Flow.js';
 import React, { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import { matchRoutes, useBlocker, useLocation, useNavigate, type NavigateOptions, useHref } from 'react-router';
@@ -141,7 +140,7 @@ function extractPath(event: MouseEvent): void | string {
  * @param search search of navigation
  */
 function fireNavigated(pathname: string, search: string) {
-  setTimeout(() => {
+  queueMicrotask(() => {
     window.dispatchEvent(
       new CustomEvent('vaadin-navigated', {
         detail: {
@@ -327,7 +326,7 @@ function Flow() {
     (event: CustomEvent<PortalEntry>) => {
       event.preventDefault();
 
-      const key = nanoid();
+      const key = Math.random().toString(36).slice(2);
       dispatchPortalAction(
         addFlowPortal(
           <FlowPortal
