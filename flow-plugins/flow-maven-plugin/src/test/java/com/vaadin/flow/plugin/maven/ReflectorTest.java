@@ -177,7 +177,7 @@ public class ReflectorTest {
         pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
 
         Reflector execReflector = new DefaultReflectorProvider(
-                new FastReflectorIsolationConfig(),
+                new FastReflectorConfig(),
                 new SystemStreamLog())
                 .of(project, mojoExecution);
 

@@ -38,21 +38,21 @@ public class DefaultReflectorProvider implements ReflectorProvider {
             Artifact.SCOPE_PROVIDED
     );
 
-    protected final Set<FastReflectorIsolationConfig.ArtifactSelector> fastDefaultExcludes = new HashSet<>(Set.of(
-            new FastReflectorIsolationConfig.ArtifactSelector("com.vaadin.external*")
+    protected final Set<FastReflectorConfig.ArtifactSelector> fastDefaultExcludes = new HashSet<>(Set.of(
+            new FastReflectorConfig.ArtifactSelector("com.vaadin.external*")
     ));
 
-    protected final Set<FastReflectorIsolationConfig.ArtifactSelector> fastDefaultIncludes = new HashSet<>(Set.of(
-            new FastReflectorIsolationConfig.ArtifactSelector("*vaadin*"),
-            new FastReflectorIsolationConfig.ArtifactSelector(null, "*vaadin*")
+    protected final Set<FastReflectorConfig.ArtifactSelector> fastDefaultIncludes = new HashSet<>(Set.of(
+            new FastReflectorConfig.ArtifactSelector("*vaadin*"),
+            new FastReflectorConfig.ArtifactSelector(null, "*vaadin*")
     ));
 
-    protected final FastReflectorIsolationConfig fastReflectorIsolationConfig;
+    protected final FastReflectorConfig fastReflectorConfig;
     protected final Log log;
 
-    public DefaultReflectorProvider(final FastReflectorIsolationConfig fastReflectorIsolationConfig, final Log log) {
-        this.fastReflectorIsolationConfig =
-                Objects.requireNonNullElseGet(fastReflectorIsolationConfig, FastReflectorIsolationConfig::new);
+    public DefaultReflectorProvider(final FastReflectorConfig fastReflectorConfig, final Log log) {
+        this.fastReflectorConfig =
+                Objects.requireNonNullElseGet(fastReflectorConfig, FastReflectorConfig::new);
         this.log = log;
     }
 
@@ -213,38 +213,38 @@ public class DefaultReflectorProvider implements ReflectorProvider {
             return null;
         }
 
-        if (!fastReflectorIsolationConfig.isEnabled()) {
+        if (!fastReflectorConfig.isEnabled()) {
             logArtifactInclusionOrExclusion(artifact, true, null);
             return new ArtifactWrapper(artifact, true);
         }
 
+        final FastReflectorConfig.Isolation isolation = fastReflectorConfig.getIsolation();
+
         // Fast code starts here
-        final Optional<FastReflectorIsolationConfig.ArtifactSelector> excludeSelector =
-                checkIfArtifactSelectorsMatches(
-                        fastReflectorIsolationConfig.getExcludes(),
-                        fastDefaultExcludes,
-                        artifact);
+        final Optional<FastReflectorConfig.ArtifactSelector> excludeSelector = checkIfArtifactSelectorsMatches(
+                isolation.getExcludes(),
+                fastDefaultExcludes,
+                artifact);
         if (excludeSelector.isPresent()) {
-            final FastReflectorIsolationConfig.ArtifactSelector selector = excludeSelector.get();
+            final FastReflectorConfig.ArtifactSelector selector = excludeSelector.get();
             logArtifactInclusionOrExclusion(artifact, false, "in excludes [" + selector + "]");
             return null;
         }
 
-        final Optional<FastReflectorIsolationConfig.ArtifactSelector> includeSelector =
-                checkIfArtifactSelectorsMatches(
-                        fastReflectorIsolationConfig.getIncludes(),
-                        fastDefaultIncludes,
-                        artifact);
+        final Optional<FastReflectorConfig.ArtifactSelector> includeSelector = checkIfArtifactSelectorsMatches(
+                isolation.getIncludes(),
+                fastDefaultIncludes,
+                artifact);
         if (includeSelector.isPresent()) {
-            final FastReflectorIsolationConfig.ArtifactSelector selector = includeSelector.get();
+            final FastReflectorConfig.ArtifactSelector selector = includeSelector.get();
             logArtifactInclusionOrExclusion(artifact, true, "in includes [" + selector + "]");
             return new ArtifactWrapper(artifact, selector.isScan());
         }
 
-        // If a jar is inside a target folder, it's likely a sibling project
-        if (fastReflectorIsolationConfig.isIncludeFromTargetDirectory()
-                && "target".equals(artifact.getFile().getParentFile().getName())) {
-            logArtifactInclusionOrExclusion(artifact, true, "source=target directory");
+        // If a jar is inside output/target directory, it's likely a sibling project
+        if (isolation.isIncludeWhenInOutputDirectory()
+                && isolation.getOutputDirectoryNames().contains(artifact.getFile().getParentFile().getName())) {
+            logArtifactInclusionOrExclusion(artifact, true, "source=output/target directory");
             return new ArtifactWrapper(artifact, true);
         }
 
@@ -262,19 +262,19 @@ public class DefaultReflectorProvider implements ReflectorProvider {
         }
     }
 
-    protected Optional<FastReflectorIsolationConfig.ArtifactSelector> checkIfArtifactSelectorsMatches(
-            final FastReflectorIsolationConfig.ArtifactSelectors selectors,
-            final Set<FastReflectorIsolationConfig.ArtifactSelector> defaults,
+    protected Optional<FastReflectorConfig.ArtifactSelector> checkIfArtifactSelectorsMatches(
+            final FastReflectorConfig.ArtifactSelectors selectors,
+            final Set<FastReflectorConfig.ArtifactSelector> defaults,
             final Artifact artifact) {
         return Stream.concat(
-                        defaults.stream(),
+                        selectors.isDefaults() ? defaults.stream() : Stream.empty(),
                         selectors.getAdditional().stream())
                 .filter(sel -> checkIfArtifactSelectorMatches(sel, artifact))
                 .findFirst();
     }
 
     protected boolean checkIfArtifactSelectorMatches(
-            final FastReflectorIsolationConfig.ArtifactSelector selector,
+            final FastReflectorConfig.ArtifactSelector selector,
             final Artifact artifact) {
         if (selector.getGroupId() != null && !compareSelector(selector.getGroupId(), artifact.getGroupId())) {
             return false;

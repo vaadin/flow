@@ -2,49 +2,80 @@ package com.vaadin.flow.plugin.maven;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-
-public class FastReflectorIsolationConfig {
+/**
+ * Configuration for the fast reflector.
+ *
+ * @apiNote These classes are designed to only hold data and should contain no logic.
+ */
+public class FastReflectorConfig {
     private boolean enabled = true;
-    private boolean includeFromTargetDirectory = true;
     @Nonnull
-    private ArtifactSelectors excludes = new ArtifactSelectors();
-    @Nonnull
-    private ArtifactSelectors includes = new ArtifactSelectors();
+    private Isolation isolation = new Isolation();
 
     public boolean isEnabled() {
-        return this.enabled;
+        return enabled;
     }
 
-    public void setEnabled(final boolean enabled) {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public boolean isIncludeFromTargetDirectory() {
-        return this.includeFromTargetDirectory;
-    }
-
-    public void setIncludeFromTargetDirectory(final boolean includeFromTargetDirectory) {
-        this.includeFromTargetDirectory = includeFromTargetDirectory;
-    }
-
     @Nonnull
-    public ArtifactSelectors getExcludes() {
-        return this.excludes;
+    public Isolation getIsolation() {
+        return isolation;
     }
 
-    public void setExcludes(@Nonnull final ArtifactSelectors excludes) {
-        this.excludes = excludes;
+    public void setIsolation(@Nonnull Isolation isolation) {
+        this.isolation = isolation;
     }
 
-    @Nonnull
-    public ArtifactSelectors getIncludes() {
-        return this.includes;
-    }
+    public static class Isolation {
+        private boolean includeWhenInOutputDirectory = true;
+        @Nonnull
+        private Set<String> outputDirectoryNames = new HashSet<>(Set.of("target"));
+        @Nonnull
+        private ArtifactSelectors excludes = new ArtifactSelectors();
+        @Nonnull
+        private ArtifactSelectors includes = new ArtifactSelectors();
 
-    public void setIncludes(@Nonnull final ArtifactSelectors includes) {
-        this.includes = includes;
+        public boolean isIncludeWhenInOutputDirectory() {
+            return this.includeWhenInOutputDirectory;
+        }
+
+        public void setIncludeWhenInOutputDirectory(final boolean includeWhenInOutputDirectory) {
+            this.includeWhenInOutputDirectory = includeWhenInOutputDirectory;
+        }
+
+        @Nonnull
+        public Set<String> getOutputDirectoryNames() {
+            return this.outputDirectoryNames;
+        }
+
+        public void setOutputDirectoryNames(@Nonnull final Set<String> outputDirectoryNames) {
+            this.outputDirectoryNames = outputDirectoryNames;
+        }
+
+        @Nonnull
+        public ArtifactSelectors getExcludes() {
+            return this.excludes;
+        }
+
+        public void setExcludes(@Nonnull final ArtifactSelectors excludes) {
+            this.excludes = excludes;
+        }
+
+        @Nonnull
+        public ArtifactSelectors getIncludes() {
+            return this.includes;
+        }
+
+        public void setIncludes(@Nonnull final ArtifactSelectors includes) {
+            this.includes = includes;
+        }
     }
 
     public static class ArtifactSelectors {
@@ -76,10 +107,11 @@ public class FastReflectorIsolationConfig {
         private String artifactId;
 
         /**
-         * Determines if the selector should also be applied for scanning using the reflections library.
+         * Determines if the selector should also be applied for scanning (using the reflections library) and not just
+         * for class loading.
          * <p>
-         * This should be set to <code>false</code> when No-Vaadin specific code like Vaadin annotations are present.
-         * To improve the scanning speed.
+         * This should be set to <code>false</code> when no Vaadin specific code like Vaadin annotations are present
+         * to improve the scanning speed.
          * </p>
          * <p>
          * Please note that this only works for inclusions, not exclusions.

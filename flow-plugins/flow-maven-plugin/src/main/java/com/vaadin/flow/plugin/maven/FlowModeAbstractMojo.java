@@ -279,7 +279,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     protected Boolean frontendIgnoreVersionChecks;
 
     @Parameter
-    protected FastReflectorIsolationConfig fastReflectorIsolation;
+    protected FastReflectorConfig fastReflector;
 
     /**
      * If this is set to a non-null value, the plugin will not use classpath-scanning to detect
@@ -316,14 +316,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     protected ClassFinder classFinder;
 
     protected ReflectorProvider getNewReflectorController() {
-        return new DefaultReflectorProvider(fastReflectorIsolation, getLog());
+        return new DefaultReflectorProvider(fastReflector, getLog());
     }
 
     /**
      * Field names specified here will not be copied over to the isolated mojo.
      */
     protected Set<String> isolatedMojoIgnoreFields() {
-        return Set.of("fastReflectorIsolation");
+        return Set.of("fastReflector");
     }
 
     @Override
