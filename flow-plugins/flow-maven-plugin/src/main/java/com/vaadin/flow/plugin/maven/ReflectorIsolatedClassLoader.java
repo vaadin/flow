@@ -5,6 +5,9 @@ import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
 
 
+/**
+ * "Interface" classloader with additional methods for reflector.
+ */
 public abstract class ReflectorIsolatedClassLoader extends URLClassLoader {
     protected ReflectorIsolatedClassLoader(final URL[] urls, final ClassLoader parent) {
         super(urls, parent);
