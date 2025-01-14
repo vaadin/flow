@@ -74,7 +74,7 @@ public class DefaultReflectorProvider implements ReflectorProvider {
     }
 
     @Override
-    public Reflector of(final MavenProject project, final MojoExecution mojoExecution) {
+    public Reflector createNew(final MavenProject project, final MojoExecution mojoExecution) {
         return new DefaultReflector(createIsolatedClassLoader(project, mojoExecution));
     }
 

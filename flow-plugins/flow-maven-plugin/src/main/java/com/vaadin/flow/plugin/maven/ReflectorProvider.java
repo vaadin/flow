@@ -20,5 +20,8 @@ public interface ReflectorProvider {
      */
     Reflector adaptFrom(Object reflector);
 
-    Reflector of(MavenProject project, MojoExecution mojoExecution);
+    /**
+     * Creates a new Reflector
+     */
+    Reflector createNew(MavenProject project, MojoExecution mojoExecution);
 }

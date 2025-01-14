@@ -179,7 +179,7 @@ public class ReflectorTest {
         Reflector execReflector = new DefaultReflectorProvider(
                 new FastReflectorConfig(),
                 new SystemStreamLog())
-                .of(project, mojoExecution);
+                .createNew(project, mojoExecution);
 
         URLClassLoader isolatedClassLoader = execReflector
                 .getIsolatedClassLoader();

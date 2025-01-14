@@ -722,7 +722,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
         final long start = System.nanoTime();
 
-        final Reflector reflector = reflectorProvider.of(project, mojoExecution);
+        final Reflector reflector = reflectorProvider.createNew(project, mojoExecution);
         getLog().info("Created new Reflector[urlsOnIsolatedClassLoader="
                 + reflector.getIsolatedClassLoader().getURLs().length
                 + "x], took " + msSince(start) + "ms");
