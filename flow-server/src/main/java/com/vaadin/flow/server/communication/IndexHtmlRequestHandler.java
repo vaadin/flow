@@ -287,7 +287,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 + //
                 "};" + //
                 "window.addEventListener('unhandledrejection', e => {" + //
-                "    window.Vaadin.ConsoleErrors.push([e.reason]);" + //
+                "    window.Vaadin.ConsoleErrors.push(e.reason);" + //
                 "});" //
         );
     }
