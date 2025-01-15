@@ -393,6 +393,8 @@ public class VaadinServletContextInitializer
 
                 } catch (InvalidRouteConfigurationException
                         | InvalidRouteLayoutConfigurationException e) {
+                    getLogger().error("Route configuration error found:");
+                    getLogger().error(e.getMessage());
                     throw new IllegalStateException(e);
                 }
             } else {

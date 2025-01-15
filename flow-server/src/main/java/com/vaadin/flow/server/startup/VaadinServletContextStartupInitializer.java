@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.server.startup;
 
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.VaadinServletContext;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Allows a library/runtime to be notified of a web application's startup phase
@@ -41,8 +46,17 @@ public interface VaadinServletContextStartupInitializer
         try {
             initialize(classSet, new VaadinServletContext(context));
         } catch (VaadinInitializerException e) {
+            if (e.getCause() instanceof InvalidRouteConfigurationException || e
+                    .getCause() instanceof InvalidRouteLayoutConfigurationException) {
+                getLogger().error("Route configuration error found:");
+                getLogger().error(e.getCause().getMessage());
+            }
             throw new ServletException(e);
         }
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(VaadinServletContextStartupInitializer.class);
+    }
 }
