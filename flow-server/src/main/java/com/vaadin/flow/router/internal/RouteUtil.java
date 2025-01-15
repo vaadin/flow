@@ -70,6 +70,12 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
  */
 public class RouteUtil {
 
+    private static final String ROUTE_CONFLICT_PREFIX = "Navigation target paths (considering @Route, @RouteAlias and @RoutePrefix values) must be unique, found navigation targets '%s' and '%s' ";
+    public static final String ROUTE_CONFLICT = ROUTE_CONFLICT_PREFIX
+            + "having the same route.";
+    public static final String ROUTE_CONFLICT_WITH_PARAMS = ROUTE_CONFLICT_PREFIX
+            + "with parameter having the same route.";
+
     protected RouteUtil() {
     }
 
