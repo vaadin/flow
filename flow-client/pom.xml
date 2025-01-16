@@ -231,7 +231,6 @@
                         a separate production build -->
                     <enableAssertions>true</enableAssertions>
                     <failOnError>true</failOnError>
-                    <generateJsInteropExports>true</generateJsInteropExports>
                     <gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
                     <persistentunitcache>false</persistentunitcache>
                     <webappDirectory>${gwt.module.output}</webappDirectory>
