@@ -49,6 +49,15 @@ jobs:
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.7
+      - name: Run check style
+        uses: nikitasavinov/checkstyle-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: 'github-pr-check'
+          tool_name: 'checkstyle'
+          level: 'error'
+          fail_on_error: true
+          config: 'checkstyle/vaadin-checkstyle.xml'   
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
