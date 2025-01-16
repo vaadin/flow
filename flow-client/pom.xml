@@ -192,6 +192,9 @@
                     <excludes>
                         <exclude>**/Gwt*.java</exclude>
                     </excludes>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${basedir}/../flow-server/src/main/java</additionalClasspathElement>
+                    </additionalClasspathElements>
                     <enableAssertions>true</enableAssertions>
                 </configuration>
             </plugin>
@@ -228,6 +231,7 @@
                         a separate production build -->
                     <enableAssertions>true</enableAssertions>
                     <failOnError>true</failOnError>
+                    <generateJsInteropExports>true</generateJsInteropExports>
                     <gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
                     <persistentunitcache>false</persistentunitcache>
                     <webappDirectory>${gwt.module.output}</webappDirectory>
