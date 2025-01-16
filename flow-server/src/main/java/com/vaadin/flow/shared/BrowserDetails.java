@@ -463,8 +463,8 @@ public class BrowserDetails implements Serializable {
         try {
             return Integer.parseInt(versionString);
         } catch (Exception e) {
-            log(partName + " version parsing failed for: " + versionString
-                    + "\nWith userAgent: " + userAgent, e);
+            log(partName + " version parsing failed for: \"" + versionString
+                    + "\"\nWith userAgent: " + userAgent, e);
         }
         return -1;
     }
