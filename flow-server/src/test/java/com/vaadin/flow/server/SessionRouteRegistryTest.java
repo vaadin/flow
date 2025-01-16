@@ -49,6 +49,7 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
@@ -488,8 +489,7 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals(
                 "Expected 4 route already exists exceptions due to route target validation",
                 THREADS - 1, exceptions.size());
-        String expected = String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
+        String expected = String.format(RouteUtil.ROUTE_CONFLICT,
                 MyRoute.class.getName(), MyRoute.class.getName());
         for (String exception : exceptions) {
             Assert.assertEquals(expected, exception);
@@ -540,8 +540,7 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals(
                 "Expected 4 route already exists exceptions due to route target validation",
                 THREADS - 1, exceptions.size());
-        String expected = String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
+        String expected = String.format(RouteUtil.ROUTE_CONFLICT,
                 MyRoute.class.getName(), MyRoute.class.getName());
         for (String exception : exceptions) {
             Assert.assertEquals(expected, exception);

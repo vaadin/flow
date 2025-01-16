@@ -1,5 +1,10 @@
 package com.vaadin.flow.router.internal;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -8,10 +13,6 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ConfigureRoutesTest {
 
@@ -109,8 +110,9 @@ public class ConfigureRoutesTest {
         exceptionRule.expect(AmbiguousRouteConfigurationException.class);
         exceptionRule.reportMissingExceptionWithMessage(
                 "Duplicate routes shouldn't be accepted.");
-        exceptionRule.expectMessage(
-                "Navigation targets must have unique routes, found navigation targets 'com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget' and 'com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget' with the same route.");
+        exceptionRule.expectMessage(String.format(RouteUtil.ROUTE_CONFLICT,
+                "com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget",
+                "com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget"));
         mutable.setRoute("", BaseTarget.class);
     }
 
@@ -126,8 +128,10 @@ public class ConfigureRoutesTest {
         exceptionRule.expect(AmbiguousRouteConfigurationException.class);
         exceptionRule.reportMissingExceptionWithMessage(
                 "Duplicate parameter routes shouldn't be accepted.");
-        exceptionRule.expectMessage(
-                "Navigation targets must have unique routes, found navigation targets 'com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget' and 'com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget' with parameter have the same route.");
+        exceptionRule.expectMessage(String.format(
+                RouteUtil.ROUTE_CONFLICT_WITH_PARAMS,
+                "com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget",
+                "com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget"));
         mutable.setRoute(":param", ParamTarget.class);
     }
 
