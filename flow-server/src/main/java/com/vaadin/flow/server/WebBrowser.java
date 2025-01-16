@@ -70,8 +70,7 @@ public class WebBrowser implements Serializable {
             browserDetails = new BrowserDetails(agent) {
                 @Override
                 protected void log(String error, Exception e) {
-                    LoggerFactory.getLogger(BrowserDetails.class).error(error,
-                            e);
+                    LoggerFactory.getLogger(BrowserDetails.class).error(error);
                 }
             };
         }
