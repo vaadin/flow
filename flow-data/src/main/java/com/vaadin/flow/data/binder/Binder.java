@@ -1659,7 +1659,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void setReadOnly(boolean readOnly) {
-            if (setter == null && !readOnly) {
+            if (!binder.isRecord && this.setter == null && !readOnly) {
                 throw new IllegalStateException(
                         "Binding with a null setter has to be read-only");
             }
@@ -3535,7 +3535,8 @@ public class Binder<BEAN> implements Serializable {
      *            to set them to read-write
      */
     public void setReadOnly(boolean readOnly) {
-        getBindings().stream().filter(binding -> binding.getSetter() != null)
+        getBindings().stream()
+                .filter(binding -> isRecord || binding.getSetter() != null)
                 .forEach(field -> field.setReadOnly(readOnly));
     }
 
