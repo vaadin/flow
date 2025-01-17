@@ -382,7 +382,11 @@ function Flow() {
         (event: CustomEvent<{ state: unknown; url: string; replace?: boolean; callback: boolean }>) => {
             // @ts-ignore
             window.Vaadin.Flow.navigation = true;
-            const path = '/' + event.detail.url;
+            // clean base uri away if for instance redirected to http://localhost/path/user?id=10
+            // else the whole http... will be appended to the url see #19580
+            const path = event.detail.url.startsWith(document.baseURI)
+                ? '/' + event.detail.url.slice(document.baseURI.length)
+                : '/' + event.detail.url;
             fromAnchor.current = false;
             queuedNavigate(path, event.detail.callback, { state: event.detail.state, replace: event.detail.replace });
         },
