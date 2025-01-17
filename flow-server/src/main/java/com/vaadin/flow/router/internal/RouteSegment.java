@@ -791,9 +791,9 @@ final class RouteSegment implements Serializable {
 
         String messageFormat;
         if (isParameter()) {
-            messageFormat = "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.";
+            messageFormat = RouteUtil.ROUTE_CONFLICT_WITH_PARAMS;
         } else {
-            messageFormat = "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.";
+            messageFormat = RouteUtil.ROUTE_CONFLICT;
         }
 
         String message = String.format(messageFormat,

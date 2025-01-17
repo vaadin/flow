@@ -1304,6 +1304,23 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void setReadonly_record_allFieldsAreReadonly() {
+        Binder<TestRecord> binder = new Binder<>(TestRecord.class);
+        binder.forField(nameField).bind("name");
+        binder.forField(ageField).bind("age");
+
+        binder.getBinding("name").ifPresent(b -> b.setReadOnly(true));
+        binder.setReadOnly(true);
+        assertTrue("Name field should be readonly", nameField.isReadOnly());
+        assertTrue("Age field should be readonly", ageField.isReadOnly());
+
+        binder.setReadOnly(false);
+        assertFalse("Name field should not be readonly",
+                nameField.isReadOnly());
+        assertFalse("Age field should not be readonly", ageField.isReadOnly());
+    }
+
+    @Test
     public void isValidTest_bound_binder() {
         binder.forField(nameField)
                 .withValidator(Validator.from(

@@ -69,6 +69,7 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -169,10 +170,9 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_fails_for_multiple_registration_of_same_route() {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(
-                "Navigation targets must have unique routes, found navigation targets "
-                        + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo' and "
-                        + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2' with the same route.");
+        expectedEx.expectMessage(String.format(RouteUtil.ROUTE_CONFLICT,
+                "com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo",
+                "com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2"));
 
         RouteConfiguration.forRegistry(registry)
                 .setAnnotatedRoute(NavigationTargetFoo.class);
