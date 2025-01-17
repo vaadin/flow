@@ -99,8 +99,8 @@ public class FeatureFlags implements Serializable {
             "React 19 (default in Vaadin 25)", "react19",
             "https://react.dev/blog/2024/12/05/react-19", true, null);
 
-    public static final Feature FOCUSABLE_DISABLED_COMPONENTS = new Feature(
-            "Focusable disabled components", "focusableDisabledComponents",
+    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
+            "Accessible disabled buttons", "accessibleDisabledButtons",
             "https://github.com/vaadin/web-components/issues/4585", true, null);
 
     private List<Feature> features = new ArrayList<>();
@@ -132,7 +132,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(DASHBOARD_COMPONENT));
         features.add(new Feature(CARD_COMPONENT));
         features.add(new Feature(REACT19));
-        features.add(new Feature(FOCUSABLE_DISABLED_COMPONENTS));
+        features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
         loadProperties();
     }
 
