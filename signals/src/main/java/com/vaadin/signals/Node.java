@@ -57,8 +57,35 @@ public sealed interface Node {
      *            node has no map children
      */
     public record Data(Id parent, Id lastUpdate, Id scopeOwner, JsonNode value,
-            List<Id> listChildren,
-            Map<String, Id> mapChildren) implements Node {
+            List<Id> listChildren, Map<String, Id> mapChildren)
+            implements Node {
+        /**
+         * Creates a new data node.
+         * 
+         * @param parent
+         *            the parent id, or <code>null</code> for the root node
+         * @param lastUpdate
+         *            a unique id for the update that last updated this data
+         *            node, not <code>null</code>
+         * @param scopeOwner
+         *            the id of the external owner of this node, or
+         *            <code>null</code> if the node has no owner. Any node with
+         *            an owner is deleted if the owner is disconnected.
+         * @param value
+         *            the JSON value of this node, or <code>null</code> if there
+         *            is no value
+         * @param listChildren
+         *            a list of child ids, or the an list if the node has no
+         *            list children
+         * @param mapChildren
+         *            a sequenced map from key to child id, or an empty map if
+         *            the node has no map children
+         */
+        /*
+         * There's no point in copying the record components here since they are
+         * already documented on the top level, but the Javadoc checker insist
+         * that this constructor also has full documentation...
+         */
         public Data {
             Objects.requireNonNull(lastUpdate);
 

@@ -41,6 +41,13 @@ public record Id(long value) implements Comparable<Id> {
     private static final Encoder base64Encoder = Base64.getEncoder()
             .withoutPadding();
 
+    /**
+     * Creates a random id. Randomness is only needed to reduce the risk of
+     * collisions but there's no security impact from being able to guess random
+     * ids.
+     * 
+     * @return a random id, not <code>null</code>
+     */
     public static Id random() {
         var random = ThreadLocalRandom.current();
 

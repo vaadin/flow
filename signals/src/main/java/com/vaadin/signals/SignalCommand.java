@@ -75,7 +75,7 @@ public sealed interface SignalCommand {
      *            command, not <code>null</code>
      * @param nodeId
      *            id of the node to check, not <code>null</code>
-     * @param expecedValue
+     * @param expectedValue
      *            the expected value
      */
     public record ValueTest(Id commandId, Id nodeId,

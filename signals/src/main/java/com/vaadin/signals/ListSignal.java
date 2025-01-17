@@ -1,6 +1,6 @@
 package com.vaadin.signals;
 
-/*
+/**
  * The rest of this class will be implemented later.
  */
 public class ListSignal {
