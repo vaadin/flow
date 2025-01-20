@@ -472,9 +472,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             LOGGER.debug(
                     "Triggering re-navigation to current route for UIs affected by classes changes.");
             for (UIRefreshStrategy action : uisToRefresh.keySet()) {
-                uisToRefresh.get(action)
-                        .forEach(ui -> ui.access(() -> ui.refreshCurrentRoute(
-                                action == UIRefreshStrategy.PUSH_REFRESH_CHAIN)));
+                String triggerEventJS = String.format(
+                        "window.dispatchEvent(new CustomEvent(\"vaadin-refresh-ui\", { detail: { fullRefresh: %s }}));",
+                        action == UIRefreshStrategy.PUSH_REFRESH_CHAIN);
+                uisToRefresh.get(action).forEach(ui -> ui
+                        .access(() -> ui.getPage().executeJs(triggerEventJS)));
             }
         }
     }
@@ -507,7 +509,19 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
 
     @Override
     public void uiInit(UIInitEvent event) {
-        sessions.add(event.getUI().getSession());
+        UI ui = event.getUI();
+        sessions.add(ui.getSession());
+        ui.getPage().executeJs(
+                """
+                        const $wnd = window;
+                        window.addEventListener('vaadin-ui-refresh', (ev) => {
+                            const senderFn = $wnd.Vaadin?.Flow?.clients[$0]?.sendEventMessage;
+                            if (senderFn) {
+                                senderFn(1, "ui-refresh", ev.detail);
+                            }
+                        });
+                        """,
+                ui.getInternals().getAppId());
     }
 
     /**
