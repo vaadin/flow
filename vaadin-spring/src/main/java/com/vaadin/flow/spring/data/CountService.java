@@ -16,6 +16,6 @@ public interface CountService {
      *            the filter, or {@code null} to use no filter
      * @return the number of items in the service that match the filter
      */
-    public long count(@Nullable Filter filter);
+   long count(@Nullable Filter filter);
 
 }
