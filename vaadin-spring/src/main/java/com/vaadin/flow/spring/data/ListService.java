@@ -15,18 +15,6 @@ import com.vaadin.flow.spring.data.filter.Filter;
  */
 public interface ListService<T> {
     /**
-     * Lists objects of the given type using the paging and sorting options
-     * provided in the parameters.
-     *
-     * @param pageable
-     *            contains information about paging and sorting
-     * @return a list of objects or an empty list if no objects were found
-     */
-    default List<T> list(Pageable pageable) {
-        return list(pageable, null);
-    }
-
-    /**
      * Lists objects of the given type using the paging, sorting and filtering
      * options provided in the parameters.
      *
