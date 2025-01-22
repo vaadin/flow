@@ -20,14 +20,14 @@ import {
   mergeConfig,
   OutputOptions,
   PluginOption,
-  ResolvedConfig,
-  UserConfigFn
+  build,
+  UserConfigFn,
+  ResolvedConfig
 } from 'vite';
 import { getManifest, type ManifestTransform } from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
-import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 
@@ -118,87 +118,46 @@ function injectManifestToSWPlugin(): rollup.Plugin {
 }
 
 function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
-  let config: ResolvedConfig;
-  const devMode = opts.devMode;
-
-  const swObj: { code?: string, map?: rollup.SourceMap | null } = {};
-
-  async function build(action: 'generate' | 'write', additionalPlugins: rollup.Plugin[] = []) {
-    const includedPluginNames = [
-      'vite:esbuild',
-      'rollup-plugin-dynamic-import-variables',
-      'vite:esbuild-transpile',
-      'vite:terser'
-    ];
-    const plugins: rollup.Plugin[] = config.plugins.filter((p) => {
-      return includedPluginNames.includes(p.name);
-    });
-    const resolver = config.createResolver();
-    const resolvePlugin: rollup.Plugin = {
-      name: 'resolver',
-      resolveId(source, importer, _options) {
-        return resolver(source, importer);
-      }
-    };
-    plugins.unshift(resolvePlugin); // Put resolve first
-    plugins.push(
-      replace({
-        values: {
-          'process.env.NODE_ENV': JSON.stringify(config.mode),
-          ...config.define
-        },
-        preventAssignment: true
-      })
-    );
-    if (additionalPlugins) {
-      plugins.push(...additionalPlugins);
-    }
-    const bundle = await rollup.rollup({
-      input: path.resolve(settings.clientServiceWorkerSource),
-      plugins
-    });
-
-    try {
-      return await bundle[action]({
-        file: path.resolve(buildOutputFolder, 'sw.js'),
-        format: 'es',
-        exports: 'none',
-        sourcemap: config.command === 'serve' || config.build.sourcemap,
-        inlineDynamicImports: true
-      });
-    } finally {
-      await bundle.close();
-    }
-  }
+  const { devMode } = opts;
+  let viteConfig: ResolvedConfig;
 
   return {
     name: 'vaadin:build-sw',
     enforce: 'post',
     async configResolved(resolvedConfig) {
-      config = resolvedConfig;
+      viteConfig = resolvedConfig;
     },
     async buildStart() {
-      if (devMode) {
-        const { output } = await build('generate');
-        swObj.code = output[0].code;
-        swObj.map = output[0].map;
-      }
+      await build({
+        base: viteConfig.base,
+        root: viteConfig.root,
+        mode: viteConfig.mode,
+        resolve: viteConfig.resolve,
+        define: {
+          ...viteConfig.define,
+          'process.env.NODE_ENV': JSON.stringify(viteConfig.mode),
+        },
+        build: {
+          ...viteConfig.build,
+          sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
+          modulePreload: false,
+          lib: {
+            entry: settings.clientServiceWorkerSource,
+            name: 'sw',
+            formats: ['umd'],
+          },
+          rollupOptions: {
+            output: {
+              entryFileNames: 'sw.js',
+            },
+          },
+        },
+        plugins: [
+          !devMode && injectManifestToSWPlugin(),
+          !devMode && brotli()
+        ]
+      });
     },
-    async load(id) {
-      if (id.endsWith('sw.js')) {
-        return '';
-      }
-    },
-    async transform(_code, id) {
-      if (id.endsWith('sw.js')) {
-        return swObj;
-      }
-    },
-    async closeBundle() {
-      if (!devMode) {
-        await build('write', [injectManifestToSWPlugin(), brotli()]);
-      }
-    }
   };
 }
 
