@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -113,7 +113,7 @@ public class ServerRpcHandler implements Serializable {
                 this.csrfToken = csrfToken;
             }
 
-            if (isSyncIdCheckEnabled) {
+            if (isSyncIdCheckEnabled && !isUnloadBeaconRequest()) {
                 syncId = (int) json
                         .getNumber(ApplicationConstants.SERVER_SYNC_ID);
             } else {
@@ -131,7 +131,10 @@ public class ServerRpcHandler implements Serializable {
                 clientToServerMessageId = (int) json
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
             } else {
-                getLogger().warn("Server message without client id received");
+                if (!isUnloadBeaconRequest()) {
+                    getLogger()
+                            .warn("Server message without client id received");
+                }
                 clientToServerMessageId = -1;
             }
             invocations = json.getArray(ApplicationConstants.RPC_INVOCATIONS);

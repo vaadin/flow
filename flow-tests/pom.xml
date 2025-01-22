@@ -335,6 +335,7 @@
                 <module>test-react-adapter</module>
                 <module>test-react-adapter/pom-production.xml</module>
                 <module>test-legacy-frontend</module>
+                <module>test-client-queue</module>
             </modules>
         </profile>
         <profile>

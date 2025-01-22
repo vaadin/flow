@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -302,6 +303,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
+            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
+                dependencies
+                        .putAll(readDependencies("react19", "dependencies"));
+            }
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
@@ -368,6 +373,9 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
+            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
+                defaults.putAll(readDependencies("react19", "devDependencies"));
+            }
         }
 
         return defaults;

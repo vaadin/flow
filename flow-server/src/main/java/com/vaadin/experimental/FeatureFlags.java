@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -95,6 +95,14 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/web-components/issues/5340", true,
             "com.vaadin.flow.component.card.Card");
 
+    public static final Feature REACT19 = new Feature(
+            "React 19 (default in Vaadin 25)", "react19",
+            "https://react.dev/blog/2024/12/05/react-19", true, null);
+
+    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
+            "Accessible disabled buttons", "accessibleDisabledButtons",
+            "https://github.com/vaadin/web-components/issues/4585", true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -123,6 +131,8 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COPILOT_EXPERIMENTAL));
         features.add(new Feature(DASHBOARD_COMPONENT));
         features.add(new Feature(CARD_COMPONENT));
+        features.add(new Feature(REACT19));
+        features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
         loadProperties();
     }
 

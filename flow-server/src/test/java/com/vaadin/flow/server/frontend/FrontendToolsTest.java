@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -182,6 +182,9 @@ public class FrontendToolsTest {
     @Test
     public void nodeIsBeingLocated_unsupportedNodeInstalled_defaultNodeVersionInstalledToAlternativeDirectory()
             throws FrontendUtils.UnknownVersionException, IOException {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         // Unsupported node version
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
@@ -204,6 +207,9 @@ public class FrontendToolsTest {
     @Test
     public void nodeIsBeingLocated_unsupportedNodeInstalled_fallbackToNodeInstalledToAlternativeDirectory()
             throws IOException, FrontendUtils.UnknownVersionException {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         // Unsupported node version
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
@@ -730,6 +736,8 @@ public class FrontendToolsTest {
 
     @Test
     public void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
+        Assume.assumeFalse("Skipping test on windows.",
+                FrontendUtils.isWindows());
         Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
         Assume.assumeFalse("Skip this test once globally installed pnpm is "
                 + "discovered", pnpm.isPresent());

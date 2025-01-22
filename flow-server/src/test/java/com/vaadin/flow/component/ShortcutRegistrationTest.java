@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -504,6 +505,24 @@ public class ShortcutRegistrationTest {
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
         Assert.assertNull(event.get());
+    }
+
+    @Test
+    public void constructedRegistration_lifecycleOwnerIsDisabledWithDisabledUpdateModeAlways_shortcutEventIsFired() {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
+                Key.KEY_A).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+
+        Element element = mockLifecycle(true);
+        element.setEnabled(false);
+
+        clientResponse();
+
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        Assert.assertNotNull(event.get());
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -90,6 +90,16 @@ public class TaskGenerateReactFilesTest {
                         + "layouts.json",
                 new File(new File(frontend, FrontendUtils.GENERATED),
                         "layouts.json").exists());
+        assertGeneratedFileExists("jsx-dev-transform/index.ts");
+        assertGeneratedFileExists("jsx-dev-transform/jsx-runtime.ts");
+        assertGeneratedFileExists("jsx-dev-transform/jsx-dev-runtime.ts");
+    }
+
+    private void assertGeneratedFileExists(String filename) {
+        Assert.assertTrue(
+                "Missing ./frontend/" + FrontendUtils.GENERATED + filename,
+                new File(new File(frontend, FrontendUtils.GENERATED), filename)
+                        .exists());
     }
 
     @Test
@@ -423,6 +433,16 @@ public class TaskGenerateReactFilesTest {
         Assert.assertFalse(
                 "./frontend/routes.tsx.flowBackup should not be created with default content",
                 new File(frontend, "routes.tsx.flowBackup").exists());
+        assertGeneratedFileRemoved("jsx-dev-transform/index.ts");
+        assertGeneratedFileRemoved("jsx-dev-transform/jsx-dev-runtime.ts");
+        assertGeneratedFileRemoved("jsx-dev-transform/jsx-runtime.ts");
+    }
+
+    private void assertGeneratedFileRemoved(String filename) {
+        Assert.assertFalse(
+                "./frontend/generated/" + filename
+                        + " should be removed when react is disabled",
+                new File(frontendGenerated, filename).exists());
     }
 
     @Test

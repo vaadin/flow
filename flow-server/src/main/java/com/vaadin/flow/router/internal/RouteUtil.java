@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -69,6 +69,12 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
  * @since 1.3
  */
 public class RouteUtil {
+
+    private static final String ROUTE_CONFLICT_PREFIX = "Navigation target paths (considering @Route, @RouteAlias and @RoutePrefix values) must be unique, found navigation targets '%s' and '%s' ";
+    public static final String ROUTE_CONFLICT = ROUTE_CONFLICT_PREFIX
+            + "having the same route.";
+    public static final String ROUTE_CONFLICT_WITH_PARAMS = ROUTE_CONFLICT_PREFIX
+            + "with parameter having the same route.";
 
     protected RouteUtil() {
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -463,8 +463,8 @@ public class BrowserDetails implements Serializable {
         try {
             return Integer.parseInt(versionString);
         } catch (Exception e) {
-            log(partName + " version parsing failed for: " + versionString
-                    + "\nWith userAgent: " + userAgent, e);
+            log(partName + " version parsing failed for: \"" + versionString
+                    + "\"\nWith userAgent: " + userAgent, e);
         }
         return -1;
     }

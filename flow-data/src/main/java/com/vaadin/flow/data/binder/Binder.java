@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1659,7 +1659,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void setReadOnly(boolean readOnly) {
-            if (setter == null && !readOnly) {
+            if (!binder.isRecord && this.setter == null && !readOnly) {
                 throw new IllegalStateException(
                         "Binding with a null setter has to be read-only");
             }
@@ -3535,7 +3535,8 @@ public class Binder<BEAN> implements Serializable {
      *            to set them to read-write
      */
     public void setReadOnly(boolean readOnly) {
-        getBindings().stream().filter(binding -> binding.getSetter() != null)
+        getBindings().stream()
+                .filter(binding -> isRecord || binding.getSetter() != null)
                 .forEach(field -> field.setReadOnly(readOnly));
     }
 

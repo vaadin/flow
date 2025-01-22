@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +37,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -1153,20 +1156,30 @@ public class HotswapperTest {
 
     private static class RefreshTestingUI extends MockUI {
 
+        private static final Pattern UI_REFRESH_EVENT = Pattern.compile(
+                ".*new CustomEvent\\(\"vaadin-refresh-ui\",\\s*\\{\\s*detail:\\s*\\{\\s*fullRefresh:\\s*(true|false)\\s*}\\s*}\\).*");
         private Boolean refreshRouteChainRequested;
+
+        private final Page pageSpy;
 
         public RefreshTestingUI(VaadinSession session) {
             super(session);
+            pageSpy = Mockito.spy(super.getPage());
+            // Intercept javascript executions to check if the custom ui refresh
+            // event dispatch has been registered.
+            Mockito.doAnswer(i -> {
+                Matcher matcher = UI_REFRESH_EVENT.matcher(i.getArgument(0));
+                if (matcher.matches()) {
+                    refreshRouteChainRequested = Boolean
+                            .parseBoolean(matcher.group(1));
+                }
+                return null;
+            }).when(pageSpy).executeJs(Mockito.anyString());
         }
 
         @Override
-        public void refreshCurrentRoute(boolean refreshRouteChain) {
-            refreshRouteChainRequested = refreshRouteChain;
-            // No need to perform real navigation, tests only need to know if
-            // the method has been invoked.
-            // Navigation would fail anyway because of usage of method scoped
-            // classes. Blocking navigation prevents logs to be bloated by
-            // exception stack traces.
+        public Page getPage() {
+            return pageSpy;
         }
 
         void assertNotRefreshed() {
