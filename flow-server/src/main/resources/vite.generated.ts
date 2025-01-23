@@ -22,7 +22,7 @@ import {
   PluginOption,
   build,
   UserConfigFn,
-  ResolvedConfig
+  InlineConfig
 } from 'vite';
 import { getManifest, type ManifestTransform } from 'workbox-build';
 
@@ -119,16 +119,13 @@ function injectManifestToSWPlugin(): rollup.Plugin {
 
 function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
   const { devMode } = opts;
-  let viteConfig: ResolvedConfig;
+  let buildConfig: InlineConfig;
 
   return {
     name: 'vaadin:build-sw',
     enforce: 'post',
-    async configResolved(resolvedConfig) {
-      viteConfig = resolvedConfig;
-    },
-    async closeBundle() {
-      await build({
+    async configResolved(viteConfig) {
+      buildConfig = {
         base: viteConfig.base,
         root: viteConfig.root,
         mode: viteConfig.mode,
@@ -141,6 +138,7 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           minify: viteConfig.build.minify,
           outDir: viteConfig.build.outDir,
           sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
+          emptyOutDir: false,
           modulePreload: false,
           lib: {
             entry: settings.clientServiceWorkerSource,
@@ -152,7 +150,7 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           },
           rollupOptions: {
             output: {
-              entryChunkNames: 'sw.js',
+              entryFileNames: 'sw.js',
             },
           },
         },
@@ -160,7 +158,17 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           !devMode && injectManifestToSWPlugin(),
           !devMode && brotli()
         ]
-      });
+      };
+    },
+    async buildStart() {
+      if (devMode) {
+        await build(buildConfig);
+      }
+    },
+    async closeBundle() {
+      if (!devMode) {
+        await build(buildConfig);
+      }
     },
   };
 }
