@@ -106,7 +106,7 @@ function injectManifestToSWPlugin(): rollup.Plugin {
         const { manifestEntries } = await getManifest({
           globDirectory: buildOutputFolder,
           globPatterns: ['**/*'],
-          globIgnores: ['**/*.br', 'pwa-icons/**'],
+          globIgnores: ['**/*.br', 'pwa-icons/**', 'sw.js'],
           manifestTransforms: [rewriteManifestIndexHtmlUrl],
           maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
         });
@@ -140,15 +140,10 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
           emptyOutDir: false,
           modulePreload: false,
-          lib: {
-            entry: settings.clientServiceWorkerSource,
-            name: 'sw',
-            // Note the build.minify option does not minify whitespaces
-            // when using the 'es' format in lib mode. That's why we use
-            // the 'umd' format here.
-            formats: ['umd'],
-          },
           rollupOptions: {
+            input: {
+              sw: settings.clientServiceWorkerSource
+            },
             output: {
               entryFileNames: 'sw.js',
             },
