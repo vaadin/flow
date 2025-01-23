@@ -145,6 +145,7 @@ function buildSWPlugin(): PluginOption {
             },
             output: {
               entryFileNames: 'sw.js',
+              inlineDynamicImports: true,
             },
           },
         },
