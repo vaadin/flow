@@ -145,6 +145,7 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
               sw: settings.clientServiceWorkerSource
             },
             output: {
+              exports: 'none',
               entryFileNames: 'sw.js',
               inlineDynamicImports: true,
             },
