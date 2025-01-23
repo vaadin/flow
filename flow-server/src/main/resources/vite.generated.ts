@@ -145,6 +145,7 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
       replace({
         values: {
           'process.env.NODE_ENV': JSON.stringify(config.mode),
+          'process.env.VITE_SW_CONTEXT': true,
           ...config.define
         },
         preventAssignment: true
