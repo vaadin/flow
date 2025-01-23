@@ -129,7 +129,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         Assert.assertTrue(
                 "Expected sw-runtime-resources-precache.js to be imported, but was not",
                 serviceWorkerJS.contains(
-                        "importScripts(\"sw-runtime-resources-precache.js\");"));
+                        "importScripts(\"sw-runtime-resources-precache.js\")"));
 
         serviceWorkerUrl = getRootURL() + "/sw-runtime-resources-precache.js";
         serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
