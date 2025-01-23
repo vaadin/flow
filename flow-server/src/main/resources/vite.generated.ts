@@ -117,8 +117,7 @@ function injectManifestToSWPlugin(): rollup.Plugin {
   };
 }
 
-function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
-  const { devMode } = opts;
+function buildSWPlugin(): PluginOption {
   let buildConfig: InlineConfig;
 
   return {
@@ -149,20 +148,19 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
             },
           },
         },
-        plugins: [
-          !devMode && injectManifestToSWPlugin(),
-          !devMode && brotli()
-        ]
       };
     },
     async buildStart() {
-      if (devMode) {
+      if (buildConfig.mode === 'development') {
         await build(buildConfig);
       }
     },
     async closeBundle() {
-      if (!devMode) {
-        await build(buildConfig);
+      if (buildConfig.mode !== 'development') {
+        await build({
+          ...buildConfig,
+          plugins: [injectManifestToSWPlugin(), brotli()]
+        });
       }
     },
   };
@@ -727,7 +725,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       productionMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
-      settings.offlineEnabled && buildSWPlugin({ devMode }),
+      settings.offlineEnabled && buildSWPlugin(),
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
