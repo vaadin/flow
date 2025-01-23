@@ -138,17 +138,21 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           'process.env.NODE_ENV': JSON.stringify(viteConfig.mode),
         },
         build: {
-          ...viteConfig.build,
+          minify: viteConfig.build.minify,
+          outDir: viteConfig.build.outDir,
           sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
           modulePreload: false,
           lib: {
             entry: settings.clientServiceWorkerSource,
             name: 'sw',
+            // Note the build.minify option does not minify whitespaces
+            // when using the 'es' format in lib mode. That's why we use
+            // the 'umd' format here.
             formats: ['umd'],
           },
           rollupOptions: {
             output: {
-              entryFileNames: 'sw.js',
+              entryChunkNames: 'sw.js',
             },
           },
         },
