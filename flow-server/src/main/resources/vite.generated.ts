@@ -16,13 +16,13 @@ import settings from '#settingsImport#';
 import {
   AssetInfo,
   ChunkInfo,
+  build,
   defineConfig,
   mergeConfig,
   OutputOptions,
   PluginOption,
-  build,
-  UserConfigFn,
-  InlineConfig
+  InlineConfig,
+  UserConfigFn
 } from 'vite';
 import { getManifest, type ManifestTransform } from 'workbox-build';
 
@@ -117,8 +117,9 @@ function injectManifestToSWPlugin(): rollup.Plugin {
   };
 }
 
-function buildSWPlugin(): PluginOption {
+function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
   let buildConfig: InlineConfig;
+  const devMode = opts.devMode;
 
   return {
     name: 'vaadin:build-sw',
@@ -152,12 +153,12 @@ function buildSWPlugin(): PluginOption {
       };
     },
     async buildStart() {
-      if (buildConfig.mode === 'development') {
+      if (devMode) {
         await build(buildConfig);
       }
     },
     async closeBundle() {
-      if (buildConfig.mode !== 'development') {
+      if (!devMode) {
         await build({
           ...buildConfig,
           plugins: [injectManifestToSWPlugin(), brotli()]
@@ -726,7 +727,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       productionMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
-      settings.offlineEnabled && buildSWPlugin(),
+      settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
