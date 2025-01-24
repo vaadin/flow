@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -14,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
@@ -423,9 +425,21 @@ public class AppViewIT extends AbstractIT {
      * Static caching done by #isClientRouter can cause some tests to be flaky.
      */
     protected void waitForClientRouter() {
-        boolean hasClientRouter = (boolean) executeScript(
-                "return !!window.Vaadin.Flow.clients.TypeScript");
-        if (hasClientRouter) {
+        AtomicBoolean hasClientRouter = new AtomicBoolean(false);
+        // Tries the JS execution several times, to prevent failures caused
+        // by redirects and page reloads, such as the following error seen
+        // more frequently with Chrome 132
+        // aborted by navigation: loader has changed while resolving nodes
+        waitUntil(d -> {
+            try {
+                hasClientRouter.set((boolean) executeScript(
+                        "return !!window.Vaadin.Flow.clients.TypeScript"));
+                return true;
+            } catch (WebDriverException expected) {
+                return false;
+            }
+        });
+        if (hasClientRouter.get()) {
             waitForElementPresent(By.cssSelector("#outlet > *"));
         }
     }
