@@ -80,6 +80,10 @@ public class CleanFrontendUtil {
             }
             if (!lockFile.exists()) {
                 lockFile = new File(adapter.npmFolder(),
+                        Constants.PACKAGE_LOCK_BUN_1_2);
+            }
+            if (!lockFile.exists()) {
+                lockFile = new File(adapter.npmFolder(),
                         Constants.PACKAGE_LOCK_JSON);
             }
             if (lockFile.exists()) {
