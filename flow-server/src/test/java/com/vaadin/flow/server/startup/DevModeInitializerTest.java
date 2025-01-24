@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -185,21 +186,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         URLConnection urlConnection = Mockito.mock(URLConnection.class);
         Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
 
-        URL.setURLStreamHandlerFactory(protocol -> {
-            if (protocol.equals("vfs")) {
-                return new URLStreamHandler() {
-                    @Override
-                    protected URLConnection openConnection(URL u) {
-                        return urlConnection;
-                    }
-                };
-            }
-            return null;
-        });
-        URL url = new URL("vfs://some-non-existent-place" + path);
+        try {
+            URL.setURLStreamHandlerFactory(protocol -> {
+                if (protocol.equals("vfs")) {
+                    return new URLStreamHandler() {
+                        @Override
+                        protected URLConnection openConnection(URL u) {
+                            return urlConnection;
+                        }
+                    };
+                }
+                return null;
+            });
+            URL url = new URL("vfs://some-non-existent-place" + path);
 
-        loadingFsResources_allFilesExist(Collections.singletonList(url),
-                Constants.RESOURCES_FRONTEND_DEFAULT);
+            loadingFsResources_allFilesExist(Collections.singletonList(url),
+                    Constants.RESOURCES_FRONTEND_DEFAULT);
+        } finally {
+            Field field = URL.class.getDeclaredField("factory");
+            field.setAccessible(true);
+            field.set(null, null);
+        }
     }
 
     @Test
@@ -242,9 +249,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Always_Update_Generated_Webpack_Conf() throws Exception {
         File generatedWebpackFile = new File(webpackFile.getParentFile(),
                 FrontendUtils.WEBPACK_GENERATED);
-        try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
-            IOUtils.write("Hello world", writer);
-            writer.flush();
+        try {
+            // ensure the writer is closed eagerly to free up the file again
+            try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
+                IOUtils.write("Hello world", writer);
+                writer.flush();
+            }
             Assert.assertEquals("Hello world", IOUtils.toString(
                     generatedWebpackFile.toURI(), StandardCharsets.UTF_8));
             process();
@@ -260,7 +270,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         File generatedWebpackFile = new File(webpackFile.getParentFile(),
                 FrontendUtils.WEBPACK_GENERATED);
-        try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
+        try {
+            // ensure the writer is closed eagerly to free up the file again
+            try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
+                // NO-OP
+            }
+
             process();
 
             final String generated = IOUtils.toString(

@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -359,7 +360,7 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void isStaticResource_jarWarFileScheme_detectsAsStaticResources()
-            throws IOException {
+            throws IOException, NoSuchFieldException, IllegalAccessException {
         Assert.assertTrue("Can not run concurrently with other test",
                 StaticFileServer.openFileSystems.isEmpty());
 
@@ -375,22 +376,28 @@ public class StaticFileServerTest implements Serializable {
 
         generateJarInJar(archiveFile, tempArchive, warArchive);
 
-        // Instantiate URL stream handler factory to be able to handle war:
-        WarURLStreamHandlerFactory.getInstance();
+        try {
+            // Instantiate URL stream handler factory to be able to handle war:
+            WarURLStreamHandlerFactory.getInstance();
 
-        final URL folderResourceURL = new URL(
-                "jar:war:" + warFile.toURI().toURL() + "!/"
-                        + archiveFile.getName() + "!/frontend");
+            final URL folderResourceURL = new URL(
+                    "jar:war:" + warFile.toURI().toURL() + "!/"
+                            + archiveFile.getName() + "!/frontend");
 
-        setupRequestURI("", "", "/frontend/.");
-        Mockito.when(servletService.getStaticResource("/frontend/."))
-                .thenReturn(folderResourceURL);
+            setupRequestURI("", "", "/frontend/.");
+            Mockito.when(servletService.getStaticResource("/frontend/."))
+                    .thenReturn(folderResourceURL);
 
-        Assert.assertTrue(
-                "Request should return as static request as we can not determine non file resources in jar files.",
-                fileServer.isStaticResourceRequest(request));
+            Assert.assertTrue(
+                    "Request should return as static request as we can not determine non file resources in jar files.",
+                    fileServer.isStaticResourceRequest(request));
 
-        folder.delete();
+            folder.delete();
+        } finally {
+            Field field = URL.class.getDeclaredField("factory");
+            field.setAccessible(true);
+            field.set(null, null);
+        }
     }
 
     @Test
