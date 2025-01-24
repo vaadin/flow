@@ -11,8 +11,9 @@ public class BunUsedIT {
 
     @Test
     public void bunIsUsed() {
-        File testPackage = new File(Constants.PACKAGE_LOCK_BUN);
-        FileTestUtil.waitForFile(testPackage);
+        File bunLockFile = new File(Constants.PACKAGE_LOCK_BUN);
+        File bunLockFile1_2 = new File(Constants.PACKAGE_LOCK_BUN_1_2);
+        FileTestUtil.waitForFiles(bunLockFile, bunLockFile1_2);
     }
 
 }
