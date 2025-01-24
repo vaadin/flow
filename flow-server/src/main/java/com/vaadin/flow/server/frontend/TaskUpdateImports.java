@@ -84,7 +84,8 @@ public class TaskUpdateImports extends NodeUpdater {
         String lockFile;
         String toolName = TaskRunNpmInstall.getToolName(options);
         if (options.isEnableBun()) {
-            lockFile = Constants.PACKAGE_LOCK_BUN;
+            lockFile = Constants.PACKAGE_LOCK_BUN + "/"
+                    + Constants.PACKAGE_LOCK_BUN_1_2;
         } else if (options.isEnablePnpm()) {
             lockFile = Constants.PACKAGE_LOCK_YAML;
         } else {

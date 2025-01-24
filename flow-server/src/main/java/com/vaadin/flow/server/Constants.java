@@ -70,19 +70,24 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
-     * Name of the <code>npm</code> version locking ile.
+     * Name of the <code>npm</code> version locking file.
      */
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
 
     /**
-     * Name of the <code>pnpm</code> version locking ile.
+     * Name of the <code>pnpm</code> version locking file.
      */
     public static final String PACKAGE_LOCK_YAML = "pnpm-lock.yaml";
 
     /**
-     * Name of the <code>bun</code> version locking ile.
+     * Name of the <code>bun</code> version locking file.
      */
     public static final String PACKAGE_LOCK_BUN = "bun.lockb";
+
+    /**
+     * Name of the <code>bun</code> version locking file, starting from bun 1.2.
+     */
+    public static final String PACKAGE_LOCK_BUN_1_2 = "bun.lock";
 
     /**
      * Target folder constant.
