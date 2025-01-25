@@ -470,22 +470,27 @@ public class BinderConverterValidatorTest
         }
     }
 
-    @Test(expected = ValidationException.class)
-    public void save_beanValidationErrors() throws ValidationException {
+    @Test
+    public void save_beanValidationErrors() {
         Binder<Person> binder = new Binder<>();
         binder.forField(nameField).withValidator(new NotEmptyValidator<>("a"))
                 .bind(Person::getFirstName, Person::setFirstName);
 
-        binder.withValidator(Validator.from(person -> false, "b"));
+        binder.withValidator(Validator.alwaysFail("b"));
 
         Person person = new Person();
         nameField.setValue("foo");
         try {
             binder.writeBean(person);
-        } finally {
-            // Bean should have been updated for item validation but reverted
-            assertNull(person.getFirstName());
+            Assert.fail("Validation should have failed but it passed instead");
+        } catch (ValidationException ex) {
+            // writeBean() should run bean validations
+            Assert.assertEquals(1, ex.getBeanValidationErrors().size());
+            // field validations pass
+            Assert.assertEquals(0, ex.getFieldValidationErrors().size());
         }
+        // Bean should have been updated for item validation but reverted
+        assertNull(person.getFirstName());
     }
 
     @Test
