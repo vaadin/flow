@@ -36,6 +36,7 @@ import java.util.function.Function;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -352,10 +353,10 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     javaSourceFolder.getRoot().getAbsolutePath());
 
             Assert.assertFalse(generatedOpenApiJson.exists());
-            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
-                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                        Mockito.any())).thenReturn(true);
+            try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
+                    EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> EndpointRequestUtil
+                        .isHillaAvailable(Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
                 waitForDevServer();
@@ -420,10 +421,10 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     javaSourceFolder.getRoot().getAbsolutePath());
 
-            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
-                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                        Mockito.any())).thenReturn(true);
+            try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
+                    EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> EndpointRequestUtil
+                        .isHillaAvailable(Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
                 waitForDevServer();
