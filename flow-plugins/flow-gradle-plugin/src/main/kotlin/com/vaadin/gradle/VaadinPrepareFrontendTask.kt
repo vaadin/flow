@@ -16,13 +16,17 @@
 package com.vaadin.gradle
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
-import groovy.lang.Closure
+import com.vaadin.gradle.worker.*
 import org.gradle.api.DefaultTask
-import org.gradle.api.Task
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
-import kotlin.math.log
+import org.gradle.workers.WorkAction
+import javax.inject.Inject
+
 
 /**
  * This task checks that node and npm tools are installed, copies frontend
@@ -34,9 +38,13 @@ import kotlin.math.log
  * files) are up-to-date and have the same values as for previous build.
  */
 @CacheableTask
-public open class VaadinPrepareFrontendTask : DefaultTask() {
+public open class VaadinPrepareFrontendTask @Inject constructor(objectFactory: ObjectFactory) : DefaultTask() {
 
     private val config = PluginEffectiveConfiguration.get(project)
+
+    private val javaExecutionService = JavaExecutionService.from(objectFactory)
+
+    private val taskConfigurationFactory = VaadinTaskConfigurationFactory.from(project, config, true)
 
     /**
      * Defines an object containing all the inputs of this task.
@@ -59,12 +67,27 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
     @TaskAction
     public fun vaadinPrepareFrontend() {
         // Remove Frontend/generated folder to get clean files copied/generated
-        val adapter = GradlePluginAdapter(project, config, true)
         logger.debug("Running the vaadinPrepareFrontend task with effective configuration $config")
-        val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter)
+        
+        val taskConfiguration = taskConfigurationFactory.get()
 
-        logger.info("Generated token file $tokenFile")
-        check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
-        BuildFrontendUtil.prepareFrontend(adapter)
+        javaExecutionService.submit(VaadinPrepareFrontendWorkAction::class.java) {
+            it.getVaadinTaskConfiguration().set(taskConfiguration)
+        }
+    }
+
+    public abstract class VaadinPrepareFrontendWorkAction : WorkAction<VaadinWorkActionParameter> {
+        private val logger: Logger = Logging.getLogger(VaadinPrepareFrontendWorkAction::class.java)
+
+        override fun execute() {
+            val taskConfiguration = parameters.getVaadinTaskConfiguration().get()
+            val adapter = GradleWorkerApiAdapter.from(taskConfiguration, logger)
+
+            val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter)
+
+            logger.info("Generated token file $tokenFile")
+            check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
+            BuildFrontendUtil.prepareFrontend(adapter)
+        }
     }
 }
