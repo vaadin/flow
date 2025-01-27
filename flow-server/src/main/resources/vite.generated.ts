@@ -106,7 +106,7 @@ function injectManifestToSWPlugin(): rollup.Plugin {
         const { manifestEntries } = await getManifest({
           globDirectory: buildOutputFolder,
           globPatterns: ['**/*'],
-          globIgnores: ['**/*.br', 'pwa-icons/**', 'sw.js'],
+          globIgnores: ['**/*.br', 'pwa-icons/**'],
           manifestTransforms: [rewriteManifestIndexHtmlUrl],
           maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
         });
@@ -119,6 +119,7 @@ function injectManifestToSWPlugin(): rollup.Plugin {
 
 function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
   let buildConfig: InlineConfig;
+  let buildOutput: rollup.RollupOutput;
   const devMode = opts.devMode;
 
   return {
@@ -135,6 +136,7 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           'process.env.NODE_ENV': JSON.stringify(viteConfig.mode),
         },
         build: {
+          write: !devMode,
           minify: viteConfig.build.minify,
           outDir: viteConfig.build.outDir,
           sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
@@ -155,7 +157,12 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
     },
     async buildStart() {
       if (devMode) {
-        await build(buildConfig);
+        buildOutput = await build(buildConfig) as rollup.RollupOutput;
+      }
+    },
+    async load(id) {
+      if (id.endsWith('sw.js')) {
+        return buildOutput.output[0].code;
       }
     },
     async closeBundle() {
