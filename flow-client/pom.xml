@@ -192,6 +192,9 @@
                     <excludes>
                         <exclude>**/Gwt*.java</exclude>
                     </excludes>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${basedir}/../flow-server/src/main/java</additionalClasspathElement>
+                    </additionalClasspathElements>
                     <enableAssertions>true</enableAssertions>
                 </configuration>
             </plugin>
