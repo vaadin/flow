@@ -514,7 +514,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         ui.getPage().executeJs(
                 """
                         const $wnd = window;
-                        window.addEventListener('vaadin-ui-refresh', (ev) => {
+                        window.addEventListener('vaadin-refresh-ui', (ev) => {
                             const senderFn = $wnd.Vaadin?.Flow?.clients[$0]?.sendEventMessage;
                             if (senderFn) {
                                 senderFn(1, "ui-refresh", ev.detail);
