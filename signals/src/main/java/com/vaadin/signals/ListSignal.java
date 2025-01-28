@@ -31,10 +31,10 @@ public class ListSignal {
      * last position.
      *
      * @param after
-     *            id of the node to insert immediately after, nor
+     *            id of the node to insert immediately after, or
      *            <code>null</code> to not define a constraint
      * @param before
-     *            id of the node to insert immediately before, nor
+     *            id of the node to insert immediately before, or
      *            <code>null</code> to not define a constraint
      */
     public record ListPosition(Id after, Id before) {

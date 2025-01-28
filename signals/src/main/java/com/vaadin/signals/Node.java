@@ -65,7 +65,7 @@ public sealed interface Node {
      *            the JSON value of this node, or <code>null</code> if there is
      *            no value
      * @param listChildren
-     *            a list of child ids, or the an list if the node has no list
+     *            a list of child ids, or an empty list if the node has no list
      *            children
      * @param mapChildren
      *            a sequenced map from key to child id, or an empty map if the
