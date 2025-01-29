@@ -47,6 +47,7 @@ public interface HasSize extends HasElement {
      */
     default void setWidth(String width) {
         getElement().getStyle().setWidth(width);
+        getElement().removeAttribute("data-v-width-full");
     }
 
     /**
@@ -194,6 +195,7 @@ public interface HasSize extends HasElement {
      */
     default void setHeight(String height) {
         getElement().getStyle().setHeight(height);
+        getElement().removeAttribute("data-v-height-full");
     }
 
     /**
@@ -332,20 +334,49 @@ public interface HasSize extends HasElement {
      * This is just a convenience method which delegates its call to the
      * {@link #setWidth(String)} and {@link #setHeight(String)} methods with
      * {@literal "100%"} as the argument value
+     * <p>
+     * When adding full-size components as a child of a Vaadin layout component
+     * that is based on CSS Flexbox, such as HorizontalLayout or VerticalLayout,
+     * this can result in unexpected behavior. For example, other components
+     * with a fixed size may shrink to allow the full-size component to take up
+     * as much space as possible, or the full-size component may cause the
+     * layout to overflow. To improve this, you can enable the
+     * {@code com.vaadin.experimental.layoutImprovements} feature flag to
+     * effectively make full-size components take up the <b>remaining</b> space
+     * in the layout, rather than explicitly using 100% size of the layout. This
+     * applies additional CSS styles that allow the component to shrink below
+     * 100% if there are other components with fixed or relative sizes in the
+     * layout.
      */
     default void setSizeFull() {
         setWidth("100%");
         setHeight("100%");
+        getElement().setAttribute("data-v-width-full", true);
+        getElement().setAttribute("data-v-height-full", true);
     }
 
     /**
      * Sets the width of the component to "100%".
      * <p>
      * This is just a convenience method which delegates its call to the
-     * {@link #setWidth(String)} with {@literal "100%"} as the argument value
+     * {@link #setWidth(String)} with {@literal "100%"} as the argument value.
+     * <p>
+     * When adding full-size components as a child of a Vaadin layout component
+     * that is based on CSS Flexbox, such as HorizontalLayout or VerticalLayout,
+     * this can result in unexpected behavior. For example, other components
+     * with a fixed size may shrink to allow the full-size component to take up
+     * as much space as possible, or the full-size component may cause the
+     * layout to overflow. To improve this, you can enable the
+     * {@code com.vaadin.experimental.layoutImprovements} feature flag to
+     * effectively make full-size components take up the <b>remaining</b> space
+     * in the layout, rather than explicitly using 100% size of the layout. This
+     * applies additional CSS styles that allow the component to shrink below
+     * 100% if there are other components with fixed or relative sizes in the
+     * layout.
      */
     default void setWidthFull() {
         setWidth("100%");
+        getElement().setAttribute("data-v-width-full", true);
     }
 
     /**
@@ -353,9 +384,23 @@ public interface HasSize extends HasElement {
      * <p>
      * This is just a convenience method which delegates its call to the
      * {@link #setHeight(String)} with {@literal "100%"} as the argument value
+     * <p>
+     * When adding full-size components as a child of a Vaadin layout component
+     * that is based on CSS Flexbox, such as HorizontalLayout or VerticalLayout,
+     * this can result in unexpected behavior. For example, other components
+     * with a fixed size may shrink to allow the full-size component to take up
+     * as much space as possible, or the full-size component may cause the
+     * layout to overflow. To improve this, you can enable the
+     * {@code com.vaadin.experimental.layoutImprovements} feature flag to
+     * effectively make full-size components take up the <b>remaining</b> space
+     * in the layout, rather than explicitly using 100% size of the layout. This
+     * applies additional CSS styles that allow the component to shrink below
+     * 100% if there are other components with fixed or relative sizes in the
+     * layout.
      */
     default void setHeightFull() {
         setHeight("100%");
+        getElement().setAttribute("data-v-height-full", true);
     }
 
     /**

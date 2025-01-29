@@ -137,6 +137,47 @@ public class HasSizeTest {
     }
 
     @Test
+    public void setSizeFull_addsDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setSizeFull();
+
+        Assert.assertTrue(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertTrue(
+                component.getElement().hasAttribute("data-v-height-full"));
+    }
+
+    @Test
+    public void setSizeFull_setSize_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setSizeFull();
+
+        component.setWidth("10px");
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertTrue(
+                component.getElement().hasAttribute("data-v-height-full"));
+
+        component.setHeight("10px");
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-height-full"));
+    }
+
+    @Test
+    public void setSizeFull_setSizeUndefined_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setSizeFull();
+        component.setSizeUndefined();
+
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-height-full"));
+    }
+
+    @Test
     public void setWidthFull() {
         HasSizeComponent component = new HasSizeComponent();
         component.setWidthFull();
@@ -145,11 +186,57 @@ public class HasSizeTest {
     }
 
     @Test
+    public void setWidthFull_addsDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setWidthFull();
+
+        Assert.assertTrue(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-height-full"));
+    }
+
+    @Test
+    public void setWidthFull_setWidth_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setWidthFull();
+        component.setWidth("10px");
+
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-height-full"));
+    }
+
+    @Test
     public void setHeightFull() {
         HasSizeComponent component = new HasSizeComponent();
         component.setHeightFull();
 
         Assert.assertEquals("100%", component.getHeight());
+    }
+
+    @Test
+    public void setHeightFull_addsDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setHeightFull();
+
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertTrue(
+                component.getElement().hasAttribute("data-v-height-full"));
+    }
+
+    @Test
+    public void setHeightFull_setHeight_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setHeightFull();
+        component.setHeight("10px");
+
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-width-full"));
+        Assert.assertFalse(
+                component.getElement().hasAttribute("data-v-height-full"));
     }
 
     @Test
