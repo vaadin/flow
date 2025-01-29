@@ -47,7 +47,7 @@ public interface HasSize extends HasElement {
      */
     default void setWidth(String width) {
         getElement().getStyle().setWidth(width);
-        getElement().removeAttribute("data-v-width-full");
+        getElement().removeAttribute("data-width-full");
     }
 
     /**
@@ -195,7 +195,7 @@ public interface HasSize extends HasElement {
      */
     default void setHeight(String height) {
         getElement().getStyle().setHeight(height);
-        getElement().removeAttribute("data-v-height-full");
+        getElement().removeAttribute("data-height-full");
     }
 
     /**
@@ -351,8 +351,8 @@ public interface HasSize extends HasElement {
     default void setSizeFull() {
         setWidth("100%");
         setHeight("100%");
-        getElement().setAttribute("data-v-width-full", true);
-        getElement().setAttribute("data-v-height-full", true);
+        getElement().setAttribute("data-width-full", true);
+        getElement().setAttribute("data-height-full", true);
     }
 
     /**
@@ -376,7 +376,7 @@ public interface HasSize extends HasElement {
      */
     default void setWidthFull() {
         setWidth("100%");
-        getElement().setAttribute("data-v-width-full", true);
+        getElement().setAttribute("data-width-full", true);
     }
 
     /**
@@ -400,7 +400,7 @@ public interface HasSize extends HasElement {
      */
     default void setHeightFull() {
         setHeight("100%");
-        getElement().setAttribute("data-v-height-full", true);
+        getElement().setAttribute("data-height-full", true);
     }
 
     /**

@@ -142,9 +142,9 @@ public class HasSizeTest {
         component.setSizeFull();
 
         Assert.assertTrue(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertTrue(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
     }
 
     @Test
@@ -154,15 +154,15 @@ public class HasSizeTest {
 
         component.setWidth("10px");
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertTrue(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
 
         component.setHeight("10px");
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
     }
 
     @Test
@@ -172,9 +172,9 @@ public class HasSizeTest {
         component.setSizeUndefined();
 
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
     }
 
     @Test
@@ -191,9 +191,9 @@ public class HasSizeTest {
         component.setWidthFull();
 
         Assert.assertTrue(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
     }
 
     @Test
@@ -203,9 +203,9 @@ public class HasSizeTest {
         component.setWidth("10px");
 
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
     }
 
     @Test
@@ -222,9 +222,9 @@ public class HasSizeTest {
         component.setHeightFull();
 
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertTrue(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
     }
 
     @Test
@@ -234,9 +234,9 @@ public class HasSizeTest {
         component.setHeight("10px");
 
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-width-full"));
+                component.getElement().hasAttribute("data-width-full"));
         Assert.assertFalse(
-                component.getElement().hasAttribute("data-v-height-full"));
+                component.getElement().hasAttribute("data-height-full"));
     }
 
     @Test
