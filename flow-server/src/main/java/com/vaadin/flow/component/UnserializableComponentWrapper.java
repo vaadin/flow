@@ -122,6 +122,7 @@ public class UnserializableComponentWrapper<S extends Serializable, T extends Co
     public static void afterDeserialization(UI ui) {
         doWithWrapper(ui, wrapper -> {
             wrapper.restoreComponent();
+            flush(wrapper);
         });
     }
 
