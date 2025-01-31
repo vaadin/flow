@@ -103,8 +103,9 @@ public class FeatureFlags implements Serializable {
             "Accessible disabled buttons", "accessibleDisabledButtons",
             "https://github.com/vaadin/web-components/issues/4585", true, null);
 
-    public static final Feature LAYOUT_IMPROVEMENTS = new Feature(
-            "Layout improvements", "layoutImprovements",
+    public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = new Feature(
+            "HorizontalLayout and VerticalLayout improvements",
+            "layoutComponentImprovements",
             "https://github.com/vaadin/flow-components/issues/6998", true,
             null);
 
@@ -138,7 +139,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(CARD_COMPONENT));
         features.add(new Feature(REACT19));
         features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
-        features.add(new Feature(LAYOUT_IMPROVEMENTS));
+        features.add(new Feature(LAYOUT_COMPONENT_IMPROVEMENTS));
         loadProperties();
     }
 
