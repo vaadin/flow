@@ -2136,22 +2136,4 @@ public class UI extends Component
     public static class ClientViewPlaceholder extends Component {
     }
 
-    @Serial
-    private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        UI ui = this;
-        in.registerValidation(() -> {
-            // Restore unserializable components. Needs to be done when UI is
-            // fully deserialized
-            Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                    .setCurrent(ui);
-            try {
-                UnserializableComponentWrapper.afterDeserialization(ui);
-            } finally {
-                CurrentInstance.restoreInstances(instances);
-            }
-        }, 0);
-    }
-
 }

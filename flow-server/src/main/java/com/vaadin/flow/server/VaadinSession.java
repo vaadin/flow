@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionBindingEvent;
 import jakarta.servlet.http.HttpSessionBindingListener;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -46,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UnserializableComponentWrapper;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -1103,6 +1103,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // injected by VaadinService when required.
         lock = new ReentrantLock();
         lock.lock();
+        stream.registerValidation(this::onDeserializationCompleted, 0);
         try {
             stream.defaultReadObject();
             // Add-ons may have Listener classes that nullify themselves during
@@ -1120,6 +1121,28 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             lock.unlock();
             lock = null;
             CurrentInstance.restoreInstances(old);
+        }
+    }
+
+    private void onDeserializationCompleted() {
+        Lock originalLock = lock;
+        if (originalLock == null) {
+            lock = new ReentrantLock();
+        }
+        lock.lock();
+        try {
+            for (UI ui : uIs.values()) {
+                Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                        .setCurrent(ui);
+                try {
+                    UnserializableComponentWrapper.afterDeserialization(ui);
+                } finally {
+                    CurrentInstance.restoreInstances(instances);
+                }
+            }
+        } finally {
+            lock.unlock();
+            lock = originalLock;
         }
     }
 

@@ -29,7 +29,12 @@ public class UnserializableComponentWrapper<S extends Serializable, T extends Co
     private SerializableFunction<S, T> deserializer;
     private SerializableFunction<T, S> serializer;
 
-    public UnserializableComponentWrapper(T component,
+    public UnserializableComponentWrapper(T component) {
+        this.component = Objects.requireNonNull(component);
+        getElement().appendChild(component.getElement());
+    }
+
+    private UnserializableComponentWrapper(T component,
             SerializableFunction<T, S> serializer,
             SerializableFunction<S, T> deserializer) {
         this.component = Objects.requireNonNull(component);
@@ -54,6 +59,7 @@ public class UnserializableComponentWrapper<S extends Serializable, T extends Co
     private void writeObject(java.io.ObjectOutputStream out)
             throws IOException {
         state = serializer.apply(component);
+        out.defaultWriteObject();
     }
 
     /**
@@ -113,10 +119,9 @@ public class UnserializableComponentWrapper<S extends Serializable, T extends Co
      * @param ui
      *            The ui to which unserializable components should be added.
      */
-    static void afterDeserialization(UI ui) {
+    public static void afterDeserialization(UI ui) {
         doWithWrapper(ui, wrapper -> {
             wrapper.restoreComponent();
-            flush(wrapper);
         });
     }
 
