@@ -12,6 +12,7 @@ package com.vaadin.flow.component;
 import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.dom.Element;
@@ -25,42 +26,50 @@ public class UnserializableComponentWrapper<S extends Serializable, T extends Co
 
     private transient T component;
     private S state;
-    private SerializableFunction<S, T> generator;
-    private SerializableFunction<T, S> saver;
+    private SerializableFunction<S, T> deserializer;
+    private SerializableFunction<T, S> serializer;
 
-    public UnserializableComponentWrapper(T component) {
+    public UnserializableComponentWrapper(T component,
+            SerializableFunction<T, S> serializer,
+            SerializableFunction<S, T> deserializer) {
+        this.component = Objects.requireNonNull(component);
+        this.serializer = Objects.requireNonNull(serializer);
+        this.deserializer = Objects.requireNonNull(deserializer);
         getElement().appendChild(component.getElement());
-        this.component = component;
     }
 
-    public static <S extends Serializable, T extends Component> UnserializableComponentWrapper<S, T> of(
-            T component) {
-        return new UnserializableComponentWrapper<>(component);
-    }
-
-    public UnserializableComponentWrapper<S, T> withGenerator(
-            SerializableFunction<S, T> generator) {
-        this.generator = generator;
+    public UnserializableComponentWrapper<S, T> withComponentDeserializer(
+            SerializableFunction<S, T> deserializer) {
+        this.deserializer = Objects.requireNonNull(deserializer);
         return this;
     }
 
-    public UnserializableComponentWrapper<S, T> withSaver(
-            SerializableFunction<T, S> saver) {
-        this.saver = saver;
+    public UnserializableComponentWrapper<S, T> withComponentSerializer(
+            SerializableFunction<T, S> serializer) {
+        this.serializer = Objects.requireNonNull(serializer);
         return this;
     }
 
     @Serial
     private void writeObject(java.io.ObjectOutputStream out)
             throws IOException {
-        state = saver.apply(component);
-        if (!component.isAttached()) {
-            out.defaultWriteObject();
-        } else {
-            throw new IllegalStateException("Component still attached");
-        }
+        state = serializer.apply(component);
     }
 
+    /**
+     * Prepares the UI for serialization, removing unserializable components
+     * from the component tree.
+     * <p>
+     * </p>
+     * The changes to the UI caused by the removal are silently ignored.
+     * <p>
+     * </p>
+     * <b>IMPORTANT NOTE:</b> any detach listener registered on the wrapped
+     * components will be executed.
+     *
+     * @param ui
+     *            The ui to prepare for serialization.
+     */
     static void beforeSerialization(UI ui) {
         doWithWrapper(ui, wrapper -> {
             wrapper.component.removeFromParent();
@@ -68,6 +77,21 @@ public class UnserializableComponentWrapper<S extends Serializable, T extends Co
         });
     }
 
+    /**
+     * Restores the UI adding the unserializable components to the component
+     * tree.
+     * <p>
+     * </p>
+     * The changes to the UI caused by re-adding the components are silently
+     * ignored.
+     * <p>
+     * </p>
+     * <b>IMPORTANT NOTE:</b> any attach listener registered on the wrapped
+     * components will be executed.
+     *
+     * @param ui
+     *            The ui to prepare for serialization.
+     */
     static void afterSerialization(UI ui) {
         doWithWrapper(ui, wrapper -> {
             wrapper.state = null;
@@ -76,15 +100,28 @@ public class UnserializableComponentWrapper<S extends Serializable, T extends Co
         });
     }
 
+    /**
+     * Regenerates and adds unserializable components to the UI tree.
+     * <p>
+     * </p>
+     * The changes to the UI caused by the removal are silently ignored.
+     * <p>
+     * </p>
+     * <b>IMPORTANT NOTE:</b> any attach listener registered on the wrapped
+     * component will be executed.
+     *
+     * @param ui
+     *            The ui to which unserializable components should be added.
+     */
     static void afterDeserialization(UI ui) {
         doWithWrapper(ui, wrapper -> {
             wrapper.restoreComponent();
-            // flush(wrapper);
+            flush(wrapper);
         });
     }
 
     private void restoreComponent() {
-        component = generator.apply(state);
+        component = deserializer.apply(state);
         getElement().appendChild(component.getElement());
     }
 

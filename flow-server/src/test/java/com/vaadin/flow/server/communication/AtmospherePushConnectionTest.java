@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+import com.vaadin.tests.util.MockUI;
 
 /**
  * @author Vaadin Ltd
@@ -76,8 +77,7 @@ public class AtmospherePushConnectionTest {
 
     @Test
     public void testSerialization() throws Exception {
-
-        UI ui = Mockito.mock(UI.class);
+        UI ui = new UI();
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
 
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);

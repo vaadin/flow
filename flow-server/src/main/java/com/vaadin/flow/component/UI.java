@@ -2140,15 +2140,18 @@ public class UI extends Component
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        // Restore unserializable components. Needs to be done when UI is
-        // fully deserialized
-        Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .setCurrent(this);
-        try {
-            UnserializableComponentWrapper.afterDeserialization(this);
-        } finally {
-            CurrentInstance.restoreInstances(instances);
-        }
+        UI ui = this;
+        in.registerValidation(() -> {
+            // Restore unserializable components. Needs to be done when UI is
+            // fully deserialized
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .setCurrent(ui);
+            try {
+                UnserializableComponentWrapper.afterDeserialization(ui);
+            } finally {
+                CurrentInstance.restoreInstances(instances);
+            }
+        }, 0);
     }
 
 }
