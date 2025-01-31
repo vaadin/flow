@@ -342,6 +342,44 @@ public class AppViewIT extends AbstractIT {
         assertMenuListContains("PublicView, PrivateView, AdminView");
     }
 
+    @Test
+    public void admin_impersonate_user_shows_expected() {
+        open(LOGIN_PATH);
+        loginAdmin();
+
+        List<MenuItem> menuItems = getMenuItems();
+        List<MenuItem> expectedItems = new ArrayList<>();
+
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", true));
+        Assert.assertEquals(expectedItems, menuItems);
+
+        Assert.assertTrue(
+                $(ButtonElement.class).id("impersonate").isDisplayed());
+
+        $(ButtonElement.class).id("impersonate").click();
+
+        expectedItems.clear();
+        menuItems = getMenuItems();
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", false));
+        Assert.assertEquals(expectedItems, menuItems);
+
+        // navigateTo("private");
+
+        Assert.assertTrue(
+                $(ButtonElement.class).id("exit-impersonate").isDisplayed());
+        $(ButtonElement.class).id("exit-impersonate").click();
+
+        expectedItems.clear();
+        menuItems = getMenuItems();
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", true));
+    }
+
     private void assertMenuListContains(String expected) {
         TestBenchElement menuList = waitUntil(driver -> $("*").id("menu-list"));
         String menuListText = menuList.getText();
