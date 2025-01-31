@@ -341,12 +341,12 @@ public interface HasSize extends HasElement {
      * with a fixed size may shrink to allow the full-size component to take up
      * as much space as possible, or the full-size component may cause the
      * layout to overflow. To improve this, you can enable the
-     * {@code com.vaadin.experimental.layoutImprovements} feature flag to
-     * effectively make full-size components take up the <b>remaining</b> space
-     * in the layout, rather than explicitly using 100% size of the layout. This
-     * applies additional CSS styles that allow the component to shrink below
-     * 100% if there are other components with fixed or relative sizes in the
-     * layout.
+     * {@code com.vaadin.experimental.layoutComponentImprovements} feature flag
+     * to effectively make full-size components take up the <b>remaining</b>
+     * space in the layout, rather than explicitly using 100% size of the
+     * layout. This applies additional CSS styles that allow the component to
+     * shrink below 100% if there are other components with fixed or relative
+     * sizes in the layout.
      */
     default void setSizeFull() {
         setWidth("100%");
@@ -367,12 +367,12 @@ public interface HasSize extends HasElement {
      * with a fixed size may shrink to allow the full-size component to take up
      * as much space as possible, or the full-size component may cause the
      * layout to overflow. To improve this, you can enable the
-     * {@code com.vaadin.experimental.layoutImprovements} feature flag to
-     * effectively make full-size components take up the <b>remaining</b> space
-     * in the layout, rather than explicitly using 100% size of the layout. This
-     * applies additional CSS styles that allow the component to shrink below
-     * 100% if there are other components with fixed or relative sizes in the
-     * layout.
+     * {@code com.vaadin.experimental.layoutComponentImprovements} feature flag
+     * to effectively make full-size components take up the <b>remaining</b>
+     * space in the layout, rather than explicitly using 100% size of the
+     * layout. This applies additional CSS styles that allow the component to
+     * shrink below 100% if there are other components with fixed or relative
+     * sizes in the layout.
      */
     default void setWidthFull() {
         setWidth("100%");
@@ -391,12 +391,12 @@ public interface HasSize extends HasElement {
      * with a fixed size may shrink to allow the full-size component to take up
      * as much space as possible, or the full-size component may cause the
      * layout to overflow. To improve this, you can enable the
-     * {@code com.vaadin.experimental.layoutImprovements} feature flag to
-     * effectively make full-size components take up the <b>remaining</b> space
-     * in the layout, rather than explicitly using 100% size of the layout. This
-     * applies additional CSS styles that allow the component to shrink below
-     * 100% if there are other components with fixed or relative sizes in the
-     * layout.
+     * {@code com.vaadin.experimental.layoutComponentImprovements} feature flag
+     * to effectively make full-size components take up the <b>remaining</b>
+     * space in the layout, rather than explicitly using 100% size of the
+     * layout. This applies additional CSS styles that allow the component to
+     * shrink below 100% if there are other components with fixed or relative
+     * sizes in the layout.
      */
     default void setHeightFull() {
         setHeight("100%");
