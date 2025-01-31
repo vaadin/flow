@@ -1096,6 +1096,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
+        // Set a temporary lock to make deserialization work for session object
+        // that requires VaadinSession to be locked, e.g. Spring Vaadin scopes
+        // and related beans. The lock is removed once deserialization of the
+        // VaadinSession object is completed and the proper lock will be
+        // injected by VaadinService when required.
+        lock = new ReentrantLock();
+        lock.lock();
         try {
             stream.defaultReadObject();
             // Add-ons may have Listener classes that nullify themselves during
@@ -1110,6 +1117,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
+            lock.unlock();
+            lock = null;
             CurrentInstance.restoreInstances(old);
         }
     }

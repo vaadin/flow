@@ -831,9 +831,11 @@ public abstract class Component
         if (this instanceof UI ui) {
             Map<Class<?>, CurrentInstance> instances = CurrentInstance
                     .setCurrent(ui);
+            UnserializableComponentWrapper.beforeSerialization(ui);
             try {
                 out.defaultWriteObject();
             } finally {
+                UnserializableComponentWrapper.afterSerialization(ui);
                 CurrentInstance.restoreInstances(instances);
             }
         } else {

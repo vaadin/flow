@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.component;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -2132,4 +2135,20 @@ public class UI extends Component
     @AnonymousAllowed
     public static class ClientViewPlaceholder extends Component {
     }
+
+    @Serial
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        // Restore unserializable components. Needs to be done when UI is
+        // fully deserialized
+        Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                .setCurrent(this);
+        try {
+            UnserializableComponentWrapper.afterDeserialization(this);
+        } finally {
+            CurrentInstance.restoreInstances(instances);
+        }
+    }
+
 }
