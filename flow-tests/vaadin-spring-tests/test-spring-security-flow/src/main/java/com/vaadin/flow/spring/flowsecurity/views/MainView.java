@@ -109,10 +109,9 @@ public class MainView extends AppLayout {
                 impersonate.setId("impersonate");
                 layout.add(impersonate);
             } else if (SecurityContextHolder.getContext().getAuthentication()
-                    .getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toSet())
-                    .contains(SwitchUserFilter.ROLE_PREVIOUS_ADMINISTRATOR)) {
+                    .getAuthorities().stream().anyMatch(
+                            auth -> SwitchUserFilter.ROLE_PREVIOUS_ADMINISTRATOR
+                                    .equals(auth.getAuthority()))) {
                 Button impersonate = new Button("Exit impersonation",
                         e -> getUI().ifPresent(ui -> ui.getPage()
                                 .setLocation("/impersonate/exit")));
