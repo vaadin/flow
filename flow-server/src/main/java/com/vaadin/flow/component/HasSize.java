@@ -349,10 +349,8 @@ public interface HasSize extends HasElement {
      * sizes in the layout.
      */
     default void setSizeFull() {
-        setWidth("100%");
-        setHeight("100%");
-        getElement().setAttribute("data-width-full", true);
-        getElement().setAttribute("data-height-full", true);
+        setWidthFull();
+        setHeightFull();
     }
 
     /**
