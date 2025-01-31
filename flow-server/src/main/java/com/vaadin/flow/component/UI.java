@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.component;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serial;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
