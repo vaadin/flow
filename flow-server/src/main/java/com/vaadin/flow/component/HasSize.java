@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
+import com.vaadin.flow.server.Constants;
 
 /**
  * Any component implementing this interface supports setting the size of the
@@ -47,7 +48,7 @@ public interface HasSize extends HasElement {
      */
     default void setWidth(String width) {
         getElement().getStyle().setWidth(width);
-        getElement().removeAttribute("data-width-full");
+        getElement().removeAttribute(Constants.ATTRIBUTE_WIDTH_FULL);
     }
 
     /**
@@ -195,7 +196,7 @@ public interface HasSize extends HasElement {
      */
     default void setHeight(String height) {
         getElement().getStyle().setHeight(height);
-        getElement().removeAttribute("data-height-full");
+        getElement().removeAttribute(Constants.ATTRIBUTE_HEIGHT_FULL);
     }
 
     /**
@@ -374,7 +375,7 @@ public interface HasSize extends HasElement {
      */
     default void setWidthFull() {
         setWidth("100%");
-        getElement().setAttribute("data-width-full", true);
+        getElement().setAttribute(Constants.ATTRIBUTE_WIDTH_FULL, true);
     }
 
     /**
@@ -398,7 +399,7 @@ public interface HasSize extends HasElement {
      */
     default void setHeightFull() {
         setHeight("100%");
-        getElement().setAttribute("data-height-full", true);
+        getElement().setAttribute(Constants.ATTRIBUTE_HEIGHT_FULL, true);
     }
 
     /**
