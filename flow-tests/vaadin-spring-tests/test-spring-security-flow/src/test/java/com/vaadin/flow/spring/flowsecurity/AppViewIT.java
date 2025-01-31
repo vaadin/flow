@@ -17,6 +17,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 
+import com.vaadin.flow.component.applayout.testbench.AppLayoutElement;
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.AdminView;
@@ -355,6 +356,8 @@ public class AppViewIT extends AbstractIT {
         expectedItems.add(new MenuItem("admin", "Admin", true));
         Assert.assertEquals(expectedItems, menuItems);
 
+        $(AppLayoutElement.class).first().setDrawerOpened(true);
+
         Assert.assertTrue(
                 $(ButtonElement.class).id("impersonate").isDisplayed());
 
@@ -367,7 +370,7 @@ public class AppViewIT extends AbstractIT {
         expectedItems.add(new MenuItem("admin", "Admin", false));
         Assert.assertEquals(expectedItems, menuItems);
 
-        // navigateTo("private");
+        $(AppLayoutElement.class).first().setDrawerOpened(true);
 
         Assert.assertTrue(
                 $(ButtonElement.class).id("exit-impersonate").isDisplayed());
@@ -378,6 +381,7 @@ public class AppViewIT extends AbstractIT {
         expectedItems.add(new MenuItem("", "Public", true));
         expectedItems.add(new MenuItem("private", "Private", true));
         expectedItems.add(new MenuItem("admin", "Admin", true));
+        Assert.assertEquals(expectedItems, menuItems);
     }
 
     private void assertMenuListContains(String expected) {
