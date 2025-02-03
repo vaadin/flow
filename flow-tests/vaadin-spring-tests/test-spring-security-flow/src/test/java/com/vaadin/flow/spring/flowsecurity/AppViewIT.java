@@ -12,11 +12,13 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 
+import com.vaadin.flow.component.applayout.testbench.AppLayoutElement;
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.AdminView;
@@ -340,6 +342,49 @@ public class AppViewIT extends AbstractIT {
         loginAdmin();
         navigateToClientMenuList();
         assertMenuListContains("PublicView, PrivateView, AdminView");
+    }
+
+    @Test
+    public void admin_impersonate_user_shows_expected() {
+        Assume.assumeTrue(getUrlMappingBasePath().equals(""));
+
+        open(LOGIN_PATH);
+        loginAdmin();
+
+        List<MenuItem> menuItems = getMenuItems();
+        List<MenuItem> expectedItems = new ArrayList<>();
+
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", true));
+        Assert.assertEquals(expectedItems, menuItems);
+
+        $(AppLayoutElement.class).first().setDrawerOpened(true);
+
+        Assert.assertTrue(
+                $(ButtonElement.class).id("impersonate").isDisplayed());
+
+        $(ButtonElement.class).id("impersonate").click();
+
+        expectedItems.clear();
+        menuItems = getMenuItems();
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", false));
+        Assert.assertEquals(expectedItems, menuItems);
+
+        $(AppLayoutElement.class).first().setDrawerOpened(true);
+
+        Assert.assertTrue(
+                $(ButtonElement.class).id("exit-impersonate").isDisplayed());
+        $(ButtonElement.class).id("exit-impersonate").click();
+
+        expectedItems.clear();
+        menuItems = getMenuItems();
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", true));
+        Assert.assertEquals(expectedItems, menuItems);
     }
 
     private void assertMenuListContains(String expected) {

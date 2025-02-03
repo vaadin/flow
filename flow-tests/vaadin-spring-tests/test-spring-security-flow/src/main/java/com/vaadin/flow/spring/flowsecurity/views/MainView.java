@@ -3,8 +3,13 @@ package com.vaadin.flow.spring.flowsecurity.views;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -28,6 +33,8 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
+
+import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
 public class MainView extends AppLayout {
 
@@ -95,6 +102,23 @@ public class MainView extends AppLayout {
             });
             layout.add(login);
         } else {
+            if (securityUtils.getAuthenticatedUserInfo().getRoles()
+                    .contains(ROLE_ADMIN)) {
+                Button impersonate = new Button("Impersonate John",
+                        e -> getUI().ifPresent(ui -> ui.getPage()
+                                .setLocation("impersonate?username=john")));
+                impersonate.setId("impersonate");
+                layout.add(impersonate);
+            } else if (SecurityContextHolder.getContext().getAuthentication()
+                    .getAuthorities().stream().anyMatch(
+                            auth -> SwitchUserFilter.ROLE_PREVIOUS_ADMINISTRATOR
+                                    .equals(auth.getAuthority()))) {
+                Button impersonate = new Button("Exit impersonation",
+                        e -> getUI().ifPresent(ui -> ui.getPage()
+                                .setLocation("impersonate/exit")));
+                impersonate.setId("exit-impersonate");
+                layout.add(impersonate);
+            }
             Button logout = new Button("Logout");
             logout.setId("logout");
             logout.addClickListener(e -> {

@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
@@ -20,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.component.UI;
@@ -33,6 +36,7 @@ import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @EnableWebSecurity
 @Configuration
@@ -78,6 +82,10 @@ public class SecurityConfig extends VaadinWebSecurity {
                     .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(antMatchers("/public/**", "/error"))
                     .permitAll());
+
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/switchUser")).hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/impersonate/exit")).hasRole("PREVIOUS_ADMINISTRATOR"));
+
         // @formatter:on
         super.configure(http);
         if (getLogoutSuccessUrl().equals("/")) {
@@ -139,6 +147,19 @@ public class SecurityConfig extends VaadinWebSecurity {
                 }
             }
         };
+    }
+
+    @Bean
+    @DependsOn("VaadinSecurityContextHolderStrategy")
+    public SwitchUserFilter switchUserFilter() {
+        SwitchUserFilter filter = new SwitchUserFilter();
+        filter.setUserDetailsService(userDetailsService());
+        filter.setSwitchUserMatcher(antMatcher(HttpMethod.GET, "/impersonate"));
+        filter.setSwitchFailureUrl("/switchUser");
+        filter.setExitUserMatcher(
+                antMatcher(HttpMethod.GET, "/impersonate/exit"));
+        filter.setTargetUrl("/");
+        return filter;
     }
 
 }

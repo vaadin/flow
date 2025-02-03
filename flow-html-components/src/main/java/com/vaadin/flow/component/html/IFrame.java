@@ -20,6 +20,8 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -142,6 +144,19 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     public void setSrc(String src) {
         set(srcDescriptor, src);
+    }
+
+    /**
+     * Sets the source of the iframe with a source URL with the URL of the given
+     * {@link StreamResource}.
+     *
+     * @see #setSrc(String)
+     *
+     * @param src
+     *            the resource value, not null
+     */
+    public void setSrc(AbstractStreamResource src) {
+        getElement().setAttribute("src", src);
     }
 
     /**
