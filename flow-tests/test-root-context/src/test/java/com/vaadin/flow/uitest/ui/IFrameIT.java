@@ -25,4 +25,13 @@ public class IFrameIT extends ChromeBrowserTest {
         waitUntil(webDriver -> "B"
                 .equals(findElement(By.id("Friday")).getText()));
     }
+
+    @Test
+    public void testIFrameWithDynamicResource() {
+        open();
+
+        waitForElementPresent(By.id("frame2"));
+        getDriver().switchTo().frame("frame2");
+        Assert.assertEquals("Dynamic", findElement(By.id("content")).getText());
+    }
 }
