@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -105,7 +106,7 @@ public class MainView extends AppLayout {
                     .contains(ROLE_ADMIN)) {
                 Button impersonate = new Button("Impersonate John",
                         e -> getUI().ifPresent(ui -> ui.getPage()
-                                .setLocation("/impersonate?username=john")));
+                                .setLocation("impersonate?username=john")));
                 impersonate.setId("impersonate");
                 layout.add(impersonate);
             } else if (SecurityContextHolder.getContext().getAuthentication()
@@ -114,7 +115,7 @@ public class MainView extends AppLayout {
                                     .equals(auth.getAuthority()))) {
                 Button impersonate = new Button("Exit impersonation",
                         e -> getUI().ifPresent(ui -> ui.getPage()
-                                .setLocation("/impersonate/exit")));
+                                .setLocation("impersonate/exit")));
                 impersonate.setId("exit-impersonate");
                 layout.add(impersonate);
             }

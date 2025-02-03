@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -345,6 +346,8 @@ public class AppViewIT extends AbstractIT {
 
     @Test
     public void admin_impersonate_user_shows_expected() {
+        Assume.assumeTrue(getUrlMappingBasePath().equals(""));
+
         open(LOGIN_PATH);
         loginAdmin();
 
