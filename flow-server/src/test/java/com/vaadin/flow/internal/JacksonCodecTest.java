@@ -35,9 +35,9 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 public class JacksonCodecTest {
-    private static List<Object> withTypeInfoUnsupportedValues = Arrays.asList(
-            new Object(), new StateNode(), new Date(), new String[0],
-            new ArrayList<>(), new HashSet<>(), new HashMap<>());
+    private static final List<Object> withTypeInfoUnsupportedValues = Arrays
+            .asList(new Object(), new StateNode(), new Date(), new String[0],
+                    new ArrayList<>(), new HashSet<>(), new HashMap<>());
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -76,11 +76,15 @@ public class JacksonCodecTest {
         unsupported.add(ElementFactory.createDiv());
 
         for (Object value : unsupported) {
+            boolean thrown = false;
             try {
                 JacksonCodec.encodeWithoutTypeInfo(value);
 
-                Assert.fail("Should throw for " + value.getClass());
             } catch (AssertionError expected) {
+                thrown = true;
+            }
+            if (!thrown) {
+                Assert.fail("Should throw for " + value.getClass());
             }
         }
     }
@@ -138,11 +142,15 @@ public class JacksonCodecTest {
     @Test
     public void encodeWithTypeInfo_unsupportedTypes() {
         for (Object value : withTypeInfoUnsupportedValues) {
+            boolean thrown = false;
             try {
                 JacksonCodec.encodeWithTypeInfo(value);
 
-                Assert.fail("Should throw for " + value.getClass());
             } catch (AssertionError expected) {
+                thrown = true;
+            }
+            if (!thrown) {
+                Assert.fail("Should throw for " + value.getClass());
             }
         }
     }
