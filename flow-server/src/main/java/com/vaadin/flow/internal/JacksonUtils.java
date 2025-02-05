@@ -68,6 +68,24 @@ public final class JacksonUtils {
     }
 
     /**
+     * Create a new ObjectNode.
+     *
+     * @return ObjectNode
+     */
+    public static ObjectNode createObjectNode() {
+        return objectMapper.createObjectNode();
+    }
+
+    /**
+     * Create a new ArrayNode.
+     *
+     * @return ArrayNode
+     */
+    public static ArrayNode createArrayNode() {
+        return objectMapper.createArrayNode();
+    }
+
+    /**
      * Collects a stream of JSON values to a JSON array.
      *
      * @author Vaadin Ltd
