@@ -230,6 +230,11 @@ jobs:
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-22.04
     steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: tests-output
+          pattern: tests-output-*
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
