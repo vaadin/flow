@@ -1027,7 +1027,7 @@ public class VaadinServletContextInitializer
 
         private Resource[] collectResources(String locationPattern)
                 throws IOException {
-            List<Resource> resourcesList = new ArrayList<>();
+            Set<Resource> resourcesList = new HashSet<>();
 
             Set<String> skipped = ReloadCache.skippedResources;
             Set<String> valid = ReloadCache.validResources;
