@@ -95,12 +95,14 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     protected void assertRootPageShown() {
+        waitForClientRouter();
         waitUntil(drive -> $("h1").attribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
         Assert.assertEquals(ROOT_PAGE_HEADER_TEXT, headerText);
     }
 
     protected void assertAnotherPublicPageShown() {
+        waitForClientRouter();
         waitUntil(drive -> $("h1").attribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
         Assert.assertEquals(ANOTHER_PUBLIC_PAGE_HEADER_TEXT, headerText);
@@ -123,7 +125,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     protected void assertPathShown(String path) {
-
+        waitForClientRouter();
         waitUntil(driver -> {
             String url = driver.getCurrentUrl();
             if (!url.startsWith(getRootURL())) {
@@ -136,8 +138,15 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     protected void assertResourceShown(String path) {
-        waitUntil(driver -> driver.getCurrentUrl()
-                .equals(getRootURL() + "/" + path));
+        waitUntil(driver -> {
+            // HttpSessionRequestCache uses request parameter "continue",
+            // see HttpSessionRequestCache::setMatchingRequestParameterName
+            String url = driver.getCurrentUrl();
+            if (url.endsWith("continue")) {
+                url = url.substring(0, url.length() - 9);
+            }
+            return url.equals(getRootURL() + "/" + path);
+        });
     }
 
 }
