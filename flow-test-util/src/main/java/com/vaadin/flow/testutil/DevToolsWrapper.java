@@ -21,7 +21,7 @@ import org.openqa.selenium.devtools.SeleniumCdpConnection;
 import org.openqa.selenium.devtools.idealized.Domains;
 import org.openqa.selenium.devtools.idealized.target.model.SessionID;
 import org.openqa.selenium.devtools.idealized.target.model.TargetID;
-import org.openqa.selenium.devtools.v120.network.Network;
+import org.openqa.selenium.devtools.v132.network.Network;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -46,6 +46,7 @@ public class DevToolsWrapper {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
                 Optional.empty()));
         sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
+                Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty()));
     }
 

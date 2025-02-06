@@ -80,19 +80,6 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- To be removed after TestBench 8.2.7 release -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v127</artifactId>
-            <version>4.25.0</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -425,23 +412,6 @@
                 <groups>${excludedGroups}</groups>
                 <excludedGroups></excludedGroups>
             </properties>
-        </profile>
-        <profile>
-            <!-- To be removed after chrome used by CI gets upgraded to 128 or later -->
-            <id>ci-devtools</id>
-            <activation>
-                <property>
-                    <name>teamcity.build.id</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                    <artifactId>selenium-devtools-v127</artifactId>
-                    <version>4.25.0</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
         </profile>
         <profile>
             <id>deepClean</id>
