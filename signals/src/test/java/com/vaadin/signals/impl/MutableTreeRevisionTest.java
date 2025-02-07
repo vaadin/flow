@@ -15,10 +15,10 @@
  */
 package com.vaadin.signals.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import java.util.List;
@@ -47,7 +47,7 @@ public class MutableTreeRevisionTest {
     private final Id commandId = Id.random();
 
     @Test
-    void constuctor_modifyBase_copyNotUpdated() {
+    void constructor_modifyBase_copyNotUpdated() {
         MutableTreeRevision copy = new MutableTreeRevision(revision);
 
         revision.nodes().put(Id.random(), Node.EMPTY);
@@ -58,7 +58,7 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void constuctor_modifyCopy_baseNotUpdated() {
+    void constructor_modifyCopy_baseNotUpdated() {
         MutableTreeRevision copy = new MutableTreeRevision(revision);
 
         copy.nodes().put(Id.random(), Node.EMPTY);
@@ -486,7 +486,7 @@ public class MutableTreeRevisionTest {
 
         // Check result object
         Accept accept = assertAccepted(result);
-        assertEquals("Only alias is updated", 1, accept.updates().size());
+        assertEquals(1, accept.updates().size(), "Only alias is updated");
         TreeModification modification = accept.updates().get(commandId);
         assertNull(modification.oldNode());
         assertInstanceOf(Node.Alias.class, modification.newNode());
@@ -874,8 +874,8 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         assertTrue(accept.updates().containsKey(child));
-        assertTrue("Alias was also removed",
-                accept.updates().containsKey(alias));
+        assertTrue(accept.updates().containsKey(alias),
+                "Alias was also removed");
 
         // Check revision state
         assertListChildren(Id.ZERO);

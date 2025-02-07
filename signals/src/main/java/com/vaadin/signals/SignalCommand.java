@@ -65,7 +65,7 @@ public sealed interface SignalCommand {
         /**
          * The owner id.
          *
-         * @return the owner id, nor <code>null</code> if the created signal has
+         * @return the owner id, or <code>null</code> if the created signal has
          *         no scope owner
          */
         Id scopeOwner();

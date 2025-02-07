@@ -213,7 +213,7 @@ public class MutableTreeRevision extends TreeRevision {
 
                 String key = parentData.mapChildren().entrySet().stream()
                         .filter(entry -> entry.getValue().equals(id))
-                        .map(Entry::getKey).findAny().orElse(null);
+                        .findAny().map(Entry::getKey).orElse(null);
 
                 if (key != null) {
                     updatedNodes.put(parentId, updateMapChildren(parentData,
@@ -821,17 +821,14 @@ public class MutableTreeRevision extends TreeRevision {
      */
     public void apply(SignalCommand command,
             BiConsumer<Id, OperationResult> resultHandler) {
-        OperationResult result;
-        if (data(command.nodeId()).isPresent()) {
+        OperationResult result = data(command.nodeId()).map(data -> {
             TreeManipulator manipulator = new TreeManipulator(command);
-            result = manipulator.handleCommand(command);
-
+            var opResult = manipulator.handleCommand(command);
             if (manipulator.childResults != null && resultHandler != null) {
                 manipulator.childResults.forEach(resultHandler);
             }
-        } else {
-            result = OperationResult.fail("Node not found");
-        }
+            return opResult;
+        }).orElseGet(() -> OperationResult.fail("Node not found"));
 
         if (result instanceof Accept accept) {
             accept.updates().forEach((nodeId, update) -> {
