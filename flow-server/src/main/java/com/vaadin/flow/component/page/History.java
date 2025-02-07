@@ -19,12 +19,16 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.ApplicationConstants;
 
-import elemental.json.JsonValue;
+import elemental.json.JsonObject;
 
 /**
  * Represents <code>window.history</code> in the browser. See e.g.
@@ -48,7 +52,7 @@ public class History implements Serializable {
      */
     public static class HistoryStateChangeEvent extends EventObject {
         private final Location location;
-        private final transient JsonValue state;
+        private final transient ObjectNode state;
         private final NavigationTrigger trigger;
 
         /**
@@ -66,7 +70,7 @@ public class History implements Serializable {
          *            the type of user action that triggered this history
          *            change, not <code>null</code>
          */
-        public HistoryStateChangeEvent(History history, JsonValue state,
+        public HistoryStateChangeEvent(History history, ObjectNode state,
                 Location location, NavigationTrigger trigger) {
             super(history);
 
@@ -98,7 +102,7 @@ public class History implements Serializable {
          * @return an optional JSON state value or an empty optional if no state
          *         has been provided
          */
-        public Optional<JsonValue> getState() {
+        public Optional<ObjectNode> getState() {
             return Optional.ofNullable(state);
         }
 
@@ -154,9 +158,34 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.pushState</code> in the browser with the given
+     * location. State is given as null.
+     *
+     * @param location
+     *            the new location to set in the browser
+     */
+    public void pushState(String location) {
+
+        pushState((ObjectNode) null, location);
+
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * location. State is given as null.
+     *
+     * @param location
+     *            the new location to set in the browser
+     */
+    public void pushState(Location location) {
+        pushState((ObjectNode) null, location);
+
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
      * parameters. This is a shorthand method for
-     * {@link History#pushState(JsonValue, Location)}, creating {@link Location}
-     * from the string provided.
+     * {@link History#pushState(ObjectNode, Location)}, creating
+     * {@link Location} from the string provided.
      *
      * @param state
      *            the JSON state to push to the history stack, or
@@ -165,7 +194,28 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void pushState(JsonValue state, String location) {
+    public void pushState(ObjectNode state, String location) {
+        pushState(state,
+
+                Optional.ofNullable(location).map(Location::new).orElse(null));
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * parameters. This is a shorthand method for
+     * {@link History#pushState(ObjectNode, Location)}, creating
+     * {@link Location} from the string provided.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @deprecated Elemental is replaced by jackson
+     */
+    @Deprecated
+    public void pushState(JsonObject state, String location) {
         pushState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null));
     }
@@ -173,7 +223,7 @@ public class History implements Serializable {
     /**
      * Invokes <code>history.pushState</code> in the browser with the given
      * parameters. This is a shorthand method for
-     * {@link History#pushState(JsonValue, Location, boolean)}, creating
+     * {@link History#pushState(ObjectNode, Location, boolean)}, creating
      * {@link Location} from the string provided.
      *
      * @param state
@@ -186,7 +236,31 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void pushState(JsonValue state, String location, boolean callback) {
+    public void pushState(ObjectNode state, String location, boolean callback) {
+        pushState(state,
+                Optional.ofNullable(location).map(Location::new).orElse(null),
+                callback);
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * parameters. This is a shorthand method for
+     * {@link History#pushState(ObjectNode, Location, boolean)}, creating
+     * {@link Location} from the string provided.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     * @deprecated Elemental is replaced by jackson
+     */
+    @Deprecated
+    public void pushState(JsonObject state, String location, boolean callback) {
         pushState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null),
                 callback);
@@ -203,7 +277,24 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void pushState(JsonValue state, Location location) {
+    public void pushState(ObjectNode state, Location location) {
+        pushState(state, location, false);
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * parameters. Does not make a callback to the server by default.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @deprecated Elemental is replaced by jackson
+     */
+    @Deprecated
+    public void pushState(JsonObject state, Location location) {
         pushState(state, location, false);
     }
 
@@ -220,8 +311,29 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @deprecated Elemental is replaced by jackson
      */
-    public void pushState(JsonValue state, Location location,
+    @Deprecated
+    public void pushState(JsonObject state, Location location,
+            boolean callback) {
+        pushState(JacksonUtils.mapElemental(state), location, callback);
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * parameters.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     */
+    public void pushState(ObjectNode state, Location location,
             boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);
@@ -241,8 +353,32 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.replaceState</code> in the browser with the given
+     * location. State is given as null.
+     *
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     */
+    public void replaceState(String location) {
+        replaceState((ObjectNode) null, location);
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * location. State is given as null.
+     *
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     */
+    public void replaceState(Location location) {
+        replaceState((ObjectNode) null, location);
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
      * parameters. This is a shorthand method for
-     * {@link History#replaceState(JsonValue, Location)}, creating
+     * {@link History#replaceState(ObjectNode, Location)}, creating
      * {@link Location} from the string provided.
      *
      * @param state
@@ -252,7 +388,7 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void replaceState(JsonValue state, String location) {
+    public void replaceState(ObjectNode state, String location) {
         replaceState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null));
     }
@@ -260,7 +396,27 @@ public class History implements Serializable {
     /**
      * Invokes <code>history.replaceState</code> in the browser with the given
      * parameters. This is a shorthand method for
-     * {@link History#replaceState(JsonValue, Location, boolean)}, creating
+     * {@link History#replaceState(ObjectNode, Location)}, creating
+     * {@link Location} from the string provided.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @deprecated Elemental is replaced by jackson
+     */
+    @Deprecated
+    public void replaceState(JsonObject state, String location) {
+        replaceState(state,
+                Optional.ofNullable(location).map(Location::new).orElse(null));
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * parameters. This is a shorthand method for
+     * {@link History#replaceState(ObjectNode, Location, boolean)}, creating
      * {@link Location} from the string provided.
      *
      * @param state
@@ -273,7 +429,32 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void replaceState(JsonValue state, String location,
+    public void replaceState(ObjectNode state, String location,
+            boolean callback) {
+        replaceState(state,
+                Optional.ofNullable(location).map(Location::new).orElse(null),
+                callback);
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * parameters. This is a shorthand method for
+     * {@link History#replaceState(ObjectNode, Location, boolean)}, creating
+     * {@link Location} from the string provided.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     * @deprecated Elemental is replaced by jackson
+     */
+    @Deprecated
+    public void replaceState(JsonObject state, String location,
             boolean callback) {
         replaceState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null),
@@ -291,7 +472,24 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void replaceState(JsonValue state, Location location) {
+    public void replaceState(ObjectNode state, Location location) {
+        replaceState(state, location, false);
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * parameters. Does not make a callback to the server by default.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @deprecated Elemental is replaced by jackson
+     */
+    @Deprecated
+    public void replaceState(JsonObject state, Location location) {
         replaceState(state, location, false);
     }
 
@@ -308,8 +506,29 @@ public class History implements Serializable {
      * @param callback
      *            {@code true} if the change should make a return call to the
      *            server
+     * @deprecated Elemental is replaced by jackson
      */
-    public void replaceState(JsonValue state, Location location,
+    @Deprecated
+    public void replaceState(JsonObject state, Location location,
+            boolean callback) {
+        replaceState(JacksonUtils.mapElemental(state), location, callback);
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * parameters.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     */
+    public void replaceState(ObjectNode state, Location location,
             boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);

@@ -21,15 +21,16 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -114,14 +115,22 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
-            JsonObject buildInfo = JsonUtil.parse(json);
-            Map<String, String> properties = getConfigParametersUsingTokenData(
-                    buildInfo);
-            // only insert properties that haven't been defined
-            for (Map.Entry<String, String> entry : properties.entrySet()) {
-                if (!initParameters.containsKey(entry.getKey())) {
-                    initParameters.put(entry.getKey(), entry.getValue());
+            try {
+                // Jackson doesn't accept ' instead of "
+                JsonNode buildInfo = JacksonUtils.getMapper()
+                        .readTree(json.replaceAll("'", "\""));
+
+                Map<String, String> properties = getConfigParametersUsingTokenData(
+                        buildInfo);
+                // only insert properties that haven't been defined
+                for (Map.Entry<String, String> entry : properties.entrySet()) {
+                    if (!initParameters.containsKey(entry.getKey())) {
+                        initParameters.put(entry.getKey(), entry.getValue());
+                    }
                 }
+            } catch (JsonProcessingException e) {
+                LoggerFactory.getLogger(DeploymentConfigurationFactory.class)
+                        .debug("Failed to parse json", e);
             }
         }
 

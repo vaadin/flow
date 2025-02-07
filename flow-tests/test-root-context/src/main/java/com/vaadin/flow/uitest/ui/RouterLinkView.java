@@ -34,7 +34,7 @@ public class RouterLinkView extends AbstractDivView {
             if (e.getState().isPresent()) {
                 JsonObject state = ((JsonObject) e.getState().get());
                 if (state.hasKey("href")) {
-                    UI.getCurrent().getPage().getHistory().pushState(null,
+                    UI.getCurrent().getPage().getHistory().pushState(
                             state.getString("href"));
                 }
 

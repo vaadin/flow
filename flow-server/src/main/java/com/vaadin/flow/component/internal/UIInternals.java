@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -130,7 +132,7 @@ public class UIInternals implements Serializable {
              */
             for (Object argument : parameters) {
                 // Throws IAE for unsupported types
-                JsonCodec.encodeWithTypeInfo(argument);
+                JacksonCodec.encodeWithTypeInfo(argument);
             }
 
             this.expression = expression;
@@ -1130,8 +1132,9 @@ public class UIInternals implements Serializable {
             getLogger().warn("Latest navigation location is not set. "
                     + "Unable to refresh the current route.");
         } else {
+            // TODO: Remove cast when elemental method removed
             getRouter().navigate(ui, locationForRefresh,
-                    NavigationTrigger.REFRESH_ROUTE, null, true,
+                    NavigationTrigger.REFRESH_ROUTE, (ObjectNode) null, true,
                     refreshRouteChain || hasModalComponent());
         }
     }

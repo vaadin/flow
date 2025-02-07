@@ -56,6 +56,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -1427,7 +1428,8 @@ public class ComponentTest {
     }
 
     private DomEvent createEvent(String type, Component component) {
-        return new DomEvent(component.getElement(), type, Json.createObject());
+        return new DomEvent(component.getElement(), type,
+                JacksonUtils.createObjectNode());
     }
 
     private void assertDependency(Dependency.Type type, String url,

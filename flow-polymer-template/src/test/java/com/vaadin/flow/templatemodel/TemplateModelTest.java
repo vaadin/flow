@@ -1443,7 +1443,7 @@ public class TemplateModelTest extends HasCurrentService {
         assertTrue(
                 "Changes to empty list after attach and detach should be the same",
                 changesAfterDetach.get(0).toJson(null)
-                        .jsEquals(changesAfterAttach.get(0).toJson(null)));
+                        .equals(changesAfterAttach.get(0).toJson(null)));
 
         assertTrue(
                 "After the empty model list is detached and created a change, no more changes are created",

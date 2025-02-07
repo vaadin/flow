@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1743,7 +1744,7 @@ public class UI extends Component
         private final String route;
         private final String query;
         private final String appShellTitle;
-        private final JsonValue historyState;
+        private final ObjectNode historyState;
         private final String trigger;
 
         /**
@@ -1766,7 +1767,7 @@ public class UI extends Component
                 @EventData("route") String route,
                 @EventData("query") String query,
                 @EventData("appShellTitle") String appShellTitle,
-                @EventData("historyState") JsonValue historyState,
+                @EventData("historyState") ObjectNode historyState,
                 @EventData("trigger") String trigger) {
             super(source, true);
             this.route = route;
@@ -1836,7 +1837,7 @@ public class UI extends Component
      */
     @Deprecated
     public void connectClient(String flowRoutePath, String flowRouteQuery,
-            String appShellTitle, JsonValue historyState, String trigger) {
+            String appShellTitle, ObjectNode historyState, String trigger) {
         browserNavigate(new BrowserNavigateEvent(this, false, flowRoutePath,
                 flowRouteQuery, appShellTitle, historyState, trigger));
     }
@@ -1918,7 +1919,7 @@ public class UI extends Component
                         "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
         if (locationChanged && containsPendingReplace) {
             // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, location);
+            getPage().getHistory().replaceState(location);
         }
     }
 

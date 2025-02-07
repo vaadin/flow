@@ -3,6 +3,11 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Locale;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -123,16 +128,17 @@ public class ScrollOptions implements Serializable {
      * @return a json object as a string
      */
     public String toJson() {
-        JsonObject json = Json.createObject();
+        ObjectMapper mapper = JacksonUtils.getMapper();
+        ObjectNode node = mapper.createObjectNode();
         if (behavior != Behavior.AUTO) {
-            json.put("behavior", behavior.name().toLowerCase(Locale.ENGLISH));
+            node.put("behavior", behavior.name().toLowerCase(Locale.ENGLISH));
         }
         if (block != Alignment.START) {
-            json.put("block", block.name().toLowerCase(Locale.ENGLISH));
+            node.put("block", block.name().toLowerCase(Locale.ENGLISH));
         }
         if (inline != Alignment.NEAREST) {
-            json.put("inline", inline.name().toLowerCase(Locale.ENGLISH));
+            node.put("inline", inline.name().toLowerCase(Locale.ENGLISH));
         }
-        return json.toString();
+        return node.toString();
     }
 }

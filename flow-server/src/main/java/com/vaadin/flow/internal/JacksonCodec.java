@@ -114,7 +114,7 @@ public class JacksonCodec {
             return wrapComplexValue(NODE_TYPE,
                     JacksonUtils.getMapper().valueToTree(stateNode.getId()));
         } else {
-            return JacksonUtils.getMapper().nullNode();
+            return JacksonUtils.nullNode();
         }
     }
 
@@ -192,7 +192,7 @@ public class JacksonCodec {
      */
     public static JsonNode encodeWithoutTypeInfo(Object value) {
         if (value == null) {
-            return JacksonUtils.getMapper().nullNode();
+            return JacksonUtils.nullNode();
         }
 
         assert canEncodeWithoutTypeInfo(value.getClass());
@@ -200,7 +200,10 @@ public class JacksonCodec {
         Class<?> type = value.getClass();
         if (String.class.equals(value.getClass())) {
             return JacksonUtils.getMapper().valueToTree(value);
-        } else if (Integer.class.equals(type) || Double.class.equals(type)) {
+        } else if (Integer.class.equals(type)) {
+            return JacksonUtils.getMapper()
+                    .valueToTree(((Number) value).intValue());
+        } else if (Double.class.equals(type)) {
             return JacksonUtils.getMapper()
                     .valueToTree(((Number) value).doubleValue());
         } else if (Boolean.class.equals(type)) {
@@ -224,20 +227,15 @@ public class JacksonCodec {
      *            the JSON value to decode
      * @return the decoded value
      */
-    public static Serializable decodeWithoutTypeInfo(ObjectNode json) {
+    public static Serializable decodeWithoutTypeInfo(JsonNode json) {
         assert json != null;
-        switch (json.getNodeType()) {
-        case BOOLEAN:
-            return decodeAs(json, Boolean.class);
-        case STRING:
-            return decodeAs(json, String.class);
-        case NUMBER:
-            return decodeAs(json, Double.class);
-        case NULL:
-            return null;
-        default:
-            return json;
-        }
+        return switch (json.getNodeType()) {
+        case BOOLEAN -> decodeAs(json, Boolean.class);
+        case STRING -> decodeAs(json, String.class);
+        case NUMBER -> decodeAs(json, Double.class);
+        case NULL -> null;
+        default -> (Serializable) json;
+        };
 
     }
 

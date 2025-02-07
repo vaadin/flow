@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.internal.change;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
@@ -43,7 +45,7 @@ public class NodeAttachChange extends NodeChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_ATTACH);
     }
 }

@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -44,12 +46,12 @@ public class ReturnChannelMap extends ServerSideFeature {
 
     private class ChannelImpl implements ReturnChannelRegistration {
         private final int channelId;
-        private final SerializableBiConsumer<JsonArray, ReturnChannelRegistration> handler;
+        private final SerializableBiConsumer<ArrayNode, ReturnChannelRegistration> handler;
 
         private DisabledUpdateMode disabledUpdateMode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
         public ChannelImpl(int channelId,
-                SerializableBiConsumer<JsonArray, ReturnChannelRegistration> handler) {
+                SerializableBiConsumer<ArrayNode, ReturnChannelRegistration> handler) {
             this.channelId = channelId;
             this.handler = handler;
         }
@@ -70,7 +72,7 @@ public class ReturnChannelMap extends ServerSideFeature {
         }
 
         @Override
-        public void invoke(JsonArray arguments) {
+        public void invoke(ArrayNode arguments) {
             handler.accept(arguments, this);
         }
 
@@ -117,7 +119,7 @@ public class ReturnChannelMap extends ServerSideFeature {
      * @return a return channel registration
      */
     public ReturnChannelRegistration registerChannel(
-            SerializableConsumer<JsonArray> handler) {
+            SerializableConsumer<ArrayNode> handler) {
         assert handler != null;
 
         return registerChannel(
@@ -141,7 +143,7 @@ public class ReturnChannelMap extends ServerSideFeature {
      * @return a return channel registration
      */
     public ReturnChannelRegistration registerChannel(
-            SerializableBiConsumer<JsonArray, ReturnChannelRegistration> handler) {
+            SerializableBiConsumer<ArrayNode, ReturnChannelRegistration> handler) {
         assert handler != null;
 
         ChannelImpl channel = new ChannelImpl(nextId++, handler);

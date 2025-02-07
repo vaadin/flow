@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
 
 import elemental.json.JsonValue;
@@ -71,7 +73,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      */
     public ErrorNavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, ErrorParameter<?> errorParameter,
-            JsonValue state) {
+            ObjectNode state) {
         super(router, location, ui, trigger, state, false);
 
         this.errorParameter = errorParameter;

@@ -11,11 +11,14 @@ package com.vaadin.flow.component.polymertemplate.rpc;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.templatemodel.ModelType;
 
@@ -52,13 +55,19 @@ public class PolymerPublishedEventRpcHandler
      * @return true if valid template model value
      */
     @Override
-    public boolean isTemplateModelValue(Component instance, JsonValue argValue,
+    public boolean isTemplateModelValue(Component instance, JsonNode argValue,
             Class<?> convertedType) {
         return instance instanceof PolymerTemplate
-                && argValue instanceof JsonObject
-                && ((PolymerTemplate<?>) instance)
-                        .isSupportedClass(convertedType)
-                && ((JsonObject) argValue).hasKey("nodeId");
+                && ((PolymerTemplate<?>) instance).isSupportedClass(
+                        convertedType)
+                && argValue.has("nodeId");
+    }
+
+    @Override
+    public boolean isTemplateModelValue(Component instance, JsonValue argValue,
+            Class<?> convertedType) {
+        return isTemplateModelValue(instance,
+                JacksonUtils.mapElemental(argValue), convertedType);
     }
 
     /**
@@ -75,12 +84,12 @@ public class PolymerPublishedEventRpcHandler
      *             if the component is not attached to the UI
      */
     @Override
-    public Object getTemplateItem(Component template, JsonObject argValue,
+    public Object getTemplateItem(Component template, JsonNode argValue,
             Type convertedType) {
         final Optional<UI> ui = template.getUI();
         if (ui.isPresent()) {
             StateNode node = ui.get().getInternals().getStateTree()
-                    .getNodeById((int) argValue.getNumber("nodeId"));
+                    .getNodeById(argValue.get("nodeId").intValue());
 
             ModelType propertyType = ((PolymerTemplate<?>) template)
                     .getModelType(convertedType);
@@ -91,4 +100,10 @@ public class PolymerPublishedEventRpcHandler
                 "Event sent for a non attached template component");
     }
 
+    @Override
+    public Object getTemplateItem(Component template, JsonObject argValue,
+            Type convertedType) {
+        return getTemplateItem(template, JacksonUtils.mapElemental(argValue),
+                convertedType);
+    }
 }

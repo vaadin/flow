@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -54,6 +55,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
@@ -65,9 +67,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
@@ -3538,7 +3537,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
                 FileNotFound.trigger);
 
-        JsonObject state = Json.createObject();
+        ObjectNode state = JacksonUtils.createObjectNode();
         state.put("href", "router_link");
         state.put("scrollPositionX", 0d);
         state.put("scrollPositionY", 0d);

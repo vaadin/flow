@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.change;
 
 import java.util.Arrays;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,9 +29,6 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 public class ListChangeTest {
     private NodeList<StateNode> feature = AbstractNodeFeatureTest
@@ -43,23 +41,22 @@ public class ListChangeTest {
         ListAddChange<StateNode> change = new ListAddChange<>(feature, true, 0,
                 Arrays.asList(child1, child2));
 
-        JsonObject json = change.toJson(null);
+        JsonNode json = change.toJson(null);
 
         Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber(JsonConstants.CHANGE_NODE));
+                json.get(JsonConstants.CHANGE_NODE).intValue());
         Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
-                (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
+                json.get(JsonConstants.CHANGE_FEATURE).intValue());
         Assert.assertEquals(JsonConstants.CHANGE_TYPE_SPLICE,
-                json.getString(JsonConstants.CHANGE_TYPE));
+                json.get(JsonConstants.CHANGE_TYPE).textValue());
         Assert.assertEquals(0,
-                (int) json.getNumber(JsonConstants.CHANGE_SPLICE_INDEX));
+                json.get(JsonConstants.CHANGE_SPLICE_INDEX).intValue());
 
-        JsonArray addNodes = json
-                .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
-        Assert.assertEquals(2, addNodes.length());
+        JsonNode addNodes = json.get(JsonConstants.CHANGE_SPLICE_ADD_NODES);
+        Assert.assertEquals(2, addNodes.size());
 
-        Assert.assertEquals(child1.getId(), (int) addNodes.getNumber(0));
-        Assert.assertEquals(child2.getId(), (int) addNodes.getNumber(1));
+        Assert.assertEquals(child1.getId(), addNodes.get(0).intValue());
+        Assert.assertEquals(child2.getId(), addNodes.get(1).intValue());
     }
 
     @Test
@@ -67,9 +64,9 @@ public class ListChangeTest {
         ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
                 Arrays.asList());
 
-        JsonObject json = change.toJson(null);
+        JsonNode json = change.toJson(null);
 
-        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_REMOVE));
+        Assert.assertFalse(json.has(JsonConstants.CHANGE_SPLICE_REMOVE));
     }
 
     @Test
@@ -77,8 +74,8 @@ public class ListChangeTest {
         ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
                 Arrays.asList());
 
-        JsonObject json = change.toJson(null);
+        JsonNode json = change.toJson(null);
 
-        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES));
+        Assert.assertFalse(json.has(JsonConstants.CHANGE_SPLICE_ADD_NODES));
     }
 }

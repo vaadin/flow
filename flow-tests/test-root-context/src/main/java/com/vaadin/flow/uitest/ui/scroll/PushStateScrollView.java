@@ -16,6 +16,9 @@
 package com.vaadin.flow.uitest.ui.scroll;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
@@ -42,13 +45,13 @@ public class PushStateScrollView extends AbstractDivView {
     }
 
     private static Element createButton(String name,
-            BiConsumer<JsonValue, String> action) {
+                                        Consumer<String> action) {
         String location = PushStateScrollView.class.getName() + "/" + name;
 
         Element button = ElementFactory.createButton(name);
 
         button.setAttribute("id", name);
-        button.addEventListener("click", e -> action.accept(null, location));
+        button.addEventListener("click", e -> action.accept(location));
 
         return button;
     }

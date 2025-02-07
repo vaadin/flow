@@ -18,6 +18,9 @@ package com.vaadin.flow.server.communication.rpc;
 import java.io.Serializable;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
 
 import elemental.json.JsonObject;
@@ -26,7 +29,7 @@ import elemental.json.JsonObject;
  * RPC invocation handler interface.
  * <p>
  * Each instance must return unique rpc type (see {@link #getRpcType()} and
- * handle a {@link JsonObject} RPC data using {@link #handle(UI, JsonObject)}
+ * handle a {@link JsonObject} RPC data using {@link #handle(UI, JsonNode)}
  * method.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -53,6 +56,6 @@ public interface RpcInvocationHandler extends Serializable {
      *            the RPC data to handle, not {@code null}
      * @return an optional runnable
      */
-    Optional<Runnable> handle(UI ui, JsonObject invocationJson);
+    Optional<Runnable> handle(UI ui, JsonNode invocationJson);
 
 }

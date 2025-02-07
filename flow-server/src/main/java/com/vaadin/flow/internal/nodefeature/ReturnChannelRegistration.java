@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.shared.Registration;
 
@@ -55,7 +57,7 @@ public interface ReturnChannelRegistration extends Registration {
      *            a JSON array containing passed from the client, not
      *            <code>null</code>
      */
-    void invoke(JsonArray arguments);
+    void invoke(ArrayNode arguments);
 
     /**
      * Gets the setting for whether this channel will receive updates in case

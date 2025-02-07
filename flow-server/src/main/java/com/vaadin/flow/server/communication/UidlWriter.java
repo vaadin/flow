@@ -33,6 +33,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
@@ -165,7 +169,7 @@ public class UidlWriter implements Serializable {
             response.put("meta", meta);
         }
 
-        JsonArray stateChanges = Json.createArray();
+        ArrayNode stateChanges = JacksonUtils.createArrayNode();
 
         encodeChanges(ui, stateChanges);
 
@@ -176,8 +180,8 @@ public class UidlWriter implements Serializable {
             response.put("constants",
                     uiInternals.getConstantPool().dumpConstants());
         }
-        if (stateChanges.length() != 0) {
-            response.put("changes", stateChanges);
+        if (!stateChanges.isEmpty()) {
+            response.put("changes", Json.create(stateChanges.toString()));
         }
 
         List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals
@@ -311,7 +315,7 @@ public class UidlWriter implements Serializable {
 
     private static ReturnChannelRegistration createReturnValueChannel(
             StateNode owner, List<ReturnChannelRegistration> registrations,
-            SerializableConsumer<JsonValue> action) {
+            SerializableConsumer<JsonNode> action) {
         ReturnChannelRegistration channel = owner
                 .getFeature(ReturnChannelMap.class)
                 .registerChannel(arguments -> {
@@ -387,7 +391,7 @@ public class UidlWriter implements Serializable {
      *            a JSON array to put state changes into
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    private void encodeChanges(UI ui, JsonArray stateChanges) {
+    private void encodeChanges(UI ui, ArrayNode stateChanges) {
         UIInternals uiInternals = ui.getInternals();
         StateTree stateTree = uiInternals.getStateTree();
 
@@ -402,8 +406,7 @@ public class UidlWriter implements Serializable {
             }
 
             // Encode the actual change
-            stateChanges.set(stateChanges.length(),
-                    change.toJson(uiInternals.getConstantPool()));
+            stateChanges.add(change.toJson(uiInternals.getConstantPool()));
         };
         // A collectChanges round may add additional changes that needs to be
         // collected.

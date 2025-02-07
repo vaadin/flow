@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -34,6 +35,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonValue;
@@ -164,7 +166,36 @@ public class Router implements Serializable {
      * @see UI#navigate(String, QueryParameters)
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger) {
-        return navigate(ui, location, trigger, null);
+        return navigate(ui, location, trigger, (ObjectNode) null);
+    }
+
+    /**
+     * Navigates the given UI to the given location. For internal use only.
+     * <p>
+     * This method pushes to the browser history if the <code>trigger</code> is
+     * {@link NavigationTrigger#ROUTER_LINK} or
+     * {@link NavigationTrigger#UI_NAVIGATE}.
+     *
+     * @param ui
+     *            the UI to update, not <code>null</code>
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this navigation, not
+     *            <code>null</code>
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     * @return the HTTP status code resulting from the navigation
+     * @see UI#navigate(String)
+     * @see UI#navigate(String, QueryParameters)
+     * @deprecated Elemental is replaced by Jackson
+     */
+    @Deprecated
+    public int navigate(UI ui, Location location, NavigationTrigger trigger,
+            JsonValue state) {
+        return navigate(ui, location, trigger, JacksonUtils.mapElemental(state),
+                false, false);
     }
 
     /**
@@ -189,8 +220,45 @@ public class Router implements Serializable {
      * @see UI#navigate(String, QueryParameters)
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            JsonValue state) {
+            ObjectNode state) {
         return navigate(ui, location, trigger, state, false, false);
+    }
+
+    /**
+     * Navigates the given UI to the given location. For internal use only.
+     * <p>
+     * This method pushes to the browser history if the <code>trigger</code> is
+     * {@link NavigationTrigger#ROUTER_LINK} or
+     * {@link NavigationTrigger#UI_NAVIGATE}.
+     *
+     * @param ui
+     *            the UI to update, not <code>null</code>
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this navigation, not
+     *            <code>null</code>
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     * @param forceInstantiation
+     *            if set to {@code true}, the navigation target will always be
+     *            instantiated
+     * @param recreateLayoutChain
+     *            if set to {@code true}, the complete layout chain up to the
+     *            navigation target will be re-instantiated. Requires
+     *            {@code forceInstantiation} to be true to have an effect.
+     * @return the HTTP status code resulting from the navigation
+     * @see UI#navigate(String)
+     * @see UI#navigate(String, QueryParameters)
+     * @deprecated Elemental is replaced by Jackson
+     */
+    @Deprecated
+    public int navigate(UI ui, Location location, NavigationTrigger trigger,
+            JsonValue state, boolean forceInstantiation,
+            boolean recreateLayoutChain) {
+        return navigate(ui, location, trigger, JacksonUtils.mapElemental(state),
+                forceInstantiation, recreateLayoutChain);
     }
 
     /**
@@ -222,7 +290,7 @@ public class Router implements Serializable {
      * @see UI#navigate(String, QueryParameters)
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            JsonValue state, boolean forceInstantiation,
+            ObjectNode state, boolean forceInstantiation,
             boolean recreateLayoutChain) {
         assert ui != null;
         assert location != null;
@@ -253,7 +321,7 @@ public class Router implements Serializable {
     }
 
     private int handleNavigation(UI ui, Location location,
-            NavigationTrigger trigger, JsonValue state,
+            NavigationTrigger trigger, ObjectNode state,
             boolean forceInstantiation, boolean recreateLayoutChain) {
         NavigationState newState = getRouteResolver()
                 .resolve(new ResolveRequest(this, location));
@@ -284,7 +352,7 @@ public class Router implements Serializable {
     }
 
     private int handleExceptionNavigation(UI ui, Location location,
-            Exception exception, NavigationTrigger trigger, JsonValue state) {
+            Exception exception, NavigationTrigger trigger, ObjectNode state) {
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
                 exception);
 

@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.Uses;
@@ -114,7 +116,7 @@ public class TemplateInitializer {
     }
 
     private void doRequestAttachCustomElement(String id, String tag,
-            JsonArray path) {
+            JsonNode path) {
         if (idMapper.isMapped(id)) {
             return;
         }

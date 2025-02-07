@@ -43,6 +43,9 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 /**
  * Helpers for using <code>jackson</code>.
  * <p>
@@ -77,12 +80,42 @@ public final class JacksonUtils {
     }
 
     /**
+     * Create a JsonNode from value.
+     *
+     * @return JsonNode for given value content
+     */
+    public static JsonNode createNode(Object value) {
+        return objectMapper.valueToTree(value);
+    }
+
+    /**
      * Create a new ArrayNode.
      *
      * @return ArrayNode
      */
     public static ArrayNode createArrayNode() {
         return objectMapper.createArrayNode();
+    }
+
+    /**
+     * Create a new ArrayNode.
+     *
+     * @return ArrayNode
+     */
+    public static JsonNode nullNode() {
+        return objectMapper.nullNode();
+    }
+
+    public static ObjectNode mapElemental(JsonObject state) {
+        try {
+            return (ObjectNode) objectMapper.readTree(state.toJson());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ObjectNode mapElemental(JsonValue state) {
+        return objectMapper.valueToTree(state.toJson());
     }
 
     /**

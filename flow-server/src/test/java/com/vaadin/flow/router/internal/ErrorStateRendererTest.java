@@ -18,6 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.ErrorNavigationEvent;
@@ -173,7 +175,7 @@ public class ErrorStateRendererTest {
         // which reroute to ErrorTarget and this is an infinite loop
         renderer.handle(event);
 
-        JsonObject routerLinkState = Json.createObject();
+        ObjectNode routerLinkState = JacksonUtils.createObjectNode();
         routerLinkState.put("href", "router_link");
         routerLinkState.put("scrollPositionX", 0d);
         routerLinkState.put("scrollPositionY", 0d);

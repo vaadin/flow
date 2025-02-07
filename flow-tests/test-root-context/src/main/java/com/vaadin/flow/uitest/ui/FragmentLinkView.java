@@ -64,7 +64,7 @@ public class FragmentLinkView extends AbstractDivView {
                 .getHistoryStateChangeHandler();
         page.getHistory().setHistoryStateChangeHandler(event -> {
             if (event.getLocation().getPath().equals("override")) {
-                event.getSource().replaceState(null,
+                event.getSource().replaceState(
                         "overridden#Scroll_Target2");
             } else {
                 current.onHistoryStateChange(event);

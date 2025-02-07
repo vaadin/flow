@@ -27,6 +27,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
@@ -40,6 +48,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
@@ -671,9 +680,95 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
+     * @deprecated Elemental is replaced by Jackson
      */
     // Distinct name so setProperty("foo", null) is not ambiguous
+    @Deprecated
     public Element setPropertyJson(String name, JsonValue value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        setRawProperty(name, value);
+        return this;
+    }
+
+    /**
+     * Sets the given property to the given JSON value.
+     * <p>
+     * Please note that this method does not accept <code>null</code> as a
+     * value, since {@link Json#createNull()} should be used instead for JSON
+     * values.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    public Element setPropertyJson(String name, ObjectNode value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        setRawProperty(name, value);
+        return this;
+    }
+
+    /**
+     * Sets the given property to the given JSON value.
+     * <p>
+     * Please note that this method does not accept <code>null</code> as a
+     * value, since {@link Json#createNull()} should be used instead for JSON
+     * values.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    public Element setPropertyJson(String name, ArrayNode value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        setRawProperty(name, value);
+        return this;
+    }
+
+    /**
+     * Sets the given property to the given JSON value.
+     * <p>
+     * Please note that this method does not accept <code>null</code> as a
+     * value, since {@link Json#createNull()} should be used instead for JSON
+     * values.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    public Element setPropertyJson(String name, ValueNode value) {
         if (value == null) {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
@@ -702,7 +797,7 @@ public class Element extends Node<Element> {
         if (value == null) {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
-        return setPropertyJson(name, JsonUtils.beanToJson(value));
+        return setPropertyJson(name, JacksonUtils.beanToJson(value));
     }
 
     /**
@@ -728,7 +823,7 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
 
-        return setPropertyJson(name, JsonUtils.listToJson(value));
+        return setPropertyJson(name, JacksonUtils.listToJson(value));
     }
 
     /**
@@ -752,7 +847,7 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
 
-        return setPropertyJson(name, JsonUtils.mapToJson(value));
+        return setPropertyJson(name, JacksonUtils.mapToJson(value));
     }
 
     /**
@@ -856,6 +951,8 @@ public class Element extends Node<Element> {
             return defaultValue;
         } else if (value instanceof JsonValue) {
             return ((JsonValue) value).toJson();
+        } else if (value instanceof NullNode) {
+            return defaultValue;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
             int intValue = (int) doubleValue;
@@ -954,6 +1051,14 @@ public class Element extends Node<Element> {
                     return Double.NaN;
                 }
             }
+        } else if (value instanceof NumericNode) {
+            return ((NumericNode) value).asDouble(Double.NaN);
+        } else if (value instanceof BooleanNode) {
+            return ((BooleanNode) value).booleanValue() ? 1 : 0;
+        } else if (value instanceof TextNode) {
+            return ((TextNode) value).asDouble(Double.NaN);
+        } else if (value instanceof JsonNode) {
+            return ((JsonNode) value).asDouble(Double.NaN);
         } else {
             throw new IllegalStateException(
                     "Unsupported property type: " + value.getClass());

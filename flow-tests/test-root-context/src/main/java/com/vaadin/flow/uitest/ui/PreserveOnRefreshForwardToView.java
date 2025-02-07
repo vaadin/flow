@@ -39,7 +39,7 @@ public class PreserveOnRefreshForwardToView extends Div
                     "true");
             Location location = new Location(event.getLocation().getPath(),
                     queryParameters);
-            event.getUI().getPage().getHistory().replaceState(null, location);
+            event.getUI().getPage().getHistory().replaceState(location);
         }
     }
 }

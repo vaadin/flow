@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -429,8 +430,7 @@ public abstract class AbstractNavigationStateRenderer
 
     protected void pushHistoryState(NavigationEvent event) {
         // Enable navigating back
-        event.getUI().getPage().getHistory().pushState(null,
-                event.getLocation());
+        event.getUI().getPage().getHistory().pushState(event.getLocation());
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
@@ -865,7 +865,7 @@ public abstract class AbstractNavigationStateRenderer
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
-        newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
+        newNavigationEvent.getUI().getPage().getHistory().replaceState((ObjectNode) null,
                 newNavigationEvent.getLocation(),
                 beforeNavigation.isUseForwardCallback());
 

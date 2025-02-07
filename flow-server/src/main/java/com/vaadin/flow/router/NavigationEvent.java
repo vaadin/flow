@@ -18,6 +18,8 @@ package com.vaadin.flow.router;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
 
 import elemental.json.JsonValue;
@@ -33,7 +35,7 @@ public class NavigationEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private boolean forwardTo = false;
-    private JsonValue state = null;
+    private ObjectNode state = null;
     private boolean forceInstantiation = false;
     private boolean recreateLayoutChain = false;
 
@@ -83,7 +85,7 @@ public class NavigationEvent extends EventObject {
      *            {@link BeforeEvent#forwardTo} or not
      */
     public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state, boolean forwardTo) {
+            NavigationTrigger trigger, ObjectNode state, boolean forwardTo) {
         this(router, location, ui, trigger);
 
         this.state = state;
@@ -117,7 +119,7 @@ public class NavigationEvent extends EventObject {
      *            {@code forceInstantiation} to be true to have an effect.
      */
     public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state, boolean forwardTo,
+            NavigationTrigger trigger, ObjectNode state, boolean forwardTo,
             boolean forceInstantiation, boolean recreateLayoutChain) {
         this(router, location, ui, trigger);
 
@@ -166,7 +168,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return the navigation state
      */
-    public Optional<JsonValue> getState() {
+    public Optional<ObjectNode> getState() {
         return state == null ? Optional.empty() : Optional.of(state);
     }
 

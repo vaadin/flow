@@ -571,7 +571,7 @@ public class DeploymentConfigurationFactoryTest {
     @Test
     public void createInitParameters_readDevModeProperties() throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
+                "\"pnpm.enable\": true,", "\"require.home.node\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
@@ -586,7 +586,7 @@ public class DeploymentConfigurationFactoryTest {
     public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
             throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
+                "\"pnpm.enable\": true,", "\"require.home.node\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));

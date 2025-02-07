@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -52,6 +54,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -645,7 +648,8 @@ public class NavigationStateRendererTest {
                 new Location(path,
                         new QueryParameters(Collections.singletonMap("b",
                                 Collections.emptyList()))),
-                ui, NavigationTrigger.ROUTER_LINK, Json.createObject(), false);
+                ui, NavigationTrigger.ROUTER_LINK,
+                JacksonUtils.createObjectNode(), false);
         renderer.handle(event);
 
         Assert.assertFalse(ui.isClosing());
@@ -920,7 +924,7 @@ public class NavigationStateRendererTest {
             final Page page = new Page(this) {
                 final History history = new History(getUI().get()) {
                     @Override
-                    public void pushState(JsonValue state, Location location) {
+                    public void pushState(ObjectNode state, Location location) {
                         pushStateCalled.set(true);
                         pushStateLocations.add(location);
                     }

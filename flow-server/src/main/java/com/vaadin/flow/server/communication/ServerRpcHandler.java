@@ -30,11 +30,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.PreserveOnRefresh;
@@ -79,9 +83,9 @@ public class ServerRpcHandler implements Serializable {
     public static class RpcRequest implements Serializable {
 
         private final String csrfToken;
-        private final JsonArray invocations;
+        private final JsonNode invocations;
         private final int syncId;
-        private final JsonObject json;
+        private final JsonNode json;
         private final boolean resynchronize;
         private final int clientToServerMessageId;
 
@@ -100,13 +104,17 @@ public class ServerRpcHandler implements Serializable {
         }
 
         public RpcRequest(String jsonString, boolean isSyncIdCheckEnabled) {
-            json = JsonUtil.parse(jsonString);
+            try {
+                json = JacksonUtils.getMapper().readTree(jsonString);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
 
-            JsonValue token = json.get(ApplicationConstants.CSRF_TOKEN);
+            JsonNode token = json.get(ApplicationConstants.CSRF_TOKEN);
             if (token == null) {
                 csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
             } else {
-                String csrfToken = token.asString();
+                String csrfToken = token.textValue();
                 if (csrfToken.equals("")) {
                     csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
                 }
@@ -114,22 +122,23 @@ public class ServerRpcHandler implements Serializable {
             }
 
             if (isSyncIdCheckEnabled && !isUnloadBeaconRequest()) {
-                syncId = (int) json
-                        .getNumber(ApplicationConstants.SERVER_SYNC_ID);
+                syncId = json.get(ApplicationConstants.SERVER_SYNC_ID)
+                        .intValue();
             } else {
                 syncId = -1;
             }
 
-            if (json.hasKey(ApplicationConstants.RESYNCHRONIZE_ID)) {
-                resynchronize = json
-                        .getBoolean(ApplicationConstants.RESYNCHRONIZE_ID);
+            if (json.has(ApplicationConstants.RESYNCHRONIZE_ID)) {
+                resynchronize = json.get(ApplicationConstants.RESYNCHRONIZE_ID)
+                        .booleanValue();
             } else {
                 resynchronize = false;
             }
 
-            if (json.hasKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
-                clientToServerMessageId = (int) json
-                        .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
+            if (json.has(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
+                clientToServerMessageId = json
+                        .get(ApplicationConstants.CLIENT_TO_SERVER_ID)
+                        .intValue();
             } else {
                 if (!isUnloadBeaconRequest()) {
                     getLogger()
@@ -137,7 +146,7 @@ public class ServerRpcHandler implements Serializable {
                 }
                 clientToServerMessageId = -1;
             }
-            invocations = json.getArray(ApplicationConstants.RPC_INVOCATIONS);
+            invocations = json.get(ApplicationConstants.RPC_INVOCATIONS);
         }
 
         /**
@@ -156,7 +165,7 @@ public class ServerRpcHandler implements Serializable {
          * @return the data describing which RPC should be made, and all their
          *         data
          */
-        public JsonArray getRpcInvocationsData() {
+        public JsonNode getRpcInvocationsData() {
             return invocations;
         }
 
@@ -197,12 +206,12 @@ public class ServerRpcHandler implements Serializable {
          *
          * @return the raw JSON object that was received from the client
          */
-        public JsonObject getRawJson() {
+        public JsonNode getRawJson() {
             return json;
         }
 
         private boolean isUnloadBeaconRequest() {
-            return json.hasKey(ApplicationConstants.UNLOAD_BEACON);
+            return json.has(ApplicationConstants.UNLOAD_BEACON);
         }
 
     }
@@ -436,17 +445,18 @@ public class ServerRpcHandler implements Serializable {
             if (rpcRequest.isResynchronize()) {
                 return false;
             }
-            JsonArray invocations = rpcRequest.getRpcInvocationsData();
+            JsonNode invocations = rpcRequest.getRpcInvocationsData();
             if (invocations == null) {
                 // not a user interaction
                 return false;
             }
             // Do not enforce if RPC requests contains only poll or return
             // channel events
-            for (int i = 0; i < invocations.length(); i++) {
-                JsonObject json = invocations.get(i);
-                String type = json.hasKey("type") ? json.getString("type") : "";
-                String event = json.hasKey("event") ? json.getString("event")
+            for (int i = 0; i < invocations.size(); i++) {
+                JsonNode json = invocations.get(i);
+                String type = json.has("type") ? json.get("type").textValue()
+                        : "";
+                String event = json.has("event") ? json.get("event").textValue()
                         : "";
                 if (!JsonConstants.RPC_TYPE_CHANNEL.equals(type)
                         && (!JsonConstants.RPC_TYPE_EVENT.equals(type)
@@ -468,16 +478,18 @@ public class ServerRpcHandler implements Serializable {
 
     private String getMessageDetails(RpcRequest rpcRequest) {
         StringBuilder messageDetails = new StringBuilder();
-        JsonArray rpcArray = rpcRequest.getRpcInvocationsData();
+        JsonNode rpcArray = rpcRequest.getRpcInvocationsData();
         if (rpcArray == null) {
             return "{ no data }";
         }
 
-        for (int i = 0; i < rpcArray.length(); i++) {
-            JsonObject json = rpcArray.get(i);
-            String type = json.hasKey("type") ? json.getString("type") : "";
-            Double node = json.hasKey("node") ? json.getNumber("node") : null;
-            Double feature = json.hasKey("feature") ? json.getNumber("feature")
+        for (int i = 0; i < rpcArray.size(); i++) {
+            JsonNode json = rpcArray.get(i);
+            String type = json.has("type") ? json.get("type").textValue() : "";
+            Double node = json.has("node") ? json.get("node").doubleValue()
+                    : null;
+            Double feature = json.has("feature")
+                    ? json.get("feature").doubleValue()
                     : null;
             appendAll(messageDetails, "{ type: ", type, " node: ",
                     String.valueOf(node), " feature: ", String.valueOf(feature),
@@ -519,20 +531,21 @@ public class ServerRpcHandler implements Serializable {
      *            JSON containing all information needed to execute all
      *            requested RPC calls.
      */
-    private void handleInvocations(UI ui, JsonArray invocationsData) {
-        List<JsonObject> data = new ArrayList<>(invocationsData.length());
+    private void handleInvocations(UI ui, JsonNode invocationsData) {
+        List<JsonNode> data = new ArrayList<>(invocationsData.size());
         List<Runnable> pendingChangeEvents = new ArrayList<>();
 
         RpcInvocationHandler mapSyncHandler = getInvocationHandlers()
                 .get(JsonConstants.RPC_TYPE_MAP_SYNC);
 
-        for (int i = 0; i < invocationsData.length(); i++) {
-            JsonObject invocationJson = invocationsData.getObject(i);
-            String type = invocationJson.getString(JsonConstants.RPC_TYPE);
+        for (int i = 0; i < invocationsData.size(); i++) {
+            JsonNode invocationJson = invocationsData.get(i);
+            String type = invocationJson.get(JsonConstants.RPC_TYPE)
+                    .textValue();
             assert type != null;
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
                 // Handle these before any RPC invocations.
-                mapSyncHandler.handle(ui, invocationJson)
+                mapSyncHandler.handle(ui, (ObjectNode) invocationJson)
                         .ifPresent(runnable -> pendingChangeEvents.add(() -> {
                             try {
                                 runnable.run();
@@ -557,8 +570,8 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
-    private void handleInvocationData(UI ui, JsonObject invocationJson) {
-        String type = invocationJson.getString(JsonConstants.RPC_TYPE);
+    private void handleInvocationData(UI ui, JsonNode invocationJson) {
+        String type = invocationJson.get(JsonConstants.RPC_TYPE).textValue();
         RpcInvocationHandler handler = getInvocationHandlers().get(type);
         if (handler == null) {
             throw new IllegalArgumentException(
@@ -574,10 +587,10 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
-    private static void callErrorHandler(UI ui, JsonObject invocationJson,
+    private static void callErrorHandler(UI ui, JsonNode invocationJson,
             Throwable throwable) {
         StateNode node = ui.getInternals().getStateTree().getNodeById(
-                (int) invocationJson.getNumber(JsonConstants.RPC_NODE));
+                invocationJson.get(JsonConstants.RPC_NODE).intValue());
         ErrorEvent event;
         if (node != null) {
             event = new ErrorEvent(throwable, node);
