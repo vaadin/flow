@@ -47,7 +47,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 24.7
  */
 public class JacksonCodec {
     /**
@@ -217,7 +217,8 @@ public class JacksonCodec {
     /**
      * Helper for decoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
-     * {@link Boolean}, {@link JsonNode}. <code>null</code> is also supported.
+     * {@link Boolean}, {@link JsonNode}.
+     * {@link com.fasterxml.jackson.databind.node.NullNode} is also supported.
      *
      * @param json
      *            the JSON value to decode

@@ -49,7 +49,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 24.7
  */
 public final class JacksonUtils {
 
@@ -89,7 +89,7 @@ public final class JacksonUtils {
      * Collects a stream of JSON values to a JSON array.
      *
      * @author Vaadin Ltd
-     * @since 1.0
+     * @since 24.7
      */
     private static final class ArrayNodeCollector
             implements Collector<JsonNode, ArrayNode, ArrayNode> {
@@ -172,18 +172,45 @@ public final class JacksonUtils {
         };
     }
 
+    /**
+     * Compare String value of two JsonNode values.
+     *
+     * @param a
+     *            Value one
+     * @param b
+     *            Value two
+     * @return {@code true} if text content equals
+     */
     public static boolean stringEqual(JsonNode a, JsonNode b) {
         assert a.getNodeType() == JsonNodeType.STRING;
         assert b.getNodeType() == JsonNodeType.STRING;
         return a.asText().equals(b.asText());
     }
 
+    /**
+     * Compare boolean value of two JsonNode values.
+     *
+     * @param a
+     *            Value one
+     * @param b
+     *            Value two
+     * @return {@code true} if text boolean equals
+     */
     public static boolean booleanEqual(JsonNode a, JsonNode b) {
         assert a.getNodeType() == JsonNodeType.BOOLEAN;
         assert b.getNodeType() == JsonNodeType.BOOLEAN;
         return a.asBoolean() == b.asBoolean();
     }
 
+    /**
+     * Compare number value of two JsonNode values.
+     *
+     * @param a
+     *            Value one
+     * @param b
+     *            Value two
+     * @return {@code true} if number content equals
+     */
     public static boolean numbersEqual(JsonNode a, JsonNode b) {
         assert a.getNodeType() == JsonNodeType.NUMBER;
         assert b.getNodeType() == JsonNodeType.NUMBER;
@@ -216,13 +243,9 @@ public final class JacksonUtils {
         return true;
     }
 
-    public static List<String> getKeys(JsonNode a) {
+    public static List<String> getKeys(JsonNode node) {
         List<String> keys = new ArrayList<>();
-        for (Iterator<Map.Entry<String, JsonNode>> it = a.fields(); it
-                .hasNext();) {
-            Map.Entry<String, JsonNode> entry = it.next();
-            keys.add(entry.getKey());
-        }
+        node.fieldNames().forEachRemaining(keys::add);
         return keys;
     }
 
@@ -391,7 +414,7 @@ public final class JacksonUtils {
     public static <T> T readToObject(ObjectNode jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
-            return objectMapper.readValue(jsonObject.toString(), tClass);
+            return objectMapper.treeToValue(jsonObject, tClass);
         } catch (JsonProcessingException e) {
             throw new JsonDecodingException(
                     "Error converting JsonObject to " + tClass.getName(), e);
@@ -410,13 +433,7 @@ public final class JacksonUtils {
      *            type of result instance
      */
     public static <T> T readValue(ObjectNode jsonValue, Class<T> tClass) {
-        Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
-        try {
-            return objectMapper.readValue(jsonValue.toString(), tClass);
-        } catch (JsonProcessingException e) {
-            throw new JsonDecodingException(
-                    "Error converting ObjectNode to " + tClass.getName(), e);
-        }
+        return readToObject(jsonValue, tClass);
     }
 
     /**
@@ -434,7 +451,7 @@ public final class JacksonUtils {
             TypeReference<T> typeReference) {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
-            return objectMapper.readValue(jsonValue.toString(), typeReference);
+            return objectMapper.treeToValue(jsonValue, typeReference);
         } catch (JsonProcessingException e) {
             throw new JsonDecodingException("Error converting ObjectNode to "
                     + typeReference.getType().getTypeName(), e);
