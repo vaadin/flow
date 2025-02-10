@@ -15,7 +15,7 @@
     "compile": "esbuild convert.ts --bundle --platform=node --outdir=src/main/resources/META-INF/frontend/generated/"
   },
   "dependencies": {
-    "esbuild": "0.15.12",
+    "esbuild": "0.25.0",
     "a-node-html-parser": "^6.0.0-4",
     "acorn": "^7.1.0",
     "acorn-walk": "^8.2.0",
