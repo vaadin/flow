@@ -230,7 +230,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.12.14</version>
+                <version>1.13.4</version>
             </dependency>
 
             <dependency>
