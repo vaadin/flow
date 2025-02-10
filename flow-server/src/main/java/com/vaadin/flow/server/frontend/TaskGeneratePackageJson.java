@@ -18,7 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Creates the <code>package.json</code> if missing.
@@ -43,11 +43,11 @@ public class TaskGeneratePackageJson extends NodeUpdater {
     public void execute() {
         try {
             modified = false;
-            JsonObject mainContent = getPackageJson();
+            ObjectNode mainContent = getPackageJson();
             modified = updateDefaultDependencies(mainContent);
             if (modified) {
-                if (!mainContent.hasKey("type")
-                        || !mainContent.getString("type").equals("module")) {
+                if (!mainContent.has("type") || !mainContent.get("type")
+                        .textValue().equals("module")) {
                     mainContent.put("type", "module");
                     log().info(
                             """

@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import elemental.json.Json;
@@ -111,7 +112,7 @@ public class ExclusionFilter implements Serializable {
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(
+                    JacksonUtils.readTree(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
                     reactEnabled, excludeWebComponentNpmPackages);
             return convert.getExclusions();

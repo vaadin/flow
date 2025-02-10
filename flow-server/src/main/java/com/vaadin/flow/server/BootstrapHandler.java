@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -1661,8 +1662,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 File stylesCss = new File(
                         ThemeUtils.getThemeFolder(frontendDirectory, themeName),
                         fileName);
-                JsonObject themeJson = ThemeUtils
-                        .getThemeJson(themeName, config).orElse(null);
+                JsonNode themeJson = ThemeUtils.getThemeJson(themeName, config)
+                        .orElse(null);
 
                 // Inline CSS into style tag to have hot module reload feature
                 element.appendChild(new DataNode(CssBundler.inlineImports(

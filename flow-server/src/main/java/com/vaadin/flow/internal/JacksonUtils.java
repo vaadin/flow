@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helpers for using <code>jackson</code>.
@@ -83,6 +84,28 @@ public final class JacksonUtils {
      */
     public static ArrayNode createArrayNode() {
         return objectMapper.createArrayNode();
+    }
+
+    /**
+     * Read Json string to JsonNode.
+     *
+     * @return JsonNode representation of given json string
+     */
+    public static ObjectNode readTree(String json) {
+        try {
+            return (ObjectNode) objectMapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new JsonDecodingException("Could not parse json content", e);
+        }
+    }
+
+    /**
+     * Create a JsonNode from value.
+     *
+     * @return JsonNode for given value content
+     */
+    public static JsonNode createNode(Object value) {
+        return objectMapper.valueToTree(value);
     }
 
     /**
