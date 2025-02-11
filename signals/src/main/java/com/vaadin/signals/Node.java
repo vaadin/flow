@@ -50,7 +50,14 @@ public sealed interface Node {
 
     /**
      * A data node. The node represents the actual data behind a signal
-     * instance.
+     * instance. The value of a node is made up of three different components:
+     * <ul>
+     * <li>a leaf value for when the node is used as a value signal</li>
+     * <li>a list of children for when the node is used as a list signal</li>
+     * <li>a map of children for when the node is used as a map signal</li>
+     * </ul>
+     * Note that a child is always either a list child or a map child. A child
+     * cannot have a list position and a map key at the same time.
      *
      * @param parent
      *            the parent id, or <code>null</code> for the root node

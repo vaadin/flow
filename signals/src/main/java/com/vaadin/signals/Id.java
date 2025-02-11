@@ -45,13 +45,20 @@ public record Id(long value) implements Comparable<Id> {
     public static final Id ZERO = new Id(0);
 
     /**
+     * Id representing the edge of a list. This can be either the position
+     * immediately before the first entry or the position immediately after the
+     * last entry.
+     */
+    public static final Id EDGE = ZERO;
+
+    /**
      * Special id value reserved for internal bookkeeping.
      */
     public static final Id MAX = new Id(Long.MAX_VALUE);
 
     /*
-     * Padding refers to the trailing '=' characters that are only necessary when
-     * base64 values are concatenated together
+     * Padding refers to the trailing '=' characters that are only necessary
+     * when base64 values are concatenated together
      */
     private static final Encoder base64Encoder = Base64.getEncoder()
             .withoutPadding();

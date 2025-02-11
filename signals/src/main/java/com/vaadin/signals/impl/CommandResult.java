@@ -24,73 +24,72 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
 
 /**
- * The result of applying a signal command as an operation against a tree
- * revision. The result is either to accept or reject the operation.
+ * The result of applying a signal command against a tree revision. The result
+ * is either to accept or reject the command.
  *
  * @see SignalCommand
  * @see TreeRevision
  */
-public sealed interface OperationResult {
+public sealed interface CommandResult {
     /**
-     * A data node update in an accepted operation result.
+     * A data node update in an accepted command result.
      *
      * @param oldNode
-     *            the old node instance, or <code>null</code> if the operation
+     *            the old node instance, or <code>null</code> if the command
      *            created a new node
      * @param newNode
-     *            the new node instance or null if the operation removed the
-     *            node
+     *            the new node instance or null if the command removed the node
      */
-    record TreeModification(Node oldNode, Node newNode) {
+    record NodeModification(Node oldNode, Node newNode) {
     }
 
     /**
-     * An accepted operation. Contains a collection of node updates that are
-     * performed as a result of the operation and any applied insert operations
-     * with a {@link Data#scopeOwner()} that matches the tree to which the
-     * operation was applied.
+     * An accepted command. Contains a collection of node updates that are
+     * performed as a result of the command and any applied insert commands with
+     * a {@link Data#scopeOwner()} that matches the tree to which the command
+     * was applied.
      * <p>
      * Note that due to the way aliases are resolved, the node id in the update
      * map might not match the node id in the applied signal command.
      *
      * @param updates
      *            a map from node ids to modifications to apply, not
-     *            <code>null</code>. The map is empty for test operations that
-     *            do not apply any changes even if the test passes.
+     *            <code>null</code>. The map is empty for condition commands
+     *            that do not apply any changes even if the test passes.
      * @param originalInserts
      *            a map from inserted node id to the originating signal command
      *            for new nodes with a matching scope owner. Not
      *            <code>null</code>.
      */
-    record Accept(Map<Id, TreeModification> updates,
+    record Accept(Map<Id, NodeModification> updates,
             Map<Id, SignalCommand.ScopeOwnerCommand> originalInserts)
             implements
-                OperationResult {
+                CommandResult {
         @Override
         public boolean accepted() {
             return true;
         }
 
         /**
-         * Asserts that this operation contains exactly one modification and
+         * Asserts that this result contains exactly one modification and
          * returns it.
          *
-         * @return the single operation, not <code>null</code>
+         * @return the single modification, not <code>null</code>
          */
-        public TreeModification onlyUpdate() {
+        public NodeModification onlyUpdate() {
             assert updates.size() == 1;
             return updates.values().iterator().next();
         }
     }
 
     /**
-     * A rejected operation, together with the reason for the rejection.
+     * A rejected command, together with the reason for the rejection.
      *
      * @param reason
      *            a string that describes the rejection reason, not
      *            <code>null</code>
      */
-    record Reject(String reason) implements OperationResult {
+    record Reject(String reason) implements CommandResult {
         @Override
         public boolean accepted() {
             return false;
@@ -98,27 +97,27 @@ public sealed interface OperationResult {
     }
 
     /**
-     * Tests whether this operation result is accepted or rejected.
+     * Tests whether this command result is accepted or rejected.
      *
-     * @return <code>true</code> if the operation is accepted,
-     *         <code>false</code> if it's rejected
+     * @return <code>true</code> if the command is accepted, <code>false</code>
+     *         if it's rejected
      */
     boolean accepted();
 
     /**
-     * Creates a copy of the given map of operation results where all accepted
+     * Creates a copy of the given map of command results where all accepted
      * results are replaced with the same rejection.
      *
      * @param results
-     *            the original map from ids to operation results, not
+     *            the original map from ids to command results, not
      *            <code>null</code>
      * @param reason
      *            the rejection reason string, not <code>null</code>
      * @return a map with all accepted results replaced with rejections
      */
-    public static Map<Id, OperationResult> rejectAll(
-            Map<Id, OperationResult> results, String reason) {
-        Map<Id, OperationResult> failed = new HashMap<>();
+    public static Map<Id, CommandResult> rejectAll(
+            Map<Id, CommandResult> results, String reason) {
+        Map<Id, CommandResult> failed = new HashMap<>();
 
         results.forEach((key, original) -> {
             if (original instanceof Reject failure) {
@@ -163,7 +162,7 @@ public sealed interface OperationResult {
      * @return an accepted result if the condition is <code>true</code>, a
      *         rejected result if the condition is <code>false</code>
      */
-    public static OperationResult test(boolean condition,
+    public static CommandResult conditional(boolean condition,
             String reasonIfFailed) {
         return condition ? ok() : fail(reasonIfFailed);
     }

@@ -48,10 +48,10 @@ import com.vaadin.signals.SignalCommand.ClearCommand;
 import com.vaadin.signals.SignalCommand.ClearOwnerCommand;
 import com.vaadin.signals.SignalCommand.IncrementCommand;
 import com.vaadin.signals.SignalCommand.InsertCommand;
-import com.vaadin.signals.SignalCommand.KeyTest;
-import com.vaadin.signals.SignalCommand.TestCommand;
-import com.vaadin.signals.SignalCommand.LastUpdateTest;
-import com.vaadin.signals.SignalCommand.PositionTest;
+import com.vaadin.signals.SignalCommand.KeyCondition;
+import com.vaadin.signals.SignalCommand.ConditionCommand;
+import com.vaadin.signals.SignalCommand.LastUpdateCondition;
+import com.vaadin.signals.SignalCommand.PositionCondition;
 import com.vaadin.signals.SignalCommand.PutCommand;
 import com.vaadin.signals.SignalCommand.PutIfAbsentCommand;
 import com.vaadin.signals.SignalCommand.RemoveByKeyCommand;
@@ -60,10 +60,10 @@ import com.vaadin.signals.SignalCommand.ScopeOwnerCommand;
 import com.vaadin.signals.SignalCommand.SetCommand;
 import com.vaadin.signals.SignalCommand.SnapshotCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
-import com.vaadin.signals.SignalCommand.ValueTest;
-import com.vaadin.signals.impl.OperationResult.Accept;
-import com.vaadin.signals.impl.OperationResult.Reject;
-import com.vaadin.signals.impl.OperationResult.TreeModification;
+import com.vaadin.signals.SignalCommand.ValueCondition;
+import com.vaadin.signals.impl.CommandResult.Accept;
+import com.vaadin.signals.impl.CommandResult.Reject;
+import com.vaadin.signals.impl.CommandResult.NodeModification;
 
 /**
  * A tree revision that can be mutated by applying signal commands.
@@ -90,26 +90,26 @@ public class MutableTreeRevision extends TreeRevision {
          * methods to optionally set a result while also returning a regular
          * value.
          */
-        private OperationResult result;
+        private CommandResult result;
 
         /**
          * Child results are collected for transactions and applied at the end
          * since the result of earlier operations might change if a later
          * operation is rejected.
          */
-        private Map<Id, OperationResult> childResults;
+        private Map<Id, CommandResult> subCommandResults;
 
         public TreeManipulator(SignalCommand command) {
             this.command = command;
         }
 
-        private void setResult(OperationResult result) {
+        private void setResult(CommandResult result) {
             assert this.result == null;
             this.result = result;
         }
 
         private void fail(String reason) {
-            setResult(OperationResult.fail(reason));
+            setResult(CommandResult.fail(reason));
         }
 
         private Id resolveAlias(Id nodeId) {
@@ -212,8 +212,8 @@ public class MutableTreeRevision extends TreeRevision {
                 Data parentData = data(parentId).get();
 
                 String key = parentData.mapChildren().entrySet().stream()
-                        .filter(entry -> entry.getValue().equals(id))
-                        .findAny().map(Entry::getKey).orElse(null);
+                        .filter(entry -> entry.getValue().equals(id)).findAny()
+                        .map(Entry::getKey).orElse(null);
 
                 if (key != null) {
                     updatedNodes.put(parentId, updateMapChildren(parentData,
@@ -276,6 +276,8 @@ public class MutableTreeRevision extends TreeRevision {
             }
 
             useData(parentId, (node, id) -> {
+                // Mark as detached only after the last error condition check
+                // done by useData
                 detachedNodes.remove(resolvedChildId);
 
                 Data updated = attacher.apply(node, resolvedChildId);
@@ -309,7 +311,7 @@ public class MutableTreeRevision extends TreeRevision {
 
             if (after != null) {
                 int position;
-                if (after.equals(Id.ZERO)) {
+                if (after.equals(Id.EDGE)) {
                     // After edge -> insert first
                     position = 0;
                 } else {
@@ -324,7 +326,7 @@ public class MutableTreeRevision extends TreeRevision {
                 if (before != null) {
                     Id atPosition = position < children.size()
                             ? children.get(position)
-                            : Id.ZERO;
+                            : Id.EDGE;
                     if (!atPosition.equals(before)) {
                         return -1;
                     }
@@ -338,7 +340,7 @@ public class MutableTreeRevision extends TreeRevision {
                 }
 
                 // Before edge -> insert last
-                if (before.equals(Id.ZERO)) {
+                if (before.equals(Id.EDGE)) {
                     return children.size();
                 }
 
@@ -376,9 +378,9 @@ public class MutableTreeRevision extends TreeRevision {
             }
         }
 
-        private TreeModification createUpdate(Id id, Node newNode) {
+        private NodeModification createModification(Id id, Node newNode) {
             Data original = MutableTreeRevision.this.data(id).orElse(null);
-            return new TreeModification(original, newNode);
+            return new NodeModification(original, newNode);
         }
 
         private static Map<Class<? extends SignalCommand>, BiConsumer<TreeManipulator, ? extends SignalCommand>> handlers = new HashMap<>();
@@ -388,20 +390,22 @@ public class MutableTreeRevision extends TreeRevision {
             handlers.put(commandType, handler);
         }
 
-        private static <T extends TestCommand> void addTestHandler(
+        private static <T extends ConditionCommand> void addConditionHandler(
                 Class<T> commandType,
-                BiFunction<TreeManipulator, T, OperationResult> handler) {
+                BiFunction<TreeManipulator, T, CommandResult> handler) {
             addHandler(commandType, (manipulator, command) -> manipulator
                     .setResult(handler.apply(manipulator, command)));
         }
 
         static {
-            addTestHandler(ValueTest.class, TreeManipulator::handleValueTest);
-            addTestHandler(PositionTest.class,
-                    TreeManipulator::handlePositionTest);
-            addTestHandler(KeyTest.class, TreeManipulator::handleKeyTest);
-            addTestHandler(LastUpdateTest.class,
-                    TreeManipulator::handleLastUpdateTest);
+            addConditionHandler(ValueCondition.class,
+                    TreeManipulator::handleValueCondition);
+            addConditionHandler(PositionCondition.class,
+                    TreeManipulator::handlePositionCondition);
+            addConditionHandler(KeyCondition.class,
+                    TreeManipulator::handleKeyCondition);
+            addConditionHandler(LastUpdateCondition.class,
+                    TreeManipulator::handleLastUpdateCondition);
 
             addHandler(AdoptAsCommand.class, TreeManipulator::handleAdoptAs);
             addHandler(AdoptAtCommand.class, TreeManipulator::handleAdoptAt);
@@ -423,7 +427,7 @@ public class MutableTreeRevision extends TreeRevision {
             addHandler(SnapshotCommand.class, TreeManipulator::handleSnapshot);
         }
 
-        public OperationResult handleCommand(SignalCommand command) {
+        public CommandResult handleCommand(SignalCommand command) {
             @SuppressWarnings("unchecked")
             BiConsumer<TreeManipulator, SignalCommand> handler = (BiConsumer<TreeManipulator, SignalCommand>) handlers
                     .get(command.getClass());
@@ -434,11 +438,11 @@ public class MutableTreeRevision extends TreeRevision {
                 return result;
             }
 
-            Map<Id, TreeModification> updates = new HashMap<>();
+            Map<Id, NodeModification> updates = new HashMap<>();
 
             updatedNodes.forEach((id, newNode) -> {
                 if (!detachedNodes.contains(id)) {
-                    updates.put(id, createUpdate(id, newNode));
+                    updates.put(id, createModification(id, newNode));
                 }
             });
 
@@ -456,11 +460,11 @@ public class MutableTreeRevision extends TreeRevision {
                 LinkedList<Id> toDetach = new LinkedList<>(detachedNodes);
                 while (!toDetach.isEmpty()) {
                     Id removed = toDetach.removeLast();
-                    updates.put(removed, createUpdate(removed, null));
+                    updates.put(removed, createModification(removed, null));
 
                     reverseAliases.getOrDefault(removed, List.of())
                             .forEach(aliasToRemove -> updates.put(aliasToRemove,
-                                    createUpdate(aliasToRemove, null)));
+                                    createModification(aliasToRemove, null)));
 
                     Data node = MutableTreeRevision.this.data(removed).get();
                     toDetach.addAll(node.listChildren());
@@ -471,8 +475,8 @@ public class MutableTreeRevision extends TreeRevision {
             return new Accept(updates, originalInserts);
         }
 
-        private OperationResult handleValueTest(ValueTest test) {
-            JsonNode value = value(test.nodeId());
+        private CommandResult handleValueCondition(ValueCondition test) {
+            JsonNode value = value(test.targetNodeId());
             if (value == null) {
                 value = NullNode.getInstance();
             }
@@ -482,15 +486,12 @@ public class MutableTreeRevision extends TreeRevision {
                 expectedValue = NullNode.getInstance();
             }
 
-            if (!value.equals(expectedValue)) {
-                return OperationResult.fail("Unexpected value");
-            } else {
-                return OperationResult.ok();
-            }
+            return CommandResult.conditional(value.equals(expectedValue),
+                    "Unexpected value");
         }
 
-        private OperationResult handlePositionTest(PositionTest test) {
-            Id nodeId = test.nodeId();
+        private CommandResult handlePositionCondition(PositionCondition test) {
+            Id nodeId = test.targetNodeId();
             Id resolvedChild = resolveAlias(test.childId());
 
             int indexOf = listChildren(nodeId)
@@ -498,20 +499,20 @@ public class MutableTreeRevision extends TreeRevision {
                     .orElseGet(() -> Integer.valueOf(-1));
 
             if (indexOf == -1) {
-                return OperationResult.fail("Not a child");
+                return CommandResult.fail("Not a child");
             }
 
             ListPosition position = test.position();
 
             Id after = position.after();
             if (after != null) {
-                if (after.equals(Id.ZERO)) {
+                if (after.equals(Id.EDGE)) {
                     if (indexOf != 0) {
-                        return OperationResult.fail("Not the first child");
+                        return CommandResult.fail("Not the first child");
                     }
                 } else {
                     if (!isChildAt(nodeId, indexOf - 1, after)) {
-                        return OperationResult
+                        return CommandResult
                                 .fail("Not after the provided child");
                     }
                 }
@@ -519,55 +520,55 @@ public class MutableTreeRevision extends TreeRevision {
 
             Id before = position.before();
             if (before != null) {
-                if (before.equals(Id.ZERO)) {
+                if (before.equals(Id.EDGE)) {
                     int childCount = listChildren(nodeId).map(List::size)
                             .orElse(0);
                     if (indexOf != childCount - 1) {
-                        return OperationResult.fail("Not the last child");
+                        return CommandResult.fail("Not the last child");
                     }
                 } else {
                     if (!isChildAt(nodeId, indexOf + 1, before)) {
-                        return OperationResult
+                        return CommandResult
                                 .fail("Not before the provided child");
                     }
                 }
             }
 
-            return OperationResult.ok();
+            return CommandResult.ok();
         }
 
-        private OperationResult handleKeyTest(KeyTest keyTest) {
-            Id nodeId = keyTest.nodeId();
+        private CommandResult handleKeyCondition(KeyCondition keyTest) {
+            Id nodeId = keyTest.targetNodeId();
             String key = keyTest.key();
             Id expectedChild = keyTest.expectedChild();
 
             Id actualChildId = mapChild(nodeId, key).orElse(null);
             if (expectedChild == null) {
-                return OperationResult.test(actualChildId != null,
+                return CommandResult.conditional(actualChildId != null,
                         "Key not present");
             } else if (Id.ZERO.equals(expectedChild)) {
-                return OperationResult.test(actualChildId == null,
+                return CommandResult.conditional(actualChildId == null,
                         "A key is present");
             } else {
-                return OperationResult.test(
+                return CommandResult.conditional(
                         isSameNode(actualChildId, expectedChild),
                         "Unexpected child");
             }
         }
 
-        private OperationResult handleLastUpdateTest(
-                LastUpdateTest lastUpdateTest) {
-            Id lastUpdate = data(lastUpdateTest.nodeId()).map(Data::lastUpdate)
-                    .orElse(null);
+        private CommandResult handleLastUpdateCondition(
+                LastUpdateCondition lastUpdateTest) {
+            Id lastUpdate = data(lastUpdateTest.targetNodeId())
+                    .map(Data::lastUpdate).orElse(null);
 
-            return OperationResult.test(
+            return CommandResult.conditional(
                     Objects.equals(lastUpdate,
                             lastUpdateTest.expectedLastUpdate()),
                     "Unexpected last update");
         }
 
         private void handleAdoptAs(AdoptAsCommand adoptAs) {
-            Id nodeId = adoptAs.nodeId();
+            Id nodeId = adoptAs.targetNodeId();
             String key = adoptAs.key();
             Id childId = adoptAs.childId();
 
@@ -577,7 +578,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private void handleAdoptAt(AdoptAtCommand adoptAt) {
-            Id nodeId = adoptAt.nodeId();
+            Id nodeId = adoptAt.targetNodeId();
             ListPosition position = adoptAt.position();
             Id childId = adoptAt.childId();
 
@@ -587,7 +588,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private void handleIncrement(IncrementCommand increment) {
-            Id nodeId = increment.nodeId();
+            Id nodeId = increment.targetNodeId();
             double delta = increment.delta();
 
             JsonNode oldValue = value(nodeId);
@@ -606,8 +607,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private void handleClear(ClearCommand clear) {
-            updateData(clear.nodeId(), node -> {
-                assert detachedNodes.isEmpty();
+            updateData(clear.targetNodeId(), node -> {
                 detachedNodes.addAll(node.listChildren());
                 detachedNodes.addAll(node.mapChildren().values());
 
@@ -621,13 +621,14 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private void handleRemoveByKey(RemoveByKeyCommand removeByKey) {
-            mapChild(removeByKey.nodeId(), removeByKey.key()).ifPresentOrElse(
-                    this::detach, () -> fail("Key not present"));
+            mapChild(removeByKey.targetNodeId(), removeByKey.key())
+                    .ifPresentOrElse(this::detach,
+                            () -> fail("Key not present"));
         }
 
         private void handlePut(PutCommand put) {
             Id commandId = put.commandId();
-            Id nodeId = put.nodeId();
+            Id nodeId = put.targetNodeId();
             String key = put.key();
             JsonNode value = put.value();
 
@@ -641,7 +642,7 @@ public class MutableTreeRevision extends TreeRevision {
 
         private void handlePutIfAbsent(PutIfAbsentCommand putIfAbsent) {
             Id commandId = putIfAbsent.commandId();
-            Id nodeId = putIfAbsent.nodeId();
+            Id nodeId = putIfAbsent.targetNodeId();
             String key = putIfAbsent.key();
 
             mapChild(nodeId, key).ifPresentOrElse(childId -> {
@@ -662,15 +663,15 @@ public class MutableTreeRevision extends TreeRevision {
             Id commandId = insert.commandId();
 
             createNode(commandId, insert.value(), insert.scopeOwner());
-            attachAt(insert.nodeId(), insert.position(), commandId);
+            attachAt(insert.targetNodeId(), insert.position(), commandId);
         }
 
         private void handleSet(SetCommand set) {
-            setValue(set.nodeId(), set.value());
+            setValue(set.targetNodeId(), set.value());
         }
 
         private void handleRemove(RemoveCommand remove) {
-            Id nodeId = remove.nodeId();
+            Id nodeId = remove.targetNodeId();
             Id expectedParentId = remove.expectedParentId();
 
             if (expectedParentId != null) {
@@ -700,16 +701,16 @@ public class MutableTreeRevision extends TreeRevision {
         private void handleTransaction(TransactionCommand transaction) {
             List<SignalCommand> commands = transaction.commands();
 
-            MutableTreeRevision child = new MutableTreeRevision(
+            MutableTreeRevision scratchpad = new MutableTreeRevision(
                     MutableTreeRevision.this);
 
-            childResults = new HashMap<Id, OperationResult>();
+            subCommandResults = new HashMap<Id, CommandResult>();
 
             Reject firstReject = null;
             for (SignalCommand command : commands) {
-                child.apply(command, childResults::put);
+                scratchpad.apply(command, subCommandResults::put);
 
-                OperationResult childResult = childResults
+                CommandResult childResult = subCommandResults
                         .get(command.commandId());
                 if (childResult instanceof Reject reject) {
                     firstReject = reject;
@@ -718,16 +719,17 @@ public class MutableTreeRevision extends TreeRevision {
             }
 
             if (firstReject == null) {
-                Map<Id, TreeModification> updates = new HashMap<>();
+                Map<Id, NodeModification> updates = new HashMap<>();
                 Map<Id, SignalCommand.ScopeOwnerCommand> originalInserts = new HashMap<>();
 
                 // Iterate the command list to preserve order
                 for (SignalCommand command : commands) {
-                    Accept op = (Accept) childResults.get(command.commandId());
+                    Accept op = (Accept) subCommandResults
+                            .get(command.commandId());
                     op.updates().forEach((nodeId, modification) -> {
                         if (updates.containsKey(nodeId)) {
                             updates.put(nodeId,
-                                    new TreeModification(
+                                    new NodeModification(
                                             updates.get(nodeId).oldNode(),
                                             modification.newNode()));
                         } else {
@@ -741,11 +743,11 @@ public class MutableTreeRevision extends TreeRevision {
                 setResult(new Accept(updates, originalInserts));
             } else {
                 for (SignalCommand command : commands) {
-                    OperationResult originalResult = childResults
+                    CommandResult originalResult = subCommandResults
                             .get(command.commandId());
                     if (originalResult == null
                             || originalResult instanceof Accept) {
-                        childResults.put(command.commandId(), firstReject);
+                        subCommandResults.put(command.commandId(), firstReject);
                     }
                 }
 
@@ -785,9 +787,9 @@ public class MutableTreeRevision extends TreeRevision {
      *            the list of commands to apply, not <code>null</code>
      * @return a map from command id to operation results, not <code>null</code>
      */
-    public Map<Id, OperationResult> applyAndGetResults(
+    public Map<Id, CommandResult> applyAndGetResults(
             List<SignalCommand> commands) {
-        Map<Id, OperationResult> results = new HashMap<>();
+        Map<Id, CommandResult> results = new HashMap<>();
 
         for (SignalCommand command : commands) {
             apply(command, results::put);
@@ -815,20 +817,21 @@ public class MutableTreeRevision extends TreeRevision {
      *
      * @param command
      *            the command to apply, not <code>null</code>
-     * @param resultHandler
-     *            the result handler callback, or <code>null</code> to ignore
-     *            results
+     * @param resultCollector
+     *            callback to collect command results, or <code>null</code> to
+     *            ignore results
      */
     public void apply(SignalCommand command,
-            BiConsumer<Id, OperationResult> resultHandler) {
-        OperationResult result = data(command.nodeId()).map(data -> {
+            BiConsumer<Id, CommandResult> resultCollector) {
+        CommandResult result = data(command.targetNodeId()).map(data -> {
             TreeManipulator manipulator = new TreeManipulator(command);
             var opResult = manipulator.handleCommand(command);
-            if (manipulator.childResults != null && resultHandler != null) {
-                manipulator.childResults.forEach(resultHandler);
+            if (manipulator.subCommandResults != null
+                    && resultCollector != null) {
+                manipulator.subCommandResults.forEach(resultCollector);
             }
             return opResult;
-        }).orElseGet(() -> OperationResult.fail("Node not found"));
+        }).orElseGet(() -> CommandResult.fail("Node not found"));
 
         if (result instanceof Accept accept) {
             accept.updates().forEach((nodeId, update) -> {
@@ -845,8 +848,8 @@ public class MutableTreeRevision extends TreeRevision {
             originalInserts().putAll(accept.originalInserts());
         }
 
-        if (resultHandler != null) {
-            resultHandler.accept(command.commandId(), result);
+        if (resultCollector != null) {
+            resultCollector.accept(command.commandId(), result);
         }
 
         assert assertValidTree();

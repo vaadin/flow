@@ -53,7 +53,7 @@ public sealed interface SignalCommand {
      * A signal command that doesn't apply any change but only performs a test
      * that will be part of determining whether a transaction passes.
      */
-    sealed interface TestCommand extends SignalCommand {
+    sealed interface ConditionCommand extends SignalCommand {
     }
 
     /**
@@ -76,7 +76,7 @@ public sealed interface SignalCommand {
      */
     sealed interface GlobalCommand extends SignalCommand {
         @Override
-        default Id nodeId() {
+        default Id targetNodeId() {
             return Id.ZERO;
         }
     }
@@ -86,24 +86,24 @@ public sealed interface SignalCommand {
      * equality.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the node to check, not <code>null</code>
      * @param expectedValue
      *            the expected value
      */
-    public record ValueTest(Id commandId, Id nodeId,
-            JsonNode expectedValue) implements TestCommand {
+    public record ValueCondition(Id commandId, Id targetNodeId,
+            JsonNode expectedValue) implements ConditionCommand {
     }
 
     /**
      * Tests whether the given node has a given child at a given position.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the parent node to check, not <code>null</code>
      * @param childId
      *            the id of the child to check for, not <code>null</code>
@@ -111,8 +111,8 @@ public sealed interface SignalCommand {
      *            the list position to use for optionally checking whether the
      *            child has the expected siblings
      */
-    public record PositionTest(Id commandId, Id nodeId, Id childId,
-            ListPosition position) implements TestCommand {
+    public record PositionCondition(Id commandId, Id targetNodeId, Id childId,
+            ListPosition position) implements ConditionCommand {
     }
 
     /**
@@ -120,9 +120,9 @@ public sealed interface SignalCommand {
      * key.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the parent node to check, not <code>null</code>
      * @param key
      *            the key to check, not <code>null</code>
@@ -131,8 +131,8 @@ public sealed interface SignalCommand {
      *            any child is present, or <code>Id.ZERO</code> to test that no
      *            child is present
      */
-    public record KeyTest(Id commandId, Id nodeId, String key,
-            Id expectedChild) implements TestCommand {
+    public record KeyCondition(Id commandId, Id targetNodeId, String key,
+            Id expectedChild) implements ConditionCommand {
     }
 
     /**
@@ -140,16 +140,16 @@ public sealed interface SignalCommand {
      * id.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the node to check, not <code>null</code>
      * @param expectedLastUpdate
-     *            the expected id of the command hat last updated this node, not
-     *            <code>null</code>
+     *            the expected id of the command that last updated this node,
+     *            not <code>null</code>
      */
-    public record LastUpdateTest(Id commandId, Id nodeId,
-            Id expectedLastUpdate) implements TestCommand {
+    public record LastUpdateCondition(Id commandId, Id targetNodeId,
+            Id expectedLastUpdate) implements ConditionCommand {
     }
 
     /**
@@ -159,16 +159,16 @@ public sealed interface SignalCommand {
      * same key. The child is detached from its previous parent.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the parent node to adopt to, not <code>null</code>
      * @param childId
      *            id of the child node to adopt, not <code>null</code>
      * @param key
      *            key to adopt the node as, not <code>null</code>
      */
-    public record AdoptAsCommand(Id commandId, Id nodeId, Id childId,
+    public record AdoptAsCommand(Id commandId, Id targetNodeId, Id childId,
             String key) implements KeyCommand {
     }
 
@@ -179,16 +179,16 @@ public sealed interface SignalCommand {
      * parent.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the parent node to adopt to, not <code>null</code>
      * @param childId
      *            id of the child node to adopt, not <code>null</code>
      * @param position
      *            the list insert position to insert into, not <code>null</code>
      */
-    public record AdoptAtCommand(Id commandId, Id nodeId, Id childId,
+    public record AdoptAtCommand(Id commandId, Id targetNodeId, Id childId,
             ListPosition position) implements SignalCommand {
     }
 
@@ -199,14 +199,14 @@ public sealed interface SignalCommand {
      * value.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the node to update, not <code>null</code>
      * @param delta
      *            a double value to increment by
      */
-    public record IncrementCommand(Id commandId, Id nodeId,
+    public record IncrementCommand(Id commandId, Id targetNodeId,
             double delta) implements SignalCommand {
     }
 
@@ -214,27 +214,27 @@ public sealed interface SignalCommand {
      * Removes all children from the target node.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the node to update, not <code>null</code>
      */
     public record ClearCommand(Id commandId,
-            Id nodeId) implements SignalCommand {
+            Id targetNodeId) implements SignalCommand {
     }
 
     /**
      * Removes the child with the given key, if present.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the node to update, not <code>null</code>
      * @param key
      *            the key to remove, not <code>null</code>
      */
-    public record RemoveByKeyCommand(Id commandId, Id nodeId,
+    public record RemoveByKeyCommand(Id commandId, Id targetNodeId,
             String key) implements KeyCommand {
     }
 
@@ -244,16 +244,16 @@ public sealed interface SignalCommand {
      * node is created.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the parent node to update, not <code>null</code>
      * @param key
      *            the key to update, not <code>null</code>
      * @param value
      *            the value to set
      */
-    public record PutCommand(Id commandId, Id nodeId, String key,
+    public record PutCommand(Id commandId, Id targetNodeId, String key,
             JsonNode value) implements ValueCommand, KeyCommand {
     }
 
@@ -264,18 +264,18 @@ public sealed interface SignalCommand {
      * exist, then a new node is created to hold the value.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>. Also used as the node id of
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>. Also used as the node id of
      *            the newly created node.
-     * @param nodeId
+     * @param targetNodeId
      *            id of the parent node to update, not <code>null</code>
      * @param key
      *            the key to update, not <code>null</code>
      * @param value
      *            the value to set if a mapping didn't already exist
      */
-    public record PutIfAbsentCommand(Id commandId, Id nodeId, Id scopeOwner,
-            String key, JsonNode value)
+    public record PutIfAbsentCommand(Id commandId, Id targetNodeId,
+            Id scopeOwner, String key, JsonNode value)
             implements
                 ValueCommand,
                 KeyCommand,
@@ -287,18 +287,18 @@ public sealed interface SignalCommand {
      * position.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>. Also used as the node id of
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>. Also used as the node id of
      *            the newly created node.
-     * @param nodeId
+     * @param targetNodeId
      *            id of the parent node to update, not <code>null</code>
      * @param value
      *            the value to set if a mapping didn't already exist
      * @param position
      *            the list insert position, not <code>null</code>
      */
-    record InsertCommand(Id commandId, Id nodeId, Id scopeOwner, JsonNode value,
-            ListSignal.ListPosition position)
+    record InsertCommand(Id commandId, Id targetNodeId, Id scopeOwner,
+            JsonNode value, ListSignal.ListPosition position)
             implements
                 ValueCommand,
                 ScopeOwnerCommand {
@@ -308,14 +308,14 @@ public sealed interface SignalCommand {
      * Sets the value of the given node.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the node to update, not <code>null</code>
      * @param value
      *            the value to set
      */
-    record SetCommand(Id commandId, Id nodeId,
+    record SetCommand(Id commandId, Id targetNodeId,
             JsonNode value) implements ValueCommand {
     }
 
@@ -324,15 +324,15 @@ public sealed interface SignalCommand {
      * parent is as expected.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
-     * @param nodeId
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
+     * @param targetNodeId
      *            id of the node to remove, not <code>null</code>
      * @param expectedParentId
      *            the expected parent node id, or <code>null</code> to not
      *            verify the parent
      */
-    record RemoveCommand(Id commandId, Id nodeId,
+    record RemoveCommand(Id commandId, Id targetNodeId,
             Id expectedParentId) implements SignalCommand {
     }
 
@@ -340,8 +340,8 @@ public sealed interface SignalCommand {
      * Removes all nodes that have its scope owner set as the given id.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
      * @param ownerId
      *            the scope owner id to look for, not <code>null</code>
      */
@@ -354,8 +354,8 @@ public sealed interface SignalCommand {
      * commands are individually accepted.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
      * @param commands
      *            the list of commands to apply, not <code>null</code>
      */
@@ -367,8 +367,8 @@ public sealed interface SignalCommand {
      * Initializes a tree based on a collection of pre-existing nodes.
      *
      * @param commandId
-     *            the unique command id used to track the status of this
-     *            command, not <code>null</code>
+     *            the unique command id used to track the status of this command
+     *            instance, not <code>null</code>
      * @param nodes
      *            a map from node id to nodes to use, not <code>null</code>
      */
@@ -396,5 +396,5 @@ public sealed interface SignalCommand {
      * @return id of the primary node targeted by this command, not
      *         <code>null</code>
      */
-    Id nodeId();
+    Id targetNodeId();
 }

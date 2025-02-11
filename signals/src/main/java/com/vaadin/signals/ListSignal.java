@@ -47,7 +47,7 @@ public class ListSignal {
          */
         public static ListPosition first() {
             // After edge
-            return new ListPosition(Id.ZERO, null);
+            return new ListPosition(Id.EDGE, null);
         }
 
         /**
@@ -58,7 +58,7 @@ public class ListSignal {
          */
         public static ListPosition last() {
             // Before edge
-            return new ListPosition(null, Id.ZERO);
+            return new ListPosition(null, Id.EDGE);
         }
     }
 }

@@ -38,8 +38,8 @@ import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Alias;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
-import com.vaadin.signals.impl.OperationResult.Accept;
-import com.vaadin.signals.impl.OperationResult.TreeModification;
+import com.vaadin.signals.impl.CommandResult.Accept;
+import com.vaadin.signals.impl.CommandResult.NodeModification;
 
 public class MutableTreeRevisionTest {
     private final MutableTreeRevision revision = new MutableTreeRevision(
@@ -70,12 +70,12 @@ public class MutableTreeRevisionTest {
 
     @Test
     void setCommand_existingTarget_valueIsSet() {
-        OperationResult result = applySingle(new SignalCommand.SetCommand(
+        CommandResult result = applySingle(new SignalCommand.SetCommand(
                 commandId, Id.ZERO, new TextNode("value")));
 
         // Check result object
         Accept accept = assertAccepted(result);
-        TreeModification modification = accept.onlyUpdate();
+        NodeModification modification = accept.onlyUpdate();
         assertEquals(Node.EMPTY, modification.oldNode());
         Data newDataNode = (Data) modification.newNode();
         assertEquals(new TextNode("value"), newDataNode.value());
@@ -86,7 +86,7 @@ public class MutableTreeRevisionTest {
 
     @Test
     void setCommand_missingTarget_rejected() {
-        OperationResult result = applySingle(new SignalCommand.SetCommand(
+        CommandResult result = applySingle(new SignalCommand.SetCommand(
                 commandId, Id.random(), new TextNode("value")));
 
         // Check result object
@@ -100,7 +100,7 @@ public class MutableTreeRevisionTest {
     void setCommand_aliasTarget_dataNodeUpdated() {
         Id alias = createAlias(Id.ZERO);
 
-        OperationResult result = applySingle(new SignalCommand.SetCommand(
+        CommandResult result = applySingle(new SignalCommand.SetCommand(
                 commandId, alias, new TextNode("value")));
 
         // Check result object
@@ -115,7 +115,7 @@ public class MutableTreeRevisionTest {
 
     @Test
     void incrementCommand_nullValue_incrementsFromZero() {
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.IncrementCommand(commandId, Id.ZERO, 3));
 
         // Check result object
@@ -131,7 +131,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
                 new DoubleNode(2)));
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.IncrementCommand(commandId, Id.ZERO, 3));
 
         // Check result object
@@ -147,7 +147,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
                 new TextNode("value")));
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.IncrementCommand(commandId, Id.ZERO, 3));
 
         // Check result object
@@ -161,7 +161,7 @@ public class MutableTreeRevisionTest {
     void incrementCommand_alias_dataUpdated() {
         Id alias = createAlias(Id.ZERO);
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.IncrementCommand(commandId, alias, 3));
 
         // Check result object
@@ -175,17 +175,17 @@ public class MutableTreeRevisionTest {
 
     @Test
     void insertCommand_emptyNode_onlyChild() {
-        OperationResult result = applySingle(new SignalCommand.InsertCommand(
+        CommandResult result = applySingle(new SignalCommand.InsertCommand(
                 commandId, Id.ZERO, null, new TextNode("value"),
                 ListSignal.ListPosition.first()));
 
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(2, accept.updates().size());
-        TreeModification parentUpdate = accept.updates().get(Id.ZERO);
+        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
         assertEquals(List.of(commandId),
                 ((Data) parentUpdate.newNode()).listChildren());
-        TreeModification childUpdate = accept.updates().get(commandId);
+        NodeModification childUpdate = accept.updates().get(commandId);
         assertNull(childUpdate.oldNode());
         assertEquals("value",
                 ((Data) childUpdate.newNode()).value().textValue());
@@ -202,13 +202,13 @@ public class MutableTreeRevisionTest {
                 ListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
                         ListSignal.ListPosition.first()));
 
         // Check result object
         Accept accept = assertAccepted(result);
-        TreeModification parentUpdate = accept.updates().get(Id.ZERO);
+        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
         assertEquals(List.of(other),
                 ((Data) parentUpdate.oldNode()).listChildren());
         assertEquals(List.of(inserted, other),
@@ -225,7 +225,7 @@ public class MutableTreeRevisionTest {
                 ListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
-        OperationResult result = applySingle(new SignalCommand.InsertCommand(
+        CommandResult result = applySingle(new SignalCommand.InsertCommand(
                 inserted, Id.ZERO, null, null, ListSignal.ListPosition.last()));
 
         // Check result object
@@ -242,7 +242,7 @@ public class MutableTreeRevisionTest {
                 ListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
                         new ListSignal.ListPosition(other, null)));
 
@@ -260,7 +260,7 @@ public class MutableTreeRevisionTest {
                 ListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
                         new ListSignal.ListPosition(null, other)));
 
@@ -274,7 +274,7 @@ public class MutableTreeRevisionTest {
     @Test
     void insertCommand_beforeMissing_reject() {
         Id inserted = Id.random();
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
                         new ListSignal.ListPosition(null, Id.random())));
 
@@ -288,7 +288,7 @@ public class MutableTreeRevisionTest {
     @Test
     void insertCommand_afterMissing_reject() {
         Id inserted = Id.random();
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
                         new ListSignal.ListPosition(Id.random(), null)));
 
@@ -310,7 +310,7 @@ public class MutableTreeRevisionTest {
                 ListSignal.ListPosition.last()));
 
         Id inserted = Id.random();
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
                         new ListSignal.ListPosition(other1, other2)));
 
@@ -332,7 +332,7 @@ public class MutableTreeRevisionTest {
                 ListSignal.ListPosition.last()));
 
         Id inserted = Id.random();
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
                         new ListSignal.ListPosition(other2, other1)));
         // they are technically adjacent, but not in the expected order
@@ -346,7 +346,7 @@ public class MutableTreeRevisionTest {
 
     @Test
     void insertCommand_emptyPosition_reject() {
-        OperationResult result = applySingle(new SignalCommand.InsertCommand(
+        CommandResult result = applySingle(new SignalCommand.InsertCommand(
                 commandId, Id.ZERO, null, null, new ListPosition(null, null)));
 
         // Check result object
@@ -360,7 +360,7 @@ public class MutableTreeRevisionTest {
     void insertCommand_parentAlias_dataUpdated() {
         Id alias = createAlias(Id.ZERO);
 
-        OperationResult result = applySingle(new SignalCommand.InsertCommand(
+        CommandResult result = applySingle(new SignalCommand.InsertCommand(
                 commandId, alias, null, null, ListPosition.first()));
 
         // Check result object
@@ -377,7 +377,7 @@ public class MutableTreeRevisionTest {
         Id child = insertChildren(Id.ZERO, 1).get(0);
         Id alias = createAlias(child);
 
-        OperationResult result = applySingle(new SignalCommand.InsertCommand(
+        CommandResult result = applySingle(new SignalCommand.InsertCommand(
                 commandId, Id.ZERO, null, null, new ListPosition(alias, null)));
 
         // Check result object
@@ -392,7 +392,7 @@ public class MutableTreeRevisionTest {
         Id child = insertChildren(Id.ZERO, 1).get(0);
         Id alias = createAlias(child);
 
-        OperationResult result = applySingle(new SignalCommand.InsertCommand(
+        CommandResult result = applySingle(new SignalCommand.InsertCommand(
                 commandId, Id.ZERO, null, null, new ListPosition(null, alias)));
 
         // Check result object
@@ -404,16 +404,16 @@ public class MutableTreeRevisionTest {
 
     @Test
     void putCommand_emptyTarget_nodeInserted() {
-        OperationResult result = applySingle(new SignalCommand.PutCommand(
+        CommandResult result = applySingle(new SignalCommand.PutCommand(
                 commandId, Id.ZERO, "key", new TextNode("value")));
 
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(2, accept.updates().size());
-        TreeModification rootModification = accept.updates().get(Id.ZERO);
+        NodeModification rootModification = accept.updates().get(Id.ZERO);
         assertEquals(Map.of("key", commandId),
                 ((Data) rootModification.newNode()).mapChildren());
-        TreeModification childModification = accept.updates().get(commandId);
+        NodeModification childModification = accept.updates().get(commandId);
         assertNull(childModification.oldNode());
         assertEquals("value",
                 ((Data) childModification.newNode()).value().textValue());
@@ -424,17 +424,29 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
+    void putCommand_multiplePuts_orderPreserved() {
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "firstKey", new TextNode("first")));
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "secondKey", new TextNode("second")));
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "thirdKey", new TextNode("third")));
+
+        assertMapKeys(Id.ZERO, "firstKey", "secondKey", "thirdKey");
+    }
+
+    @Test
     void putCommand_replaceExisting_nodeUpdated() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key",
                 new TextNode("1")));
 
-        OperationResult result = applySingle(new SignalCommand.PutCommand(
+        CommandResult result = applySingle(new SignalCommand.PutCommand(
                 commandId, Id.ZERO, "key", new TextNode("2")));
 
         // Check result object
         Accept accept = assertAccepted(result);
-        TreeModification childUpdate = accept.onlyUpdate();
+        NodeModification childUpdate = accept.onlyUpdate();
         assertEquals("1", ((Data) childUpdate.oldNode()).value().textValue());
         assertEquals("2", ((Data) childUpdate.newNode()).value().textValue());
 
@@ -447,7 +459,7 @@ public class MutableTreeRevisionTest {
     void putCommand_aliasTarget_dataNodeUpdated() {
         Id alias = createAlias(Id.ZERO);
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.PutCommand(commandId, alias, "key", null));
 
         // Check result object
@@ -461,9 +473,8 @@ public class MutableTreeRevisionTest {
 
     @Test
     void putIfAbsentCommand_absent_nodeCreated() {
-        OperationResult result = applySingle(
-                new SignalCommand.PutIfAbsentCommand(commandId, Id.ZERO, null,
-                        "key", new TextNode("value")));
+        CommandResult result = applySingle(new SignalCommand.PutIfAbsentCommand(
+                commandId, Id.ZERO, null, "key", new TextNode("value")));
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(2, accept.updates().size());
@@ -480,14 +491,13 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key",
                 new TextNode("1")));
 
-        OperationResult result = applySingle(
-                new SignalCommand.PutIfAbsentCommand(commandId, Id.ZERO, null,
-                        "key", new TextNode("2")));
+        CommandResult result = applySingle(new SignalCommand.PutIfAbsentCommand(
+                commandId, Id.ZERO, null, "key", new TextNode("2")));
 
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(1, accept.updates().size(), "Only alias is updated");
-        TreeModification modification = accept.updates().get(commandId);
+        NodeModification modification = accept.updates().get(commandId);
         assertNull(modification.oldNode());
         assertInstanceOf(Node.Alias.class, modification.newNode());
         assertEquals(child, ((Alias) modification.newNode()).target());
@@ -504,9 +514,8 @@ public class MutableTreeRevisionTest {
     void putIfAbsentCommand_aliasTarget_dataNodeUpdated() {
         Id alias = createAlias(Id.ZERO);
 
-        OperationResult result = applySingle(
-                new SignalCommand.PutIfAbsentCommand(commandId, alias, null,
-                        "key", null));
+        CommandResult result = applySingle(new SignalCommand.PutIfAbsentCommand(
+                commandId, alias, null, "key", null));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -518,8 +527,20 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
+    void putIfAbsentCommand_multiplePuts_orderPreserved() {
+        applySingle(new SignalCommand.PutIfAbsentCommand(Id.random(), Id.ZERO,
+                null, "firstKey", new TextNode("first")));
+        applySingle(new SignalCommand.PutIfAbsentCommand(Id.random(), Id.ZERO,
+                null, "secondKey", new TextNode("second")));
+        applySingle(new SignalCommand.PutIfAbsentCommand(Id.random(), Id.ZERO,
+                null, "thirdKey", new TextNode("third")));
+
+        assertMapKeys(Id.ZERO, "firstKey", "secondKey", "thirdKey");
+    }
+
+    @Test
     void adoptAtCommand_childMissing_reject() {
-        OperationResult result = applySingle(new SignalCommand.AdoptAtCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, Id.ZERO, Id.random(), ListPosition.last()));
 
         // Check result object
@@ -535,7 +556,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
                 ListSignal.ListPosition.last()));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAtCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, child, Id.ZERO, ListPosition.last()));
 
         // Check result object
@@ -555,7 +576,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
                 ListSignal.ListPosition.last()));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAtCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, Id.ZERO, child, ListPosition.first()));
 
         // Check result object
@@ -575,7 +596,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
                 ListSignal.ListPosition.last()));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAtCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, target, child, ListPosition.first()));
 
         // Check result object
@@ -591,7 +612,7 @@ public class MutableTreeRevisionTest {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAtCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, Id.ZERO, child, ListPosition.first()));
 
         // Check result object
@@ -608,7 +629,7 @@ public class MutableTreeRevisionTest {
 
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAtCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, alias, children.get(0), ListPosition.last()));
 
         // Check result object
@@ -626,7 +647,7 @@ public class MutableTreeRevisionTest {
 
         Id alias = createAlias(children.get(0));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAtCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, Id.ZERO, alias, ListPosition.last()));
 
         // Check result object
@@ -640,7 +661,7 @@ public class MutableTreeRevisionTest {
 
     @Test
     void adoptAsCommand_childMissing_reject() {
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, Id.ZERO, Id.random(), "key"));
 
         // Check result object
@@ -655,7 +676,7 @@ public class MutableTreeRevisionTest {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, child, Id.ZERO, "key"));
 
         // Check result object
@@ -670,7 +691,7 @@ public class MutableTreeRevisionTest {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, Id.ZERO, child, "key2"));
 
         // Check result object
@@ -688,7 +709,7 @@ public class MutableTreeRevisionTest {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key2", null));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, target, child, "key"));
 
         // Check result object
@@ -705,7 +726,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
                 ListPosition.last()));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, Id.ZERO, child, "key"));
 
         // Check result object
@@ -724,7 +745,7 @@ public class MutableTreeRevisionTest {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key2", null));
 
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, Id.ZERO, child, "key"));
 
         // Check result object
@@ -740,7 +761,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
         Id alias = createAlias(Id.ZERO);
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, alias, child, "key2"));
 
         // Check result object
@@ -758,7 +779,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
         Id alias = createAlias(child);
-        OperationResult result = applySingle(new SignalCommand.AdoptAsCommand(
+        CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, Id.ZERO, alias, "key2"));
 
         // Check result object
@@ -771,8 +792,24 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
+    void adoptAsCommand_existingKeys_orderPreserved() {
+        Id firstId = Id.random();
+        applySingle(new SignalCommand.PutCommand(firstId, Id.ZERO, "firstKey",
+                new TextNode("first")));
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "secondKey", new TextNode("second")));
+        applySingle(new SignalCommand.PutCommand(commandId, firstId, "key",
+                new TextNode("value")));
+
+        applySingle(new SignalCommand.AdoptAsCommand(Id.random(), Id.ZERO,
+                commandId, "thirdKey"));
+
+        assertMapKeys(Id.ZERO, "firstKey", "secondKey", "thirdKey");
+    }
+
+    @Test
     void removeCommand_rootNode_reject() {
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.RemoveCommand(commandId, Id.ZERO, null));
 
         // Check result object
@@ -792,7 +829,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(grandChild, child, null,
                 null, ListPosition.last()));
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.RemoveCommand(commandId, child, null));
 
         // Check result object
@@ -800,9 +837,9 @@ public class MutableTreeRevisionTest {
         assertEquals(3, accept.updates().size());
         Data newRootData = (Data) accept.updates().get(Id.ZERO).newNode();
         assertEquals(List.of(), newRootData.listChildren());
-        TreeModification childUpdate = accept.updates().get(child);
+        NodeModification childUpdate = accept.updates().get(child);
         assertNull(childUpdate.newNode());
-        TreeModification grandchildUpdate = accept.updates().get(grandChild);
+        NodeModification grandchildUpdate = accept.updates().get(grandChild);
         assertNull(grandchildUpdate.newNode());
 
         // Check revision state
@@ -820,7 +857,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
                 ListPosition.last()));
 
-        OperationResult result = applySingle(new SignalCommand.RemoveCommand(
+        CommandResult result = applySingle(new SignalCommand.RemoveCommand(
                 commandId, child, expectedParent));
 
         // Check result object
@@ -836,7 +873,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
                 ListPosition.last()));
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.RemoveCommand(commandId, child, Id.ZERO));
 
         // Check result object
@@ -851,7 +888,7 @@ public class MutableTreeRevisionTest {
         Id child = insertChildren(Id.ZERO, 1).get(0);
 
         Id alias = createAlias(Id.ZERO);
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.RemoveCommand(commandId, child, alias));
 
         // Check result object
@@ -868,7 +905,7 @@ public class MutableTreeRevisionTest {
         Id child = insertChildren(Id.ZERO, 1).get(0);
 
         Id alias = createAlias(child);
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.RemoveCommand(commandId, alias, Id.ZERO));
 
         // Check result object
@@ -883,10 +920,25 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
+    void removeCommand_multipleMapChildren_orderPreserved() {
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "firstKey", new TextNode("first")));
+        applySingle(new SignalCommand.PutCommand(commandId, Id.ZERO,
+                "secondKey", new TextNode("second")));
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "thirdKey", new TextNode("third")));
+
+        applySingle(
+                new SignalCommand.RemoveCommand(Id.random(), commandId, null));
+
+        assertMapKeys(Id.ZERO, "firstKey", "thirdKey");
+
+    }
+
+    @Test
     void removeByKeyCommand_missingKey_reject() {
-        OperationResult result = applySingle(
-                new SignalCommand.RemoveByKeyCommand(commandId, Id.ZERO,
-                        "key"));
+        CommandResult result = applySingle(new SignalCommand.RemoveByKeyCommand(
+                commandId, Id.ZERO, "key"));
 
         // Check result object
         assertFalse(result.accepted());
@@ -900,16 +952,15 @@ public class MutableTreeRevisionTest {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.RemoveByKeyCommand(commandId, Id.ZERO,
-                        "key"));
+        CommandResult result = applySingle(new SignalCommand.RemoveByKeyCommand(
+                commandId, Id.ZERO, "key"));
 
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(2, accept.updates().size());
-        TreeModification childUpdate = accept.updates().get(child);
+        NodeModification childUpdate = accept.updates().get(child);
         assertNull(childUpdate.newNode());
-        TreeModification parentUpdate = accept.updates().get(Id.ZERO);
+        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
         assertEquals(Map.of(), ((Data) parentUpdate.newNode()).mapChildren());
 
         // Check revision state
@@ -922,7 +973,7 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
         Id alias = createAlias(Id.ZERO);
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.RemoveByKeyCommand(commandId, alias, "key"));
 
         // Check result object
@@ -935,6 +986,22 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
+    void removeByKeyCommand_multipleMapChildren_orderPreserved() {
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "firstKey", new TextNode("first")));
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "secondKey", new TextNode("second")));
+        applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO,
+                "thirdKey", new TextNode("third")));
+
+        applySingle(new SignalCommand.RemoveByKeyCommand(Id.random(), Id.ZERO,
+                "secondKey"));
+
+        assertMapKeys(Id.ZERO, "firstKey", "thirdKey");
+
+    }
+
+    @Test
     void clearCommand_nodeWithChildren_childrenRemoved() {
         Id listChild = Id.random();
         applySingle(new SignalCommand.InsertCommand(listChild, Id.ZERO, null,
@@ -944,17 +1011,17 @@ public class MutableTreeRevisionTest {
         applySingle(
                 new SignalCommand.PutCommand(mapChild, Id.ZERO, "key", null));
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.ClearCommand(commandId, Id.ZERO));
 
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(3, accept.updates().size());
-        TreeModification listChildUpdate = accept.updates().get(listChild);
+        NodeModification listChildUpdate = accept.updates().get(listChild);
         assertNull(listChildUpdate.newNode());
-        TreeModification mapChildUpdate = accept.updates().get(mapChild);
+        NodeModification mapChildUpdate = accept.updates().get(mapChild);
         assertNull(mapChildUpdate.newNode());
-        TreeModification parentUpdate = accept.updates().get(Id.ZERO);
+        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
         assertEquals(Map.of(), ((Data) parentUpdate.newNode()).mapChildren());
 
         // Check revision state
@@ -963,7 +1030,7 @@ public class MutableTreeRevisionTest {
 
     @Test
     void clearCommand_emptyNode_noChange() {
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.ClearCommand(commandId, Id.ZERO));
 
         // Check result object
@@ -979,7 +1046,7 @@ public class MutableTreeRevisionTest {
         insertChildren(Id.ZERO, 1);
 
         Id alias = createAlias(Id.ZERO);
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.ClearCommand(alias, Id.ZERO));
 
         Accept accept = assertAccepted(result);
@@ -991,90 +1058,90 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestNoPosition_listChild_accepted() {
+    void positionConditionNoPosition_listChild_accepted() {
         Id child = insertChildren(Id.ZERO, 1).get(0);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, child, new ListPosition(null, null)));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void positionTestNoPosition_missingChild_rejected() {
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+    void positionConditionNoPosition_missingChild_rejected() {
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, Id.random(), new ListPosition(null, null)));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void positionTestNoPosition_mapChild_rejected() {
+    void positionConditionNoPosition_mapChild_rejected() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, child, new ListPosition(null, null)));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void positionTestNoPosition_otherParent_rejected() {
+    void positionConditionNoPosition_otherParent_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(
-                new SignalCommand.PositionTest(commandId, children.get(0),
+        CommandResult result = applySingle(
+                new SignalCommand.PositionCondition(commandId, children.get(0),
                         children.get(1), new ListPosition(null, null)));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void positionTestFirst_isFirst_accepted() {
+    void positionConditionFirst_isFirst_accepted() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(0), ListPosition.first()));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void positionTestFirst_isNotFirst_rejected() {
+    void positionConditionFirst_isNotFirst_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(1), ListPosition.first()));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void positionTestLast_isNotLast_rejected() {
+    void positionConditionLast_isNotLast_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(0), ListPosition.last()));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void positionTestLast_isLast_accepted() {
+    void positionConditionLast_isLast_accepted() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(1), ListPosition.last()));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void positionTestAfter_isAfter_accepted() {
+    void positionConditionAfter_isAfter_accepted() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(1),
                 new ListPosition(children.get(0), null)));
 
@@ -1082,10 +1149,10 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestAfter_itself_rejected() {
+    void positionConditionAfter_itself_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(0),
                 new ListPosition(children.get(0), null)));
 
@@ -1093,10 +1160,10 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestAfter_isNotAfter_rejected() {
+    void positionConditionAfter_isNotAfter_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(0),
                 new ListPosition(children.get(1), null)));
 
@@ -1104,10 +1171,10 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestBefore_isBefore_accepted() {
+    void positionConditionBefore_isBefore_accepted() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(0),
                 new ListPosition(null, children.get(1))));
 
@@ -1115,10 +1182,10 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestBefore_itself_rejected() {
+    void positionConditionBefore_itself_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(0),
                 new ListPosition(null, children.get(0))));
 
@@ -1126,10 +1193,10 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestBefore_isNotBefore_rejected() {
+    void positionConditionBefore_isNotBefore_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(1),
                 new ListPosition(null, children.get(0))));
 
@@ -1137,10 +1204,10 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestBetween_isBetween_accepted() {
+    void positionConditionBetween_isBetween_accepted() {
         List<Id> children = insertChildren(Id.ZERO, 3);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(1),
                 new ListPosition(children.get(0), children.get(2))));
 
@@ -1148,10 +1215,10 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTestBetween_notBetween_rejected() {
+    void positionConditionBetween_notBetween_rejected() {
         List<Id> children = insertChildren(Id.ZERO, 3);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, children.get(1),
                 new ListPosition(children.get(2), children.get(1))));
 
@@ -1159,244 +1226,247 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void positionTest_parentAlias_checksAliasTarget() {
+    void positionCondition_parentAlias_checksAliasTarget() {
         Id child = insertChildren(Id.ZERO, 1).get(0);
 
         Id alias = createAlias(Id.ZERO);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, alias, child, new ListPosition(null, null)));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void positionTest_childAlias_checkAliasTarget() {
+    void positionCondition_childAlias_checkAliasTarget() {
         Id child = insertChildren(Id.ZERO, 1).get(0);
 
         Id alias = createAlias(child);
 
-        OperationResult result = applySingle(new SignalCommand.PositionTest(
+        CommandResult result = applySingle(new SignalCommand.PositionCondition(
                 commandId, Id.ZERO, alias, new ListPosition(null, null)));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void positionTest_aliasSiblings_checkAliasTargets() {
+    void positionCondition_aliasSiblings_checkAliasTargets() {
         List<Id> children = insertChildren(Id.ZERO, 3);
         Id first = createAlias(children.get(0));
         Id last = createAlias(children.get(2));
 
-        OperationResult result = applySingle(
-                new SignalCommand.PositionTest(commandId, Id.ZERO,
+        CommandResult result = applySingle(
+                new SignalCommand.PositionCondition(commandId, Id.ZERO,
                         children.get(1), new ListPosition(first, last)));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void valueTest_sameValue_accepted() {
+    void valueCondition_sameValue_accepted() {
         applySingle(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
                 new TextNode("value")));
 
-        OperationResult result = applySingle(new SignalCommand.ValueTest(
+        CommandResult result = applySingle(new SignalCommand.ValueCondition(
                 commandId, Id.ZERO, new TextNode("value")));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void valueTest_alias_dataNodeChecked() {
+    void valueCondition_alias_dataNodeChecked() {
         applySingle(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
                 new TextNode("value")));
 
         Id alias = createAlias(Id.ZERO);
 
-        OperationResult result = applySingle(new SignalCommand.ValueTest(
+        CommandResult result = applySingle(new SignalCommand.ValueCondition(
                 commandId, alias, new TextNode("value")));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void valueTest_otherValue_rejected() {
+    void valueCondition_otherValue_rejected() {
         applySingle(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
                 new TextNode("other")));
 
-        OperationResult result = applySingle(new SignalCommand.ValueTest(
+        CommandResult result = applySingle(new SignalCommand.ValueCondition(
                 commandId, Id.ZERO, new TextNode("value")));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void valueTestNull_jsonNullValue_accepted() {
+    void valueConditiontNull_jsonNullValue_accepted() {
         applySingle(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
                 NullNode.getInstance()));
 
-        OperationResult result = applySingle(
-                new SignalCommand.ValueTest(commandId, Id.ZERO, null));
+        CommandResult result = applySingle(
+                new SignalCommand.ValueCondition(commandId, Id.ZERO, null));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void valueTestJsonNull_nullValue_accepted() {
+    void valueConditionJsonNull_nullValue_accepted() {
         applySingle(new SignalCommand.SetCommand(Id.random(), Id.ZERO, null));
 
-        OperationResult result = applySingle(new SignalCommand.ValueTest(
+        CommandResult result = applySingle(new SignalCommand.ValueCondition(
                 commandId, Id.ZERO, NullNode.getInstance()));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void lastUpdateTest_sameValue_accepted() {
+    void lastUpdateCondition_sameValue_accepted() {
         Id update = Id.random();
         applySingle(new SignalCommand.SetCommand(update, Id.ZERO, null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.LastUpdateTest(commandId, Id.ZERO, update));
+        CommandResult result = applySingle(
+                new SignalCommand.LastUpdateCondition(commandId, Id.ZERO,
+                        update));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void lastUpdateTest_alias_targetNodeChecked() {
+    void lastUpdateCondition_alias_targetNodeChecked() {
         Id update = Id.random();
         applySingle(new SignalCommand.SetCommand(update, Id.ZERO, null));
 
         Id alias = createAlias(Id.ZERO);
-        OperationResult result = applySingle(
-                new SignalCommand.LastUpdateTest(commandId, alias, update));
+        CommandResult result = applySingle(
+                new SignalCommand.LastUpdateCondition(commandId, alias,
+                        update));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void lastUpdateTest_differentValue_rejected() {
+    void lastUpdateCondition_differentValue_rejected() {
         Id update = Id.random();
         applySingle(new SignalCommand.SetCommand(update, Id.ZERO, null));
 
-        OperationResult result = applySingle(new SignalCommand.LastUpdateTest(
-                commandId, Id.ZERO, Id.random()));
+        CommandResult result = applySingle(
+                new SignalCommand.LastUpdateCondition(commandId, Id.ZERO,
+                        Id.random()));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void keyTestNoKey_noKey_accepted() {
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", Id.ZERO));
+    void keyConditionNoKey_noKey_accepted() {
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", Id.ZERO));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void keyTestNoKey_keyPresent_rejected() {
+    void keyConditionNoKey_keyPresent_rejected() {
         applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO, "key",
                 null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", Id.ZERO));
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", Id.ZERO));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void keyTestKeyPresent_keyPresent_accepted() {
+    void keyConditionKeyPresent_keyPresent_accepted() {
         applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO, "key",
                 null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", null));
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", null));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void keyTestKeyPresent_noKey_rejected() {
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", null));
+    void keyConditionKeyPresent_noKey_rejected() {
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", null));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void keyTestSpecificNode_nodePresent_accepted() {
+    void keyConditionSpecificNode_nodePresent_accepted() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", child));
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", child));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void keyTestSpecificNode_noNode_rejected() {
+    void keyConditionSpecificNode_noNode_rejected() {
         Id child = Id.random();
 
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", child));
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", child));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void keyTestSpecificNode_otherKey_rejected() {
+    void keyConditionSpecificNode_otherKey_rejected() {
         Id child = Id.random();
         applySingle(
                 new SignalCommand.PutCommand(child, Id.ZERO, "other", null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", child));
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", child));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void keyTestSpecificNode_otherNode_rejected() {
+    void keyConditionSpecificNode_otherNode_rejected() {
         Id child = Id.random();
         applySingle(
                 new SignalCommand.PutCommand(child, Id.ZERO, "other", null));
         applySingle(new SignalCommand.PutCommand(Id.random(), Id.ZERO, "key",
                 null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", child));
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", child));
 
         assertTestResult(false, result);
     }
 
     @Test
-    void keyTest_aliasParent_targetChecked() {
+    void keyCondition_aliasParent_targetChecked() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
         Id alias = createAlias(Id.ZERO);
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, alias, "key", child));
+        CommandResult result = applySingle(
+                new SignalCommand.KeyCondition(commandId, alias, "key", child));
 
         assertTestResult(true, result);
     }
 
     @Test
-    void keyTest_aliasChild_targetChecked() {
+    void keyCondition_aliasChild_targetChecked() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key", null));
 
         Id alias = createAlias(child);
-        OperationResult result = applySingle(
-                new SignalCommand.KeyTest(commandId, Id.ZERO, "key", alias));
+        CommandResult result = applySingle(new SignalCommand.KeyCondition(
+                commandId, Id.ZERO, "key", alias));
 
         assertTestResult(true, result);
     }
 
     @Test
     void transactionCommand_empty_noChange() {
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.TransactionCommand(commandId, List.of()));
 
         // Check result object
@@ -1412,7 +1482,7 @@ public class MutableTreeRevisionTest {
         Id command1 = Id.random();
         Id command2 = Id.random();
 
-        Map<Id, OperationResult> results = revision.applyAndGetResults(
+        Map<Id, CommandResult> results = revision.applyAndGetResults(
                 List.of(new SignalCommand.TransactionCommand(commandId,
                         List.of(new SignalCommand.SetCommand(command1, Id.ZERO,
                                 new TextNode("value")),
@@ -1423,7 +1493,7 @@ public class MutableTreeRevisionTest {
         Accept transaction = assertAccepted(results.get(commandId));
         assertEquals(2, transaction.updates().size());
         // Verify that modifications from both commands are merged
-        TreeModification rootModification = transaction.updates().get(Id.ZERO);
+        NodeModification rootModification = transaction.updates().get(Id.ZERO);
         assertEquals(Node.EMPTY, rootModification.oldNode());
         assertEquals(revision.nodes().get(Id.ZERO), rootModification.newNode());
 
@@ -1442,16 +1512,16 @@ public class MutableTreeRevisionTest {
         Id command1 = Id.random();
         Id command2 = Id.random();
 
-        Map<Id, OperationResult> results = revision.applyAndGetResults(
+        Map<Id, CommandResult> results = revision.applyAndGetResults(
                 List.of(new SignalCommand.TransactionCommand(commandId,
                         List.of(new SignalCommand.SetCommand(command1, Id.ZERO,
                                 new TextNode("value")),
-                                new SignalCommand.ValueTest(command2, Id.ZERO,
-                                        null)))));
+                                new SignalCommand.ValueCondition(command2,
+                                        Id.ZERO, null)))));
 
         // Check result objects
         assertEquals(Set.of(command1, command2, commandId), results.keySet());
-        for (OperationResult subResult : results.values()) {
+        for (CommandResult subResult : results.values()) {
             assertFalse(subResult.accepted());
         }
 
@@ -1464,7 +1534,7 @@ public class MutableTreeRevisionTest {
         Id set = Id.random();
         Id innerTransaction = Id.random();
 
-        Map<Id, OperationResult> results = revision.applyAndGetResults(
+        Map<Id, CommandResult> results = revision.applyAndGetResults(
                 List.of(new SignalCommand.TransactionCommand(commandId,
                         List.of(new SignalCommand.TransactionCommand(
                                 innerTransaction,
@@ -1489,7 +1559,7 @@ public class MutableTreeRevisionTest {
         copy.apply(new SignalCommand.PutCommand(child, Id.ZERO, "key", null),
                 null);
 
-        OperationResult result = applySingle(
+        CommandResult result = applySingle(
                 new SignalCommand.SnapshotCommand(commandId, copy.nodes()));
 
         // Check result objects
@@ -1513,9 +1583,8 @@ public class MutableTreeRevisionTest {
         applySingle(
                 new SignalCommand.PutCommand(childOfOwned, node, "key", null));
 
-        OperationResult result = applySingle(
-                new SignalCommand.ClearOwnerCommand(commandId,
-                        revision.ownerId()));
+        CommandResult result = applySingle(new SignalCommand.ClearOwnerCommand(
+                commandId, revision.ownerId()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -1535,9 +1604,8 @@ public class MutableTreeRevisionTest {
 
         assertEquals(node, revision.originalInserts().get(node).commandId());
 
-        OperationResult result = applySingle(
-                new SignalCommand.ClearOwnerCommand(commandId,
-                        revision.ownerId()));
+        CommandResult result = applySingle(new SignalCommand.ClearOwnerCommand(
+                commandId, revision.ownerId()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -1556,9 +1624,8 @@ public class MutableTreeRevisionTest {
 
         assertEquals(Map.of(), revision.originalInserts());
 
-        OperationResult result = applySingle(
-                new SignalCommand.ClearOwnerCommand(commandId,
-                        revision.ownerId()));
+        CommandResult result = applySingle(new SignalCommand.ClearOwnerCommand(
+                commandId, revision.ownerId()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -1576,9 +1643,8 @@ public class MutableTreeRevisionTest {
 
         assertEquals(Map.of(), revision.originalInserts());
 
-        OperationResult result = applySingle(
-                new SignalCommand.ClearOwnerCommand(commandId,
-                        revision.ownerId()));
+        CommandResult result = applySingle(new SignalCommand.ClearOwnerCommand(
+                commandId, revision.ownerId()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -1588,8 +1654,25 @@ public class MutableTreeRevisionTest {
         assertMapChildren(Id.ZERO, Map.of("key", node));
     }
 
-    private OperationResult applySingle(SignalCommand command) {
-        Map<Id, OperationResult> results = revision
+    @Test
+    void apply_listOfCommands_appliesAllCommands() {
+        SignalCommand.SetCommand setA = new SignalCommand.SetCommand(
+                Id.random(), Id.ZERO, new TextNode("a"));
+        // Failed condition to test that subsequent commands are still applied
+        SignalCommand.ValueCondition testB = new SignalCommand.ValueCondition(
+                Id.random(), Id.ZERO, new TextNode("b"));
+        SignalCommand.InsertCommand insertC = new SignalCommand.InsertCommand(
+                Id.random(), Id.ZERO, null, new TextNode("c"),
+                ListPosition.first());
+
+        revision.apply(List.of(setA, testB, insertC));
+
+        assertValue(Id.ZERO, "a");
+        assertListChildren(Id.ZERO, insertC.commandId());
+    }
+
+    private CommandResult applySingle(SignalCommand command) {
+        Map<Id, CommandResult> results = revision
                 .applyAndGetResults(List.of(command));
         assertEquals(1, results.size());
 
@@ -1629,26 +1712,31 @@ public class MutableTreeRevisionTest {
         }
     }
 
+    private void assertMapKeys(Id nodeId, String... expectedKeys) {
+        assertEquals(List.of(expectedKeys), List
+                .copyOf(revision.data(nodeId).get().mapChildren().keySet()));
+    }
+
     private void assertUnchanged() {
         assertEquals(Map.of(Id.ZERO, Node.EMPTY), revision.nodes());
     }
 
     private static void assertTestResult(boolean expectedResult,
-            OperationResult result) {
+            CommandResult result) {
         assertEquals(expectedResult, result.accepted());
         if (result.accepted()) {
             assertEquals(0, ((Accept) result).updates().size());
         }
     }
 
-    private static Accept assertAccepted(OperationResult result) {
+    private static Accept assertAccepted(CommandResult result) {
         assertTrue(result.accepted());
         return (Accept) result;
     }
 
-    private static Data assertSingleDataChange(OperationResult result) {
+    private static Data assertSingleDataChange(CommandResult result) {
         Accept accept = assertAccepted(result);
-        TreeModification onlyUpdate = accept.onlyUpdate();
+        NodeModification onlyUpdate = accept.onlyUpdate();
         return (Data) onlyUpdate.newNode();
     }
 
