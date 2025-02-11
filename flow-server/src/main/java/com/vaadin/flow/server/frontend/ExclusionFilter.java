@@ -32,7 +32,6 @@ import org.apache.commons.io.IOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import elemental.json.Json;
 
 /**
  * Excludes dependencies listed in an "exclusions" array of
