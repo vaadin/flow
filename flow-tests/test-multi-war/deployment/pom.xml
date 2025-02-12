@@ -41,7 +41,34 @@
                             <contextPath>/test-war2</contextPath>
                         </contextHandler>
                     </contextHandlers>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>vaadin.project.basedir</key>
+                            <value>${project.basedir}</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!--
+                            Ensures that vaadin.project.basedir is removed and not leaking into other modules
+                        -->
+                        <id>unset-vaadin-project-basedir</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>bsh-property</goal>
+                        </goals>
+                        <configuration>
+                            <source><![CDATA[
+                                System.clearProperty("vaadin.project.basedir");
+                            ]]></source>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
