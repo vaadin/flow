@@ -77,12 +77,14 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
     //@formatter:off
-    private static final Pattern VISITABLE_CLASS_PATTERN = Pattern.compile("(^$|"
+    private static final Pattern NOT_VISITABLE_CLASS_PATTERN = Pattern.compile("(^$|"
             + ".*(slf4j).*|"
             // #5803
-            + "^(java|sun|oracle|elemental|javax|jakarta|oshi|"
-            + "org\\.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq)\\b|"
-            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode)\\b|"
+            + "^(java|sun|oracle|elemental|javax|javafx|jakarta|oshi|cglib|"
+            + "org\\.(apache|antlr|atmosphere|aspectj|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq|springframework|bouncycastle|snakeyaml|keycloak|flywaydb)\\b|"
+            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode|ibm)\\b|"
+            + "ch\\.quos\\.logback\\b|"
+            + "io\\.(fabric8\\.kubernetes)\\b|"
             + "net\\.(sf|bytebuddy)\\b"
             + ").*|"
             + ".*(Exception)$"
@@ -903,7 +905,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // common name-spaces that would not have components.
         // We also exclude Feature-Flag classes
         return className != null && !isExperimental(className)
-                && !VISITABLE_CLASS_PATTERN.matcher(className).matches();
+                && !NOT_VISITABLE_CLASS_PATTERN.matcher(className).matches();
     }
 
     private URL getUrl(String className) {

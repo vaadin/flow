@@ -327,11 +327,11 @@ public class FrontendDependenciesTest {
                 classFinder, true);
 
         Assert.assertTrue(
-                "second package should match fully not as starts with 'spring != springframework'",
-                dependencies.shouldVisit("org.springframework.samples"));
+                "second package should match fully not as starts with 'spring != springseason'",
+                dependencies.shouldVisit("org.springseason.samples"));
         Assert.assertTrue(
-                "second package should match fully not as starts with 'spring != springframework'",
-                dependencies.shouldVisit("org.springframework"));
+                "second package should match fully not as starts with 'spring != springseason'",
+                dependencies.shouldVisit("org.springseason"));
         Assert.assertFalse("should not visit with only 2 packages 'org.spring'",
                 dependencies.shouldVisit("org.spring"));
 
