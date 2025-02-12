@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
@@ -253,6 +256,8 @@ public class WebComponentGenerator {
                     "\\'") + "'";
         } else if (JsonValue.class.isAssignableFrom(property.getType())) {
             value = ((JsonValue) property.getDefaultValue()).toJson();
+        } else if (JsonNode.class.isAssignableFrom(property.getType())) {
+            value = property.getDefaultValue().toString();
         } else {
             throw new UnsupportedPropertyTypeException(String.format(
                     "%s is not a currently supported type for a Property."
@@ -303,6 +308,10 @@ public class WebComponentGenerator {
         } else if (JsonArray.class.isAssignableFrom(propertyData.getType())) {
             return "Array";
         } else if (JsonValue.class.isAssignableFrom(propertyData.getType())) {
+            return "Object";
+        } else if (ArrayNode.class.isAssignableFrom(propertyData.getType())) {
+            return "Array";
+        } else if (ObjectNode.class.isAssignableFrom(propertyData.getType())) {
             return "Object";
         } else {
             throw new IllegalStateException(

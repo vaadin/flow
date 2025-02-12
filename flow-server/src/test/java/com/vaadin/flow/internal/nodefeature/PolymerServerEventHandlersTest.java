@@ -29,6 +29,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -43,6 +45,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.HasCurrentService;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
 
@@ -152,16 +155,16 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
         assertEquals(1, methodCollector.size());
         assertEquals(method, methodCollector.iterator().next());
         assertEquals(method.getParameters().length,
-                extractParametersData(method).length());
+                extractParametersData(method).size());
     }
 
-    private JreJsonArray extractParametersData(Method method) {
+    private JsonNode extractParametersData(Method method) {
         ConstantPoolKey parametersData = (ConstantPoolKey) stateNode
                 .getFeature(PolymerEventListenerMap.class)
                 .get(method.getName());
         assertNotNull(parametersData);
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         parametersData.export(json);
         return json.get(parametersData.getId());
     }

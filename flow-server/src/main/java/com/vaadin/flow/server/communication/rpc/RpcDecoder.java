@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
 
-import elemental.json.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Decoder of RPC method arguments (server-side methods invoked from the
@@ -29,7 +29,7 @@ import elemental.json.JsonValue;
  * <p>
  * Each decoder is checked whether it's may be used to handle the argument value
  * with the required server-side parameter type via the
- * {@link #isApplicable(JsonValue, Class)} method. Decoder is applied to the
+ * {@link #isApplicable(JsonNode, Class)} method. Decoder is applied to the
  * received value and required type if it's applicable.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -51,7 +51,7 @@ public interface RpcDecoder extends Serializable {
      * @return {@code true} if this decoder is able to decode the {@code value}
      *         to the {@code type}, {@code false} otherwise
      */
-    boolean isApplicable(JsonValue value, Class<?> type);
+    boolean isApplicable(JsonNode value, Class<?> type);
 
     /**
      * Decode the given {@code value} to the required {@code type}.
@@ -70,5 +70,5 @@ public interface RpcDecoder extends Serializable {
      * @throws RpcDecodeException
      *             if the {@code value} cannot be converted to the {@code type}
      */
-    <T> T decode(JsonValue value, Class<T> type) throws RpcDecodeException;
+    <T> T decode(JsonNode value, Class<T> type) throws RpcDecodeException;
 }

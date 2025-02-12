@@ -17,6 +17,8 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
@@ -25,8 +27,7 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
+import elemental.json.Json;
 
 /**
  * RPC handler for Navigation.
@@ -46,23 +47,25 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
     }
 
     @Override
-    public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
+    public Optional<Runnable> handle(UI ui, JsonNode invocationJson) {
         History history = ui.getPage().getHistory();
 
         HistoryStateChangeHandler historyStateChangeHandler = history
                 .getHistoryStateChangeHandler();
         if (historyStateChangeHandler != null) {
-            JsonValue state = invocationJson
+            JsonNode state = invocationJson
                     .get(JsonConstants.RPC_NAVIGATION_STATE);
             String location = invocationJson
-                    .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
+                    .get(JsonConstants.RPC_NAVIGATION_LOCATION).textValue();
             boolean triggeredByLink = invocationJson
-                    .hasKey(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
+                    .has(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
             NavigationTrigger trigger = triggeredByLink
                     ? NavigationTrigger.ROUTER_LINK
                     : NavigationTrigger.HISTORY;
+            // TODO: remove Json when history updated
             HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
-                    state, new Location(location), trigger);
+                    state == null ? null : Json.create(state.toString()),
+                    new Location(location), trigger);
             historyStateChangeHandler.onHistoryStateChange(event);
         }
 

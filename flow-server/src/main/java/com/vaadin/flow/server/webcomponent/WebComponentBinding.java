@@ -20,15 +20,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonCodec;
-
-import elemental.json.JsonValue;
+import com.vaadin.flow.internal.JacksonCodec;
 
 /**
  * Represents a single instance of a exported web component instance embedded
@@ -42,7 +41,8 @@ import elemental.json.JsonValue;
  * @since 2.0
  *
  * @see WebComponentConfiguration#createWebComponentBinding(com.vaadin.flow.di.Instantiator,
- *      com.vaadin.flow.dom.Element, elemental.json.JsonObject) to create
+ *      com.vaadin.flow.dom.Element,
+ *      com.fasterxml.jackson.databind.node.ObjectNode) to create
  *      {@code WebComponentBindings}
  */
 public final class WebComponentBinding<C extends Component>
@@ -54,7 +54,7 @@ public final class WebComponentBinding<C extends Component>
      * Constructs a new {@code WebComponentBinding}. The bound {@link Component}
      * is given via {@code component} parameter. The web component properties
      * are bound by calling
-     * {@link #bindProperty(PropertyConfigurationImpl, boolean, elemental.json.JsonValue)};
+     * {@link #bindProperty(PropertyConfigurationImpl, boolean, JsonNode)};
      *
      * @param component
      *            component which exposes {@code properties} as web component.
@@ -116,7 +116,7 @@ public final class WebComponentBinding<C extends Component>
      *             if the {@code jsonValue} cannot be converted to the type of
      *             the property identified by {@code propertyName}.
      */
-    public void updateProperty(String propertyName, JsonValue jsonValue) {
+    public void updateProperty(String propertyName, JsonNode jsonValue) {
         Objects.requireNonNull(propertyName,
                 "Parameter 'propertyName' must not be null!");
 
@@ -190,7 +190,7 @@ public final class WebComponentBinding<C extends Component>
      */
     public void bindProperty(
             PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
-            boolean overrideDefault, JsonValue startingValue) {
+            boolean overrideDefault, JsonNode startingValue) {
         Objects.requireNonNull(propertyConfiguration,
                 "Parameter 'propertyConfiguration' cannot be null!");
 
@@ -212,20 +212,20 @@ public final class WebComponentBinding<C extends Component>
                 binding);
     }
 
-    private Serializable jsonValueToConcreteType(JsonValue jsonValue,
+    private Serializable jsonValueToConcreteType(JsonNode jsonValue,
             Class<? extends Serializable> type) {
         Objects.requireNonNull(type, "Parameter 'type' must not be null!");
 
-        if (JsonCodec.canEncodeWithoutTypeInfo(type)) {
+        if (JacksonCodec.canEncodeWithoutTypeInfo(type)) {
             Serializable value = null;
             if (jsonValue != null) {
-                value = JsonCodec.decodeAs(jsonValue, type);
+                value = JacksonCodec.decodeAs(jsonValue, type);
             }
             return value;
         } else {
             throw new IllegalArgumentException(
                     String.format("Received '%s' was not convertible to '%s'",
-                            JsonValue.class.getName(), type.getName()));
+                            JsonNode.class.getName(), type.getName()));
         }
     }
 
