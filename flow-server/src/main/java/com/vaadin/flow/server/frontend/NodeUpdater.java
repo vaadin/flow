@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -606,7 +607,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Adds Hilla components to package.json if Hilla is used in the project.
+     * Adds Hilla components to package.json if Hilla is available in the
+     * project's classpath.
      *
      * @param dependencies
      *            to be added into package.json
@@ -618,8 +620,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     private void putHillaComponentsDependencies(
             Map<String, String> dependencies, String packageJsonKey) {
-        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                options.getClassFinder())) {
+        if (EndpointRequestUtil.isHillaAvailable(options.getClassFinder())) {
             if (options.isReactEnabled()) {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/react", packageJsonKey));
