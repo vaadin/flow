@@ -7,14 +7,18 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 
+import com.vaadin.flow.component.applayout.testbench.AppLayoutElement;
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.AdminView;
@@ -340,6 +344,49 @@ public class AppViewIT extends AbstractIT {
         assertMenuListContains("PublicView, PrivateView, AdminView");
     }
 
+    @Test
+    public void admin_impersonate_user_shows_expected() {
+        Assume.assumeTrue(getUrlMappingBasePath().equals(""));
+
+        open(LOGIN_PATH);
+        loginAdmin();
+
+        List<MenuItem> menuItems = getMenuItems();
+        List<MenuItem> expectedItems = new ArrayList<>();
+
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", true));
+        Assert.assertEquals(expectedItems, menuItems);
+
+        $(AppLayoutElement.class).first().setDrawerOpened(true);
+
+        Assert.assertTrue(
+                $(ButtonElement.class).id("impersonate").isDisplayed());
+
+        $(ButtonElement.class).id("impersonate").click();
+
+        expectedItems.clear();
+        menuItems = getMenuItems();
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", false));
+        Assert.assertEquals(expectedItems, menuItems);
+
+        $(AppLayoutElement.class).first().setDrawerOpened(true);
+
+        Assert.assertTrue(
+                $(ButtonElement.class).id("exit-impersonate").isDisplayed());
+        $(ButtonElement.class).id("exit-impersonate").click();
+
+        expectedItems.clear();
+        menuItems = getMenuItems();
+        expectedItems.add(new MenuItem("", "Public", true));
+        expectedItems.add(new MenuItem("private", "Private", true));
+        expectedItems.add(new MenuItem("admin", "Admin", true));
+        Assert.assertEquals(expectedItems, menuItems);
+    }
+
     private void assertMenuListContains(String expected) {
         TestBenchElement menuList = waitUntil(driver -> $("*").id("menu-list"));
         String menuListText = menuList.getText();
@@ -423,9 +470,21 @@ public class AppViewIT extends AbstractIT {
      * Static caching done by #isClientRouter can cause some tests to be flaky.
      */
     protected void waitForClientRouter() {
-        boolean hasClientRouter = (boolean) executeScript(
-                "return !!window.Vaadin.Flow.clients.TypeScript");
-        if (hasClientRouter) {
+        AtomicBoolean hasClientRouter = new AtomicBoolean(false);
+        // Tries the JS execution several times, to prevent failures caused
+        // by redirects and page reloads, such as the following error seen
+        // more frequently with Chrome 132
+        // aborted by navigation: loader has changed while resolving nodes
+        waitUntil(d -> {
+            try {
+                hasClientRouter.set((boolean) executeScript(
+                        "return !!window.Vaadin.Flow.clients.TypeScript"));
+                return true;
+            } catch (WebDriverException expected) {
+                return false;
+            }
+        });
+        if (hasClientRouter.get()) {
             waitForElementPresent(By.cssSelector("#outlet > *"));
         }
     }

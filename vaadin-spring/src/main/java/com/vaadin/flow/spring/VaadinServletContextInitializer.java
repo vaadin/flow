@@ -1027,7 +1027,7 @@ public class VaadinServletContextInitializer
 
         private Resource[] collectResources(String locationPattern)
                 throws IOException {
-            List<Resource> resourcesList = new ArrayList<>();
+            Set<Resource> resources = new HashSet<>();
 
             Set<String> skipped = ReloadCache.skippedResources;
             Set<String> valid = ReloadCache.validResources;
@@ -1049,7 +1049,7 @@ public class VaadinServletContextInitializer
                 }
 
                 if (isDevModeCacheUsed() && valid.contains(originalPath)) {
-                    resourcesList.add(resource);
+                    resources.add(resource);
                     // Restore root paths to ensure new resources are correctly
                     // validate and cached after a reload
                     if (originalPath.endsWith("/")) {
@@ -1057,10 +1057,10 @@ public class VaadinServletContextInitializer
                     }
                 } else {
                     if (path.endsWith(".jar!/")) {
-                        resourcesList.add(resource);
+                        resources.add(resource);
                     } else if (path.endsWith("/")) {
                         rootPaths.add(path);
-                        resourcesList.add(resource);
+                        resources.add(resource);
                     } else {
                         int index = path.lastIndexOf(".jar!/");
                         if (index >= 0) {
@@ -1075,7 +1075,7 @@ public class VaadinServletContextInitializer
                             }
                             if (shouldPathBeScanned(relativePath,
                                     path.substring(0, index))) {
-                                resourcesList.add(resource);
+                                resources.add(resource);
                             }
                         } else {
                             List<String> parents = rootPaths.stream()
@@ -1092,14 +1092,14 @@ public class VaadinServletContextInitializer
                                             path.substring(parent.length()),
                                             parent,
                                             parentIsAllowedByPackageProperties))) {
-                                resourcesList.add(resource);
+                                resources.add(resource);
                             }
                         }
                     }
                 }
 
                 if (isDevModeCacheUsed()) {
-                    if (resourcesList.contains(resource)) {
+                    if (resources.contains(resource)) {
                         valid.add(originalPath);
                     } else {
                         skipped.add(originalPath);
@@ -1107,7 +1107,7 @@ public class VaadinServletContextInitializer
                 }
             }
 
-            return resourcesList.toArray(new Resource[0]);
+            return resources.toArray(new Resource[0]);
         }
 
         private boolean isDevModeCacheUsed() {

@@ -10,15 +10,6 @@ import com.vaadin.flow.spring.data.filter.Filter;
 public interface CountService {
 
     /**
-     * Counts the number of items, without any filtering.
-     *
-     * @return the number of items in the service
-     */
-    default long count() {
-        return count(null);
-    }
-
-    /**
      * Counts the number of items that match the given filter.
      *
      * @param filter

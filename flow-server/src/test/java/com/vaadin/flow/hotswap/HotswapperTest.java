@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.hotswap;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,6 +25,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +38,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -55,6 +59,7 @@ import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionDestroyListener;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.SessionInitListener;
+import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -1045,6 +1050,24 @@ public class HotswapperTest {
                 uiInitInstalled.get());
     }
 
+    @Test
+    public void uiInit_registersUIRefreshClientSideEvent() {
+        VaadinSession session = createMockVaadinSession();
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class,
+                MyLayoutWithChild.class);
+
+        try {
+            session.lock();
+            UIInitEvent event = new UIInitEvent(ui, service);
+            hotswapper.uiInit(event);
+            Assert.assertTrue(
+                    "Expected Hotswapper to register client side refresh event listener ",
+                    ui.refreshUIClientListenerRegistered);
+        } finally {
+            session.unlock();
+        }
+    }
+
     private void assertOnHotswapCompleteInvoked(VaadinHotswapper hotswapper,
             HotswapCompleteEvent event) {
         var eventArgumentCaptor = ArgumentCaptor
@@ -1153,20 +1176,41 @@ public class HotswapperTest {
 
     private static class RefreshTestingUI extends MockUI {
 
+        private static final String REFRESH_EVENT_NAME = "vaadin-refresh-ui";
+
+        private static final Pattern FIRE_UI_REFRESH_EVENT = Pattern
+                .compile(".*new CustomEvent\\(\"" + REFRESH_EVENT_NAME
+                        + "\",\\s*\\{\\s*detail:\\s*\\{\\s*fullRefresh:\\s*(true|false)\\s*}\\s*}\\).*");
+        private static final String ADD_CLIENT_UI_REFRESH_LISTENER = "window.addEventListener('"
+                + REFRESH_EVENT_NAME + "',";
         private Boolean refreshRouteChainRequested;
+        private boolean refreshUIClientListenerRegistered;
+
+        private final Page pageSpy;
 
         public RefreshTestingUI(VaadinSession session) {
             super(session);
+            pageSpy = Mockito.spy(super.getPage());
+            // Intercept javascript executions to check if the custom ui refresh
+            // event dispatch has been registered.
+            Mockito.doAnswer(i -> {
+                String expression = i.getArgument(0);
+                Matcher matcher = FIRE_UI_REFRESH_EVENT.matcher(expression);
+                if (matcher.matches()) {
+                    refreshRouteChainRequested = Boolean
+                            .parseBoolean(matcher.group(1));
+                } else if (expression
+                        .contains(ADD_CLIENT_UI_REFRESH_LISTENER)) {
+                    refreshUIClientListenerRegistered = true;
+                }
+                return null;
+            }).when(pageSpy).executeJs(Mockito.anyString(),
+                    Mockito.any(Serializable[].class));
         }
 
         @Override
-        public void refreshCurrentRoute(boolean refreshRouteChain) {
-            refreshRouteChainRequested = refreshRouteChain;
-            // No need to perform real navigation, tests only need to know if
-            // the method has been invoked.
-            // Navigation would fail anyway because of usage of method scoped
-            // classes. Blocking navigation prevents logs to be bloated by
-            // exception stack traces.
+        public Page getPage() {
+            return pageSpy;
         }
 
         void assertNotRefreshed() {

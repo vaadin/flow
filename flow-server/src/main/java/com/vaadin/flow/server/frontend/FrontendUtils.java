@@ -39,6 +39,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -60,7 +62,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 
-import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -1034,13 +1035,13 @@ public class FrontendUtils {
      *            origin of the version (like a file), used in error message
      * @return the frontend version the package or {@code null}
      */
-    public static FrontendVersion getPackageVersionFromJson(
-            JsonObject sourceJson, String pkg, String versionOrigin) {
-        if (!sourceJson.hasKey(pkg)) {
+    public static FrontendVersion getPackageVersionFromJson(JsonNode sourceJson,
+            String pkg, String versionOrigin) {
+        if (!sourceJson.has(pkg)) {
             return null;
         }
         try {
-            final String versionString = sourceJson.getString(pkg);
+            final String versionString = sourceJson.get(pkg).textValue();
             return new FrontendVersion(pkg, versionString);
         } catch (ClassCastException classCastException) { // NOSONAR
             LoggerFactory.getLogger(FrontendVersion.class).warn(

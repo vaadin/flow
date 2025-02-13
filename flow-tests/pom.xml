@@ -432,23 +432,6 @@
             </properties>
         </profile>
         <profile>
-            <!-- To be removed after chrome used by CI gets upgraded to 128 or later -->
-            <id>ci-devtools</id>
-            <activation>
-                <property>
-                    <name>teamcity.build.id</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                    <artifactId>selenium-devtools-v127</artifactId>
-                    <version>4.25.0</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
             <id>deepClean</id>
             <build>
                 <plugins>

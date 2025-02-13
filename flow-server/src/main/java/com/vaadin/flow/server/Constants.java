@@ -70,19 +70,24 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
-     * Name of the <code>npm</code> version locking ile.
+     * Name of the <code>npm</code> version locking file.
      */
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
 
     /**
-     * Name of the <code>pnpm</code> version locking ile.
+     * Name of the <code>pnpm</code> version locking file.
      */
     public static final String PACKAGE_LOCK_YAML = "pnpm-lock.yaml";
 
     /**
-     * Name of the <code>bun</code> version locking ile.
+     * Name of the <code>bun</code> version locking file.
      */
     public static final String PACKAGE_LOCK_BUN = "bun.lockb";
+
+    /**
+     * Name of the <code>bun</code> version locking file, starting from bun 1.2.
+     */
+    public static final String PACKAGE_LOCK_BUN_1_2 = "bun.lock";
 
     /**
      * Target folder constant.
@@ -390,6 +395,18 @@ public final class Constants implements Serializable {
      * Gradle builds in a build info (token) file.
      */
     public static final String DISABLE_PREPARE_FRONTEND_CACHE = "disable.prepare.frontend.cache";
+
+    /**
+     * Attribute used by HasSize to mark elements that have been set to full
+     * width.
+     */
+    public static final String ATTRIBUTE_WIDTH_FULL = "data-width-full";
+
+    /**
+     * Attribute used by HasSize to mark elements that have been set to full
+     * height.
+     */
+    public static final String ATTRIBUTE_HEIGHT_FULL = "data-height-full";
 
     private Constants() {
         // prevent instantiation constants class only
