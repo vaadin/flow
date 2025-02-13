@@ -20,7 +20,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -83,6 +82,28 @@ public final class JacksonUtils {
      */
     public static ArrayNode createArrayNode() {
         return objectMapper.createArrayNode();
+    }
+
+    /**
+     * Read Json string to JsonNode.
+     *
+     * @return JsonNode representation of given json string
+     */
+    public static ObjectNode readTree(String json) {
+        try {
+            return (ObjectNode) objectMapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new JsonDecodingException("Could not parse json content", e);
+        }
+    }
+
+    /**
+     * Create a JsonNode from value.
+     *
+     * @return JsonNode for given value content
+     */
+    public static JsonNode createNode(Object value) {
+        return objectMapper.valueToTree(value);
     }
 
     /**

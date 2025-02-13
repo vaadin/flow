@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +30,6 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import elemental.json.JsonObject;
 
 /**
  * Watches the given theme folder for changes, combines the theme on changes and
@@ -52,7 +51,7 @@ public class ThemeLiveUpdater implements Closeable {
     public ThemeLiveUpdater(File themeFolder, VaadinContext context) {
         String themeName = themeFolder.getName();
         File stylesCss = new File(themeFolder, "styles.css");
-        JsonObject themeJson = ThemeUtils
+        JsonNode themeJson = ThemeUtils
                 .getThemeJson(themeName, ApplicationConfiguration.get(context))
                 .orElse(null);
 

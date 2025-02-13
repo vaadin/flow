@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -25,6 +28,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -35,10 +39,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
@@ -136,21 +136,21 @@ public class BundleValidationTest {
         }
     }
 
-    private JsonObject getBasicStats() {
-        JsonObject stats = Json.createObject();
+    private ObjectNode getBasicStats() {
+        ObjectNode stats = JacksonUtils.createObjectNode();
 
-        JsonObject packageJsonDependencies = Json.createObject();
-        JsonObject frontendHashes = Json.createObject();
-        JsonObject themeJsonContents = Json.createObject();
+        ObjectNode packageJsonDependencies = JacksonUtils.createObjectNode();
+        ObjectNode frontendHashes = JacksonUtils.createObjectNode();
+        ObjectNode themeJsonContents = JacksonUtils.createObjectNode();
 
-        JsonArray entryScripts = Json.createArray();
-        JsonArray bundleImports = Json.createArray();
+        ArrayNode entryScripts = JacksonUtils.createArrayNode();
+        ArrayNode bundleImports = JacksonUtils.createArrayNode();
 
-        stats.put(PACKAGE_JSON_DEPENDENCIES, packageJsonDependencies);
-        stats.put(ENTRY_SCRIPTS, entryScripts);
-        stats.put(BUNDLE_IMPORTS, bundleImports);
-        stats.put(FRONTEND_HASHES, frontendHashes);
-        stats.put(THEME_JSON_CONTENTS, themeJsonContents);
+        stats.set(PACKAGE_JSON_DEPENDENCIES, packageJsonDependencies);
+        stats.set(ENTRY_SCRIPTS, entryScripts);
+        stats.set(BUNDLE_IMPORTS, bundleImports);
+        stats.set(FRONTEND_HASHES, frontendHashes);
+        stats.set(THEME_JSON_CONTENTS, themeJsonContents);
         stats.put(PACKAGE_JSON_HASH, "aHash");
 
         NodeUpdater nodeUpdater = new NodeUpdater(
@@ -168,8 +168,7 @@ public class BundleValidationTest {
                     dependency.getValue());
         }
 
-        bundleImports.set(bundleImports.length(),
-                "./generated/jar-resources/theme-util.js");
+        bundleImports.add("./generated/jar-resources/theme-util.js");
         frontendHashes.put("theme-util.js",
                 BundleValidationUtil.calculateHash(THEME_UTIL_JS));
         jarResources.put("theme-util.js", THEME_UTIL_JS);
@@ -215,9 +214,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -244,9 +243,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -279,9 +278,9 @@ public class BundleValidationTest {
         packages.put("@vaadin/text", "1.0.0");
         Mockito.when(depScanner.getPackages()).thenReturn(packages);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -315,9 +314,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -343,10 +342,11 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "1.0.0");
 
         setupFrontendUtilsMock(stats);
 
@@ -388,7 +388,7 @@ public class BundleValidationTest {
                       "jsVersion": "2.0.3",
                       "npmName": "@vaadin/router",
                       "releasenotes": true
-                    },
+                    }
                   },
                   "platform": "123-SNAPSHOT"
                 }
@@ -397,9 +397,9 @@ public class BundleValidationTest {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "2.0.3");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "2.0.3");
 
         setupFrontendUtilsMock(stats);
 
@@ -436,10 +436,11 @@ public class BundleValidationTest {
         packages.put("@vaadin/text", "2.1.0");
         Mockito.when(depScanner.getPackages()).thenReturn(packages);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.9.2");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "2.1.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.9.2");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "2.1.0");
 
         setupFrontendUtilsMock(stats);
 
@@ -473,14 +474,15 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "1.0.0");
         stats.put(PACKAGE_JSON_HASH,
                 "af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6");
-        stats.getArray(ENTRY_SCRIPTS).set(0,
-                "VAADIN/build/indexhtml-aa31f040.js");
+        ((ArrayNode) stats.get(ENTRY_SCRIPTS))
+                .add("VAADIN/build/indexhtml-aa31f040.js");
 
         setupFrontendUtilsMock(stats);
 
@@ -514,9 +516,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -550,9 +552,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -586,9 +588,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.6");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.6");
 
         setupFrontendUtilsMock(stats);
 
@@ -597,8 +599,8 @@ public class BundleValidationTest {
         Assert.assertFalse("No compilation if tilde range only patch update",
                 needsBuild);
 
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.1");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.1");
         setupFrontendUtilsMock(stats);
 
         needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
@@ -630,9 +632,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
 
         setupFrontendUtilsMock(stats);
 
@@ -642,8 +644,8 @@ public class BundleValidationTest {
                 "No compilation if caret range only minor version update",
                 needsBuild);
 
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "2.0.0");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "2.0.0");
         setupFrontendUtilsMock(stats);
 
         needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
@@ -680,9 +682,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/accordion",
-                "24.0.0.beta2");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/accordion", "24.0.0.beta2");
 
         setupFrontendUtilsMock(stats);
 
@@ -702,13 +704,14 @@ public class BundleValidationTest {
 
         String defaultHash = BundleValidationUtil
                 .getDefaultPackageJson(options, depScanner, null)
-                .getObject(NodeUpdater.VAADIN_DEP_KEY)
-                .getString(NodeUpdater.HASH_KEY);
+                .get(NodeUpdater.VAADIN_DEP_KEY).get(NodeUpdater.HASH_KEY)
+                .textValue();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "1.0.0");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         setupFrontendUtilsMock(stats);
@@ -728,12 +731,12 @@ public class BundleValidationTest {
 
         String defaultHash = BundleValidationUtil
                 .getDefaultPackageJson(options, depScanner, null)
-                .getObject(NodeUpdater.VAADIN_DEP_KEY)
-                .getString(NodeUpdater.HASH_KEY);
+                .get(NodeUpdater.VAADIN_DEP_KEY).get(NodeUpdater.HASH_KEY)
+                .textValue();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         setupFrontendUtilsMock(stats);
@@ -754,12 +757,12 @@ public class BundleValidationTest {
 
         String defaultHash = BundleValidationUtil
                 .getDefaultPackageJson(options, depScanner, null)
-                .getObject(NodeUpdater.VAADIN_DEP_KEY)
-                .getString(NodeUpdater.HASH_KEY);
+                .get(NodeUpdater.VAADIN_DEP_KEY).get(NodeUpdater.HASH_KEY)
+                .textValue();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         setupFrontendUtilsMock(stats);
@@ -797,14 +800,14 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(0,
-                "@Frontend/generated/jar-resources/dndConnector-es6.js");
-        bundleImports.set(1, "@polymer/paper-input/paper-input.js");
-        bundleImports.set(2, "@vaadin/common-frontend/ConnectionIndicator.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports
+                .add("@Frontend/generated/jar-resources/dndConnector-es6.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/common-frontend/ConnectionIndicator.js");
 
         setupFrontendUtilsMock(stats);
 
@@ -841,18 +844,15 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         setupFrontendUtilsMock(stats);
 
@@ -890,18 +890,15 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getTheme())
                 .thenReturn(new NodeTestComponents.LumoTest());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         setupFrontendUtilsMock(stats);
 
@@ -936,13 +933,12 @@ public class BundleValidationTest {
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "./generated/jar-resources/TodoTemplate.js");
-        stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("./generated/jar-resources/TodoTemplate.js");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("TodoTemplate.js",
                 BundleValidationUtil.calculateHash(fileContent));
         jarResources.put("TodoTemplate.js", fileContent);
 
@@ -981,11 +977,11 @@ public class BundleValidationTest {
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        stats.getArray(BUNDLE_IMPORTS).set(0,
-                "Frontend/generated/jar-resources/TodoTemplate.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/generated/jar-resources/TodoTemplate.js");
 
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
@@ -998,7 +994,7 @@ public class BundleValidationTest {
         devBundleUtils
                 .when(() -> DevBundleUtils.findBundleStatsJson(
                         temporaryFolder.getRoot(), "target"))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -1030,12 +1026,12 @@ public class BundleValidationTest {
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        stats.getArray(BUNDLE_IMPORTS).set(0,
-                "Frontend/generated/jar-resources/TodoTemplate.js");
-        stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ((ArrayNode) (ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/generated/jar-resources/TodoTemplate.js");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("TodoTemplate.js",
                 "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
 
         devBundleUtils.when(() -> DevBundleUtils
@@ -1049,7 +1045,7 @@ public class BundleValidationTest {
         devBundleUtils
                 .when(() -> DevBundleUtils.findBundleStatsJson(
                         temporaryFolder.getRoot(), "target"))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -1077,10 +1073,10 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/my-styles.css?inline")));
 
-        JsonObject stats = getBasicStats();
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(), "Frontend/my-styles.css");
-        stats.getObject(FRONTEND_HASHES).put("my-styles.css",
+        ObjectNode stats = getBasicStats();
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("Frontend/my-styles.css");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("my-styles.css",
                 "0d94fe659d24e1e56872b47fc98d9f09227e19816c62a3db709bad347fbd0cdd");
 
         setupFrontendUtilsMock(stats);
@@ -1104,9 +1100,11 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
 
-        JsonObject stats = getBasicStats();
-        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
-        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts", "old_hash");
+        ObjectNode stats = getBasicStats();
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
+                "old_hash");
 
         setupFrontendUtilsMock(stats);
 
@@ -1128,10 +1126,10 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
 
-        JsonObject stats = getBasicStats();
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(), "Frontend/views/lit-view.ts");
-        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+        ObjectNode stats = getBasicStats();
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
                 "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
 
         setupFrontendUtilsMock(stats);
@@ -1153,9 +1151,10 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
 
-        JsonObject stats = getBasicStats();
-        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
-        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+        ObjectNode stats = getBasicStats();
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
                 "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
 
         setupFrontendUtilsMock(stats);
@@ -1174,7 +1173,7 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
         stats.remove(THEME_JSON_CONTENTS);
 
         setupFrontendUtilsMock(stats);
@@ -1243,8 +1242,8 @@ public class BundleValidationTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("other-theme",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("other-theme",
                 "other-theme-hash");
 
         setupFrontendUtilsMock(stats);
@@ -1269,8 +1268,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("reusable-theme",
                 """
                         {
                           "importCss": ["@fortawesome/fontawesome-free/css/all.min.css"],
@@ -1304,8 +1303,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("reusable-theme",
                 """
                         {
                           "importCss": ["@fortawesome/fontawesome-free/css/all.min.css"],
@@ -1346,7 +1345,7 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
         stats.remove(THEME_JSON_CONTENTS);
 
         setupFrontendUtilsMock(stats);
@@ -1375,8 +1374,8 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 "{\"lumoImports\": [\"typography\"]}");
 
         setupFrontendUtilsMock(stats);
@@ -1403,8 +1402,8 @@ public class BundleValidationTest {
         new File(temporaryFolder.getRoot(),
                 DEFAULT_FRONTEND_DIR + "themes/my-theme").mkdirs();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 "{\"lumoImports\": [\"typography\"]}");
 
         setupFrontendUtilsMock(stats);
@@ -1440,8 +1439,8 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("my-theme", """
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("my-theme", """
                 {
 
 
@@ -1492,8 +1491,8 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
                           "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
@@ -1535,8 +1534,8 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
                           "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
@@ -1574,7 +1573,7 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
@@ -1603,8 +1602,8 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, "{}");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation, "{}");
 
         setupFrontendUtilsMock(stats);
 
@@ -1796,7 +1795,7 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
@@ -1821,8 +1820,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(FrontendUtils.INDEX_TS,
                 "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
 
         setupFrontendUtilsMock(stats);
@@ -1849,8 +1848,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(FrontendUtils.INDEX_TS,
                 "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
 
         setupFrontendUtilsMock(stats);
@@ -1875,8 +1874,8 @@ public class BundleValidationTest {
                 StandardCharsets.UTF_8);
         FileUtils.write(indexHtml, defaultIndexHtml, StandardCharsets.UTF_8);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(FRONTEND_HASHES).put(INDEX_HTML,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
                 BundleValidationUtil.calculateHash(defaultIndexHtml));
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1907,8 +1906,8 @@ public class BundleValidationTest {
         String customIndexHtml = defaultIndexHtml.replace("<body>",
                 "<body><div>custom content</div>");
         FileUtils.write(indexHtml, customIndexHtml, StandardCharsets.UTF_8);
-        JsonObject stats = getBasicStats();
-        stats.getObject(FRONTEND_HASHES).put(INDEX_HTML,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
                 BundleValidationUtil.calculateHash(defaultIndexHtml));
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1940,8 +1939,8 @@ public class BundleValidationTest {
         String customIndexHtml = defaultIndexHtml.replace("<body>",
                 "<body><div>custom content</div>");
         FileUtils.write(indexHtml, customIndexHtml, StandardCharsets.UTF_8);
-        JsonObject stats = getBasicStats();
-        stats.getObject(FRONTEND_HASHES).put(INDEX_HTML,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
                 BundleValidationUtil.calculateHash(defaultIndexHtml));
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1964,11 +1963,11 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
+        ObjectNode stats = getBasicStats();
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add(
                 "Frontend/generated/jar-resources/vaadin-spreadsheet/vaadin-spreadsheet.js");
-        stats.getObject(FRONTEND_HASHES).put(
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
                 "vaadin-spreadsheet/vaadin-spreadsheet.js",
                 "e545ad23a2d1d4b3a3370a0305dd71c15bbfc645216f50c6e327bd818b7484c4");
 
@@ -1995,7 +1994,7 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getCss()).thenReturn(Collections.singletonMap(
                 ChunkInfo.GLOBAL, Collections.singletonList(cssData)));
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
@@ -2017,7 +2016,7 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
@@ -2037,8 +2036,9 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
+                "file:my-pkg");
 
         setupFrontendUtilsMock(stats);
 
@@ -2058,8 +2058,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
                 "./another-folder");
 
         setupFrontendUtilsMock(stats);
@@ -2080,8 +2080,9 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
+                "1.0.0");
 
         setupFrontendUtilsMock(stats);
 
@@ -2101,8 +2102,9 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
+                "file:my-pkg");
 
         setupFrontendUtilsMock(stats);
 
@@ -2138,9 +2140,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -2192,24 +2194,21 @@ public class BundleValidationTest {
 
         File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson(), StandardCharsets.UTF_8);
+        FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
         DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
                 bundleSourceFolder);
@@ -2250,24 +2249,21 @@ public class BundleValidationTest {
 
         File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson(), StandardCharsets.UTF_8);
+        FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
         ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
                 bundleSourceFolder);
@@ -2306,24 +2302,21 @@ public class BundleValidationTest {
 
         File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson(), StandardCharsets.UTF_8);
+        FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
         if (mode.isProduction()) {
             ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
@@ -2360,14 +2353,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         URL url = Mockito.mock(URL.class);
         Mockito.when(
                 finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -2400,14 +2393,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         URL url = Mockito.mock(URL.class);
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -2452,10 +2445,10 @@ public class BundleValidationTest {
                   "core": {
                     "vaadin-button": {
                       "jsVersion": "2.0.0",
-                      "npmName": "@vaadin/button",
-                    },
+                      "npmName": "@vaadin/button"
+                    }
                   },
-                  react: {
+                  "react": {
                     "react-components": {
                       "exclusions": ["@vaadin/button"],
                       "jsVersion": "24.4.0",
@@ -2470,8 +2463,8 @@ public class BundleValidationTest {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES)
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
                 .put("@vaadin/react-components", "24.4.0");
 
         URL url = Mockito.mock(URL.class);
@@ -2479,7 +2472,7 @@ public class BundleValidationTest {
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -2502,14 +2495,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         URL url = Mockito.mock(URL.class);
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -2552,13 +2545,13 @@ public class BundleValidationTest {
         FileUtils.write(frontendFile, "Some codes", StandardCharsets.UTF_8);
     }
 
-    private void setupFrontendUtilsMock(JsonObject stats) {
+    private void setupFrontendUtilsMock(ObjectNode stats) {
         if (mode.isProduction()) {
             prodBundleUtils
                     .when(() -> ProdBundleUtils.findBundleStatsJson(
                             Mockito.any(File.class),
                             Mockito.any(ClassFinder.class)))
-                    .thenReturn(stats.toJson());
+                    .thenReturn(stats.toString());
         } else {
             devBundleUtils
                     .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any(),
@@ -2567,7 +2560,7 @@ public class BundleValidationTest {
             devBundleUtils
                     .when(() -> DevBundleUtils.findBundleStatsJson(
                             temporaryFolder.getRoot(), "target"))
-                    .thenAnswer(q -> stats.toJson());
+                    .thenAnswer(q -> stats.toString());
         }
         frontendUtils
                 .when(() -> FrontendUtils.getJarResourceString(
@@ -2644,25 +2637,27 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
         if (useParentTheme) {
-            stats.getObject(THEME_JSON_CONTENTS).put("parent-theme",
+            ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("parent-theme",
                     themeContents);
-            stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
+            ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("my-theme",
                     themeWithParentContents);
         } else {
-            stats.getObject(THEME_JSON_CONTENTS).put("my-theme", themeContents);
+            ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("my-theme",
+                    themeContents);
         }
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, themeContents);
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
+                themeContents);
         if (bundled) {
-            stats.getObject(FRONTEND_HASHES)
+            ((ObjectNode) stats.get(FRONTEND_HASHES))
                     .put(themeLocation + "vaadin-text-field.css",
                             BundleValidationUtil.calculateHash(String.format(
                                     cssTemplate,
                                     (contentChanged) ? "red" : "blue")));
         }
         for (String path : otherBundledComponentCss) {
-            stats.getObject(FRONTEND_HASHES).put(themeLocation + path,
+            ((ObjectNode) stats.get(FRONTEND_HASHES)).put(themeLocation + path,
                     BundleValidationUtil.calculateHash(
                             "[part=\"input-field\"]{background: green; }"));
         }

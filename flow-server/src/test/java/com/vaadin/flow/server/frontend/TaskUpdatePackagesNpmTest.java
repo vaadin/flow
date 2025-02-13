@@ -449,15 +449,19 @@ public class TaskUpdatePackagesNpmTest {
     public void npmIsInUse_versionsJsonHasVaadinCoreVersionPinned_vaadinCoreVersionIgnored()
             throws IOException {
         final String expectedElementMixinVersion = "21.0.0-alpha2";
-        String versionJsonString = //@formatter:off
-                "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \"" + expectedElementMixinVersion
-                        + "\",\n" + "    \"npmName\": \"" + VAADIN_ELEMENT_MIXIN
-                        + "\"\n" + "},\n" + "\"vaadin-core\": {\n"
+        String versionJsonString =
+        //@formatter:off
+                "{ \"core\": {"
+                        + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + expectedElementMixinVersion + "\",\n"
+                        + "    \"npmName\": \"" + VAADIN_ELEMENT_MIXIN + "\"\n"
+                        + "},\n"
+                        + "\"vaadin-core\": {\n"
                         + "    \"jsVersion\": \"21.0.0.alpha1\",\n"
                         // broken for npm
-                        + "    \"npmName\": \"" + VAADIN_CORE_NPM_PACKAGE
-                        + "\"\n" + "},\n" + "}}},\n";//@formatter:on
+                        + "    \"npmName\": \"" + VAADIN_CORE_NPM_PACKAGE + "\"\n"
+                        + "}\n"
+                        + "}}\n";//@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
@@ -586,11 +590,15 @@ public class TaskUpdatePackagesNpmTest {
     @Test
     public void npmIsInUse_versionsJsonContainsSameVersions_nothingIsModified()
             throws IOException {
-        String versionJsonString = //@formatter:off
-                "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION
-                        + "\",\n" + "    \"npmName\": \"" + VAADIN_DIALOG
-                        + "\"\n" + "},\n" + "}}},\n";//@formatter:on
+        String versionJsonString =
+        //@formatter:off
+                          "{ \"core\": {"
+                        + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION + "\",\n"
+                        + "    \"npmName\": \"" + VAADIN_DIALOG + "\"\n"
+                        + "}\n"
+                        + "}}\n";
+                //@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 

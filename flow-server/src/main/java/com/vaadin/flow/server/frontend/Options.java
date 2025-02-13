@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -17,8 +17,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-
-import elemental.json.JsonObject;
 
 /**
  * Build a <code>NodeExecutor</code> instance.
@@ -59,7 +57,7 @@ public class Options implements Serializable {
 
     private boolean useByteCodeScanner = false;
 
-    private JsonObject tokenFileData;
+    private JsonNode tokenFileData;
 
     private File tokenFile;
 
@@ -424,7 +422,7 @@ public class Options implements Serializable {
      *            the object to fill with token file data
      * @return the builder, for chaining
      */
-    public Options populateTokenFileData(JsonObject object) {
+    public Options populateTokenFileData(JsonNode object) {
         tokenFileData = object;
         return this;
     }
@@ -803,7 +801,7 @@ public class Options implements Serializable {
         return useByteCodeScanner;
     }
 
-    public JsonObject getTokenFileData() {
+    public JsonNode getTokenFileData() {
         return tokenFileData;
     }
 
