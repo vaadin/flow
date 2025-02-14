@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -88,10 +88,21 @@ public class SpringBootAutoConfiguration {
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
             VaadinConfigurationProperties configurationProperties) {
-        String mapping = configurationProperties.getUrlMapping();
-        Map<String, String> initParameters = new HashMap<>();
-        boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+        boolean rootMapping = RootMappedCondition
+                .isRootMapping(configurationProperties.getUrlMapping());
+        return configureServletRegistrationBean(multipartConfig,
+                configurationProperties,
+                new SpringServlet(context, rootMapping));
+    }
 
+    public static ServletRegistrationBean<SpringServlet> configureServletRegistrationBean(
+            ObjectProvider<MultipartConfigElement> multipartConfig,
+            VaadinConfigurationProperties configurationProperties,
+            SpringServlet servletInstance) {
+
+        String mapping = configurationProperties.getUrlMapping();
+        boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+        Map<String, String> initParameters = new HashMap<>();
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(
@@ -105,7 +116,7 @@ public class SpringBootAutoConfiguration {
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context, rootMapping), mapping);
+                servletInstance, mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());

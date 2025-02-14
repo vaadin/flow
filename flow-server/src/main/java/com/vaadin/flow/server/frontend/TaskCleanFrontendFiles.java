@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,7 +51,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
     private List<String> generatedFiles = List.of(NODE_MODULES,
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
             Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
-            TaskGenerateTsConfig.TSCONFIG_JSON,
+            Constants.PACKAGE_LOCK_BUN_1_2, TaskGenerateTsConfig.TSCONFIG_JSON,
             TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc",
             FrontendUtils.VITE_GENERATED_CONFIG, FrontendUtils.VITE_CONFIG);
     private Set<File> existingFiles = new HashSet<>();

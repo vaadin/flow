@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,11 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -60,6 +64,33 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
     @Override
     public AccessCheckResult check(NavigationContext context) {
         Class<?> targetView = context.getNavigationTarget();
+        if (RouteUtil.isAutolayoutEnabled(targetView,
+                context.getLocation().getPath())) {
+            RouteRegistry registry = context.getRouter().getRegistry();
+            boolean noParents = registry.getRegisteredRoutes().stream()
+                    .filter(routeData -> routeData.getNavigationTarget()
+                            .equals(targetView))
+                    .map(data -> data.getParentLayouts().isEmpty()).findFirst()
+                    .orElse(true);
+            if (noParents
+                    && registry.hasLayout(context.getLocation().getPath())) {
+                Class<?> layout = registry
+                        .getLayout(context.getLocation().getPath());
+
+                boolean hasAccess = accessAnnotationChecker.hasAccess(layout,
+                        context.getPrincipal(), context::hasRole);
+                if (!hasAccess) {
+                    LOGGER.debug(
+                            "Denied access to view due to layout '{}' access rules",
+                            layout.getSimpleName());
+                    return context.deny(
+                            "Consider adding one of the following annotations "
+                                    + "to make the layout accessible: @AnonymousAllowed, "
+                                    + "@PermitAll, @RolesAllowed.");
+                }
+            }
+        }
+
         boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
                 context.getPrincipal(), context::hasRole);
         LOGGER.debug("Access to view '{}' with path '{}' is {}",
@@ -74,6 +105,18 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
             denyReason = "Consider adding one of the following annotations "
                     + "to make the view accessible: @AnonymousAllowed, "
                     + "@PermitAll, @RolesAllowed.";
+            if (targetView.isAnnotationPresent(Layout.class)
+                    && context.getRouter().getRegistry()
+                            .getTargetUrl(
+                                    (Class<? extends Component>) targetView)
+                            .isEmpty()) {
+                LOGGER.debug(
+                        "Denied access to view due to layout '{}' access rules",
+                        targetView.getSimpleName());
+                denyReason = "Consider adding one of the following annotations "
+                        + "to make the layout accessible: @AnonymousAllowed, "
+                        + "@PermitAll, @RolesAllowed.";
+            }
         } else {
             denyReason = "Access is denied by annotations on the view.";
         }

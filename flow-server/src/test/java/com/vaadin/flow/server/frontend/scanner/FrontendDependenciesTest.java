@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,8 +37,10 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -280,6 +282,24 @@ public class FrontendDependenciesTest {
                 "@vaadin/common-frontend/ConnectionIndicator.js");
     }
 
+    @Test // 20074
+    public void layoutClasses_collectedAsEntrypoint() {
+        Mockito.when(classFinder.getAnnotatedClasses(Layout.class))
+                .thenReturn(Collections.singleton(MainLayout.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        Optional<EntryPointData> layoutEndpointData = dependencies
+                .getEntryPoints().stream().filter(entryPoint -> entryPoint
+                        .getName().equals(MainLayout.class.getName()))
+                .findAny();
+        Assert.assertTrue("MainLayout should be visited",
+                layoutEndpointData.isPresent());
+        DepsTests.assertImports(dependencies.getModules(), "reference.js",
+                "@vaadin/common-frontend/ConnectionIndicator.js");
+    }
+
     @Test // #9861
     public void visitedExporter_previousEntryPointsNotOverridden()
             throws InstantiationException, IllegalAccessException {
@@ -307,11 +327,11 @@ public class FrontendDependenciesTest {
                 classFinder, true);
 
         Assert.assertTrue(
-                "second package should match fully not as starts with 'spring != springframework'",
-                dependencies.shouldVisit("org.springframework.samples"));
+                "second package should match fully not as starts with 'spring != springseason'",
+                dependencies.shouldVisit("org.springseason.samples"));
         Assert.assertTrue(
-                "second package should match fully not as starts with 'spring != springframework'",
-                dependencies.shouldVisit("org.springframework"));
+                "second package should match fully not as starts with 'spring != springseason'",
+                dependencies.shouldVisit("org.springseason"));
         Assert.assertFalse("should not visit with only 2 packages 'org.spring'",
                 dependencies.shouldVisit("org.spring"));
 
@@ -504,4 +524,9 @@ public class FrontendDependenciesTest {
     public static class GrandChildRoute extends ChildRoute {
     }
 
+    @Tag("div")
+    @Layout
+    @JsModule("reference.js")
+    public static class MainLayout extends Component implements RouterLayout {
+    }
 }

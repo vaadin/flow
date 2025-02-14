@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -226,7 +226,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void applyThemeVariant(Document indexDocument,
-            VaadinContext context) throws IOException {
+            VaadinContext context) {
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {

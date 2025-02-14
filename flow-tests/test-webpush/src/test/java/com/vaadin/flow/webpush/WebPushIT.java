@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -153,7 +153,18 @@ public class WebPushIT extends ChromeBrowserTest {
                             .then( (notifications) => {
                                 return notifications.length == 1 &&
                                     notifications[0].title === 'Test title' &&
-                                    notifications[0].body === 'Testing notification';
+                                    notifications[0].body === 'Testing notification' &&
+                                    notifications[0].badge === 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png' &&
+                                    notifications[0].data === 'This is my data!' &&
+                                    notifications[0].dir === 'rtl' &&
+                                    notifications[0].icon === 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png' &&
+                                    notifications[0].lang === 'de-DE' &&
+                                    notifications[0].renotify === true &&
+                                    notifications[0].requireInteraction === true &&
+                                    notifications[0].silent === false &&
+                                    notifications[0].tag === 'My Notification' &&
+                                    Array.isArray(notifications[0].actions) && notifications[0].actions.length > 0 && notifications[0].actions[0].action === 'dashboard' &&
+                                    Array.isArray(notifications[0].vibrate) && notifications[0].vibrate.length > 0 && notifications[0].vibrate[0] === 500;
                             });
                         """);
     }

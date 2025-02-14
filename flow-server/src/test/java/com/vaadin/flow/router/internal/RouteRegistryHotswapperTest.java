@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.router.internal;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,10 +32,12 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -42,6 +47,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class RouteRegistryHotswapperTest {
 
@@ -99,7 +105,7 @@ public class RouteRegistryHotswapperTest {
 
         Assert.assertEquals(
                 "Expected only changed route to be removed from the registry",
-                appRouteRegistryTracker.removed.size(), 1);
+                1, appRouteRegistryTracker.removed.size());
 
         Assert.assertEquals(Set.of(MyRouteB.class),
                 appRouteRegistryTracker.removed.stream()
@@ -194,6 +200,105 @@ public class RouteRegistryHotswapperTest {
                 tracker.removed.isEmpty() && tracker.added.isEmpty());
         Assert.assertEquals(before, after);
 
+    }
+
+    @Test
+    public void onClassLoadEvent_reactEnabled_layoutChanges_layoutJsonUpdated()
+            throws IOException {
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+        configuration.setReactEnabled(true);
+        configuration.setProjectFolder(
+                Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath()
+                .resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse(
+                "Expected layouts.json file not to be present before hotswap",
+                Files.exists(layoutFile));
+
+        @Layout
+        class MyLayout extends Component implements RouterLayout {
+        }
+
+        updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
+        Assert.assertTrue("Expected layouts.json file to be written",
+                Files.exists(layoutFile));
+    }
+
+    @Test
+    public void onClassLoadEvent_reactEnabled_layoutNotChanged_layoutJsonNotUpdated()
+            throws IOException {
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+        configuration.setReactEnabled(true);
+        configuration.setProjectFolder(
+                Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath()
+                .resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse(
+                "Expected layouts.json file not to be present before hotswap",
+                Files.exists(layoutFile));
+
+        @Layout
+        class MyLayout extends Component implements RouterLayout {
+        }
+
+        updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
+        Assert.assertTrue("Expected layouts.json file to be written",
+                Files.exists(layoutFile));
+        long lastModified = layoutFile.toFile().lastModified();
+
+        updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
+        Assert.assertTrue("Expected layouts.json file to be written",
+                Files.exists(layoutFile));
+        Assert.assertEquals(
+                "Layout not changed, json file should not be written",
+                lastModified, layoutFile.toFile().lastModified());
+
+    }
+
+    @Test
+    public void onClassLoadEvent_reactEnabled_notLayoutChanges_layoutJsonNotUpdated()
+            throws IOException {
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+        configuration.setReactEnabled(true);
+        configuration.setProjectFolder(
+                Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath()
+                .resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse(
+                "Expected layouts.json file not to be present before hotswap",
+                Files.exists(layoutFile));
+
+        updater.onClassLoadEvent(vaadinService, Set.of(MyRouteA.class), true);
+        Assert.assertFalse(
+                "Expected layouts.json file not to be present after hotswap",
+                Files.exists(layoutFile));
+    }
+
+    @Test
+    public void onClassLoadEvent_reactDisabled_layoutChanges_layoutJsonNotWritten()
+            throws IOException {
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+        configuration.setReactEnabled(false);
+        configuration.setProjectFolder(
+                Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath()
+                .resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse(
+                "Expected layouts.json file not to be present before hotswap",
+                Files.exists(layoutFile));
+
+        @Layout
+        class MyLayout extends Component implements RouterLayout {
+        }
+
+        updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
+        Assert.assertFalse(
+                "Expected layouts.json file not to be present after hotswap",
+                Files.exists(layoutFile));
     }
 
     @Test

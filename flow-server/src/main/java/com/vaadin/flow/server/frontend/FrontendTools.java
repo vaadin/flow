@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -66,11 +66,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v20.17.0";
+    public static final String DEFAULT_NODE_VERSION = "v22.14.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "10.8.2";
+    public static final String DEFAULT_NPM_VERSION = "10.9.2";
 
     public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
@@ -117,9 +117,9 @@ public class FrontendTools {
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 18;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 12;
-    private static final int SUPPORTED_NPM_MAJOR_VERSION = 8;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 20;
+    private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
+    private static final int SUPPORTED_NPM_MAJOR_VERSION = 9;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 6;
 
     static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
@@ -137,8 +137,10 @@ public class FrontendTools {
             1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
 
     private enum BuildTool {
-        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js"), PNPM("pnpm",
-                null), BUN("bun", null);
+        NPM("npm", "npm-cli.js"),
+        NPX("npx", "npx-cli.js"),
+        PNPM("pnpm", null),
+        BUN("bun", null);
 
         private final String name;
         private final String script;

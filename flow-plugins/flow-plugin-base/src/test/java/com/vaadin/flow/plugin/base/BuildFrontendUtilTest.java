@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
@@ -151,10 +152,10 @@ public class BuildFrontendUtilTest {
                 .when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(Mockito.any());
 
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
+                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
+                    .thenReturn(true);
             BuildFrontendUtil.runNodeUpdater(adapter);
         }
 
@@ -423,6 +424,14 @@ public class BuildFrontendUtilTest {
 
         addPremiumFeatureAndDAUFlagTrue(tokenFile);
 
+        ClassLoader classLoader = new URLClassLoader(
+                new URL[] { new File(baseDir, "target/test-classes/").toURI()
+                        .toURL() },
+                BuildFrontendUtilTest.class.getClassLoader());
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                classLoader);
+        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+
         withMockedLicenseChecker(true, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
             Assert.assertTrue("Token file should still exist",
@@ -520,7 +529,8 @@ public class BuildFrontendUtilTest {
         File generatedFeatureFlagsFile = new File(adapter.generatedTsFolder(),
                 FEATURE_FLAGS_FILE_NAME);
         String featureFlagsJs = Files
-                .readString(generatedFeatureFlagsFile.toPath());
+                .readString(generatedFeatureFlagsFile.toPath())
+                .replace("\r\n", "\n");
 
         Assert.assertTrue("Example feature flag is not set",
                 featureFlagsJs.contains(

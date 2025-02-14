@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -216,9 +216,9 @@ public class DefaultApplicationConfigurationFactory
         if (resources.size() > 1) {
             String warningMessage = String.format(
                     "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible.%n"
+                            + "Accepting file '%s' first match of '%s' possible (%s).%n"
                             + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size());
+                    firstResource.getPath(), resources.size(), resources);
             getLogger().warn(warningMessage);
         } else {
             String debugMessage = String.format(

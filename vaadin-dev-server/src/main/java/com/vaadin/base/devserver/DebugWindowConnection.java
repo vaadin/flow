@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,7 +72,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
-                "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
+                "org.zeroturnaround.jrebel.vaadin.JRebelInitializer"));
         IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
                 "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
         IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
@@ -250,7 +250,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
         return getRef(resource) != null;
     }
 
-    private void send(JsonObject msg) {
+    /**
+     * Broadcasts the given message to all connected clients.
+     *
+     * @param msg
+     *            the message to broadcast
+     */
+    public void broadcast(JsonObject msg) {
         resources.keySet().forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
@@ -264,7 +270,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     public void reload() {
         JsonObject msg = Json.createObject();
         msg.put("command", "reload");
-        send(msg);
+        broadcast(msg);
     }
 
     @Override
@@ -272,7 +278,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         JsonObject msg = Json.createObject();
         msg.put("command", "reload");
         msg.put("strategy", refreshLayouts ? "full-refresh" : "refresh");
-        send(msg);
+        broadcast(msg);
     }
 
     @Override
@@ -281,7 +287,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         msg.put("command", "update");
         msg.put("path", path);
         msg.put("content", content);
-        send(msg);
+        broadcast(msg);
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
@@ -373,6 +379,17 @@ public class DebugWindowConnection implements BrowserLiveReload {
             return;
         }
         resources.put(ref, new FragmentedMessage());
+    }
+
+    @Override
+    public void sendHmrEvent(String event, JsonObject eventData) {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "hmr");
+        JsonObject data = Json.createObject();
+        msg.put("data", data);
+        data.put("event", event);
+        data.put("eventData", eventData);
+        broadcast(msg);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -91,8 +91,8 @@ public final class DevBundleBuildingHandler implements DevModeHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        return AbstractDevServerRunner.handleRequestInternal(request, response,
-                buildCompletedFuture, new AtomicBoolean());
+        return AbstractDevServerRunner.handleRequestInternal(session, request,
+                response, buildCompletedFuture, new AtomicBoolean());
     }
 
     /**

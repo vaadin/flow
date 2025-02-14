@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -56,7 +57,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.communication.PushMode;
-
 import elemental.json.JsonException;
 
 /**
@@ -164,7 +164,9 @@ public class PushHandler {
         assert vaadinRequest != null;
 
         try {
-            new ServerRpcHandler().handleRpc(ui, reader, vaadinRequest);
+            new ServerRpcHandler().handleRpc(ui,
+                    SynchronizedRequestHandler.getRequestBody(reader),
+                    vaadinRequest);
             connection.push(false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
@@ -543,8 +545,7 @@ public class PushHandler {
      *            The atmosphere resource to send refresh to
      *
      */
-    private static void sendRefreshAndDisconnect(AtmosphereResource resource)
-            throws IOException {
+    private static void sendRefreshAndDisconnect(AtmosphereResource resource) {
         sendNotificationAndDisconnect(resource, VaadinService
                 .createCriticalNotificationJSON(null, null, null, null));
     }

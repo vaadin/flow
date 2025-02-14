@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,6 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 /**
  * Implementation of Spring's
@@ -48,22 +47,13 @@ public class VaadinUIScope extends AbstractScope {
 
         private final VaadinSession session;
 
-        private final Registration sessionDestroyListenerRegistration;
-
         private final Map<Integer, BeanStore> uiStores;
 
         private UIStoreWrapper(VaadinSession session) {
             assert session.hasLock();
             uiStores = new HashMap<>();
             this.session = session;
-            if (session instanceof SpringVaadinSession) {
-                sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
-            } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
-            }
+            session.addSessionDestroyListener(event -> destroy());
         }
 
         @Override
@@ -96,9 +86,6 @@ public class VaadinUIScope extends AbstractScope {
                 uiStores.clear();
             } finally {
                 session.unlock();
-                if (sessionDestroyListenerRegistration != null) {
-                    sessionDestroyListenerRegistration.remove();
-                }
             }
         }
 
@@ -121,7 +108,7 @@ public class VaadinUIScope extends AbstractScope {
     @Override
     protected BeanStore getBeanStore() {
         final VaadinSession session = getVaadinSession();
-        session.lock();
+        session.getLockInstance().lock();
         try {
             UIStoreWrapper wrapper = session.getAttribute(UIStoreWrapper.class);
             if (wrapper == null) {
@@ -130,7 +117,7 @@ public class VaadinUIScope extends AbstractScope {
             }
             return wrapper.getBeanStore(getUI());
         } finally {
-            session.unlock();
+            session.getLockInstance().unlock();
         }
     }
 

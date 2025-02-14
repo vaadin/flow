@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,8 +80,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @WebMvcTest
-@ContextConfiguration(classes = { SecurityAutoConfiguration.class,
-        SpringBootAutoConfiguration.class,
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class,
         JwtStatelessAuthenticationTest.WorkaroundConfig.class,
         JwtStatelessAuthenticationTest.SecurityConfig.class })

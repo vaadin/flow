@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +39,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -44,9 +47,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.FrontendStubs;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -143,12 +143,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         // Add flowDeps
-        JsonObject json = packageUpdater.getPackageJson();
+        ObjectNode json = packageUpdater.getPackageJson();
         getDependencies(json).put(DEP_NAME_FLOW_DEPS, "target/frontend");
         json.put(VAADIN_APP_PACKAGE_HASH,
                 "e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b");
         Files.write(packageJson.toPath(),
-                Collections.singletonList(json.toJson()));
+                Collections.singletonList(json.toString()));
 
         options.withEnablePnpm(true);
         packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
@@ -169,12 +169,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         // Add old dep
-        JsonObject json = packageUpdater.getPackageJson();
+        ObjectNode json = packageUpdater.getPackageJson();
         getDependencies(json).put(DEP_NAME_FLOW_JARS, "target/flow-frontend");
         json.put(VAADIN_APP_PACKAGE_HASH,
                 "e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b");
         Files.write(packageJson.toPath(),
-                Collections.singletonList(json.toJson()));
+                Collections.singletonList(json.toString()));
 
         options.withEnablePnpm(true);
         packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
@@ -212,11 +212,11 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        JsonObject packJsonObject = getPackageJson(packageJson);
-        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+        JsonNode packJsonNode = getPackageJson(packageJson);
+        ObjectNode deps = (ObjectNode) packJsonNode.get(DEPENDENCIES);
         deps.put(DEP_NAME_FLOW_DEPS, "foobar");
 
-        writePackageJson(packageJson, packJsonObject);
+        writePackageJson(packageJson, packJsonNode);
 
         packageUpdater.execute();
 
@@ -230,11 +230,11 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        JsonObject packJsonObject = getPackageJson(packageJson);
-        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+        JsonNode packJsonNode = getPackageJson(packageJson);
+        ObjectNode deps = (ObjectNode) packJsonNode.get(DEPENDENCIES);
         deps.put(DEP_NAME_FLOW_JARS, "foobar");
 
-        writePackageJson(packageJson, packJsonObject);
+        writePackageJson(packageJson, packJsonNode);
 
         packageUpdater.execute();
 
@@ -265,14 +265,14 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         // Change the version
-        JsonObject json = packageUpdater.getPackageJson();
+        JsonNode json = packageUpdater.getPackageJson();
         final String old_dependency = "old_dependency";
-        json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
+        ((ObjectNode) json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES))
                 .put(old_dependency, "1.1.1");
-        json.getObject(DEV_DEPENDENCIES).put(old_dependency, "1.1.1");
+        ((ObjectNode) json.get(DEV_DEPENDENCIES)).put(old_dependency, "1.1.1");
 
         Files.write(packageJson.toPath(),
-                Collections.singletonList(json.toJson()));
+                Collections.singletonList(json.toString()));
 
         // run it again with existing generated package.json and mismatched
         // versions
@@ -280,11 +280,11 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         json = packageUpdater.getPackageJson();
         Assert.assertFalse("Old dev dependency should be removed from vaadin",
-                json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES)
-                        .hasKey(old_dependency));
+                json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES)
+                        .has(old_dependency));
         Assert.assertFalse(
                 "Old dev dependency should be removed from devDependencies",
-                json.getObject(DEV_DEPENDENCIES).hasKey(old_dependency));
+                json.get(DEV_DEPENDENCIES).has(old_dependency));
     }
 
     @Test // #10032
@@ -294,16 +294,16 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
 
         // Change the version
-        JsonObject json = packageUpdater.getPackageJson();
+        JsonNode json = packageUpdater.getPackageJson();
         final String key = "vite";
         final String version = packageUpdater.getDefaultDevDependencies()
                 .get(key);
-        json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES).put(key,
+        ((ObjectNode) json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES)).put(key,
                 "v2.8.0");
-        json.getObject(DEV_DEPENDENCIES).put(key, version);
+        ((ObjectNode) json.get(DEV_DEPENDENCIES)).put(key, version);
 
         Files.write(packageJson.toPath(),
-                Collections.singletonList(json.toJson()));
+                Collections.singletonList(json.toString()));
 
         // run it again to see that versions are updated
         packageCreator.execute();
@@ -311,10 +311,10 @@ public abstract class AbstractNodeUpdatePackagesTest
         json = packageUpdater.getPackageJson();
         Assert.assertEquals(
                 "Vaadin dependency should be updated to latest DevDependency",
-                version, json.getObject(VAADIN_DEP_KEY)
-                        .getObject(DEV_DEPENDENCIES).getString(key));
+                version, json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES).get(key)
+                        .textValue());
         Assert.assertEquals("DevDependency should stay the same as it was",
-                version, json.getObject(DEV_DEPENDENCIES).getString(key));
+                version, json.get(DEV_DEPENDENCIES).get(key).textValue());
     }
 
     @Test
@@ -386,7 +386,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         makeNodeModulesAndPackageLock();
 
         Files.write(packageLock.toPath(),
-                Collections.singletonList(stringify(makePackageLock("1.1.1"))));
+                Collections.singletonList(makePackageLock("1.1.1").toString()));
 
         packageUpdater.execute();
 
@@ -463,20 +463,20 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         // Shuffle the dependencies.
-        JsonObject json = getPackageJson(this.packageJson);
-        JsonObject dependencies = json.getObject(DEPENDENCIES);
-        List<String> dependencyKeys = Arrays.asList(dependencies.keys());
+        ObjectNode json = (ObjectNode) getPackageJson(this.packageJson);
+        JsonNode dependencies = json.get(DEPENDENCIES);
+        List<String> dependencyKeys = JacksonUtils.getKeys(dependencies);
 
         Collections.shuffle(dependencyKeys);
 
-        JsonObject newDependencies = Json.createObject();
-        dependencyKeys.forEach(
-                key -> newDependencies.put(key, dependencies.getString(key)));
+        ObjectNode newDependencies = JacksonUtils.createObjectNode();
+        dependencyKeys.forEach(key -> newDependencies.put(key,
+                dependencies.get(key).textValue()));
 
-        json.put(DEPENDENCIES, newDependencies);
+        json.set(DEPENDENCIES, newDependencies);
 
         Files.write(this.packageJson.toPath(),
-                Collections.singletonList(stringify(json)));
+                Collections.singletonList(json.toString()));
 
         // generate it one more time, the content will be different since
         // packageCreator has not added its content
@@ -608,18 +608,18 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
-        JsonObject json = getPackageJson(packageJson);
-        json.getObject(DEPENDENCIES).put("@custom/timer", "3.3.0");
+        JsonNode json = getPackageJson(packageJson);
+        ((ObjectNode) json.get(DEPENDENCIES)).put("@custom/timer", "3.3.0");
 
         Files.write(packageJson.toPath(),
-                Collections.singletonList(json.toJson()));
+                Collections.singletonList(json.toString()));
 
         packageUpdater.execute();
 
-        JsonObject dependencies = getPackageJson(packageJson)
-                .getObject(DEPENDENCIES);
-        Assert.assertTrue(dependencies.hasKey("@custom/timer"));
-        Assert.assertEquals("3.3.0", dependencies.getString("@custom/timer"));
+        JsonNode dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
+        Assert.assertTrue(dependencies.has("@custom/timer"));
+        Assert.assertEquals("3.3.0",
+                dependencies.get("@custom/timer").textValue());
     }
 
     @Test
@@ -671,12 +671,11 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        JsonObject dependencies = getPackageJson(packageJson)
-                .getObject(DEPENDENCIES);
+        JsonNode dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
         for (Map.Entry<String, String> entry : packages.entrySet()) {
-            Assert.assertTrue(dependencies.hasKey(entry.getKey()));
+            Assert.assertTrue(dependencies.has(entry.getKey()));
             Assert.assertEquals(entry.getValue(),
-                    dependencies.getString(entry.getKey()));
+                    dependencies.get(entry.getKey()).textValue());
         }
 
         packages.clear();
@@ -688,11 +687,11 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater.execute();
 
-        dependencies = getPackageJson(packageJson).getObject(DEPENDENCIES);
+        dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
         for (Map.Entry<String, String> entry : packages.entrySet()) {
-            Assert.assertTrue(dependencies.hasKey(entry.getKey()));
+            Assert.assertTrue(dependencies.has(entry.getKey()));
             Assert.assertEquals(entry.getValue(),
-                    dependencies.getString(entry.getKey()));
+                    dependencies.get(entry.getKey()).textValue());
         }
     }
 
@@ -718,29 +717,28 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packages.remove("@vaadin/vaadin-checkbox");
 
-        JsonObject dependencies = getPackageJson(packageJson)
-                .getObject(DEPENDENCIES);
+        JsonNode dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
         Assert.assertTrue("vaadin-checkbox is missing from the dependencies",
-                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+                dependencies.has("@vaadin/vaadin-checkbox"));
 
-        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY)
-                .getObject(DEPENDENCIES);
+        dependencies = getPackageJson(packageJson).get(VAADIN_DEP_KEY)
+                .get(DEPENDENCIES);
         Assert.assertTrue("vaadin-checkbox is missing from vaadin.dependencies",
-                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+                dependencies.has("@vaadin/vaadin-checkbox"));
 
         // generate it one more time, this should remove the checkbox
         packageUpdater.execute();
 
-        dependencies = getPackageJson(packageJson).getObject(DEPENDENCIES);
+        dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
         Assert.assertFalse(
                 "vaadin-checkbox is still available in the dependencies",
-                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+                dependencies.has("@vaadin/vaadin-checkbox"));
 
-        dependencies = getPackageJson(packageJson).getObject(VAADIN_DEP_KEY)
-                .getObject(DEPENDENCIES);
+        dependencies = getPackageJson(packageJson).get(VAADIN_DEP_KEY)
+                .get(DEPENDENCIES);
         Assert.assertFalse(
                 "vaadin-checkbox is still available in vaadin.dependencies",
-                dependencies.hasKey("@vaadin/vaadin-checkbox"));
+                dependencies.has("@vaadin/vaadin-checkbox"));
 
     }
 
@@ -788,68 +786,68 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     private void assertMainPackageJsonContent() throws IOException {
-        JsonObject json = packageUpdater.getPackageJson();
-        Assert.assertTrue(json.hasKey("name"));
-        Assert.assertTrue(json.hasKey("license"));
+        JsonNode json = packageUpdater.getPackageJson();
+        Assert.assertTrue(json.has("name"));
+        Assert.assertTrue(json.has("license"));
 
-        JsonObject dependencies = json.getObject(DEPENDENCIES);
+        JsonNode dependencies = json.get(DEPENDENCIES);
         for (Map.Entry<String, String> entry : packageUpdater
                 .getDefaultDependencies().entrySet()) {
             Assert.assertTrue("Missing '" + entry.getKey() + "' package",
-                    dependencies.hasKey(entry.getKey()));
+                    dependencies.has(entry.getKey()));
         }
 
-        JsonObject devDependencies = json.getObject(DEV_DEPENDENCIES);
+        JsonNode devDependencies = json.get(DEV_DEPENDENCIES);
         for (Map.Entry<String, String> entry : packageUpdater
                 .getDefaultDevDependencies().entrySet()) {
             Assert.assertTrue("Missing '" + entry.getKey() + "' package",
-                    devDependencies.hasKey(entry.getKey()));
+                    devDependencies.has(entry.getKey()));
         }
 
-        Assert.assertFalse(dependencies.hasKey(DEP_NAME_FLOW_JARS));
+        Assert.assertFalse(dependencies.has(DEP_NAME_FLOW_JARS));
     }
 
-    private JsonObject getDependencies(JsonObject json) {
-        return json.getObject(DEPENDENCIES);
+    private ObjectNode getDependencies(JsonNode json) {
+        return (ObjectNode) json.get(DEPENDENCIES);
     }
 
-    private JsonObject makePackageLock(String version) {
-        JsonObject object = Json.createObject();
-        JsonObject deps = Json.createObject();
-        JsonObject shrinkWrap = Json.createObject();
-        object.put(DEPENDENCIES, deps);
+    private ObjectNode makePackageLock(String version) {
+        ObjectNode object = JacksonUtils.createObjectNode();
+        JsonNode deps = JacksonUtils.createObjectNode();
+        ObjectNode shrinkWrap = JacksonUtils.createObjectNode();
+        object.set(DEPENDENCIES, deps);
         shrinkWrap.put("version", version);
         return object;
     }
 
     private void assertPackageJsonFlowDeps() throws IOException {
-        JsonObject packJsonObject = getPackageJson(packageJson);
-        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+        JsonNode packJsonNode = getPackageJson(packageJson);
+        JsonNode deps = packJsonNode.get(DEPENDENCIES);
         // No Flow deps
-        Assert.assertFalse(deps.hasKey(DEP_NAME_FLOW_DEPS));
+        Assert.assertFalse(deps.has(DEP_NAME_FLOW_DEPS));
         // No Flow resources
-        Assert.assertFalse(deps.hasKey(DEP_NAME_FLOW_JARS));
+        Assert.assertFalse(deps.has(DEP_NAME_FLOW_JARS));
         // No old package hash
-        Assert.assertFalse(deps.hasKey(VAADIN_APP_PACKAGE_HASH));
+        Assert.assertFalse(deps.has(VAADIN_APP_PACKAGE_HASH));
         // Contains initially generated default polymer dep
-        Assert.assertTrue(deps.hasKey("@polymer/polymer"));
+        Assert.assertTrue(deps.has("@polymer/polymer"));
         // Contains new hash
-        Assert.assertTrue(packJsonObject.getObject("vaadin").hasKey("hash"));
+        Assert.assertTrue(packJsonNode.get("vaadin").has("hash"));
     }
 
-    JsonObject getPackageJson(File packageFile) throws IOException {
-        JsonObject packageJson = null;
+    JsonNode getPackageJson(File packageFile) throws IOException {
+        JsonNode packageJson = null;
         if (packageFile.exists()) {
             String fileContent = FileUtils.readFileToString(packageFile,
                     UTF_8.name());
-            packageJson = Json.parse(fileContent);
+            packageJson = JacksonUtils.readTree(fileContent);
         }
         return packageJson;
     }
 
-    void writePackageJson(File packageJsonFile, JsonObject packageJson)
+    void writePackageJson(File packageJsonFile, JsonNode packageJson)
             throws IOException {
-        FileIOUtils.writeIfChanged(packageJsonFile, packageJson.toJson());
+        FileIOUtils.writeIfChanged(packageJsonFile, packageJson.toString());
     }
 
 }

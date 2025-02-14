@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -101,6 +101,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * <p>
      * The backing {@link List} must be mutable to use this method. Immutable
      * data structure will throw an exception.
+     * <p>
+     * Refreshes all items of the component after adding the item, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param item
      *            item to add
@@ -120,6 +123,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * data structure will throw an exception.
      * <p>
      * If the item is already present in the data provider, then it is moved.
+     * <p>
+     * Refreshes all items of the component after adding the item, i.e. runs
+     * {@link DataView#refreshAll()}.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -145,6 +151,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * <p>
      * If the item is already present in the data provider, then it is moved.
      * <p>
+     * Refreshes all items of the component after adding the item, i.e. runs
+     * {@link DataView#refreshAll()}.
+     * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param item
@@ -168,6 +177,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * data structure will throw an exception.
      * <p>
      * Any items that already present in the data provider are moved to the end.
+     * <p>
+     * Refreshes all items of the component after adding the items, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param items
      *            collection of item to add
@@ -187,6 +199,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * The backing {@link List} must be mutable to use this method. Immutable
      * data structure will throw an exception. Any items that already present in
      * the data provider are moved.
+     * <p>
+     * Refreshes all items of the component after adding the item, i.e. runs
+     * {@link DataView#refreshAll()}.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -213,6 +228,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * <p>
      * Any items that already present in the data provider are moved.
      * <p>
+     * Refreshes all items of the component after adding the item, i.e. runs
+     * {@link DataView#refreshAll()}.
+     * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param items
@@ -234,6 +252,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * <p>
      * The backing {@link List} must be mutable to use this method. Immutable
      * data structure will throw an exception.
+     * <p>
+     * Refreshes all items of the component after removing the item, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param item
      *            item to remove
@@ -271,6 +292,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * filter through data view of another component. A filter set by this
      * method won't be retained when a new {@link DataProvider} is set to the
      * component.
+     * <p>
+     * Refreshes all items of the component after setting the filter, i.e. runs
+     * {@link DataView#refreshAll()}.
+     *
      *
      * @param filter
      *            filter to be set, or <code>null</code> to clear any previously
@@ -291,6 +316,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * filter through data view of another component. A filter set by this
      * method won't be retained when a new {@link DataProvider} is set to the
      * component.
+     * <p>
+     * Refreshes all items of the component after adding the filter, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param filter
      *            the filter to add, not <code>null</code>
@@ -303,6 +331,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Removes all in-memory filters set or added.
+     * <p>
+     * Refreshes all items of the component after removing the filter, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @return ListDataView instance
      *
@@ -320,6 +351,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * setting a sort comparator through data view of another component. A
      * sorting set by this method won't be retained when a new
      * {@link DataProvider} is set to the component.
+     * <p>
+     * Refreshes all items of the component after setting the sorting, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param sortComparator
      *            a comparator to use, or <code>null</code> to clear any
@@ -342,6 +376,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * setting a sort comparator through data view of another component. A
      * sorting set by this method won't be retained when a new
      * {@link DataProvider} is set to the component.
+     * <p>
+     * Refreshes all items of the component after adding the sorting, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param sortComparator
      *            a comparator to add, not <code>null</code>
@@ -357,6 +394,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Any other component using the same {@link DataProvider} object would not
      * be affected by removing default sorting through data view of another
      * component.
+     * <p>
+     * Refreshes all items of the component after removing the sorting, i.e.
+     * runs {@link DataView#refreshAll()}.
      *
      * @return ListDataView instance
      *
@@ -375,6 +415,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * setting a sort order through data view of another component. A sort order
      * set by this method won't be retained when a new {@link DataProvider} is
      * set to the component.
+     * <p>
+     * Refreshes all items of the component after setting the sorting, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param valueProvider
      *            the value provider that defines the property do sort by, not
@@ -403,6 +446,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * setting a sort sort through data view of another component. A sorting set
      * by this method won't be retained when a new {@link DataProvider} is set
      * to the component.
+     * <p>
+     * Refreshes all items of the component after adding the sorting, i.e. runs
+     * {@link DataView#refreshAll()}.
      *
      * @param valueProvider
      *            the value provider that defines the property do sort by, not

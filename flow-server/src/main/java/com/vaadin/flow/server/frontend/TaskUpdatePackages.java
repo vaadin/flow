@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,20 +31,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -85,7 +84,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                     .getPackages();
             Map<String, String> scannedApplicationDevDependencies = frontDeps
                     .getDevPackages();
-            JsonObject packageJson = getPackageJson();
+            ObjectNode packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
@@ -93,8 +92,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
             if (modified || npmVersionLockingUpdated) {
-                if (!packageJson.hasKey("type")
-                        || !packageJson.getString("type").equals("module")) {
+                if (!packageJson.has("type") || !packageJson.get("type")
+                        .textValue().equals("module")) {
                     packageJson.put("type", "module");
                     log().info(
                             """
@@ -110,25 +109,25 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    boolean lockVersionForNpm(JsonObject packageJson) throws IOException {
+    boolean lockVersionForNpm(ObjectNode packageJson) throws IOException {
         boolean versionLockingUpdated = false;
 
-        JsonObject overridesSection = getOverridesSection(packageJson);
-        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        for (String dependency : versionsJson.keys()) {
-            if (!overridesSection.hasKey(dependency)
+        ObjectNode overridesSection = getOverridesSection(packageJson);
+        final JsonNode dependencies = packageJson.get(DEPENDENCIES);
+        for (String dependency : JacksonUtils.getKeys(versionsJson)) {
+            if (!overridesSection.has(dependency)
                     && shouldLockDependencyVersion(dependency, dependencies,
                             versionsJson)) {
                 overridesSection.put(dependency, "$" + dependency);
                 versionLockingUpdated = true;
             }
         }
-        final JsonObject devDependencies = packageJson
-                .getObject(DEV_DEPENDENCIES);
-        for (String dependency : overridesSection.keys()) {
-            if (!dependencies.hasKey(dependency)
-                    && !devDependencies.hasKey(dependency)
-                    && overridesSection.getString(dependency).startsWith("$")) {
+        final ObjectNode devDependencies = (ObjectNode) packageJson
+                .get(DEV_DEPENDENCIES);
+        for (String dependency : JacksonUtils.getKeys(overridesSection)) {
+            if (!dependencies.has(dependency)
+                    && !devDependencies.has(dependency) && overridesSection
+                            .get(dependency).textValue().startsWith("$")) {
                 overridesSection.remove(dependency);
                 versionLockingUpdated = true;
             }
@@ -138,16 +137,18 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private boolean shouldLockDependencyVersion(String dependency,
-            JsonObject projectDependencies, JsonObject versionsJson) {
-        String platformDefinedVersion = versionsJson.getString(dependency);
+            JsonNode projectDependencies, JsonNode versionsJson) {
+        String platformDefinedVersion = versionsJson.get(dependency)
+                .textValue();
 
         if (isInternalPseudoDependency(platformDefinedVersion)) {
             return false;
         }
 
-        if (projectDependencies.hasKey(dependency)) {
+        if (projectDependencies.has(dependency)) {
             try {
-                new FrontendVersion(projectDependencies.getString(dependency));
+                new FrontendVersion(
+                        projectDependencies.get(dependency).textValue());
             } catch (Exception e) {
                 // Do not lock non-numeric versions, e.g. folder references
                 return false;
@@ -163,53 +164,53 @@ public class TaskUpdatePackages extends NodeUpdater {
                 .startsWith("./" + options.getBuildDirectoryName());
     }
 
-    private JsonObject getOverridesSection(JsonObject packageJson) {
-        JsonObject overridesSection = packageJson.getObject(OVERRIDES);
+    private ObjectNode getOverridesSection(ObjectNode packageJson) {
+        ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
         if (overridesSection == null) {
-            overridesSection = Json.createObject();
-            packageJson.put(OVERRIDES, overridesSection);
+            overridesSection = JacksonUtils.createObjectNode();
+            packageJson.set(OVERRIDES, overridesSection);
         }
         return overridesSection;
     }
 
     @Override
-    String writePackageFile(JsonObject json) throws IOException {
+    String writePackageFile(JsonNode json) throws IOException {
         sortObject(json, DEPENDENCIES);
         sortObject(json, DEV_DEPENDENCIES);
         sortObject(json, VAADIN_DEP_KEY);
         return super.writePackageFile(json);
     }
 
-    private void sortObject(JsonObject json, String key) {
-        if (!json.hasKey(key)) {
+    private void sortObject(JsonNode json, String key) {
+        if (!json.has(key)) {
             return;
         }
-        JsonObject object = json.get(key);
-        JsonObject ordered = orderKeys(object);
-        Stream.of(object.keys()).forEach(object::remove);
+        ObjectNode object = (ObjectNode) json.get(key);
+        ObjectNode ordered = orderKeys(object);
+        JacksonUtils.getKeys(object).forEach(object::remove);
         // add ordered keys back
-        Stream.of(ordered.keys()).forEach(prop -> {
-            JsonValue value = ordered.get(prop);
-            object.put(prop, value);
+        JacksonUtils.getKeys(ordered).forEach(prop -> {
+            JsonNode value = ordered.get(prop);
+            object.set(prop, value);
         });
     }
 
-    private JsonObject orderKeys(JsonObject object) {
-        String[] keys = object.keys();
+    private ObjectNode orderKeys(JsonNode object) {
+        String[] keys = JacksonUtils.getKeys(object).toArray(String[]::new);
         Arrays.sort(keys);
-        JsonObject result = Json.createObject();
+        ObjectNode result = JacksonUtils.createObjectNode();
         for (String key : keys) {
-            JsonValue value = object.get(key);
-            if (value instanceof JsonObject) {
-                value = orderKeys((JsonObject) value);
+            JsonNode value = object.get(key);
+            if (value instanceof ObjectNode) {
+                value = orderKeys(value);
             }
-            result.put(key, value);
+            result.set(key, value);
         }
         return result;
     }
 
     @SuppressWarnings("squid:S134")
-    private boolean updatePackageJsonDependencies(JsonObject packageJson,
+    private boolean updatePackageJsonDependencies(ObjectNode packageJson,
             Map<String, String> applicationDependencies,
             Map<String, String> applicationDevDependencies) throws IOException {
         int added = 0;
@@ -217,7 +218,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
                 finder,
                 options.isReactEnabled()
-                        && FrontendUtils.isReactModuleAvailable(options))
+                        && FrontendUtils.isReactModuleAvailable(options),
+                options.isNpmExcludeWebComponents())
                 .exclude(applicationDependencies);
 
         // Add application dependencies
@@ -238,8 +240,8 @@ public class TaskUpdatePackages extends NodeUpdater {
          * #10572 lock all platform internal versions
          */
         List<String> pinnedPlatformDependencies = new ArrayList<>();
-        final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
-        for (String key : platformPinnedDependencies.keys()) {
+        final ObjectNode platformPinnedDependencies = getPlatformPinnedDependencies();
+        for (String key : JacksonUtils.getKeys(platformPinnedDependencies)) {
             // need to double check that not overriding a scanned
             // dependency since add-ons should be able to downgrade
             // version through exclusion
@@ -292,27 +294,28 @@ public class TaskUpdatePackages extends NodeUpdater {
             cleanUp();
         }
 
-        String oldHash = packageJson.getObject(VAADIN_DEP_KEY)
-                .getString(HASH_KEY);
+        String oldHash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY)
+                .textValue();
         String newHash = generatePackageJsonHash(packageJson);
         // update packageJson hash value, if no changes it will not be written
-        packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
+        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY, newHash);
 
         return added > 0 || removed > 0 || removedDev > 0
                 || !oldHash.equals(newHash);
     }
 
     private int cleanDependencies(List<String> dependencyCollection,
-            JsonObject packageJson, String dependencyKey) {
+            JsonNode packageJson, String dependencyKey) {
         int removed = 0;
 
-        JsonObject dependencyObject = packageJson.getObject(dependencyKey);
-        JsonObject vaadinDependencyObject = packageJson
-                .getObject(VAADIN_DEP_KEY).getObject(dependencyKey);
+        ObjectNode dependencyObject = (ObjectNode) packageJson
+                .get(dependencyKey);
+        ObjectNode vaadinDependencyObject = (ObjectNode) packageJson
+                .get(VAADIN_DEP_KEY).get(dependencyKey);
         if (dependencyObject != null) {
-            for (String key : dependencyObject.keys()) {
+            for (String key : JacksonUtils.getKeys(dependencyObject)) {
                 if (!dependencyCollection.contains(key)
-                        && vaadinDependencyObject.hasKey(key)) {
+                        && vaadinDependencyObject.has(key)) {
                     dependencyObject.remove(key);
                     vaadinDependencyObject.remove(key);
                     log().debug("Removed \"{}\".", key);
@@ -323,8 +326,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         return removed;
     }
 
-    protected static boolean pinPlatformDependency(JsonObject packageJson,
-            JsonObject platformPinnedVersions, String pkg) {
+    protected static boolean pinPlatformDependency(JsonNode packageJson,
+            JsonNode platformPinnedVersions, String pkg) {
         final FrontendVersion platformPinnedVersion = FrontendUtils
                 .getPackageVersionFromJson(platformPinnedVersions, pkg,
                         "vaadin_dependencies.json");
@@ -332,27 +335,28 @@ public class TaskUpdatePackages extends NodeUpdater {
             return false;
         }
 
-        final JsonObject vaadinDeps = packageJson.getObject(VAADIN_DEP_KEY)
-                .getObject(DEPENDENCIES);
-        final JsonObject packageJsonDeps = packageJson.getObject(DEPENDENCIES);
+        final ObjectNode vaadinDeps = (ObjectNode) packageJson
+                .get(VAADIN_DEP_KEY).get(DEPENDENCIES);
+        final ObjectNode packageJsonDeps = (ObjectNode) packageJson
+                .get(DEPENDENCIES);
         // packages exist at this point
         assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
         assert packageJsonDeps != null : "dependencies { } should exist";
 
         FrontendVersion packageJsonVersion = null, vaadinDepsVersion = null;
         try {
-            if (packageJsonDeps.hasKey(pkg)) {
+            if (packageJsonDeps.has(pkg)) {
                 packageJsonVersion = new FrontendVersion(
-                        packageJsonDeps.getString(pkg));
+                        packageJsonDeps.get(pkg).textValue());
             }
         } catch (NumberFormatException e) {
             // Overridden to a file link in package.json, do not change
             return false;
         }
         try {
-            if (vaadinDeps.hasKey(pkg)) {
+            if (vaadinDeps.has(pkg)) {
                 vaadinDepsVersion = new FrontendVersion(
-                        vaadinDeps.getString(pkg));
+                        vaadinDeps.get(pkg).textValue());
             }
         } catch (NumberFormatException e) {
             // Vaadin defines a non-numeric version. Not sure what the case
@@ -391,13 +395,13 @@ public class TaskUpdatePackages extends NodeUpdater {
         Optional<String> platformVersion = getVaadinVersion(finder);
         if (platformVersion.isPresent()
                 && options.getNodeModulesFolder().exists()) {
-            JsonObject vaadinJsonContents = getVaadinJsonContents();
+            JsonNode vaadinJsonContents = getVaadinJsonContents();
             // If no record of previous version, version is considered updated
-            if (!vaadinJsonContents.hasKey(NodeUpdater.VAADIN_VERSION)) {
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
                 return true;
             }
-            return !Objects.equals(
-                    vaadinJsonContents.getString(NodeUpdater.VAADIN_VERSION),
+            return !Objects.equals(vaadinJsonContents
+                    .get(NodeUpdater.VAADIN_VERSION).textValue(),
                     platformVersion.get());
         }
         return false;
@@ -412,10 +416,10 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         try (InputStream vaadinVersionsStream = coreVersionsResource
                 .openStream()) {
-            final JsonObject versionsJson = Json.parse(IOUtils
+            final JsonNode versionsJson = JacksonUtils.readTree(IOUtils
                     .toString(vaadinVersionsStream, StandardCharsets.UTF_8));
-            if (versionsJson.hasKey("platform")) {
-                return Optional.of(versionsJson.getString("platform"));
+            if (versionsJson.has("platform")) {
+                return Optional.of(versionsJson.get("platform").textValue());
             }
         } catch (Exception e) {
             LoggerFactory.getLogger(Platform.class)
@@ -430,33 +434,33 @@ public class TaskUpdatePackages extends NodeUpdater {
      * present.
      *
      * @param packageJson
-     *            JsonObject of current package.json contents
+     *            JsonNode of current package.json contents
      * @return amount of removed properties
      * @throws IOException
      *             thrown if removal of package-lock.json fails
      */
-    private int removeLegacyProperties(JsonObject packageJson)
+    private int removeLegacyProperties(ObjectNode packageJson)
             throws IOException {
         int result = 0;
         /*
          * In modern Flow versions "@vaadin/flow-deps" should not exist.
          */
-        if (packageJson.hasKey(DEPENDENCIES)) {
-            JsonObject object = packageJson.getObject(DEPENDENCIES);
-            if (object.hasKey(DEP_NAME_FLOW_DEPS)) {
+        if (packageJson.has(DEPENDENCIES)) {
+            ObjectNode object = (ObjectNode) packageJson.get(DEPENDENCIES);
+            if (object.has(DEP_NAME_FLOW_DEPS)) {
                 object.remove(DEP_NAME_FLOW_DEPS);
                 log().debug("Removed \"{}\" as it's not generated anymore.",
                         DEP_NAME_FLOW_DEPS);
                 result++;
             }
-            if (object.hasKey(DEP_NAME_FLOW_JARS)) {
+            if (object.has(DEP_NAME_FLOW_JARS)) {
                 object.remove(DEP_NAME_FLOW_JARS);
                 log().debug("Removed \"{}\" as it's not needed anymore.",
                         DEP_NAME_FLOW_JARS);
                 result++;
             }
         }
-        if (packageJson.hasKey(VAADIN_APP_PACKAGE_HASH)) {
+        if (packageJson.has(VAADIN_APP_PACKAGE_HASH)) {
             packageJson.remove(VAADIN_APP_PACKAGE_HASH);
             log().debug("Removed \"{}\" as it's not used.",
                     VAADIN_APP_PACKAGE_HASH);
@@ -489,40 +493,38 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     /**
      * Generate hash for package dependencies. This will consider both
-     * 'dependencies' and 'devDependencies' of the packageJson format
-     * JsonObject.
+     * 'dependencies' and 'devDependencies' of the packageJson format JsonNode.
      * <p>
      * Dependencies will be sorted by key so that different runs for same
      * dependencies in different order will not trigger npm install.
      *
      * @param packageJson
-     *            JsonObject built in the same format as package.json
+     *            JsonNode built in the same format as package.json
      * @return has for dependencies and devDependencies
      */
-    static String generatePackageJsonHash(JsonObject packageJson) {
+    static String generatePackageJsonHash(JsonNode packageJson) {
         StringBuilder hashContent = new StringBuilder();
-        if (packageJson.hasKey(DEPENDENCIES)) {
-            JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        if (packageJson.has(DEPENDENCIES)) {
+            JsonNode dependencies = packageJson.get(DEPENDENCIES);
             hashContent.append("\"dependencies\": {");
-            String sortedDependencies = Arrays.stream(dependencies.keys())
-                    .sorted(String::compareToIgnoreCase)
+            String sortedDependencies = JacksonUtils.getKeys(dependencies)
+                    .stream().sorted(String::compareToIgnoreCase)
                     .map(key -> String.format("\"%s\": \"%s\"", key,
-                            dependencies.getString(key)))
+                            dependencies.get(key).textValue()))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDependencies);
             hashContent.append("}");
         }
-        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
-            if (hashContent.length() > 0) {
+        if (packageJson.has(DEV_DEPENDENCIES)) {
+            if (!hashContent.isEmpty()) {
                 hashContent.append(",\n");
             }
-            JsonObject devDependencies = packageJson
-                    .getObject(DEV_DEPENDENCIES);
+            JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
             hashContent.append("\"devDependencies\": {");
-            String sortedDevDependencies = Arrays.stream(devDependencies.keys())
-                    .sorted(String::compareToIgnoreCase)
+            String sortedDevDependencies = JacksonUtils.getKeys(devDependencies)
+                    .stream().sorted(String::compareToIgnoreCase)
                     .map(key -> String.format("\"%s\": \"%s\"", key,
-                            devDependencies.getString(key)))
+                            devDependencies.get(key).textValue()))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");

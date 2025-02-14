@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,9 +35,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Mode;
@@ -69,7 +69,6 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
-            TaskGenerateBootstrap.class,
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
@@ -80,11 +79,13 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
+            TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
             TaskCleanFrontendFiles.class,
@@ -259,6 +260,9 @@ public class NodeTasks implements FallibleCommand {
         } else {
             pwa = new PwaConfiguration();
         }
+        if (options.isProductionMode() && pwa.isEnabled()) {
+            commands.add(new TaskGeneratePWAIcons(options, pwa));
+        }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
             commands.add(new TaskUpdateVite(options, webComponentTags));
@@ -312,8 +316,7 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
-        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                options.getClassFinder())) {
+        if (!EndpointRequestUtil.isHillaAvailable(options.getClassFinder())) {
             return;
         }
         Lookup lookup = options.getLookup();

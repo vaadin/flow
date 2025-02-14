@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,8 @@ import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.JsonConstants;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.slf4j.Logger;
@@ -106,6 +108,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         response.setStatus(HttpStatusCode.OK.getCode());
         response.setHeader(RETRIEVED_LOCALE_HEADER_NAME,
                 translationPropertyFile.getLocale().toLanguageTag());
+        response.setHeader("Content-Type", JsonConstants.JSON_CONTENT_TYPE);
         writeFileToResponse(response, translationPropertyFile);
     }
 

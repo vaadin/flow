@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -105,12 +105,11 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             }
         }
 
-        readBuildInfo(initParameters, vaadinConfig.getVaadinContext());
+        readBuildInfo(initParameters);
         return initParameters;
     }
 
-    private void readBuildInfo(Properties initParameters,
-            VaadinContext context) {
+    private void readBuildInfo(Properties initParameters) {
         String json = getTokenFileContent(initParameters::getProperty);
         // Read the json and set the appropriate system properties if not
         // already set.

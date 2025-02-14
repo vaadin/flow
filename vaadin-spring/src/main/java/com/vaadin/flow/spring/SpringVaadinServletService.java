@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,8 +46,6 @@ public class SpringVaadinServletService extends VaadinServletService {
 
     private final transient ApplicationContext context;
 
-    private final Registration serviceDestroyRegistration;
-
     static final String SPRING_BOOT_WEBPROPERTIES_CLASS = "org.springframework.boot.autoconfigure.web.WebProperties";
 
     /**
@@ -66,11 +64,6 @@ public class SpringVaadinServletService extends VaadinServletService {
             ApplicationContext context) {
         super(servlet, deploymentConfiguration);
         this.context = context;
-        SessionDestroyListener listener = event -> sessionDestroyed(
-                event.getSession());
-        Registration registration = addSessionDestroyListener(listener);
-        serviceDestroyRegistration = addServiceDestroyListener(
-                event -> serviceDestroyed(registration));
     }
 
     @Override
@@ -105,19 +98,11 @@ public class SpringVaadinServletService extends VaadinServletService {
         uiInitListeners.values().forEach(this::addUIInitListener);
     }
 
+    // This method should be removed when the deprecated class
+    // SpringVaadinSession is removed
     @Override
     protected VaadinSession createVaadinSession(VaadinRequest request) {
         return new SpringVaadinSession(this);
-    }
-
-    private void sessionDestroyed(VaadinSession session) {
-        assert session instanceof SpringVaadinSession;
-        ((SpringVaadinSession) session).fireSessionDestroy();
-    }
-
-    private void serviceDestroyed(Registration registration) {
-        registration.remove();
-        serviceDestroyRegistration.remove();
     }
 
     @Override

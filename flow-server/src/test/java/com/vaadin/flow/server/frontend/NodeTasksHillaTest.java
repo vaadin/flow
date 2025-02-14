@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -117,10 +118,10 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
+                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
+                    .thenReturn(true);
 
             new NodeTasks(options).execute();
         }

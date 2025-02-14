@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -439,6 +440,18 @@ public class AccessControlTestClasses {
                 ErrorParameter<NotFoundException> parameter) {
             return 0;
         }
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    public static class NoAuthLayout extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    @AnonymousAllowed
+    public static class AnonymousAllowedLayout extends Component
+            implements RouterLayout {
     }
 
 }

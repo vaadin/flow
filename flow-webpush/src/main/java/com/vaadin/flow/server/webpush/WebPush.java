@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,14 +32,12 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.VaadinService;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -77,11 +75,6 @@ public class WebPush {
      *            Subject used in the JWT payload (for VAPID).
      */
     public WebPush(String publicKey, String privateKey, String subject) {
-        if (!FeatureFlags.get(VaadinService.getCurrent().getContext())
-                .isEnabled(FeatureFlags.WEB_PUSH)) {
-            throw new WebPushException("WebPush feature is not enabled. "
-                    + "Add `com.vaadin.experimental.webPush=true` to `vaadin-featureflags.properties`file in resources to enable feature.");
-        }
         this.publicKey = publicKey;
 
         Security.addProvider(new BouncyCastleProvider());
@@ -109,13 +102,20 @@ public class WebPush {
      * @throws WebPushException
      *             if sending a notification fails
      */
-    public void sendNotification(Subscription subscription,
+    public void sendNotification(WebPushSubscription subscription,
             WebPushMessage message) throws WebPushException {
         int statusCode = -1;
         HttpResponse<String> response = null;
         try {
+            Subscription.Keys keys = null;
+            if (subscription.keys() != null) {
+                keys = new Subscription.Keys(subscription.keys().p256dh(),
+                        subscription.keys().auth());
+            }
+            Subscription nativeSubscription = new Subscription(
+                    subscription.endpoint(), keys);
             Notification notification = Notification.builder()
-                    .subscription(subscription).payload(message.toJson())
+                    .subscription(nativeSubscription).payload(message.toJson())
                     .build();
             response = pushService.send(notification,
                     PushService.DEFAULT_ENCODING,
@@ -282,11 +282,13 @@ public class WebPush {
         };
     }
 
-    private Subscription generateSubscription(JsonObject subscriptionJson) {
-        Subscription.Keys keys = new Subscription.Keys(
+    private WebPushSubscription generateSubscription(
+            JsonObject subscriptionJson) {
+        WebPushKeys keys = new WebPushKeys(
                 subscriptionJson.getObject("keys").getString("p256dh"),
                 subscriptionJson.getObject("keys").getString("auth"));
-        return new Subscription(subscriptionJson.getString("endpoint"), keys);
+        return new WebPushSubscription(subscriptionJson.getString("endpoint"),
+                keys);
     }
 
     private Logger getLogger() {

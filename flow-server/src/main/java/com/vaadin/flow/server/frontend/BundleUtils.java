@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,18 +25,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
@@ -53,15 +52,15 @@ public final class BundleUtils {
      * @return the bundle imports as a set
      */
     public static Set<String> loadBundleImports() {
-        JsonObject statsJson = loadStatsJson();
-        if (!statsJson.hasKey("bundleImports")) {
+        JsonNode statsJson = loadStatsJson();
+        if (!statsJson.has("bundleImports")) {
             return null;
         }
 
         Set<String> bundledImports = new HashSet<>();
-        JsonArray bundleImports = statsJson.getArray("bundleImports");
-        for (int i = 0; i < bundleImports.length(); i++) {
-            String jsImport = bundleImports.getString(i);
+        JsonNode bundleImports = statsJson.get("bundleImports");
+        for (int i = 0; i < bundleImports.size(); i++) {
+            String jsImport = bundleImports.get(i).textValue();
             bundledImports.add(jsImport);
             bundledImports.add(jsImport.replace("/theme/lumo/", "/src/"));
             bundledImports.add(jsImport.replace("/theme/material/", "/src/"));
@@ -83,19 +82,19 @@ public final class BundleUtils {
      *
      * @return the stats json as a json object
      */
-    static JsonObject loadStatsJson() {
+    static ObjectNode loadStatsJson() {
         URL statsUrl = BundleUtils.class.getClassLoader()
                 .getResource("META-INF/VAADIN/config/stats.json");
         if (statsUrl == null) {
-            return Json.createObject();
+            return JacksonUtils.createObjectNode();
         }
         try {
-            return Json
-                    .parse(IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
+            return JacksonUtils.readTree(
+                    IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
         } catch (IOException e) {
             getLogger().warn(
                     "Unable to parse META-INF/VAADIN/config/stats.json", e);
-            return Json.createObject();
+            return JacksonUtils.createObjectNode();
         }
     }
 
@@ -146,8 +145,8 @@ public final class BundleUtils {
      *         <code>false</code> otherwise
      */
     public static boolean isPreCompiledProductionBundle() {
-        JsonObject stats = loadStatsJson();
-        return stats.hasKey("pre-compiled");
+        JsonNode stats = loadStatsJson();
+        return stats.has("pre-compiled");
     }
 
     private static Logger getLogger() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -74,7 +74,6 @@ public class PrepareFrontendMojoTest {
     private File defaultJavaSource;
     private File defaultJavaResource;
     private File generatedTsFolder;
-    private MavenProject project;
 
     @Before
     public void setup() throws Exception {
@@ -83,18 +82,6 @@ public class PrepareFrontendMojoTest {
 
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-
-        project = Mockito.mock(MavenProject.class);
-
-        List<String> packages = Arrays
-                .stream(System.getProperty("java.class.path")
-                        .split(File.pathSeparatorChar + ""))
-                .collect(Collectors.toList());
-        Mockito.when(project.getRuntimeClasspathElements())
-                .thenReturn(packages);
-        Mockito.when(project.getCompileClasspathElements())
-                .thenReturn(Collections.emptyList());
-        Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
@@ -271,8 +258,8 @@ public class PrepareFrontendMojoTest {
     public void jarPackaging_copyProjectFrontendResources()
             throws MojoExecutionException, MojoFailureException,
             IllegalAccessException {
-        Mockito.when(project.getPackaging()).thenReturn("jar");
-
+        mojo.project.setPackaging("jar");
+        MavenProject project = Mockito.spy(mojo.project);
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
 
         mojo.execute();

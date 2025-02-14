@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -77,7 +77,6 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -215,6 +214,8 @@ public class UIInternals implements Serializable {
 
     private byte[] lastProcessedMessageHash = null;
 
+    private String lastRequestResponse;
+
     private String contextRootRelativePath;
 
     private String appId;
@@ -303,6 +304,25 @@ public class UIInternals implements Serializable {
             byte[] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
         this.lastProcessedMessageHash = lastProcessedMessageHash;
+    }
+
+    /**
+     * Sets the response created for the last UIDL request.
+     *
+     * @param lastRequestResponse
+     *            The request that was sent for the last UIDL request.
+     */
+    public void setLastRequestResponse(String lastRequestResponse) {
+        this.lastRequestResponse = lastRequestResponse;
+    }
+
+    /**
+     * Returns the response created for the last UIDL request.
+     *
+     * @return The request that was sent for the last UIDL request.
+     */
+    public String getLastRequestResponse() {
+        return lastRequestResponse;
     }
 
     /**
@@ -699,18 +719,31 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-        JavaScriptInvocation invocation = new JavaScriptInvocation("""
-                    document.title = $0;
-                    if(window?.Vaadin?.documentTitleSignal) {
-                        window.Vaadin.documentTitleSignal.value = $0;
-                    }
-                """.stripIndent(), title);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(
+                generateTitleScript().stripIndent(), title);
 
         pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
                 getStateTree().getRootNode(), invocation);
         addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
+    }
+
+    private String generateTitleScript() {
+        String setTitleScript = """
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """;
+        if (getSession().getConfiguration().isReactEnabled()) {
+            // For react-router we should wait for navigation to finish
+            // before updating the title.
+            setTitleScript = String.format(
+                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
+                    setTitleScript);
+        }
+        return setTitleScript;
     }
 
     /**
@@ -845,7 +878,8 @@ public class UIInternals implements Serializable {
             }
             previous = current;
         }
-        if (getSession().getConfiguration().isReactEnabled()
+        if (getSession().getService().getDeploymentConfiguration()
+                .isReactEnabled()
                 && getRouter().getRegistry()
                         .getNavigationTarget(viewLocation.getPath()).isEmpty()
                 && target instanceof RouterLayout) {
@@ -1080,6 +1114,12 @@ public class UIInternals implements Serializable {
     /**
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
+     * <p>
+     * </p>
+     * If modal components are currently defined for the UI, the whole route
+     * chain will be refreshed regardless the {@code refreshRouteChain}
+     * parameter, because otherwise it would not be possible to preserve the
+     * correct modality cardinality and order.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
@@ -1091,8 +1131,8 @@ public class UIInternals implements Serializable {
                     + "Unable to refresh the current route.");
         } else {
             getRouter().navigate(ui, locationForRefresh,
-                    NavigationTrigger.PROGRAMMATIC, null, true,
-                    refreshRouteChain);
+                    NavigationTrigger.REFRESH_ROUTE, null, true,
+                    refreshRouteChain || hasModalComponent());
         }
     }
 

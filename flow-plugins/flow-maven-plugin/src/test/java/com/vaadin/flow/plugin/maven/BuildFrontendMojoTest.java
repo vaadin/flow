@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,10 +29,35 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.ReflectionUtils;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.StringUtil;
@@ -44,25 +69,10 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import org.apache.maven.model.Build;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-
-import static java.io.File.pathSeparator;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -79,8 +89,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static java.io.File.pathSeparator;
 
 public class BuildFrontendMojoTest {
     public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
@@ -221,16 +230,48 @@ public class BuildFrontendMojoTest {
 
     static void setProject(AbstractMojo mojo, File baseFolder)
             throws Exception {
-        Build buildMock = mock(Build.class);
-        when(buildMock.getFinalName()).thenReturn("finalName");
-        MavenProject project = mock(MavenProject.class);
-        Mockito.when(project.getGroupId()).thenReturn("com.vaadin.testing");
-        Mockito.when(project.getArtifactId()).thenReturn("my-application");
-        when(project.getBasedir()).thenReturn(baseFolder);
-        when(project.getBuild()).thenReturn(buildMock);
-        when(project.getRuntimeClasspathElements())
-                .thenReturn(getClassPath(baseFolder.toPath()));
+        mojo.setPluginContext(new HashMap<>());
+
+        MavenProject project = new MavenProject();
+        project.setGroupId("com.vaadin.testing");
+        project.setArtifactId("my-application");
+        project.setFile(baseFolder.toPath().resolve("pom.xml").toFile());
+        project.setBuild(new Build());
+        project.getBuild().setFinalName("finalName");
+
+        List<String> classPath = getClassPath(baseFolder.toPath()).stream()
+                // Exclude maven jars so classes will be loaded by them fake
+                // maven.api realm that will be the same for the test class
+                // and the mojo execution
+                .filter(path -> !path.matches(".*([\\\\/])maven-.*\\.jar"))
+                .toList();
+        AtomicInteger dependencyCounter = new AtomicInteger();
+        project.setArtifacts(classPath.stream().map(path -> {
+            DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler();
+            artifactHandler.setAddedToClasspath(true);
+            DefaultArtifact artifact = new DefaultArtifact("com.vaadin.testing",
+                    "dep-" + dependencyCounter.incrementAndGet(), "1.0",
+                    "compile", "jar", null, artifactHandler);
+            artifact.setFile(new File(path));
+            return artifact;
+        }).collect(Collectors.toSet()));
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+
+        ClassWorld classWorld = new ClassWorld();
+        ClassRealm mavenApiRealm = classWorld.newRealm("maven.api", null);
+        mavenApiRealm.importFrom(MavenProject.class.getClassLoader(), "");
+        ClassRealm pluginClassRealm = classWorld.newRealm("flow-plugin", null);
+
+        PluginDescriptor pluginDescriptor = new PluginDescriptor();
+        pluginDescriptor.setArtifacts(List.of());
+        pluginDescriptor.setClassRealm(pluginClassRealm);
+        pluginDescriptor.setPlugin(new Plugin());
+        pluginDescriptor.setClassRealm(pluginClassRealm);
+        MojoDescriptor mojoDescriptor = new MojoDescriptor();
+        mojoDescriptor.setPluginDescriptor(pluginDescriptor);
+        MojoExecution mojoExecution = new MojoExecution(mojoDescriptor);
+        ReflectionUtils.setVariableValueInObject(mojo, "mojoExecution",
+                mojoExecution);
     }
 
     @Test

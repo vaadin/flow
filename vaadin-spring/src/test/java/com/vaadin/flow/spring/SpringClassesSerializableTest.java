@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -93,10 +93,19 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.SpringLookupInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties",
                 "com\\.vaadin\\.flow\\.spring\\.SpringDevToolsPortHandler",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.jpa\\.JpaFilterConverter",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.jpa\\.ListRepositoryService",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.jpa\\.CrudRepositoryService",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.ListService",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.CountService",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.CrudService",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.FormService",
+                "com\\.vaadin\\.flow\\.spring\\.data\\.GetService",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.AtmosphereHintsRegistrar",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor\\$Marker",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinHintsRegistrar",
+                "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinRouteScope(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinSessionScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.AbstractScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinUIScope",

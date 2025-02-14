@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -254,8 +254,8 @@ public class FrontendStubs {
      */
     public static class ToolStubBuilder {
 
-        private static final String DEFAULT_NPM_VERSION = "8.6.0";
-        private static final String DEFAULT_NODE_VERSION = "18.12.0";
+        private static final String DEFAULT_NPM_VERSION = "10.9.0";
+        private static final String DEFAULT_NODE_VERSION = "22.12.0";
 
         private String version;
         private String cacheDir;

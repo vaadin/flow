@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,19 +80,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private final Class<?> abstractTheme;
 
     private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
-
-    /**
-     * Creates a new scanner instance which discovers all dependencies in the
-     * classpath.
-     *
-     * @param finder
-     *            a class finder
-     * @param featureFlags
-     *            available feature flags and their status
-     */
-    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
-        this(finder, AnnotationReader::getAnnotationsFor, featureFlags, true);
-    }
 
     /**
      * Creates a new scanner instance which discovers all dependencies in the

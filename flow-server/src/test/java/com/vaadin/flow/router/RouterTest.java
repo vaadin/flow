@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,6 +64,7 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -2934,6 +2935,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void ui_navigate_should_only_have_one_history_marking_on_loop()
             throws InvalidRouteConfigurationException {
+        ((MockDeploymentConfiguration) ui.getSession().getService()
+                .getDeploymentConfiguration()).setReactEnabled(false);
+
         setNavigationTargets(LoopByUINavigate.class);
 
         ui.navigate("loop");
@@ -3766,6 +3770,9 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getFrontendFolder())
                 .thenReturn(new File("front"));
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(new File("./"));
+        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
@@ -3795,6 +3802,9 @@ public class RouterTest extends RoutingTestBase {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getFrontendFolder())
                 .thenReturn(new File("front"));
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(new File("./"));
+        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";

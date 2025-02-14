@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2024 Vaadin Ltd
+ *    Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,13 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getReactEnable(): Provider<Boolean> = config.reactEnable
 
     @Input
+    public fun getFrontendExtraFileExtensions(): ListProperty<String> = config.frontendExtraFileExtensions
+
+    @Input
     public fun getApplicationIdentifier(): Provider<String> = config.applicationIdentifier
+
+    @Input
+    public fun getNpmExcludeWebComponents(): Provider<Boolean> = config.npmExcludeWebComponents
 
     @Input
     @Optional
@@ -174,6 +180,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
         settings.isForceAlternativeNode = config.requireHomeNodeExec.get()
         settings.isUseGlobalPnpm = config.useGlobalPnpm.get()
         settings.isAutoUpdate = config.nodeAutoUpdate.get()
+        settings.nodeVersion = config.nodeVersion.get()
         FrontendTools(settings)
     }
 }

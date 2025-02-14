@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -201,7 +201,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
 
         reconnectAttempt++;
-        Console.log("Reconnect attempt " + reconnectAttempt + " for " + type);
+        Console.debug("Reconnect attempt " + reconnectAttempt + " for " + type);
 
         if (reconnectAttempt >= getConfiguration().getReconnectAttempts()) {
             // Max attempts reached, stop trying and go back to CONNECTION_LOST
@@ -259,11 +259,11 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             return;
         }
         if (payload != null) {
-            Console.log("Re-sending last message to the server...");
+            Console.debug("Re-sending last message to the server...");
             registry.getMessageSender().send(payload);
         } else {
             // Use heartbeat
-            Console.log("Trying to re-establish server connection...");
+            Console.debug("Trying to re-establish server connection...");
             registry.getHeartbeat().send();
         }
     }
@@ -450,7 +450,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         reconnectAttempt = 0;
         ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
-        Console.log("Re-established connection to server");
+        Console.debug("Re-established connection to server");
     }
 
     @Override
@@ -458,6 +458,18 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         debug("pushOk()");
         if (isReconnecting()) {
             resolveTemporaryError(Type.PUSH);
+            if (registry.getRequestResponseTracker().hasActiveRequest()) {
+                debug("pushOk() Reset active request state when reconnecting PUSH because of a network error.");
+                endRequest();
+                // for bidirectional transport, the pending message is not sent
+                // as reconnection payload, so immediately push the pending
+                // changes on reconnect
+                if (pushConnection.isBidirectional()) {
+                    Console.debug(
+                            "Flush pending messages after PUSH reconnection.");
+                    registry.getMessageSender().sendInvocationsToServer();
+                }
+            }
         }
     }
 
@@ -477,7 +489,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void pushReconnectPending(PushConnection pushConnection) {
         debug("pushReconnectPending(" + pushConnection.getTransportType()
                 + ")");
-        Console.log("Reopening push connection");
+        Console.debug("Reopening push connection");
         if (pushConnection.isBidirectional()) {
             // Lost connection for a connection which will tell us when the
             // connection is available again
@@ -514,7 +526,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void pushClosed(PushConnection pushConnection,
             JavaScriptObject response) {
         debug("pushClosed()");
-        Console.log("Push connection closed");
+        Console.debug("Push connection closed");
     }
 
     private void pauseHeartbeats() {
@@ -522,8 +534,11 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private void resumeHeartbeats() {
-        registry.getHeartbeat().setInterval(
-                registry.getApplicationConfiguration().getHeartbeatInterval());
+        // Resume heart beat only if it was not terminated (interval == -1)
+        if (registry.getHeartbeat().getInterval() >= 0) {
+            registry.getHeartbeat().setInterval(registry
+                    .getApplicationConfiguration().getHeartbeatInterval());
+        }
     }
 
     private boolean redirectIfRefreshToken(String message) {

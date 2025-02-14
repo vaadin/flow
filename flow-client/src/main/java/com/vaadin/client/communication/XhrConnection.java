@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -114,7 +114,7 @@ public class XhrConnection {
 
         @Override
         public void onSuccess(XMLHttpRequest xhr) {
-            Console.log("Server visit took "
+            Console.debug("Server visit took "
                     + Profiler.getRelativeTimeString(requestStartTime) + "ms");
 
             // for(;;);["+ realJson +"]"
@@ -129,7 +129,7 @@ public class XhrConnection {
             }
 
             registry.getConnectionStateHandler().xhrOk();
-            Console.log("Received xhr message: " + responseText);
+            Console.debug("Received xhr message: " + responseText);
             registry.getMessageHandler().handleMessage(json);
         }
 
@@ -161,7 +161,7 @@ public class XhrConnection {
         XMLHttpRequest xhr = Xhr.post(getUri(), payloadJson,
                 JsonConstants.JSON_CONTENT_TYPE, responseHandler);
 
-        Console.log("Sending xhr message to server: " + payloadJson);
+        Console.debug("Sending xhr message to server: " + payloadJson);
 
         if (webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
             final int retryTimeout = 250;

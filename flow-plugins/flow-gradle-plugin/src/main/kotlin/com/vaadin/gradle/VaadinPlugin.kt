@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2024 Vaadin Ltd
+ *    Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.gradle.util.GradleVersion
  */
 public class VaadinPlugin : Plugin<Project> {
     public companion object {
-        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.4"
+        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.7"
     }
 
     override fun apply(project: Project) {

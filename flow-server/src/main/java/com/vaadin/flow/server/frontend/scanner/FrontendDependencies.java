@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,6 +51,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -76,12 +77,14 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
     //@formatter:off
-    private static final Pattern VISITABLE_CLASS_PATTERN = Pattern.compile("(^$|"
+    private static final Pattern NOT_VISITABLE_CLASS_PATTERN = Pattern.compile("(^$|"
             + ".*(slf4j).*|"
             // #5803
-            + "^(java|sun|oracle|elemental|javax|jakarta|oshi|"
-            + "org\\.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq)\\b|"
-            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode)\\b|"
+            + "^(java|sun|oracle|elemental|javax|javafx|jakarta|oshi|cglib|"
+            + "org\\.(apache|antlr|atmosphere|aspectj|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq|springframework|bouncycastle|snakeyaml|keycloak|flywaydb)\\b|"
+            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode|ibm)\\b|"
+            + "ch\\.quos\\.logback\\b|"
+            + "io\\.(fabric8\\.kubernetes)\\b|"
             + "net\\.(sf|bytebuddy)\\b"
             + ").*|"
             + ".*(Exception)$"
@@ -177,6 +180,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
                     ms);
+        } catch (IllegalArgumentException ex) {
+            StackTraceElement[] stackTrace = ex.getStackTrace();
+            if (ex.getMessage() != null
+                    && ex.getMessage().startsWith("Unsupported api ")
+                    && stackTrace.length > 0 && stackTrace[0].getClassName()
+                            .equals("org.objectweb.asm.ClassVisitor")) {
+                log().error(
+                        "Invalid asm library version. Please make sure that the project does not override org.ow2.asm:asm dependency defined by Vaadin with an incompatible version.");
+            }
+            throw ex;
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
@@ -463,6 +476,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
                 .loadClass(VaadinServiceInitListener.class.getName()))) {
             addInternalEntryPoint(initListener);
+        }
+
+        for (Class<?> layout : getFinder().getAnnotatedClasses(
+                getFinder().loadClass(Layout.class.getName()))) {
+            addInternalEntryPoint(layout);
         }
 
         for (Class<?> appShell : getFinder().getSubTypesOf(
@@ -887,7 +905,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // common name-spaces that would not have components.
         // We also exclude Feature-Flag classes
         return className != null && !isExperimental(className)
-                && !VISITABLE_CLASS_PATTERN.matcher(className).matches();
+                && !NOT_VISITABLE_CLASS_PATTERN.matcher(className).matches();
     }
 
     private URL getUrl(String className) {

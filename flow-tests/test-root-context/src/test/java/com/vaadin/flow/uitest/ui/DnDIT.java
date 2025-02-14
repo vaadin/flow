@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -87,6 +87,130 @@ public class DnDIT extends ChromeBrowserTest {
                 targetElement.hasAttribute("disabled"));
         dragElementOver(boxElement, targetElement);
         Assert.assertFalse(targetElement.hasClassName("v-drag-over-target"));
+    }
+
+    @Test
+    public void testSetDragImage_withImage() {
+        open();
+
+        clickElementWithJs("button-toggle-drag-image-enabled");
+
+        // effect could be anything, just testing the drag image.
+        TestBenchElement boxElement = getBoxElement("COPY");
+        clearEvents();
+
+        drag(boxElement);
+
+        waitForElementPresent(By.id("event-2"));
+
+        TestBenchElement eventlog = getEventlog(2);
+        String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
+        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+    }
+
+    @Test
+    public void testSetDragImage_imageIsClearedWithNull() {
+        open();
+
+        clickElementWithJs("button-toggle-drag-image-enabled");
+        TestBenchElement boxElement = getBoxElement("COPY");
+        TestBenchElement laneElement = getLaneElement("COPY");
+        clearEvents();
+        dragAndDrop(boxElement, laneElement);
+
+        // clears drag image to null
+        clickElementWithJs("button-toggle-drag-image-enabled");
+
+        clearEvents();
+        dragAndDrop(boxElement, laneElement);
+        waitForElementPresent(By.id("event-3"));
+        Assert.assertEquals("Invalid event order", "1: Start: COPY",
+                getEventlog(1).getText());
+        Assert.assertEquals("Invalid event order", "2: Drop: COPY COPY",
+                getEventlog(2).getText());
+    }
+
+    @Test
+    public void testSetDragImage_withVisibleComponentInViewport() {
+        open();
+
+        clickElementWithJs("button-toggle-drag-image-enabled");
+        clickElementWithJs("button-toggle-image");
+
+        TestBenchElement boxElement = getBoxElement("COPY");
+        clearEvents();
+        drag(boxElement);
+
+        // need to wait for roundtrip, there should always be 3 events after dnd
+        // with drag image
+        waitForElementPresent(By.id("event-2"));
+
+        TestBenchElement eventlog = getEventlog(2);
+        String expected = "2: DragImage: <button id=\"button-toggle-image\">Toggle image</button>";
+        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+    }
+
+    // visible component in viewport does not generate virtual element for drag
+    // image.
+    @Test
+    public void testSetDragImage_visibleComponentInViewportIsClearedWithNull() {
+        open();
+
+        clickElementWithJs("button-toggle-drag-image-enabled");
+        clickElementWithJs("button-toggle-image");
+        TestBenchElement boxElement = getBoxElement("COPY");
+        TestBenchElement laneElement = getLaneElement("COPY");
+        clearEvents();
+        dragAndDrop(boxElement, laneElement);
+
+        // clears drag image to null
+        clickElementWithJs("button-toggle-drag-image-enabled");
+
+        clearEvents();
+        dragAndDrop(boxElement, laneElement);
+        waitForElementPresent(By.id("event-3"));
+        Assert.assertEquals("Invalid event order", "1: Start: COPY",
+                getEventlog(1).getText());
+        Assert.assertEquals("Invalid event order", "2: Drop: COPY COPY",
+                getEventlog(2).getText());
+    }
+
+    @Test
+    public void testSetDragImage_withDragSourceAsDragImage() {
+        open();
+
+        clickElementWithJs("button-toggle-drag-image-enabled");
+        clickElementWithJs("button-toggle-image");
+        clickElementWithJs("button-toggle-image");
+
+        TestBenchElement boxElement = getBoxElement("no-effect");
+        clearEvents();
+        drag(boxElement);
+
+        // need to wait for roundtrip, there should always be 3 events after dnd
+        // with drag image
+        waitForElementPresent(By.id("event-2"));
+
+        TestBenchElement eventlog = getEventlog(2);
+        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\"> no-effect </div>";
+        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+    }
+
+    @Test
+    public void testSetDragImage_withNotYetAttachedDragSource() {
+        open();
+
+        clickElementWithJs("button-add-drag-source-with-drag-image");
+
+        TestBenchElement boxElement = $(TestBenchElement.class)
+                .id("drag-source-with-image");
+        clearEvents();
+        drag(boxElement);
+
+        waitForElementPresent(By.id("event-2"));
+        TestBenchElement eventlog = getEventlog(2);
+        String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
+        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
     }
 
     private void dragBoxToLanes(TestBenchElement boxElement,

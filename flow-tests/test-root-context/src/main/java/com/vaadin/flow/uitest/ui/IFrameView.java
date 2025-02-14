@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.ByteArrayInputStream;
+
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
@@ -43,6 +46,7 @@ public class IFrameView extends AbstractDivView {
 
     public IFrame frame = new IFrame();
     public NativeButton button;
+    public IFrame frameResource = new IFrame();
 
     public IFrameView() {
         content = "A";
@@ -56,10 +60,17 @@ public class IFrameView extends AbstractDivView {
         frame.setId("frame1");
         button = new NativeButton("Reload", event -> handleButtonClick());
         button.setId("Reload");
-
         button.addClickListener(event -> handleButtonClick());
-        add(frame, button);
 
+        StreamResource dynamicResource = new StreamResource("dynamic-resource",
+                () -> new ByteArrayInputStream(
+                        "<html><body><span id=\"content\">Dynamic</span></body></html>"
+                                .getBytes()));
+        dynamicResource.setContentType("text/html");
+        frameResource.setSrc(dynamicResource);
+        frameResource.setId("frame2");
+
+        add(frame, button, frameResource);
     }
 
     public void handleButtonClick() {

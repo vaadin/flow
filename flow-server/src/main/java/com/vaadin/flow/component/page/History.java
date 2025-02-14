@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -227,7 +227,8 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        if (ui.getSession().getConfiguration().isReactEnabled()) {
+        if (ui.getSession().getService().getDeploymentConfiguration()
+                .isReactEnabled()) {
             ui.getPage().executeJs(
                     "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));",
                     state, pathWithQueryParameters, callback);
@@ -314,7 +315,8 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        if (ui.getSession().getConfiguration().isReactEnabled()) {
+        if (ui.getSession().getService().getDeploymentConfiguration()
+                .isReactEnabled()) {
             ui.getPage().executeJs(
                     "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));",
                     state, pathWithQueryParameters, callback);

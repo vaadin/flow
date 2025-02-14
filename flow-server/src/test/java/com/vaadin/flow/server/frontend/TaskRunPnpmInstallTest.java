@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -35,7 +37,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -43,9 +45,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -152,12 +151,12 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "}", PINNED_VERSION), StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject object = getGeneratedVersionsContent(versions, packageJson);
-        Assert.assertTrue(object.hasKey("@vaadin/vaadin-overlay"));
+        JsonNode object = getGeneratedVersionsContent(versions, packageJson);
+        Assert.assertTrue(object.has("@vaadin/vaadin-overlay"));
 
         // Platform version takes precedence over dev deps
         Assert.assertEquals(PINNED_VERSION,
-                object.getString("@vaadin/vaadin-overlay"));
+                object.get("@vaadin/vaadin-overlay").textValue());
     }
 
     @Test
@@ -225,15 +224,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 versionsNotificationVersion, versionsUploadVersion), StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject generatedVersions = getGeneratedVersionsContent(versions,
+        JsonNode generatedVersions = getGeneratedVersionsContent(versions,
                 packageJson);
 
         Assert.assertEquals("Login version is the same for user and platform.",
                 loginVersion,
-                generatedVersions.getString("@vaadin/vaadin-login"));
+                generatedVersions.get("@vaadin/vaadin-login").textValue());
         Assert.assertEquals("Notification version should use platform",
-                versionsNotificationVersion,
-                generatedVersions.getString("@vaadin/vaadin-notification"));
+                versionsNotificationVersion, generatedVersions
+                        .get("@vaadin/vaadin-notification").textValue());
     }
 
     @Test
@@ -314,24 +313,25 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 StandardCharsets.UTF_8);
 
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
-                Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
+                JacksonUtils.readTree(packageJsonContent),
+                NodeUpdater.DEPENDENCIES);
         // Platform defines a pinned version
         TaskRunNpmInstall task = createTask(versionsJsonFilter
                 .getFilteredVersions(
-                        Json.parse("{ \"@vaadin/vaadin-overlay\":\""
+                        JacksonUtils.readTree("{ \"@vaadin/vaadin-overlay\":\""
                                 + PINNED_VERSION + "\"}"),
                         "test-versions.json")
-                .toJson());
+                .toString());
         task.execute();
 
         File overlayPackageJson = new File(options.getNodeModulesFolder(),
                 "@vaadin/vaadin-overlay/package.json");
 
         // The resulting version should be the one specified by the user
-        JsonObject overlayPackage = Json.parse(FileUtils
+        JsonNode overlayPackage = JacksonUtils.readTree(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,
-                overlayPackage.getString("version"));
+                overlayPackage.get("version").textValue());
     }
 
     @Test
@@ -475,14 +475,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return new TaskRunNpmInstall(updater, options);
     }
 
-    private JsonObject getGeneratedVersionsContent(File versions,
+    private JsonNode getGeneratedVersionsContent(File versions,
             File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
         Mockito.when(
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        JsonObject packageJson = Json.parse(FileUtils
+        ObjectNode packageJson = JacksonUtils.readTree(FileUtils
                 .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
         getNodeUpdater().generateVersionsJson(packageJson);
         return getNodeUpdater().versionsJson;
@@ -509,18 +509,18 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             @Override
             public void execute() {
                 try {
-                    generateVersionsJson(Json.createObject());
+                    generateVersionsJson(JacksonUtils.createObjectNode());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
 
             @Override
-            JsonObject getPlatformPinnedDependencies() throws IOException {
+            ObjectNode getPlatformPinnedDependencies() {
                 if (versionsContent != null) {
-                    return Json.parse(versionsContent);
+                    return JacksonUtils.readTree(versionsContent);
                 } else {
-                    return Json.createObject();
+                    return JacksonUtils.createObjectNode();
                 }
             }
 

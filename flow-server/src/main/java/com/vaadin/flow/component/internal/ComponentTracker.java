@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -47,13 +48,17 @@ public class ComponentTracker {
             .synchronizedMap(new WeakHashMap<>());
     private static Map<Component, Location> attachLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, Location[]> createLocations = Collections
+            .synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, Location[]> attachLocations = Collections
+            .synchronizedMap(new WeakHashMap<>());
 
     private static Boolean disabled = null;
     private static String[] prefixesToSkip = new String[] {
             "com.vaadin.flow.component.", "com.vaadin.flow.di.",
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
-            "com.vaadin.flow.spring.", "java.", "jdk.",
-            "org.springframework.beans.", };
+            "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
+            "org.springframework.beans.", "org.jboss.weld.", };
 
     /**
      * Represents a location in the source code.
@@ -119,15 +124,21 @@ public class ComponentTracker {
         }
 
         /**
-         * Finds the Java file this location refers to.
+         * Finds the source file this location refers to.
          *
          * @param configuration
          *            the application configuration
-         * @return the Java file the location refers to, or {@code null}
+         * @return the source file the location refers to, or {@code null}
          */
-        public File findJavaFile(AbstractConfiguration configuration) {
+        public File findSourceFile(AbstractConfiguration configuration) {
             String cls = className();
-            String filenameNoExt = filename().replace(".java", "");
+            int indexOfExt = filename().lastIndexOf(".");
+            String ext = filename().substring(indexOfExt);
+            if (!ext.equals(".java") && !ext.equals(".kt")) {
+                return null;
+            }
+
+            String filenameNoExt = filename().substring(0, indexOfExt);
 
             if (!cls.endsWith(filenameNoExt)) {
                 // Check for inner class
@@ -141,9 +152,29 @@ public class ComponentTracker {
             }
 
             File src = configuration.getJavaSourceFolder();
+
+            // Windows path is with '\' and not '/'. normalize path for check.
+            String path = src.getPath().replaceAll("\\\\", "/");
+            if (ext.equals(".kt") && path.endsWith("/java")) {
+                src = new File(path.substring(0, path.lastIndexOf("/java"))
+                        + "/kotlin");
+            }
             File javaFile = new File(src,
-                    cls.replace(".", File.separator) + ".java");
+                    cls.replace(".", File.separator) + ext);
             return javaFile;
+        }
+
+        /**
+         * Finds the Java file this location refers to.
+         *
+         * @param configuration
+         *            the application configuration
+         * @return the Java file the location refers to, or {@code null}
+         * @deprecated use findSourceFile
+         */
+        @Deprecated
+        public File findJavaFile(AbstractConfiguration configuration) {
+            return findSourceFile(configuration);
         }
 
         @Override
@@ -165,6 +196,18 @@ public class ComponentTracker {
     }
 
     /**
+     * Finds the locations related to where the given component instance was
+     * created.
+     *
+     * @param component
+     *            the component to find
+     * @return the locations involved in creating the component
+     */
+    public static Location[] findCreateLocations(Component component) {
+        return createLocations.get(component);
+    }
+
+    /**
      * Tracks the location where the component was created. This should be
      * called from the Component constructor so that the creation location can
      * be found from the current stacktrace.
@@ -177,12 +220,15 @@ public class ComponentTracker {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        Location location = findRelevantLocation(component.getClass(), stack,
-                null);
+        Location[] relevantLocations = findRelevantLocations(stack);
+        Location location = findRelevantLocation(component.getClass(),
+                relevantLocations, null);
         if (isNavigatorCreate(location)) {
-            location = findRelevantLocation(null, stack, null);
+            location = findRelevantLocation(null, relevantLocations, null);
         }
         createLocation.put(component, location);
+        createLocations.put(component, Stream.of(stack)
+                .map(ComponentTracker::toLocation).toArray(Location[]::new));
     }
 
     /**
@@ -195,6 +241,18 @@ public class ComponentTracker {
      */
     public static Location findAttach(Component component) {
         return attachLocation.get(component);
+    }
+
+    /**
+     * Finds the locations related to where the given component instance was
+     * attached to a parent.
+     *
+     * @param component
+     *            the component to find
+     * @return the locations involved in creating the component
+     */
+    public static Location[] findAttachLocations(Component component) {
+        return attachLocations.get(component);
     }
 
     /**
@@ -213,14 +271,17 @@ public class ComponentTracker {
 
         // In most cases the interesting attach call is found in the same class
         // where the component was created and not in a generic layout class
-        Location location = findRelevantLocation(component.getClass(), stack,
-                findCreate(component));
+        Location[] relevantLocations = findRelevantLocations(stack);
+        Location location = findRelevantLocation(component.getClass(),
+                relevantLocations, findCreate(component));
         if (isNavigatorCreate(location)) {
             // For routes, we can just show the init location as we have nothing
             // better
             location = createLocation.get(component);
         }
         attachLocation.put(component, location);
+        attachLocations.put(component, Stream.of(stack)
+                .map(ComponentTracker::toLocation).toArray(Location[]::new));
     }
 
     /**
@@ -235,20 +296,47 @@ public class ComponentTracker {
      */
     public static void refreshLocation(Location location, int offset) {
         refreshLocation(createLocation, location, offset);
+        refreshLocations(createLocations, location, offset);
         refreshLocation(attachLocation, location, offset);
+        refreshLocations(attachLocations, location, offset);
+    }
+
+    private static boolean needsUpdate(Location l, Location referenceLocation) {
+        return Objects.equals(l.className, referenceLocation.className)
+                && l.lineNumber > referenceLocation.lineNumber;
+    }
+
+    private static Location updateLocation(Location l, int offset) {
+        return new Location(l.className, l.filename, l.methodName,
+                l.lineNumber + offset);
     }
 
     private static void refreshLocation(Map<Component, Location> targetRef,
-            Location location, int offset) {
+            Location referenceLocation, int offset) {
         Map<Component, Location> updatedLocations = new HashMap<>();
-        targetRef.entrySet().stream().filter(
-                e -> Objects.equals(e.getValue().className, location.className))
-                .filter(e -> e.getValue().lineNumber > location.lineNumber)
-                .forEach(e -> {
-                    Location l = e.getValue();
-                    updatedLocations.put(e.getKey(), new Location(l.className,
-                            l.filename, l.methodName, l.lineNumber + offset));
-                });
+        for (Component c : targetRef.keySet()) {
+            Location l = targetRef.get(c);
+            if (needsUpdate(l, referenceLocation)) {
+                updatedLocations.put(c, updateLocation(l, offset));
+            }
+        }
+
+        targetRef.putAll(updatedLocations);
+    }
+
+    private static void refreshLocations(Map<Component, Location[]> targetRef,
+            Location referenceLocation, int offset) {
+        Map<Component, Location[]> updatedLocations = new HashMap<>();
+        for (Component c : targetRef.keySet()) {
+            Location[] locations = targetRef.get(c);
+
+            for (int i = 0; i < locations.length; i++) {
+                if (needsUpdate(locations[i], referenceLocation)) {
+                    locations[i] = updateLocation(locations[i], offset);
+                }
+            }
+        }
+
         targetRef.putAll(updatedLocations);
     }
 
@@ -257,30 +345,41 @@ public class ComponentTracker {
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
+    private static Location[] findRelevantLocations(StackTraceElement[] stack) {
+        return Stream.of(stack).filter(e -> {
+            for (String prefixToSkip : prefixesToSkip) {
+                if (e.getClassName().startsWith(prefixToSkip)) {
+                    return false;
+                }
+            }
+            return true;
+        }).map(ComponentTracker::toLocation).toArray(Location[]::new);
+    }
+
     private static Location findRelevantLocation(
-            Class<? extends Component> excludeClass, StackTraceElement[] stack,
+            Class<? extends Component> excludeClass, Location[] locations,
             Location preferredClass) {
-        List<StackTraceElement> candidates = Stream.of(stack)
-                .filter(e -> excludeClass == null
-                        || !e.getClassName().equals(excludeClass.getName()))
-                .filter(e -> {
+        List<Location> candidates = Arrays.stream(locations)
+                .filter(location -> excludeClass == null
+                        || !location.className().equals(excludeClass.getName()))
+                .filter(location -> {
                     for (String prefixToSkip : prefixesToSkip) {
-                        if (e.getClassName().startsWith(prefixToSkip)) {
+                        if (location.className().startsWith(prefixToSkip)) {
                             return false;
                         }
                     }
                     return true;
                 }).collect(Collectors.toList());
         if (preferredClass != null) {
-            Optional<StackTraceElement> preferredCandidate = candidates.stream()
-                    .filter(e -> e.getClassName()
+            Optional<Location> preferredCandidate = candidates.stream()
+                    .filter(location -> location.className()
                             .equals(preferredClass.className()))
                     .findFirst();
             if (preferredCandidate.isPresent()) {
-                return toLocation(preferredCandidate.get());
+                return preferredCandidate.get();
             }
         }
-        return toLocation(candidates.stream().findFirst().orElse(null));
+        return candidates.isEmpty() ? null : candidates.get(0);
     }
 
     /**

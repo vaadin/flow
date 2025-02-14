@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,14 @@
 
 package com.vaadin.flow.spring;
 
+import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
+import com.vaadin.flow.server.Command;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -78,6 +83,23 @@ public class DevModeHandlerStopTest {
                 "Expecting DevModeHandler to be stopped by DevModeHandlerManager, but it was not");
     }
 
+    @Test
+    void shutdownCommandsShouldBeExecutedOnStoppingDevModeHandlerManager() {
+        AtomicReference<Boolean> watcherClosed = new AtomicReference<>(false);
+        DevModeHandlerManager devModeHandlerManager = new DevModeHandlerManagerImpl();
+
+        Closeable mockWatcher = () -> watcherClosed.set(true);
+        devModeHandlerManager.registerShutdownCommand(() -> {
+            try {
+                mockWatcher.close();
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        });
+        devModeHandlerManager.stopDevModeHandler();
+        Assertions.assertTrue(watcherClosed.get());
+    }
+
     private static class MockDevModeHandlerManager
             implements DevModeHandlerManager {
 
@@ -111,6 +133,15 @@ public class DevModeHandlerStopTest {
 
         @Override
         public void launchBrowserInDevelopmentMode(String url) {
+
+        }
+
+        @Override
+        public void setApplicationUrl(String applicationUrl) {
+        }
+
+        @Override
+        public void registerShutdownCommand(Command command) {
 
         }
     }

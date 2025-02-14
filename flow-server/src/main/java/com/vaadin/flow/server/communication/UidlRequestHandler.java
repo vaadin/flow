@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +39,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.ClientResentPayloadException;
 import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
@@ -102,39 +104,57 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        String requestBody = SynchronizedRequestHandler
+                .getRequestBody(request.getReader());
+        Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
+                session, request, response, requestBody);
+        if (responseWriter.isPresent()) {
+            responseWriter.get().writeResponse();
+        }
+        return responseWriter.isPresent();
+    }
+
+    @Override
+    public boolean isReadAndWriteOutsideSessionLock() {
+        return true;
+    }
+
+    @Override
+    public Optional<ResponseWriter> synchronizedHandleRequest(
+            VaadinSession session, VaadinRequest request,
+            VaadinResponse response, String requestBody)
+            throws IOException, UnsupportedOperationException {
         UI uI = session.getService().findUI(request);
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            commitJsonResponse(response,
-                    VaadinService.createUINotFoundJSON(false));
-            return true;
+            return Optional.of(() -> commitJsonResponse(response,
+                    VaadinService.createUINotFoundJSON(false)));
         }
 
         StringWriter stringWriter = new StringWriter();
 
         try {
-            getRpcHandler(session).handleRpc(uI, request.getReader(), request);
+            getRpcHandler().handleRpc(uI, requestBody, request);
             writeUidl(uI, stringWriter, false);
+        } catch (ClientResentPayloadException e) {
+            stringWriter.write(uI.getInternals().getLastRequestResponse());
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
-            writeRefresh(response);
-            return true;
+            return Optional.of(() -> writeRefresh(response));
         } catch (InvalidUIDLSecurityKeyException e) {
             getLogger().warn("Invalid security key received from {}",
                     request.getRemoteHost());
             // Refresh on client side
-            writeRefresh(response);
-            return true;
+            return Optional.of(() -> writeRefresh(response));
         } catch (DauEnforcementException e) {
             getLogger().warn(
                     "Daily Active User limit reached. Blocking new user request");
             response.setHeader(DAUUtils.STATUS_CODE_KEY, String
                     .valueOf(HttpStatusCode.SERVICE_UNAVAILABLE.getCode()));
             String json = DAUUtils.jsonEnforcementResponse(request, e);
-            commitJsonResponse(response, json);
-            return true;
+            return Optional.of(() -> commitJsonResponse(response, json));
         } catch (ResynchronizationRequiredException e) { // NOSONAR
             // Resync on the client side
             writeUidl(uI, stringWriter, true);
@@ -142,8 +162,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             stringWriter.close();
         }
 
-        commitJsonResponse(response, stringWriter.toString());
-        return true;
+        return Optional.of(
+                () -> commitJsonResponse(response, stringWriter.toString()));
     }
 
     private void writeRefresh(VaadinResponse response) throws IOException {
@@ -159,6 +179,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
         // some dirt to prevent cross site scripting
         String responseString = "for(;;);[" + uidl.toJson() + "]";
+        ui.getInternals().setLastRequestResponse(responseString);
         writer.write(responseString);
     }
 
@@ -191,7 +212,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return true;
     }
 
-    private ServerRpcHandler getRpcHandler(VaadinSession session) {
+    private ServerRpcHandler getRpcHandler() {
         ServerRpcHandler handler = rpcHandler.get();
         if (handler == null) {
             rpcHandler.compareAndSet(null, createRpcHandler());

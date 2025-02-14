@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,7 +39,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -161,11 +160,11 @@ public class ServletDeployer implements ServletContextListener {
                 ? createAppServlet(context)
                 : null;
 
-        logServletCreation(servletCreation, context, productionMode);
+        logServletCreation(servletCreation, productionMode);
     }
 
     private void logServletCreation(VaadinServletCreation servletCreation,
-            ServletContext servletContext, boolean productionMode) {
+            boolean productionMode) {
         Logger logger = getLogger();
 
         if (servletCreation == null || productionMode) {
@@ -180,8 +179,6 @@ public class ServletDeployer implements ServletContextListener {
             logger.warn(servletCreationMessage);
         } else {
             logger.info(servletCreationMessage);
-            ServletRegistration vaadinServlet = findVaadinServlet(
-                    servletContext);
         }
     }
 

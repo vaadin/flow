@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,7 +50,6 @@ public class WebComponentGenerator {
     private static final String TOKEN_ATTRIBUTE_NAME = "_AttributeName_";
     private static final String TOKEN_CHANGE_EVENT_NAME = "_ChangeEventName_";
     private static final String TOKEN_PROPERTY_NAME = "_PropertyName_";
-    private static final String HTML_TEMPLATE = "webcomponent-template.html";
     private static final String JS_TEMPLATE = "webcomponent-template.js";
     private static final String SCRIPT_TEMPLATE = "webcomponent-script-template.js";
     private static final String CODE_PROPERTY_DEFAULT = "webcomponent-property-default.js";

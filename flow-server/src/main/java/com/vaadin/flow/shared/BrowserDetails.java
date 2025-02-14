@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -82,16 +82,19 @@ public class BrowserDetails implements Serializable {
         isWebKit = !isTrident && userAgent.contains("applewebkit");
 
         // browser name
-        isChrome = userAgent.contains(CHROME) || userAgent.contains(" crios/")
-                || userAgent.contains(HEADLESSCHROME);
-        isOpera = userAgent.contains("opera");
+        isChrome = (userAgent.contains(CHROME) || userAgent.contains(" crios/")
+                || userAgent.contains(HEADLESSCHROME))
+                && !userAgent.contains(" opr/");
+        isOpera = userAgent.contains("opera") || userAgent.contains(" opr/");
         isIE = userAgent.contains("msie") && !isOpera
                 && !userAgent.contains("webtv");
         // IE 11 no longer contains MSIE in the user agent
         isIE = isIE || isTrident;
 
-        isSafari = !isChrome && !isIE && userAgent.contains("safari");
-        isFirefox = userAgent.contains(" firefox/");
+        isSafari = !isChrome && !isIE && !isOpera
+                && userAgent.contains("safari");
+        isFirefox = userAgent.contains(" firefox/")
+                || userAgent.contains("fxios/");
         if (userAgent.contains(" edge/") || userAgent.contains(" edg/")
                 || userAgent.contains(" edga/")
                 || userAgent.contains(" edgios/")) {
@@ -148,7 +151,7 @@ public class BrowserDetails implements Serializable {
                     if (rvPos >= 0) {
                         String tmp = userAgent.substring(rvPos + 3);
                         tmp = tmp.replaceFirst("(\\.[0-9]+).+", "$1");
-                        parseVersionString(tmp);
+                        parseVersionString(tmp, userAgent);
                     }
                 } else if (isTrident) {
                     // potentially IE 11 in compatibility mode
@@ -161,18 +164,30 @@ public class BrowserDetails implements Serializable {
                             .substring(userAgent.indexOf("msie ") + 5);
                     ieVersionString = safeSubstring(ieVersionString, 0,
                             ieVersionString.indexOf(';'));
-                    parseVersionString(ieVersionString);
+                    parseVersionString(ieVersionString, userAgent);
                 }
             } else if (isFirefox) {
-                int i = userAgent.indexOf(" firefox/") + 9;
-                parseVersionString(safeSubstring(userAgent, i, i + 5));
+                int i = userAgent.indexOf(" fxios/");
+                if (i != -1) {
+                    // Version present in Opera 10 and newer
+                    i = userAgent.indexOf(" fxios/") + 7;
+                } else {
+                    i = userAgent.indexOf(" firefox/") + 9;
+                }
+                parseVersionString(
+                        safeSubstring(userAgent, i,
+                                i + getVersionStringLength(userAgent, i)),
+                        userAgent);
             } else if (isChrome) {
                 parseChromeVersion(userAgent);
             } else if (isSafari) {
                 int i = userAgent.indexOf(" version/");
                 if (i >= 0) {
                     i += 9;
-                    parseVersionString(safeSubstring(userAgent, i, i + 5));
+                    parseVersionString(
+                            safeSubstring(userAgent, i,
+                                    i + getVersionStringLength(userAgent, i)),
+                            userAgent);
                 } else {
                     int engineVersion = (int) (browserEngineVersion * 10);
                     if (engineVersion >= 6010 && engineVersion < 6015) {
@@ -206,10 +221,15 @@ public class BrowserDetails implements Serializable {
                 if (i != -1) {
                     // Version present in Opera 10 and newer
                     i += 9; // " version/".length
+                } else if (userAgent.contains(" opr/")) {
+                    i = userAgent.indexOf(" opr/") + 5;
                 } else {
                     i = userAgent.indexOf("opera/") + 6;
                 }
-                parseVersionString(safeSubstring(userAgent, i, i + 5));
+                parseVersionString(
+                        safeSubstring(userAgent, i,
+                                i + getVersionStringLength(userAgent, i)),
+                        userAgent);
             } else if (isEdge) {
                 int i = userAgent.indexOf(" edge/") + 6;
                 if (userAgent.contains(" edg/")) {
@@ -220,7 +240,10 @@ public class BrowserDetails implements Serializable {
                     i = userAgent.indexOf(" edgios/") + 8;
                 }
 
-                parseVersionString(safeSubstring(userAgent, i, i + 8));
+                parseVersionString(
+                        safeSubstring(userAgent, i,
+                                i + getVersionStringLength(userAgent, i)),
+                        userAgent);
             }
         } catch (Exception e) {
             // Browser version parsing failed
@@ -274,16 +297,16 @@ public class BrowserDetails implements Serializable {
         }
         String osVersionString = userAgent.substring(cur + 1, end);
         String[] parts = osVersionString.split("\\.");
-        parseChromeOsVersionParts(parts);
+        parseChromeOsVersionParts(parts, userAgent);
     }
 
-    private void parseChromeOsVersionParts(String[] parts) {
+    private void parseChromeOsVersionParts(String[] parts, String userAgent) {
         osMajorVersion = -1;
         osMinorVersion = -1;
 
         if (parts.length > 2) {
-            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR);
-            osMinorVersion = parseVersionPart(parts[1], OS_MINOR);
+            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR, userAgent);
+            osMinorVersion = parseVersionPart(parts[1], OS_MINOR, userAgent);
         }
     }
 
@@ -298,11 +321,13 @@ public class BrowserDetails implements Serializable {
                 i += CHROME.length();
             }
             int versionBreak = getVersionStringLength(userAgent, i);
-            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak),
+                    userAgent);
         } else {
             i += crios.length(); // move index to version string start
             int versionBreak = getVersionStringLength(userAgent, i);
-            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak),
+                    userAgent);
         }
     }
 
@@ -327,17 +352,31 @@ public class BrowserDetails implements Serializable {
 
     private void parseAndroidVersion(String userAgent) {
         // Android 5.1;
-        if (!userAgent.contains("android")) {
+        if (!userAgent.contains("android ")) {
+            return;
+        }
+
+        if (userAgent.contains("ddg_android/")) {
+            int startIndex = userAgent.indexOf("ddg_android/");
+            String osVersionString = safeSubstring(userAgent,
+                    startIndex + "ddg_android/".length(),
+                    userAgent.indexOf(' ', startIndex));
+            String[] parts = osVersionString.split("\\.");
+            parseOsVersion(parts, userAgent);
             return;
         }
 
         String osVersionString = safeSubstring(userAgent,
                 userAgent.indexOf("android ") + "android ".length(),
                 userAgent.length());
-        osVersionString = safeSubstring(osVersionString, 0,
-                osVersionString.indexOf(";"));
+        int semicolonIndex = osVersionString.indexOf(";");
+        int bracketIndex = osVersionString.indexOf(")");
+        int endIndex = semicolonIndex != -1 && semicolonIndex < bracketIndex
+                ? semicolonIndex
+                : bracketIndex;
+        osVersionString = safeSubstring(osVersionString, 0, endIndex);
         String[] parts = osVersionString.split("\\.");
-        parseOsVersion(parts);
+        parseOsVersion(parts, userAgent);
     }
 
     private void parseIOSVersion(String userAgent) {
@@ -349,35 +388,43 @@ public class BrowserDetails implements Serializable {
         String osVersionString = safeSubstring(userAgent,
                 userAgent.indexOf("os ") + 3, userAgent.indexOf(" like mac"));
         String[] parts = osVersionString.split("_");
-        parseOsVersion(parts);
+        parseOsVersion(parts, userAgent);
     }
 
-    private void parseOsVersion(String[] parts) {
+    private void parseOsVersion(String[] parts, String userAgent) {
         osMajorVersion = -1;
         osMinorVersion = -1;
 
         if (parts.length >= 1) {
-            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR);
+            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR, userAgent);
         }
         if (parts.length >= 2) {
             // Some Androids report version numbers as "2.1-update1"
             int dashIndex = parts[1].indexOf('-');
             if (dashIndex > -1) {
                 String dashlessVersion = parts[1].substring(0, dashIndex);
-                osMinorVersion = parseVersionPart(dashlessVersion, OS_MINOR);
+                osMinorVersion = parseVersionPart(dashlessVersion, OS_MINOR,
+                        userAgent);
             } else {
-                osMinorVersion = parseVersionPart(parts[1], OS_MINOR);
+                osMinorVersion = parseVersionPart(parts[1], OS_MINOR,
+                        userAgent);
             }
         }
     }
 
-    private void parseVersionString(String versionString) {
+    private void parseVersionString(String versionString, String userAgent) {
         int idx = versionString.indexOf('.');
         if (idx < 0) {
             idx = versionString.length();
         }
         String majorVersionPart = safeSubstring(versionString, 0, idx);
-        browserMajorVersion = parseVersionPart(majorVersionPart, BROWSER_MAJOR);
+        browserMajorVersion = parseVersionPart(majorVersionPart, BROWSER_MAJOR,
+                userAgent);
+
+        if (browserMajorVersion == -1) {
+            // no need to scan for minor if major version scanning failed.
+            return;
+        }
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
@@ -390,7 +437,8 @@ public class BrowserDetails implements Serializable {
         }
         String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
                 .replaceAll("[^0-9].*", "");
-        browserMinorVersion = parseVersionPart(minorVersionPart, BROWSER_MINOR);
+        browserMinorVersion = parseVersionPart(minorVersionPart, BROWSER_MINOR,
+                userAgent);
     }
 
     private static String safeSubstring(String string, int beginIndex,
@@ -410,11 +458,13 @@ public class BrowserDetails implements Serializable {
         return string.substring(trimmedStart, trimmedEnd);
     }
 
-    private int parseVersionPart(String versionString, String partName) {
+    private int parseVersionPart(String versionString, String partName,
+            String userAgent) {
         try {
             return Integer.parseInt(versionString);
         } catch (Exception e) {
-            log(partName + " version parsing failed for: " + versionString, e);
+            log(partName + " version parsing failed for: \"" + versionString
+                    + "\"\nWith userAgent: " + userAgent, e);
         }
         return -1;
     }
@@ -599,6 +649,15 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
+     * Tests if the browser is run on iPad.
+     *
+     * @return true if run on iPad, false otherwise
+     */
+    public boolean isIPad() {
+        return isIPad;
+    }
+
+    /**
      * Tests if the browser is run on Chrome OS (e.g. a Chromebook).
      *
      * @return true if run on Chrome OS, false otherwise
@@ -667,10 +726,10 @@ public class BrowserDetails implements Serializable {
         return false;
     }
 
-    private static void log(String error, Exception e) {
+    protected void log(String error, Exception e) {
         // "Logs" to stdout so the problem can be found but does not prevent
         // using the app. As this class is shared, we do not use
-        // java.util.logging
+        // slf4j for logging as normal.
         System.err.println(error + ' ' + e.getMessage());
     }
 

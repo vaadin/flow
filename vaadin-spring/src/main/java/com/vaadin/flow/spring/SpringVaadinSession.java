@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionDestroyListener;
-import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -28,14 +23,13 @@ import com.vaadin.flow.server.VaadinSession;
  * Vaadin session implementation for Spring.
  *
  * @author Vaadin Ltd
- *
+ * @deprecated No replacement planned
  */
+@Deprecated(forRemoval = true)
 public class SpringVaadinSession extends VaadinSession {
 
-    private final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
-
     /**
-     * Creates a new VaadinSession tied to a VaadinService.
+     * Creates a new SpringVaadinSession tied to a VaadinService.
      *
      * @param service
      *            the Vaadin service for the new session
@@ -48,10 +42,7 @@ public class SpringVaadinSession extends VaadinSession {
      * Handles destruction of the session.
      */
     public void fireSessionDestroy() {
-        SessionDestroyEvent event = new SessionDestroyEvent(getService(), this);
-        destroyListeners.stream()
-                .forEach(listener -> listener.sessionDestroy(event));
-        destroyListeners.clear();
+        getService().fireSessionDestroy(this);
     }
 
     /**
@@ -70,7 +61,7 @@ public class SpringVaadinSession extends VaadinSession {
      *            the vaadin service session destroy listener
      */
     public void addDestroyListener(SessionDestroyListener listener) {
-        destroyListeners.add(listener);
+        this.addSessionDestroyListener(listener);
     }
 
 }

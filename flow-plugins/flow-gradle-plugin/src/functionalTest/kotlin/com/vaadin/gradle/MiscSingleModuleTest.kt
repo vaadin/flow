@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2024 Vaadin Ltd
+ *    Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -238,7 +238,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
-        val springBootVersion = "3.0.0"
+        val springBootVersion = "3.3.4"
 
         testProject.settingsFile.writeText(
             """
@@ -569,7 +569,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'org.springframework.boot' version '3.0.0'
+                id 'org.springframework.boot' version '3.3.4'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
                 id("com.vaadin")
             }

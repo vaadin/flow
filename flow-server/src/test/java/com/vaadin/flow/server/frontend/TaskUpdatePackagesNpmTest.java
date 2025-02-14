@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,8 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +52,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -448,15 +449,19 @@ public class TaskUpdatePackagesNpmTest {
     public void npmIsInUse_versionsJsonHasVaadinCoreVersionPinned_vaadinCoreVersionIgnored()
             throws IOException {
         final String expectedElementMixinVersion = "21.0.0-alpha2";
-        String versionJsonString = //@formatter:off
-                "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \"" + expectedElementMixinVersion
-                        + "\",\n" + "    \"npmName\": \"" + VAADIN_ELEMENT_MIXIN
-                        + "\"\n" + "},\n" + "\"vaadin-core\": {\n"
+        String versionJsonString =
+        //@formatter:off
+                "{ \"core\": {"
+                        + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + expectedElementMixinVersion + "\",\n"
+                        + "    \"npmName\": \"" + VAADIN_ELEMENT_MIXIN + "\"\n"
+                        + "},\n"
+                        + "\"vaadin-core\": {\n"
                         + "    \"jsVersion\": \"21.0.0.alpha1\",\n"
                         // broken for npm
-                        + "    \"npmName\": \"" + VAADIN_CORE_NPM_PACKAGE
-                        + "\"\n" + "},\n" + "}}},\n";//@formatter:on
+                        + "    \"npmName\": \"" + VAADIN_CORE_NPM_PACKAGE + "\"\n"
+                        + "}\n"
+                        + "}}\n";//@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
@@ -585,11 +590,15 @@ public class TaskUpdatePackagesNpmTest {
     @Test
     public void npmIsInUse_versionsJsonContainsSameVersions_nothingIsModified()
             throws IOException {
-        String versionJsonString = //@formatter:off
-                "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION
-                        + "\",\n" + "    \"npmName\": \"" + VAADIN_DIALOG
-                        + "\"\n" + "},\n" + "}}},\n";//@formatter:on
+        String versionJsonString =
+        //@formatter:off
+                          "{ \"core\": {"
+                        + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION + "\",\n"
+                        + "    \"npmName\": \"" + VAADIN_DIALOG + "\"\n"
+                        + "}\n"
+                        + "}}\n";
+                //@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
@@ -846,6 +855,163 @@ public class TaskUpdatePackagesNpmTest {
                 && newPackageJson.getObject("vaadin").getObject("dependencies")
                         .hasKey(REACT_COMPONENTS));
 
+    }
+
+    @Test
+    public void webComponentsExcluded_reactDisabled_noExclusionsInVersions()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(false)
+                .withNpmExcludeWebComponents(true);
+        // with scanned application dependencies
+        execTaskUpdatePackages(createApplicationDependencies(), options);
+        JsonObject pkgJson = getOrCreatePackageJson();
+
+        assertTrue(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+
+        // without scanned application dependencies
+        execTaskUpdatePackages(new HashMap<>(), options);
+        pkgJson = getOrCreatePackageJson();
+
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+    }
+
+    @Test
+    public void webComponentsExcluded_reactDisabled_exclusionsInVersions_noWebComponentsIncluded()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+                Set.of(VAADIN_DIALOG));
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(false)
+                .withNpmExcludeWebComponents(true);
+
+        // with scanned application dependencies
+        execTaskUpdatePackages(createApplicationDependencies(), options);
+        JsonObject pkgJson = getOrCreatePackageJson();
+
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+
+        // without scanned application dependencies
+        execTaskUpdatePackages(new HashMap<>(), options);
+        pkgJson = getOrCreatePackageJson();
+
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+    }
+
+    @Test
+    public void webComponentsExcluded_reactEnabled_noExclusionsInVersions()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(true)
+                .withNpmExcludeWebComponents(true);
+
+        // with scanned application dependencies
+        execTaskUpdatePackages(createApplicationDependencies(), options);
+        JsonObject pkgJson = getOrCreatePackageJson();
+
+        assertTrue(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+
+        // without scanned application dependencies
+        execTaskUpdatePackages(new HashMap<>(), options);
+        pkgJson = getOrCreatePackageJson();
+
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+    }
+
+    @Test
+    public void webComponentsExcluded_reactEnabled_exclusionsInVersions_noWebComponentsIncluded()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+                Set.of(VAADIN_DIALOG));
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(true)
+                .withNpmExcludeWebComponents(true);
+
+        // with scanned application dependencies
+        execTaskUpdatePackages(createApplicationDependencies(), options);
+        JsonObject pkgJson = getOrCreatePackageJson();
+
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+
+        // without scanned application dependencies
+        execTaskUpdatePackages(new HashMap<>(), options);
+        pkgJson = getOrCreatePackageJson();
+
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
+        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
+        assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
+        assertFalse(hasInVaadinDependencies(pkgJson, REACT_COMPONENTS));
+    }
+
+    private void execTaskUpdatePackages(
+            Map<String, String> scannedApplicationDependencies,
+            Options options) {
+        final FrontendDependencies frontendDependenciesScanner = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages())
+                .thenReturn(scannedApplicationDependencies);
+        final TaskUpdatePackages task = new TaskUpdatePackages(
+                frontendDependenciesScanner, options) {
+        };
+        task.execute();
+    }
+
+    private boolean hasInDependencies(JsonObject newPackageJson, String key) {
+        return newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(key);
+    }
+
+    private boolean hasInVaadinDependencies(JsonObject newPackageJson,
+            String key) {
+        return newPackageJson.hasKey("vaadin") && newPackageJson
+                .getObject("vaadin").getObject("dependencies").hasKey(key);
     }
 
     private void createBasicVaadinVersionsJson() {

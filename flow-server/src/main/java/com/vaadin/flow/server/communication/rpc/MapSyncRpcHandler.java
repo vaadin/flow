@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -93,15 +93,13 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
                 .reduce(DisabledUpdateMode::mostPermissive).orElse(null);
 
         if (isEnabled) {
-            return enqueuePropertyUpdate(node, invocationJson, feature,
-                    property);
+            return enqueuePropertyUpdate(node, invocationJson, property);
         } else if (DisabledUpdateMode.ALWAYS.equals(updateMode)) {
             LoggerFactory.getLogger(MapSyncRpcHandler.class).trace(
                     "Property update request for disabled element is received from the client side. "
                             + "Change will be applied since the property '{}' always allows its update.",
                     property);
-            return enqueuePropertyUpdate(node, invocationJson, feature,
-                    property);
+            return enqueuePropertyUpdate(node, invocationJson, property);
         } else {
             final Logger logger = LoggerFactory
                     .getLogger(MapSyncRpcHandler.class);
@@ -124,8 +122,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     private Optional<Runnable> enqueuePropertyUpdate(StateNode node,
-            JsonObject invocationJson, Class<? extends NodeFeature> feature,
-            String property) {
+            JsonObject invocationJson, String property) {
         Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
 

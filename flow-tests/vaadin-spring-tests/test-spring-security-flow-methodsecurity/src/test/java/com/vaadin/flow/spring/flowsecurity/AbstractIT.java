@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -93,6 +93,8 @@ public abstract class AbstractIT extends AbstractSpringTest {
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();
+        waitUntilNot(
+                driver -> driver.getCurrentUrl().contains("my/login/page"));
         waitUntilNot(driver -> $(LoginOverlayElement.class).exists());
     }
 
@@ -102,12 +104,14 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     protected void assertRootPageShown() {
+        waitForClientRouter();
         waitUntil(drive -> $("h1").attribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
         Assert.assertEquals(ROOT_PAGE_HEADER_TEXT, headerText);
     }
 
     protected void assertAnotherPublicPageShown() {
+        waitForClientRouter();
         waitUntil(drive -> $("h1").attribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
         Assert.assertEquals(ANOTHER_PUBLIC_PAGE_HEADER_TEXT, headerText);
@@ -130,7 +134,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     protected void assertPathShown(String path) {
-
+        waitForClientRouter();
         waitUntil(driver -> {
             String url = driver.getCurrentUrl();
             if (!url.startsWith(getRootURL())) {

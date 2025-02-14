@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -59,7 +59,22 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
                 found = true;
             }
         }
-        Assert.assertTrue("My-styles.css import is expected", found);
+
+        Assert.assertTrue("my-sass.scss content hash is expected",
+                frontendHashes.hasKey("styles/my-sass.scss"));
+        Assert.assertEquals("Unexpected my-sass.scss content hash",
+                "719cbd39e90caeecd2290124044e7cefb9e6150d3c338d4df71c21bcad825ab5",
+                frontendHashes.getString("styles/my-sass.scss"));
+
+        Assert.assertTrue("my-sass.scss import is expected", found);
+        found = false;
+        for (int i = 0; i < bundleImports.length(); i++) {
+            if (bundleImports.get(i).asString()
+                    .equals("Frontend/styles/my-sass.scss")) {
+                found = true;
+            }
+        }
+        Assert.assertTrue("my-sass.scss import is expected", found);
     }
 
     @Test

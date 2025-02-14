@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -337,4 +337,21 @@ public interface PluginAdapterBase {
      *         {@literal blank}.
      */
     String applicationIdentifier();
+
+    /**
+     * Get the list of project file extensions.
+     * <p>
+     * File extensions are given with or without . prefix eg "png" and ".png"
+     * are both accepted.
+     *
+     * @return list of project file extensions
+     */
+    List<String> frontendExtraFileExtensions();
+
+    /**
+     * Whether to exclude Vaadin web component npm packages in packages.json.
+     *
+     * @return {@code true} to exclude Vaadin web component npm packages.
+     */
+    boolean isNpmExcludeWebComponents();
 }

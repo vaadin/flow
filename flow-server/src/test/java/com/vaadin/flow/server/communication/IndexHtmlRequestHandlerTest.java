@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,6 +53,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -126,6 +127,8 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(context.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(applicationConfiguration);
+
+        MenuRegistry.clearFileRoutesCache();
     }
 
     @Test

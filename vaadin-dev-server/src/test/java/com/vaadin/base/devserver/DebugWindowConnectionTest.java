@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -135,9 +135,9 @@ public class DebugWindowConnectionTest {
 
         reload.reload();
 
-        JsonObject reload = Json.createObject();
-        reload.put("command", "reload");
-        String reloadJson = reload.toJson();
+        JsonObject reloadCommand = Json.createObject();
+        reloadCommand.put("command", "reload");
+        String reloadJson = reloadCommand.toJson();
         Mockito.verify(broadcaster).broadcast(reloadJson, resource1);
         Mockito.verify(broadcaster).broadcast(reloadJson, resource2);
     }
@@ -204,13 +204,13 @@ public class DebugWindowConnectionTest {
     public void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
-        DebugWindowConnection reload = new DebugWindowConnection(
+        DebugWindowConnection connection = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
                             throws ClassNotFoundException {
                         switch (name) {
-                        case "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener":
+                        case "org.zeroturnaround.jrebel.vaadin.JRebelInitializer":
                             return JRebelInitializer.class;
                         default:
                             throw new ClassNotFoundException();
@@ -218,14 +218,14 @@ public class DebugWindowConnectionTest {
                     }
                 }, getMockContext());
         Assert.assertEquals(BrowserLiveReload.Backend.JREBEL,
-                reload.getBackend());
+                connection.getBackend());
     }
 
     @Test
     public void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
         class VaadinIntegration {
         }
-        DebugWindowConnection reload = new DebugWindowConnection(
+        DebugWindowConnection connection = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -239,7 +239,7 @@ public class DebugWindowConnectionTest {
                     }
                 }, getMockContext());
         Assert.assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT,
-                reload.getBackend());
+                connection.getBackend());
     }
 
     @Test
@@ -248,7 +248,7 @@ public class DebugWindowConnectionTest {
         }
         class LiveReloadServer {
         }
-        DebugWindowConnection reload = new DebugWindowConnection(
+        DebugWindowConnection connection = new DebugWindowConnection(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -264,7 +264,7 @@ public class DebugWindowConnectionTest {
                     }
                 }, getMockContext());
         Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
-                reload.getBackend());
+                connection.getBackend());
     }
 
     @Test

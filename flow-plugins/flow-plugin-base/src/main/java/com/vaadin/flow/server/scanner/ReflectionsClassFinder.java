@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,8 +56,12 @@ public class ReflectionsClassFinder implements ClassFinder {
      *            the list of urls for finding classes.
      */
     public ReflectionsClassFinder(URL... urls) {
-        classLoader = new URLClassLoader(urls,
-                Thread.currentThread().getContextClassLoader());
+        this(new URLClassLoader(urls,
+                Thread.currentThread().getContextClassLoader()), urls);
+    }
+
+    public ReflectionsClassFinder(ClassLoader classLoader, URL... urls) {
+        this.classLoader = classLoader;
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .addClassLoaders(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
