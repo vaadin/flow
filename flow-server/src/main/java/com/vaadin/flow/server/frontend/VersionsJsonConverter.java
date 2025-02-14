@@ -20,13 +20,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Converts platform versions file to internal format which doesn't contain
@@ -72,7 +72,7 @@ class VersionsJsonConverter {
     public static final String MODE_ALL = "all"; // same as empty string
     private static final Object VAADIN_ROUTER = "@vaadin/router";
 
-    private final JsonObject convertedObject;
+    private final ObjectNode convertedObject;
 
     private boolean reactEnabled;
 
@@ -84,12 +84,12 @@ class VersionsJsonConverter {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
 
-    VersionsJsonConverter(JsonObject platformVersions, boolean reactEnabled,
+    VersionsJsonConverter(JsonNode platformVersions, boolean reactEnabled,
             boolean excludeWebComponents) {
         this.reactEnabled = reactEnabled;
         this.excludeWebComponents = excludeWebComponents;
         exclusions = new HashSet<>();
-        convertedObject = Json.createObject();
+        convertedObject = JacksonUtils.createObjectNode();
 
         collectDependencies(platformVersions);
         excludeDependencies();
@@ -101,7 +101,7 @@ class VersionsJsonConverter {
      *
      * @return flatten the platform versions Json
      */
-    JsonObject getConvertedJson() {
+    ObjectNode getConvertedJson() {
         return convertedObject;
     }
 
@@ -114,23 +114,22 @@ class VersionsJsonConverter {
         return exclusions;
     }
 
-    private void collectDependencies(JsonObject obj) {
-        for (String key : obj.keys()) {
-            JsonValue value = obj.get(key);
-            if (!(value instanceof JsonObject)) {
+    private void collectDependencies(JsonNode obj) {
+        for (String key : JacksonUtils.getKeys(obj)) {
+            JsonNode value = obj.get(key);
+            if (!(value instanceof ObjectNode)) {
                 continue;
             }
-            JsonObject json = (JsonObject) value;
-            if (json.hasKey(NPM_NAME)) {
-                addDependency(json);
+            if (value.has(NPM_NAME)) {
+                addDependency(value);
             } else {
-                collectDependencies(json);
+                collectDependencies(value);
             }
         }
     }
 
     private void excludeDependencies() {
-        for (String key : convertedObject.keys()) {
+        for (String key : JacksonUtils.getKeys(convertedObject)) {
             if (exclusions.contains(key)) {
                 convertedObject.remove(key);
             }
@@ -149,10 +148,10 @@ class VersionsJsonConverter {
         }
     }
 
-    private void addDependency(JsonObject obj) {
-        assert obj.hasKey(NPM_NAME);
-        String npmName = obj.getString(NPM_NAME);
-        String mode = obj.hasKey(MODE) ? obj.getString(MODE) : null;
+    private void addDependency(JsonNode obj) {
+        assert obj.has(NPM_NAME);
+        String npmName = obj.get(NPM_NAME).textValue();
+        String mode = obj.has(MODE) ? obj.get(MODE).textValue() : null;
         String version;
         // #11025
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
@@ -177,10 +176,10 @@ class VersionsJsonConverter {
             }
             return;
         }
-        if (obj.hasKey(NPM_VERSION)) {
-            version = obj.getString(NPM_VERSION);
-        } else if (obj.hasKey(JS_VERSION)) {
-            version = obj.getString(JS_VERSION);
+        if (obj.has(NPM_VERSION)) {
+            version = obj.get(NPM_VERSION).textValue();
+        } else if (obj.has(JS_VERSION)) {
+            version = obj.get(JS_VERSION).textValue();
         } else {
             throw new IllegalStateException("Vaadin code versions file "
                     + "contains unexpected data: dependency '" + npmName
@@ -194,12 +193,12 @@ class VersionsJsonConverter {
                 npmName, version, (mode != null ? " for mode " + mode : ""));
     }
 
-    private void collectExclusions(JsonObject obj) {
-        if (obj.hasKey(EXCLUSIONS)) {
-            JsonArray array = obj.getArray(EXCLUSIONS);
+    private void collectExclusions(JsonNode obj) {
+        if (obj.has(EXCLUSIONS)) {
+            ArrayNode array = (ArrayNode) obj.get(EXCLUSIONS);
             if (array != null) {
-                IntStream.range(0, array.length())
-                        .forEach(i -> exclusions.add(array.getString(i)));
+                IntStream.range(0, array.size())
+                        .forEach(i -> exclusions.add(array.get(i).textValue()));
             }
         }
     }

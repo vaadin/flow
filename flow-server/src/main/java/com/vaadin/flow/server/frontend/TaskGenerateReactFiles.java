@@ -24,20 +24,19 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -248,16 +247,16 @@ public class TaskGenerateReactFiles
     }
 
     private String layoutsContent(Collection<Class<?>> layoutClasses) {
-        JsonArray availableLayouts = Json.createArray();
+        ArrayNode availableLayouts = JacksonUtils.createArrayNode();
         for (Class<?> layout : layoutClasses) {
             if (layout.isAnnotationPresent(Layout.class)) {
-                JsonObject layoutObject = Json.createObject();
+                ObjectNode layoutObject = JacksonUtils.createObjectNode();
                 layoutObject.put("path",
                         layout.getAnnotation(Layout.class).value());
-                availableLayouts.set(availableLayouts.length(), layoutObject);
+                availableLayouts.add(layoutObject);
             }
         }
-        return availableLayouts.toJson();
+        return availableLayouts.toString();
     }
 
     private void cleanup() throws ExecutionFailedException {
