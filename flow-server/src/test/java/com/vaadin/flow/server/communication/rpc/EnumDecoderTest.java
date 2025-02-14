@@ -18,6 +18,8 @@ package com.vaadin.flow.server.communication.rpc;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.JacksonUtils;
+
 import elemental.json.Json;
 
 public class EnumDecoderTest {
@@ -30,39 +32,41 @@ public class EnumDecoderTest {
 
     @Test
     public void isApplicable_applicableToStringAndEnum() {
-        Assert.assertTrue(
-                decoder.isApplicable(Json.create("foo"), Title.class));
+        Assert.assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                Title.class));
     }
 
     @Test
     public void isApplicable_notApplicableToBooleanAndEnum() {
-        Assert.assertFalse(decoder.isApplicable(Json.create(true), Enum.class));
+        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
+                Enum.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndString() {
-        Assert.assertFalse(
-                decoder.isApplicable(Json.create("foo"), String.class));
+        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                String.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndAbstractEnum() {
-        Assert.assertFalse(
-                decoder.isApplicable(Json.create("foo"), Enum.class));
+        Assert.assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                Enum.class));
     }
 
     @Test
     public void stringToEnum_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Title title = Title.MRS;
-        Title decoded = decoder.decode(Json.create(title.name()), Title.class);
+        Title decoded = decoder.decode(JacksonUtils.createNode(title.name()),
+                Title.class);
         Assert.assertEquals(title, decoded);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void stringToEnum_nonConvertableString_valueIsConverted()
             throws RpcDecodeException {
-        decoder.decode(Json.create("foo"), Title.class);
+        decoder.decode(JacksonUtils.createNode("foo"), Title.class);
     }
 
 }
