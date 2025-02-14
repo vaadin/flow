@@ -200,7 +200,8 @@ public class JacksonCodec {
             return JacksonUtils.getMapper().nullNode();
         }
 
-        assert canEncodeWithoutTypeInfo(value.getClass());
+        assert canEncodeWithoutTypeInfo(value.getClass())
+                : "Non encodable type " + value.getClass();
 
         Class<?> type = value.getClass();
         if (String.class.equals(value.getClass())) {

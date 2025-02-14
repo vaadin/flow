@@ -18,12 +18,12 @@ package com.vaadin.flow.internal.change;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Base class describing a change to a state node.
@@ -64,8 +64,8 @@ public abstract class NodeChange implements Serializable {
      *
      * @return a json representation of this change
      */
-    public JsonObject toJson(ConstantPool constantPool) {
-        JsonObject json = Json.createObject();
+    public ObjectNode toJson(ConstantPool constantPool) {
+        ObjectNode json = JacksonUtils.createObjectNode();
 
         json.put(JsonConstants.CHANGE_NODE, node.getId());
 
@@ -83,6 +83,6 @@ public abstract class NodeChange implements Serializable {
      *            the constant pool to use for serializing constant pool
      *            references
      */
-    protected abstract void populateJson(JsonObject json,
+    protected abstract void populateJson(ObjectNode json,
             ConstantPool constantPool);
 }
