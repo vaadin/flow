@@ -521,7 +521,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writePackageFile(JsonNode json, File packageFile)
             throws IOException {
-        String content = json.toString() + "\n";
+        String content = json.toPrettyString() + "\n";
         if (packageFile.exists() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
@@ -541,7 +541,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (vaadinJsonFile.exists()) {
             String fileContent = FileUtils.readFileToString(vaadinJsonFile,
                     UTF_8.name());
-            return (ObjectNode) JacksonUtils.readTree(fileContent);
+            return JacksonUtils.readTree(fileContent);
         } else {
             return JacksonUtils.createObjectNode();
         }
@@ -553,7 +553,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         newContent.forEach(fileContent::put);
         File vaadinJsonFile = getVaadinJsonFile();
         FileUtils.forceMkdirParent(vaadinJsonFile);
-        String content = fileContent + "\n";
+        String content = fileContent.toPrettyString() + "\n";
         FileIOUtils.writeIfChanged(vaadinJsonFile, content);
     }
 
