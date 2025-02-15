@@ -629,8 +629,68 @@ public class UI extends Component
      *            <code>null</code> as described above
      * @return a runnable that will run either the access task or the detach
      *         handler, possibly asynchronously
+     * @deprecated Use
+     *             {@link #wrapWithAccess(SerializableRunnable, SerializableRunnable)}
+     *             instead which is a better name for the method
+     *
      */
+    @Deprecated(forRemoval = true)
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
+            SerializableRunnable detachHandler) {
+        return wrapWithAccess(accessTask, detachHandler);
+    }
+
+    /**
+     * Wraps the given access task as a consumer that passes a value to the
+     * given task with this UI locked. The wrapped task may be run synchronously
+     * or asynchronously. If the UI is detached when the returned consumer is
+     * run, the provided detach handler is run instead. If the provided detach
+     * handler is <code>null</code>, the returned runnable may throw an
+     * {@link UIDetachedException}.
+     * <p>
+     * This method can be used to create a callback that can be passed to an
+     * external notifier that isn't aware of the synchronization needed to
+     * update a UI instance.
+     *
+     * @param accessTask
+     *            the task that updates this UI, not <code>null</code>
+     * @param detachHandler
+     *            the callback that will be invoked if the UI is detached, or
+     *            <code>null</code> as described above
+     * @return a consumer that will run either the access task or the detach
+     *         handler, possibly asynchronously
+     * @deprecated Use
+     *             {@link #wrapWithAccess(SerializableConsumer, SerializableRunnable)}
+     *             instead which is a better name for the method
+     */
+    @Deprecated(forRemoval = true)
+    public <T> SerializableConsumer<T> accessLater(
+            SerializableConsumer<T> accessTask,
+            SerializableRunnable detachHandler) {
+        return wrapWithAccess(accessTask, detachHandler);
+    }
+
+    /**
+     * Wraps the given access task as a runnable that runs the given task with
+     * this UI locked. The wrapped task may be run synchronously or
+     * asynchronously. If the UI is detached when the returned runnable is run,
+     * the provided detach handler is run instead. If the provided detach
+     * handler is <code>null</code>, the returned runnable may throw an
+     * {@link UIDetachedException}.
+     * <p>
+     * This method can be used to create a callback that can be passed to an
+     * external notifier that isn't aware of the synchronization needed to
+     * update a UI instance.
+     *
+     * @param accessTask
+     *            the task that updates this UI, not <code>null</code>
+     * @param detachHandler
+     *            the callback that will be invoked if the UI is detached, or
+     *            <code>null</code> as described above
+     * @return a runnable that will run either the access task or the detach
+     *         handler, possibly asynchronously
+     */
+    public SerializableRunnable wrapWithAccess(SerializableRunnable accessTask,
             SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
@@ -657,7 +717,7 @@ public class UI extends Component
      * @return a consumer that will run either the access task or the detach
      *         handler, possibly asynchronously
      */
-    public <T> SerializableConsumer<T> accessLater(
+    public <T> SerializableConsumer<T> wrapWithAccess(
             SerializableConsumer<T> accessTask,
             SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
