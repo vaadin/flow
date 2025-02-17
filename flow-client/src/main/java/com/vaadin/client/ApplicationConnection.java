@@ -238,7 +238,7 @@ public class ApplicationConnection {
 
     private boolean isHiddenByServer(int id) {
         StateNode node = registry.getStateTree().getNode(id);
-        boolean visible =  node == null ? true
+        boolean visible = node == null ? true
                 : node.getMap(NodeFeatures.ELEMENT_DATA)
                         .getProperty(NodeProperties.VISIBLE)
                         .getValueOrDefault(true);
