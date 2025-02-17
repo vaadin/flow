@@ -236,6 +236,15 @@ public class ApplicationConnection {
                         .getValueOrDefault(null);
     }
 
+    private boolean isHiddenByServer(int id) {
+        StateNode node = registry.getStateTree().getNode(id);
+        boolean visible = node == null ? true
+                : node.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.VISIBLE)
+                        .getValueOrDefault(true);
+        return !visible;
+    }
+
     public static final class Styles extends JavaScriptObject {
         protected Styles() {
 
@@ -307,6 +316,7 @@ public class ApplicationConnection {
             return {
                 element: ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId),
                 javaClass: ap.@ApplicationConnection::getJavaClass(*)(nodeId),
+                hiddenByServer: ap.@ApplicationConnection::isHiddenByServer(*)(nodeId),
                 styles: ap.@ApplicationConnection::getElementStyleProperties(*)(nodeId)
             };
         });
