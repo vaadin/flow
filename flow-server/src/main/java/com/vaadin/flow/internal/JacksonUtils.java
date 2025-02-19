@@ -34,6 +34,9 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.util.Separators;
+import com.fasterxml.jackson.core.util.Separators.Spacing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -488,5 +491,23 @@ public final class JacksonUtils {
      */
     public static ObjectNode writeValue(Object object) {
         return objectMapper.valueToTree(object);
+    }
+
+    /**
+     * Converts the given node into JSON suitable for writing into a file such
+     * as {@literal package.json}.
+     *
+     * @param node
+     *            the node to convert
+     * @return the JSON string
+     * @throws JsonProcessingException
+     *             if the node cannot be converted
+     */
+    public static String toFileJson(JsonNode node)
+            throws JsonProcessingException {
+        DefaultPrettyPrinter filePrinter = new DefaultPrettyPrinter(
+                Separators.createDefaultInstance()
+                        .withObjectFieldValueSpacing(Spacing.AFTER));
+        return objectMapper.writer().with(filePrinter).writeValueAsString(node);
     }
 }

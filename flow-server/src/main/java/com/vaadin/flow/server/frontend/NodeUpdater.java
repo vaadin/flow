@@ -522,7 +522,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writePackageFile(JsonNode json, File packageFile)
             throws IOException {
-        String content = json.toPrettyString() + "\n";
+        String content = JacksonUtils.toFileJson(json);
         if (packageFile.exists() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
