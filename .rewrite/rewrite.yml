@@ -1,0 +1,10 @@
+type: specs.openrewrite.org/v1beta/recipe
+name: com.vaadin.rewrite.AddSinceTagToNewMethods
+displayName: Add @since tag to newly added methods
+description: Automatically adds @since Javadoc tag to methods that do not have one and have been added in the latest release
+recipeList:
+  - org.openrewrite.java.AddJavadocComment:
+      matcher: "method[not(@since)]"
+      comment: "@since {{newVersion}}"
+      methodPattern: com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner getDevPackages*(..)
+      onlyIfExists: true

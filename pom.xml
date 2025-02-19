@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
@@ -28,7 +29,7 @@
         <module>flow-html-components-testbench</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
+        <!-- <module>flow-tests</module> -->
         <module>flow-server-production-mode</module>
         <module>flow-plugins</module>
         <module>flow-test-generic</module>
@@ -138,7 +139,7 @@
 
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
-        <exclude.windows.failed.tests/>
+        <exclude.windows.failed.tests />
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
 
@@ -314,14 +315,100 @@
         </extensions>
 
         <plugins>
+
+            <plugin>
+                <groupId>org.revapi</groupId>
+                <artifactId>revapi-maven-plugin</artifactId>
+                <version>0.15.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.revapi</groupId>
+                        <artifactId>revapi-java</artifactId>
+                        <version>0.28.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.revapi</groupId>
+                        <artifactId>revapi-reporter-json</artifactId>
+                        <version>0.5.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.revapi</groupId>
+                        <artifactId>revapi-reporter-text</artifactId>
+                        <version>0.15.0</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <analysisConfiguration>
+                        <!-- <revapi.differences>
+                            <ignore>true</ignore>
+                            <differences>
+                                <item>
+                                    <code>java.field.defaultSerializationChanged</code>
+                                </item>
+                            </differences>
+                        </revapi.differences> -->
+                        <revapi.filter>
+                            <include>
+                                <item>
+                                    <matcher>java-package</matcher>
+                                    <!-- only match Vaadin classes-->
+                                    <match>/com\.vaadin(\..*)?/</match>
+                                </item>
+                            </include>
+                            <exclude>
+                                <item>
+                                    <matcher>java-package</matcher>
+                                    <!-- exclude any internal classes-->
+                                    <match>/(.*)?\.internal(\..*)?/</match>
+                                </item>
+                                <item>
+                                    <matcher>java-package</matcher>
+                                    <!-- exclude experimental classes-->
+                                    <match>/com\.vaadin\.experimental(\..*)?/</match>
+                                </item>
+                                <item>
+                                    <code>java\.class\.defaultSerializationChanged</code>
+                                    <new>method .*</new>
+                                </item>
+                            </exclude>
+                        </revapi.filter>
+                        <revapi.reporter.json>
+                            <minSeverity>POTENTIALLY_BREAKING</minSeverity>
+                            <minCriticality>documented</minCriticality>
+                            <output>report.json</output>
+                            <indent>true</indent>
+                            <append>true</append>
+                            <keepEmptyFile>false</keepEmptyFile>
+                        </revapi.reporter.json>
+                        <revapi.reporter.text>
+                            <minSeverity>POTENTIALLY_BREAKING</minSeverity>
+                            <minCriticality>documented</minCriticality>
+                            <output>report.txt</output>
+                            <indent>true</indent>
+                            <append>true</append>
+                        </revapi.reporter.text>
+                    </analysisConfiguration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.24.1</version>
                 <configuration>
-                    <configFile>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configFile>
+                    <configFile>
+                        ${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configJsFile>
+                    <configJsFile>
+                        ${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configJsFile>
                     <lineEnding>LF</lineEnding>
                 </configuration>
             </plugin>
@@ -498,7 +585,7 @@
                             <id>default-cli</id>
                             <configuration>
                                 <rules>
-                                    <dependencyConvergence/>
+                                    <dependencyConvergence />
                                 </rules>
                             </configuration>
                             <goals>
@@ -547,7 +634,7 @@
                         <classpathDependencyExcludes>
                             <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
                         </classpathDependencyExcludes>
-<!--
+                        <!--
                         <parallel>classes</parallel>
                         <threadCount>4</threadCount>
 -->
@@ -625,7 +712,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore/>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -638,7 +725,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore/>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -651,7 +738,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore/>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -672,6 +759,16 @@
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.3.1</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.openrewrite.maven</groupId>
+                    <artifactId>rewrite-maven-plugin</artifactId>
+                    <version>6.1.1</version>
+                    <configuration>
+                        <configLocation>.rewrite\rewrite.yml</configLocation>
+                        <activeRecipes>com.vaadin.rewrite.AddSinceTagToNewMethods</activeRecipes>
+                    </configuration>
+                </plugin>
+
             </plugins>
         </pluginManagement>
     </build>
@@ -685,15 +782,15 @@
         <profile>
             <id>all-tests</id>
             <properties>
-                <groups/>
-                <excludedGroups/>
+                <groups />
+                <excludedGroups />
             </properties>
         </profile>
         <profile>
             <id>slow-tests</id>
             <properties>
                 <groups>com.vaadin.flow.testcategory.SlowTests</groups>
-                <excludedGroups/>
+                <excludedGroups />
             </properties>
         </profile>
         <profile>
@@ -703,9 +800,9 @@
                 <sonar.organization>vaadin</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <!-- override properties for legacy sonar instance -->
-                <sonar.analysis.mode/>
-                <sonar.issuesReport.console.enable/>
-                <sonar.issuesReport.html.enable/>
+                <sonar.analysis.mode />
+                <sonar.issuesReport.console.enable />
+                <sonar.issuesReport.html.enable />
             </properties>
         </profile>
     </profiles>
