@@ -21,7 +21,6 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.HandlesTypes;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -65,6 +64,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -75,7 +75,7 @@ import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -558,6 +558,14 @@ public class VaadinServletContextInitializer
             List<Class<?>> superTypes = new ArrayList<>();
             collectHandleTypes(devModeHandlerManager.getHandlesTypes(),
                     annotations, superTypes);
+
+            EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
+                    .lookup(EndpointGeneratorTaskFactory.class);
+
+            if (endpointGeneratorTaskFactory != null) {
+                annotations.addAll(endpointGeneratorTaskFactory
+                        .getBrowserCallableAnnotations());
+            }
 
             Set<Class<?>> classes = findClassesForDevMode(basePackages,
                     annotations, superTypes);

@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -620,7 +621,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     private void putHillaComponentsDependencies(
             Map<String, String> dependencies, String packageJsonKey) {
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                options.getClassFinder())) {
+                options.getClassFinder())
+                || EndpointRequestUtil.areHillaEndpointsUsed(options)) {
             if (options.isReactEnabled()) {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/react", packageJsonKey));

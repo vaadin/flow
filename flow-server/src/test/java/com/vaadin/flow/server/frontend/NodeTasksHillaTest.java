@@ -122,7 +122,8 @@ public class NodeTasksHillaTest {
                 EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
                     .thenReturn(true);
-
+            util.when(() -> EndpointRequestUtil
+                    .areHillaEndpointsUsed(Mockito.any())).thenReturn(true);
             new NodeTasks(options).execute();
         }
 

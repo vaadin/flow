@@ -73,9 +73,9 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
             TaskInstallFrontendBuildPlugins.class,
+            TaskGenerateOpenAPI.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
-            TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
@@ -317,6 +317,9 @@ public class NodeTasks implements FallibleCommand {
 
     private void addEndpointServicesTasks(Options options) {
         if (!EndpointRequestUtil.isHillaAvailable(options.getClassFinder())) {
+            return;
+        }
+        if (!EndpointRequestUtil.areHillaEndpointsUsed(options)) {
             return;
         }
         Lookup lookup = options.getLookup();
