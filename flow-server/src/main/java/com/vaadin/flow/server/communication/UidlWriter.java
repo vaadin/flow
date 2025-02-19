@@ -19,6 +19,7 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +34,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +49,8 @@ import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
@@ -165,7 +172,7 @@ public class UidlWriter implements Serializable {
             response.put("meta", meta);
         }
 
-        JsonArray stateChanges = Json.createArray();
+        ArrayNode stateChanges = JacksonUtils.createArrayNode();
 
         encodeChanges(ui, stateChanges);
 
@@ -173,11 +180,14 @@ public class UidlWriter implements Serializable {
                 new ResolveContext(service, session.getBrowser()));
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
-            response.put("constants",
-                    uiInternals.getConstantPool().dumpConstants());
+            response.put("constants", Json.parse(
+                    uiInternals.getConstantPool().dumpConstants().toString()));
         }
-        if (stateChanges.length() != 0) {
-            response.put("changes", stateChanges);
+        if (!stateChanges.isEmpty()) {
+            JsonArray array = Json.createArray();
+            stateChanges.forEach(node -> array.set(array.length(),
+                    Json.parse(node.toString())));
+            response.put("changes", array);
         }
 
         List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals
@@ -317,7 +327,13 @@ public class UidlWriter implements Serializable {
                 .registerChannel(arguments -> {
                     registrations.forEach(ReturnChannelRegistration::remove);
 
-                    action.accept(arguments.get(0));
+                    if (arguments.get(0) instanceof NullNode) {
+                        action.accept(Json.createNull());
+                    } else if (arguments.get(0) instanceof ValueNode) {
+                        action.accept(Json.create(arguments.get(0).asText()));
+                    } else {
+                        action.accept(Json.parse(arguments.get(0).toString()));
+                    }
                 });
 
         registrations.add(channel);
@@ -387,7 +403,7 @@ public class UidlWriter implements Serializable {
      *            a JSON array to put state changes into
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    private void encodeChanges(UI ui, JsonArray stateChanges) {
+    private void encodeChanges(UI ui, ArrayNode stateChanges) {
         UIInternals uiInternals = ui.getInternals();
         StateTree stateTree = uiInternals.getStateTree();
 
@@ -402,8 +418,7 @@ public class UidlWriter implements Serializable {
             }
 
             // Encode the actual change
-            stateChanges.set(stateChanges.length(),
-                    change.toJson(uiInternals.getConstantPool()));
+            stateChanges.add(change.toJson(uiInternals.getConstantPool()));
         };
         // A collectChanges round may add additional changes that needs to be
         // collected.

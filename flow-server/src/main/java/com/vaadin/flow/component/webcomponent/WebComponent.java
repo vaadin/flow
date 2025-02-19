@@ -19,6 +19,9 @@ package com.vaadin.flow.component.webcomponent;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
@@ -228,6 +231,22 @@ public final class WebComponent<C extends Component> implements Serializable {
             // that expected behavior.
             componentHost.executeJs(String.format(UPDATE_PROPERTY_FORMAT,
                     ((JsonValue) value).toJson()), propertyName);
+        } else if (value instanceof ObjectNode) {
+            // this gets around executeJavaScript limitation.
+            // Since properties can take JsonValues, this was needed to allow
+            // that expected behavior.
+            componentHost.executeJs(
+                    String.format(UPDATE_PROPERTY_FORMAT, value), propertyName);
+        } else if (value instanceof ValueNode) {
+            // this gets around executeJavaScript limitation.
+            // Since properties can take JsonValues, this was needed to allow
+            // that expected behavior.
+            componentHost.executeJs(
+                    String.format(UPDATE_PROPERTY_FORMAT, value), propertyName);
+        } else {
+            throw new IllegalArgumentException(
+                    String.format("Unknown property type '%s'",
+                            value.getClass().getSimpleName()));
         }
     }
 }
