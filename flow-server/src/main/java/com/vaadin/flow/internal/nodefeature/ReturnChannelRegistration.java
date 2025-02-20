@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonArray;
 
 /**
  * A registration for a return channel. A new return channel can be registered

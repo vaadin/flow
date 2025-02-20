@@ -21,17 +21,12 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
-import org.w3c.dom.Text;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
-
-import elemental.json.JsonValue;
 
 /**
  * Utility for encoding objects to and from JSON.
@@ -212,8 +207,7 @@ public class JacksonCodec {
             return JacksonUtils.getMapper()
                     .valueToTree(((Number) value).doubleValue());
         } else if (Boolean.class.equals(type)) {
-            return JacksonUtils.getMapper()
-                    .valueToTree(((Boolean) value).booleanValue());
+            return JacksonUtils.getMapper().valueToTree(value);
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return (JsonNode) value;
         }

@@ -20,8 +20,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
-import elemental.json.Json;
-
 public class EnumDecoderTest {
 
     private StringToEnumDecoder decoder = new StringToEnumDecoder();

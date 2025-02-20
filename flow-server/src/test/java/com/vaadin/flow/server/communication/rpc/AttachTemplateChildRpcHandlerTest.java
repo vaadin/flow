@@ -28,10 +28,6 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 public class AttachTemplateChildRpcHandlerTest {
 
     @Test(expected = IllegalStateException.class)

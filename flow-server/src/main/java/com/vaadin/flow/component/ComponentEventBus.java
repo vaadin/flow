@@ -41,7 +41,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 

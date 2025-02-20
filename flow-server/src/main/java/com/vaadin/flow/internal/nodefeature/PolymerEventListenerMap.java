@@ -23,11 +23,8 @@ import java.util.Map;
 
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
 
 /**
  * Map of PolymerTemplate events with server-side listeners. The key set of this
