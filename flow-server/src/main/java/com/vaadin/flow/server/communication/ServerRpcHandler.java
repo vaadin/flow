@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.PreserveOnRefresh;
@@ -532,7 +533,8 @@ public class ServerRpcHandler implements Serializable {
             assert type != null;
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
                 // Handle these before any RPC invocations.
-                mapSyncHandler.handle(ui, invocationJson)
+                mapSyncHandler
+                        .handle(ui, JacksonUtils.mapElemental(invocationJson))
                         .ifPresent(runnable -> pendingChangeEvents.add(() -> {
                             try {
                                 runnable.run();
@@ -565,7 +567,8 @@ public class ServerRpcHandler implements Serializable {
                     "Unsupported event type: " + type);
         }
         try {
-            Optional<Runnable> handle = handler.handle(ui, invocationJson);
+            Optional<Runnable> handle = handler.handle(ui,
+                    JacksonUtils.mapElemental(invocationJson));
             assert !handle.isPresent()
                     : "RPC handler " + handler.getClass().getName()
                             + " returned a Runnable even though it shouldn't";

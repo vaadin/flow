@@ -27,6 +27,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
@@ -682,6 +689,26 @@ public class Element extends Node<Element> {
         return this;
     }
 
+    // Distinct name so setProperty("foo", null) is not ambiguous
+    public Element setPropertyJson(String name, ObjectNode value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        setRawProperty(name, value);
+        return this;
+    }
+
+    // Distinct name so setProperty("foo", null) is not ambiguous
+    public Element setPropertyJson(String name, ValueNode value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        setRawProperty(name, value);
+        return this;
+    }
+
     /**
      * Sets the given property to the given bean, converted to a JSON object.
      * <p>
@@ -856,6 +883,8 @@ public class Element extends Node<Element> {
             return defaultValue;
         } else if (value instanceof JsonValue) {
             return ((JsonValue) value).toJson();
+        } else if (value instanceof NullNode) {
+            return defaultValue;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
             int intValue = (int) doubleValue;
@@ -954,6 +983,14 @@ public class Element extends Node<Element> {
                     return Double.NaN;
                 }
             }
+        } else if (value instanceof NumericNode) {
+            return ((NumericNode) value).asDouble(Double.NaN);
+        } else if (value instanceof BooleanNode) {
+            return ((BooleanNode) value).booleanValue() ? 1 : 0;
+        } else if (value instanceof TextNode) {
+            return ((TextNode) value).asDouble(Double.NaN);
+        } else if (value instanceof JsonNode) {
+            return ((JsonNode) value).asDouble(Double.NaN);
         } else {
             throw new IllegalStateException(
                     "Unsupported property type: " + value.getClass());

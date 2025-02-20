@@ -28,16 +28,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 
-import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -362,11 +366,26 @@ public class ComponentEventBus implements Serializable {
                 eventDataObjects.add(parseStateNodeIdToComponentReference(
                         domEvent, type, expression));
             } else {
-                JsonValue jsonValue = domEvent.getEventData().get(expression);
-                if (jsonValue == null) {
-                    jsonValue = Json.createNull();
+                JsonNode jsonValue;
+                if (domEvent.getEventData()
+                        .get(expression) instanceof JsonObject) {
+                    jsonValue = JacksonUtils.mapElemental(
+                            domEvent.getEventData().get(expression));
+                } else {
+                    jsonValue = JacksonUtils.mapElemental((JsonValue) domEvent
+                            .getEventData().get(expression));
                 }
-                Object value = JsonCodec.decodeAs(jsonValue, type);
+                if (jsonValue == null) {
+                    jsonValue = JacksonUtils.nullNode();
+                }
+                Object value;
+                if (JsonValue.class.isAssignableFrom(type)) {
+                    // TODO: Remove after History uses Jackson.
+                    value = JsonCodec.decodeAs(
+                            domEvent.getEventData().get(expression), type);
+                } else {
+                    value = JacksonCodec.decodeAs(jsonValue, type);
+                }
                 eventDataObjects.add(value);
             }
         });
