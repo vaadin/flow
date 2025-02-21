@@ -534,7 +534,7 @@ public class BuildFrontendUtilTest {
 
         Assert.assertTrue("Example feature flag is not set",
                 featureFlagsJs.contains(
-                        "window.Vaadin.featureFlags.exampleFeatureFlag = true;\n"));
+                        "window.Vaadin.FeatureFlagsTest.FEATURE_FLAG_EXAMPLEFeatureFlag = true;\n"));
     }
 
     private void fillAdapter() throws URISyntaxException {
