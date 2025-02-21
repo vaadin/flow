@@ -92,7 +92,7 @@ public interface EndpointRequestUtil extends Serializable {
     /**
      * Checks if Hilla is available and Hilla endpoints are used in the project.
      *
-     * @return {@code true} if Hilla is available and Hilla views are used,
+     * @return {@code true} if Hilla is available and Hilla endpoints are used,
      *         {@code false} otherwise
      */
     static boolean areHillaEndpointsUsed(Options options) {
