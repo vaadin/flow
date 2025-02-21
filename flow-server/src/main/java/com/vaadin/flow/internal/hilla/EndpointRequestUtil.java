@@ -99,7 +99,11 @@ public interface EndpointRequestUtil extends Serializable {
         if (!EndpointRequestUtil.isHillaAvailable()) {
             return false;
         }
-        return options.getLookup().lookup(EndpointGeneratorTaskFactory.class)
-                .hasBrowserCallables(options);
+        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = options
+                .getLookup().lookup(EndpointGeneratorTaskFactory.class);
+        if (endpointGeneratorTaskFactory != null) {
+            return endpointGeneratorTaskFactory.hasBrowserCallables(options);
+        }
+        return false;
     }
 }
