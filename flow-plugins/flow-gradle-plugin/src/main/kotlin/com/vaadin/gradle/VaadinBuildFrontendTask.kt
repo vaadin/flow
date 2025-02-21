@@ -22,6 +22,8 @@ import com.vaadin.flow.server.frontend.FrontendUtils
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
 import com.vaadin.pro.licensechecker.LicenseChecker
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
@@ -40,9 +42,10 @@ import org.gradle.api.tasks.bundling.Jar
  * * Update [FrontendUtils.WEBPACK_CONFIG] file.
  *
  */
-public open class VaadinBuildFrontendTask : DefaultTask() {
-    private val config: PluginEffectiveConfiguration =
-        PluginEffectiveConfiguration.get(project)
+public abstract class VaadinBuildFrontendTask : DefaultTask() {
+
+    @get:Internal
+    internal abstract val adapter: Property<GradlePluginAdapter>
 
     init {
         group = "Vaadin"
@@ -64,30 +67,34 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         }
     }
 
+    internal fun configure(config: PluginEffectiveConfiguration) {
+        adapter.set(GradlePluginAdapter(this, config, false))
+    }
+
     @TaskAction
     public fun vaadinBuildFrontend() {
+        val config = adapter.get().config
         logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
-        val adapter = GradlePluginAdapter(project, config, false)
         // sanity check
-        val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
+        val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
         val cleanTask = TaskCleanFrontendFiles(config.npmFolder.get(),
-                BuildFrontendUtil.getGeneratedFrontendDirectory(adapter), adapter.classFinder
+                BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()), adapter.get().classFinder
         )
-        BuildFrontendUtil.runNodeUpdater(adapter)
+        BuildFrontendUtil.runNodeUpdater(adapter.get())
 
-        if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
-                (adapter.servletResourceOutputDirectory())) {
-            BuildFrontendUtil.runFrontendBuild(adapter)
+        if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
+                (adapter.get().servletResourceOutputDirectory())) {
+            BuildFrontendUtil.runFrontendBuild(adapter.get())
             if (cleanFrontendFiles()) {
                 cleanTask.execute()
             }
         }
         LicenseChecker.setStrictOffline(true)
-        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter)
+        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter.get())
 
-        BuildFrontendUtil.updateBuildFile(adapter, licenseRequired)
+        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired)
     }
 
 
@@ -104,9 +111,8 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
      * @return `true` to remove created files, `false` to keep the files
      */
     protected open fun cleanFrontendFiles(): Boolean {
-        val adapter = GradlePluginAdapter(project, config, false)
-        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter),
-                        adapter.classFinder)) {
+        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()),
+                        adapter.get().classFinder)) {
             /*
              * Override this to not clean generated frontend files after the
              * build. For Hilla, the generated files can still be useful for
@@ -115,6 +121,6 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
              */
             return false
         }
-        return config.cleanFrontendFiles.get()
+        return adapter.get().config.cleanFrontendFiles.get()
     }
 }
