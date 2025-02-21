@@ -60,7 +60,7 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v18.20.6";
+    public static final String DEFAULT_NODE_VERSION = "v18.20.7";
     /**
      * This is the version shipped with the default Node version.
      */
