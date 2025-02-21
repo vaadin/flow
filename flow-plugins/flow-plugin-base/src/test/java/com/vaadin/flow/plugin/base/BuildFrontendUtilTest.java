@@ -156,6 +156,8 @@ public class BuildFrontendUtilTest {
                 EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
                     .thenReturn(true);
+            util.when(() -> EndpointRequestUtil
+                    .areHillaEndpointsUsed(Mockito.any())).thenReturn(true);
             BuildFrontendUtil.runNodeUpdater(adapter);
         }
 
@@ -168,10 +170,10 @@ public class BuildFrontendUtilTest {
         // Hilla Engine requires npm install, the order of execution is critical
         final TaskRunNpmInstall taskRunNpmInstall = construction.constructed()
                 .get(0);
-        InOrder inOrder = Mockito.inOrder(taskRunNpmInstall,
-                taskGenerateOpenAPI, taskGenerateEndpoint);
-        inOrder.verify(taskRunNpmInstall).execute();
+        InOrder inOrder = Mockito.inOrder(taskGenerateOpenAPI,
+                taskRunNpmInstall, taskGenerateEndpoint);
         inOrder.verify(taskGenerateOpenAPI).execute();
+        inOrder.verify(taskRunNpmInstall).execute();
         inOrder.verify(taskGenerateEndpoint).execute();
     }
 
