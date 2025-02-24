@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -53,6 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.DevBundleBuildingHandler;
+import com.vaadin.base.devserver.OpenInCurrentIde;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
@@ -239,6 +241,9 @@ public class DevModeInitializer implements Serializable {
             StatisticsStorage storage = new StatisticsStorage();
             DevModeUsageStatistics.init(baseDir, storage,
                     new StatisticsSender(storage));
+            DevModeUsageStatistics.collectEvent(
+                    "ide_" + OpenInCurrentIde.getIdeAndProcessInfo().ide()
+                            .name().toLowerCase(Locale.ENGLISH));
         }
 
         File frontendFolder = config.getFrontendFolder();
