@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import org.apache.commons.io.IOUtils;
@@ -319,12 +320,13 @@ public class UidlWriter implements Serializable {
                 .registerChannel(arguments -> {
                     registrations.forEach(ReturnChannelRegistration::remove);
 
-                    if (arguments.get(0) instanceof NullNode) {
+                    JsonNode jsonNode = arguments.get(0);
+                    if (jsonNode instanceof NullNode) {
                         action.accept(Json.createNull());
-                    } else if (arguments.get(0) instanceof ValueNode) {
-                        action.accept(Json.create(arguments.get(0).asText()));
+                    } else if (jsonNode instanceof ValueNode) {
+                        action.accept(Json.create(jsonNode.asText()));
                     } else {
-                        action.accept(Json.parse(arguments.get(0).toString()));
+                        action.accept(Json.parse(jsonNode.toString()));
                     }
                 });
 

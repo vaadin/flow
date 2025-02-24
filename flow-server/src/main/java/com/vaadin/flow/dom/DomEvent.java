@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -46,6 +47,24 @@ public class DomEvent extends EventObject {
     private final DebouncePhase phase;
 
     private final Element eventTarget;
+
+    /**
+     * Creates a new DOM event.
+     *
+     * @param source
+     *            the element on which the listener has been attached, not
+     *            <code>null</code>
+     * @param eventType
+     *            the type of the event, not <code>null</code>
+     * @param eventData
+     *            additional data related to the event, not <code>null</code>
+     *
+     * @see Element#addEventListener(String, DomEventListener)
+     * @see DomEventListener
+     */
+    public DomEvent(Element source, String eventType, JsonObject eventData) {
+        this(source, eventType, JacksonUtils.mapElemental(eventData));
+    }
 
     /**
      * Creates a new DOM event.
