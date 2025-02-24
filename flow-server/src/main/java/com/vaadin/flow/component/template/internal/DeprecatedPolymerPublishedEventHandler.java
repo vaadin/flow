@@ -18,6 +18,8 @@ package com.vaadin.flow.component.template.internal;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.Component;
 
 import elemental.json.JsonObject;
@@ -51,6 +53,7 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      *            target type that value should be converted to
      * @return true if valid template model value
      */
+    @Deprecated
     boolean isTemplateModelValue(Component instance, JsonValue argValue,
             Class<?> convertedType);
 
@@ -67,6 +70,38 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      * @throws IllegalStateException
      *             if the component is not attached to the UI
      */
+    @Deprecated
     Object getTemplateItem(Component template, JsonObject argValue,
+            Type convertedType);
+
+    /**
+     * Validate that the given Component instance is a PolymerTemplate and that
+     * the value can be converted.
+     *
+     * @param instance
+     *            Component to be validated
+     * @param argValue
+     *            received value
+     * @param convertedType
+     *            target type that value should be converted to
+     * @return true if valid template model value
+     */
+    boolean isTemplateModelValue(Component instance, JsonNode argValue,
+            Class<?> convertedType);
+
+    /**
+     * Get the template model object and type.
+     *
+     * @param template
+     *            polymer template to get model from
+     * @param argValue
+     *            argument value
+     * @param convertedType
+     *            value type
+     * @return the provided model value
+     * @throws IllegalStateException
+     *             if the component is not attached to the UI
+     */
+    Object getTemplateItem(Component template, JsonNode argValue,
             Type convertedType);
 }

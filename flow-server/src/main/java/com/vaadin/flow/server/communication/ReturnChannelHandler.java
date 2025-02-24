@@ -17,6 +17,8 @@ package com.vaadin.flow.server.communication;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,9 +29,6 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 /**
  * RPC handler for return channel messages.
@@ -48,11 +47,11 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
-        int channelId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_CHANNEL);
-        JsonArray arguments = invocationJson
-                .getArray(JsonConstants.RPC_CHANNEL_ARGUMENTS);
+            JsonNode invocationJson) {
+        int channelId = invocationJson.get(JsonConstants.RPC_CHANNEL)
+                .intValue();
+        ArrayNode arguments = (ArrayNode) invocationJson
+                .get(JsonConstants.RPC_CHANNEL_ARGUMENTS);
 
         if (!node.hasFeature(ReturnChannelMap.class)) {
             getLogger().warn("Node has no return channels: {}", invocationJson);
@@ -81,7 +80,7 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+    protected boolean allowInert(UI ui, JsonNode invocationJson) {
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         // Allow calls if a return channel has been registered for the node.
