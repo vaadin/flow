@@ -28,6 +28,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
@@ -59,6 +60,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -710,36 +712,7 @@ public class Element extends Node<Element> {
      * @return this element
      */
     // Distinct name so setProperty("foo", null) is not ambiguous
-    public Element setPropertyJson(String name, ObjectNode value) {
-        if (value == null) {
-            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
-        }
-
-        setRawProperty(name, value);
-        return this;
-    }
-
-    /**
-     * Sets the given property to the given JSON value.
-     * <p>
-     * Please note that this method does not accept <code>null</code> as a
-     * value, since {@link JacksonUtils#nullNode()} should be used instead for
-     * JSON values.
-     * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
-     *
-     * @param name
-     *            the property name, not <code>null</code>
-     * @param value
-     *            the property value, not <code>null</code>
-     * @return this element
-     */
-    // Distinct name so setProperty("foo", null) is not ambiguous
-    public Element setPropertyJson(String name, ValueNode value) {
+    public Element setPropertyJson(String name, BaseJsonNode value) {
         if (value == null) {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
@@ -1501,7 +1474,14 @@ public class Element extends Node<Element> {
 
         // Add "this" as the last parameter
         Stream<Serializable> wrappedParameters = Stream
-                .concat(Stream.of(parameters), Stream.of(this));
+                .concat(Stream.of(parameters).map(param -> {
+                    if (param instanceof JsonObject) {
+                        return JacksonUtils.mapElemental((JsonObject) param);
+                    } else if (param instanceof JsonValue) {
+                        return JacksonUtils.mapElemental((JsonValue) param);
+                    }
+                    return param;
+                }), Stream.of(this));
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression

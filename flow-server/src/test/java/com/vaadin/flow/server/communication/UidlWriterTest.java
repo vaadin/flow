@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.ParentLayout;
@@ -187,16 +189,20 @@ public class UidlWriterTest {
                         element.getNode(), invocation))
                 .collect(Collectors.toList());
 
-        JsonArray json = UidlWriter
+        ArrayNode json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
 
-        JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
-                // Null since element is not attached
-                Json.createNull(), Json.create("$0.focus()")),
-                JsonUtils.createArray(Json.create("Lives remaining:"),
-                        Json.create(3), Json.create("console.log($0, $1)")));
+        ArrayNode expectedJson = JacksonUtils.createArray(
+                JacksonUtils.createArray(
+                        // Null since element is not attached
+                        JacksonUtils.nullNode(),
+                        JacksonUtils.createNode("$0.focus()")),
+                JacksonUtils.createArray(
+                        JacksonUtils.createNode("Lives remaining:"),
+                        JacksonUtils.createNode(3),
+                        JacksonUtils.createNode("console.log($0, $1)")));
 
-        assertTrue(JsonUtils.jsonEquals(expectedJson, json));
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, json));
     }
 
     @Test

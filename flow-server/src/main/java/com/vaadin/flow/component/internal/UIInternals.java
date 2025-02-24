@@ -54,6 +54,8 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -130,7 +132,7 @@ public class UIInternals implements Serializable {
              */
             for (Object argument : parameters) {
                 // Throws IAE for unsupported types
-                JsonCodec.encodeWithTypeInfo(argument);
+                JacksonCodec.encodeWithTypeInfo(argument);
             }
 
             this.expression = expression;
@@ -1131,8 +1133,8 @@ public class UIInternals implements Serializable {
                     + "Unable to refresh the current route.");
         } else {
             getRouter().navigate(ui, locationForRefresh,
-                    NavigationTrigger.REFRESH_ROUTE, null, true,
-                    refreshRouteChain || hasModalComponent());
+                    NavigationTrigger.REFRESH_ROUTE, JacksonUtils.nullNode(),
+                    true, refreshRouteChain || hasModalComponent());
         }
     }
 

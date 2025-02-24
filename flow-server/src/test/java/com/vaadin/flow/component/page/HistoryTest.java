@@ -18,6 +18,7 @@ package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +98,7 @@ public class HistoryTest {
         Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
                 page.expression);
         Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+                ((JsonNode) page.parameters[0]).textValue());
         Assert.assertEquals("invalid location", "context/view?param=4",
                 page.parameters[1]);
 
@@ -106,7 +107,7 @@ public class HistoryTest {
         Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
                 page.expression);
         Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+                ((JsonNode) page.parameters[0]).textValue());
         Assert.assertEquals("invalid location", "context/view/?param=4",
                 page.parameters[1]);
     }
@@ -185,7 +186,7 @@ public class HistoryTest {
         Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
                 page.expression);
         Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+                ((JsonNode) page.parameters[0]).textValue());
         Assert.assertEquals("invalid location", "context/view?param=4",
                 page.parameters[1]);
 
@@ -194,7 +195,7 @@ public class HistoryTest {
         Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
                 page.expression);
         Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+                ((JsonNode) page.parameters[0]).textValue());
         Assert.assertEquals("invalid location", "context/view/?param=4",
                 page.parameters[1]);
     }

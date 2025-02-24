@@ -52,6 +52,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -858,7 +859,8 @@ public class NavigationStateRendererTest {
         ui.addModal(modalComponent);
 
         renderer.handle(new NavigationEvent(router, new Location(""), ui,
-                NavigationTrigger.REFRESH_ROUTE, null, false, true, true));
+                NavigationTrigger.REFRESH_ROUTE, JacksonUtils.nullNode(), false,
+                true, true));
 
         Assert.assertEquals(1, modalComponent.attachCount);
         Assert.assertEquals(1, modalComponent.detachCount);
@@ -940,7 +942,7 @@ public class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE,
-                null, true));
+                JacksonUtils.nullNode(), true));
         Assert.assertFalse(
                 "No pushState invocation is expected when forwardTo is true.",
                 pushStateCalled.get());

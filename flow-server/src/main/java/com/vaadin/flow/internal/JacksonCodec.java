@@ -195,10 +195,11 @@ public class JacksonCodec {
             return JacksonUtils.getMapper().nullNode();
         }
 
-        assert canEncodeWithoutTypeInfo(value.getClass());
+        assert canEncodeWithoutTypeInfo(value.getClass())
+                : "Non encodable type " + value.getClass();
 
         Class<?> type = value.getClass();
-        if (String.class.equals(value.getClass())) {
+        if (String.class.equals(type)) {
             return JacksonUtils.getMapper().valueToTree(value);
         } else if (Integer.class.equals(type)) {
             return JacksonUtils.getMapper()
@@ -212,8 +213,7 @@ public class JacksonCodec {
             return (JsonNode) value;
         }
         assert !canEncodeWithoutTypeInfo(type);
-        throw new IllegalArgumentException(
-                "Can't encode " + value.getClass() + " to json");
+        throw new IllegalArgumentException("Can't encode " + type + " to json");
     }
 
     /**

@@ -16,20 +16,20 @@
 package com.vaadin.flow.component.react;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,7 +110,8 @@ public abstract class ReactAdapterComponent extends Component {
      *            value to assign
      */
     protected void setState(String stateName, Object value) {
-        getElement().setPropertyJson(stateName, writeAsJson(value));
+        JsonNode jsonNode = writeAsJson(value);
+        getElement().setPropertyJson(stateName, (BaseJsonNode) jsonNode);
     }
 
     /**
@@ -144,7 +145,7 @@ public abstract class ReactAdapterComponent extends Component {
     }
 
     /**
-     * Converts JsonValue into Java object of given type.
+     * Converts ObjectNode into Java object of given type.
      *
      * @param jsonValue
      *            JSON value to convert, not {@code null}
@@ -154,13 +155,13 @@ public abstract class ReactAdapterComponent extends Component {
      * @param <T>
      *            type of result instance
      */
-    protected static <T> T readFromJson(JsonValue jsonValue,
+    protected static <T> T readFromJson(JsonNode jsonValue,
             Class<T> typeClass) {
-        return JsonUtils.readValue(jsonValue, typeClass);
+        return JacksonUtils.readValue(jsonValue, typeClass);
     }
 
     /**
-     * Converts JsonValue into Java object of given type.
+     * Converts ObjectNode into Java object of given type.
      *
      * @param jsonValue
      *            JSON value to convert, not {@code null}
@@ -170,20 +171,20 @@ public abstract class ReactAdapterComponent extends Component {
      * @param <T>
      *            type of result instance
      */
-    protected static <T> T readFromJson(JsonValue jsonValue,
+    protected static <T> T readFromJson(JsonNode jsonValue,
             TypeReference<T> typeReference) {
-        return JsonUtils.readValue(jsonValue, typeReference);
+        return JacksonUtils.readValue(jsonValue, typeReference);
     }
 
     /**
-     * Converts Java object into JsonValue.
+     * Converts Java object into ObjectNode.
      *
      * @param object
      *            Java object to convert
      * @return converted JSON value
      */
-    protected static JsonValue writeAsJson(Object object) {
-        return JsonUtils.writeValue(object);
+    protected static JsonNode writeAsJson(Object object) {
+        return JacksonUtils.createNode(object);
     }
 
     /**
@@ -210,29 +211,29 @@ public abstract class ReactAdapterComponent extends Component {
         return contentMap.get(name);
     }
 
-    private JsonValue getPropertyJson(String propertyName) {
+    private JsonNode getPropertyJson(String propertyName) {
         var rawValue = getElement().getPropertyRaw(propertyName);
         if (rawValue == null) {
-            return Json.createNull();
-        } else if (rawValue instanceof JsonValue jsonValue) {
+            return JacksonUtils.nullNode();
+        } else if (rawValue instanceof BaseJsonNode jsonValue) {
             return jsonValue;
         } else if (rawValue instanceof String stringValue) {
-            return Json.create(stringValue);
+            return JacksonUtils.createNode(stringValue);
         } else if (rawValue instanceof Double doubleValue) {
-            return Json.create(doubleValue);
+            return JacksonUtils.createNode(doubleValue);
         } else if (rawValue instanceof Boolean booleanValue) {
-            return Json.create(booleanValue);
+            return JacksonUtils.createNode(booleanValue);
         } else {
-            return Json.create(rawValue.toString());
+            return JacksonUtils.createNode(rawValue.toString());
         }
     }
 
     private <T> DomListenerRegistration addJsonReaderStateChangeListener(
-            String stateName, SerializableFunction<JsonValue, T> jsonReader,
+            String stateName, SerializableFunction<JsonNode, T> jsonReader,
             SerializableConsumer<T> listener) {
         return getElement().addPropertyChangeListener(stateName,
                 stateName + "-changed", (event -> {
-                    JsonValue newStateJson = JsonCodec
+                    JsonNode newStateJson = JacksonCodec
                             .encodeWithoutTypeInfo(event.getValue());
                     T newState = jsonReader.apply(newStateJson);
                     listener.accept(newState);

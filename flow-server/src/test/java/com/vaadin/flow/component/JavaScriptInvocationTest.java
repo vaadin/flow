@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.component;
 
+import com.fasterxml.jackson.databind.node.ValueNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.internal.JacksonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonString;
@@ -29,7 +31,8 @@ public class JavaScriptInvocationTest {
     @Test
     public void testSerializable() {
         JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
-                "expression", "string", Json.create("jsonString"));
+                "expression", "string",
+                (ValueNode) JacksonUtils.createNode("jsonString"));
 
         JavaScriptInvocation deserialized = SerializationUtils
                 .deserialize(SerializationUtils.serialize(invocation));
@@ -40,6 +43,6 @@ public class JavaScriptInvocationTest {
         Assert.assertEquals(2, deserialized.getParameters().size());
         Assert.assertEquals("string", deserialized.getParameters().get(0));
         Assert.assertEquals("jsonString",
-                ((JsonString) deserialized.getParameters().get(1)).getString());
+                ((ValueNode) deserialized.getParameters().get(1)).textValue());
     }
 }

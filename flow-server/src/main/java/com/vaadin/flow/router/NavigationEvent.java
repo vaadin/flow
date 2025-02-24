@@ -18,7 +18,11 @@ package com.vaadin.flow.router;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 
 import elemental.json.JsonValue;
 
@@ -33,7 +37,7 @@ public class NavigationEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private boolean forwardTo = false;
-    private JsonValue state = null;
+    private BaseJsonNode state = null;
     private boolean forceInstantiation = false;
     private boolean recreateLayoutChain = false;
 
@@ -86,7 +90,34 @@ public class NavigationEvent extends EventObject {
             NavigationTrigger trigger, JsonValue state, boolean forwardTo) {
         this(router, location, ui, trigger);
 
-        this.state = state;
+        this.state = (BaseJsonNode) JacksonUtils.mapElemental(state);
+        this.forwardTo = forwardTo;
+    }
+
+    /**
+     * Creates a new navigation event.
+     *
+     * @param router
+     *            the router handling the navigation, not {@code null}
+     * @param location
+     *            the new location, not {@code null}
+     * @param ui
+     *            the UI in which the navigation occurs, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this navigation event,
+     *            not {@code null}
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     * @param forwardTo
+     *            indicates if this event is created as a result of
+     *            {@link BeforeEvent#forwardTo} or not
+     */
+    public NavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger, JsonNode state, boolean forwardTo) {
+        this(router, location, ui, trigger);
+
+        this.state = (BaseJsonNode) state;
         this.forwardTo = forwardTo;
     }
 
@@ -121,7 +152,44 @@ public class NavigationEvent extends EventObject {
             boolean forceInstantiation, boolean recreateLayoutChain) {
         this(router, location, ui, trigger);
 
-        this.state = state;
+        this.state = (BaseJsonNode) JacksonUtils.mapElemental(state);
+        this.forwardTo = forwardTo;
+        this.forceInstantiation = forceInstantiation;
+        this.recreateLayoutChain = recreateLayoutChain;
+    }
+
+    /**
+     * Creates a new navigation event.
+     *
+     * @param router
+     *            the router handling the navigation, not {@code null}
+     * @param location
+     *            the new location, not {@code null}
+     * @param ui
+     *            the UI in which the navigation occurs, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this navigation event,
+     *            not {@code null}
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     * @param forwardTo
+     *            indicates if this event is created as a result of
+     *            {@link BeforeEvent#forwardTo} or not
+     * @param forceInstantiation
+     *            if set to {@code true}, the navigation target will always be
+     *            instantiated
+     * @param recreateLayoutChain
+     *            if set to {@code true}, the complete layout chain up to the
+     *            navigation target will be re-instantiated. Requires
+     *            {@code forceInstantiation} to be true to have an effect.
+     */
+    public NavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger, JsonNode state, boolean forwardTo,
+            boolean forceInstantiation, boolean recreateLayoutChain) {
+        this(router, location, ui, trigger);
+
+        this.state = (BaseJsonNode) state;
         this.forwardTo = forwardTo;
         this.forceInstantiation = forceInstantiation;
         this.recreateLayoutChain = recreateLayoutChain;
@@ -166,7 +234,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return the navigation state
      */
-    public Optional<JsonValue> getState() {
+    public Optional<BaseJsonNode> getState() {
         return state == null ? Optional.empty() : Optional.of(state);
     }
 

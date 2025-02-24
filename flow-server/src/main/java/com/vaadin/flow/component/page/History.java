@@ -19,7 +19,10 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -231,11 +234,15 @@ public class History implements Serializable {
                 .isReactEnabled()) {
             ui.getPage().executeJs(
                     "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));",
-                    state, pathWithQueryParameters, callback);
+                    state == null ? null
+                            : (BaseJsonNode) JacksonUtils.mapElemental(state),
+                    pathWithQueryParameters, callback);
         } else {
             ui.getPage().executeJs(
                     "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
-                    state, pathWithQueryParameters);
+                    state == null ? null
+                            : (BaseJsonNode) JacksonUtils.mapElemental(state),
+                    pathWithQueryParameters);
         }
     }
 
@@ -319,11 +326,15 @@ public class History implements Serializable {
                 .isReactEnabled()) {
             ui.getPage().executeJs(
                     "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));",
-                    state, pathWithQueryParameters, callback);
+                    state == null ? null
+                            : (BaseJsonNode) JacksonUtils.mapElemental(state),
+                    pathWithQueryParameters, callback);
         } else {
             ui.getPage().executeJs(
                     "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
-                    state, pathWithQueryParameters);
+                    state == null ? null
+                            : (BaseJsonNode) JacksonUtils.mapElemental(state),
+                    pathWithQueryParameters);
         }
     }
 

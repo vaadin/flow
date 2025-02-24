@@ -671,9 +671,9 @@ public class TemplateModelTest extends HasCurrentService {
 
         Assert.assertEquals(null, model.getDouble());
 
-        model.setDouble(new Double(1.0D));
+        model.setDouble(Double.valueOf(1.0D));
 
-        Assert.assertEquals(new Double(1.0D), model.getDouble());
+        Assert.assertEquals(Double.valueOf(1.0D), model.getDouble());
     }
 
     @Test
@@ -695,9 +695,9 @@ public class TemplateModelTest extends HasCurrentService {
 
         Assert.assertEquals(null, model.getInteger());
 
-        model.setInteger(new Integer(10));
+        model.setInteger(Integer.valueOf(10));
 
-        Assert.assertEquals(new Integer(10), model.getInteger());
+        Assert.assertEquals(Integer.valueOf(10), model.getInteger());
     }
 
     @Test
@@ -1443,7 +1443,7 @@ public class TemplateModelTest extends HasCurrentService {
         assertTrue(
                 "Changes to empty list after attach and detach should be the same",
                 changesAfterDetach.get(0).toJson(null)
-                        .jsEquals(changesAfterAttach.get(0).toJson(null)));
+                        .equals(changesAfterAttach.get(0).toJson(null)));
 
         assertTrue(
                 "After the empty model list is detached and created a change, no more changes are created",

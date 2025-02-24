@@ -433,9 +433,8 @@ public class IndexHtmlRequestHandlerTest {
 
         VaadinRequest request = createVaadinRequest("/");
 
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-
-                request, response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
 
         ArgumentCaptor<IndexHtmlResponse> captor = ArgumentCaptor
                 .forClass(IndexHtmlResponse.class);

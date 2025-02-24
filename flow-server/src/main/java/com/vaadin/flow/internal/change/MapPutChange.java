@@ -16,14 +16,14 @@
 
 package com.vaadin.flow.internal.change;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Change describing a changed value in a map feature.
@@ -76,7 +76,7 @@ public class MapPutChange extends NodeFeatureChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         // Set the type and key before calling super to make the keys appear in
         // a more logical order
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_PUT);
@@ -84,13 +84,12 @@ public class MapPutChange extends NodeFeatureChange {
 
         super.populateJson(json, constantPool);
 
-        if (value instanceof StateNode) {
-            StateNode node = (StateNode) value;
-            json.put(JsonConstants.CHANGE_PUT_NODE_VALUE,
-                    Json.create(node.getId()));
+        if (value instanceof StateNode node) {
+            json.set(JsonConstants.CHANGE_PUT_NODE_VALUE,
+                    JacksonUtils.createNode(node.getId()));
         } else {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
-                    JsonCodec.encodeWithConstantPool(value, constantPool));
+            json.set(JsonConstants.CHANGE_PUT_VALUE,
+                    JacksonCodec.encodeWithConstantPool(value, constantPool));
         }
     }
 }
