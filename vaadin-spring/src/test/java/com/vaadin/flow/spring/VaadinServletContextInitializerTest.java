@@ -3,10 +3,12 @@ package com.vaadin.flow.spring;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -15,6 +17,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -24,10 +27,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -35,6 +41,10 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletDeployer;
@@ -137,6 +147,70 @@ public class VaadinServletContextInitializerTest {
         Mockito.verify(devModeHandlerManager, Mockito.never())
                 .initDevModeHandler(Mockito.any(),
                         Mockito.any(VaadinContext.class));
+    }
+
+    @Test
+    public void hillaProvidesAnnotations_checkTheyAreAdded() throws Exception {
+        initDefaultMocks();
+
+        DevModeHandler devModeHandler = Mockito.mock(DevModeHandler.class);
+        Mockito.when(devModeHandlerManager.getDevModeHandler())
+                .thenReturn(null);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
+
+        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
+
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
+
+        final Set<Class<? extends Annotation>> annotations = Set
+                .of(NpmPackage.class, CssImport.class);
+
+        Mockito.doReturn(new EndpointGeneratorTaskFactory() {
+            @Override
+            public TaskGenerateEndpoint createTaskGenerateEndpoint(
+                    Options options) {
+                return null;
+            }
+
+            @Override
+            public TaskGenerateOpenAPI createTaskGenerateOpenAPI(
+                    Options options) {
+                return null;
+            }
+
+            @Override
+            public Set<Class<? extends Annotation>> getBrowserCallableAnnotations() {
+                // Not really relevant which annotations are used here.
+                // Can't use the real Hilla annotations anyway.
+                return annotations;
+            }
+
+            @Override
+            public boolean hasBrowserCallables(Options options) {
+                return true;
+            }
+        }).when(lookup).lookup(EndpointGeneratorTaskFactory.class);
+
+        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
+                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
+                    .thenReturn(true);
+            util.when(() -> EndpointRequestUtil
+                    .areHillaEndpointsUsed(Mockito.any())).thenReturn(true);
+        }
+
+        VaadinServletContextInitializer initializer = getStubbedVaadinServletContextInitializer();
+        initializer.onStartup(servletContext);
+
+        ArgumentCaptor<List<Class<? extends Annotation>>> captor = ArgumentCaptor
+                .forClass(List.class);
+        Mockito.verify(initializer, Mockito.atMostOnce()).findClassesForDevMode(
+                Mockito.any(), captor.capture(), Mockito.any());
+        List<Class<? extends Annotation>> captured = captor.getValue();
+
+        Assert.assertTrue(captured.containsAll(annotations));
     }
 
     @Test
