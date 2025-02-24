@@ -142,6 +142,7 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
           emptyOutDir: false,
           modulePreload: false,
+          target: ['safari15', 'es2022'],
           rollupOptions: {
             input: {
               sw: settings.clientServiceWorkerSource
