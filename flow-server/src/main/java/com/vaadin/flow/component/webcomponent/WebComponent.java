@@ -211,9 +211,7 @@ public final class WebComponent<C extends Component> implements Serializable {
 
         if (value == null) {
             componentHost.executeJs(UPDATE_PROPERTY_NULL, propertyName);
-        }
-
-        if (value instanceof Integer) {
+        } else if (value instanceof Integer) {
             componentHost.executeJs(UPDATE_PROPERTY, propertyName,
                     (Integer) value);
         } else if (value instanceof Double) {
