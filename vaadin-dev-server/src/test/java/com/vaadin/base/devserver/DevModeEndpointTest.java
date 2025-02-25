@@ -22,7 +22,6 @@ import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
@@ -108,10 +107,10 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                 .toFile();
 
         Assert.assertFalse(generatedOpenApiJson.exists());
-        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
-                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
-                    .thenReturn(true);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
@@ -140,10 +139,10 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
-        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
-                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
-                    .thenReturn(true);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
