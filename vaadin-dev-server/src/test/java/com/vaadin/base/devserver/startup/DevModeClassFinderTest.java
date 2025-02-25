@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,7 +55,7 @@ import org.junit.Test;
 public class DevModeClassFinderTest {
 
     private DevModeClassFinder classFinder = new DevModeClassFinder(
-            Collections.emptySet(), Collections.emptySet());
+            Collections.emptySet());
 
     @Test
     public void applicableClasses_knownClasses() {
@@ -128,7 +127,7 @@ public class DevModeClassFinderTest {
     @Test(expected = IllegalArgumentException.class)
     public void callGetSubTypesOfByClass_unexpectedType_throw() {
         DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet(), Collections.emptySet());
+                Collections.emptySet());
         classFinder.getSubTypesOf(Object.class);
     }
 

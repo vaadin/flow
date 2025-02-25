@@ -19,8 +19,6 @@ package com.vaadin.flow.internal.hilla;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
@@ -87,23 +85,5 @@ public interface EndpointRequestUtil extends Serializable {
         } catch (ClassNotFoundException e) {
             return false;
         }
-    }
-
-    /**
-     * Checks if Hilla is available and Hilla endpoints are used in the project.
-     *
-     * @return {@code true} if Hilla is available and Hilla endpoints are used,
-     *         {@code false} otherwise
-     */
-    static boolean areHillaEndpointsUsed(Options options) {
-        if (!EndpointRequestUtil.isHillaAvailable()) {
-            return false;
-        }
-        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = options
-                .getLookup().lookup(EndpointGeneratorTaskFactory.class);
-        if (endpointGeneratorTaskFactory != null) {
-            return endpointGeneratorTaskFactory.hasBrowserCallables(options);
-        }
-        return false;
     }
 }

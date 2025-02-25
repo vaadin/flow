@@ -47,7 +47,7 @@ import jakarta.servlet.MultipartConfigElement;
  * @author Vaadin Ltd
  *
  */
-@Configuration(proxyBeanMethods = false)
+@Configuration
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)

@@ -69,7 +69,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
@@ -101,12 +100,9 @@ public class DevModeInitializer implements Serializable {
 
         private static final Set<String> APPLICABLE_CLASS_NAMES = Collections
                 .unmodifiableSet(calculateApplicableClassNames());
-        private final Set<Class<? extends Annotation>> browserCallableAnnotations;
 
-        public DevModeClassFinder(Set<Class<?>> classes,
-                Set<Class<? extends Annotation>> browserCallableAnnotations) {
+        public DevModeClassFinder(Set<Class<?>> classes) {
             super(classes);
-            this.browserCallableAnnotations = browserCallableAnnotations;
         }
 
         @Override
@@ -123,8 +119,7 @@ public class DevModeInitializer implements Serializable {
         }
 
         private void ensureImplementation(Class<?> clazz) {
-            if (!APPLICABLE_CLASS_NAMES.contains(clazz.getName())
-                    && !browserCallableAnnotations.contains(clazz)) {
+            if (!APPLICABLE_CLASS_NAMES.contains(clazz.getName())) {
                 throw new IllegalArgumentException("Unexpected class name "
                         + clazz + ". Implementation error: the class finder "
                         + "instance is not aware of this class. "
@@ -134,7 +129,6 @@ public class DevModeInitializer implements Serializable {
         }
 
         private static Set<String> calculateApplicableClassNames() {
-
             HandlesTypes handlesTypes = DevModeStartupListener.class
                     .getAnnotation(HandlesTypes.class);
             return Stream.of(handlesTypes.value()).map(Class::getName)
@@ -249,18 +243,7 @@ public class DevModeInitializer implements Serializable {
         File frontendFolder = config.getFrontendFolder();
 
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
-
-        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookupFromContext
-                .lookup(EndpointGeneratorTaskFactory.class);
-
-        Set<Class<? extends Annotation>> browserCallableAnnotations = new HashSet<>();
-        if (endpointGeneratorTaskFactory != null) {
-            browserCallableAnnotations.addAll(endpointGeneratorTaskFactory
-                    .getBrowserCallableAnnotations());
-        }
-
-        Lookup lookupForClassFinder = Lookup.of(
-                new DevModeClassFinder(classes, browserCallableAnnotations),
+        Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, baseDir)

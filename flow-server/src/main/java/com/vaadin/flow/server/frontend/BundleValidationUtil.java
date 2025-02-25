@@ -30,7 +30,6 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -69,11 +68,9 @@ public final class BundleValidationUtil {
         try {
             boolean needsBuild;
             if (mode.isProduction()) {
-                if (options.isForceProductionBuild()
-                        || FrontendUtils.isHillaUsed(
-                                options.getFrontendDirectory(),
-                                options.getClassFinder())
-                        || EndpointRequestUtil.areHillaEndpointsUsed(options)) {
+                if (options.isForceProductionBuild() || FrontendUtils
+                        .isHillaUsed(options.getFrontendDirectory(),
+                                options.getClassFinder())) {
                     if (options.isForceProductionBuild()) {
                         UsageStatistics.markAsUsed("flow/prod-build-requested",
                                 null);
