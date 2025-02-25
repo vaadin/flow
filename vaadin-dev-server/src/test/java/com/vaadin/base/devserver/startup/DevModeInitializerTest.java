@@ -357,8 +357,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
                 util.when(() -> EndpointRequestUtil
                         .isHillaAvailable(Mockito.any())).thenReturn(true);
-                util.when(() -> EndpointRequestUtil
-                        .areHillaEndpointsUsed(Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
                 waitForDevServer();
@@ -427,8 +425,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
                 util.when(() -> EndpointRequestUtil
                         .isHillaAvailable(Mockito.any())).thenReturn(true);
-                util.when(() -> EndpointRequestUtil
-                        .areHillaEndpointsUsed(Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
                 waitForDevServer();
