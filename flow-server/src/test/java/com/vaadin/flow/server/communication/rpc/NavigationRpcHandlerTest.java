@@ -1,22 +1,22 @@
 package com.vaadin.flow.server.communication.rpc;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.shared.JsonConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.History;
-import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.shared.JsonConstants;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class NavigationRpcHandlerTest {
 
     private UI ui;
     private History.HistoryStateChangeHandler historyStateChangeHandler;
     private NavigationRpcHandler rpcHandler;
-    private ObjectNode invocation;
+    private JsonObject invocation;
 
     @Before
     public void setup() {
@@ -29,7 +29,7 @@ public class NavigationRpcHandlerTest {
         ui.add(new RouterLink());
 
         rpcHandler = new NavigationRpcHandler();
-        invocation = JacksonUtils.createObjectNode();
+        invocation = Json.createObject();
         invocation.put(JsonConstants.RPC_NAVIGATION_LOCATION, "foo");
     }
 

@@ -20,15 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -40,6 +38,8 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
 import com.vaadin.flow.shared.JsonConstants;
+
+import elemental.json.JsonObject;
 
 /**
  * Model map synchronization RPC handler.
@@ -61,13 +61,13 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonNode invocationJson) {
-        assert invocationJson.has(JsonConstants.RPC_FEATURE);
-        assert invocationJson.has(JsonConstants.RPC_PROPERTY);
-        assert invocationJson.has(JsonConstants.RPC_PROPERTY_VALUE);
+            JsonObject invocationJson) {
+        assert invocationJson.hasKey(JsonConstants.RPC_FEATURE);
+        assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
+        assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
 
-        int featureId = invocationJson.get(JsonConstants.RPC_FEATURE)
-                .intValue();
+        int featureId = (int) invocationJson
+                .getNumber(JsonConstants.RPC_FEATURE);
         Class<? extends NodeFeature> feature = NodeFeatureRegistry
                 .getFeature(featureId);
         assert NodeMap.class.isAssignableFrom(feature);
@@ -77,8 +77,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         List<DisabledUpdateMode> seenUpdateModes = new ArrayList<>();
 
-        String property = invocationJson.get(JsonConstants.RPC_PROPERTY)
-                .textValue();
+        String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
 
         if (node.hasFeature(ElementListenerMap.class)) {
             DisabledUpdateMode eventMode = node
@@ -123,8 +122,8 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     private Optional<Runnable> enqueuePropertyUpdate(StateNode node,
-            JsonNode invocationJson, String property) {
-        Serializable value = JacksonCodec.decodeWithoutTypeInfo(
+            JsonObject invocationJson, String property) {
+        Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
 
         value = tryConvert(value, node);
@@ -165,10 +164,11 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     private Serializable tryConvert(Serializable value, StateNode context) {
-        if (value instanceof ObjectNode json) {
-            if (json.has("nodeId")) {
+        if (value instanceof JsonObject) {
+            JsonObject json = (JsonObject) value;
+            if (json.hasKey("nodeId")) {
                 StateTree tree = (StateTree) context.getOwner();
-                double id = json.get("nodeId").doubleValue();
+                double id = json.getNumber("nodeId");
                 StateNode stateNode = tree.getNodeById((int) id);
                 return tryCopyStateNode(stateNode, json);
             }
@@ -177,7 +177,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     private Serializable tryCopyStateNode(StateNode node,
-            ObjectNode properties) {
+            JsonObject properties) {
         if (node == null) {
             return properties;
         }

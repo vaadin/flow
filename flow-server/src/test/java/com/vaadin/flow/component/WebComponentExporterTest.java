@@ -18,7 +18,6 @@ package com.vaadin.flow.component;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,10 +27,13 @@ import org.junit.rules.ExpectedException;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonSerializer;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
+
+import elemental.json.Json;
+import elemental.json.JsonValue;
 
 import static org.mockito.Mockito.mock;
 
@@ -69,7 +71,7 @@ public class WebComponentExporterTest {
         Bean bean = new Bean();
         bean.setInteger(5);
 
-        ObjectNode value = (ObjectNode) JacksonUtils.createNode(bean);
+        JsonValue value = JsonSerializer.toJson(bean);
         exporter.addProperty("json", value);
 
         assertProperty(config, "json", value);
@@ -113,7 +115,7 @@ public class WebComponentExporterTest {
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class), JacksonUtils.createObjectNode());
+                        mock(Element.class), Json.createObject());
 
         Assert.assertNotNull(binding);
 
@@ -159,7 +161,7 @@ public class WebComponentExporterTest {
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class), JacksonUtils.createObjectNode());
+                        mock(Element.class), Json.createObject());
 
         Assert.assertNotNull("Binding should not be null", binding);
         Assert.assertNotNull("Binding's component should not be null",
@@ -181,8 +183,7 @@ public class WebComponentExporterTest {
         // attribute: value=2
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class),
-                        JacksonUtils.readTree("{\"value\":2}"));
+                        mock(Element.class), Json.parse("{\"value\":2}"));
 
         Assert.assertEquals("attribute should have set default value to two", 2,
                 binding.getComponent().value);
@@ -192,7 +193,7 @@ public class WebComponentExporterTest {
     public void configuration_bindProxy_withoutInstanceConfigurator() {
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class), JacksonUtils.createObjectNode());
+                        mock(Element.class), Json.createObject());
 
         Assert.assertNotNull("Binding should not be null", binding);
         Assert.assertNotNull("Binding's component should not be null",
@@ -209,7 +210,7 @@ public class WebComponentExporterTest {
                 .create(sharedTagExporter);
 
         sharedConfig.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class), JacksonUtils.createObjectNode());
+                mock(Element.class), Json.createObject());
     }
 
     @Test
@@ -237,7 +238,7 @@ public class WebComponentExporterTest {
                 .create(exporter);
 
         config.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class), JacksonUtils.createObjectNode());
+                mock(Element.class), Json.createObject());
     }
 
     @Test(expected = IllegalStateException.class)

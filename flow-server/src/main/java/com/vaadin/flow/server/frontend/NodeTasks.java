@@ -73,9 +73,9 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
             TaskInstallFrontendBuildPlugins.class,
+            TaskGenerateOpenAPI.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
-            TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
@@ -319,19 +319,22 @@ public class NodeTasks implements FallibleCommand {
         if (!EndpointRequestUtil.isHillaAvailable(options.getClassFinder())) {
             return;
         }
-        Lookup lookup = options.getLookup();
-        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
-                .lookup(EndpointGeneratorTaskFactory.class);
+        if (EndpointRequestUtil.areHillaEndpointsUsed(options)
+                || FrontendUtils.isHillaUsed(options.getFrontendDirectory())) {
+            Lookup lookup = options.getLookup();
+            EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
+                    .lookup(EndpointGeneratorTaskFactory.class);
 
-        if (endpointGeneratorTaskFactory != null) {
-            TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenAPI(options);
-            commands.add(taskGenerateOpenAPI);
+            if (endpointGeneratorTaskFactory != null) {
+                TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
+                        .createTaskGenerateOpenAPI(options);
+                commands.add(taskGenerateOpenAPI);
 
-            if (options.getFrontendGeneratedFolder() != null) {
-                TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
-                        .createTaskGenerateEndpoint(options);
-                commands.add(taskGenerateEndpoint);
+                if (options.getFrontendGeneratedFolder() != null) {
+                    TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
+                            .createTaskGenerateEndpoint(options);
+                    commands.add(taskGenerateEndpoint);
+                }
             }
         }
     }

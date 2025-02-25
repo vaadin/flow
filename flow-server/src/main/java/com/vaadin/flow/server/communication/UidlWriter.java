@@ -33,9 +33,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,8 +173,8 @@ public class UidlWriter implements Serializable {
                 new ResolveContext(service, session.getBrowser()));
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
-            response.put("constants", Json.parse(
-                    uiInternals.getConstantPool().dumpConstants().toString()));
+            response.put("constants",
+                    uiInternals.getConstantPool().dumpConstants());
         }
         if (stateChanges.length() != 0) {
             response.put("changes", stateChanges);
@@ -320,14 +317,7 @@ public class UidlWriter implements Serializable {
                 .registerChannel(arguments -> {
                     registrations.forEach(ReturnChannelRegistration::remove);
 
-                    JsonNode jsonNode = arguments.get(0);
-                    if (jsonNode instanceof NullNode) {
-                        action.accept(Json.createNull());
-                    } else if (jsonNode instanceof ValueNode) {
-                        action.accept(Json.create(jsonNode.asText()));
-                    } else {
-                        action.accept(Json.parse(jsonNode.toString()));
-                    }
+                    action.accept(arguments.get(0));
                 });
 
         registrations.add(channel);

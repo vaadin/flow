@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
@@ -40,11 +39,13 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -80,24 +81,24 @@ public class ElementListenerMap extends NodeMap {
                     });
         }
 
-        public JsonNode toJson() {
+        public JsonValue toJson() {
             if (debounceSettings.isEmpty()) {
-                return JacksonUtils.createNode(false);
+                return Json.create(false);
             } else if (debounceSettings.size() == 1
                     && debounceSettings.containsKey(Integer.valueOf(0))) {
                 // Shorthand if only debounce is a dummy filter debounce
-                return JacksonUtils.createNode(true);
+                return Json.create(true);
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
                         .map(entry -> Stream.concat(
-                                Stream.of(JacksonUtils
-                                        .createNode(entry.getKey().intValue())),
+                                Stream.of(
+                                        Json.create(entry.getKey().intValue())),
                                 entry.getValue().stream()
                                         .map(DebouncePhase::getIdentifier)
-                                        .map(JacksonUtils::createNode))
-                                .collect(JacksonUtils.asArray()))
-                        .collect(JacksonUtils.asArray());
+                                        .map(Json::create))
+                                .collect(JsonUtils.asArray()))
+                        .collect(JsonUtils.asArray());
             }
 
         }
@@ -199,12 +200,7 @@ public class ElementListenerMap extends NodeMap {
             return filter;
         }
 
-        @Deprecated
         boolean matchesFilter(JsonObject eventData) {
-            return matchesFilter(JacksonUtils.mapElemental(eventData));
-        }
-
-        boolean matchesFilter(JsonNode eventData) {
             if (filter == null) {
                 // No filter: always matches
                 return true;
@@ -215,8 +211,8 @@ public class ElementListenerMap extends NodeMap {
                 return false;
             }
 
-            if (eventData.has(filter)) {
-                return eventData.get(filter).booleanValue();
+            if (eventData.hasKey(filter)) {
+                return eventData.getBoolean(filter);
             } else {
                 return false;
             }
@@ -397,7 +393,7 @@ public class ElementListenerMap extends NodeMap {
     private void updateEventSettings(String eventType) {
         Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
                 eventType);
-        JsonNode eventSettingsJson = JacksonUtils.createObject(eventSettings,
+        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
                 ExpressionSettings::toJson);
 
         ConstantPoolKey constantPoolKey = new ConstantPoolKey(

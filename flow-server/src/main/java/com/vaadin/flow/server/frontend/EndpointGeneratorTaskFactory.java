@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.server.frontend;
 
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
 /**
  * A factory for creating Vaadin Endpoint generator tasks.
  * <p>
@@ -43,4 +46,21 @@ public interface EndpointGeneratorTaskFactory {
      * @return an endpoint task that generates open api json file.
      */
     TaskGenerateOpenAPI createTaskGenerateOpenAPI(Options options);
+
+    /**
+     * Fetches all endpoint-type annotations from Hilla configuration
+     *
+     * @return Set of endpoint-type annotations
+     */
+    Set<Class<? extends Annotation>> getBrowserCallableAnnotations();
+
+    /**
+     * Determines the presence of annotations (e.g. BrowserCallable or Endpoint)
+     * which require Flow to add Hilla packages to the build.
+     *
+     * @param options
+     *            the task options
+     * @return {@code true} if annotations are present, {@code false} otherwise
+     */
+    boolean hasBrowserCallables(Options options);
 }

@@ -43,11 +43,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Helpers for using <code>jackson</code>.
@@ -111,44 +107,6 @@ public final class JacksonUtils {
      */
     public static JsonNode createNode(Object value) {
         return objectMapper.valueToTree(value);
-    }
-
-    /**
-     * Create a nullNode for null value.
-     *
-     * @return NullNode
-     */
-    public static ValueNode nullNode() {
-        return (ValueNode) objectMapper.nullNode();
-    }
-
-    /**
-     * Map JsonObject to ObjectNode.
-     *
-     * @param jsonObject
-     *            JsonObject to change
-     * @return ObjectNode of elemental json object
-     */
-    public static ObjectNode mapElemental(JsonObject jsonObject) {
-        try {
-            return (ObjectNode) objectMapper.readTree(jsonObject.toJson());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Map JsonValue to ObjectNode.
-     *
-     * @param jsonValue
-     *            JsonValue to change
-     * @return ObjectNode of elemental json value
-     */
-    public static JsonNode mapElemental(JsonValue jsonValue) {
-        if (jsonValue == null) {
-            return nullNode();
-        }
-        return objectMapper.valueToTree(jsonValue.asString());
     }
 
     /**

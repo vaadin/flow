@@ -20,8 +20,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Wraps a JSON value that should be stored in the {@link ConstantPool} shared
@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @since 1.0
  */
 public class ConstantPoolKey implements Serializable {
-    private final JsonNode json;
+    private final JsonValue json;
     private String id;
 
     /**
@@ -50,7 +50,7 @@ public class ConstantPoolKey implements Serializable {
      * @param json
      *            the JSON constant, not <code>null</code>
      */
-    public ConstantPoolKey(JsonNode json) {
+    public ConstantPoolKey(JsonValue json) {
         assert json != null;
         this.json = json;
     }
@@ -76,8 +76,8 @@ public class ConstantPoolKey implements Serializable {
      *            the constant pool update that is to be sent to the client, not
      *            <code>null</code>
      */
-    public void export(ObjectNode clientConstantPoolUpdate) {
-        clientConstantPoolUpdate.set(getId(), json);
+    public void export(JsonObject clientConstantPoolUpdate) {
+        clientConstantPoolUpdate.put(getId(), json);
     }
 
     /**
@@ -88,8 +88,8 @@ public class ConstantPoolKey implements Serializable {
      *            the JSON to get a hash of, not <code>null</code>
      * @return the key uniquely identifying the given JSON value
      */
-    private static String calculateHash(JsonNode json) {
-        byte[] digest = MessageDigestUtil.sha256(json.toString());
+    private static String calculateHash(JsonValue json) {
+        byte[] digest = MessageDigestUtil.sha256(json.toJson());
 
         /*
          * Only use first 64 bits to keep id string short (1 in 100 000 000

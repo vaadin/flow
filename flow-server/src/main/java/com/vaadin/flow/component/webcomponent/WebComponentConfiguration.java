@@ -19,8 +19,6 @@ package com.vaadin.flow.component.webcomponent;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
@@ -35,7 +33,7 @@ import elemental.json.JsonObject;
  * {@link WebComponentExporter}. Provides all the necessary information to
  * generate the web component resources and constructs new
  * {@link WebComponentBinding} instances with
- * {@link #createWebComponentBinding(com.vaadin.flow.di.Instantiator, com.vaadin.flow.dom.Element, com.fasterxml.jackson.databind.node.ObjectNode)};
+ * {@link #createWebComponentBinding(com.vaadin.flow.di.Instantiator, com.vaadin.flow.dom.Element, elemental.json.JsonObject)};
  *
  * @param <C>
  *            type of the component being exported
@@ -100,7 +98,7 @@ public interface WebComponentConfiguration<C extends Component>
      *         to communicate with the component it is hosting
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
-            Element element, ObjectNode newAttributeDefaults);
+            Element element, JsonObject newAttributeDefaults);
 
     /**
      * Retrieves the tag name configured by the web component exporter.

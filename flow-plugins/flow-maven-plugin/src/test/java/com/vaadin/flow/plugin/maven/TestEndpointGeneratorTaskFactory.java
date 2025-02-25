@@ -17,9 +17,11 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,16 @@ public class TestEndpointGeneratorTaskFactory
     @Override
     public TaskGenerateOpenAPI createTaskGenerateOpenAPI(Options options) {
         return new TestTaskGenerateOpenAPI(options);
+    }
+
+    @Override
+    public Set<Class<? extends Annotation>> getBrowserCallableAnnotations() {
+        return Set.of();
+    }
+
+    @Override
+    public boolean hasBrowserCallables(Options options) {
+        return true;
     }
 
     /**
