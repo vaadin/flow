@@ -35,7 +35,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
@@ -152,10 +151,10 @@ public class BuildFrontendUtilTest {
                 .when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(Mockito.any());
 
-        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
-                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
-                    .thenReturn(true);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
             BuildFrontendUtil.runNodeUpdater(adapter);
         }
 

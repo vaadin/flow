@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Mode;
@@ -316,7 +315,8 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
-        if (!EndpointRequestUtil.isHillaAvailable(options.getClassFinder())) {
+        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
             return;
         }
         Lookup lookup = options.getLookup();
