@@ -79,11 +79,13 @@ public class FrontendToolsLocator implements Serializable {
     public Optional<File> tryLocateTool(String toolName) {
         List<String> candidateLocations = executeCommand(false,
                 isWindows() ? "where" : "which", toolName)
-                .map(this::omitErrorResult).map(CommandResult::getStdout)
-                .orElseGet(() -> Arrays.asList(
-                        // Add most common paths in unix #5611
-                        "/usr/local/bin/" + toolName,
-                        "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
+                        .map(this::omitErrorResult)
+                        .map(CommandResult::getStdout)
+                        .orElseGet(() -> Arrays.asList(
+                                // Add most common paths in unix #5611
+                                "/usr/local/bin/" + toolName,
+                                "/opt/local/bin/" + toolName,
+                                "/opt/bin/" + toolName));
 
         for (String candidateLocation : candidateLocations) {
             File candidate = new File(candidateLocation);
@@ -200,32 +202,25 @@ public class FrontendToolsLocator implements Serializable {
 
     private CommandResult omitErrorResult(CommandResult commandResult) {
         if (!commandResult.isSuccessful()) {
-            if (log().isDebugEnabled()) {
-                log().debug(
-                        "Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
-                        commandResult.command, commandResult.exitCode,
-                        commandResult.exitCode,
-                        String.join("\n", commandResult.stderr));
-            }
+            log().warn(
+                    "Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
+                    commandResult.command, commandResult.exitCode,
+                    commandResult.exitCode,
+                    String.join("\n", commandResult.stderr));
             return null;
         }
         if (commandResult.stdout.isEmpty()) {
-            if (log().isDebugEnabled()) {
-                log().debug("Command '{}' has no output, stderr:\n'{}'",
-                        commandResult.command,
-                        String.join("\n", commandResult.stderr));
-            }
-            return null;
+            log().warn("Command '{}' has no output, stderr:\n'{}'",
+                    commandResult.command,
+                    String.join("\n", commandResult.stderr));
         }
         if (!commandResult.stderr.isEmpty()) {
             // "npm -v" can output deprecation warnings to stderr but it still
             // works
-            if (log().isDebugEnabled()) {
-                log().debug(
-                        "Command '{}' has non-empty stderr but assuming this is fine:\n'{}'",
-                        commandResult.command,
-                        String.join("\n", commandResult.stderr));
-            }
+            log().warn(
+                    "Command '{}' has non-empty stderr but assuming this is fine:\n'{}'",
+                    commandResult.command,
+                    String.join("\n", commandResult.stderr));
         }
         return commandResult;
     }
