@@ -17,60 +17,61 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.HashMap;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 public class AttachTemplateChildRpcHandlerTest {
 
     @Test(expected = IllegalStateException.class)
     public void handleNode_attachById_elementNotFound() {
-        doHandleNode_attach_elementNotFound(JacksonUtils.createNode("id"));
+        doHandleNode_attach_elementNotFound(Json.create("id"));
     }
 
     @Test(expected = IllegalStateException.class)
     public void handleNode_attachCustomElement_elementNotFound() {
-        doHandleNode_attach_elementNotFound(JacksonUtils.nullNode());
+        doHandleNode_attach_elementNotFound(Json.createNull());
     }
 
     @Test(expected = IllegalStateException.class)
     public void handleNode_attachByIdExistingRequest_throwReservedId() {
-        doHandleNode_attach_throwReservedId(JacksonUtils.createNode(2));
+        doHandleNode_attach_throwReservedId(Json.create(2));
     }
 
     @Test(expected = IllegalStateException.class)
     public void handleNode_attachCustonElementCustomId_throwReservedId() {
-        doHandleNode_attach_throwReservedId(JacksonUtils.nullNode());
+        doHandleNode_attach_throwReservedId(Json.createNull());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void handleNode_success_throwIllegalInvocation() {
-        assertHandleNode(1, JacksonUtils.createNode("id"));
+        assertHandleNode(1, Json.create("id"));
     }
 
-    private void doHandleNode_attach_elementNotFound(JsonNode id) {
+    private void doHandleNode_attach_elementNotFound(JsonValue id) {
         assertHandleNode(-1, id);
     }
 
-    private void doHandleNode_attach_throwReservedId(JsonNode id) {
+    private void doHandleNode_attach_throwReservedId(JsonValue id) {
         assertHandleNode(2, id);
     }
 
-    private void assertHandleNode(int assignedId, JsonNode id) {
+    private void assertHandleNode(int assignedId, JsonValue id) {
         AttachTemplateChildRpcHandler handler = new AttachTemplateChildRpcHandler();
 
         int requestedId = 1;
-        ObjectNode object = JacksonUtils.createObjectNode();
+        JsonObject object = Json.createObject();
         object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
         object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, assignedId);
-        object.set(JsonConstants.RPC_ATTACH_ID, id);
+        object.put(JsonConstants.RPC_ATTACH_ID, id);
 
         StateNode node = Mockito.mock(StateNode.class);
         StateNode parentNode = Mockito.mock(StateNode.class);

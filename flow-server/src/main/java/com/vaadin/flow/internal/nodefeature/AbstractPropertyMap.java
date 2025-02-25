@@ -18,7 +18,6 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -128,7 +127,6 @@ public abstract class AbstractPropertyMap extends NodeMap {
         }
         Class<?> type = ReflectTools.convertPrimitiveType(value.getClass());
         return JsonCodec.canEncodeWithoutTypeInfo(type)
-                || JacksonCodec.canEncodeWithoutTypeInfo(type)
                 || StateNode.class.isAssignableFrom(type);
     }
 

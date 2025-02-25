@@ -23,12 +23,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedStatic;
@@ -56,7 +55,7 @@ public class AbstractRpcInvocationHandlerTest {
 
         @Override
         protected Optional<Runnable> handleNode(StateNode node,
-                JsonNode invocationJson) {
+                JsonObject invocationJson) {
             this.node = node;
             return Optional.of(() -> {
             });
@@ -105,7 +104,7 @@ public class AbstractRpcInvocationHandlerTest {
     public void inertUI_passingNoPollingPayload_ignoresPollingInvocation() {
 
         UI ui = createInertUIWithPollInterval();
-        JsonNode invocationJson = createNonPollingRpcInvocationPayload(ui);
+        JsonObject invocationJson = createNonPollingRpcInvocationPayload(ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
         Assert.assertEquals(Optional.empty(), runnable);
@@ -116,7 +115,7 @@ public class AbstractRpcInvocationHandlerTest {
 
         UI ui = createInertUI();
 
-        JsonNode invocationJson = createLegitimatePollingRpcInvocationPayload(
+        JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
         Assert.assertEquals(Optional.empty(), runnable);
@@ -134,7 +133,7 @@ public class AbstractRpcInvocationHandlerTest {
     public void inertUIWithPollingInterval_passingIllegitimateKeysForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
-        JsonNode invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
+        JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
@@ -145,7 +144,7 @@ public class AbstractRpcInvocationHandlerTest {
     public void inertUIWithPollingInterval_passingIllegitimateGreaterNumberOfKeysForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
-        JsonNode invocationJson = createIllegitimatePayloadWithGreaterSizePollingRpcInvocationPayload(
+        JsonObject invocationJson = createIllegitimatePayloadWithGreaterSizePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
@@ -156,7 +155,7 @@ public class AbstractRpcInvocationHandlerTest {
     public void inertUIWithPollingInterval_passingIllegitimateSmallerNumberOfKeysForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
-        JsonNode invocationJson = createIllegitimatePayloadWithSmallerSizePollingRpcInvocationPayload(
+        JsonObject invocationJson = createIllegitimatePayloadWithSmallerSizePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
@@ -167,7 +166,7 @@ public class AbstractRpcInvocationHandlerTest {
     public void inertUIWithPollingInterval_passingIllegitimateNoNodeKeyForPollingPayload_throwsAssertionError() {
 
         UI ui = createInertUIWithPollInterval();
-        JsonNode invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload();
+        JsonObject invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload();
         Assert.assertThrows(AssertionError.class,
                 () -> handler.handle(ui, invocationJson));
     }
@@ -176,7 +175,7 @@ public class AbstractRpcInvocationHandlerTest {
     public void inertUIWithPollingInterval_passingIllegitimateNonRootNodeIdForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
-        JsonNode invocationJson = createIllegitimatePayloadWithNonRootNodePollingRpcInvocationPayload(
+        JsonObject invocationJson = createIllegitimatePayloadWithNonRootNodePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
@@ -195,7 +194,7 @@ public class AbstractRpcInvocationHandlerTest {
                     .thenReturn(logger);
 
             UI ui = createInertUI();
-            JsonNode invocationJson = createLegitimatePollingRpcInvocationPayload(
+            JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
                     ui);
             handler.handle(ui, invocationJson);
 
@@ -216,7 +215,7 @@ public class AbstractRpcInvocationHandlerTest {
                     .thenReturn(logger);
 
             UI ui = createInertUIWithPollInterval();
-            JsonNode invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
+            JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
                     ui);
             handler.handle(ui, invocationJson);
 
@@ -234,7 +233,7 @@ public class AbstractRpcInvocationHandlerTest {
             additionalConfig.accept(element);
         }
 
-        ObjectNode object = JacksonUtils.createObjectNode();
+        JsonObject object = Json.createObject();
         object.put(JsonConstants.RPC_NODE, element.getNode().getId());
         handler.handle(ui, object);
         return element;
@@ -255,26 +254,26 @@ public class AbstractRpcInvocationHandlerTest {
         return ui;
     }
 
-    private JsonNode createLegitimatePollingRpcInvocationPayload(UI ui) {
-        ObjectNode payload = JacksonUtils.createObjectNode();
+    private JsonObject createLegitimatePollingRpcInvocationPayload(UI ui) {
+        JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         payload.put(JsonConstants.RPC_NODE, ui.getElement().getNode().getId());
         payload.put(JsonConstants.RPC_EVENT_TYPE, PollEvent.DOM_EVENT_NAME);
         return payload;
     }
 
-    private JsonNode createIllegitimatePayloadKeysPollingRpcInvocationPayload(
+    private JsonObject createIllegitimatePayloadKeysPollingRpcInvocationPayload(
             UI ui) {
-        ObjectNode payload = JacksonUtils.createObjectNode();
+        JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_EVENT_DATA, "DATA");
         payload.put(JsonConstants.RPC_NODE, ui.getElement().getNode().getId());
         payload.put(JsonConstants.RPC_EVENT_TYPE, PollEvent.DOM_EVENT_NAME);
         return payload;
     }
 
-    private JsonNode createIllegitimatePayloadWithGreaterSizePollingRpcInvocationPayload(
+    private JsonObject createIllegitimatePayloadWithGreaterSizePollingRpcInvocationPayload(
             UI ui) {
-        ObjectNode payload = JacksonUtils.createObjectNode();
+        JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_EVENT_DATA, "DATA");
         payload.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         payload.put(JsonConstants.RPC_NODE, ui.getElement().getNode().getId());
@@ -282,24 +281,24 @@ public class AbstractRpcInvocationHandlerTest {
         return payload;
     }
 
-    private JsonNode createIllegitimatePayloadWithSmallerSizePollingRpcInvocationPayload(
+    private JsonObject createIllegitimatePayloadWithSmallerSizePollingRpcInvocationPayload(
             UI ui) {
-        ObjectNode payload = JacksonUtils.createObjectNode();
+        JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_NODE, ui.getElement().getNode().getId());
         payload.put(JsonConstants.RPC_EVENT_TYPE, PollEvent.DOM_EVENT_NAME);
         return payload;
     }
 
-    private JsonNode createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload() {
-        ObjectNode payload = JacksonUtils.createObjectNode();
+    private JsonObject createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload() {
+        JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         payload.put(JsonConstants.CHANGE_TYPE, "change");
         payload.put(JsonConstants.RPC_EVENT_TYPE, PollEvent.DOM_EVENT_NAME);
         return payload;
     }
 
-    private JsonNode createNonPollingRpcInvocationPayload(UI ui) {
-        ObjectNode payload = JacksonUtils.createObjectNode();
+    private JsonObject createNonPollingRpcInvocationPayload(UI ui) {
+        JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         payload.put(JsonConstants.RPC_NODE,
                 ui.getInternals().getStateTree().getRootNode().getId());
@@ -308,12 +307,12 @@ public class AbstractRpcInvocationHandlerTest {
         return payload;
     }
 
-    private JsonNode createIllegitimatePayloadWithNonRootNodePollingRpcInvocationPayload(
+    private JsonObject createIllegitimatePayloadWithNonRootNodePollingRpcInvocationPayload(
             UI ui) {
         Element element = ElementFactory.createAnchor();
         ui.getElement().appendChild(element);
 
-        ObjectNode payload = JacksonUtils.createObjectNode();
+        JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         payload.put(JsonConstants.RPC_NODE, element.getNode().getId());
         payload.put(JsonConstants.RPC_EVENT_TYPE, PollEvent.DOM_EVENT_NAME);

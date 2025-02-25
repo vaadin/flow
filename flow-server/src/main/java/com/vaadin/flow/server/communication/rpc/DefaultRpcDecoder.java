@@ -15,19 +15,19 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.flow.internal.JsonCodec;
 
-import com.vaadin.flow.internal.JacksonCodec;
+import elemental.json.JsonValue;
 
 /**
  * Decodes the standard basic types from their JSON representation.
  * <p>
  * Delegates to the standard JSON deserializer method
- * {@link JacksonCodec#decodeAs(JsonNode, Class)}.
+ * {@link JsonCodec#decodeAs(JsonValue, Class)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @see JacksonCodec#decodeAs(JsonNode, Class)
+ * @see JsonCodec#decodeAs(JsonValue, Class)
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -36,14 +36,14 @@ import com.vaadin.flow.internal.JacksonCodec;
 public class DefaultRpcDecoder implements RpcDecoder {
 
     @Override
-    public boolean isApplicable(JsonNode value, Class<?> type) {
-        return JacksonCodec.canEncodeWithoutTypeInfo(type);
+    public boolean isApplicable(JsonValue value, Class<?> type) {
+        return JsonCodec.canEncodeWithoutTypeInfo(type);
     }
 
     @Override
-    public <T> T decode(JsonNode value, Class<T> type)
+    public <T> T decode(JsonValue value, Class<T> type)
             throws RpcDecodeException {
-        return JacksonCodec.decodeAs(value, type);
+        return JsonCodec.decodeAs(value, type);
     }
 
 }

@@ -17,8 +17,6 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,10 +24,11 @@ import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.shared.JsonConstants;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class EventRpcHandlerTest {
 
@@ -58,7 +57,7 @@ public class EventRpcHandlerTest {
         DomListenerRegistration domListenerRegistration = element
                 .addEventListener("test-event", e -> invocationData
                         .addAndGet((int) e.getEventData().getNumber("nr")));
-        ObjectNode eventData = JacksonUtils.createObjectNode();
+        JsonObject eventData = Json.createObject();
         eventData.put("nr", 123);
         sendElementEvent(element, ui, "test-event", eventData);
         Assert.assertEquals(123, invocationData.get());
@@ -78,11 +77,11 @@ public class EventRpcHandlerTest {
 
     }
 
-    private static JsonNode createElementEventInvocation(Element element,
-            String eventType, JsonNode eventData) {
+    private static JsonObject createElementEventInvocation(Element element,
+            String eventType, JsonObject eventData) {
         StateNode node = element.getNode();
         // Copied from ServerConnector
-        ObjectNode message = JacksonUtils.createObjectNode();
+        JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
 
@@ -94,7 +93,7 @@ public class EventRpcHandlerTest {
     }
 
     private static void sendElementEvent(Element element, UI ui,
-            String eventType, JsonNode eventData) throws Exception {
+            String eventType, JsonObject eventData) throws Exception {
         new EventRpcHandler().handle(ui,
                 createElementEventInvocation(element, eventType, eventData));
     }

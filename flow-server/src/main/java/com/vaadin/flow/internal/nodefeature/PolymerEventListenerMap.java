@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+
+import elemental.json.Json;
 
 /**
  * Map of PolymerTemplate events with server-side listeners. The key set of this
@@ -102,8 +104,8 @@ public class PolymerEventListenerMap extends NodeMap {
 
     private static ConstantPoolKey createConstantPoolKey(
             List<String> eventData) {
-        return new ConstantPoolKey(eventData.stream()
-                .map(JacksonUtils::createNode).collect(JacksonUtils.asArray()));
+        return new ConstantPoolKey(eventData.stream().map(Json::create)
+                .collect(JsonUtils.asArray()));
     }
 
     private void removeListener(String eventType) {

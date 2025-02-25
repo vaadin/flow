@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -200,14 +200,12 @@ public class JacksonCodec {
         Class<?> type = value.getClass();
         if (String.class.equals(value.getClass())) {
             return JacksonUtils.getMapper().valueToTree(value);
-        } else if (Integer.class.equals(type)) {
-            return JacksonUtils.getMapper()
-                    .valueToTree(((Number) value).intValue());
-        } else if (Double.class.equals(type)) {
+        } else if (Integer.class.equals(type) || Double.class.equals(type)) {
             return JacksonUtils.getMapper()
                     .valueToTree(((Number) value).doubleValue());
         } else if (Boolean.class.equals(type)) {
-            return JacksonUtils.getMapper().valueToTree(value);
+            return JacksonUtils.getMapper()
+                    .valueToTree(((Boolean) value).booleanValue());
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return (JsonNode) value;
         }
@@ -226,15 +224,20 @@ public class JacksonCodec {
      *            the JSON value to decode
      * @return the decoded value
      */
-    public static Serializable decodeWithoutTypeInfo(JsonNode json) {
+    public static Serializable decodeWithoutTypeInfo(ObjectNode json) {
         assert json != null;
-        return switch (json.getNodeType()) {
-        case BOOLEAN -> decodeAs(json, Boolean.class);
-        case STRING -> decodeAs(json, String.class);
-        case NUMBER -> decodeAs(json, Double.class);
-        case NULL -> null;
-        default -> (Serializable) json;
-        };
+        switch (json.getNodeType()) {
+        case BOOLEAN:
+            return decodeAs(json, Boolean.class);
+        case STRING:
+            return decodeAs(json, String.class);
+        case NUMBER:
+            return decodeAs(json, Double.class);
+        case NULL:
+            return null;
+        default:
+            return json;
+        }
 
     }
 
@@ -263,31 +266,11 @@ public class JacksonCodec {
         if (type == String.class) {
             return type.cast(json.asText());
         } else if (convertedType == Boolean.class) {
-            if (json instanceof TextNode) {
-                return (T) convertedType
-                        .cast(Boolean.valueOf(json.textValue()));
-            }
-            return (T) convertedType.cast(json.asBoolean());
+            return (T) convertedType.cast(Boolean.valueOf(json.asBoolean()));
         } else if (convertedType == Double.class) {
-            try {
-                if (json instanceof TextNode) {
-                    return (T) convertedType
-                            .cast(Double.valueOf(json.textValue()));
-                }
-            } catch (NumberFormatException e) {
-                // NO-OP
-            }
-            return (T) convertedType.cast(json.doubleValue());
+            return (T) convertedType.cast(Double.valueOf(json.doubleValue()));
         } else if (convertedType == Integer.class) {
-            try {
-                if (json instanceof TextNode) {
-                    return (T) convertedType
-                            .cast(Integer.valueOf(json.textValue()));
-                }
-            } catch (NumberFormatException e) {
-                // NO-OP
-            }
-            return (T) convertedType.cast(json.intValue());
+            return (T) convertedType.cast(Integer.valueOf(json.intValue()));
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {

@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
@@ -61,18 +60,6 @@ public class LookupServletContainerInitializerTest {
 
         @Override
         public Object getTemplateItem(Component template, JsonObject argValue,
-                Type convertedType) {
-            return null;
-        }
-
-        @Override
-        public boolean isTemplateModelValue(Component instance,
-                JsonNode argValue, Class<?> convertedType) {
-            return false;
-        }
-
-        @Override
-        public Object getTemplateItem(Component template, JsonNode argValue,
                 Type convertedType) {
             return null;
         }

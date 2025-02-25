@@ -11,9 +11,6 @@ package com.vaadin.flow.component.polymertemplate.rpc;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -84,33 +81,6 @@ public class PolymerPublishedEventRpcHandler
         if (ui.isPresent()) {
             StateNode node = ui.get().getInternals().getStateTree()
                     .getNodeById((int) argValue.getNumber("nodeId"));
-
-            ModelType propertyType = ((PolymerTemplate<?>) template)
-                    .getModelType(convertedType);
-
-            return propertyType.modelToApplication(node);
-        }
-        throw new IllegalArgumentException(
-                "Event sent for a non attached template component");
-    }
-
-    @Override
-    public boolean isTemplateModelValue(Component instance, JsonNode argValue,
-            Class<?> convertedType) {
-        return instance instanceof PolymerTemplate
-                && argValue instanceof ObjectNode
-                && ((PolymerTemplate<?>) instance).isSupportedClass(
-                        convertedType)
-                && argValue.has("nodeId");
-    }
-
-    @Override
-    public Object getTemplateItem(Component template, JsonNode argValue,
-            Type convertedType) {
-        final Optional<UI> ui = template.getUI();
-        if (ui.isPresent()) {
-            StateNode node = ui.get().getInternals().getStateTree()
-                    .getNodeById(argValue.get("nodeId").intValue());
 
             ModelType propertyType = ((PolymerTemplate<?>) template)
                     .getModelType(convertedType);

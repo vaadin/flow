@@ -21,16 +21,13 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Server-side representation of a DOM event fired in the browser.
@@ -40,7 +37,7 @@ import elemental.json.JsonObject;
  */
 public class DomEvent extends EventObject {
 
-    private final JsonNode eventData;
+    private final JsonObject eventData;
 
     private final String eventType;
 
@@ -63,24 +60,6 @@ public class DomEvent extends EventObject {
      * @see DomEventListener
      */
     public DomEvent(Element source, String eventType, JsonObject eventData) {
-        this(source, eventType, JacksonUtils.mapElemental(eventData));
-    }
-
-    /**
-     * Creates a new DOM event.
-     *
-     * @param source
-     *            the element on which the listener has been attached, not
-     *            <code>null</code>
-     * @param eventType
-     *            the type of the event, not <code>null</code>
-     * @param eventData
-     *            additional data related to the event, not <code>null</code>
-     *
-     * @see Element#addEventListener(String, DomEventListener)
-     * @see DomEventListener
-     */
-    public DomEvent(Element source, String eventType, JsonNode eventData) {
         super(source);
         assert source != null;
         assert eventType != null;
@@ -93,32 +72,32 @@ public class DomEvent extends EventObject {
         eventTarget = extractEventTarget(eventData, source);
     }
 
-    private static DebouncePhase extractPhase(JsonNode eventData) {
-        JsonNode jsonValue = eventData.get(JsonConstants.EVENT_DATA_PHASE);
+    private static DebouncePhase extractPhase(JsonObject eventData) {
+        JsonValue jsonValue = eventData.get(JsonConstants.EVENT_DATA_PHASE);
         if (jsonValue == null) {
             return DebouncePhase.LEADING;
         } else {
-            return DebouncePhase.forIdentifier(jsonValue.textValue());
+            return DebouncePhase.forIdentifier(jsonValue.asString());
         }
     }
 
-    private static Element extractEventTarget(JsonNode eventData,
+    private static Element extractEventTarget(JsonObject eventData,
             Element currentTarget) {
         return extractElement(eventData, currentTarget,
                 JsonConstants.MAP_STATE_NODE_EVENT_DATA, false);
     }
 
-    static Element extractElement(JsonNode eventData, Element source,
+    static Element extractElement(JsonObject eventData, Element source,
             String key, boolean lookUnderUI) {
         assert key.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
-        if (!eventData.has(key)) {
+        if (!eventData.hasKey(key)) {
             return null;
         }
-        final JsonNode reportedStateNodeId = eventData.get(key);
+        final JsonValue reportedStateNodeId = eventData.get(key);
         if (reportedStateNodeId == null) {
             return null;
         }
-        int id = reportedStateNodeId.intValue();
+        int id = (int) reportedStateNodeId.asNumber();
         if (id == -1) {
             return null;
         }
@@ -176,7 +155,7 @@ public class DomEvent extends EventObject {
      * @return a JSON object containing event data, never <code>null</code>
      */
     public JsonObject getEventData() {
-        return Json.parse(eventData.toString());
+        return eventData;
     }
 
     /**

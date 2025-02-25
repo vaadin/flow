@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import elemental.json.JsonValue;
 
 /**
@@ -55,10 +52,6 @@ public class JavaScriptSemantics {
             return ((Boolean) value).booleanValue();
         } else if (value instanceof JsonValue) {
             return ((JsonValue) value).asBoolean();
-        } else if (value instanceof ObjectNode) {
-            return ((JsonNode) value).asBoolean(true);
-        } else if (value instanceof JsonNode) {
-            return ((JsonNode) value).asBoolean();
         } else if (value instanceof Number) {
             double number = ((Number) value).doubleValue();
             // Special comparison to keep sonarqube happy
