@@ -53,7 +53,7 @@ import com.vaadin.flow.server.VaadinServlet;
  * @author Vaadin Ltd
  *
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Conditional(RootMappedCondition.class)
 public class VaadinServletConfiguration {
 

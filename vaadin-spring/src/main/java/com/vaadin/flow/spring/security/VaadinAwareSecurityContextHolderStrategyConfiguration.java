@@ -24,7 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolderStrategy;
 /**
  * Provides configuration of Vaadin aware {@link SecurityContextHolderStrategy}
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class VaadinAwareSecurityContextHolderStrategyConfiguration {
 
     /**

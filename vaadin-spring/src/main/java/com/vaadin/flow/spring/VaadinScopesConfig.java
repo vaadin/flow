@@ -29,7 +29,7 @@ import com.vaadin.flow.spring.scopes.VaadinUIScope;
  * @author Vaadin Ltd
  *
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class VaadinScopesConfig {
 
     /**
