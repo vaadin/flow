@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -376,13 +377,10 @@ public class ComponentEventBus implements Serializable {
                     jsonValue = JacksonUtils.mapElemental((JsonValue) domEvent
                             .getEventData().get(expression));
                 }
-                if (jsonValue == null) {
-                    jsonValue = JacksonUtils.nullNode();
-                }
                 Object value;
                 if (JsonValue.class.isAssignableFrom(type)) {
                     // TODO: Remove after History uses Jackson.
-                    if (jsonValue == null) {
+                    if (domEvent.getEventData().get(expression) == null) {
                         value = JsonCodec.decodeAs(Json.createNull(), type);
                     } else {
                         value = JsonCodec.decodeAs(
