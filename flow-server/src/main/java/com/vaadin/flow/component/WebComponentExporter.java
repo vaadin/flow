@@ -25,22 +25,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
+
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Exports a {@link Component} as a web component.
@@ -91,9 +90,8 @@ public abstract class WebComponentExporter<C extends Component>
         implements Serializable {
 
     private static final List<Class> SUPPORTED_TYPES = Collections
-            .unmodifiableList(
-                    Arrays.asList(Boolean.class, String.class, Integer.class,
-                            Double.class, JsonNode.class, ObjectNode.class));
+            .unmodifiableList(Arrays.asList(Boolean.class, String.class,
+                    Integer.class, Double.class, JsonValue.class));
 
     private final String tag;
     private HashMap<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
@@ -247,14 +245,9 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public final PropertyConfiguration<C, ObjectNode> addProperty(String name,
-            ObjectNode defaultValue) {
-        return addProperty(name, ObjectNode.class, defaultValue);
-    }
-
-    public final PropertyConfiguration<C, ValueNode> addProperty(String name,
-            ValueNode defaultValue) {
-        return addProperty(name, ValueNode.class, defaultValue);
+    public final PropertyConfiguration<C, JsonValue> addProperty(String name,
+            JsonValue defaultValue) {
+        return addProperty(name, JsonValue.class, defaultValue);
     }
 
     /**
@@ -349,7 +342,7 @@ public abstract class WebComponentExporter<C extends Component>
         @Override
         public WebComponentBinding<C> createWebComponentBinding(
                 Instantiator instantiator, Element element,
-                ObjectNode newAttributeDefaults) {
+                JsonObject newAttributeDefaults) {
             assert (instantiator != null);
 
             final C componentReference = instantiator
@@ -380,9 +373,9 @@ public abstract class WebComponentExporter<C extends Component>
             WebComponentBinding<C> binding = new WebComponentBinding<>(
                     componentReference);
 
-            // collect possible new defaults from attributes as JsonNode values
-            final Map<String, JsonNode> newDefaultValues = JacksonUtils
-                    .getKeys(newAttributeDefaults).stream().collect(Collectors
+            // collect possible new defaults from attributes as JsonValues
+            final Map<String, JsonValue> newDefaultValues = Stream
+                    .of(newAttributeDefaults.keys()).collect(Collectors
                             .toMap(key -> key, newAttributeDefaults::get));
 
             // bind properties onto the WebComponentBinding. Since

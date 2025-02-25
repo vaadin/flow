@@ -19,12 +19,13 @@ package com.vaadin.flow.webcomponent;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.internal.JacksonUtils;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 @Tag("click-counter")
 public class PropertyUpdateComponent extends Div {
@@ -51,8 +52,8 @@ public class PropertyUpdateComponent extends Div {
                 numberListener -> numberListener.handleNumber(clickCounter));
     }
 
-    public ObjectNode getNumberJson() {
-        ObjectNode json = JacksonUtils.createObjectNode();
+    public JsonValue getNumberJson() {
+        JsonObject json = Json.createObject();
         json.put("counter", clickCounter);
         return json;
     }

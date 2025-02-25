@@ -18,16 +18,12 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -108,44 +104,42 @@ public class DomEventTest {
     private <T extends ComponentEvent<Component>> void assertSettings(
             Class<T> eventType, String expectedFilter, int expectedTimeout,
             DebouncePhase... expectedPhases) {
-        JsonNode settings = getEventSettings(eventType);
+        JsonObject settings = getEventSettings(eventType);
 
         if (expectedFilter == null) {
-            Assert.assertArrayEquals(new String[0],
-                    JacksonUtils.getKeys(settings).toArray());
+            Assert.assertArrayEquals(new String[0], settings.keys());
             return;
         }
 
         Assert.assertArrayEquals(new String[] { expectedFilter },
-                JacksonUtils.getKeys(settings).toArray());
+                settings.keys());
 
         if (expectedTimeout == 0 && expectedPhases.length == 0) {
             Assert.assertEquals(
                     "There should be a boolean instead of empty phase list",
-                    JsonNodeType.BOOLEAN,
-                    settings.get(expectedFilter).getNodeType());
-            boolean isFilter = settings.get(expectedFilter).booleanValue();
+                    JsonType.BOOLEAN, settings.get(expectedFilter).getType());
+            boolean isFilter = settings.getBoolean(expectedFilter);
             Assert.assertTrue("Expression should be used as a filter",
                     isFilter);
             return;
         }
 
-        JsonNode filterSettings = settings.get(expectedFilter);
+        JsonArray filterSettings = settings.getArray(expectedFilter);
 
-        Assert.assertEquals(1, filterSettings.size());
+        Assert.assertEquals(1, filterSettings.length());
 
-        JsonNode filterSetting = filterSettings.get(0);
+        JsonArray filterSetting = filterSettings.getArray(0);
 
         Assert.assertEquals("Debunce timeout should be as expected",
-                expectedTimeout, filterSetting.get(0).intValue());
+                expectedTimeout, (int) filterSetting.getNumber(0));
 
         Assert.assertEquals("Number of phases should be as expected",
-                expectedPhases.length, filterSetting.size() - 1);
+                expectedPhases.length, filterSetting.length() - 1);
 
         for (int i = 0; i < expectedPhases.length; i++) {
             String expectedIdentifier = expectedPhases[i].getIdentifier();
             Assert.assertEquals(expectedIdentifier,
-                    filterSetting.get(i + 1).textValue());
+                    filterSetting.getString(i + 1));
         }
     }
 
@@ -153,7 +147,7 @@ public class DomEventTest {
             JsonObject filterSettings) {
     }
 
-    private <T extends ComponentEvent<Component>> JsonNode getEventSettings(
+    private <T extends ComponentEvent<Component>> JsonObject getEventSettings(
             Class<T> eventType) {
         Component component = new Component(new Element("element")) {
         };
@@ -171,12 +165,13 @@ public class DomEventTest {
         Assert.assertEquals("event", change.getKey());
 
         ConstantPoolKey value = (ConstantPoolKey) change.getValue();
-        ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
+        JsonObject constantPoolUpdate = Json.createObject();
         value.export(constantPoolUpdate);
 
-        List<String> keys = JacksonUtils.getKeys(constantPoolUpdate);
-        Assert.assertEquals(1, keys.size());
+        String[] keys = constantPoolUpdate.keys();
+        Assert.assertEquals(1, keys.length);
+        JsonObject eventSettings = constantPoolUpdate.getObject(keys[0]);
 
-        return constantPoolUpdate.get(keys.get(0));
+        return eventSettings;
     }
 }

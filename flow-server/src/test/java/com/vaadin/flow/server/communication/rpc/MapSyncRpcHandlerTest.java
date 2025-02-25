@@ -20,16 +20,11 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.MockedStatic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -37,14 +32,20 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.shared.JsonConstants;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -107,7 +108,7 @@ public class MapSyncRpcHandlerTest {
 
         // Use the model node id for JSON object which represents a value to
         // update
-        ObjectNode json = JacksonUtils.createObjectNode();
+        JsonObject json = Json.createObject();
         json.put("nodeId", item.getId());
 
         // send sync request
@@ -149,7 +150,7 @@ public class MapSyncRpcHandlerTest {
 
         // Use the model node id for JSON object which represents a value to
         // update
-        ObjectNode json = JacksonUtils.createObjectNode();
+        JsonObject json = Json.createObject();
         json.put("nodeId", model.getId());
 
         // send sync request
@@ -182,7 +183,7 @@ public class MapSyncRpcHandlerTest {
 
         // Use the model node id for JSON object which represents a value to
         // update
-        ObjectNode json = JacksonUtils.createObjectNode();
+        JsonObject json = Json.createObject();
         json.put("nodeId", anotherNode.getId());
 
         // send sync request
@@ -192,7 +193,7 @@ public class MapSyncRpcHandlerTest {
                 .getFeature(ElementPropertyMap.class).getProperty("foo");
 
         Assert.assertNotSame(anotherNode, testPropertyValue);
-        Assert.assertTrue(testPropertyValue instanceof ObjectNode);
+        Assert.assertTrue(testPropertyValue instanceof JsonValue);
     }
 
     @Test
@@ -432,21 +433,21 @@ public class MapSyncRpcHandlerTest {
                 createSyncPropertyInvocation(element, eventType, value));
     }
 
-    private static JsonNode createSyncPropertyInvocation(Element element,
+    private static JsonObject createSyncPropertyInvocation(Element element,
             String property, Serializable value) {
         return createSyncPropertyInvocation(element.getNode(), property, value);
     }
 
-    private static JsonNode createSyncPropertyInvocation(StateNode node,
+    private static JsonObject createSyncPropertyInvocation(StateNode node,
             String property, Serializable value) {
         // Copied from ServerConnector
-        ObjectNode message = JacksonUtils.createObjectNode();
+        JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_FEATURE,
                 NodeFeatureRegistry.getId(ElementPropertyMap.class));
         message.put(JsonConstants.RPC_PROPERTY, property);
-        message.set(JsonConstants.RPC_PROPERTY_VALUE,
-                JacksonCodec.encodeWithoutTypeInfo(value));
+        message.put(JsonConstants.RPC_PROPERTY_VALUE,
+                JsonCodec.encodeWithoutTypeInfo(value));
 
         return message;
     }

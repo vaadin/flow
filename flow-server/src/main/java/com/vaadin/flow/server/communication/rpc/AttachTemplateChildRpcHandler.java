@@ -17,8 +17,6 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +24,10 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
+
+import elemental.json.JsonNull;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * RPC handler for a client-side response on attach existing element by id
@@ -51,21 +53,21 @@ public class AttachTemplateChildRpcHandler
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonNode invocationJson) {
-        assert invocationJson.has(JsonConstants.RPC_ATTACH_REQUESTED_ID);
-        assert invocationJson.has(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
-        assert invocationJson.has(JsonConstants.RPC_ATTACH_ID);
+            JsonObject invocationJson) {
+        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
+        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
+        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ID);
 
-        int requestedId = invocationJson
-                .get(JsonConstants.RPC_ATTACH_REQUESTED_ID).intValue();
-        int assignedId = invocationJson
-                .get(JsonConstants.RPC_ATTACH_ASSIGNED_ID).intValue();
+        int requestedId = (int) invocationJson
+                .getNumber(JsonConstants.RPC_ATTACH_REQUESTED_ID);
+        int assignedId = (int) invocationJson
+                .getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
 
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
 
         StateNode parent = tree.getNodeById(requestedId).getParent();
-        JsonNode id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
+        JsonValue id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
         String tag = requestedNode.getFeature(ElementData.class).getTag();
 
         Logger logger = LoggerFactory
@@ -74,7 +76,7 @@ public class AttachTemplateChildRpcHandler
         if (assignedId == -1) {
             logger.error("Attach existing element has failed because "
                     + "the client-side element is not found");
-            if (id instanceof NullNode) {
+            if (id instanceof JsonNull) {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' was "
                                 + "not found in the parent with id='%d'",
@@ -83,12 +85,12 @@ public class AttachTemplateChildRpcHandler
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' and id '%s' was "
                                 + "not found in the parent with id='%d'",
-                        tag, id.textValue(), parent.getId()));
+                        tag, id.asString(), parent.getId()));
             }
         } else if (requestedId != assignedId) {
             logger.error("Attach existing element has failed because "
                     + "the element has been already attached from the server side");
-            if (id instanceof NullNode) {
+            if (id instanceof JsonNull) {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' is already "
                                 + "attached to the parent with id='%d'",
@@ -97,7 +99,7 @@ public class AttachTemplateChildRpcHandler
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' and id '%s' is "
                                 + "already attached to the parent with id='%d'",
-                        tag, id.textValue(), parent.getId()));
+                        tag, id.asString(), parent.getId()));
             }
         } else {
             logger.error("Attach existing element request succeeded. "

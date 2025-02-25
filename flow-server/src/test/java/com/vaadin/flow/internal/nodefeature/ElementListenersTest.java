@@ -22,8 +22,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,10 +34,12 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -203,23 +203,23 @@ public class ElementListenersTest
 
     @Test
     public void eventDataInEvent() {
-        AtomicReference<JsonNode> eventDataReference = new AtomicReference<>();
+        AtomicReference<JsonObject> eventDataReference = new AtomicReference<>();
         ns.add("foo", e -> {
             Assert.assertNull(eventDataReference.get());
-            eventDataReference.set(JacksonUtils.mapElemental(e.getEventData()));
+            eventDataReference.set(e.getEventData());
         });
 
         Assert.assertNull(eventDataReference.get());
 
-        ObjectNode eventData = JacksonUtils.createObjectNode();
+        JsonObject eventData = Json.createObject();
         eventData.put("baz", true);
         ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
 
-        JsonNode capturedJson = eventDataReference.get();
+        JsonObject capturedJson = eventDataReference.get();
         Assert.assertNotNull(capturedJson);
 
-        Assert.assertEquals(1, JacksonUtils.getKeys(capturedJson).size());
-        Assert.assertEquals("true", capturedJson.get("baz").toString());
+        Assert.assertEquals(1, capturedJson.keys().length);
+        Assert.assertEquals("true", capturedJson.get("baz").toJson());
     }
 
     @Test
@@ -373,15 +373,15 @@ public class ElementListenersTest
                 expressions.iterator().next());
 
         // child
-        final ObjectNode eventData = JacksonUtils.createObjectNode();
+        final JsonObject eventData = Json.createObject();
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 child.getNode().getId());
         listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
         Assert.assertEquals(child, capturedTarget.get());
 
         // nothing reported -> empty optional
-        listenerMap.fireEvent(new DomEvent(parent, eventType,
-                JacksonUtils.createObjectNode()));
+        listenerMap.fireEvent(
+                new DomEvent(parent, eventType, Json.createObject()));
         Assert.assertNull("no element should be reported",
                 capturedTarget.get());
 
@@ -425,15 +425,15 @@ public class ElementListenersTest
         Assert.assertEquals(1, expressions.size());
         Assert.assertEquals(key, expressions.iterator().next());
 
-        final ObjectNode eventData = JacksonUtils.createObjectNode();
+        final JsonObject eventData = Json.createObject();
         eventData.put(key, child.getNode().getId());
         listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
         Assert.assertEquals(child,
                 capturedTarget.get().getEventDataElement(expression).get());
 
         // nothing reported -> empty optional
-        listenerMap.fireEvent(new DomEvent(parent, eventType,
-                JacksonUtils.createObjectNode()));
+        listenerMap.fireEvent(
+                new DomEvent(parent, eventType, Json.createObject()));
         Assert.assertFalse("no element should be reported", capturedTarget.get()
                 .getEventDataElement(expression).isPresent());
 
@@ -466,7 +466,7 @@ public class ElementListenersTest
         Assert.assertEquals(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 expressions.iterator().next());
 
-        final ObjectNode eventData = JacksonUtils.createObjectNode();
+        final JsonObject eventData = Json.createObject();
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 child.getNode().getId());
         listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
@@ -485,7 +485,7 @@ public class ElementListenersTest
         ns.fireEvent(createEvent("foo"));
         Assert.assertEquals(0, eventCount.get());
 
-        ObjectNode eventData = JacksonUtils.createObjectNode();
+        JsonObject eventData = Json.createObject();
         eventData.put("filterKey", true);
         ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
         Assert.assertEquals(1, eventCount.get());
@@ -502,7 +502,6 @@ public class ElementListenersTest
     }
 
     private static DomEvent createEvent(String type) {
-        return new DomEvent(new Element("fake"), type,
-                JacksonUtils.createObjectNode());
+        return new DomEvent(new Element("fake"), type, Json.createObject());
     }
 }

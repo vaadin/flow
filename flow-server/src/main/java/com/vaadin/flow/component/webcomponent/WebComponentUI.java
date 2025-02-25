@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -45,6 +44,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import elemental.json.JsonObject;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -76,7 +77,7 @@ public class WebComponentUI extends UI {
         private String tag;
         private String userAssignedId;
         private String webComponentElementId;
-        private ObjectNode attributeValues;
+        private JsonObject attributeValues;
 
         /**
          * Creates a new web component connection event.
@@ -103,7 +104,7 @@ public class WebComponentUI extends UI {
                 @EventData("tag") String tag,
                 @EventData("id") String webComponentElementId,
                 @EventData("userAssignedId") String userAssignedId,
-                @EventData("attributeValues") ObjectNode attributeValues) {
+                @EventData("attributeValues") JsonObject attributeValues) {
             super(source, true);
             this.tag = tag;
             this.userAssignedId = userAssignedId;
@@ -143,7 +144,7 @@ public class WebComponentUI extends UI {
          *
          * @return the initial attribute values
          */
-        public ObjectNode getAttributeJson() {
+        public JsonObject getAttributeJson() {
             return attributeValues;
         }
     }

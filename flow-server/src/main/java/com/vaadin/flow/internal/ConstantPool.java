@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Keeps track of {@link ConstantPoolKey} values that have already been sent to
@@ -77,8 +77,8 @@ public class ConstantPool implements Serializable {
      *
      * @return a JSON object describing all new constants
      */
-    public JsonNode dumpConstants() {
-        ObjectNode json = JacksonUtils.createObjectNode();
+    public JsonObject dumpConstants() {
+        JsonObject json = Json.createObject();
 
         newKeys.forEach(key -> key.export(json));
         newKeys.clear();
