@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -381,8 +382,12 @@ public class ComponentEventBus implements Serializable {
                 Object value;
                 if (JsonValue.class.isAssignableFrom(type)) {
                     // TODO: Remove after History uses Jackson.
-                    value = JsonCodec.decodeAs(
-                            domEvent.getEventData().get(expression), type);
+                    if (jsonValue == null) {
+                        value = JsonCodec.decodeAs(Json.createNull(), type);
+                    } else {
+                        value = JsonCodec.decodeAs(
+                                domEvent.getEventData().get(expression), type);
+                    }
                 } else {
                     value = JacksonCodec.decodeAs(jsonValue, type);
                 }
