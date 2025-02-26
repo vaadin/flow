@@ -1,0 +1,4 @@
+new: method com.vaadin.flow.function.SerializableBiPredicate<TARGET, TARGET> com.vaadin.flow.data.binder.Binder.Binding<BEAN, TARGET>::getEqualityPredicate()
+new: method java.lang.String com.vaadin.flow.plugin.base.PluginAdapterBase::applicationIdentifier()
+new: method boolean foo.bar.A::testBar(String)
+new: method com.vaadin.ImportantClass foo.bar.A::testBar2<TARGET>(String)
