@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +62,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
@@ -87,11 +89,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-
-import elemental.json.Json;
-import elemental.json.JsonException;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -1892,33 +1889,33 @@ public abstract class VaadinService implements Serializable {
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url, String querySelector) {
         try {
-            JsonObject appError = Json.createObject();
+            ObjectNode appError = JacksonUtils.createObjectNode();
             putValueOrJsonNull(appError, "caption", caption);
             putValueOrJsonNull(appError, "url", url);
             putValueOrJsonNull(appError, "message", message);
             putValueOrJsonNull(appError, "details", details);
             putValueOrJsonNull(appError, "querySelector", querySelector);
 
-            JsonObject meta = Json.createObject();
-            meta.put("appError", appError);
+            ObjectNode meta = JacksonUtils.createObjectNode();
+            meta.set("appError", appError);
 
-            JsonObject json = Json.createObject();
-            json.put("changes", Json.createObject());
-            json.put("resources", Json.createObject());
-            json.put("locales", Json.createObject());
-            json.put("meta", meta);
+            ObjectNode json = JacksonUtils.createObjectNode();
+            json.set("changes", JacksonUtils.createObjectNode());
+            json.set("resources", JacksonUtils.createObjectNode());
+            json.set("locales", JacksonUtils.createObjectNode());
+            json.set("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
             return wrapJsonForClient(json);
-        } catch (JsonException e) {
+        } catch (Exception e) {
             getLogger().warn(
                     "Error creating critical notification JSON message", e);
-            return wrapJsonForClient(Json.createObject());
+            return wrapJsonForClient(JacksonUtils.createObjectNode());
         }
 
     }
 
-    private static String wrapJsonForClient(JsonObject json) {
-        return "for(;;);[" + JsonUtil.stringify(json) + "]";
+    private static String wrapJsonForClient(ObjectNode json) {
+        return "for(;;);[" + json.toString() + "]";
     }
 
     /**
@@ -1931,9 +1928,9 @@ public abstract class VaadinService implements Serializable {
      *         a string
      */
     public static String createSessionExpiredJSON(boolean async) {
-        JsonObject json = Json.createObject();
-        JsonObject meta = Json.createObject();
-        json.put("meta", meta);
+        ObjectNode json = JacksonUtils.createObjectNode();
+        ObjectNode meta = JacksonUtils.createObjectNode();
+        json.set("meta", meta);
 
         if (async) {
             meta.put(JsonConstants.META_ASYNC, true);
@@ -1959,10 +1956,10 @@ public abstract class VaadinService implements Serializable {
         return createSessionExpiredJSON(async);
     }
 
-    private static void putValueOrJsonNull(JsonObject json, String key,
+    private static void putValueOrJsonNull(ObjectNode json, String key,
             String value) {
         if (value == null) {
-            json.put(key, Json.createNull());
+            json.set(key, JacksonUtils.nullNode());
         } else {
             json.put(key, value);
         }
