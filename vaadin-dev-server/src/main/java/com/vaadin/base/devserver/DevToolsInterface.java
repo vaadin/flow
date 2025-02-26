@@ -15,7 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * For interfacing with the development tools by plugins.
@@ -30,5 +30,5 @@ public interface DevToolsInterface {
      * @param data
      *            data, specific to the command
      */
-    void send(String command, JsonObject data);
+    void send(String command, JsonNode data);
 }
