@@ -15,7 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Handles dev tools messages from the client.
@@ -47,7 +47,7 @@ public interface DevToolsMessageHandler {
      * @return {@code true} if the message was handled and should not be passed
      *         on to further handlers
      */
-    boolean handleMessage(String command, JsonObject data,
+    boolean handleMessage(String command, JsonNode data,
             DevToolsInterface devToolsInterface);
 
     /**
