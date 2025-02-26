@@ -211,6 +211,17 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void serveIndexHtml_featureFlagsSetter_isPresent()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Assert.assertTrue("Response should have Feature Flags updater function",
+                indexHtml.contains(
+                        "window.Vaadin.featureFlagsUpdaters.push((activator) => {"));
+    }
+
+    @Test
     public void canHandleRequest_requestWithRootPath_handleRequest() {
         boolean canHandleRequest = indexHtmlRequestHandler
                 .canHandleRequest(createVaadinRequest("/"));

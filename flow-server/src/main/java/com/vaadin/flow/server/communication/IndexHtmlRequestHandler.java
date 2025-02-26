@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
@@ -37,6 +38,8 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -109,6 +112,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
             htmlElement.attr("lang", locale.getLanguage());
         }
+
+        initializeFeatureFlags(indexDocument, request);
 
         JsonObject initialJson = Json.createObject();
 
@@ -207,6 +212,28 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void initializeFeatureFlags(Document indexDocument,
+            VaadinRequest request) {
+        String script = featureFlagsInitializer(request);
+        Element scriptElement = indexDocument.head().prependElement("script");
+        scriptElement.attr(SCRIPT_INITIAL, "");
+        scriptElement.appendChild(new DataNode(script));
+    }
+
+    static String featureFlagsInitializer(VaadinRequest request) {
+        return FeatureFlags.get(request.getService().getContext()).getFeatures()
+                .stream().filter(Feature::isEnabled)
+                .map(feature -> String.format("activator(\"%s\");",
+                        feature.getId()))
+                .collect(Collectors.joining("\n",
+                        """
+                                window.Vaadin = window.Vaadin || {};
+                                window.Vaadin.featureFlagsUpdaters = window.Vaadin.featureFlagsUpdaters || [];
+                                window.Vaadin.featureFlagsUpdaters.push((activator) => {
+                                """,
+                        "});"));
     }
 
     private static void addDevBundleTheme(Document document,

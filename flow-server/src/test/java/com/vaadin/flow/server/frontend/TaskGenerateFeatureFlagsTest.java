@@ -87,17 +87,12 @@ public class TaskGenerateFeatureFlagsTest {
     }
 
     @Test
-    public void should_defineCorrectEnabledValue()
+    public void should_callFeatureFlagsUpdaterFunction()
             throws ExecutionFailedException {
-        // Enable example feature
-        featureFlags.getFeatures().stream()
-                .filter(feature -> feature.equals(FeatureFlags.EXAMPLE))
-                .forEach(feature -> feature.setEnabled(true));
-
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
-
-        assertFeatureFlagGlobal(content, FeatureFlags.EXAMPLE, true);
+        Assert.assertTrue(content.contains(
+                "window.Vaadin.featureFlagsUpdaters.forEach(updater => updater(activator))"));
     }
 
     @Test
