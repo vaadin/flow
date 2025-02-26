@@ -1,5 +1,6 @@
 package com.vaadin.base.devserver.startup;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletRegistration;
 import java.io.File;
@@ -20,13 +21,12 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -112,7 +112,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         // Not this needs to update according to dependencies in
         // NodeUpdater.getDefaultDependencies and
         // NodeUpdater.getDefaultDevDependencies
-        FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(),
+        FileUtils.write(mainPackageFile, getInitalPackageJson().toString(),
                 "UTF-8");
         devServerConfigFile.createNewFile();
         FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
@@ -125,16 +125,16 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         return new File(baseDir, VITE_CONFIG);
     }
 
-    private JsonObject getInitalPackageJson() {
-        JsonObject packageJson = Json.createObject();
-        JsonObject vaadinPackages = Json.createObject();
+    private ObjectNode getInitalPackageJson() {
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+        ObjectNode vaadinPackages = JacksonUtils.createObjectNode();
 
-        vaadinPackages.put("dependencies", Json.createObject());
-        JsonObject defaults = vaadinPackages.getObject("dependencies");
+        vaadinPackages.put("dependencies", JacksonUtils.createObjectNode());
+        ObjectNode defaults = (ObjectNode) vaadinPackages.get("dependencies");
         defaults.put("@polymer/polymer", "3.2.0");
 
-        vaadinPackages.put("devDependencies", Json.createObject());
-        defaults = vaadinPackages.getObject("devDependencies");
+        vaadinPackages.put("devDependencies", JacksonUtils.createObjectNode());
+        defaults = (ObjectNode) vaadinPackages.get("devDependencies");
         defaults.put("webpack", "4.30.0");
         defaults.put("webpack-cli", "3.3.0");
         defaults.put("webpack-dev-server", "3.3.0");
