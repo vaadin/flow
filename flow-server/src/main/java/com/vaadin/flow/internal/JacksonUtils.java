@@ -40,10 +40,17 @@ import com.fasterxml.jackson.core.util.Separators.Spacing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Helpers for using <code>jackson</code>.
@@ -85,6 +92,87 @@ public final class JacksonUtils {
      */
     public static ArrayNode createArrayNode() {
         return objectMapper.createArrayNode();
+    }
+
+    /**
+     * Create a nullNode for null value.
+     *
+     * @return NullNode
+     */
+    public static ValueNode nullNode() {
+        return (ValueNode) objectMapper.nullNode();
+    }
+
+    /**
+     * Map JsonObject to ObjectNode.
+     *
+     * @param jsonObject
+     *            JsonObject to change
+     * @return ObjectNode of elemental json object
+     */
+    public static ObjectNode mapElemental(JsonObject jsonObject) {
+        try {
+            return (ObjectNode) objectMapper.readTree(jsonObject.toJson());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Map JsonValue to ObjectNode.
+     *
+     * @param jsonValue
+     *            JsonValue to change
+     * @return ObjectNode of elemental json value
+     */
+    public static BaseJsonNode mapElemental(JsonValue jsonValue) {
+        if (jsonValue == null) {
+            return nullNode();
+        }
+        return objectMapper.valueToTree(jsonValue.asString());
+    }
+
+    /**
+     * Convert the contents of an ArrayNode into a JsonArray. This is mostly
+     * needed for arrays that may contain arrays and values.
+     *
+     * @param jsonNodes
+     *            ArrayNode to convert
+     * @return JsonArray of ArrayNode content
+     */
+    public static JsonArray createElementalArray(ArrayNode jsonNodes) {
+        JsonArray array = Json.createArray();
+        jsonNodes.forEach(node -> {
+            array.set(array.length(), parseNode(node));
+        });
+        return array;
+    }
+
+    private static JsonValue parseNode(JsonNode node) {
+        if (node instanceof ArrayNode) {
+            JsonArray jsonArray = Json.createArray();
+            node.forEach(arrayNode -> parseArrayNode(arrayNode, jsonArray));
+            return jsonArray;
+        }
+        return Json.parse(node.toString());
+    }
+
+    private static void parseArrayNode(JsonNode node, JsonArray jsonArray) {
+        if (JsonNodeType.NUMBER.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.create(node.doubleValue()));
+        } else if (JsonNodeType.STRING.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.create(node.textValue()));
+        } else if (JsonNodeType.ARRAY.equals(node.getNodeType())) {
+            JsonArray array = Json.createArray();
+            node.forEach(arrayNode -> parseArrayNode(arrayNode, array));
+            jsonArray.set(jsonArray.length(), array);
+        } else if (JsonNodeType.BOOLEAN.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.create(node.booleanValue()));
+        } else if (JsonNodeType.NULL.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.createNull());
+        } else {
+            jsonArray.set(jsonArray.length(), Json.parse(node.toString()));
+        }
     }
 
     /**
