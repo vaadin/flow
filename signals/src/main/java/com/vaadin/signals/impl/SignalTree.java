@@ -1,0 +1,338 @@
+package com.vaadin.signals.impl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import com.vaadin.signals.Id;
+import com.vaadin.signals.Node;
+import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SignalCommand;
+
+/**
+ * Provides thread-safe access to a tree of signal nodes and a way of listening
+ * for changes to those nodes. There are two primary types of signal trees:
+ * direct trees have their changes applied immediately whereas async trees make
+ * a differences between submitted changes and changes that have been
+ * asynchronously confirmed.
+ */
+public abstract class SignalTree {
+    /**
+     * Collection of callbacks representing the possible stages when committing
+     * a transaction. The commit is split up into stages to enable a coordinated
+     * transaction that includes multiple signal trees.
+     *
+     * @see SignalTree#prepareCommit(CommandsAndHandlers)
+     */
+    public interface PendingCommit {
+        /**
+         * Checks whether the pending changes can be committed. Committing is
+         * possible if all changes would be accepted based on the current tree
+         * state.
+         *
+         * @return <code>true</code> if the changes can be committed.
+         */
+        boolean canCommit();
+
+        /**
+         * Updates the tree state so that all pending changes are considered to
+         * be submitted.
+         */
+        void applyChanges();
+
+        /**
+         * Sets the result of all pending changes as rejected.
+         */
+        void markAsAborted();
+
+        /**
+         * Notifies dependents and updates all result listeners based on the
+         * pending changes.
+         */
+        void publishChanges();
+    }
+
+    /**
+     * The tree type, used to determine how different tree instances can be
+     * combined in a transaction.
+     */
+    public enum Type {
+        /**
+         * Async trees can only confirm the status of applied commands
+         * asynchronously and can thus not participate in transactions that
+         * contain other async or direct trees.
+         */
+        ASYNC,
+
+        /**
+         * Computed trees cannot cause conflicts and can thus participate in any
+         * transaction without restrictions.
+         */
+        COMPUTED,
+
+        /**
+         * Direct trees can confirm the status of applied commands while the
+         * tree is locked which makes it possible for multiple direct trees to
+         * participate in the same transaction.
+         */
+        DIRECT;
+    }
+
+    private final Map<Id, List<Runnable>> dependents = new HashMap<>();
+
+    private final Id id = Id.random();
+
+    private final ReentrantLock lock = new ReentrantLock();
+
+    private final Type type;
+
+    /**
+     * Creates a new signal tree with the given type.
+     *
+     * @param type
+     *            the signal tree type, not <code>null</code>
+     */
+    protected SignalTree(Type type) {
+        assert type != null;
+
+        this.type = type;
+    }
+
+    /**
+     * Gets the id of this signal tree. The id is a randomly generated unique
+     * value. The id is mainly used for identifying node ownership.
+     *
+     * @see SignalCommand.ScopeOwnerCommand
+     * @see TreeRevision#ownerId()
+     *
+     * @return the tree id, not <code>null</code>
+     */
+    public Id id() {
+        return id;
+    }
+
+    /**
+     * Gets the lock that is used for protecting the integrity of this signal
+     * tree. Locking is in general handled automatically by the tree but needs
+     * to be handled externally when applying transactions so that all trees
+     * participating in a transaction are locked before starting to evaluate the
+     * transaction.
+     *
+     * @return the tree lock instance, not <code>null</code>
+     */
+    public ReentrantLock getLock() {
+        return lock;
+    }
+
+    /**
+     * Checks whether the tree lock is currently held.
+     *
+     * @return <code>true</code> if the lock is held by the current thread
+     */
+    protected boolean hasLock() {
+        return lock.isHeldByCurrentThread();
+    }
+
+    /**
+     * Runs a supplier while holding the lock and returns the provided value.
+     *
+     * @param <T>
+     *            the supplier type
+     * @param action
+     *            the supplier to run, not <code>null</code>
+     * @return the value returned by the supplier
+     */
+    protected <T> T getWithLock(Supplier<T> action) {
+        lock.lock();
+        try {
+            return action.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Runs an action while holding the lock.
+     *
+     * @param action
+     *            the action to run, not <code>null</code>
+     */
+    protected void runWithLock(Runnable action) {
+        lock.lock();
+        try {
+            action.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Wraps the provided action to run it while holding the lock.
+     *
+     * @param action
+     *            the action to wrap, not <code>null</code>
+     * @return a runnable that runs the provided action while holding the lock,
+     *         not <code>null</code>
+     */
+    protected Runnable wrapWithLock(Runnable action) {
+        return () -> runWithLock(action);
+    }
+
+    /**
+     * Registers a dependency on a node in this tree. The dependent will be
+     * invoked the next time the corresponding node is updated in the submitted
+     * snapshot. The dependency is cleared when invoked and needs to be
+     * registered again if it's still relevant. It is safe to register the
+     * dependency again from within the callback.
+     *
+     * @param nodeId
+     *            the id of the node to depend on, not <code>null</code>
+     * @param dependent
+     *            the callback to run when the node has changed, not
+     *            <code>null</code>
+     * @return a callback that can be used to remove the dependency before it's
+     *         triggered, not <code>null</code>
+     */
+    public Runnable depend(Id nodeId, Runnable dependent) {
+        assert nodeId != null;
+        assert dependent != null;
+
+        return getWithLock(() -> {
+            assert submitted().nodes().containsKey(nodeId);
+
+            List<Runnable> list = dependents.computeIfAbsent(nodeId,
+                    ignore -> new ArrayList<>());
+
+            list.add(dependent);
+
+            return wrapWithLock(() -> list.remove(dependent));
+        });
+    }
+
+    /**
+     * Notify all dependents that are affected by changes between two snapshots.
+     *
+     * @see #depend(Id, Runnable)
+     *
+     * @param oldSnapshot
+     *            the old snapshot, not <code>null</code>
+     * @param newSnapshot
+     *            the new snapshot, not <code>null</code>
+     */
+    protected void notifyDependents(Snapshot oldSnapshot,
+            Snapshot newSnapshot) {
+        if (oldSnapshot == newSnapshot) {
+            return;
+        }
+
+        runWithLock(() -> {
+            dependents.forEach((nodeId, list) -> {
+                Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
+                Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
+
+                if (oldNode != newNode
+                        && !oldNode.lastUpdate().equals(newNode.lastUpdate())) {
+                    List<Runnable> copy = List.copyOf(list);
+
+                    // Assuming there will immediately be a new dependent for
+                    // the same node so not clearing the map entry.
+                    list.clear();
+
+                    copy.forEach(Runnable::run);
+                }
+            });
+        });
+    }
+
+    /**
+     * Gets the current snapshot based on all confirmed and submitted commands.
+     *
+     * @return the submitted snapshot, not <code>null</code>
+     */
+    public abstract Snapshot submitted();
+
+    /**
+     * Gets the current snapshot based on all confirmed. This snapshot does not
+     * contain changes from commands that have been submitted but not yet
+     * confirmed.
+     *
+     * @return the confirmed snapshot, not <code>null</code>
+     */
+    public abstract Snapshot confirmed();
+
+    /**
+     * Applies a single command to this tree. This is a shorthand for submitting
+     * a commit with only a single command.
+     *
+     * @param command
+     *            the command to apply, not <code>null</code>
+     * @param resultHandler
+     *            a result handler that will be notified when the command is
+     *            confirmed, not <code>null</code> to ignore the result
+     */
+    public void applyChange(SignalCommand command,
+            Consumer<CommandResult> resultHandler) {
+        assert command != null;
+
+        CommandsAndHandlers commands = new CommandsAndHandlers(command,
+                resultHandler);
+
+        runWithLock(() -> {
+            PendingCommit commit = prepareCommit(commands);
+            if (commit.canCommit()) {
+                commit.applyChanges();
+                commit.publishChanges();
+            } else {
+                commit.markAsAborted();
+            }
+        });
+    }
+
+    /**
+     * Applies a single command to this tree without listening for the result.
+     *
+     * @param command
+     *            the command to apply, not <code>null</code>
+     */
+    public void applyChange(SignalCommand command) {
+        applyChange(command, null);
+    }
+
+    /**
+     * Starts the process of committing a set of changes. The returned instance
+     * defines callbacks for continuing the commit procedure.
+     * <p>
+     * Note that this method expects that the caller has acquired the tree lock
+     * prior to calling the method and that the lock will remain acquired while
+     * interacting with the returned object.
+     *
+     * @param changes
+     *            the changes to commit, not <code>null</code>
+     * @return callbacks for coordinating the rest of the commit sequence, not
+     *         <code>null</code>
+     */
+    public abstract PendingCommit prepareCommit(CommandsAndHandlers changes);
+
+    /**
+     * Gets the type of this signal tree.
+     *
+     * @return the signal tree type, not <code>null</code>
+     */
+    public Type type() {
+        return type;
+    }
+
+    /**
+     * Marks that this signal tree should keep listening to its backing event
+     * log until the pin is cleared. An async signal tree will automatically
+     * remain pinned while there are unconfirmed commands but needs to be
+     * explicitly pinned when there's an active effect that depends on the tree.
+     *
+     * @return a callback to clear the pin, not <code>null</code>
+     */
+    public abstract Runnable pin();
+}
