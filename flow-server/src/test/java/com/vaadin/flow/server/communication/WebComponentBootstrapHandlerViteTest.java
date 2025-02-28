@@ -258,7 +258,7 @@ public class WebComponentBootstrapHandlerViteTest {
         int scriptIndex = result.indexOf("var hasScript = function(src)");
         Assert.assertTrue(scriptIndex >= 0);
 
-        Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\": false"));
+        Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\" : false"));
     }
 
     @Test
