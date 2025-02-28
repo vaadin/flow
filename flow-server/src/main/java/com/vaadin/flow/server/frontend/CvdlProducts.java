@@ -19,12 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.pro.licensechecker.Product;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /** Utilities for commercial product handling. */
 public class CvdlProducts {
@@ -48,11 +47,12 @@ public class CvdlProducts {
         }
 
         try {
-            JsonObject packageJson = Json.parse(FileUtils
+            JsonNode packageJson = JacksonUtils.readTree(FileUtils
                     .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
-            if (packageJson.hasKey(CVDL_PACKAGE_KEY)) {
-                return new Product(packageJson.getString(CVDL_PACKAGE_KEY),
-                        packageJson.getString("version"));
+            if (packageJson.has(CVDL_PACKAGE_KEY)) {
+                return new Product(
+                        packageJson.get(CVDL_PACKAGE_KEY).textValue(),
+                        packageJson.get("version").textValue());
             }
             return null;
         } catch (IOException e) {
