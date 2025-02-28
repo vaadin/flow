@@ -16,9 +16,9 @@
 
 package com.vaadin.gradle
 
+import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
-import elemental.json.Json
 import org.gradle.testkit.runner.BuildResult
 import org.junit.Test
 import java.io.File
@@ -120,10 +120,10 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect(null) { b.task(":vaadinBuildFrontend") }
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = Json.parse(tokenFile.readText())
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("app-" + StringUtil.getHash("web",
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -174,10 +174,10 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect(null) { b.task(":vaadinBuildFrontend") }
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = Json.parse(tokenFile.readText())
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("app-" + StringUtil.getHash("MY_APP_ID",
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -226,8 +226,8 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect(null) { b.task(":vaadinBuildFrontend") }
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("MY_APP_ID") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("MY_APP_ID") { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test

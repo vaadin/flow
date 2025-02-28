@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -38,6 +39,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
@@ -242,16 +244,15 @@ public class PrepareFrontendMojoTest {
     @Test
     public void should_updateAndKeepDependencies_when_packageJsonExists()
             throws Exception {
-        JsonObject json = TestUtils.getInitialPackageJson();
-        json.put("dependencies", Json.createObject());
-        json.getObject("dependencies").put("foo", "bar");
-        FileUtils.fileWrite(packageJson, json.toJson());
+        ObjectNode json = TestUtils.getInitialPackageJson();
+        json.set("dependencies", JacksonUtils.createObjectNode());
+        ((ObjectNode) json.get("dependencies")).put("foo", "bar");
+        FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();
         assertPackageJsonContent();
 
-        JsonObject packageJsonObject = getPackageJson(packageJson);
-        assertContainsPackage(packageJsonObject.getObject("dependencies"),
-                "foo");
+        ObjectNode packageJsonObject = getPackageJson(packageJson);
+        assertContainsPackage(packageJsonObject.get("dependencies"), "foo");
     }
 
     @Test
@@ -268,13 +269,13 @@ public class PrepareFrontendMojoTest {
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = getPackageJson(packageJson);
+        ObjectNode packageJsonObject = getPackageJson(packageJson);
 
-        assertContainsPackage(packageJsonObject.getObject("dependencies"),
+        assertContainsPackage(packageJsonObject.get("dependencies"),
                 "@polymer/polymer");
 
-        assertContainsPackage(packageJsonObject.getObject("devDependencies"),
-                "vite", "@rollup/plugin-replace", "rollup-plugin-brotli",
+        assertContainsPackage(packageJsonObject.get("devDependencies"), "vite",
+                "@rollup/plugin-replace", "rollup-plugin-brotli",
                 "vite-plugin-checker");
     }
 }

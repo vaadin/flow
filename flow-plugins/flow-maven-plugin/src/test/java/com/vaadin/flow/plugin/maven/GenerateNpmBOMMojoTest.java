@@ -98,7 +98,7 @@ public class GenerateNpmBOMMojoTest {
                 .when(mojo).getJarFiles();
 
         FileUtils.fileWrite(manifestFilePath, "UTF-8",
-                TestUtils.getInitialPackageJson().toJson());
+                TestUtils.getInitialPackageJson().toString());
         lookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
