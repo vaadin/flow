@@ -53,6 +53,9 @@ public class TaskGenerateFeatureFlagsTest {
 
         File frontendFolder = temporaryFolder.newFolder(FRONTEND);
         featureFlags = FeatureFlags.get(context);
+        FeatureFlagsTest.addTestFeatureFlag(featureFlags);
+        FeatureFlagsTest.reloadFeatureFlags(featureFlags);
+
         Options options = new Options(Mockito.mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder)
                 .withFeatureFlags(featureFlags);
@@ -113,8 +116,9 @@ public class TaskGenerateFeatureFlagsTest {
 
     private static void assertFeatureFlagGlobal(String content, Feature feature,
             boolean enabled) {
-        Assert.assertTrue(content
-                .contains(String.format("window.Vaadin.featureFlags.%s = %s",
-                        feature.getId(), enabled)));
+        Assert.assertTrue("Feature " + feature.getId() + " not initialized",
+                content.contains(
+                        String.format("window.Vaadin.featureFlags.%s = %s",
+                                feature.getId(), enabled)));
     }
 }

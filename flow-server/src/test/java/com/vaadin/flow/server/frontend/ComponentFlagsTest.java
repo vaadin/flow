@@ -29,6 +29,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.experimental.FeatureFlagsTest;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -66,6 +67,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
         propertiesDir = temporaryFolder.newFolder();
 
         featureFlags = new FeatureFlags(Mockito.mock(Lookup.class));
+        FeatureFlagsTest.addTestFeatureFlag(featureFlags);
         featureFlags.setPropertiesLocation(propertiesDir);
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);

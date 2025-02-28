@@ -17,8 +17,10 @@ package com.vaadin.experimental;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -76,12 +78,26 @@ public class FeatureFlagsTest {
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
         featureFlags = FeatureFlags.get(context);
+        addTestFeatureFlag(featureFlags);
         featureFlags.setPropertiesLocation(propertiesDir);
 
         mockResourcesLocation();
 
         featureFlagsFile = new File(propertiesDir, PROPERTIES_FILENAME);
         Files.deleteIfExists(featureFlagsFile.toPath());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void addTestFeatureFlag(FeatureFlags featureFlags) {
+        try {
+            Field featuresField = FeatureFlags.class
+                    .getDeclaredField("features");
+            featuresField.setAccessible(true);
+            ((List<Feature>) featuresField.get(featureFlags))
+                    .add(new Feature(FEATURE_FLAG_EXAMPLE));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new AssertionError("Cannot inject test feature", e);
+        }
     }
 
     @Test
@@ -142,8 +158,9 @@ public class FeatureFlagsTest {
                 true);
         Assert.assertTrue("Feature should have been enabled",
                 featureFlags.isEnabled(FeatureFlagsTest.FEATURE_FLAG_EXAMPLE));
-        Assert.assertEquals(
-                "# Example feature. Will be removed once the first real feature flag is added\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
+        Assert.assertEquals(String.format(
+                "# %s\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
+                FEATURE_FLAG_EXAMPLE.getTitle()),
                 FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8));
 
@@ -490,8 +507,7 @@ public class FeatureFlagsTest {
             System.setProperty(unsupportedProperty, "true");
             // resetting feature flags to manually retry check (because it was
             // run in @Before block)
-            context.removeAttribute(FeatureFlags.FeatureFlagsWrapper.class);
-            featureFlags = FeatureFlags.get(context);
+            reloadFeatureFlags(featureFlags);
 
             // We do not want warning message for valid flag name with either
             // prefix
@@ -518,6 +534,20 @@ public class FeatureFlagsTest {
             }
             System.clearProperty(unsupportedDeprecatedFormatProperty);
             System.clearProperty(unsupportedProperty);
+        }
+    }
+
+    public static void reloadFeatureFlags(FeatureFlags featureFlags) {
+        try {
+            Field field = FeatureFlags.class
+                    .getDeclaredField("isSystemPropertiesChecked");
+            field.setAccessible(true);
+            field.set(featureFlags, false);
+            featureFlags.loadProperties();
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new AssertionError(
+                    "Cannot reset FeatureFlags.isSystemPropertiesChecked flag",
+                    e);
         }
     }
 
