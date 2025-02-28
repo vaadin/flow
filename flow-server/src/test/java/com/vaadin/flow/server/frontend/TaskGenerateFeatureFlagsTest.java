@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.experimental.FeatureFlagsTest.FEATURE_FLAG_EXAMPLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.experimental.FeatureFlagsTest;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -51,6 +53,9 @@ public class TaskGenerateFeatureFlagsTest {
 
         File frontendFolder = temporaryFolder.newFolder(FRONTEND);
         featureFlags = FeatureFlags.get(context);
+        FeatureFlagsTest.addTestFeatureFlag(featureFlags);
+        FeatureFlagsTest.reloadFeatureFlags(featureFlags);
+
         Options options = new Options(Mockito.mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder)
                 .withFeatureFlags(featureFlags);
@@ -91,13 +96,15 @@ public class TaskGenerateFeatureFlagsTest {
             throws ExecutionFailedException {
         // Enable example feature
         featureFlags.getFeatures().stream()
-                .filter(feature -> feature.equals(FeatureFlags.EXAMPLE))
+                .filter(feature -> feature
+                        .equals(FeatureFlagsTest.FEATURE_FLAG_EXAMPLE))
                 .forEach(feature -> feature.setEnabled(true));
 
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
 
-        assertFeatureFlagGlobal(content, FeatureFlags.EXAMPLE, true);
+        assertFeatureFlagGlobal(content, FeatureFlagsTest.FEATURE_FLAG_EXAMPLE,
+                true);
     }
 
     @Test
@@ -109,8 +116,9 @@ public class TaskGenerateFeatureFlagsTest {
 
     private static void assertFeatureFlagGlobal(String content, Feature feature,
             boolean enabled) {
-        Assert.assertTrue(content
-                .contains(String.format("window.Vaadin.featureFlags.%s = %s",
-                        feature.getId(), enabled)));
+        Assert.assertTrue("Feature " + feature.getId() + " not initialized",
+                content.contains(
+                        String.format("window.Vaadin.featureFlags.%s = %s",
+                                feature.getId(), enabled)));
     }
 }

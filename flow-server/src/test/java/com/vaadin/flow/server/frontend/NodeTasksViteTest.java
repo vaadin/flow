@@ -32,6 +32,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.experimental.FeatureFlagsTest;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
@@ -103,6 +104,10 @@ public class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
+        FeatureFlags featureFlags = options.getFeatureFlags();
+        FeatureFlagsTest.addTestFeatureFlag(featureFlags);
+        FeatureFlagsTest.reloadFeatureFlags(featureFlags);
+
         assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
 
@@ -142,6 +147,10 @@ public class NodeTasksViteTest {
                 .setJavaResourceFolder(propertiesDir)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
+
+        FeatureFlags featureFlags = options.getFeatureFlags();
+        FeatureFlagsTest.addTestFeatureFlag(featureFlags);
+        FeatureFlagsTest.reloadFeatureFlags(featureFlags);
 
         new NodeTasks(options).execute();
         File importsFile = FrontendUtils

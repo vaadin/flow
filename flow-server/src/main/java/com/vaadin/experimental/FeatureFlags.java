@@ -57,11 +57,6 @@ public class FeatureFlags implements Serializable {
 
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
-    public static final Feature EXAMPLE = new Feature(
-            "Example feature. Will be removed once the first real feature flag is added",
-            "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
-            false,
-            "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
             "Collaboration Kit backend for clustering support",
             "collaborationEngineBackend",
@@ -129,7 +124,6 @@ public class FeatureFlags implements Serializable {
      */
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
-        features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
