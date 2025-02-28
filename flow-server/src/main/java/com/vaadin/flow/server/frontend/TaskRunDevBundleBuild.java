@@ -119,6 +119,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
         settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
         FrontendTools frontendTools = new FrontendTools(settings);
 
         File buildExecutable = new File(options.getNpmFolder(),

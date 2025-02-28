@@ -134,6 +134,8 @@ public class Options implements Serializable {
      */
     private boolean cleanOldGeneratedFiles = false;
 
+    private boolean frontendIgnoreVersionChecks = false;
+
     /**
      * Creates a new instance.
      *
@@ -567,6 +569,19 @@ public class Options implements Serializable {
      */
     public Options withFrontendHotdeploy(boolean frontendHotdeploy) {
         this.frontendHotdeploy = frontendHotdeploy;
+        return this;
+    }
+
+    /**
+     * Whether to ignore node/npm tool version checks or not. Defaults to
+     * {@code false}.
+     *
+     * @param frontendIgnoreVersionChecks
+     *            {@code true} to ignore node/npm tool version checks
+     */
+    public Options withFrontendIgnoreVersionChecks(
+            boolean frontendIgnoreVersionChecks) {
+        this.frontendIgnoreVersionChecks = frontendIgnoreVersionChecks;
         return this;
     }
 
@@ -1012,5 +1027,14 @@ public class Options implements Serializable {
     public Options withNpmExcludeWebComponents(boolean exclude) {
         this.npmExcludeWebComponents = exclude;
         return this;
+    }
+
+    /**
+     * Whether to ignore node/npm tool version checks or not.
+     *
+     * @return {@code true} to ignore node/npm tool version checks
+     */
+    public boolean isFrontendIgnoreVersionChecks() {
+        return frontendIgnoreVersionChecks;
     }
 }

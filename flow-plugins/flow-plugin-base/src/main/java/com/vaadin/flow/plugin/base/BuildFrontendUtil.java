@@ -172,7 +172,9 @@ public class BuildFrontendUtil {
                 .withFrontendExtraFileExtensions(
                         adapter.frontendExtraFileExtensions())
                 .withNpmExcludeWebComponents(
-                        adapter.isNpmExcludeWebComponents());
+                        adapter.isNpmExcludeWebComponents())
+                .withFrontendIgnoreVersionChecks(
+                        adapter.isFrontendIgnoreVersionChecks());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -209,6 +211,8 @@ public class BuildFrontendUtil {
         settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
+        settings.setIgnoreVersionChecks(
+                adapter.isFrontendIgnoreVersionChecks());
 
         return settings;
     }
@@ -360,7 +364,9 @@ public class BuildFrontendUtil {
                     .withNpmExcludeWebComponents(
                             adapter.isNpmExcludeWebComponents())
                     .withFrontendExtraFileExtensions(
-                            adapter.frontendExtraFileExtensions());
+                            adapter.frontendExtraFileExtensions())
+                    .withFrontendIgnoreVersionChecks(
+                            adapter.isFrontendIgnoreVersionChecks());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -430,7 +436,9 @@ public class BuildFrontendUtil {
                     .withFrontendExtraFileExtensions(
                             adapter.frontendExtraFileExtensions())
                     .withNpmExcludeWebComponents(
-                            adapter.isNpmExcludeWebComponents());
+                            adapter.isNpmExcludeWebComponents())
+                    .withFrontendIgnoreVersionChecks(
+                            adapter.isFrontendIgnoreVersionChecks());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

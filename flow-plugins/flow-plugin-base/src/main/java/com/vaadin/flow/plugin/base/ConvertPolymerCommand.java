@@ -199,6 +199,8 @@ public class ConvertPolymerCommand implements AutoCloseable {
         settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
+        settings.setIgnoreVersionChecks(
+                adapter.isFrontendIgnoreVersionChecks());
         return settings;
     }
 }

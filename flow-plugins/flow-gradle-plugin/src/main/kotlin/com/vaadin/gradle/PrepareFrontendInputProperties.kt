@@ -164,6 +164,10 @@ internal class PrepareFrontendInputProperties(
         config.npmExcludeWebComponents
 
     @Input
+    fun getFrontendIgnoreVersionChecks(): Provider<Boolean> =
+        config.frontendIgnoreVersionChecks
+
+    @Input
     @Optional
     fun getNodeExecutablePath(): Provider<String> =
         toolsService.toolsProperty { it.nodeBinary }

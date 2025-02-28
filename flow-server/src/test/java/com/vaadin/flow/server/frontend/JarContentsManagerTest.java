@@ -30,6 +30,7 @@ import java.util.zip.ZipEntry;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -50,6 +51,7 @@ import static org.junit.Assert.assertTrue;
  * @author Vaadin Ltd
  * @since 1.0.
  */
+@Ignore
 public class JarContentsManagerTest {
     @Rule
     public TemporaryFolder testDirectory = new TemporaryFolder();

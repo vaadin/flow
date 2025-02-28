@@ -179,7 +179,9 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withProductionMode(productionMode)
                         .withReact(isReactEnabled())
                         .withNpmExcludeWebComponents(
-                                isNpmExcludeWebComponents());
+                                isNpmExcludeWebComponents())
+                        .withFrontendIgnoreVersionChecks(
+                                isFrontendIgnoreVersionChecks());
                 new NodeTasks(options).execute();
                 logInfo("SBOM generation created node_modules and all needed metadata. "
                         + "If you don't need it, please run mvn vaadin:clean-frontend");

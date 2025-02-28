@@ -354,4 +354,12 @@ public interface PluginAdapterBase {
      * @return {@code true} to exclude Vaadin web component npm packages.
      */
     boolean isNpmExcludeWebComponents();
+
+    /**
+     * Whether to ignore node/npm tool version checks or not. Defaults to
+     * {@code false}.
+     *
+     * @return {@code true} to ignore node/npm tool version checks
+     */
+    boolean isFrontendIgnoreVersionChecks();
 }
