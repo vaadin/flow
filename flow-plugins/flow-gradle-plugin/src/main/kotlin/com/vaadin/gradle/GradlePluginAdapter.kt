@@ -312,4 +312,6 @@ internal class GradlePluginAdapter private constructor(
     override fun frontendExtraFileExtensions(): List<String> =
         config.frontendExtraFileExtensions.get()
 
+    override fun isFrontendIgnoreVersionChecks(): Boolean = config.frontendIgnoreVersionChecks.get()
+
 }

@@ -194,6 +194,12 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
     private boolean npmExcludeWebComponents;
 
+    /**
+     * Set to {@code true} to ignore node/npm tool version checks.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean frontendIgnoreVersionChecks;
+
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
 
     private ClassFinder classFinder;
@@ -552,6 +558,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isNpmExcludeWebComponents() {
         return npmExcludeWebComponents;
+    }
+
+    @Override
+    public boolean isFrontendIgnoreVersionChecks() {
+        return frontendIgnoreVersionChecks;
     }
 
     private static URLClassLoader createIsolatedClassLoader(
