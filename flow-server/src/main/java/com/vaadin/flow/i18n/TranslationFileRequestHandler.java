@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.i18n;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
@@ -23,8 +24,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,10 +131,10 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     private void writeFileToResponse(VaadinResponse response,
             ResourceBundle translationPropertyFile) throws IOException {
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         translationPropertyFile.keySet().forEach(
                 key -> json.put(key, translationPropertyFile.getString(key)));
-        response.getWriter().write(json.toJson());
+        response.getWriter().write(json.toString());
     }
 
     private Locale getLocale(VaadinRequest request) {
