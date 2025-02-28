@@ -55,7 +55,7 @@ public class DefaultApplicationConfigurationFactoryTest {
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        String content = "{ 'externalStatsFile':true }";
+        String content = "{ \"externalStatsFile\":true }";
         mockClassPathTokenFile(resourceProvider, content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -73,7 +73,7 @@ public class DefaultApplicationConfigurationFactoryTest {
     @Test
     public void create_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
-        String content = "{ 'externalStatsFile':true }";
+        String content = "{ \"externalStatsFile\":true }";
         VaadinContext context = mockTokenFileViaContextParam(content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -91,7 +91,7 @@ public class DefaultApplicationConfigurationFactoryTest {
     @Test
     public void create_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
-        String content = "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}";
+        String content = "{ \"externalStatsUrl\": \"http://my.server/static/stats.json\"}";
         VaadinContext context = mockTokenFileViaContextParam(content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -117,7 +117,7 @@ public class DefaultApplicationConfigurationFactoryTest {
                 context);
 
         mockClassPathTokenFile(resourceProvider,
-                "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}");
+                "{ \"externalStatsUrl\": \"http://my.server/static/stats.json\"}");
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
         ApplicationConfiguration configuration = factory.create(context);
@@ -165,7 +165,7 @@ public class DefaultApplicationConfigurationFactoryTest {
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        String content = "{ '" + Constants.PREMIUM_FEATURES + "':true }";
+        String content = "{ \"" + Constants.PREMIUM_FEATURES + "\": true }";
         mockClassPathTokenFile(resourceProvider, content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
