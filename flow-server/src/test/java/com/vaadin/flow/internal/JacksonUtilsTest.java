@@ -482,7 +482,7 @@ public class JacksonUtilsTest {
                   "child": {
                     "childValue": "child"
                   }
-                }""", JacksonUtils.toFileJson(json));
+                }""", JacksonUtils.toFileJson(json).replace("\r\n", "\n"));
 
     }
 
