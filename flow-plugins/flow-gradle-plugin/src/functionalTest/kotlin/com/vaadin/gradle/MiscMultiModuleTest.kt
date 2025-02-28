@@ -24,7 +24,9 @@ import org.junit.Test
 import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.writeText
+import kotlin.test.assertContains
 import kotlin.test.expect
+import org.gradle.testkit.runner.TaskOutcome
 
 class MiscMultiModuleTest : AbstractGradleTest() {
     /**
@@ -227,5 +229,57 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val tokenFileContent = Json.parse(tokenFile.readText())
         expect("MY_APP_ID") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
     }
+
+    @Test
+    fun testPrepareFrontend_configurationCache() {
+        testProject.settingsFile.writeText("include 'lib', 'web'")
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+            }
+        """.trimIndent())
+        testProject.newFolder("lib")
+        val webFolder = testProject.newFolder("web")
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        webFolder.resolve("src/main/frontend").mkdirs()
+        val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
+        webBuildFile.writeText("""
+            apply plugin: 'war'
+            apply plugin: 'com.vaadin'
+            
+            dependencies {
+                implementation project(':lib')
+                implementation("com.vaadin:flow:$flowVersion")
+            }
+
+            vaadin {
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                applicationIdentifier = 'MY_APP_ID'
+            }
+        """.trimIndent())
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result.expectTaskSucceded("web:vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("web:vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
 
 }
