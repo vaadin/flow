@@ -10,12 +10,21 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinSession;
 
+import elemental.json.JsonObject;
+
 @JsModule(value = "./devtools-plugin.ts", developmentOnly = true)
 public class DevToolsPlugin implements DevToolsMessageHandler {
 
     @Override
     public void handleConnect(DevToolsInterface devToolsInterface) {
         devToolsInterface.send("plugin-init", null);
+    }
+
+    @Override
+    public boolean handleMessage(String command, JsonObject data,
+            DevToolsInterface devToolsInterface) {
+        return handleMessage(command, JacksonUtils.mapElemental(data),
+                devToolsInterface);
     }
 
     @Override

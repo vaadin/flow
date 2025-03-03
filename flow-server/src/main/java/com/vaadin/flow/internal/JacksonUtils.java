@@ -40,10 +40,16 @@ import com.fasterxml.jackson.core.util.Separators.Spacing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import elemental.json.JsonNull;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Helpers for using <code>jackson</code>.
@@ -85,6 +91,21 @@ public final class JacksonUtils {
      */
     public static ArrayNode createArrayNode() {
         return objectMapper.createArrayNode();
+    }
+
+    /**
+     * Map JsonObject to ObjectNode.
+     *
+     * @param jsonObject
+     *            JsonObject to change
+     * @return ObjectNode of elemental json object
+     */
+    public static ObjectNode mapElemental(JsonObject jsonObject) {
+        try {
+            return (ObjectNode) objectMapper.readTree(jsonObject.toJson());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
