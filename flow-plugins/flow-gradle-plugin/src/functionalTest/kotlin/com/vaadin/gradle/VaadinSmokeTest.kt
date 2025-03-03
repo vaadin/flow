@@ -15,14 +15,14 @@
  */
 package com.vaadin.gradle
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.vaadin.flow.internal.JacksonUtils
 import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.expect
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendUtils
-import elemental.json.JsonObject
-import elemental.json.impl.JsonUtil
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
@@ -71,8 +71,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
         val tokenFile = File(testProject.dir, "build/vaadin-generated/META-INF/VAADIN/config/flow-build-info.json")
         expect(true, tokenFile.toString()) { tokenFile.isFile }
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect(false, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
     }
 
     @Test
@@ -100,11 +100,11 @@ class VaadinSmokeTest : AbstractGradleTest() {
         build.find("*.br", 4..10)
         build.find("*.js", 4..10)
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(true, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect(true, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        ), buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -115,8 +115,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskSucceded("vaadinPrepareFrontend")
 
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect("MY_APP_ID", buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
