@@ -119,8 +119,9 @@ public class FrontendToolsSettings implements Serializable {
     /**
      * Set if node and npm versions should be checked or not.
      *
-     * If set, ystem property {@value FrontendUtils#PARAM_IGNORE_VERSION_CHECKS}
-     * will override the value set here. Defaults to {@code false}.
+     * If set, system property
+     * {@value FrontendUtils#PARAM_IGNORE_VERSION_CHECKS} will override the
+     * value set here. Defaults to {@code false}.
      *
      * @param ignoreVersionChecks
      *            set to {@code true} if versions should be validated
