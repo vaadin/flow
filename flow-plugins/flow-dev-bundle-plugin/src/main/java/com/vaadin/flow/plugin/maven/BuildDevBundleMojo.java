@@ -197,7 +197,7 @@ public class BuildDevBundleMojo extends AbstractMojo
     /**
      * Set to {@code true} to ignore node/npm tool version checks.
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
     private boolean frontendIgnoreVersionChecks;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";

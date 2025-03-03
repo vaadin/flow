@@ -121,7 +121,7 @@ public class FrontendToolsSettings implements Serializable {
      *
      * If set, system property
      * {@value FrontendUtils#PARAM_IGNORE_VERSION_CHECKS} will override the
-     * value set here. Defaults to {@code false}.
+     * value set here.
      *
      * @param ignoreVersionChecks
      *            set to {@code true} if versions should be validated
@@ -129,12 +129,11 @@ public class FrontendToolsSettings implements Serializable {
     public void setIgnoreVersionChecks(boolean ignoreVersionChecks) {
         String val = System
                 .getProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS);
-        if ("true".equalsIgnoreCase(val)) {
-            this.ignoreVersionChecks = true;
-        } else if ("false".equalsIgnoreCase(val)) {
-            this.ignoreVersionChecks = false;
-        } else {
+        if (val == null) {
             this.ignoreVersionChecks = ignoreVersionChecks;
+        } else {
+            this.ignoreVersionChecks = Boolean
+                    .getBoolean(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS);
         }
     }
 

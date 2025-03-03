@@ -356,8 +356,10 @@ public interface PluginAdapterBase {
     boolean isNpmExcludeWebComponents();
 
     /**
-     * Whether to ignore node/npm tool version checks or not. Defaults to
-     * {@code false}.
+     * Whether to ignore node/npm tool version checks or not.
+     *
+     * Note that disabling frontend tools version checking could cause failing
+     * builds and other issues that are difficult to debug.
      *
      * @return {@code true} to ignore node/npm tool version checks
      */

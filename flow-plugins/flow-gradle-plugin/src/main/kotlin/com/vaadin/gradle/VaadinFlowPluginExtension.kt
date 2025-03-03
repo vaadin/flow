@@ -549,6 +549,7 @@ public class PluginEffectiveConfiguration(
 
     public val frontendIgnoreVersionChecks: Provider<Boolean> = extension
         .frontendIgnoreVersionChecks.convention(false)
+        .overrideWithSystemPropertyFlag(project, FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)
 
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
