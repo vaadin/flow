@@ -47,6 +47,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonNull;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -94,6 +96,15 @@ public final class JacksonUtils {
     }
 
     /**
+     * Create a nullNode for null value.
+     *
+     * @return NullNode
+     */
+    public static ValueNode nullNode() {
+        return (ValueNode) objectMapper.nullNode();
+    }
+
+    /**
      * Map JsonObject to ObjectNode.
      *
      * @param jsonObject
@@ -105,6 +116,59 @@ public final class JacksonUtils {
             return (ObjectNode) objectMapper.readTree(jsonObject.toJson());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Map JsonValue to ObjectNode.
+     *
+     * @param jsonValue
+     *            JsonValue to change
+     * @return ObjectNode of elemental json value
+     */
+    public static BaseJsonNode mapElemental(JsonValue jsonValue) {
+        if (jsonValue == null || jsonValue instanceof JsonNull) {
+            return nullNode();
+        }
+        return objectMapper.valueToTree(jsonValue.asString());
+    }
+
+    /**
+     * Convert the contents of an ArrayNode into a JsonArray. This is mostly
+     * needed for arrays that may contain arrays and values.
+     *
+     * @param jsonNodes
+     *            ArrayNode to convert
+     * @return JsonArray of ArrayNode content
+     */
+    public static JsonArray createElementalArray(ArrayNode jsonNodes) {
+        return (JsonArray) parseNode(jsonNodes);
+    }
+
+    private static JsonValue parseNode(JsonNode node) {
+        if (node instanceof ArrayNode) {
+            JsonArray jsonArray = Json.createArray();
+            node.forEach(arrayNode -> parseArrayNode(arrayNode, jsonArray));
+            return jsonArray;
+        }
+        return Json.parse(node.toString());
+    }
+
+    private static void parseArrayNode(JsonNode node, JsonArray jsonArray) {
+        if (JsonNodeType.NUMBER.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.create(node.doubleValue()));
+        } else if (JsonNodeType.STRING.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.create(node.textValue()));
+        } else if (JsonNodeType.ARRAY.equals(node.getNodeType())) {
+            JsonArray array = Json.createArray();
+            node.forEach(arrayNode -> parseArrayNode(arrayNode, array));
+            jsonArray.set(jsonArray.length(), array);
+        } else if (JsonNodeType.BOOLEAN.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.create(node.booleanValue()));
+        } else if (JsonNodeType.NULL.equals(node.getNodeType())) {
+            jsonArray.set(jsonArray.length(), Json.createNull());
+        } else {
+            jsonArray.set(jsonArray.length(), Json.parse(node.toString()));
         }
     }
 
