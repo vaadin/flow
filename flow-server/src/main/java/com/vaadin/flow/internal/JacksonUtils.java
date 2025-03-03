@@ -49,6 +49,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonNull;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -126,7 +127,7 @@ public final class JacksonUtils {
      * @return ObjectNode of elemental json value
      */
     public static BaseJsonNode mapElemental(JsonValue jsonValue) {
-        if (jsonValue == null) {
+        if (jsonValue == null || jsonValue instanceof JsonNull) {
             return nullNode();
         }
         return objectMapper.valueToTree(jsonValue.asString());
@@ -141,11 +142,7 @@ public final class JacksonUtils {
      * @return JsonArray of ArrayNode content
      */
     public static JsonArray createElementalArray(ArrayNode jsonNodes) {
-        JsonArray array = Json.createArray();
-        jsonNodes.forEach(node -> {
-            array.set(array.length(), parseNode(node));
-        });
-        return array;
+        return (JsonArray) parseNode(jsonNodes);
     }
 
     private static JsonValue parseNode(JsonNode node) {
