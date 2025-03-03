@@ -46,6 +46,8 @@ import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
+import elemental.json.JsonObject;
+
 /**
  * {@link BrowserLiveReload} implementation class.
  * <p>

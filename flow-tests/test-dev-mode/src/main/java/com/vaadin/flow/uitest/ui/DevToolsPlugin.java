@@ -17,7 +17,7 @@ public class DevToolsPlugin implements DevToolsMessageHandler {
 
     @Override
     public void handleConnect(DevToolsInterface devToolsInterface) {
-        devToolsInterface.send("plugin-init", null);
+        devToolsInterface.send("plugin-init", (JsonNode) null);
     }
 
     @Override
