@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -35,7 +37,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
@@ -53,10 +55,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -152,10 +150,10 @@ public class BuildFrontendUtilTest {
                 .when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(Mockito.any());
 
-        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
-                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
-                    .thenReturn(true);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
             BuildFrontendUtil.runNodeUpdater(adapter);
         }
 
@@ -308,16 +306,16 @@ public class BuildFrontendUtilTest {
     public void updateBuildFile_tokenExisting_developmentEntriesRemoved()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
-        JsonObject buildInfoJsonDev = Json
-                .parse(Files.readString(tokenFile.toPath()));
+        JsonNode buildInfoJsonDev = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
 
         BuildFrontendUtil.updateBuildFile(adapter, false);
         Assert.assertTrue("Token file should still exist", tokenFile.exists());
-        JsonObject buildInfoJsonProd = Json
-                .parse(Files.readString(tokenFile.toPath()));
+        JsonNode buildInfoJsonProd = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
 
-        Set<String> removedKeys = Arrays.stream(buildInfoJsonDev.keys())
-                .filter(key -> !buildInfoJsonProd.hasKey(key))
+        Set<String> removedKeys = JacksonUtils.getKeys(buildInfoJsonDev)
+                .stream().filter(key -> !buildInfoJsonProd.has(key))
                 .collect(Collectors.toSet());
         Assert.assertFalse(
                 "Development entries have not been removed from token file",
@@ -331,11 +329,12 @@ public class BuildFrontendUtilTest {
 
         BuildFrontendUtil.updateBuildFile(adapter, false);
         Assert.assertTrue("Token file should still exist", tokenFile.exists());
-        JsonObject buildInfoJsonProd = Json
-                .parse(Files.readString(tokenFile.toPath()));
+        JsonNode buildInfoJsonProd = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
         Assert.assertEquals("Wrong application identifier in token file",
-                "TEST_APP_ID", buildInfoJsonProd
-                        .getString(InitParameters.APPLICATION_IDENTIFIER));
+                "TEST_APP_ID",
+                buildInfoJsonProd.get(InitParameters.APPLICATION_IDENTIFIER)
+                        .textValue());
     }
 
     @Test
@@ -358,10 +357,10 @@ public class BuildFrontendUtilTest {
             }
             Assert.assertTrue("Token file should still exist",
                     tokenFile.exists());
-            JsonObject buildInfoJsonProd = Json
-                    .parse(Files.readString(tokenFile.toPath()));
+            JsonNode buildInfoJsonProd = JacksonUtils
+                    .readTree(Files.readString(tokenFile.toPath()));
             Assert.assertTrue("DAU flag should be active in token file",
-                    buildInfoJsonProd.getBoolean(Constants.DAU_TOKEN));
+                    buildInfoJsonProd.get(Constants.DAU_TOKEN).booleanValue());
         });
     }
 
@@ -384,10 +383,10 @@ public class BuildFrontendUtilTest {
             }
         }
         Assert.assertTrue("Token file should still exist", tokenFile.exists());
-        JsonObject buildInfoJsonProd = Json
-                .parse(Files.readString(tokenFile.toPath()));
+        JsonNode buildInfoJsonProd = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
         Assert.assertFalse("DAU flag should not be present in token file",
-                buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+                buildInfoJsonProd.has(Constants.DAU_TOKEN));
     }
 
     @Test
@@ -410,10 +409,10 @@ public class BuildFrontendUtilTest {
             }
             Assert.assertTrue("Token file should still exist",
                     tokenFile.exists());
-            JsonObject buildInfoJsonProd = Json
-                    .parse(Files.readString(tokenFile.toPath()));
+            JsonNode buildInfoJsonProd = JacksonUtils
+                    .readTree(Files.readString(tokenFile.toPath()));
             Assert.assertFalse("DAU flag should not be present in token file",
-                    buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+                    buildInfoJsonProd.has(Constants.DAU_TOKEN));
         });
     }
 
@@ -436,12 +435,13 @@ public class BuildFrontendUtilTest {
             BuildFrontendUtil.updateBuildFile(adapter, true);
             Assert.assertTrue("Token file should still exist",
                     tokenFile.exists());
-            JsonObject buildInfoJsonProd = Json
-                    .parse(Files.readString(tokenFile.toPath()));
+            JsonNode buildInfoJsonProd = JacksonUtils
+                    .readTree(Files.readString(tokenFile.toPath()));
             Assert.assertTrue(
                     Constants.PREMIUM_FEATURES
                             + " flag should be active in token file",
-                    buildInfoJsonProd.getBoolean(Constants.PREMIUM_FEATURES));
+                    buildInfoJsonProd.get(Constants.PREMIUM_FEATURES)
+                            .booleanValue());
         });
     }
 
@@ -456,12 +456,12 @@ public class BuildFrontendUtilTest {
             BuildFrontendUtil.updateBuildFile(adapter, true);
             Assert.assertTrue("Token file should still exist",
                     tokenFile.exists());
-            JsonObject buildInfoJsonProd = Json
-                    .parse(Files.readString(tokenFile.toPath()));
+            JsonNode buildInfoJsonProd = JacksonUtils
+                    .readTree(Files.readString(tokenFile.toPath()));
             Assert.assertFalse(
                     Constants.PREMIUM_FEATURES
                             + " flag should not be active in token file",
-                    buildInfoJsonProd.hasKey(Constants.PREMIUM_FEATURES));
+                    buildInfoJsonProd.has(Constants.PREMIUM_FEATURES));
         });
     }
 
@@ -558,7 +558,7 @@ public class BuildFrontendUtilTest {
             String version, String cvdlName) throws IOException {
         File componentFolder = new File(nodeModulesFolder, name);
         componentFolder.mkdirs();
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("name", name);
         json.put("version", version);
         if (cvdlName == null) {
@@ -568,7 +568,7 @@ public class BuildFrontendUtilTest {
             json.put("cvdlName", cvdlName);
         }
         FileUtils.write(new File(componentFolder, "package.json"),
-                json.toJson(), StandardCharsets.UTF_8);
+                json.toString(), StandardCharsets.UTF_8);
 
     }
 
@@ -603,11 +603,11 @@ public class BuildFrontendUtilTest {
         // when bundle is compiled on Vaadin CI server
         String tokenJson = FileUtils.readFileToString(tokenFile,
                 StandardCharsets.UTF_8);
-        JsonObject buildInfo = JsonUtil.parse(tokenJson);
+        ObjectNode buildInfo = JacksonUtils.readTree(tokenJson);
         buildInfo.put(Constants.PREMIUM_FEATURES, true);
         buildInfo.put(Constants.DAU_TOKEN, true);
 
         FileIOUtils.writeIfChanged(tokenFile,
-                JsonUtil.stringify(buildInfo, 2) + "\n");
+                buildInfo.toPrettyString() + "\n");
     }
 }

@@ -68,8 +68,6 @@ public class FrontendToolsSettings implements Serializable {
             SerializableSupplier<String> alternativeDirGetter) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
-        ignoreVersionChecks = "true".equalsIgnoreCase(
-                System.getProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS));
     }
 
     /**
@@ -121,13 +119,22 @@ public class FrontendToolsSettings implements Serializable {
     /**
      * Set if node and npm versions should be checked or not.
      *
+     * If set, system property
+     * {@value FrontendUtils#PARAM_IGNORE_VERSION_CHECKS} will override the
+     * value set here.
+     *
      * @param ignoreVersionChecks
-     *            set if versions should be validated, default is system
-     *            property for
-     *            {@value FrontendUtils#PARAM_IGNORE_VERSION_CHECKS}
+     *            set to {@code true} if versions should be validated
      */
     public void setIgnoreVersionChecks(boolean ignoreVersionChecks) {
-        this.ignoreVersionChecks = ignoreVersionChecks;
+        String val = System
+                .getProperty(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS);
+        if (val == null) {
+            this.ignoreVersionChecks = ignoreVersionChecks;
+        } else {
+            this.ignoreVersionChecks = Boolean
+                    .getBoolean(FrontendUtils.PARAM_IGNORE_VERSION_CHECKS);
+        }
     }
 
     /**
