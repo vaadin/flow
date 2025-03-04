@@ -35,6 +35,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -43,6 +45,7 @@ import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
@@ -61,10 +64,6 @@ import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LocalSubscriptionKey;
 import com.vaadin.pro.licensechecker.Product;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -230,7 +229,7 @@ public class BuildFrontendUtil {
         // token file with the information about the build
         File token = new File(adapter.servletResourceOutputDirectory(),
                 TOKEN_FILE);
-        JsonObject buildInfo = Json.createObject();
+        ObjectNode buildInfo = JacksonUtils.createObjectNode();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
@@ -288,7 +287,7 @@ public class BuildFrontendUtil {
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileIOUtils.writeIfChanged(token,
-                    JsonUtil.stringify(buildInfo, 2) + "\n");
+                    buildInfo.toPrettyString() + "\n");
             // Enable debug to find out problems related with flow modes
 
             if (adapter.isDebugEnabled()) {
@@ -299,7 +298,7 @@ public class BuildFrontendUtil {
                                 + "npmFolder: %s%nToken file: " + "%s%n"
                                 + "Token content: %s%n",
                         adapter.projectBaseDirectory(), adapter.npmFolder(),
-                        token.getAbsolutePath(), buildInfo.toJson()));
+                        token.getAbsolutePath(), buildInfo));
             }
             return token;
         } catch (IOException e) {
@@ -645,18 +644,18 @@ public class BuildFrontendUtil {
             FrontendDependenciesScanner scanner, String statsJsonContent) {
         List<Product> components = new ArrayList<>();
 
-        final JsonObject statsJson = Json.parse(statsJsonContent);
+        final JsonNode statsJson = JacksonUtils.readTree(statsJsonContent);
         Set<String> usedPackages = getUsedPackages(scanner);
-        if (statsJson.hasKey("cvdlModules")) {
-            final JsonObject cvdlModules = statsJson.getObject("cvdlModules");
-            for (String key : cvdlModules.keys()) {
+        if (statsJson.has("cvdlModules")) {
+            final JsonNode cvdlModules = statsJson.get("cvdlModules");
+            for (String key : JacksonUtils.getKeys(cvdlModules)) {
                 if (!usedPackages.contains(key)) {
                     // If product is not used do not collect it.
                     continue;
                 }
-                final JsonObject cvdlModule = cvdlModules.getObject(key);
-                components.add(new Product(cvdlModule.getString("name"),
-                        cvdlModule.getString("version")));
+                final JsonNode cvdlModule = cvdlModules.get(key);
+                components.add(new Product(cvdlModule.get("name").textValue(),
+                        cvdlModule.get("version").textValue()));
             }
         }
         return components;
@@ -765,7 +764,7 @@ public class BuildFrontendUtil {
         try {
             String json = FileUtils.readFileToString(tokenFile,
                     StandardCharsets.UTF_8.name());
-            JsonObject buildInfo = JsonUtil.parse(json);
+            ObjectNode buildInfo = JacksonUtils.readTree(json);
 
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(NODE_VERSION);
@@ -811,7 +810,7 @@ public class BuildFrontendUtil {
                 buildInfo.put(Constants.PREMIUM_FEATURES, true);
             }
 
-            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
+            FileUtils.write(tokenFile, buildInfo.toPrettyString() + "\n",
                     StandardCharsets.UTF_8.name());
             tokenFile.deleteOnExit();
         } catch (IOException e) {
