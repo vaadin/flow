@@ -46,6 +46,8 @@ import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
+import elemental.json.JsonObject;
+
 /**
  * {@link BrowserLiveReload} implementation class.
  * <p>
@@ -247,6 +249,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public boolean isLiveReload(AtmosphereResource resource) {
         return getRef(resource) != null;
+    }
+
+    /**
+     * Broadcasts the given message to all connected clients.
+     *
+     * @param msg
+     *            the message to broadcast
+     * @deprecated Use {@link #broadcast(ObjectNode)} instead.
+     */
+    @Deprecated
+    public void broadcast(JsonObject msg) {
+        this.broadcast(JacksonUtils.readTree(msg.toJson()));
     }
 
     /**
