@@ -295,6 +295,12 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val npmExcludeWebComponents: Property<Boolean>
 
+    /**
+     * Whether to ignore node/npm tool version checks or not. Defaults to
+     * {@code false}.
+     */
+    public abstract val frontendIgnoreVersionChecks: Property<Boolean>
+
     public fun filterClasspath(
         @DelegatesTo(
             value = ClasspathFilter::class,
@@ -540,6 +546,10 @@ public class PluginEffectiveConfiguration(
     public val frontendExtraFileExtensions: ListProperty<String> =
         extension.frontendExtraFileExtensions
             .convention(listOf())
+
+    public val frontendIgnoreVersionChecks: Provider<Boolean> = extension
+        .frontendIgnoreVersionChecks.convention(false)
+        .overrideWithSystemPropertyFlag(project, FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)
 
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)

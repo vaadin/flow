@@ -227,6 +227,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
         settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
 
