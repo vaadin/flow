@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -339,6 +340,17 @@ public class UidlWriter implements Serializable {
             PendingJavaScriptInvocation invocation) {
         List<Object> parametersList = invocation.getInvocation()
                 .getParameters();
+        // TODO: remove when execJs takes Jackson instead of elemental
+        parametersList = parametersList.stream().map(param -> {
+            if (param instanceof JsonArray) {
+                return JacksonUtils.mapElemental((JsonArray) param);
+            } else if (param instanceof JsonObject) {
+                return JacksonUtils.mapElemental((JsonObject) param);
+            } else if (param instanceof JsonValue) {
+                return JacksonUtils.mapElemental((JsonValue) param);
+            }
+            return param;
+        }).toList();
 
         Stream<Object> parameters = parametersList.stream();
         String expression = invocation.getInvocation().getExpression();
