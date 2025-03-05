@@ -28,15 +28,17 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
@@ -44,7 +46,6 @@ import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
@@ -146,14 +147,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
 
         @Override
-        public void send(String command, JsonObject data) {
-            JsonObject msg = Json.createObject();
+        public void send(String command, JsonNode data) {
+            ObjectNode msg = JacksonUtils.createObjectNode();
             msg.put("command", command);
             if (data != null) {
-                msg.put("data", data);
+                msg.set("data", data);
             }
 
-            debugWindowConnection.send(resource, msg.toJson());
+            debugWindowConnection.send(resource, msg.toString());
         }
 
         @Override
@@ -255,12 +256,24 @@ public class DebugWindowConnection implements BrowserLiveReload {
      *
      * @param msg
      *            the message to broadcast
+     * @deprecated Use {@link #broadcast(ObjectNode)} instead.
      */
+    @Deprecated
     public void broadcast(JsonObject msg) {
+        this.broadcast(JacksonUtils.readTree(msg.toJson()));
+    }
+
+    /**
+     * Broadcasts the given message to all connected clients.
+     *
+     * @param msg
+     *            the message to broadcast
+     */
+    public void broadcast(ObjectNode msg) {
         resources.keySet().forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
-                resource.getBroadcaster().broadcast(msg.toJson(), resource);
+                resource.getBroadcaster().broadcast(msg.toString(), resource);
             }
         });
 
@@ -268,14 +281,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void reload() {
-        JsonObject msg = Json.createObject();
+        ObjectNode msg = JacksonUtils.createObjectNode();
         msg.put("command", "reload");
         broadcast(msg);
     }
 
     @Override
     public void refresh(boolean refreshLayouts) {
-        JsonObject msg = Json.createObject();
+        ObjectNode msg = JacksonUtils.createObjectNode();
         msg.put("command", "reload");
         msg.put("strategy", refreshLayouts ? "full-refresh" : "refresh");
         broadcast(msg);
@@ -283,7 +296,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void update(String path, String content) {
-        JsonObject msg = Json.createObject();
+        ObjectNode msg = JacksonUtils.createObjectNode();
         msg.put("command", "update");
         msg.put("path", path);
         msg.put("content", content);
@@ -297,17 +310,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
             getLogger().debug("Received live reload heartbeat");
             return;
         }
-        JsonObject json = Json.parse(message);
-        String command = json.getString("command");
-        JsonObject data = json.getObject("data");
+        JsonNode json = JacksonUtils.readTree(message);
+        String command = json.get("command").textValue();
+        JsonNode data = json.get("data");
         if ("setFeature".equals(command)) {
-            FeatureFlags.get(context).setEnabled(data.getString("featureId"),
-                    data.getBoolean("enabled"));
+            FeatureFlags.get(context).setEnabled(
+                    data.get("featureId").textValue(),
+                    data.get("enabled").booleanValue());
         } else if ("reportTelemetry".equals(command)) {
             DevModeUsageStatistics.handleBrowserData(data);
         } else if ("checkLicense".equals(command)) {
-            String name = data.getString("name");
-            String version = data.getString("version");
+            String name = data.get("name").textValue();
+            String version = data.get("version").textValue();
             Product product = new Product(name, version);
             boolean ok;
             String errorMessage = "";
@@ -382,13 +396,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
-    public void sendHmrEvent(String event, JsonObject eventData) {
-        JsonObject msg = Json.createObject();
+    public void sendHmrEvent(String event, JsonNode eventData) {
+        ObjectNode msg = JacksonUtils.createObjectNode();
         msg.put("command", "hmr");
-        JsonObject data = Json.createObject();
-        msg.put("data", data);
+        ObjectNode data = JacksonUtils.createObjectNode();
+        msg.set("data", data);
         data.put("event", event);
-        data.put("eventData", eventData);
+        data.set("eventData", eventData);
         broadcast(msg);
     }
 
