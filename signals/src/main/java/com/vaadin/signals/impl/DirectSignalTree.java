@@ -81,11 +81,4 @@ public class DirectSignalTree extends SignalTree {
             }
         };
     }
-
-    @Override
-    public Runnable pin() {
-        // no-op for a direct tree
-        return () -> {
-        };
-    }
 }

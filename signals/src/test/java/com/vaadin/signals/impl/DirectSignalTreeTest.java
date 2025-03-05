@@ -324,10 +324,4 @@ public class DirectSignalTreeTest {
         assertEquals(1, count.get());
     }
 
-    @Test
-    void pin_nothingExplodes() {
-        DirectSignalTree tree = new DirectSignalTree(false);
-
-        tree.pin().run();
-    }
 }

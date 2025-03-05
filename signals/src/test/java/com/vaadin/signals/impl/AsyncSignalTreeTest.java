@@ -1,23 +1,17 @@
 package com.vaadin.signals.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.vaadin.signals.Id;
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.impl.CommandResult.Accept;
@@ -122,172 +116,5 @@ public class AsyncSignalTreeTest {
                 TestUtil.submittedRootValue(tree));
         assertEquals(new TextNode("Submitted"),
                 TestUtil.confirmedRootValue(tree));
-    }
-
-    @Test
-    void isPinned_newTree_notPinned() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        assertFalse(tree.isPinned());
-    }
-
-    @Test
-    void isPinned_unconfirmedCommand_pinnedUntilConfirmed() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        tree.applyChange(TestUtil.rootValueCommand("value"));
-        assertTrue(tree.isPinned());
-
-        // Confirm an unrelated command
-        tree.confirm(List.of(TestUtil.rootValueCommand("unrelated")));
-        assertTrue(tree.isPinned());
-
-        tree.confirmSubmitted();
-        assertFalse(tree.isPinned());
-    }
-
-    @Test
-    void isPinned_partialConfirm_unpinnedAfterFullConfirm() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        tree.applyChange(TestUtil.rootValueCommand());
-        tree.applyChange(TestUtil.rootValueCommand());
-
-        tree.confirm(tree.submitted.remove(0));
-        assertTrue(tree.isPinned());
-
-        tree.confirm(tree.submitted.remove(0));
-        assertFalse(tree.isPinned());
-    }
-
-    @Test
-    void pin_pinAndUnpin_pinnedUntilUnpinned() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        Runnable unpin = tree.pin();
-        assertTrue(tree.isPinned());
-
-        unpin.run();
-        assertFalse(tree.isPinned());
-    }
-
-    @Test
-    void pin_multiplePinned_pinnedUntilAllUnpinned() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        Runnable pin1 = tree.pin();
-        Runnable pin2 = tree.pin();
-        Runnable pin3 = tree.pin();
-
-        pin1.run();
-        pin3.run();
-        assertTrue(tree.isPinned());
-
-        pin2.run();
-        assertFalse(tree.isPinned());
-    }
-
-    @Test
-    void pin_unpinMultipleTimes_countedOnce() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        Runnable pin1 = tree.pin();
-        Runnable pin2 = tree.pin();
-
-        pin1.run();
-        pin1.run();
-        assertTrue(tree.isPinned());
-
-        pin2.run();
-        assertFalse(tree.isPinned());
-    }
-
-    @Test
-    void onPinStatusChanged_pinAndUnpin_runWithLockAtEdge() {
-        List<Boolean> pinStatusChanges = new ArrayList<>();
-
-        AsyncTestTree tree = new AsyncTestTree() {
-            @Override
-            protected void onPinStatusChanged(boolean pinned) {
-                super.onPinStatusChanged(pinned);
-                pinStatusChanges.add(pinned);
-                assertTrue(hasLock());
-            }
-        };
-        assertEquals(List.of(), pinStatusChanges);
-
-        Runnable pin = tree.pin();
-        assertEquals(List.of(true), pinStatusChanges);
-
-        Runnable pin2 = tree.pin();
-        assertEquals(List.of(true), pinStatusChanges);
-
-        pin.run();
-        assertEquals(List.of(true), pinStatusChanges);
-        pin.run();
-        assertEquals(List.of(true), pinStatusChanges);
-
-        pin2.run();
-        assertEquals(List.of(true, false), pinStatusChanges);
-    }
-
-    @Test
-    void onPinStatusChanged_pinWhenUnpinned_pinnedAgain() {
-        AtomicBoolean pinAgain = new AtomicBoolean(true);
-        List<Runnable> pins = new ArrayList<>();
-
-        AsyncTestTree tree = new AsyncTestTree() {
-            @Override
-            protected void onPinStatusChanged(boolean pinned) {
-                super.onPinStatusChanged(pinned);
-
-                if (!pinned && pinAgain.get()) {
-                    pins.add(pin());
-                }
-            }
-        };
-
-        Runnable original = tree.pin();
-        assertEquals(List.of(), pins);
-
-        original.run();
-        assertTrue(tree.isPinned());
-        assertEquals(1, pins.size());
-
-        pinAgain.set(false);
-        pins.remove(0).run();
-        assertFalse(tree.isPinned());
-        assertEquals(List.of(), pins);
-    }
-
-    @Test
-    void pin_scopeOwnerNodePresent_nodeRemovedAndAddedBack() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        Runnable pin = tree.pin();
-
-        SignalCommand.InsertCommand insert = new SignalCommand.InsertCommand(
-                Id.random(), Id.ZERO, tree.id(), new TextNode("value"),
-                ListPosition.last());
-        tree.applyChange(insert);
-        tree.confirmSubmitted();
-        assertEquals(Map.of(insert.commandId(), insert),
-                tree.confirmed().originalInserts());
-        assertEquals(1,
-                tree.confirmed().data(Id.ZERO).get().listChildren().size());
-
-        pin.run();
-        assertFalse(false,
-                "The pending ClearOwnerCommand should not pin the tree");
-        assertEquals(List.of(),
-                tree.submitted().data(Id.ZERO).get().listChildren());
-
-        tree.pin();
-        tree.confirmSubmitted();
-
-        assertEquals(1,
-                tree.confirmed().data(Id.ZERO).get().listChildren().size());
-        assertEquals(Map.of(insert.commandId(), insert),
-                tree.confirmed().originalInserts());
     }
 }

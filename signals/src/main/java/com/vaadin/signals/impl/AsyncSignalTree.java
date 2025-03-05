@@ -1,10 +1,7 @@
 package com.vaadin.signals.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
@@ -21,15 +18,9 @@ import com.vaadin.signals.SignalCommand.SnapshotCommand;
 public abstract class AsyncSignalTree extends SignalTree {
     private final CommandsAndHandlers unconfirmedCommands = new CommandsAndHandlers();
 
-    private Runnable unconfirmedCommandsPin;
-
     private Snapshot confirmed = new Snapshot(id(), true);
 
     private Snapshot submitted = new Snapshot(id(), true);
-
-    private final Set<Object> pins = new HashSet<>();
-
-    private List<SignalCommand> submitWhenPinned = new ArrayList<>();
 
     protected AsyncSignalTree() {
         super(Type.ASYNC);
@@ -84,13 +75,6 @@ public abstract class AsyncSignalTree extends SignalTree {
             notifyDependents(oldSubmitted, submitted);
 
             unconfirmedCommands.notifyResultHandlers(results, commands);
-
-            if (unconfirmedCommandsPin != null
-                    && !hasPinnableUnconfirmedCommand()) {
-                Runnable oldPin = unconfirmedCommandsPin;
-                unconfirmedCommandsPin = null;
-                oldPin.run();
-            }
         });
     }
 
@@ -130,11 +114,6 @@ public abstract class AsyncSignalTree extends SignalTree {
 
                 notifyDependents(oldSnapshot, newSnapshot);
 
-                if (unconfirmedCommandsPin == null
-                        && hasPinnableUnconfirmedCommand()) {
-                    unconfirmedCommandsPin = pin();
-                }
-
                 submit(changes.getCommands());
             }
 
@@ -165,71 +144,5 @@ public abstract class AsyncSignalTree extends SignalTree {
         return getWithLock(() -> {
             return new SnapshotCommand(Id.random(), confirmed.nodes());
         });
-    }
-
-    @Override
-    public Runnable pin() {
-        Object pin = new Object();
-
-        runWithLock(() -> {
-            boolean wasEmpty = pins.isEmpty();
-
-            pins.add(pin);
-
-            if (wasEmpty) {
-                onPinStatusChanged(true);
-            }
-        });
-
-        return wrapWithLock(() -> {
-            if (pins.remove(pin) && pins.isEmpty()) {
-                onPinStatusChanged(false);
-            }
-        });
-    }
-
-    /**
-     * Checks whether this tree is currently pinned.
-     *
-     * @return <code>true</code> if the tree is pinned
-     */
-    public boolean isPinned() {
-        return getWithLock(() -> !pins.isEmpty());
-    }
-
-    /**
-     * Callback that is run whenever the first pin is created or the last one is
-     * cleared. This allows the tree instance to react when the value of
-     * {@link #isPinned()} is toggled.
-     *
-     * @param pinned
-     *            <code>true</code> if the tree is now pinned,
-     *            <code>false</code> if it's now unpinned
-     */
-    protected void onPinStatusChanged(boolean pinned) {
-        if (pinned) {
-            if (!submitWhenPinned.isEmpty()) {
-                submitWhenPinned.forEach(insert -> applyChange(insert));
-                submitWhenPinned.clear();
-            }
-        } else {
-            var originalInserts = submitted().originalInserts();
-            if (!originalInserts.isEmpty()) {
-                submitWhenPinned.addAll(originalInserts.values());
-                applyChange(
-                        new SignalCommand.ClearOwnerCommand(Id.random(), id()));
-            }
-        }
-    }
-
-    private boolean hasPinnableUnconfirmedCommand() {
-        /*
-         * Don't pin for clear owner commands since those are emitted when
-         * unpinned. Ignoring this type of command is fine since it's not a
-         * user-issued command which in turn means that the user will not wait
-         * for the command to be confirmed.
-         */
-        return unconfirmedCommands.getCommands().stream().anyMatch(
-                command -> !(command instanceof SignalCommand.ClearOwnerCommand));
     }
 }

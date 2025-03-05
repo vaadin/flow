@@ -325,14 +325,4 @@ public abstract class SignalTree {
     public Type type() {
         return type;
     }
-
-    /**
-     * Marks that this signal tree should keep listening to its backing event
-     * log until the pin is cleared. An async signal tree will automatically
-     * remain pinned while there are unconfirmed commands but needs to be
-     * explicitly pinned when there's an active effect that depends on the tree.
-     *
-     * @return a callback to clear the pin, not <code>null</code>
-     */
-    public abstract Runnable pin();
 }
