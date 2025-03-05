@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
@@ -204,9 +205,9 @@ public class AtmospherePushConnection
         } else {
             synchronized (lock) {
                 try {
-                    JsonObject response = new UidlWriter().createUidl(getUI(),
+                    JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
-                    sendMessage("for(;;);[" + response.toJson() + "]");
+                    sendMessage("for(;;);[" + response + "]");
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }

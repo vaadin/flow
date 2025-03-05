@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
@@ -39,6 +41,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
@@ -81,24 +84,24 @@ public class ElementListenerMap extends NodeMap {
                     });
         }
 
-        public JsonValue toJson() {
+        public JsonNode toJson() {
             if (debounceSettings.isEmpty()) {
-                return Json.create(false);
+                return JacksonUtils.createNode(false);
             } else if (debounceSettings.size() == 1
                     && debounceSettings.containsKey(Integer.valueOf(0))) {
                 // Shorthand if only debounce is a dummy filter debounce
-                return Json.create(true);
+                return JacksonUtils.createNode(true);
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
                         .map(entry -> Stream.concat(
-                                Stream.of(
-                                        Json.create(entry.getKey().intValue())),
+                                Stream.of(JacksonUtils
+                                        .createNode(entry.getKey().intValue())),
                                 entry.getValue().stream()
                                         .map(DebouncePhase::getIdentifier)
-                                        .map(Json::create))
-                                .collect(JsonUtils.asArray()))
-                        .collect(JsonUtils.asArray());
+                                        .map(JacksonUtils::createNode))
+                                .collect(JacksonUtils.asArray()))
+                        .collect(JacksonUtils.asArray());
             }
 
         }
@@ -393,7 +396,7 @@ public class ElementListenerMap extends NodeMap {
     private void updateEventSettings(String eventType) {
         Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
                 eventType);
-        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
+        ObjectNode eventSettingsJson = JacksonUtils.createObject(eventSettings,
                 ExpressionSettings::toJson);
 
         ConstantPoolKey constantPoolKey = new ConstantPoolKey(

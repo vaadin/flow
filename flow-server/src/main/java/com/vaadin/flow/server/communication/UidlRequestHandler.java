@@ -25,10 +25,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -173,17 +178,17 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
-        JsonObject uidl = createUidl(ui, resync);
+        ObjectNode uidl = createUidl(ui, resync);
 
         removeOffendingMprHashFragment(uidl);
 
         // some dirt to prevent cross site scripting
-        String responseString = "for(;;);[" + uidl.toJson() + "]";
+        String responseString = "for(;;);[" + uidl + "]";
         ui.getInternals().setLastRequestResponse(responseString);
         writer.write(responseString);
     }
 
-    JsonObject createUidl(UI ui, boolean resync) {
+    ObjectNode createUidl(UI ui, boolean resync) {
         return new UidlWriter().createUidl(ui, false, resync);
     }
 
@@ -250,21 +255,21 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         outputStream.flush();
     }
 
-    private void removeOffendingMprHashFragment(JsonObject uidl) {
-        if (!uidl.hasKey(EXECUTE)) {
+    private void removeOffendingMprHashFragment(ObjectNode uidl) {
+        if (!uidl.has(EXECUTE)) {
             return;
         }
 
-        JsonArray exec = uidl.getArray(EXECUTE);
+        ArrayNode exec = (ArrayNode) uidl.get(EXECUTE);
         String location = null;
         int idx = -1;
-        for (int i = 0; i < exec.length(); i++) {
-            JsonArray arr = exec.get(i);
-            for (int j = 0; j < arr.length(); j++) {
-                if (!arr.get(j).getType().equals(JsonType.STRING)) {
+        for (int i = 0; i < exec.size(); i++) {
+            ArrayNode arr = (ArrayNode) exec.get(i);
+            for (int j = 0; j < arr.size(); j++) {
+                if (!arr.get(j).getNodeType().equals(JsonNodeType.STRING)) {
                     continue;
                 }
-                String script = arr.getString(j);
+                String script = arr.get(j).textValue();
                 if (script.contains("history.pushState")) {
                     idx = i;
                     continue;
@@ -285,14 +290,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
 
         if (location != null) {
-            idx = idx >= 0 ? idx : exec.length();
-            JsonArray arr = Json.createArray();
-            arr.set(0, "");
-            arr.set(1,
-                    String.format(
-                            location.startsWith("http") ? PUSH_STATE_LOCATION
-                                    : PUSH_STATE_HASH,
-                            location));
+            idx = idx >= 0 ? idx : exec.size();
+            ArrayNode arr = JacksonUtils.createArrayNode();
+            arr.add("");
+            arr.add(String
+                    .format(location.startsWith("http") ? PUSH_STATE_LOCATION
+                            : PUSH_STATE_HASH, location));
             exec.set(idx, arr);
         }
     }
