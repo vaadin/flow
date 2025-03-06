@@ -58,7 +58,7 @@ public class FeatureFlags implements Serializable {
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
     public static final Feature EXAMPLE = new Feature(
-            "Example feature. Will be removed once the first real feature flag is added",
+            "Example feature. Internally used for testing purposes. Does not have any effect on production applications.",
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");

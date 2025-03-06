@@ -87,8 +87,7 @@ public class MapPutChange extends NodeFeatureChange {
 
         super.populateJson(json, constantPool);
 
-        if (value instanceof StateNode) {
-            StateNode node = (StateNode) value;
+        if (value instanceof StateNode node) {
             json.put(JsonConstants.CHANGE_PUT_NODE_VALUE,
                     Json.create(node.getId()));
         } else if (value instanceof JsonNode node) {
