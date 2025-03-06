@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
@@ -38,7 +38,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -52,7 +52,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             }
             project(':web') {
                 apply plugin: 'war'
-                apply plugin: 'com.vaadin'
+                apply plugin: 'com.vaadin.flow'
                 
                 dependencies {
                     implementation project(':lib')
@@ -82,7 +82,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -96,7 +96,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             }
             project(':web') {
                 apply plugin: 'war'
-                apply plugin: 'com.vaadin'
+                apply plugin: 'com.vaadin.flow'
                 
                 dependencies {
                     implementation project(':lib')
@@ -135,7 +135,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -153,7 +153,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
         webBuildFile.writeText("""
             apply plugin: 'war'
-            apply plugin: 'com.vaadin'
+            apply plugin: 'com.vaadin.flow'
             
             dependencies {
                 implementation project(':lib')
@@ -186,7 +186,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -204,7 +204,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
         webBuildFile.writeText("""
             apply plugin: 'war'
-            apply plugin: 'com.vaadin'
+            apply plugin: 'com.vaadin.flow'
             
             dependencies {
                 implementation project(':lib')
@@ -236,7 +236,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -258,7 +258,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
         webBuildFile.writeText("""
             apply plugin: 'war'
-            apply plugin: 'com.vaadin'
+            apply plugin: 'com.vaadin.flow'
             
             dependencies {
                 implementation project(':lib')
