@@ -70,6 +70,7 @@ public class ViteWebsocketConnectionTest {
             throws ExecutionException, InterruptedException {
         CountDownLatch connectionLatch = new CountDownLatch(1);
         CountDownLatch closeLatch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
         handlerSupplier = (exchange) -> {
             // Simulate connection delay
             Thread.sleep(500);
@@ -81,16 +82,25 @@ public class ViteWebsocketConnectionTest {
                 }, () -> {
                     closeLatch.countDown();
                 }, err -> {
+                    error.set(err);
+                    connectionLatch.countDown();
                 }) {
             @Override
             public void onOpen(WebSocket webSocket) {
-                super.onOpen(webSocket);
                 connectionLatch.countDown();
+                super.onOpen(webSocket);
             }
         };
-        connectionLatch.await(2, TimeUnit.SECONDS);
+        boolean established = connectionLatch.await(2, TimeUnit.SECONDS);
         long elapsedTime = Duration.ofNanos(System.nanoTime() - startTime)
                 .toMillis();
+        if (error.get() != null) {
+            throw new AssertionError(
+                    "Websocket connection failed: " + error.get().getMessage(),
+                    error.get());
+        }
+        Assert.assertTrue("Connection NOT established. Elapsed time "
+                + elapsedTime + " ms", established);
         Assert.assertTrue(
                 "Should have waited for connection to be established (elapsed time: "
                         + elapsedTime + ")",
@@ -115,7 +125,10 @@ public class ViteWebsocketConnectionTest {
                 "/VAADIN", "proto", x -> {
                 }, () -> {
                 }, err -> errorLatch.countDown());
-        errorLatch.await(2, TimeUnit.SECONDS);
+        if (!errorLatch.await(2, TimeUnit.SECONDS)) {
+            Assert.fail(
+                    "Expecting connection failure, but not happened in 2 seconds");
+        }
     }
 
     @Test(timeout = 2000)
