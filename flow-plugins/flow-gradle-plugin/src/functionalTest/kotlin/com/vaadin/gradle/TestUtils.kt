@@ -213,7 +213,7 @@ object OsUtils {
  * Used to test the plugin. Contains helpful utility methods to manipulate folders
  * and files in the project.
  */
-class TestProject(val gradleVersion: String = VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION) {
+class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION) {
     /**
      * The project root dir.
      */

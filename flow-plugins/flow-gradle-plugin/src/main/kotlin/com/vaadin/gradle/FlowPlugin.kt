@@ -26,7 +26,7 @@ import org.gradle.util.GradleVersion
  * The main class of the Vaadin Gradle Plugin.
  * @author mavi@vaadin.com
  */
-public class VaadinPlugin : Plugin<Project> {
+public class FlowPlugin : Plugin<Project> {
     public companion object {
         public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.7"
     }
