@@ -144,8 +144,8 @@ gradlePlugin {
     testSourceSets sourceSets.functionalTest
     plugins {
         vaadinPlugin {
-            id = 'com.vaadin'
-            implementationClass = 'com.vaadin.gradle.VaadinPlugin'
+            id = 'com.vaadin.flow'
+            implementationClass = 'com.vaadin.flow.gradle.VaadinPlugin'
         }
     }
 }
