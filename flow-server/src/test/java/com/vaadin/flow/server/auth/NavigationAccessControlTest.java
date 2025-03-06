@@ -280,6 +280,14 @@ public class NavigationAccessControlTest {
     }
 
     @Test
+    public void setLoginViewStringShouldNotThrowWithSameString() {
+        accessControl.setLoginView("/foo");
+        accessControl.setLoginView("/foo");
+        accessControl.setLoginView(new String("/foo"));
+        Assert.assertEquals("/foo", accessControl.getLoginUrl());
+    }
+
+    @Test
     public void beforeEnter_loginView_accessToLoginViewAlwaysAllowed() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
