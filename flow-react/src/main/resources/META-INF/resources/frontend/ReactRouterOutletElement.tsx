@@ -3,8 +3,8 @@ import { ReactAdapterElement } from "Frontend/generated/flow/ReactAdapter.js";
 import React from "react";
 
 class ReactRouterOutletElement extends ReactAdapterElement {
-  connectedCallback() {
-    super.connectedCallback();
+  public async connectedCallback() {
+    await super.connectedCallback();
     this.style.display = 'contents';
   }
 
