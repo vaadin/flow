@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -49,13 +49,6 @@ import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRe
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonException;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
-import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.shared.ApplicationConstants.RPC_INVOCATIONS;
 import static com.vaadin.flow.shared.ApplicationConstants.SERVER_SYNC_ID;
@@ -144,7 +137,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             writeUidl(uI, stringWriter, false);
         } catch (ClientResentPayloadException e) {
             stringWriter.write(uI.getInternals().getLastRequestResponse());
-        } catch (JsonException e) {
+        } catch (JsonDecodingException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
             return Optional.of(() -> writeRefresh(response));
@@ -278,10 +271,10 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                     continue;
                 }
 
-                JsonObject json = JsonUtil.parse("{" + script + "}");
+                ObjectNode json = JacksonUtils.readTree("{" + script + "}");
                 location = removeHashInV7Uidl(json);
                 if (location != null) {
-                    script = JsonUtil.stringify(json);
+                    script = json.toPrettyString();
                     // remove curly brackets
                     script = script.substring(1, script.length() - 1);
                     arr.set(j, script);
@@ -300,18 +293,18 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
     }
 
-    private String removeHashInV7Uidl(JsonObject json) {
+    private String removeHashInV7Uidl(ObjectNode json) {
         String removed = null;
-        JsonArray changes = json.getArray(CHANGES);
-        for (int i = 0; i < changes.length(); i++) {
-            String hash = removeHashInChange(changes.getArray(i));
+        ArrayNode changes = (ArrayNode) json.get(CHANGES);
+        for (int i = 0; i < changes.size(); i++) {
+            String hash = removeHashInChange((ArrayNode) changes.get(i));
             if (hash != null) {
                 removed = hash;
             }
         }
-        JsonArray rpcs = json.getArray(RPC);
-        for (int i = 0; i < rpcs.length(); i++) {
-            String hash = removeHashInRpc(rpcs.getArray(i));
+        ArrayNode rpcs = (ArrayNode) json.get(RPC);
+        for (int i = 0; i < rpcs.size(); i++) {
+            String hash = removeHashInRpc((ArrayNode) rpcs.get(i));
             if (removed == null && hash != null) {
                 removed = hash;
             }
@@ -319,21 +312,21 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return removed;
     }
 
-    private String removeHashInChange(JsonArray change) {
-        if (change.length() < 3
-                || !change.get(2).getType().equals(JsonType.ARRAY)) {
+    private String removeHashInChange(ArrayNode change) {
+        if (change.size() < 3
+                || !change.get(2).getNodeType().equals(JsonNodeType.ARRAY)) {
             return null;
         }
-        JsonArray value = change.getArray(2);
-        if (value.length() < 2
-                || !value.get(1).getType().equals(JsonType.OBJECT)) {
+        ArrayNode value = (ArrayNode) change.get(2);
+        if (value.size() < 2
+                || !value.get(1).getNodeType().equals(JsonNodeType.OBJECT)) {
             return null;
         }
-        JsonObject location = value.getObject(1);
-        if (!location.hasKey(LOCATION)) {
+        ObjectNode location = (ObjectNode) value.get(1);
+        if (!location.has(LOCATION)) {
             return null;
         }
-        String url = location.getString(LOCATION);
+        String url = location.get(LOCATION).textValue();
         Matcher match = URL_PATTERN.matcher(url);
         if (match.find()) {
             location.put(LOCATION, match.group(1));
@@ -342,18 +335,19 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return null;
     }
 
-    private String removeHashInRpc(JsonArray rpc) {
-        if (rpc.length() != 4 || !rpc.get(1).getType().equals(JsonType.STRING)
-                || !rpc.get(2).getType().equals(JsonType.STRING)
-                || !rpc.get(3).getType().equals(JsonType.ARRAY)
+    private String removeHashInRpc(ArrayNode rpc) {
+        if (rpc.size() != 4
+                || !rpc.get(1).getNodeType().equals(JsonNodeType.STRING)
+                || !rpc.get(2).getNodeType().equals(JsonNodeType.STRING)
+                || !rpc.get(3).getNodeType().equals(JsonNodeType.ARRAY)
                 || !"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc"
-                        .equals(rpc.getString(1))
-                || !"executeJavaScript".equals(rpc.getString(2))) {
+                        .equals(rpc.get(1).textValue())
+                || !"executeJavaScript".equals(rpc.get(2).textValue())) {
             return null;
         }
-        JsonArray scripts = rpc.getArray(3);
-        for (int j = 0; j < scripts.length(); j++) {
-            String exec = scripts.getString(j);
+        ArrayNode scripts = (ArrayNode) rpc.get(3);
+        for (int j = 0; j < scripts.size(); j++) {
+            String exec = scripts.get(j).textValue();
             Matcher match = HASH_PATTERN.matcher(exec);
             if (match.find()) {
                 // replace JS with a noop

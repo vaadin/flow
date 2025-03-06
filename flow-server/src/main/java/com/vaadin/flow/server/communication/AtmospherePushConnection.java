@@ -37,8 +37,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.communication.PushConstants;
 
-import elemental.json.JsonObject;
-
 /**
  * A {@link PushConnection} implementation using the Atmosphere push support
  * that is by default included in Vaadin.
