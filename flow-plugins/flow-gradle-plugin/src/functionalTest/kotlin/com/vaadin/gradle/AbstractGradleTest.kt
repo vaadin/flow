@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import org.junit.After
 import org.junit.Before
