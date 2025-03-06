@@ -1,4 +1,4 @@
-package com.vaadin.flow.gradle
+package com.vaadin.gradle
 
 import org.junit.Test
 import kotlin.test.expect

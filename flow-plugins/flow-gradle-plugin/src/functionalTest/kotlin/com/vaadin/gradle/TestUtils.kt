@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.flow.gradle
+package com.vaadin.gradle
 
 import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult

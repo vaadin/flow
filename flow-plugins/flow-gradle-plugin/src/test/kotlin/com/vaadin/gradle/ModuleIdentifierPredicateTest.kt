@@ -1,4 +1,4 @@
-package com.vaadin.flow.gradle
+package com.vaadin.gradle
 
 import org.gradle.api.internal.artifacts.DefaultModuleIdentifier
 import org.junit.Test

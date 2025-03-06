@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.flow.gradle
+package com.vaadin.gradle
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import org.gradle.api.DefaultTask

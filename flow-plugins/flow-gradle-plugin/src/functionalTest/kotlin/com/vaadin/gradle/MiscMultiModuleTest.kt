@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.vaadin.flow.gradle
+package com.vaadin.gradle
 
 import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
