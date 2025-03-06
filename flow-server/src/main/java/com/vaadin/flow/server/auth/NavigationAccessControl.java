@@ -216,7 +216,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *            the frontend view to use as login view
      */
     public void setLoginView(String loginUrl) {
-        if (loginUrl == this.loginUrl) {
+        if (Objects.equals(loginUrl, this.loginUrl)) {
             // Probably hot reload
             return;
         }
