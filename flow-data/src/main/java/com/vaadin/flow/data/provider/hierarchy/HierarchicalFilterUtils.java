@@ -59,6 +59,21 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
+        public int getDepth(T item) {
+            return getDataProvider().getDepth(item);
+        }
+
+        @Override
+        public T getParentItem(T item) {
+            return getDataProvider().getParentItem(item);
+        }
+
+        @Override
+        public boolean isFlatHierarchy() {
+            return getDataProvider().isFlatHierarchy();
+        }
+
+        @Override
         public int size(Query<T, Q> query) {
             return HierarchicalConfigurableFilterDataProvider.super.size(query);
         }
@@ -119,6 +134,21 @@ final class HierarchicalFilterUtils {
         @Override
         public boolean hasChildren(T item) {
             return getDataProvider().hasChildren(item);
+        }
+
+        @Override
+        public int getDepth(T item) {
+            return getDataProvider().getDepth(item);
+        }
+
+        @Override
+        public T getParentItem(T item) {
+            return getDataProvider().getParentItem(item);
+        }
+
+        @Override
+        public boolean isFlatHierarchy() {
+            return getDataProvider().isFlatHierarchy();
         }
 
         @Override
