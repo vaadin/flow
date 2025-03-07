@@ -21,9 +21,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 /**
  * Keeps track of {@link ConstantPoolKey} values that have already been sent to
  * the client.
