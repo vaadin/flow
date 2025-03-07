@@ -111,7 +111,7 @@ public class WebComponentTest {
 
         WebComponentBinding<Component> binding = new WebComponentBinding<>(
                 mock(Component.class));
-        binding.bindProperty(intConfiguration, false, null);
+        binding.bindProperty(intConfiguration, false);
 
         WebComponent<Component> webComponent = new WebComponent<>(binding,
                 new Element("tag"));
@@ -144,12 +144,12 @@ public class WebComponentTest {
         // binding
         WebComponentBinding<Component> binding = new WebComponentBinding<>(
                 mock(Component.class));
-        binding.bindProperty(intConfiguration, false, null);
-        binding.bindProperty(doubleConfiguration, false, null);
-        binding.bindProperty(stringConfiguration, false, null);
-        binding.bindProperty(booleanConfiguration, false, null);
-        binding.bindProperty(jsonNodeConfiguration, false, null);
-        binding.bindProperty(jsonConfiguration, false, null);
+        binding.bindProperty(intConfiguration, false);
+        binding.bindProperty(doubleConfiguration, false);
+        binding.bindProperty(stringConfiguration, false);
+        binding.bindProperty(booleanConfiguration, false);
+        binding.bindProperty(jsonNodeConfiguration, false);
+        binding.bindProperty(jsonConfiguration, false);
 
         // test
         WebComponent<Component> webComponent = new WebComponent<>(binding,
