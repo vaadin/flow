@@ -79,7 +79,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     protected FrontendDependenciesScanner getScanner(ClassFinder finder,
             FeatureFlags featureFlags) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true, featureFlags);
+                .createScanner(false, finder, true, featureFlags, true);
     }
 
     @Test

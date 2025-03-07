@@ -64,7 +64,7 @@ public class TaskGenerateBootstrapTest {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
         frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, false);
+                .createScanner(false, finder, false, null, true);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         options = new MockOptions(finder, null)
@@ -151,7 +151,7 @@ public class TaskGenerateBootstrapTest {
     private FrontendDependencies getThemedDependency()
             throws MalformedURLException {
         ClassFinder finder = getClassFinder();
-        return new FrontendDependencies(finder) {
+        return new FrontendDependencies(finder, true, null, true) {
 
             @Override
             public Map<ChunkInfo, List<String>> getModules() {
