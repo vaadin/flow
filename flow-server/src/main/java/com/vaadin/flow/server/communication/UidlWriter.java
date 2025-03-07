@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -327,8 +328,15 @@ public class UidlWriter implements Serializable {
 
     private static JsonArray encodeExecuteJavaScript(
             PendingJavaScriptInvocation invocation) {
-        List<Object> parametersList = invocation.getInvocation()
-                .getParameters();
+        // TODO: Mapping of JsonNode to JsonObject to be skipped when JsExec
+        // changed
+        List<Object> parametersList = invocation.getInvocation().getParameters()
+                .stream().map(param -> {
+                    if (param instanceof JsonNode) {
+                        return Json.parse(param.toString());
+                    }
+                    return param;
+                }).toList();
 
         Stream<Object> parameters = parametersList.stream();
         String expression = invocation.getInvocation().getExpression();
