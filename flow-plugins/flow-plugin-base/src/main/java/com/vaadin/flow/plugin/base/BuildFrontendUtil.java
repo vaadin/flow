@@ -311,12 +311,14 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
+     * @param frontendDependencies
      * @throws ExecutionFailedException
      *             - a ExecutionFailedException.
      * @throws URISyntaxException
      *             - - Could not build an URI from nodeDownloadRoot().
      */
-    public static void runNodeUpdater(PluginAdapterBuild adapter)
+    public static void runNodeUpdater(PluginAdapterBuild adapter,
+            FrontendDependenciesScanner frontendDependencies)
             throws ExecutionFailedException, URISyntaxException {
 
         Set<File> jarFiles = adapter.getJarFiles();
@@ -366,7 +368,7 @@ public class BuildFrontendUtil {
                             adapter.frontendExtraFileExtensions())
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks());
-            new NodeTasks(options).execute();
+            new NodeTasks(options, frontendDependencies).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable
@@ -577,10 +579,12 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            the PluginAdapterBase
+     * @param frontendDependencies
      * @return {@literal true} if license validation is required because of the
      *         presence of commercial components, otherwise {@literal false}.
      */
-    public static boolean validateLicenses(PluginAdapterBase adapter) {
+    public static boolean validateLicenses(PluginAdapterBase adapter,
+            FrontendDependenciesScanner frontendDependencies) {
         File outputFolder = adapter.webpackOutputDirectory();
 
         String statsJsonContent = null;
@@ -609,11 +613,8 @@ public class BuildFrontendUtil {
             statsJsonContent = "{}";
         }
 
-        FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, adapter.getClassFinder(), true, null,
-                        adapter.isReactEnabled());
         List<Product> commercialComponents = findCommercialFrontendComponents(
-                scanner, statsJsonContent);
+                frontendDependencies, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
 
         for (Product component : commercialComponents) {

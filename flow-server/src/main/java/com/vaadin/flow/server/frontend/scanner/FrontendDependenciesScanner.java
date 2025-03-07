@@ -22,8 +22,6 @@ import java.util.Set;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.PwaConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -45,54 +43,6 @@ public interface FrontendDependenciesScanner extends Serializable {
      */
     class FrontendDependenciesScannerFactory {
 
-        /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
-         * <p>
-         *
-         * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
-         * @param finder
-         *            a class finder
-         * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
-         * @return a scanner implementation strategy
-         */
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, null);
-        }
-
-        /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
-         * <p>
-         *
-         * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
-         * @param finder
-         *            a class finder
-         * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
-         * @param featureFlags
-         *            available feature flags and their status
-         * @return a scanner implementation strategy
-         *
-         */
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents,
-                FeatureFlags featureFlags) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, featureFlags, true);
-        }
-
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
@@ -107,15 +57,6 @@ public interface FrontendDependenciesScanner extends Serializable {
                         generateEmbeddableWebComponents, featureFlags,
                         reactEnabled);
             }
-        }
-
-        public FrontendDependenciesScanner createScanner(Options options) {
-            boolean reactEnabled = options.isReactEnabled() && FrontendUtils
-                    .isReactRouterRequired(options.getFrontendDirectory());
-            return createScanner(!options.isUseByteCodeScanner(),
-                    options.getClassFinder(),
-                    options.isGenerateEmbeddableWebComponents(),
-                    options.getFeatureFlags(), reactEnabled);
         }
     }
 
