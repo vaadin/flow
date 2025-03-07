@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -121,9 +122,9 @@ public class MetadataWriterTest {
 
     private void assertMetadataOutput(boolean repaintAll, boolean async,
             String expectedOutput) {
-        JsonObject meta = new MetadataWriter().createMetadata(ui, repaintAll,
+        ObjectNode meta = new MetadataWriter().createMetadata(ui, repaintAll,
                 async, messages);
-        Assert.assertEquals(expectedOutput, meta.toJson());
+        Assert.assertEquals(expectedOutput, meta.toString());
     }
 
 }

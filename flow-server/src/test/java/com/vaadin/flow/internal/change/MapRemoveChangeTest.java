@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.internal.change;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,16 +36,16 @@ public class MapRemoveChangeTest {
     public void testJson() {
         MapRemoveChange change = new MapRemoveChange(feature, "some");
 
-        JsonObject json = change.toJson(null);
+        ObjectNode json = change.toJson(null);
 
         Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber(JsonConstants.CHANGE_NODE));
+                json.get(JsonConstants.CHANGE_NODE).intValue());
         Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
-                (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
+                json.get(JsonConstants.CHANGE_FEATURE).intValue());
         Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
-                json.getString(JsonConstants.CHANGE_TYPE));
+                json.get(JsonConstants.CHANGE_TYPE).textValue());
         Assert.assertEquals("some",
-                json.getString(JsonConstants.CHANGE_MAP_KEY));
+                json.get(JsonConstants.CHANGE_MAP_KEY).textValue());
     }
 
 }

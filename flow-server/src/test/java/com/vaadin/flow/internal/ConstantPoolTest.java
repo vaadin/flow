@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,32 +28,35 @@ public class ConstantPoolTest {
     @Test
     public void newConstantPool_noNewItems() {
         Assert.assertFalse(constantPool.hasNewConstants());
-        Assert.assertEquals(0, constantPool.dumpConstants().keys().length);
+        Assert.assertEquals(0,
+                JacksonUtils.getKeys(constantPool.dumpConstants()).size());
     }
 
     @Test
     public void valueIsRegistered() {
-        ConstantPoolKey reference = new ConstantPoolKey(Json.createObject());
+        ConstantPoolKey reference = new ConstantPoolKey(
+                JacksonUtils.createObjectNode());
 
         String constantId = constantPool.getConstantId(reference);
 
         Assert.assertTrue(constantPool.hasNewConstants());
 
-        JsonObject dump = constantPool.dumpConstants();
+        ObjectNode dump = constantPool.dumpConstants();
 
-        Assert.assertEquals(1, dump.keys().length);
-        Assert.assertEquals("{}", dump.get(constantId).toJson());
+        Assert.assertEquals(1, JacksonUtils.getKeys(dump).size());
+        Assert.assertEquals("{}", dump.get(constantId).toString());
     }
 
     @Test
     public void sameValue_sameId() {
-        ConstantPoolKey reference = new ConstantPoolKey(Json.createObject());
+        ConstantPoolKey reference = new ConstantPoolKey(
+                JacksonUtils.createObjectNode());
 
         String constantId = constantPool.getConstantId(reference);
         constantPool.dumpConstants();
 
-        String otherId = constantPool
-                .getConstantId(new ConstantPoolKey(Json.createObject()));
+        String otherId = constantPool.getConstantId(
+                new ConstantPoolKey(JacksonUtils.createObjectNode()));
 
         Assert.assertEquals(constantId, otherId);
         Assert.assertFalse(constantPool.hasNewConstants());
@@ -60,13 +64,14 @@ public class ConstantPoolTest {
 
     @Test
     public void differentValue_differentId() {
-        ConstantPoolKey reference = new ConstantPoolKey(Json.createObject());
+        ConstantPoolKey reference = new ConstantPoolKey(
+                JacksonUtils.createObjectNode());
 
         String constantId = constantPool.getConstantId(reference);
         constantPool.dumpConstants();
 
-        String otherId = constantPool
-                .getConstantId(new ConstantPoolKey(Json.createArray()));
+        String otherId = constantPool.getConstantId(
+                new ConstantPoolKey(JacksonUtils.createArrayNode()));
 
         Assert.assertNotEquals(constantId, otherId);
         Assert.assertTrue(constantPool.hasNewConstants());
@@ -75,9 +80,9 @@ public class ConstantPoolTest {
     @Test
     public void constantPoolKey_exportedDirectly_idCreated() {
         final ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                Json.createObject());
-        final JsonObject message = Json.createObject();
+                JacksonUtils.createObjectNode());
+        final ObjectNode message = JacksonUtils.createObjectNode();
         constantPoolKey.export(message);
-        Assert.assertTrue(message.hasKey(constantPoolKey.getId()));
+        Assert.assertTrue(message.has(constantPoolKey.getId()));
     }
 }

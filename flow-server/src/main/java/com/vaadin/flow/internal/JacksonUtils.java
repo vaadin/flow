@@ -111,6 +111,21 @@ public final class JacksonUtils {
      *            JsonObject to change
      * @return ObjectNode of elemental json object or null for null jsonObject
      */
+    public static ArrayNode mapElemental(JsonArray jsonObject) {
+        try {
+            return (ArrayNode) objectMapper.readTree(jsonObject.toJson());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Map JsonObject to ObjectNode.
+     *
+     * @param jsonObject
+     *            JsonObject to change
+     * @return ObjectNode of elemental json object
+     */
     public static ObjectNode mapElemental(JsonObject jsonObject) {
         if (jsonObject == null) {
             return null;

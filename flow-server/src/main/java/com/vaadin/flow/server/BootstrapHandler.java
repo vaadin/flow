@@ -823,8 +823,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return a JSON object with the initial UIDL message
          */
         private ObjectNode getInitialUidl(UI ui) {
-            ObjectNode json = JacksonUtils
-                    .mapElemental(new UidlWriter().createUidl(ui, false));
+            ObjectNode json = new UidlWriter().createUidl(ui, false);
 
             VaadinSession session = ui.getSession();
             if (session.getConfiguration().isXsrfProtectionEnabled()) {
@@ -1500,8 +1499,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return a JSON object with the initial UIDL message
      */
     protected static ObjectNode getInitialUidl(UI ui) {
-        ObjectNode json = JacksonUtils
-                .mapElemental(new UidlWriter().createUidl(ui, false));
+        ObjectNode json = new UidlWriter().createUidl(ui, false);
 
         VaadinSession session = ui.getSession();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {

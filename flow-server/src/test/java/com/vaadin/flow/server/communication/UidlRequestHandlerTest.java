@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +34,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -48,9 +51,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -201,15 +201,15 @@ public class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        JsonObject uidl = generateUidl(true, true);
+        ObjectNode uidl = generateUidl(true, true);
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
 
-        String v7Uidl = uidl.getArray("execute").getArray(2).getString(1);
+        String v7Uidl = uidl.get("execute").get(2).get(1).textValue();
         assertFalse(v7Uidl.contains("http://localhost:9998/#!away"));
         assertTrue(v7Uidl.contains("http://localhost:9998/"));
         assertFalse(v7Uidl.contains("window.location.hash = '!away';"));
@@ -222,17 +222,17 @@ public class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        JsonObject uidl = generateUidl(true, true);
+        ObjectNode uidl = generateUidl(true, true);
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
-                uidl.getArray("execute").getArray(1).getString(1));
+                uidl.get("execute").get(1).get(1).textValue());
     }
 
     @Test
@@ -243,17 +243,17 @@ public class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        JsonObject uidl = generateUidl(false, true);
+        ObjectNode uidl = generateUidl(false, true);
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
-                uidl.getArray("execute").getArray(1).getString(1));
+                uidl.get("execute").get(1).get(1).textValue());
     }
 
     @Test
@@ -263,19 +263,19 @@ public class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        JsonObject uidl = generateUidl(true, true);
-        uidl.getArray("execute").getArray(2).remove(1);
+        ObjectNode uidl = generateUidl(true, true);
+        ((ArrayNode) uidl.get("execute").get(2)).remove(1);
 
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
 
-        String expected = uidl.toJson();
+        String expected = uidl.toString();
 
         String out = writer.toString();
-        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
 
-        String actual = uidl.toJson();
+        String actual = uidl.toString();
 
         assertEquals(expected, actual);
     }
@@ -288,7 +288,7 @@ public class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        JsonObject uidl = getUidlWithNoHashInLocation();
+        ObjectNode uidl = getUidlWithNoHashInLocation();
 
         doReturn(uidl).when(handler).createUidl(ui, false);
 
@@ -329,10 +329,10 @@ public class UidlRequestHandlerTest {
         Mockito.verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
     }
 
-    private JsonObject generateUidl(boolean withLocation, boolean withHash) {
+    private ObjectNode generateUidl(boolean withLocation, boolean withHash) {
 
         // @formatter:off
-        JsonObject uidl = JsonUtil.parse(
+        ObjectNode uidl = JacksonUtils.readTree(
                 "{" +
                 "  \"syncId\": 3," +
                 "  \"clientId\": 3," +
@@ -387,13 +387,13 @@ public class UidlRequestHandlerTest {
             v7String = v7String.replace("___PLACE_FOR_HASH_RPC___", hashRpc);
         }
 
-        uidl.getArray("execute").getArray(2).set(1, v7String);
+        ((ArrayNode) uidl.get("execute").get(2)).set(1, v7String);
         return uidl;
     }
 
-    private JsonObject getUidlWithNoHashInLocation() {
+    private ObjectNode getUidlWithNoHashInLocation() {
         // @formatter:off
-        return JsonUtil.parse(
+        return JacksonUtils.readTree(
                 "{" +
                 "  \"syncId\": 3," +
                 "  \"clientId\": 3," +
@@ -404,7 +404,7 @@ public class UidlRequestHandlerTest {
                 "        0," +
                 "        9" +
                 "      ]," +
-                "      '\"syncId\": 1, \"clientId\": 0, \"changes\" : [[\"change\",{\"pid\":\"0\"},[\"0\",{\"id\":\"0\",\"location\":\"http://localhost:8080/\",\"v\":{\"action\":\"\"}},[\"actions\",{}]]]], \"state\":{\"1\":{\"componentSettings\":[]}}, \"types\":{\"0\":\"0\",\"1\":\"2\"}, \"hierarchy\":{\"0\":[\"1\"]}, \"rpc\" : [], \"meta\" : {\"async\":true}, \"resources\" : {}, \"timings\":[113, 113]'," +
+                "      \"'syncId': 1, 'clientId': 0, 'changes' : [['change',{'pid':'0'},['0',{'id':'0','location':'http://localhost:8080/','v':{'action':''}},['actions',{}]]]], 'state':{'1':{'componentSettings':[]}}, 'types':{'0':'0','1':'2'}, 'hierarchy':{'0':['1']}, 'rpc' : [], 'meta' : {'async':true}, 'resources' : {}, 'timings':[113, 113]\"," +
                 "      \"ROOT\"" +
                 "    ]" +
                 "  ]," +
