@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -858,7 +859,8 @@ public class NavigationStateRendererTest {
         ui.addModal(modalComponent);
 
         renderer.handle(new NavigationEvent(router, new Location(""), ui,
-                NavigationTrigger.REFRESH_ROUTE, null, false, true, true));
+                NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, false,
+                true, true));
 
         Assert.assertEquals(1, modalComponent.attachCount);
         Assert.assertEquals(1, modalComponent.detachCount);
@@ -940,7 +942,7 @@ public class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE,
-                null, true));
+                (BaseJsonNode) null, true));
         Assert.assertFalse(
                 "No pushState invocation is expected when forwardTo is true.",
                 pushStateCalled.get());
