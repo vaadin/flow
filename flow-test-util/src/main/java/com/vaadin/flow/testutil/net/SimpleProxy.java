@@ -1,4 +1,4 @@
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.testutil.net;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,14 +1,12 @@
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.testutil;
 
 import java.util.List;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public abstract class AbstractBrowserConsoleTest extends ChromeBrowserTest {
 
     @Override
-    protected void open() {
-        super.open();
+    protected void open(String... parameters) {
+        super.open(parameters);
 
         getCommandExecutor().executeScript("window.logs = [];"
                 + "var origConsole = window.console; window.console = {"
@@ -23,10 +21,10 @@ public abstract class AbstractBrowserConsoleTest extends ChromeBrowserTest {
     protected List<?> getBrowserLogs(boolean reset) {
         if (reset) {
             return (List<?>) getCommandExecutor().executeScript(
-                    "var result = window.logs; window.logs=[]; return result;");
+                    "var result = window.logs; window.logs=[]; return result || [];");
         } else {
             return (List<?>) getCommandExecutor()
-                    .executeScript("return window.logs;");
+                    .executeScript("return window.logs || [];");
         }
     }
 

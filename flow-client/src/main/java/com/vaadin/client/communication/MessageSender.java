@@ -208,7 +208,10 @@ public class MessageSender {
      */
     public void send(final JsonObject payload) {
         if (hasQueuedMessages()) {
-            messageQueue.add(payload);
+            if (messageQueue.stream().noneMatch(
+                    message -> message.toJson().equals(payload.toJson()))) {
+                messageQueue.add(payload);
+            }
             return;
         }
         messageQueue.add(payload);
@@ -384,8 +387,8 @@ public class MessageSender {
                 if (messageQueue.get(0)
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID)
                         + 1 == nextExpectedId) {
-                    resetTimer();
                     messageQueue.remove(0);
+                    resetTimer();
                 }
             }
             return;

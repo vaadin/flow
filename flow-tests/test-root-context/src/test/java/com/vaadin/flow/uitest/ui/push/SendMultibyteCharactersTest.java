@@ -10,6 +10,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
 import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.AbstractBrowserConsoleTest;
 import com.vaadin.testbench.TestBenchElement;
 
 @Category(PushTests.class)
