@@ -1120,11 +1120,11 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void requestFlush() {
+    protected void requestFlush() {
         requestFlush(false);
     }
 
-    private void requestFlush(boolean forced) {
+    protected void requestFlush(boolean forced) {
         if (!shouldRequestFlush(forced)) {
             return;
         }
@@ -1179,7 +1179,7 @@ public class DataCommunicator<T> implements Serializable {
                 || !flushUpdatedDataRequest.canExecute(stateNode));
     }
 
-    private void flush() {
+    protected void flush() {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
         Range effectiveRequested;
@@ -1587,5 +1587,4 @@ public class DataCommunicator<T> implements Serializable {
     private static Logger getLogger() {
         return LoggerFactory.getLogger(DataCommunicator.class);
     }
-
 }

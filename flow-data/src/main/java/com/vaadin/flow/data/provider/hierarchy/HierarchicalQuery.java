@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
@@ -35,6 +37,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 public class HierarchicalQuery<T, F> extends Query<T, F> {
 
     private final T parent;
+    private final Set<Object> expandedItemIds;
 
     /**
      * Constructs a new hierarchical query object with given filter and parent
@@ -49,6 +52,13 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
     public HierarchicalQuery(F filter, T parent) {
         super(filter);
         this.parent = parent;
+        this.expandedItemIds = Collections.emptySet();
+    }
+
+    public HierarchicalQuery(F filter, Set<Object> expandedItemIds, T parent) {
+        super(filter);
+        this.parent = parent;
+        this.expandedItemIds = expandedItemIds;
     }
 
     /**
@@ -74,6 +84,15 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
             F filter, T parent) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
         this.parent = parent;
+        this.expandedItemIds = Collections.emptySet();
+    }
+
+    public HierarchicalQuery(int offset, int limit,
+            List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
+            F filter, Set<Object> expandedItemIds, T parent) {
+        super(offset, limit, sortOrders, inMemorySorting, filter);
+        this.parent = parent;
+        this.expandedItemIds = expandedItemIds;
     }
 
     /**
@@ -84,6 +103,10 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      */
     public T getParent() {
         return parent;
+    }
+
+    public Set<Object> getExpandedItemIds() {
+        return expandedItemIds;
     }
 
     /**
