@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -930,7 +931,7 @@ public abstract class AbstractNavigationStateRenderer
         Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC, null, true);
+                NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true);
     }
 
     /**
