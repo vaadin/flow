@@ -105,11 +105,31 @@ public final class JacksonUtils {
     }
 
     /**
+     * Map JsonArray to ArrayNode.
+     *
+     * @param jsonArray
+     *            JsonArray to change
+     * @return ArrayNode of elemental json array object or null for null
+     *         jsonArray
+     */
+    public static ArrayNode mapElemental(JsonArray jsonArray) {
+        if (jsonArray == null || jsonArray instanceof JsonNull) {
+            return null;
+        }
+        try {
+            return (ArrayNode) objectMapper.readTree(jsonArray.toJson());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Map JsonObject to ObjectNode.
      *
      * @param jsonObject
      *            JsonObject to change
-     * @return ObjectNode of elemental json object or null for null jsonObject
+     * @return ObjectNode of elemental json object object or null for null
+     *         jsonObject
      */
     public static ObjectNode mapElemental(JsonObject jsonObject) {
         if (jsonObject == null) {

@@ -622,8 +622,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             return false;
         }
 
-        ObjectNode json = JacksonUtils.mapElemental(
-                new UidlWriter().createUidl(context.getUI(), true, true));
+        ObjectNode json = new UidlWriter().createUidl(context.getUI(), true,
+                true);
         json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
         json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
                 context.getUI().getCsrfToken());
