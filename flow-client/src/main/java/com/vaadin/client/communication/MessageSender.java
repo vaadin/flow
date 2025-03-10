@@ -20,7 +20,6 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
-
 import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -208,8 +207,10 @@ public class MessageSender {
      */
     public void send(final JsonObject payload) {
         if (hasQueuedMessages()) {
-            if (messageQueue.stream().noneMatch(
-                    message -> message.toJson().equals(payload.toJson()))) {
+            // The sever sync id is set in the private sendPayload method.
+            // If it is already present on the payload, it means the message has
+            // been already sent and enqueued.
+            if (!payload.hasKey(ApplicationConstants.SERVER_SYNC_ID)) {
                 messageQueue.add(payload);
             }
             return;
