@@ -1,14 +1,12 @@
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.testutil;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
-import org.junit.experimental.categories.Category;
 
-import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.net.SimpleProxy;
 
-@Category(PushTests.class)
 public abstract class ChromeBrowserTestWithProxy
         extends AbstractBrowserConsoleTest {
 

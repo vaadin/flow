@@ -3,17 +3,18 @@ package com.vaadin.flow.uitest.ui.push;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
+public abstract class ReconnectTest extends PushChromeBrowserTestWithProxy {
 
     @Override
     public void setup() throws Exception {
         super.setup();
 
-        open();
+        open((String[]) null);
 
         startTimer();
         waitUntilServerCounterChanges();
@@ -89,6 +90,12 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
                 return false;
             }
         }, 30);
+        ensureNoSystemErrorFromServer();
+    }
+
+    private void ensureNoSystemErrorFromServer() {
+        // Make sure there is no error caused by messages sync lost
+        waitForElementNotPresent(By.cssSelector("div.v-system-error"));
     }
 
     private void waitUntilClientCounterChanges(final int expectedValue) {
