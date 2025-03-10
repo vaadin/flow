@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -26,7 +26,7 @@ import org.gradle.util.GradleVersion
  * The main class of the Vaadin Gradle Plugin.
  * @author mavi@vaadin.com
  */
-public class VaadinPlugin : Plugin<Project> {
+public class FlowPlugin : Plugin<Project> {
     public companion object {
         public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.7"
     }
