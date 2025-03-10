@@ -17,6 +17,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
  * Build a <code>NodeExecutor</code> instance.
@@ -84,6 +85,8 @@ public class Options implements Serializable {
     private boolean compressBundle = true;
 
     private List<String> frontendExtraFileExtensions = null;
+
+    private FrontendDependenciesScanner frontendDependenciesScanner;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -1036,5 +1039,36 @@ public class Options implements Serializable {
      */
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    /**
+     * Sets the frontend dependencies scanner to use.
+     *
+     * @param frontendDependenciesScanner
+     *            frontend dependencies scanner
+     * @return this builder
+     */
+    public Options withFrontendDependenciesScanner(
+            FrontendDependenciesScanner frontendDependenciesScanner) {
+        this.frontendDependenciesScanner = frontendDependenciesScanner;
+        return this;
+    }
+
+    /**
+     * Gets the frontend dependencies scanner to use. If not is not pre-set,
+     * this initializes a new one based on the Options set.
+     *
+     * @return frontend dependencies scanner
+     */
+    public FrontendDependenciesScanner getFrontendDependenciesScanner() {
+        if (frontendDependenciesScanner == null) {
+            boolean reactEnabled = isReactEnabled() && FrontendUtils
+                    .isReactRouterRequired(getFrontendDirectory());
+            frontendDependenciesScanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                    .createScanner(!isUseByteCodeScanner(), getClassFinder(),
+                            isGenerateEmbeddableWebComponents(),
+                            getFeatureFlags(), reactEnabled);
+        }
+        return frontendDependenciesScanner;
     }
 }
