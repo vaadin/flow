@@ -19,9 +19,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 public class ConstantPoolTest {
     private ConstantPool constantPool = new ConstantPool();
 

@@ -31,9 +31,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-
 public class ListChangeTest {
     private NodeList<StateNode> feature = AbstractNodeFeatureTest
             .createFeature(ElementChildrenList.class);

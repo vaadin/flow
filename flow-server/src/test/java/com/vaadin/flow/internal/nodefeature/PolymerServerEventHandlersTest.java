@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.internal.nodefeature;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,6 +28,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -49,10 +47,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JreJsonArray;
-import net.jcip.annotations.NotThreadSafe;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Vaadin Ltd

@@ -29,8 +29,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.WrappedSession;
 
-import elemental.json.JsonObject;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

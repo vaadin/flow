@@ -26,8 +26,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-
 public class MapRemoveChangeTest {
     private NodeMap feature = AbstractNodeFeatureTest
             .createFeature(ElementPropertyMap.class);

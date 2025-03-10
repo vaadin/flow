@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +24,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.servlet.http.HttpServletRequest;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Test;
@@ -48,7 +47,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -64,10 +62,6 @@ import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;

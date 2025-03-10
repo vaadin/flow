@@ -105,11 +105,12 @@ public final class JacksonUtils {
     }
 
     /**
-     * Map JsonObject to ObjectNode.
+     * Map JsonArray to ArrayNode.
      *
      * @param jsonArray
-     *            JsonObject to change
-     * @return ObjectNode of elemental json object or null for null jsonObject
+     *            JsonArray to change
+     * @return ArrayNode of elemental json array object or null for null
+     *         jsonArray
      */
     public static ArrayNode mapElemental(JsonArray jsonArray) {
         if (jsonArray == null || jsonArray instanceof JsonNull) {
@@ -127,7 +128,8 @@ public final class JacksonUtils {
      *
      * @param jsonObject
      *            JsonObject to change
-     * @return ObjectNode of elemental json object
+     * @return ObjectNode of elemental json object object or null for null
+     *         jsonObject
      */
     public static ObjectNode mapElemental(JsonObject jsonObject) {
         if (jsonObject == null) {

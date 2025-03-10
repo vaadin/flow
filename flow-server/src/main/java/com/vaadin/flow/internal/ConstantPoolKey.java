@@ -22,10 +22,8 @@ import java.util.Base64;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Wraps a JSON value that should be stored in the {@link ConstantPool} shared
