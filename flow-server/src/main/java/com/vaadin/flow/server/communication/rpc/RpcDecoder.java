@@ -53,6 +53,40 @@ public interface RpcDecoder extends Serializable {
      * @return {@code true} if this decoder is able to decode the {@code value}
      *         to the {@code type}, {@code false} otherwise
      */
+    @Deprecated
+    boolean isApplicable(JsonValue value, Class<?> type);
+
+    /**
+     * Decode the given {@code value} to the required {@code type}.
+     * <p>
+     * {@link RpcDecodeException} is thrown if the {@code value} cannot be
+     * converted to the {@code type} (even though the decoder is applicable for
+     * the {@code value} and the {@code type}).
+     *
+     * @param value
+     *            the value which needs to be decoded
+     * @param type
+     *            the required type to decode
+     * @param <T>
+     *            the decoded value type
+     * @return the decoded value
+     * @throws RpcDecodeException
+     *             if the {@code value} cannot be converted to the {@code type}
+     */
+    @Deprecated
+    <T> T decode(JsonValue value, Class<T> type) throws RpcDecodeException;
+
+    /**
+     * Returns {@code true} if the decoder is applicable for the given
+     * {@code value} and the required {@code type}.
+     *
+     * @param value
+     *            the value which needs to be decoded
+     * @param type
+     *            the required type to decode
+     * @return {@code true} if this decoder is able to decode the {@code value}
+     *         to the {@code type}, {@code false} otherwise
+     */
     boolean isApplicable(JsonNode value, Class<?> type);
 
     /**

@@ -25,6 +25,12 @@ import java.util.Locale;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 
+import com.vaadin.flow.internal.JacksonUtils;
+
+import elemental.json.JsonString;
+import elemental.json.JsonType;
+import elemental.json.JsonValue;
+
 /**
  * Decodes a {@link JsonNode} with {@link JsonNodeType#STRING} type to
  * {@link Number} subclass type.
@@ -40,6 +46,19 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
  *
  */
 public class StringToNumberDecoder implements RpcDecoder {
+
+    @Override
+    public boolean isApplicable(JsonNode value, Class<?> type) {
+        return value.getNodeType().equals(JsonNodeType.STRING)
+                && Number.class.isAssignableFrom(type)
+                && type.getPackage().equals(Integer.class.getPackage());
+    }
+
+    @Override
+    public <T> T decode(JsonNode value, Class<T> type)
+            throws RpcDecodeException {
+        return decode(JacksonUtils.mapElemental(value), type);
+    }
 
     @Override
     public boolean isApplicable(JsonNode value, Class<?> type) {
