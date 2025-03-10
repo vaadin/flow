@@ -15,11 +15,15 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.experimental.FeatureFlags
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendUtils
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
+import com.vaadin.flow.server.frontend.scanner.ClassFinder
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
 import com.vaadin.pro.licensechecker.LicenseChecker
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
@@ -80,9 +84,26 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
         val cleanTask = TaskCleanFrontendFiles(config.npmFolder.get(),
-                BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()), adapter.get().classFinder
+                BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()), adapter.get().classFinder)
+
+        val reactEnabled: Boolean = adapter.get().isReactEnabled()
+                && FrontendUtils.isReactRouterRequired(
+            BuildFrontendUtil.getFrontendDirectory(adapter.get())
         )
-        BuildFrontendUtil.runNodeUpdater(adapter.get())
+        val featureFlags: FeatureFlags = FeatureFlags(
+            adapter.get().createLookup(adapter.get().getClassFinder())
+        )
+        if (adapter.get().javaResourceFolder() != null) {
+            featureFlags.setPropertiesLocation(adapter.get().javaResourceFolder())
+        }
+        val frontendDependencies: FrontendDependenciesScanner = FrontendDependenciesScannerFactory()
+            .createScanner(
+                !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
+                adapter.get().generateEmbeddableWebComponents(), featureFlags,
+                reactEnabled
+            )
+
+        BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)
 
         if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
                 (adapter.get().servletResourceOutputDirectory())) {
@@ -92,7 +113,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             }
         }
         LicenseChecker.setStrictOffline(true)
-        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter.get())
+        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter.get(), frontendDependencies)
 
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired)
     }

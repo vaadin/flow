@@ -118,7 +118,8 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 "");
 
         ClassFinder finder = getClassFinder();
-        FrontendDependencies deps = new FrontendDependencies(finder) {
+        FrontendDependencies deps = new FrontendDependencies(finder, true, null,
+                true) {
 
             @Override
             public Map<ChunkInfo, List<String>> getModules() {

@@ -59,7 +59,11 @@ public interface FrontendDependenciesScanner extends Serializable {
          *            checks {@code WebComponentExporter} classes for
          *            dependencies if {@code true}, doesn't check otherwise
          * @return a scanner implementation strategy
+         * @deprecated Use
+         *             {@link FrontendDependenciesScannerFactory#createScanner(boolean, ClassFinder, boolean, FeatureFlags, boolean)}
+         *             instead.
          */
+        @Deprecated
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents) {
@@ -84,7 +88,11 @@ public interface FrontendDependenciesScanner extends Serializable {
          *            available feature flags and their status
          * @return a scanner implementation strategy
          *
+         * @deprecated Use
+         *             {@link FrontendDependenciesScannerFactory#createScanner(boolean, ClassFinder, boolean, FeatureFlags, boolean)}
+         *             instead.
          */
+        @Deprecated
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
@@ -93,6 +101,25 @@ public interface FrontendDependenciesScanner extends Serializable {
                     generateEmbeddableWebComponents, featureFlags, true);
         }
 
+        /**
+         * Produces scanner implementation based on {@code allDependenciesScan}
+         * value.
+         * <p>
+         *
+         * @param allDependenciesScan
+         *            if {@code true} then full classpath scanning strategy is
+         *            used, otherwise byte scanning strategy is produced
+         * @param finder
+         *            a class finder
+         * @param generateEmbeddableWebComponents
+         *            checks {@code WebComponentExporter} classes for
+         *            dependencies if {@code true}, doesn't check otherwise
+         * @param featureFlags
+         *            available feature flags and their status
+         * @param reactEnabled
+         *            {@code true} if react is enabled, {@code true otherwise}
+         * @return a scanner implementation strategy
+         */
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
@@ -109,6 +136,17 @@ public interface FrontendDependenciesScanner extends Serializable {
             }
         }
 
+        /**
+         * Produces scanner implementation based on the given Options object.
+         *
+         * @param options
+         *            Options to build the scanner from
+         * @return a scanner implementation strategy
+         * @deprecated Use
+         *             {@link FrontendDependenciesScannerFactory#createScanner(boolean, ClassFinder, boolean, FeatureFlags, boolean)}
+         *             instead.
+         */
+        @Deprecated
         public FrontendDependenciesScanner createScanner(Options options) {
             boolean reactEnabled = options.isReactEnabled() && FrontendUtils
                     .isReactRouterRequired(options.getFrontendDirectory());

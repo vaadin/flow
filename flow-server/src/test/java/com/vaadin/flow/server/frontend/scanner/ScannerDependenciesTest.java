@@ -47,8 +47,9 @@ public class ScannerDependenciesTest {
 
     static FrontendDependencies getFrontendDependencies(Class<?>... classes) {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
-                new DefaultClassFinder(new HashSet<>(
-                        new ArrayList<>(Arrays.asList(classes)))));
+                new DefaultClassFinder(
+                        new HashSet<>(new ArrayList<>(Arrays.asList(classes)))),
+                true, null, true);
         return frontendDependencies;
     }
 
@@ -258,7 +259,7 @@ public class ScannerDependenciesTest {
         FrontendDependencies deps = getFrontendDependencies(
                 MethodAnnotationRoute.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
-                "./search-layout.js", "./search-field.js");
+                "./search-field.js", "./search-layout.js");
     }
 
     @Route
