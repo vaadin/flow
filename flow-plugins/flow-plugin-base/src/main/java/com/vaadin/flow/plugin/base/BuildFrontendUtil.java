@@ -312,6 +312,8 @@ public class BuildFrontendUtil {
      * @param adapter
      *            - the PluginAdapterBase.
      * @param frontendDependencies
+     *            Frontend dependencies scanner to use. If not set, one will be
+     *            initialized by {@link Options} class later.
      * @throws ExecutionFailedException
      *             - a ExecutionFailedException.
      * @throws URISyntaxException
