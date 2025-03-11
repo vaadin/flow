@@ -283,13 +283,17 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
 
         if (location != null) {
-            idx = idx >= 0 ? idx : exec.size();
             ArrayNode arr = JacksonUtils.createArrayNode();
             arr.add("");
             arr.add(String
                     .format(location.startsWith("http") ? PUSH_STATE_LOCATION
                             : PUSH_STATE_HASH, location));
-            exec.set(idx, arr);
+            if (idx >= 0) {
+                exec.set(idx, arr);
+            } else {
+                exec.add(arr);
+            }
+
         }
     }
 
