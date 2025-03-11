@@ -49,7 +49,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonBoolean;
 import elemental.json.JsonNull;
+import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -152,6 +154,15 @@ public final class JacksonUtils {
     public static BaseJsonNode mapElemental(JsonValue jsonValue) {
         if (jsonValue == null || jsonValue instanceof JsonNull) {
             return nullNode();
+        }
+        if (jsonValue instanceof JsonObject) {
+            return mapElemental((JsonObject) jsonValue);
+        }
+        if (jsonValue instanceof JsonNumber) {
+            return objectMapper.valueToTree(jsonValue.asNumber());
+        }
+        if (jsonValue instanceof JsonBoolean) {
+            return objectMapper.valueToTree(jsonValue.asBoolean());
         }
         return objectMapper.valueToTree(jsonValue.asString());
     }
