@@ -273,8 +273,6 @@ public class JacksonCodec {
             return (T) convertedType.cast(Integer.valueOf(json.intValue()));
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
-        } else if (JsonNode.class.isAssignableFrom(type)) {
-            return type.cast(json);
         } else {
             assert !canEncodeWithoutTypeInfo(type);
             throw new IllegalArgumentException(

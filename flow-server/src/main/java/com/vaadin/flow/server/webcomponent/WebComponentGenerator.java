@@ -263,8 +263,8 @@ public class WebComponentGenerator {
                     "%s is not a currently supported type for a Property."
                             + " Please use %s or %s instead.",
                     property.getType().getSimpleName(),
-                    JsonValue.class.getSimpleName(),
-                    JsonNode.class.getSimpleName()));
+                    JsonNode.class.getSimpleName(),
+                    JsonValue.class.getSimpleName()));
         }
         if (value == null) {
             value = "null";

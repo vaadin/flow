@@ -30,7 +30,6 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 
 import elemental.json.Json;
@@ -215,7 +214,7 @@ public final class WebComponentBinding<C extends Component>
      *            property configuration, not {@code null}
      * @param overrideDefault
      *            set to {@code true} if the property should be initialized with
-     *            {@code startingValue} instead of default value found in
+     *            {@literal null} instead of default value found in
      *            {@link PropertyData}
      * @throws NullPointerException
      *             if {@code propertyConfiguration} is {@code null}
@@ -340,7 +339,7 @@ public final class WebComponentBinding<C extends Component>
             }
             return value;
         } else if (JsonCodec.canEncodeWithoutTypeInfo(type)) {
-            // TODO: Remove when
+            // TODO: Remove when ClientCallable works with jackson types only.
             Serializable value = null;
             if (jsonValue != null && !(jsonValue instanceof NullNode)) {
                 value = JsonCodec.decodeAs(Json.parse(jsonValue.toString()),
