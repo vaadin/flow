@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;

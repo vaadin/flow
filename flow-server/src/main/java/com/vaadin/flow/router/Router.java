@@ -306,24 +306,8 @@ public class Router implements Serializable {
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
             JsonValue state, boolean forceInstantiation,
             boolean recreateLayoutChain) {
-        assert ui != null;
-        assert location != null;
-        assert trigger != null;
-        ui.getSession().checkHasLock();
-        BaseJsonNode jsonState = JacksonUtils.mapElemental(state);
-
-        if (handleNavigationForLocation(ui, location)) {
-            try {
-                return handleNavigation(ui, location, trigger, jsonState,
-                        forceInstantiation, recreateLayoutChain);
-            } catch (Exception exception) {
-                return handleExceptionNavigation(ui, location, exception,
-                        trigger, jsonState);
-            } finally {
-                ui.getInternals().clearLastHandledNavigation();
-            }
-        }
-        return HttpStatusCode.NOT_MODIFIED.getCode();
+        return navigate(ui, location, trigger, JacksonUtils.mapElemental(state),
+                forceInstantiation, recreateLayoutChain);
     }
 
     private boolean handleNavigationForLocation(UI ui, Location location) {
