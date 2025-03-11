@@ -110,10 +110,9 @@ public class FeatureFlags implements Serializable {
             null);
 
     public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = new Feature(
-        "Form Layout auto-responsive mode enabled by default",
-        "defaultAutoResponsiveFormLayout",
-        "https://github.com/vaadin/platform/issues/7172", true,
-        null);
+            "Form Layout auto-responsive mode enabled by default",
+            "defaultAutoResponsiveFormLayout",
+            "https://github.com/vaadin/platform/issues/7172", true, null);
 
     private List<Feature> features = new ArrayList<>();
 
