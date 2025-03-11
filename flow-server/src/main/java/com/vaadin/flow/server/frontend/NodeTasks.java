@@ -103,13 +103,15 @@ public class NodeTasks implements FallibleCommand {
      *            the options
      */
     public NodeTasks(Options options) {
+        FrontendDependenciesScanner frontendDependencies = options
+                .getFrontendDependenciesScanner();
+
         // Lock file is created in the project root folder and not in target/ so
         // that Maven does not remove it
         lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
                 .toPath();
 
         ClassFinder classFinder = options.getClassFinder();
-        FrontendDependenciesScanner frontendDependencies = null;
 
         Set<String> webComponentTags = new HashSet<>();
 
@@ -119,9 +121,6 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
                 || options.isEnableConfigUpdate()) {
-            frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(options);
-
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,
                         frontendDependencies,
