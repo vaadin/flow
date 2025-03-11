@@ -23,8 +23,6 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
 
-import elemental.json.JsonValue;
-
 /**
  * Maps data from a DOM event to a {@link ComponentEvent}.
  * <p>
@@ -39,9 +37,10 @@ import elemental.json.JsonValue;
  * expression is passed back to the server and injected into the annotated
  * {@link ComponentEvent} constructor parameter.
  * <p>
- * Supported parameter types are {@link String}, {@link JsonValue},
- * {@link Integer}, {@link Double}, {@link Boolean} and their respective
- * primitive types.
+ * Supported parameter types are {@link String},
+ * {@link elemental.json.JsonValue},
+ * {@link com.fasterxml.jackson.databind.JsonNode}, {@link Integer},
+ * {@link Double}, {@link Boolean} and their respective primitive types.
  *
  * @see DomEvent
  * @see DomListenerRegistration#addEventData(String)
