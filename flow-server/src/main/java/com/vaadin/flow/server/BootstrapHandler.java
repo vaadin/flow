@@ -27,7 +27,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -49,6 +48,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -69,6 +70,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
@@ -89,12 +91,6 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
@@ -220,7 +216,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private String appId;
         private PushMode pushMode;
-        private JsonObject applicationParameters;
+        private ObjectNode applicationParameters;
         private BootstrapUriResolver uriResolver;
 
         private boolean initTheme = true;
@@ -388,7 +384,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @return the application parameters that will be written on the page
          */
-        public JsonObject getApplicationParameters() {
+        public ObjectNode getApplicationParameters() {
             if (applicationParameters == null) {
                 applicationParameters = parameterBuilder
                         .getApplicationParameters(this);
@@ -761,15 +757,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private Element createDependencyElement(BootstrapContext context,
-                JsonObject dependencyJson) {
-            String type = dependencyJson.getString(Dependency.KEY_TYPE);
+                ObjectNode dependencyJson) {
+            String type = dependencyJson.get(Dependency.KEY_TYPE).textValue();
             if (Dependency.Type.contains(type)) {
                 Dependency.Type dependencyType = Dependency.Type.valueOf(type);
                 return createDependencyElement(context.getUriResolver(),
                         LoadMode.INLINE, dependencyJson, dependencyType);
             }
             return Jsoup.parse(
-                    dependencyJson.getString(Dependency.KEY_CONTENTS), "",
+                    dependencyJson.get(Dependency.KEY_CONTENTS).textValue(), "",
                     Parser.xmlParser());
         }
 
@@ -810,8 +806,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupMetaAndTitle(head, context);
             setupCss(head, context);
 
-            JsonObject initialUIDL = getInitialUidl(context.getUI());
-            Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
+            ObjectNode initialUIDL = getInitialUidl(context.getUI());
+            Map<LoadMode, ArrayNode> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
                     initialUIDL);
             setupFrameworkLibraries(head, initialUIDL, context);
             return applyUserDependencies(head, context,
@@ -826,8 +822,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the UI for which the UIDL should be generated
          * @return a JSON object with the initial UIDL message
          */
-        private JsonObject getInitialUidl(UI ui) {
-            JsonObject json = new UidlWriter().createUidl(ui, false);
+        private ObjectNode getInitialUidl(UI ui) {
+            ObjectNode json = new UidlWriter().createUidl(ui, false);
 
             VaadinSession session = ui.getSession();
             if (session.getConfiguration().isXsrfProtectionEnabled()) {
@@ -835,7 +831,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             writePushIdUIDL(json, session);
             if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Initial UIDL: {}", json.asString());
+                getLogger().debug("Initial UIDL: {}", json.toPrettyString());
             }
             return json;
         }
@@ -849,7 +845,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @param session
          *            the vaadin session to which the security key belongs
          */
-        private void writePushIdUIDL(JsonObject response,
+        private void writePushIdUIDL(ObjectNode response,
                 VaadinSession session) {
             String pushId = session.getPushId();
             response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
@@ -864,16 +860,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @param ui
          *            the UI to which the security key belongs
          */
-        private void writeSecurityKeyUIDL(JsonObject response, UI ui) {
+        private void writeSecurityKeyUIDL(ObjectNode response, UI ui) {
             String seckey = ui.getCsrfToken();
             response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
         }
 
         private List<Element> applyUserDependencies(Element head,
                 BootstrapContext context,
-                Map<LoadMode, JsonArray> dependenciesToProcessOnServer) {
+                Map<LoadMode, ArrayNode> dependenciesToProcessOnServer) {
             List<Element> dependenciesToInlineInBody = new ArrayList<>();
-            for (Map.Entry<LoadMode, JsonArray> entry : dependenciesToProcessOnServer
+            for (Map.Entry<LoadMode, ArrayNode> entry : dependenciesToProcessOnServer
                     .entrySet()) {
                 dependenciesToInlineInBody.addAll(
                         inlineDependenciesInHead(head, context.getUriResolver(),
@@ -884,13 +880,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private List<Element> inlineDependenciesInHead(Element head,
                 BootstrapUriResolver uriResolver, LoadMode loadMode,
-                JsonArray dependencies) {
+                ArrayNode dependencies) {
             List<Element> dependenciesToInlineInBody = new ArrayList<>();
 
-            for (int i = 0; i < dependencies.length(); i++) {
-                JsonObject dependencyJson = dependencies.getObject(i);
-                Dependency.Type dependencyType = Dependency.Type
-                        .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+            for (int i = 0; i < dependencies.size(); i++) {
+                ObjectNode dependencyJson = (ObjectNode) dependencies.get(i);
+                Dependency.Type dependencyType = Dependency.Type.valueOf(
+                        dependencyJson.get(Dependency.KEY_TYPE).textValue());
                 Element dependencyElement = createDependencyElement(uriResolver,
                         loadMode, dependencyJson, dependencyType);
 
@@ -899,12 +895,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return dependenciesToInlineInBody;
         }
 
-        private Map<LoadMode, JsonArray> popDependenciesToProcessOnServer(
-                JsonObject initialUIDL) {
-            Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
+        private Map<LoadMode, ArrayNode> popDependenciesToProcessOnServer(
+                ObjectNode initialUIDL) {
+            Map<LoadMode, ArrayNode> result = new EnumMap<>(LoadMode.class);
             Stream.of(LoadMode.EAGER, LoadMode.INLINE).forEach(mode -> {
-                if (initialUIDL.hasKey(mode.name())) {
-                    result.put(mode, initialUIDL.getArray(mode.name()));
+                if (initialUIDL.has(mode.name())) {
+                    result.put(mode, (ArrayNode) initialUIDL.get(mode.name()));
                     initialUIDL.remove(mode.name());
                 }
             });
@@ -912,7 +908,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void setupFrameworkLibraries(Element head,
-                JsonObject initialUIDL, BootstrapContext context) {
+                ObjectNode initialUIDL, BootstrapContext context) {
 
             VaadinService service = context.getSession().getService();
             DeploymentConfiguration conf = service.getDeploymentConfiguration();
@@ -984,10 +980,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            in the stat file
          * @return
          */
-        protected List<String> getChunkKeys(JsonObject chunks) {
+        protected List<String> getChunkKeys(ObjectNode chunks) {
             // include all chunks but the one used for exported
             // components.
-            return Arrays.stream(chunks.keys())
+            return JacksonUtils.getKeys(chunks).stream()
                     .filter(s -> !EXPORT_CHUNK.equals(s))
                     .collect(Collectors.toList());
         }
@@ -1131,12 +1127,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private Element createDependencyElement(BootstrapUriResolver resolver,
-                LoadMode loadMode, JsonObject dependency,
+                LoadMode loadMode, ObjectNode dependency,
                 Dependency.Type type) {
             boolean inlineElement = loadMode == LoadMode.INLINE;
-            String url = dependency.hasKey(Dependency.KEY_URL)
+            String url = dependency.has(Dependency.KEY_URL)
                     ? resolver.resolveVaadinUri(
-                            dependency.getString(Dependency.KEY_URL))
+                            dependency.get(Dependency.KEY_URL).textValue())
                     : null;
 
             final Element dependencyElement;
@@ -1158,7 +1154,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             if (inlineElement) {
                 dependencyElement.appendChild(new DataNode(
-                        dependency.getString(Dependency.KEY_CONTENTS)));
+                        dependency.get(Dependency.KEY_CONTENTS).textValue()));
             }
 
             return dependencyElement;
@@ -1183,7 +1179,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "You have to enable javascript in your browser to use this web site.");
         }
 
-        protected Element getBootstrapScript(JsonValue initialUIDL,
+        protected Element getBootstrapScript(ObjectNode initialUIDL,
                 BootstrapContext context) {
             return createInlineJavaScriptElement("//<![CDATA[\n"
                     + getBootstrapJS(initialUIDL, context) + "//]]>");
@@ -1197,20 +1193,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return BOOTSTRAP_JS;
         }
 
-        private String getBootstrapJS(JsonValue initialUIDL,
+        private String getBootstrapJS(ObjectNode initialUIDL,
                 BootstrapContext context) {
             boolean productionMode = context.getSession().getConfiguration()
                     .isProductionMode();
             String result = getBootstrapJS();
-            JsonObject appConfig = context.getApplicationParameters();
+            ObjectNode appConfig = context.getApplicationParameters();
 
-            int indent = 0;
+            String appConfigString;
+
+            String initialUIDLString;
             if (!productionMode) {
-                indent = 4;
+                appConfigString = appConfig.toPrettyString();
+                initialUIDLString = initialUIDL.toPrettyString();
+            } else {
+                appConfigString = appConfig.toString();
+                initialUIDLString = initialUIDL.toString();
             }
-            String appConfigString = JsonUtil.stringify(appConfig, indent);
-
-            String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);
 
             /*
              * The < symbol is escaped to prevent two problems:
@@ -1259,9 +1258,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @param context
          *            Non-null context to provide application parameters for.
-         * @return A non-null {@link JsonObject} with application parameters.
+         * @return A non-null {@link ObjectNode} with application parameters.
          */
-        public JsonObject getApplicationParameters(BootstrapContext context) {
+        public ObjectNode getApplicationParameters(BootstrapContext context) {
             VaadinRequest request = context.getRequest();
             VaadinSession session = context.getSession();
             DeploymentConfiguration deploymentConfiguration = session
@@ -1269,10 +1268,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             final boolean productionMode = deploymentConfiguration
                     .isProductionMode();
 
-            JsonObject appConfig = Json.createObject();
+            ObjectNode appConfig = JacksonUtils.createObjectNode();
 
             if (!productionMode) {
-                JsonObject versionInfo = Json.createObject();
+                ObjectNode versionInfo = JacksonUtils.createObjectNode();
                 versionInfo.put("vaadinVersion", Version.getFullVersion());
                 String atmosphereVersion = AtmospherePushConnection
                         .getAtmosphereVersion();
@@ -1290,7 +1289,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             SystemMessages systemMessages = session.getService()
                     .getSystemMessages(locale, request);
             if (systemMessages != null) {
-                JsonObject sessExpMsg = Json.createObject();
+                ObjectNode sessExpMsg = JacksonUtils.createObjectNode();
                 putValueOrNull(sessExpMsg, CAPTION,
                         systemMessages.getSessionExpiredCaption());
                 putValueOrNull(sessExpMsg, MESSAGE,
@@ -1329,12 +1328,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return appConfig;
         }
 
-        private void putValueOrNull(JsonObject object, String key,
+        private void putValueOrNull(ObjectNode object, String key,
                 String value) {
             assert object != null;
             assert key != null;
             if (value == null) {
-                object.put(key, Json.createNull());
+                object.set(key, JacksonUtils.nullNode());
             } else {
                 object.put(key, value);
             }
@@ -1499,8 +1498,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the UI for which the UIDL should be generated
      * @return a JSON object with the initial UIDL message
      */
-    protected static JsonObject getInitialUidl(UI ui) {
-        JsonObject json = new UidlWriter().createUidl(ui, false);
+    protected static ObjectNode getInitialUidl(UI ui) {
+        ObjectNode json = new UidlWriter().createUidl(ui, false);
 
         VaadinSession session = ui.getSession();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
@@ -1508,7 +1507,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
         writePushIdUIDL(json, session);
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Initial UIDL: {}", json.asString());
+            getLogger().debug("Initial UIDL: {}", json);
         }
         return json;
     }
@@ -1522,7 +1521,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param session
      *            the vaadin session to which the security key belongs
      */
-    private static void writePushIdUIDL(JsonObject response,
+    private static void writePushIdUIDL(ObjectNode response,
             VaadinSession session) {
         String pushId = session.getPushId();
         response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
@@ -1537,7 +1536,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @param ui
      *            the UI to which the security key belongs
      */
-    private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
+    private static void writeSecurityKeyUIDL(ObjectNode response, UI ui) {
         String seckey = ui.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
@@ -1595,14 +1594,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupPwa(document, service.getPwaRegistry());
     }
 
-    protected static JsonObject getStatsJson(DeploymentConfiguration config)
+    protected static ObjectNode getStatsJson(DeploymentConfiguration config)
             throws IOException {
         String statsJson = DevBundleUtils.findBundleStatsJson(
                 config.getProjectFolder(), config.getBuildFolder());
         Objects.requireNonNull(statsJson,
                 "Frontend development bundle is expected to be in the project"
                         + " or on the classpath, but not found.");
-        return Json.parse(statsJson);
+        return JacksonUtils.readTree(statsJson);
     }
 
     /**

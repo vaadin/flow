@@ -29,6 +29,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -42,7 +45,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -60,11 +63,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
@@ -149,7 +147,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 head.select("script[src], link[href]").attr("crossorigin",
                         "true");
 
-                JsonObject initialUIDL = getInitialUidl(context.getUI());
+                ObjectNode initialUIDL = getInitialUidl(context.getUI());
 
                 head.prependChild(createInlineJavaScriptElement(
                         "window.JSCompiler_renameProperty = function(a) { return a; }"));
@@ -171,8 +169,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
 
         @Override
-        protected List<String> getChunkKeys(JsonObject chunks) {
-            if (chunks.hasKey(EXPORT_CHUNK)) {
+        protected List<String> getChunkKeys(ObjectNode chunks) {
+            if (chunks.has(EXPORT_CHUNK)) {
                 return Collections.singletonList(EXPORT_CHUNK);
             } else {
                 return super.getChunkKeys(chunks);
@@ -181,12 +179,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     protected static void addGeneratedIndexContent(Document targetDocument,
-            JsonObject statsJson) {
+            ObjectNode statsJson) {
         List<String> toAdd = new ArrayList<>();
 
-        Optional<String> webComponentScript = JsonUtils
-                .stream(statsJson.getArray("entryScripts"))
-                .map(value -> value.asString())
+        Optional<String> webComponentScript = JacksonUtils
+                .stream((ArrayNode) statsJson.get("entryScripts"))
+                .map(JsonNode::asText)
                 .filter(script -> script.contains("webcomponenthtml"))
                 .findFirst();
 
@@ -260,7 +258,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
                 request, response, session);
-        JsonObject config = context.getApplicationParameters();
+        ObjectNode config = context.getApplicationParameters();
 
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
@@ -273,9 +271,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(request.getService().getContext());
 
-        JsonArray tags = registry.getConfigurations().stream()
-                .map(conf -> Json.create(conf.getTag()))
-                .collect(JsonUtils.asArray());
+        ArrayNode tags = registry.getConfigurations().stream()
+                .map(conf -> JacksonUtils.createNode(conf.getTag()))
+                .collect(JacksonUtils.asArray());
         config.put("webcomponents", tags);
 
         config.put(ApplicationConstants.DEV_TOOLS_ENABLED, false);
@@ -624,14 +622,14 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             return false;
         }
 
-        JsonObject json = new UidlWriter().createUidl(context.getUI(), true,
+        ObjectNode json = new UidlWriter().createUidl(context.getUI(), true,
                 true);
         json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
         json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
                 context.getUI().getCsrfToken());
         json.put(ApplicationConstants.UIDL_PUSH_ID,
                 context.getUI().getSession().getPushId());
-        String responseString = "for(;;);[" + JsonUtil.stringify(json) + "]";
+        String responseString = "for(;;);[" + json + "]";
 
         try {
             VaadinService service = request.getService();

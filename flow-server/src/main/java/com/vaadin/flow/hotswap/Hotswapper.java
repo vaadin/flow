@@ -41,6 +41,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -55,8 +56,6 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.Json;
 
 /**
  * Entry point for application classes hot reloads.
@@ -185,7 +184,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             ResourceBundle.clearCache();
 
             // Trigger any potential Hilla translation updates
-            liveReload.sendHmrEvent("translations-update", Json.createObject());
+            liveReload.sendHmrEvent("translations-update",
+                    JacksonUtils.createObjectNode());
 
             // Trigger any potential Flow translation updates
             EnumMap<UIRefreshStrategy, List<UI>> refreshActions = new EnumMap<>(

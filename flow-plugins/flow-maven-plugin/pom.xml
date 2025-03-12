@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-plugins</artifactId>
-        <version>24.7-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
@@ -46,16 +46,6 @@
             <artifactId>maven-shared-utils</artifactId>
             <version>3.4.2</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-elemental</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.gwt</groupId>
-                    <artifactId>gwt-user</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

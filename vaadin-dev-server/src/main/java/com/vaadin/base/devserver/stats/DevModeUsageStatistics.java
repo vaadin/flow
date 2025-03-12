@@ -26,8 +26,6 @@ import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Version;
 import com.vaadin.pro.licensechecker.MachineId;
 
-import elemental.json.JsonObject;
-
 /**
  * Singleton for collecting development time usage metrics
  * <p>
@@ -142,7 +140,7 @@ public class DevModeUsageStatistics {
      * @param data
      *            the data from the browser
      */
-    public static void handleBrowserData(JsonObject data) {
+    public static void handleBrowserData(JsonNode data) {
         getLogger().debug("Received client usage statistics from the browser");
 
         if (!isStatisticsEnabled()) {
@@ -151,7 +149,7 @@ public class DevModeUsageStatistics {
 
         get().storage.update((global, project) -> {
             try {
-                String json = data.get("browserData").toJson();
+                String json = data.get("browserData").toString();
                 JsonNode clientData = JsonHelpers.getJsonMapper()
                         .readTree(json);
                 if (clientData != null && clientData.isObject()) {
