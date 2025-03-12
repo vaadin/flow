@@ -45,7 +45,7 @@ public class FileWatcherTest {
         String rootPorjectResourceFrontend = projectFolder.getAbsolutePath()
                 + metaInf + "resources/frontend";
         String subProjectLegacyFrontend = projectFolder.getAbsolutePath()
-                + "/fakeProject" + metaInf + "frontend";
+                + "/fakeproject" + metaInf + "frontend";
 
         new File(rootPorjectResourceFrontend).mkdirs();
         new File(subProjectLegacyFrontend).mkdirs();
@@ -94,7 +94,7 @@ public class FileWatcherTest {
         String rootPorjectResourceFrontend = projectFolder.getAbsolutePath()
                 + metaInf + "resources/frontend";
         String subProjectLegacyFrontend = projectFolder.getAbsolutePath()
-                + "/fakeProject" + metaInf + "frontend";
+                + "/fakeproject" + metaInf + "frontend";
 
         new File(rootPorjectResourceFrontend).mkdirs();
         new File(subProjectLegacyFrontend).mkdirs();
