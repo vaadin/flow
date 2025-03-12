@@ -31,32 +31,32 @@ import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.SignalTree.PendingCommit;
 import com.vaadin.signals.impl.SignalTree.Type;
 
-public class DirectSignalTreeTest {
+public class SynchronousSignalTreeTest {
 
     @Test
-    void constructor_false_regularDirectTree() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+    void constructor_false_regularSyncTree() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        assertEquals(Type.DIRECT, tree.type());
+        assertEquals(Type.SYNCHRONOUS, tree.type());
     }
 
     @Test
     void constructor_true_computedTree() {
-        DirectSignalTree tree = new DirectSignalTree(true);
+        SynchronousSignalTree tree = new SynchronousSignalTree(true);
 
         assertEquals(Type.COMPUTED, tree.type());
     }
 
     @Test
     void hasLock_newInstance_notLocked() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         assertFalse(tree.hasLock());
     }
 
     @Test
     void getWithLock_usesTheLock() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Boolean hasLock = tree.getWithLock(() -> {
             return tree.hasLock();
@@ -67,7 +67,7 @@ public class DirectSignalTreeTest {
 
     @Test
     void runWithLock_usesTheLock() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicBoolean hasLock = new AtomicBoolean();
 
         tree.runWithLock(() -> {
@@ -79,7 +79,7 @@ public class DirectSignalTreeTest {
 
     @Test
     void wrapWithLock_usesTheLock() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicBoolean hasLock = new AtomicBoolean();
 
         Runnable wrapped = tree.wrapWithLock(() -> {
@@ -95,7 +95,7 @@ public class DirectSignalTreeTest {
 
     @Test
     void emptyTree_noChanges_hasEmptyRootNode() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Map<Id, Node> nodes = tree.confirmed().nodes();
         assertEquals(1, nodes.size());
@@ -110,7 +110,7 @@ public class DirectSignalTreeTest {
 
     @Test
     void commit_withoutLock_throws() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         assertThrows(AssertionError.class, () -> {
             tree.prepareCommit(new CommandsAndHandlers());
@@ -119,22 +119,22 @@ public class DirectSignalTreeTest {
 
     @Test
     void commit_acceptableCommand_changeAppliedAndPublished() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
 
         AtomicReference<CommandResult> result = new AtomicReference<>();
 
         PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
-                TestUtil.rootValueCommand(), result::set));
+                TestUtil.writeRootValueCommand(), result::set));
 
-        assertNull(TestUtil.confirmedRootValue(tree));
+        assertNull(TestUtil.readConfirmedRootValue(tree));
         assertNull(result.get());
 
         assertTrue(commit.canCommit());
 
         commit.applyChanges();
 
-        assertNotNull(TestUtil.confirmedRootValue(tree));
+        assertNotNull(TestUtil.readConfirmedRootValue(tree));
         assertSame(tree.confirmed(), tree.submitted());
         assertNull(result.get());
 
@@ -144,7 +144,7 @@ public class DirectSignalTreeTest {
 
     @Test
     void commit_failingCommand_cannotCommitAndErrorReported() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
 
         AtomicReference<CommandResult> result = new AtomicReference<>();
@@ -162,7 +162,7 @@ public class DirectSignalTreeTest {
 
     @Test
     void commit_failingCommand_applyAndPublishTrows() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
 
         PendingCommit commit = tree.prepareCommit(
@@ -180,7 +180,7 @@ public class DirectSignalTreeTest {
 
     @Test
     void apply_multipleAcceptableCommands_allApplied() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
 
         Id a = Id.random();
@@ -199,12 +199,12 @@ public class DirectSignalTreeTest {
 
         assertInstanceOf(Accept.class, aResult.get());
         assertInstanceOf(Accept.class, bResult.get());
-        assertEquals(new DoubleNode(42), TestUtil.confirmedRootValue(tree));
+        assertEquals(new DoubleNode(42), TestUtil.readConfirmedRootValue(tree));
     }
 
     @Test
     void apply_secondCommandInvalidBecauseOfFirst_noneApplied() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
 
         Id a = Id.random();
@@ -224,102 +224,102 @@ public class DirectSignalTreeTest {
 
         assertEquals("Transaction aborted", ((Reject) aResult.get()).reason());
         assertEquals("Value is not numeric", ((Reject) bResult.get()).reason());
-        assertNull(TestUtil.confirmedRootValue(tree));
+        assertNull(TestUtil.readConfirmedRootValue(tree));
     }
 
     @Test
     void applyChange_goodCommand_applied() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        tree.applyChange(TestUtil.rootValueCommand());
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
 
-        assertNotNull(TestUtil.confirmedRootValue(tree));
+        assertNotNull(TestUtil.readConfirmedRootValue(tree));
     }
 
     @Test
     void applyChange_badCommnad_errorReported() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicReference<CommandResult> result = new AtomicReference<>();
 
-        tree.applyChange(TestUtil.failingCommand(), result::set);
+        tree.commitSingleCommand(TestUtil.failingCommand(), result::set);
 
         assertInstanceOf(Reject.class, result.get());
     }
 
     @Test
     void applyChange_multipleChanges_allApplied() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        tree.applyChange(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
-                new DoubleNode(41)));
-        tree.applyChange(
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(41)));
+        tree.commitSingleCommand(
                 new SignalCommand.IncrementCommand(Id.random(), Id.ZERO, 1));
 
-        assertNotNull(TestUtil.confirmedRootValue(tree));
+        assertNotNull(TestUtil.readConfirmedRootValue(tree));
     }
 
     @Test
-    void depend_multipleChanges_invokedOnce() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+    void observe_multipleChanges_invokedOnce() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.depend(Id.ZERO, count::incrementAndGet);
+        tree.observeNextChange(Id.ZERO, count::incrementAndGet);
 
-        tree.applyChange(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
-                new DoubleNode(2)));
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(2)));
 
         assertEquals(1, count.get());
 
-        tree.applyChange(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
-                new DoubleNode(3)));
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(3)));
 
         assertEquals(1, count.get());
     }
 
     @Test
-    void depend_cancelled_notInvoked() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+    void observe_cancelled_notInvoked() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Runnable canceler = tree.depend(Id.ZERO, Assertions::fail);
+        Runnable canceler = tree.observeNextChange(Id.ZERO, Assertions::fail);
         canceler.run();
 
-        tree.applyChange(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
-                new DoubleNode(2)));
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(2)));
     }
 
     @Test
-    void depend_otherNodeChanged_notInvoked() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+    void observe_otherNodeChanged_notInvoked() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Id child = Id.random();
-        tree.applyChange(new SignalCommand.InsertCommand(child, Id.ZERO, null,
-                null, ListPosition.first()));
+        tree.commitSingleCommand(new SignalCommand.InsertCommand(child, Id.ZERO,
+                null, null, ListPosition.first()));
 
-        tree.depend(Id.ZERO, Assertions::fail);
+        tree.observeNextChange(Id.ZERO, Assertions::fail);
 
-        tree.applyChange(new SignalCommand.SetCommand(Id.random(), child,
-                new TextNode("value")));
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                child, new TextNode("value")));
     }
 
     @Test
-    void depend_dependInCallback_registeredAgain() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+    void observe_observeInCallback_registeredAgain() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         AtomicInteger count = new AtomicInteger();
 
-        tree.depend(Id.ZERO, () -> {
-            tree.depend(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, () -> {
+            tree.observeNextChange(Id.ZERO, () -> {
                 count.incrementAndGet();
             });
         });
 
-        tree.applyChange(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
-                new DoubleNode(2)));
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(2)));
 
         assertEquals(0, count.get());
 
-        tree.applyChange(new SignalCommand.SetCommand(Id.random(), Id.ZERO,
-                new DoubleNode(3)));
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(3)));
 
         assertEquals(1, count.get());
     }

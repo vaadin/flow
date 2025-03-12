@@ -34,7 +34,7 @@ public class CommandsAndHandlersTest {
 
     @Test
     void contructor_singleCommandNoHandler_hasCommandButNoHandler() {
-        SignalCommand command = TestUtil.rootValueCommand();
+        SignalCommand command = TestUtil.writeRootValueCommand();
 
         CommandsAndHandlers commands = new CommandsAndHandlers(command, null);
 
@@ -45,7 +45,7 @@ public class CommandsAndHandlersTest {
 
     @Test
     void constructor_singleCommandAndHandler_hasCommandAndHandler() {
-        SignalCommand command = TestUtil.rootValueCommand();
+        SignalCommand command = TestUtil.writeRootValueCommand();
         Consumer<CommandResult> handler = dummyHandler();
 
         CommandsAndHandlers commands = new CommandsAndHandlers(command,
@@ -59,8 +59,8 @@ public class CommandsAndHandlersTest {
 
     @Test
     void constructor_multipleCommandsAndHandlers_hasCopiesOfEverything() {
-        SignalCommand c1 = TestUtil.rootValueCommand();
-        SignalCommand c2 = TestUtil.rootValueCommand();
+        SignalCommand c1 = TestUtil.writeRootValueCommand();
+        SignalCommand c2 = TestUtil.writeRootValueCommand();
         Consumer<CommandResult> handler = dummyHandler();
 
         List<SignalCommand> list = Arrays.asList(c1, c2);
@@ -79,9 +79,9 @@ public class CommandsAndHandlersTest {
 
     @Test
     void removeHandledCommands_commandsInList_commandsRemovedHandlersRetained() {
-        SignalCommand c1 = TestUtil.rootValueCommand();
-        SignalCommand c2 = TestUtil.rootValueCommand();
-        SignalCommand c3 = TestUtil.rootValueCommand();
+        SignalCommand c1 = TestUtil.writeRootValueCommand();
+        SignalCommand c2 = TestUtil.writeRootValueCommand();
+        SignalCommand c3 = TestUtil.writeRootValueCommand();
         Consumer<CommandResult> handler = dummyHandler();
 
         CommandsAndHandlers commands = new CommandsAndHandlers(
@@ -97,7 +97,7 @@ public class CommandsAndHandlersTest {
     @Test
     void removeHandledCommands_commandsNotInList_noChange() {
         CommandsAndHandlers commands = new CommandsAndHandlers(
-                TestUtil.rootValueCommand(), dummyHandler());
+                TestUtil.writeRootValueCommand(), dummyHandler());
 
         commands.removeHandledCommands(List.of(Id.random()));
 
@@ -107,7 +107,7 @@ public class CommandsAndHandlersTest {
 
     @Test
     void notifyResultHandlers_handlerPresent_handlerInvokedAndRemoved() {
-        SignalCommand c1 = TestUtil.rootValueCommand();
+        SignalCommand c1 = TestUtil.writeRootValueCommand();
         ResultHandler h1 = new ResultHandler();
 
         CommandsAndHandlers commands = new CommandsAndHandlers(c1, h1);
@@ -121,8 +121,8 @@ public class CommandsAndHandlersTest {
 
     @Test
     void notifyResultHandlers_multipleResults_invokedInOrder() {
-        SignalCommand c1 = TestUtil.rootValueCommand();
-        SignalCommand c2 = TestUtil.rootValueCommand();
+        SignalCommand c1 = TestUtil.writeRootValueCommand();
+        SignalCommand c2 = TestUtil.writeRootValueCommand();
         Accept r1 = CommandResult.ok();
         Accept r2 = CommandResult.ok();
 
@@ -147,7 +147,7 @@ public class CommandsAndHandlersTest {
 
     @Test
     void notifyResultHandlers_nestedTransactionCommands_childHandlersInvoked() {
-        SignalCommand c1 = TestUtil.rootValueCommand();
+        SignalCommand c1 = TestUtil.writeRootValueCommand();
         TransactionCommand tx1 = new SignalCommand.TransactionCommand(
                 Id.random(), List.of(c1));
         TransactionCommand tx2 = new SignalCommand.TransactionCommand(
@@ -175,8 +175,8 @@ public class CommandsAndHandlersTest {
 
     @Test
     void add_otherCommands_added() {
-        SignalCommand c1 = TestUtil.rootValueCommand();
-        SignalCommand c2 = TestUtil.rootValueCommand();
+        SignalCommand c1 = TestUtil.writeRootValueCommand();
+        SignalCommand c2 = TestUtil.writeRootValueCommand();
         Consumer<CommandResult> h1 = dummyHandler();
         Consumer<CommandResult> h2 = dummyHandler();
 

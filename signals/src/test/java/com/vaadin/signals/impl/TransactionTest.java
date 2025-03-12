@@ -19,26 +19,27 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.impl.AsyncSignalTreeTest.AsyncTestTree;
+import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
 import com.vaadin.signals.impl.Transaction.Type;
+import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;
 
 public class TransactionTest {
     @Test
     void getCurrentTransaction_noTransaction_rootTransaction() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Transaction transaction = Transaction.getCurrentTransaction();
+        Transaction transaction = Transaction.getCurrent();
         assertFalse(Transaction.inTransaction());
 
         TreeRevision revision = transaction.read(tree);
         assertSame(tree.submitted(), revision);
 
-        transaction.apply(tree, TestUtil.rootValueCommand(), null);
-        assertNotNull(TestUtil.submittedRootValue(tree));
+        transaction.apply(tree, TestUtil.writeRootValueCommand(), null);
+        assertNotNull(TestUtil.readSubmittedRootValue(tree));
     }
 
     @Test
@@ -55,22 +56,9 @@ public class TransactionTest {
     }
 
     @Test
-    void runInTransaction_runnable_nullReturned() {
-        AtomicBoolean invoked = new AtomicBoolean();
-        TransactionOperation<Void> operation = Transaction
-                .runInTransaction(() -> {
-                    assertTrue(Transaction.inTransaction());
-                    invoked.set(true);
-                });
-
-        assertTrue(invoked.get());
-        assertNull(operation.returnValue());
-    }
-
-    @Test
     void runInTransaction_defaultTransactionType_isFull() {
         Transaction transaction = Transaction.runInTransaction(() -> {
-            return Transaction.getCurrentTransaction();
+            return Transaction.getCurrent();
         }).returnValue();
 
         assertInstanceOf(StagedTransaction.class, transaction);
@@ -80,18 +68,16 @@ public class TransactionTest {
     void runInTransaction_successfulFull_committed()
             throws InterruptedException, ExecutionException {
         AsyncTestTree tree = new AsyncTestTree();
-        SignalCommand command = TestUtil.rootValueCommand();
+        SignalCommand command = TestUtil.writeRootValueCommand();
 
-        TransactionOperation<Void> operation = Transaction
-                .runInTransaction(() -> {
-                    Transaction transaction = Transaction
-                            .getCurrentTransaction();
-                    assertInstanceOf(StagedTransaction.class, transaction);
+        SignalOperation<Void> operation = Transaction.runInTransaction(() -> {
+            Transaction transaction = Transaction.getCurrent();
+            assertInstanceOf(StagedTransaction.class, transaction);
 
-                    transaction.apply(tree, command, null);
-                    assertEquals(List.of(), tree.submitted,
-                            "Nothing should be submitted before the transaction ends");
-                });
+            transaction.apply(tree, command, null);
+            assertEquals(List.of(), tree.submitted,
+                    "Nothing should be submitted before the transaction ends");
+        });
 
         List<SignalCommand> commands = tree.submitted.get(0);
         assertEquals(1, commands.size());
@@ -117,12 +103,13 @@ public class TransactionTest {
 
         assertThrows(RuntimeException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand(), handler);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand(), handler);
                 throw new RuntimeException();
             });
         });
 
+        assertFalse(Transaction.inTransaction());
         assertEquals(List.of(), tree.submitted);
         assertInstanceOf(Reject.class, handler.result);
     }
@@ -134,8 +121,8 @@ public class TransactionTest {
 
         assertThrows(RuntimeException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand(), handler);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand(), handler);
                 throw new RuntimeException();
             }, Type.WRITE_THROUGH);
         });
@@ -151,6 +138,8 @@ public class TransactionTest {
         AtomicBoolean invoked = new AtomicBoolean();
 
         Transaction.runWithoutTransaction(() -> {
+            assertFalse(Transaction.inTransaction());
+
             invoked.set(true);
         });
 
@@ -171,13 +160,13 @@ public class TransactionTest {
     @Test
     void writeThrough_acceptedChange_operationResultSuccessful()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         ResultHandler handler = new ResultHandler();
 
         TransactionOperation<Void> operation = Transaction
                 .runInTransaction(() -> {
-                    Transaction.getCurrentTransaction().apply(tree,
-                            TestUtil.rootValueCommand(), handler);
+                    Transaction.getCurrent().apply(tree,
+                            TestUtil.writeRootValueCommand(), handler);
                 }, Type.WRITE_THROUGH);
 
         assertTrue(operation.result().isDone());
@@ -189,12 +178,12 @@ public class TransactionTest {
     @Test
     void writeThrough_rejectedChange_operationResultSuccessful()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         ResultHandler handler = new ResultHandler();
 
         TransactionOperation<Void> operation = Transaction
                 .runInTransaction(() -> {
-                    Transaction.getCurrentTransaction().apply(tree,
+                    Transaction.getCurrent().apply(tree,
                             TestUtil.failingCommand(), handler);
                 }, Type.WRITE_THROUGH);
 
@@ -206,75 +195,71 @@ public class TransactionTest {
 
     @Test
     void writeThrough_externalChange_repeatableRead() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
-            JsonNode beforeUpdate = TestUtil.transactionRootValue(tree);
+            JsonNode beforeUpdate = TestUtil.readTransactionRootValue(tree);
 
             // Writes directly to the tree, skipping the transaction
-            tree.applyChange(TestUtil.rootValueCommand());
+            tree.commitSingleCommand(TestUtil.writeRootValueCommand());
 
-            JsonNode afterUpdate = TestUtil.transactionRootValue(tree);
+            JsonNode afterUpdate = TestUtil.readTransactionRootValue(tree);
             assertNull(afterUpdate);
             assertSame(beforeUpdate, afterUpdate);
         }, Type.WRITE_THROUGH);
 
-        JsonNode outsideTransaction = TestUtil.transactionRootValue(tree);
+        JsonNode outsideTransaction = TestUtil.readTransactionRootValue(tree);
         assertNotNull(outsideTransaction);
     }
 
     @Test
     void writeThrough_changeThroughTransaction_visibleAndWrittenImmediately() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
-            JsonNode beforeUpdate = TestUtil.transactionRootValue(tree);
+            JsonNode beforeUpdate = TestUtil.readTransactionRootValue(tree);
             assertNull(beforeUpdate);
 
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand(), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand(), null);
 
-            assertNotNull(TestUtil.submittedRootValue(tree));
+            assertNotNull(TestUtil.readSubmittedRootValue(tree));
 
-            JsonNode afterUpdate = TestUtil.transactionRootValue(tree);
+            JsonNode afterUpdate = TestUtil.readTransactionRootValue(tree);
             assertNotNull(afterUpdate);
         }, Type.WRITE_THROUGH);
     }
 
     @Test
-    void writeThrough_multipleTrees_readValuesLockedAfterFirstTxUse() {
-        DirectSignalTree tree1 = new DirectSignalTree(false);
-        DirectSignalTree tree2 = new DirectSignalTree(false);
+    void writeThrough_writesBypassingTransaction_readValuesLockedAfterFirstTxUse() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
-            // Just read to participate, don't care about the value
-            TestUtil.transactionRootValue(tree1);
+            tree.commitSingleCommand(TestUtil.writeRootValueCommand("value"));
 
-            tree2.applyChange(TestUtil.rootValueCommand("value"));
-
-            String value = TestUtil.transactionRootValue(tree2).textValue();
+            String value = TestUtil.readTransactionRootValue(tree).textValue();
             assertEquals("value", value);
 
-            tree2.applyChange(TestUtil.rootValueCommand("value2"));
+            tree.commitSingleCommand(TestUtil.writeRootValueCommand("value2"));
 
-            String value2 = TestUtil.transactionRootValue(tree2).textValue();
+            String value2 = TestUtil.readTransactionRootValue(tree).textValue();
             assertEquals("value", value2);
         }, Type.WRITE_THROUGH);
     }
 
     @Test
     void writeThrough_readInNestedTx_readsFromOuterTx() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
             // Read just to participate
-            TestUtil.transactionRootValue(tree);
+            TestUtil.readTransactionRootValue(tree);
 
             // Make an external change that isn't visible in the transaction
-            tree.applyChange(TestUtil.rootValueCommand());
+            tree.commitSingleCommand(TestUtil.writeRootValueCommand());
 
             Transaction.runInTransaction(() -> {
-                assertNull(TestUtil.transactionRootValue(tree),
+                assertNull(TestUtil.readTransactionRootValue(tree),
                         "Inner transaction should read values from the outer transaction");
             });
         }, Type.WRITE_THROUGH);
@@ -282,48 +267,48 @@ public class TransactionTest {
 
     @Test
     void writeThrough_writeInNestedTx_visibleInOuterTx() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
             // Read just to participate
-            TestUtil.transactionRootValue(tree);
+            TestUtil.readTransactionRootValue(tree);
 
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand(), null);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand(), null);
             }, Type.WRITE_THROUGH);
 
-            assertNotNull(TestUtil.transactionRootValue(tree));
+            assertNotNull(TestUtil.readTransactionRootValue(tree));
         }, Type.WRITE_THROUGH);
     }
 
     @Test
     void readonly_externalChange_repeatableRead() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
-            JsonNode beforeUpdate = TestUtil.transactionRootValue(tree);
+            JsonNode beforeUpdate = TestUtil.readTransactionRootValue(tree);
 
             // Writes directly to the tree, skipping the transaction
-            tree.applyChange(TestUtil.rootValueCommand());
+            tree.commitSingleCommand(TestUtil.writeRootValueCommand());
 
-            JsonNode afterUpdate = TestUtil.transactionRootValue(tree);
+            JsonNode afterUpdate = TestUtil.readTransactionRootValue(tree);
             assertNull(afterUpdate);
             assertSame(beforeUpdate, afterUpdate);
         }, Type.READ_ONLY);
 
-        JsonNode outsideTransaction = TestUtil.transactionRootValue(tree);
+        JsonNode outsideTransaction = TestUtil.readTransactionRootValue(tree);
         assertNotNull(outsideTransaction);
     }
 
     @Test
-    void readonly_writeDirectTree_throws() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+    void readonly_writeSyncTree_throws() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         assertThrows(IllegalStateException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand(), null);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand(), null);
             }, Type.READ_ONLY);
         });
     }
@@ -334,36 +319,36 @@ public class TransactionTest {
 
         assertThrows(IllegalStateException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand(), null);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand(), null);
             }, Type.READ_ONLY);
         });
     }
 
     @Test
     void readonly_writeComputedTree_accepted() {
-        DirectSignalTree tree = new DirectSignalTree(true);
+        SynchronousSignalTree tree = new SynchronousSignalTree(true);
 
         Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand(), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand(), null);
         }, Type.READ_ONLY);
 
-        assertNotNull(TestUtil.submittedRootValue(tree));
+        assertNotNull(TestUtil.readSubmittedRootValue(tree));
     }
 
     @Test
     void readonly_writeInNoTransaction_acceptedButIgnoredInTransaction() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
             Transaction.runWithoutTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand(), null);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand(), null);
             });
         }, Type.READ_ONLY);
 
-        assertNotNull(TestUtil.submittedRootValue(tree));
+        assertNotNull(TestUtil.readSubmittedRootValue(tree));
     }
 
     @Test

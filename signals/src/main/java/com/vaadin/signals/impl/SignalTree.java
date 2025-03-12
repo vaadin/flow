@@ -16,8 +16,8 @@ import com.vaadin.signals.SignalCommand;
 /**
  * Provides thread-safe access to a tree of signal nodes and a way of listening
  * for changes to those nodes. There are two primary types of signal trees:
- * direct trees have their changes applied immediately whereas async trees make
- * a differences between submitted changes and changes that have been
+ * synchronous trees have their changes applied immediately whereas asynchronous
+ * trees make a differences between submitted changes and changes that have been
  * asynchronously confirmed.
  */
 public abstract class SignalTree {
@@ -62,11 +62,11 @@ public abstract class SignalTree {
      */
     public enum Type {
         /**
-         * Async trees can only confirm the status of applied commands
+         * Asynchronous trees can only confirm the status of applied commands
          * asynchronously and can thus not participate in transactions that
-         * contain other async or direct trees.
+         * contain other asynchronous or synchronous trees.
          */
-        ASYNC,
+        ASYNCHRONOUS,
 
         /**
          * Computed trees cannot cause conflicts and can thus participate in any
@@ -75,14 +75,14 @@ public abstract class SignalTree {
         COMPUTED,
 
         /**
-         * Direct trees can confirm the status of applied commands while the
-         * tree is locked which makes it possible for multiple direct trees to
+         * Synchronous trees can confirm the status of applied commands while
+         * the tree is locked which makes it possible for multiple sync trees to
          * participate in the same transaction.
          */
-        DIRECT;
+        SYNCHRONOUS;
     }
 
-    private final Map<Id, List<Runnable>> dependents = new HashMap<>();
+    private final Map<Id, List<Runnable>> observers = new HashMap<>();
 
     private final Id id = Id.random();
 
@@ -183,54 +183,55 @@ public abstract class SignalTree {
     }
 
     /**
-     * Registers a dependency on a node in this tree. The dependent will be
+     * Registers an observer for a node in this tree. The observer will be
      * invoked the next time the corresponding node is updated in the submitted
-     * snapshot. The dependency is cleared when invoked and needs to be
-     * registered again if it's still relevant. It is safe to register the
-     * dependency again from within the callback.
+     * snapshot. The observer is removed when invoked and needs to be registered
+     * again if it's still relevant. It is safe to register the observer again
+     * from within the callback.
      *
      * @param nodeId
-     *            the id of the node to depend on, not <code>null</code>
-     * @param dependent
+     *            the id of the node to observe, not <code>null</code>
+     * @param observer
      *            the callback to run when the node has changed, not
      *            <code>null</code>
-     * @return a callback that can be used to remove the dependency before it's
+     * @return a callback that can be used to remove the observer before it's
      *         triggered, not <code>null</code>
      */
-    public Runnable depend(Id nodeId, Runnable dependent) {
+    public Runnable observeNextChange(Id nodeId, Runnable observer) {
         assert nodeId != null;
-        assert dependent != null;
+        assert observer != null;
 
         return getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
 
-            List<Runnable> list = dependents.computeIfAbsent(nodeId,
+            List<Runnable> list = observers.computeIfAbsent(nodeId,
                     ignore -> new ArrayList<>());
 
-            list.add(dependent);
+            list.add(observer);
 
-            return wrapWithLock(() -> list.remove(dependent));
+            return wrapWithLock(() -> list.remove(observer));
         });
     }
 
     /**
-     * Notify all dependents that are affected by changes between two snapshots.
+     * Notify all observers that are affected by changes between two snapshots.
+     * All notified observers are removed. It is safe for an observer to
+     * register itself again when it is invoked.
      *
-     * @see #depend(Id, Runnable)
+     * @see #observeNextChange(Id, Runnable)
      *
      * @param oldSnapshot
      *            the old snapshot, not <code>null</code>
      * @param newSnapshot
      *            the new snapshot, not <code>null</code>
      */
-    protected void notifyDependents(Snapshot oldSnapshot,
-            Snapshot newSnapshot) {
+    protected void notifyObservers(Snapshot oldSnapshot, Snapshot newSnapshot) {
         if (oldSnapshot == newSnapshot) {
             return;
         }
 
         runWithLock(() -> {
-            dependents.forEach((nodeId, list) -> {
+            observers.forEach((nodeId, list) -> {
                 Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
                 Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
 
@@ -256,17 +257,17 @@ public abstract class SignalTree {
     public abstract Snapshot submitted();
 
     /**
-     * Gets the current snapshot based on all confirmed commands. This snapshot does not
-     * contain changes from commands that have been submitted but not yet
-     * confirmed.
+     * Gets the current snapshot based on all confirmed commands. This snapshot
+     * does not contain changes from commands that have been submitted but not
+     * yet confirmed.
      *
      * @return the confirmed snapshot, not <code>null</code>
      */
     public abstract Snapshot confirmed();
 
     /**
-     * Applies a single command to this tree. This is a shorthand for submitting
-     * a commit with only a single command.
+     * Applies a single command to this tree. This is a shorthand for committing
+     * only a single command.
      *
      * @param command
      *            the command to apply, not <code>null</code>
@@ -274,7 +275,7 @@ public abstract class SignalTree {
      *            a result handler that will be notified when the command is
      *            confirmed, not <code>null</code> to ignore the result
      */
-    public void applyChange(SignalCommand command,
+    public void commitSingleCommand(SignalCommand command,
             Consumer<CommandResult> resultHandler) {
         assert command != null;
 
@@ -295,11 +296,13 @@ public abstract class SignalTree {
     /**
      * Applies a single command to this tree without listening for the result.
      *
+     * @see #commitSingleCommand(SignalCommand, Consumer)
+     *
      * @param command
      *            the command to apply, not <code>null</code>
      */
-    public void applyChange(SignalCommand command) {
-        applyChange(command, null);
+    public void commitSingleCommand(SignalCommand command) {
+        commitSingleCommand(command, null);
     }
 
     /**

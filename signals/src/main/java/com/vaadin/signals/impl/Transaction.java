@@ -40,9 +40,14 @@ public abstract class Transaction {
 
         @Override
         public void submit(SignalTree tree, SignalCommand command,
-                Consumer<CommandResult> resultHandler, boolean apply) {
-            if (apply) {
-                tree.applyChange(command, resultHandler);
+                Consumer<CommandResult> resultHandler, boolean applyToTree) {
+            if (readonly() && tree.type() != SignalTree.Type.COMPUTED) {
+                throw new IllegalStateException(
+                        "Cannot make changes in a read-only transaction.");
+            }
+
+            if (applyToTree) {
+                tree.commitSingleCommand(command, resultHandler);
             }
         }
 
@@ -77,31 +82,29 @@ public abstract class Transaction {
 
         public RepeatableReadTransaction(boolean readonly, Transaction outer) {
             super(readonly);
+            assert outer != null;
             this.outer = outer;
         }
 
-        private MutableTreeRevision getRevision(SignalTree tree) {
+        private MutableTreeRevision getOrCreateReadRevision(SignalTree tree) {
             return trees.computeIfAbsent(tree,
                     newTree -> new MutableTreeRevision(outer.read(newTree)));
         }
 
         @Override
         public void submit(SignalTree tree, SignalCommand command,
-                Consumer<CommandResult> resultHandler, boolean apply) {
-            if (readonly() && tree.type() != SignalTree.Type.COMPUTED) {
-                throw new IllegalStateException();
-            }
+                Consumer<CommandResult> resultHandler, boolean applyToTree) {
+            super.submit(tree, command, resultHandler, applyToTree);
 
-            super.submit(tree, command, resultHandler, apply);
+            getOrCreateReadRevision(tree).apply(command, null);
 
-            getRevision(tree).apply(command, null);
-
+            // Let an outer transaction update its own read revision
             outer.submit(tree, command, null, false);
         }
 
         @Override
         public TreeRevision read(SignalTree tree) {
-            return getRevision(tree);
+            return getOrCreateReadRevision(tree);
         }
     }
 
@@ -125,12 +128,12 @@ public abstract class Transaction {
     public enum Type {
         /**
          * A conventional read-write transaction that stages commands to be
-         * submitted when the transaction is committed. Provides repeatable
-         * reads that are updated by changes from any staged commands.
+         * submitted as a single commit. Provides repeatable reads that are
+         * updated by changes from any staged commands.
          */
         STAGED {
             @Override
-            Transaction wrap(Transaction outer) {
+            Transaction create(Transaction outer) {
                 if (outer.readonly()) {
                     throw new IllegalStateException();
                 }
@@ -144,7 +147,7 @@ public abstract class Transaction {
          */
         WRITE_THROUGH {
             @Override
-            Transaction wrap(Transaction outer) {
+            Transaction create(Transaction outer) {
                 if (outer.readonly()) {
                     throw new IllegalStateException();
                 }
@@ -160,23 +163,23 @@ public abstract class Transaction {
          */
         READ_ONLY {
             @Override
-            Transaction wrap(Transaction outer) {
+            Transaction create(Transaction outer) {
                 return new RepeatableReadTransaction(true, outer);
             }
         };
 
         /**
-         * Creates a new transaction instance of this type by wrapping the given
-         * outer transaction.
+         * Creates a new transaction instance of this type as an inner
+         * transaction for the provided outer transaction.
          *
          * @param outer
-         *            the outer transaction to wrap, not <code>null</code>
+         *            the outer transaction to use, not <code>null</code>
          * @return a new transaction instance, not <code>null</code>
          * @throws IllegalStateException
-         *             if this transaction type cannot wrap the provided outer
-         *             transaction
+         *             if this transaction type is not compatible with the
+         *             provided outer transaction
          */
-        abstract Transaction wrap(Transaction outer)
+        abstract Transaction create(Transaction outer)
                 throws IllegalStateException;
     }
 
@@ -187,7 +190,7 @@ public abstract class Transaction {
      *
      * @return the current transaction handler, not <code>null</code>
      */
-    public static Transaction getCurrentTransaction() {
+    public static Transaction getCurrent() {
         Transaction transaction = currentTransaction.get();
         if (transaction == null) {
             return ROOT;
@@ -208,7 +211,7 @@ public abstract class Transaction {
     /**
      * Runs the given supplier in a regular transaction and returns an operation
      * object that wraps the supplier value. The created transaction handler
-     * will be available from {@link #getCurrentTransaction()}.
+     * will be available from {@link #getCurrent()}.
      * <p>
      * The transaction will be committed after running the task, or rolled back
      * if the task throws an exception.
@@ -229,7 +232,7 @@ public abstract class Transaction {
     /**
      * Runs the given supplier in a transaction of the given type and returns an
      * operation object that wraps the supplier value. The created transaction
-     * handler will be available from {@link #getCurrentTransaction()}.
+     * handler will be available from {@link #getCurrent()}.
      *
      * @param <T>
      *            the supplier type
@@ -242,9 +245,9 @@ public abstract class Transaction {
      */
     public static <T> TransactionOperation<T> runInTransaction(
             Supplier<T> transactionTask, Type transactionType) {
-        Transaction outer = getCurrentTransaction();
+        Transaction outer = getCurrent();
 
-        Transaction inner = transactionType.wrap(outer);
+        Transaction inner = transactionType.create(outer);
         currentTransaction.set(inner);
         try {
             T value = transactionTask.get();
@@ -276,7 +279,7 @@ public abstract class Transaction {
     /**
      * Runs the given task in a transaction of the given type and returns an
      * operation object without a value. The created transaction handler will be
-     * available from {@link #getCurrentTransaction()}.
+     * available from {@link #getCurrent()}.
      * <p>
      * The transaction will be committed after running the task, or rolled back
      * if the task throws an exception.
@@ -285,7 +288,7 @@ public abstract class Transaction {
      *            the task to run, not <code>null</code>
      * @param transactionType
      *            the type of the transaction, not <code>null</code>
-     * @return the value-less operation object, not <code>null</code>
+     * @return the operation object, not <code>null</code>
      */
     public static TransactionOperation<Void> runInTransaction(
             Runnable transactionTask, Type transactionType) {
@@ -295,14 +298,14 @@ public abstract class Transaction {
     /**
      * Runs the given task in a regular transaction and returns an operation
      * object without a value. The created transaction handler will be available
-     * from {@link #getCurrentTransaction()}.
+     * from {@link #getCurrent()}.
      * <p>
      * The transaction will be committed after running the task, or rolled back
      * if the task throws an exception.
      *
      * @param transactionTask
      *            the task to run, not <code>null</code>
-     * @return the value-less operation object, not <code>null</code>
+     * @return the operation object, not <code>null</code>
      */
     public static TransactionOperation<Void> runInTransaction(
             Runnable transactionTask) {
@@ -313,9 +316,6 @@ public abstract class Transaction {
      * Runs the given supplier outside any transaction and returns the supplied
      * value. The current transaction will be restored after the task has been
      * run.
-     * <p>
-     * The transaction will be committed after running the task, or rolled back
-     * if the task throws an exception.
      *
      * @param <T>
      *            the supplier type
@@ -357,13 +357,13 @@ public abstract class Transaction {
      * @param resultHandler
      *            the handler of the command result, or <code>null</code> to
      *            ignore the result
-     * @param apply
+     * @param applyToTree
      *            <code>true</code> to apply the command to the underlying tree,
      *            <code>false</code> to only update the transaction's
      *            repeatable-read revision
      */
     public abstract void submit(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler, boolean apply);
+            Consumer<CommandResult> resultHandler, boolean applyToTree);
 
     /**
      * Applies the given command to the given tree in the context of this
@@ -416,8 +416,8 @@ public abstract class Transaction {
      * user-originated write operations but just side effects of lazy
      * evaluation.
      *
-     * @return {@code false} if this transaction allows regular writes to the underlying tree,
-     *         {@code true} otherwise.
+     * @return {@code false} if this transaction allows regular writes to the
+     *         underlying tree, {@code true} otherwise.
      */
     protected abstract boolean readonly();
 }

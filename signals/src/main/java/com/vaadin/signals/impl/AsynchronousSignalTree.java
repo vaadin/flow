@@ -5,7 +5,6 @@ import java.util.Map;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
-import com.vaadin.signals.SignalCommand.SnapshotCommand;
 
 /**
  * A signal tree that submits commands to an event log and asynchronously waits
@@ -15,15 +14,15 @@ import com.vaadin.signals.SignalCommand.SnapshotCommand;
  * a conflict. This type of tree is intended for signals that are synchronized
  * across a cluster.
  */
-public abstract class AsyncSignalTree extends SignalTree {
+public abstract class AsynchronousSignalTree extends SignalTree {
     private final CommandsAndHandlers unconfirmedCommands = new CommandsAndHandlers();
 
     private Snapshot confirmed = new Snapshot(id(), true);
 
     private Snapshot submitted = new Snapshot(id(), true);
 
-    protected AsyncSignalTree() {
-        super(Type.ASYNC);
+    protected AsynchronousSignalTree() {
+        super(Type.ASYNCHRONOUS);
     }
 
     /**
@@ -72,7 +71,7 @@ public abstract class AsyncSignalTree extends SignalTree {
                 submitted = confirmed;
             }
 
-            notifyDependents(oldSubmitted, submitted);
+            notifyObservers(oldSubmitted, submitted);
 
             unconfirmedCommands.notifyResultHandlers(results, commands);
         });
@@ -112,7 +111,7 @@ public abstract class AsyncSignalTree extends SignalTree {
             public void publishChanges() {
                 assert hasLock();
 
-                notifyDependents(oldSnapshot, newSnapshot);
+                notifyObservers(oldSnapshot, newSnapshot);
 
                 submit(changes.getCommands());
             }
@@ -133,16 +132,5 @@ public abstract class AsyncSignalTree extends SignalTree {
     @Override
     public Snapshot submitted() {
         return getWithLock(() -> submitted);
-    }
-
-    /**
-     * Creates a new snapshot command based on the currently confirmed nodes.
-     *
-     * @return the new snapshot command, not <code>null</code>
-     */
-    public SnapshotCommand createSnapshot() {
-        return getWithLock(() -> {
-            return new SnapshotCommand(Id.random(), confirmed.nodes());
-        });
     }
 }

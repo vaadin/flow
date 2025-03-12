@@ -27,7 +27,7 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.impl.AsyncSignalTreeTest.AsyncTestTree;
+import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
 import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
 import com.vaadin.signals.impl.StagedTransaction.ResultCollector;
 import com.vaadin.signals.impl.Transaction.Type;
@@ -123,12 +123,12 @@ public class StagedTransactionTest {
 
     @Test
     void transaction_goodThenFailingCommands_goodRevertedFromTransactionRead() {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction.runInTransaction(() -> {
-            Transaction tx = Transaction.getCurrentTransaction();
+            Transaction tx = Transaction.getCurrent();
 
-            tx.apply(tree, TestUtil.rootValueCommand(), null);
+            tx.apply(tree, TestUtil.writeRootValueCommand(), null);
 
             assertNotNull(tx.read(tree).data(Id.ZERO).get().value());
 
@@ -139,19 +139,19 @@ public class StagedTransactionTest {
     }
 
     @Test
-    void commit_twoDirectTreesWithGoodCommands_changesApplied()
+    void commit_twoSyncTreesWithGoodCommands_changesApplied()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree t1 = new DirectSignalTree(false);
-        DirectSignalTree t2 = new DirectSignalTree(false);
+        SynchronousSignalTree t1 = new SynchronousSignalTree(false);
+        SynchronousSignalTree t2 = new SynchronousSignalTree(false);
 
         ResultHandler h1 = new ResultHandler();
         ResultHandler h2 = new ResultHandler();
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction tx = Transaction.getCurrentTransaction();
+            Transaction tx = Transaction.getCurrent();
 
-            tx.apply(t1, TestUtil.rootValueCommand(), h1);
-            tx.apply(t2, TestUtil.rootValueCommand(), h2);
+            tx.apply(t1, TestUtil.writeRootValueCommand(), h1);
+            tx.apply(t2, TestUtil.writeRootValueCommand(), h2);
 
             assertNull(h1.result);
             assertNull(h2.result);
@@ -163,26 +163,26 @@ public class StagedTransactionTest {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
-        assertNotNull(TestUtil.confirmedRootValue(t1));
-        assertNotNull(TestUtil.confirmedRootValue(t2));
+        assertNotNull(TestUtil.readConfirmedRootValue(t1));
+        assertNotNull(TestUtil.readConfirmedRootValue(t2));
     }
 
     @Test
-    void commit_twoDirectTreesWithOneBadCommand_noChangeApplied()
+    void commit_twoSyncTreesWithOneBadCommand_noChangeApplied()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree t1 = new DirectSignalTree(false);
-        DirectSignalTree t2 = new DirectSignalTree(false);
+        SynchronousSignalTree t1 = new SynchronousSignalTree(false);
+        SynchronousSignalTree t2 = new SynchronousSignalTree(false);
 
         ResultHandler h1 = new ResultHandler();
         ResultHandler h2 = new ResultHandler();
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction tx = Transaction.getCurrentTransaction();
+            Transaction tx = Transaction.getCurrent();
 
-            tx.apply(t1, TestUtil.rootValueCommand(), h1);
+            tx.apply(t1, TestUtil.writeRootValueCommand(), h1);
             tx.apply(t2, TestUtil.failingCommand(), h2);
 
-            assertNull(TestUtil.transactionRootValue(t1),
+            assertNull(TestUtil.readTransactionRootValue(t1),
                     "Reading should take expected failure into account");
             assertNull(h1.result);
             assertNull(h2.result);
@@ -205,8 +205,8 @@ public class StagedTransactionTest {
         ResultHandler handler = new ResultHandler();
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand(), handler);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand(), handler);
 
             assertNull(handler.result);
         });
@@ -234,9 +234,9 @@ public class StagedTransactionTest {
         ResultHandler h2 = new ResultHandler();
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction tx = Transaction.getCurrentTransaction();
+            Transaction tx = Transaction.getCurrent();
 
-            tx.apply(tree, TestUtil.rootValueCommand(), h1);
+            tx.apply(tree, TestUtil.writeRootValueCommand(), h1);
             tx.apply(tree, TestUtil.failingCommand(), h2);
 
             assertNull(h1.result);
@@ -262,16 +262,16 @@ public class StagedTransactionTest {
     @Test
     void commit_outerStagedTransaction_transactionCommandInOuter() {
         AsyncTestTree tree = new AsyncTestTree();
-        SignalCommand command = TestUtil.rootValueCommand();
+        SignalCommand command = TestUtil.writeRootValueCommand();
 
         Transaction.runInTransaction(() -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree, command, null);
+                Transaction.getCurrent().apply(tree, command, null);
             });
 
             assertTrue(tree.submitted.isEmpty());
 
-            assertNotNull(TestUtil.transactionRootValue(tree));
+            assertNotNull(TestUtil.readTransactionRootValue(tree));
         });
 
         assertEquals(1, tree.submitted.size());
@@ -293,137 +293,141 @@ public class StagedTransactionTest {
     @Test
     void commit_outerWriteThroughTransaction_immediatelyAppliedAndVisible() {
         AsyncTestTree tree = new AsyncTestTree();
-        SignalCommand command = TestUtil.rootValueCommand();
+        SignalCommand command = TestUtil.writeRootValueCommand();
 
         Transaction.runInTransaction(() -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree, command, null);
+                Transaction.getCurrent().apply(tree, command, null);
             });
 
             assertEquals(1, tree.submitted.size());
 
-            assertNotNull(TestUtil.transactionRootValue(tree));
+            assertNotNull(TestUtil.readTransactionRootValue(tree));
         }, Type.WRITE_THROUGH);
     }
 
     @Test
     void commit_writeThroughInsideStaged_immediatelyAppliedAndVisible() {
         AsyncTestTree tree = new AsyncTestTree();
-        SignalCommand command = TestUtil.rootValueCommand();
+        SignalCommand command = TestUtil.writeRootValueCommand();
 
         Transaction.runInTransaction(() -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree, command, null);
+                Transaction.getCurrent().apply(tree, command, null);
             }, Type.WRITE_THROUGH);
 
             assertEquals(1, tree.submitted.size());
 
-            assertNotNull(TestUtil.transactionRootValue(tree));
+            assertNotNull(TestUtil.readTransactionRootValue(tree));
         });
     }
 
     @Test
-    void commit_failingTransactionSavedByDirectWrite_seemsFailingButIsAccepted()
+    void commit_failingTransactionSavedBySyncWrite_seemsFailingButIsAccepted()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
+            Transaction.getCurrent().apply(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             new TextNode("expected")),
                     null);
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand("update"), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand("update"), null);
 
             // This change is applied outside the transaction and will make it
             // pass
-            tree.applyChange(TestUtil.rootValueCommand("expected"));
+            tree.commitSingleCommand(
+                    TestUtil.writeRootValueCommand("expected"));
 
             // Transaction doesn't "know" about the previous change and "thinks"
             // it will not applied
-            assertNull(TestUtil.transactionRootValue(tree));
+            assertNull(TestUtil.readTransactionRootValue(tree));
         });
 
         assertTrue(operation.result().get().successful());
-        assertEquals("update", TestUtil.confirmedRootValue(tree).textValue());
+        assertEquals("update",
+                TestUtil.readConfirmedRootValue(tree).textValue());
     }
 
     @Test
     void commit_failingTransactionSavedByNestedWriteThroughWrite_seemsFineAndIsAccepted()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
+            Transaction.getCurrent().apply(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             new TextNode("expected")),
                     null);
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand("update"), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand("update"), null);
 
-            assertNull(TestUtil.confirmedRootValue(tree));
+            assertNull(TestUtil.readConfirmedRootValue(tree));
 
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand("expected"), null);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand("expected"), null);
             }, Type.WRITE_THROUGH);
 
             assertEquals("update",
-                    TestUtil.transactionRootValue(tree).textValue(),
+                    TestUtil.readTransactionRootValue(tree).textValue(),
                     "Should take inner transaction changes into account");
         });
 
         assertTrue(operation.result().get().successful());
-        assertEquals("update", TestUtil.confirmedRootValue(tree).textValue());
+        assertEquals("update",
+                TestUtil.readConfirmedRootValue(tree).textValue());
     }
 
     @Test
-    void commit_goodTransactionRuinedByDirectWrite_seemsFineButFails()
+    void commit_goodTransactionRuinedBySyncWrite_seemsFineButFails()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
+            Transaction.getCurrent().apply(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             null),
                     null);
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand("update"), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand("update"), null);
 
-            tree.applyChange(TestUtil.rootValueCommand("unexpected"));
+            tree.commitSingleCommand(
+                    TestUtil.writeRootValueCommand("unexpected"));
 
             assertEquals("update",
-                    TestUtil.transactionRootValue(tree).textValue());
+                    TestUtil.readTransactionRootValue(tree).textValue());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.confirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).textValue());
     }
 
     @Test
     void commit_goodTransactionRuinedByNestedWriteThroughWrite_seemsFailingAndFails()
             throws InterruptedException, ExecutionException {
-        DirectSignalTree tree = new DirectSignalTree(false);
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
+            Transaction.getCurrent().apply(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             null),
                     null);
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand("update"), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand("update"), null);
 
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrentTransaction().apply(tree,
-                        TestUtil.rootValueCommand("unexpected"), null);
+                Transaction.getCurrent().apply(tree,
+                        TestUtil.writeRootValueCommand("unexpected"), null);
             }, Type.WRITE_THROUGH);
 
             assertEquals("unexpected",
-                    TestUtil.transactionRootValue(tree).textValue());
+                    TestUtil.readTransactionRootValue(tree).textValue());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.confirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).textValue());
     }
 
     @Test
@@ -432,19 +436,20 @@ public class StagedTransactionTest {
         AsyncTestTree tree = new AsyncTestTree();
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
+            Transaction.getCurrent().apply(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             new TextNode("expected")),
                     null);
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand("update"), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand("update"), null);
         });
 
-        assertNull(TestUtil.submittedRootValue(tree));
+        assertNull(TestUtil.readSubmittedRootValue(tree));
 
-        tree.confirm(List.of(TestUtil.rootValueCommand("expected")));
+        tree.confirm(List.of(TestUtil.writeRootValueCommand("expected")));
 
-        assertEquals("update", TestUtil.submittedRootValue(tree).textValue());
+        assertEquals("update",
+                TestUtil.readSubmittedRootValue(tree).textValue());
 
         tree.confirmSubmitted();
 
@@ -456,20 +461,21 @@ public class StagedTransactionTest {
             throws InterruptedException, ExecutionException {
         AsyncTestTree tree = new AsyncTestTree();
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrentTransaction().apply(tree,
+            Transaction.getCurrent().apply(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             null),
                     null);
-            Transaction.getCurrentTransaction().apply(tree,
-                    TestUtil.rootValueCommand("update"), null);
+            Transaction.getCurrent().apply(tree,
+                    TestUtil.writeRootValueCommand("update"), null);
         });
 
-        assertEquals("update", TestUtil.submittedRootValue(tree).textValue());
+        assertEquals("update",
+                TestUtil.readSubmittedRootValue(tree).textValue());
 
-        tree.confirm(List.of(TestUtil.rootValueCommand("unexpected")));
+        tree.confirm(List.of(TestUtil.writeRootValueCommand("unexpected")));
 
         assertEquals("unexpected",
-                TestUtil.submittedRootValue(tree).textValue());
+                TestUtil.readSubmittedRootValue(tree).textValue());
 
         tree.confirmSubmitted();
 
@@ -477,43 +483,38 @@ public class StagedTransactionTest {
     }
 
     @Test
-    void treeMixing_multipleDirectAndComputed_allIsFine() {
-        SignalTree d1 = new DirectSignalTree(false);
-        SignalTree d2 = new DirectSignalTree(false);
-        SignalTree c1 = new DirectSignalTree(true);
-        SignalTree c2 = new DirectSignalTree(true);
+    void treeMixing_multipleSyncAndComputed_allIsFine() {
+        SignalTree d1 = new SynchronousSignalTree(false);
+        SignalTree d2 = new SynchronousSignalTree(false);
+        SignalTree c1 = new SynchronousSignalTree(true);
+        SignalTree c2 = new SynchronousSignalTree(true);
 
         Transaction.runInTransaction(() -> {
-            TestUtil.transactionRootValue(d1);
-            TestUtil.transactionRootValue(d2);
-            TestUtil.transactionRootValue(c1);
-            TestUtil.transactionRootValue(c2);
+            TestUtil.readTransactionRootValue(d1);
+            TestUtil.readTransactionRootValue(d2);
+            TestUtil.readTransactionRootValue(c1);
+            TestUtil.readTransactionRootValue(c2);
         });
     }
 
     @Test
     void treeMixing_singleAsyncAndMultipleComputed_allIsFine() {
         SignalTree a1 = new AsyncTestTree();
-        SignalTree c1 = new DirectSignalTree(true);
-        SignalTree c2 = new DirectSignalTree(true);
+        SignalTree c1 = new SynchronousSignalTree(true);
+        SignalTree c2 = new SynchronousSignalTree(true);
 
+        // Async first
         Transaction.runInTransaction(() -> {
-            TestUtil.transactionRootValue(a1);
-            TestUtil.transactionRootValue(c1);
-            TestUtil.transactionRootValue(c2);
+            TestUtil.readTransactionRootValue(a1);
+            TestUtil.readTransactionRootValue(c1);
+            TestUtil.readTransactionRootValue(c2);
         });
-    }
 
-    @Test
-    void treeMixing_multipleComputedAndSingleAsync_allIsFine() {
-        SignalTree a1 = new AsyncTestTree();
-        SignalTree c1 = new DirectSignalTree(true);
-        SignalTree c2 = new DirectSignalTree(true);
-
+        // Computed first
         Transaction.runInTransaction(() -> {
-            TestUtil.transactionRootValue(c1);
-            TestUtil.transactionRootValue(c2);
-            TestUtil.transactionRootValue(a1);
+            TestUtil.readTransactionRootValue(c1);
+            TestUtil.readTransactionRootValue(c2);
+            TestUtil.readTransactionRootValue(a1);
         });
     }
 
@@ -523,45 +524,41 @@ public class StagedTransactionTest {
         SignalTree a2 = new AsyncTestTree();
 
         Transaction.runInTransaction(() -> {
-            TestUtil.transactionRootValue(a1);
+            TestUtil.readTransactionRootValue(a1);
 
             assertThrows(IllegalStateException.class, () -> {
-                TestUtil.transactionRootValue(a2);
+                TestUtil.readTransactionRootValue(a2);
             });
         });
     }
 
     @Test
-    void treeMixing_asyncAndDirect_throws() {
+    void treeMixing_asyncAndSync_throws() {
         SignalTree a1 = new AsyncTestTree();
-        SignalTree d1 = new DirectSignalTree(false);
+        SignalTree d1 = new SynchronousSignalTree(false);
 
+        // Async first
         Transaction.runInTransaction(() -> {
-            TestUtil.transactionRootValue(a1);
+            TestUtil.readTransactionRootValue(a1);
 
             assertThrows(IllegalStateException.class, () -> {
-                TestUtil.transactionRootValue(d1);
+                TestUtil.readTransactionRootValue(d1);
             });
         });
-    }
 
-    @Test
-    void treeMixing_directAndAsync_throws() {
-        SignalTree a1 = new AsyncTestTree();
-        SignalTree d1 = new DirectSignalTree(false);
-
+        // Sync first
         Transaction.runInTransaction(() -> {
-            TestUtil.transactionRootValue(d1);
+            TestUtil.readTransactionRootValue(d1);
 
             assertThrows(IllegalStateException.class, () -> {
-                TestUtil.transactionRootValue(a1);
+                TestUtil.readTransactionRootValue(a1);
             });
         });
     }
 
     @Test
     void commitLocking_multipleTrees_lockOrderConsistent() {
-        class LockOrderTree extends DirectSignalTree {
+        class LockOrderTree extends SynchronousSignalTree {
             static Set<LockOrderTree> lockedTrees = new HashSet<>();
 
             private Set<LockOrderTree> previouslyLocked = new HashSet<>();
@@ -604,8 +601,8 @@ public class StagedTransactionTest {
 
             Transaction.runInTransaction(() -> {
                 for (LockOrderTree tree : trees) {
-                    Transaction.getCurrentTransaction().apply(tree,
-                            TestUtil.rootValueCommand(), null);
+                    Transaction.getCurrent().apply(tree,
+                            TestUtil.writeRootValueCommand(), null);
                 }
             });
         }

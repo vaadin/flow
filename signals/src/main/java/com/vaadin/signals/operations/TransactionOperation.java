@@ -2,10 +2,10 @@ package com.vaadin.signals.operations;
 
 /**
  * A signal operation representing a transaction and the return value from the
- * transaction callback. The result of a transaction doesn't carry any value.
- * Note that in the case of write-through transactions, the result will always
- * be successful even if operations applied within the transaction were not
- * successful.
+ * transaction callback. The {@link #result()} for a transaction doesn't carry
+ * any value. Note that in the case of write-through transactions, the result
+ * will always be successful even if operations applied within the transaction
+ * were not successful.
  *
  * @param <T>
  *            the transaction return value type

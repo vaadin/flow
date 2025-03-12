@@ -11,17 +11,17 @@ import com.vaadin.signals.SignalCommand;
  * {@link #confirmed()} and {@link #submitted()} return the same value. This
  * type of tree is intended for signals that are used only within a single JVM.
  */
-public class DirectSignalTree extends SignalTree {
+public class SynchronousSignalTree extends SignalTree {
 
     /**
-     * Creates a new direct signal tree.
+     * Creates a new synchronous signal tree.
      *
      * @param computedSignal
      *            <code>true</code> if the tree is used for backing a computed
      *            signal, <code>false</code> if it's a standalone tree
      */
-    public DirectSignalTree(boolean computedSignal) {
-        super(computedSignal ? Type.COMPUTED : Type.DIRECT);
+    public SynchronousSignalTree(boolean computedSignal) {
+        super(computedSignal ? Type.COMPUTED : Type.SYNCHRONOUS);
     }
 
     private Snapshot snapshot = new Snapshot(id(), false);
@@ -70,7 +70,7 @@ public class DirectSignalTree extends SignalTree {
                 assert hasLock();
                 assert valid;
 
-                notifyDependents(oldSnapshot, snapshot);
+                notifyObservers(oldSnapshot, snapshot);
                 changes.notifyResultHandlers(results);
             }
 

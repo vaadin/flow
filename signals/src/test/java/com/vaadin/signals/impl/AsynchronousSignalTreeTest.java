@@ -18,9 +18,9 @@ import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.SignalTree.Type;
 
-public class AsyncSignalTreeTest {
+public class AsynchronousSignalTreeTest {
 
-    static class AsyncTestTree extends AsyncSignalTree {
+    static class AsyncTestTree extends AsynchronousSignalTree {
         List<List<SignalCommand>> submitted = new ArrayList<>();
 
         @Override
@@ -37,10 +37,10 @@ public class AsyncSignalTreeTest {
     }
 
     @Test
-    void newInstance_type_async() {
+    void newInstance_type_asynchronous() {
         AsyncTestTree tree = new AsyncTestTree();
 
-        assertEquals(Type.ASYNC, tree.type());
+        assertEquals(Type.ASYNCHRONOUS, tree.type());
     }
 
     @Test
@@ -49,19 +49,19 @@ public class AsyncSignalTreeTest {
 
         AtomicReference<CommandResult> result = new AtomicReference<>();
 
-        SignalCommand command = TestUtil.rootValueCommand();
-        tree.applyChange(command, result::set);
+        SignalCommand command = TestUtil.writeRootValueCommand();
+        tree.commitSingleCommand(command, result::set);
 
         assertNull(result.get());
-        assertNull(TestUtil.confirmedRootValue(tree));
-        assertNotNull(TestUtil.submittedRootValue(tree));
+        assertNull(TestUtil.readConfirmedRootValue(tree));
+        assertNotNull(TestUtil.readSubmittedRootValue(tree));
         assertEquals(List.of(List.of(command)), tree.submitted);
 
         tree.confirmSubmitted();
 
         assertInstanceOf(Accept.class, result.get());
-        assertNotNull(TestUtil.confirmedRootValue(tree));
-        assertNotNull(TestUtil.submittedRootValue(tree));
+        assertNotNull(TestUtil.readConfirmedRootValue(tree));
+        assertNotNull(TestUtil.readSubmittedRootValue(tree));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class AsyncSignalTreeTest {
         AtomicReference<CommandResult> result = new AtomicReference<>();
 
         SignalCommand command = TestUtil.failingCommand();
-        tree.applyChange(command, result::set);
+        tree.commitSingleCommand(command, result::set);
 
         /*
          * It might seem weird that an obviously invalid command wouldn't be
@@ -91,30 +91,30 @@ public class AsyncSignalTreeTest {
     void confirm_externalCommand_applied() {
         AsyncTestTree tree = new AsyncTestTree();
 
-        tree.confirm(List.of(TestUtil.rootValueCommand()));
+        tree.confirm(List.of(TestUtil.writeRootValueCommand()));
 
-        assertNotNull(TestUtil.confirmedRootValue(tree));
-        assertNotNull(TestUtil.submittedRootValue(tree));
+        assertNotNull(TestUtil.readConfirmedRootValue(tree));
+        assertNotNull(TestUtil.readSubmittedRootValue(tree));
     }
 
     @Test
     void confirm_overwritingSubmitted_submittedWins() {
         AsyncTestTree tree = new AsyncTestTree();
 
-        tree.applyChange(TestUtil.rootValueCommand("Submitted"));
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("Submitted"));
 
-        tree.confirm(List.of(TestUtil.rootValueCommand("Confirmed")));
+        tree.confirm(List.of(TestUtil.writeRootValueCommand("Confirmed")));
 
         assertEquals(new TextNode("Submitted"),
-                TestUtil.submittedRootValue(tree));
+                TestUtil.readSubmittedRootValue(tree));
         assertEquals(new TextNode("Confirmed"),
-                TestUtil.confirmedRootValue(tree));
+                TestUtil.readConfirmedRootValue(tree));
 
         tree.confirmSubmitted();
 
         assertEquals(new TextNode("Submitted"),
-                TestUtil.submittedRootValue(tree));
+                TestUtil.readSubmittedRootValue(tree));
         assertEquals(new TextNode("Submitted"),
-                TestUtil.confirmedRootValue(tree));
+                TestUtil.readConfirmedRootValue(tree));
     }
 }

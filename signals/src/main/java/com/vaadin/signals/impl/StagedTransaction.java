@@ -19,12 +19,12 @@ import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
 
 /**
- * A conventional read-write transaction that stages commands to be submitted
- * when the transaction is committed. Commits by incorporating staged changes
- * into the outer transaction if it's another staged transaction and otherwise
- * performs a two-phase commit to atomically apply changes to all participating
- * trees. Provides repeatable reads that are supplemented by changes from any
- * staged commands.
+ * A conventional read-write transaction that stages commands to be submitted as
+ * a single commit. Commits by incorporating staged changes into the outer
+ * transaction if it's another staged transaction and otherwise performs a
+ * two-phase commit to atomically apply changes to all participating trees.
+ * Provides repeatable reads that are supplemented by changes from any staged
+ * commands.
  */
 public class StagedTransaction extends Transaction {
     /**
@@ -123,6 +123,7 @@ public class StagedTransaction extends Transaction {
      *            the outer transaction to wrap, not <code>null</code>
      */
     public StagedTransaction(Transaction outer) {
+        assert outer != null;
         this.outer = outer;
     }
 
@@ -200,7 +201,7 @@ public class StagedTransaction extends Transaction {
                 handlers);
     }
 
-    private TreeState treeState(SignalTree tree) {
+    private TreeState getOrCreateTreeState(SignalTree tree) {
         TreeState treeState = openTrees.get(tree);
         if (treeState == null) {
             validateTreeTypes(tree);
@@ -214,15 +215,16 @@ public class StagedTransaction extends Transaction {
 
     @Override
     public void submit(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler, boolean apply) {
-        submit(tree, new CommandsAndHandlers(command, resultHandler), apply);
+            Consumer<CommandResult> resultHandler, boolean applyToTree) {
+        submit(tree, new CommandsAndHandlers(command, resultHandler),
+                applyToTree);
     }
 
     private void submit(SignalTree tree, CommandsAndHandlers commands,
-            boolean apply) {
-        TreeState state = treeState(tree);
+            boolean applyToTree) {
+        TreeState state = getOrCreateTreeState(tree);
 
-        if (apply) {
+        if (applyToTree) {
             state.staged.add(commands);
 
             state.updateRevision(commands.getCommands());
@@ -235,19 +237,22 @@ public class StagedTransaction extends Transaction {
 
     @Override
     public TreeRevision read(SignalTree tree) {
-        TreeState state = treeState(tree);
+        TreeState state = getOrCreateTreeState(tree);
         return failing ? state.base : state.revision;
     }
 
     private void validateTreeTypes(SignalTree tree) {
         SignalTree.Type treeType = tree.type();
-        if (treeType == SignalTree.Type.ASYNC) {
+        if (treeType == SignalTree.Type.ASYNCHRONOUS) {
             if (!openTreeTypes().allMatch(SignalTree.Type.COMPUTED::equals)) {
-                throw new IllegalStateException();
+                throw new IllegalStateException(
+                        "An asynchronous signal can only share transaction with computed signals and other asynchronous signals that belong to the same tree.");
             }
-        } else if (treeType == SignalTree.Type.DIRECT) {
-            if (openTreeTypes().anyMatch(SignalTree.Type.ASYNC::equals)) {
-                throw new IllegalStateException();
+        } else if (treeType == SignalTree.Type.SYNCHRONOUS) {
+            if (openTreeTypes()
+                    .anyMatch(SignalTree.Type.ASYNCHRONOUS::equals)) {
+                throw new IllegalStateException(
+                        "A synchronous signal cannot share transaction with asynchronous signals.");
             }
         }
     }
