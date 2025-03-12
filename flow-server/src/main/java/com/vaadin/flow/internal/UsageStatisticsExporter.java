@@ -19,10 +19,8 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.nodes.Document;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * A class for exporting {@link UsageStatistics} entries.
@@ -58,11 +56,11 @@ public class UsageStatisticsExporter implements Serializable {
 
     private static String createUsageStatisticsJson(
             UsageStatistics.UsageEntry entry) {
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
 
         json.put("is", entry.getName());
         json.put("version", entry.getVersion());
 
-        return json.toJson();
+        return json.toString();
     }
 }

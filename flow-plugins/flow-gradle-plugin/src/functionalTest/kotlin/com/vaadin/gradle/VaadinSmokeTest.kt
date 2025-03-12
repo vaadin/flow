@@ -15,14 +15,14 @@
  */
 package com.vaadin.gradle
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.vaadin.flow.internal.JacksonUtils
 import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.expect
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendUtils
-import elemental.json.JsonObject
-import elemental.json.impl.JsonUtil
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
@@ -71,8 +71,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
         val tokenFile = File(testProject.dir, "build/vaadin-generated/META-INF/VAADIN/config/flow-build-info.json")
         expect(true, tokenFile.toString()) { tokenFile.isFile }
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect(false, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
     }
 
     @Test
@@ -100,11 +100,11 @@ class VaadinSmokeTest : AbstractGradleTest() {
         build.find("*.br", 4..10)
         build.find("*.js", 4..10)
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(true, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect(true, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        ), buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -115,8 +115,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskSucceded("vaadinPrepareFrontend")
 
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect("MY_APP_ID", buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -437,7 +437,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             addonJar.toPath(), StandardCopyOption.REPLACE_EXISTING
         )
 
-        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build", debug = true)
         result.expectTaskSucceded("vaadinPrepareFrontend")
         result.expectTaskSucceded("vaadinBuildFrontend")
 
@@ -495,6 +495,78 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 )
             }
         }
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache_configurationChange_cacheInvalidated() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val buildFile = testProject.buildFile.readText()
+            .replace("nodeAutoUpdate = true", "nodeAutoUpdate = false")
+        testProject.buildFile.writeText(buildFile)
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.SUCCESS)
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache_gradlePropertyChange_cacheInvalidated() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", "-Pvaadin.eagerServerLoad=true", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.SUCCESS)
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache_systemPropertyChange_cacheInvalidated() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", "-Dvaadin.eagerServerLoad=true", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.SUCCESS)
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
     }
 
     private fun enableHilla() {

@@ -413,6 +413,7 @@ public class FrontendTools {
         settings.setUseGlobalPnpm(useGlobalPnpm);
         settings.setNodeVersion(nodeVersion);
         settings.setNodeDownloadRoot(URI.create(nodeDownloadRoot));
+        settings.setIgnoreVersionChecks(false);
         return settings;
     }
 

@@ -17,6 +17,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
  * Build a <code>NodeExecutor</code> instance.
@@ -85,6 +86,8 @@ public class Options implements Serializable {
 
     private List<String> frontendExtraFileExtensions = null;
 
+    private FrontendDependenciesScanner frontendDependenciesScanner;
+
     /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
@@ -133,6 +136,8 @@ public class Options implements Serializable {
      * created.
      */
     private boolean cleanOldGeneratedFiles = false;
+
+    private boolean frontendIgnoreVersionChecks = false;
 
     /**
      * Creates a new instance.
@@ -567,6 +572,19 @@ public class Options implements Serializable {
      */
     public Options withFrontendHotdeploy(boolean frontendHotdeploy) {
         this.frontendHotdeploy = frontendHotdeploy;
+        return this;
+    }
+
+    /**
+     * Whether to ignore node/npm tool version checks or not. Defaults to
+     * {@code false}.
+     *
+     * @param frontendIgnoreVersionChecks
+     *            {@code true} to ignore node/npm tool version checks
+     */
+    public Options withFrontendIgnoreVersionChecks(
+            boolean frontendIgnoreVersionChecks) {
+        this.frontendIgnoreVersionChecks = frontendIgnoreVersionChecks;
         return this;
     }
 
@@ -1012,5 +1030,45 @@ public class Options implements Serializable {
     public Options withNpmExcludeWebComponents(boolean exclude) {
         this.npmExcludeWebComponents = exclude;
         return this;
+    }
+
+    /**
+     * Whether to ignore node/npm tool version checks or not.
+     *
+     * @return {@code true} to ignore node/npm tool version checks
+     */
+    public boolean isFrontendIgnoreVersionChecks() {
+        return frontendIgnoreVersionChecks;
+    }
+
+    /**
+     * Sets the frontend dependencies scanner to use.
+     *
+     * @param frontendDependenciesScanner
+     *            frontend dependencies scanner
+     * @return this builder
+     */
+    public Options withFrontendDependenciesScanner(
+            FrontendDependenciesScanner frontendDependenciesScanner) {
+        this.frontendDependenciesScanner = frontendDependenciesScanner;
+        return this;
+    }
+
+    /**
+     * Gets the frontend dependencies scanner to use. If not is not pre-set,
+     * this initializes a new one based on the Options set.
+     *
+     * @return frontend dependencies scanner
+     */
+    public FrontendDependenciesScanner getFrontendDependenciesScanner() {
+        if (frontendDependenciesScanner == null) {
+            boolean reactEnabled = isReactEnabled() && FrontendUtils
+                    .isReactRouterRequired(getFrontendDirectory());
+            frontendDependenciesScanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                    .createScanner(!isUseByteCodeScanner(), getClassFinder(),
+                            isGenerateEmbeddableWebComponents(),
+                            getFeatureFlags(), reactEnabled);
+        }
+        return frontendDependenciesScanner;
     }
 }

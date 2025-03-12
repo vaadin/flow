@@ -193,7 +193,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         // get the running script
         boolean productionMode = request.getService()
                 .getDeploymentConfiguration().isProductionMode();
-        return getThisScript(tagName) + "var scriptUri = thisScript.src;"
+
+        return IndexHtmlRequestHandler.featureFlagsInitializer(request)
+                + getThisScript(tagName) + "var scriptUri = thisScript.src;"
                 + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
                 + "');" + "var context = scriptUri.substring(0, index+"
                 + WEB_COMPONENT_PATH.length() + ");"
