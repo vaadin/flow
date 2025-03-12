@@ -35,6 +35,7 @@ public class StagedTransaction extends Transaction {
     static class ResultCollector {
         private final HashSet<Object> unresolvedDependencies;
         private final Consumer<ResultOrError<Void>> resultHandler;
+        private final Object lock = new Object();
 
         private Boolean state = null;
 
@@ -48,7 +49,7 @@ public class StagedTransaction extends Transaction {
             assert unresolvedDependencies.contains(dependency);
 
             return result -> {
-                synchronized (unresolvedDependencies) {
+                synchronized (lock) {
                     if (!unresolvedDependencies.remove(dependency)) {
                         assert false;
                     }
