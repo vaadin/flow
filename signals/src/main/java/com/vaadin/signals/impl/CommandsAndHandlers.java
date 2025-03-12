@@ -46,7 +46,7 @@ public class CommandsAndHandlers {
      * @param command
      *            the command to use, not <code>null</code>
      * @param resultHandler
-     *            the result handler to use, nor <code>null</code> to not use a
+     *            the result handler to use, or <code>null</code> to not use a
      *            result handler
      */
     public CommandsAndHandlers(SignalCommand command,

@@ -10,8 +10,8 @@ import com.vaadin.signals.SignalCommand.SnapshotCommand;
 /**
  * A signal tree that submits commands to an event log and asynchronously waits
  * for external confirmation before completing handling of the command. This
- * means that {@link #confirmed} may contain changes that are not yet in
- * {@link #submitted} and might never end up there if a concurrent change causes
+ * means that {@link #submitted} may contain changes that are not yet in
+ * {@link #confirmed} and might never end up there if a concurrent change causes
  * a conflict. This type of tree is intended for signals that are synchronized
  * across a cluster.
  */

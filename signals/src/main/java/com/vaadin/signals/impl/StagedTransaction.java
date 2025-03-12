@@ -59,12 +59,10 @@ public class StagedTransaction extends Transaction {
                         state = Boolean.FALSE;
                         resultHandler.accept(
                                 new SignalOperation.Error<>(error.reason()));
-                    } else {
-                        if (unresolvedDependencies.isEmpty()) {
-                            state = Boolean.TRUE;
-                            resultHandler
-                                    .accept(new SignalOperation.Result<>(null));
-                        }
+                    } else if (unresolvedDependencies.isEmpty()) {
+                        state = Boolean.TRUE;
+                        resultHandler
+                                .accept(new SignalOperation.Result<>(null));
                     }
                 }
             };

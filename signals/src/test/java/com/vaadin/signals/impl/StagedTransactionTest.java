@@ -492,7 +492,7 @@ public class StagedTransactionTest {
     }
 
     @Test
-    void treeMixing_singleAsyncDirectAndMultipleComputed_allIsFine() {
+    void treeMixing_singleAsyncAndMultipleComputed_allIsFine() {
         SignalTree a1 = new AsyncTestTree();
         SignalTree c1 = new DirectSignalTree(true);
         SignalTree c2 = new DirectSignalTree(true);

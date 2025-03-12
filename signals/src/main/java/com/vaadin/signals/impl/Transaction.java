@@ -235,11 +235,6 @@ public abstract class Transaction {
      *            the supplier type
      * @param transactionTask
      *            the supplier to run in a transaction, not <code>null</code>
-     *
-     * @param <T>
-     *            the supplier type
-     * @param transactionTask
-     *            the supplier to run in a transaction, not <code>null</code>
      * @param transactionType
      *            the type of the transaction, not <code>null</code>
      * @return the operation object that wraps the supplier value, not
@@ -286,15 +281,15 @@ public abstract class Transaction {
      * The transaction will be committed after running the task, or rolled back
      * if the task throws an exception.
      *
-     * @param transacationTask
+     * @param transactionTask
      *            the task to run, not <code>null</code>
      * @param transactionType
      *            the type of the transaction, not <code>null</code>
      * @return the value-less operation object, not <code>null</code>
      */
     public static TransactionOperation<Void> runInTransaction(
-            Runnable transacationTask, Type transactionType) {
-        return runInTransaction(asSupplier(transacationTask), transactionType);
+            Runnable transactionTask, Type transactionType) {
+        return runInTransaction(asSupplier(transactionTask), transactionType);
     }
 
     /**
@@ -305,13 +300,13 @@ public abstract class Transaction {
      * The transaction will be committed after running the task, or rolled back
      * if the task throws an exception.
      *
-     * @param transacationTask
+     * @param transactionTask
      *            the task to run, not <code>null</code>
      * @return the value-less operation object, not <code>null</code>
      */
     public static TransactionOperation<Void> runInTransaction(
-            Runnable transacationTask) {
-        return runInTransaction(asSupplier(transacationTask));
+            Runnable transactionTask) {
+        return runInTransaction(asSupplier(transactionTask));
     }
 
     /**
@@ -365,7 +360,7 @@ public abstract class Transaction {
      * @param apply
      *            <code>true</code> to apply the command to the underlying tree,
      *            <code>false</code> to only update the transaction's
-     *            repeateable-read revision
+     *            repeatable-read revision
      */
     public abstract void submit(SignalTree tree, SignalCommand command,
             Consumer<CommandResult> resultHandler, boolean apply);
@@ -421,7 +416,8 @@ public abstract class Transaction {
      * user-originated write operations but just side effects of lazy
      * evaluation.
      *
-     * @return
+     * @return {@code false} if this transaction allows regular writes to the underlying tree,
+     *         {@code true} otherwise.
      */
     protected abstract boolean readonly();
 }

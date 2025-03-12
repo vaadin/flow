@@ -18,7 +18,7 @@ public class DirectSignalTree extends SignalTree {
      *
      * @param computedSignal
      *            <code>true</code> if the tree is used for backing a computed
-     *            signal, <code>false</code> if its a standalone tree
+     *            signal, <code>false</code> if it's a standalone tree
      */
     public DirectSignalTree(boolean computedSignal) {
         super(computedSignal ? Type.COMPUTED : Type.DIRECT);

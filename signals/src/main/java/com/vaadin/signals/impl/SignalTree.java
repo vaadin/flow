@@ -256,7 +256,7 @@ public abstract class SignalTree {
     public abstract Snapshot submitted();
 
     /**
-     * Gets the current snapshot based on all confirmed. This snapshot does not
+     * Gets the current snapshot based on all confirmed commands. This snapshot does not
      * contain changes from commands that have been submitted but not yet
      * confirmed.
      *
