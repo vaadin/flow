@@ -49,7 +49,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonBoolean;
 import elemental.json.JsonNull;
+import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -105,11 +107,31 @@ public final class JacksonUtils {
     }
 
     /**
+     * Map JsonArray to ArrayNode.
+     *
+     * @param jsonArray
+     *            JsonArray to change
+     * @return ArrayNode of elemental json array object or null for null
+     *         jsonArray
+     */
+    public static ArrayNode mapElemental(JsonArray jsonArray) {
+        if (jsonArray == null || jsonArray instanceof JsonNull) {
+            return null;
+        }
+        try {
+            return (ArrayNode) objectMapper.readTree(jsonArray.toJson());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Map JsonObject to ObjectNode.
      *
      * @param jsonObject
      *            JsonObject to change
-     * @return ObjectNode of elemental json object or null for null jsonObject
+     * @return ObjectNode of elemental json object object or null for null
+     *         jsonObject
      */
     public static ObjectNode mapElemental(JsonObject jsonObject) {
         if (jsonObject == null) {
@@ -132,6 +154,15 @@ public final class JacksonUtils {
     public static BaseJsonNode mapElemental(JsonValue jsonValue) {
         if (jsonValue == null || jsonValue instanceof JsonNull) {
             return nullNode();
+        }
+        if (jsonValue instanceof JsonObject) {
+            return mapElemental((JsonObject) jsonValue);
+        }
+        if (jsonValue instanceof JsonNumber) {
+            return objectMapper.valueToTree(jsonValue.asNumber());
+        }
+        if (jsonValue instanceof JsonBoolean) {
+            return objectMapper.valueToTree(jsonValue.asBoolean());
         }
         return objectMapper.valueToTree(jsonValue.asString());
     }
