@@ -140,7 +140,7 @@ public class StagedTransaction extends Transaction {
 
         if (outer instanceof StagedTransaction outerTx) {
             for (SignalTree tree : openTrees.keySet()) {
-                outerTx.submit(tree, createChange(tree, collector), true);
+                outerTx.include(tree, createChange(tree, collector), true);
             }
         } else {
             commitTwoPhase(collector);
@@ -151,7 +151,7 @@ public class StagedTransaction extends Transaction {
                 TransactionCommand command = new SignalCommand.TransactionCommand(
                         Id.random(), staged.getCommands());
 
-                outer.submit(tree, command, null, false);
+                outer.include(tree, command, null, false);
             }
         }
     }
@@ -215,13 +215,13 @@ public class StagedTransaction extends Transaction {
     }
 
     @Override
-    public void submit(SignalTree tree, SignalCommand command,
+    public void include(SignalTree tree, SignalCommand command,
             Consumer<CommandResult> resultHandler, boolean applyToTree) {
-        submit(tree, new CommandsAndHandlers(command, resultHandler),
+        include(tree, new CommandsAndHandlers(command, resultHandler),
                 applyToTree);
     }
 
-    private void submit(SignalTree tree, CommandsAndHandlers commands,
+    private void include(SignalTree tree, CommandsAndHandlers commands,
             boolean applyToTree) {
         TreeState state = getOrCreateTreeState(tree);
 

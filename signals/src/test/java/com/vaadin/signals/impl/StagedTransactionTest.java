@@ -128,11 +128,11 @@ public class StagedTransactionTest {
         Transaction.runInTransaction(() -> {
             Transaction tx = Transaction.getCurrent();
 
-            tx.apply(tree, TestUtil.writeRootValueCommand(), null);
+            tx.include(tree, TestUtil.writeRootValueCommand(), null);
 
             assertNotNull(tx.read(tree).data(Id.ZERO).get().value());
 
-            tx.apply(tree, TestUtil.failingCommand(), null);
+            tx.include(tree, TestUtil.failingCommand(), null);
 
             assertNull(tx.read(tree).data(Id.ZERO).get().value());
         });
@@ -150,8 +150,8 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction tx = Transaction.getCurrent();
 
-            tx.apply(t1, TestUtil.writeRootValueCommand(), h1);
-            tx.apply(t2, TestUtil.writeRootValueCommand(), h2);
+            tx.include(t1, TestUtil.writeRootValueCommand(), h1);
+            tx.include(t2, TestUtil.writeRootValueCommand(), h2);
 
             assertNull(h1.result);
             assertNull(h2.result);
@@ -179,8 +179,8 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction tx = Transaction.getCurrent();
 
-            tx.apply(t1, TestUtil.writeRootValueCommand(), h1);
-            tx.apply(t2, TestUtil.failingCommand(), h2);
+            tx.include(t1, TestUtil.writeRootValueCommand(), h1);
+            tx.include(t2, TestUtil.failingCommand(), h2);
 
             assertNull(TestUtil.readTransactionRootValue(t1),
                     "Reading should take expected failure into account");
@@ -205,7 +205,7 @@ public class StagedTransactionTest {
         ResultHandler handler = new ResultHandler();
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand(), handler);
 
             assertNull(handler.result);
@@ -236,8 +236,8 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction tx = Transaction.getCurrent();
 
-            tx.apply(tree, TestUtil.writeRootValueCommand(), h1);
-            tx.apply(tree, TestUtil.failingCommand(), h2);
+            tx.include(tree, TestUtil.writeRootValueCommand(), h1);
+            tx.include(tree, TestUtil.failingCommand(), h2);
 
             assertNull(h1.result);
             assertNull(h2.result);
@@ -266,7 +266,7 @@ public class StagedTransactionTest {
 
         Transaction.runInTransaction(() -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree, command, null);
+                Transaction.getCurrent().include(tree, command, null);
             });
 
             assertTrue(tree.submitted.isEmpty());
@@ -297,7 +297,7 @@ public class StagedTransactionTest {
 
         Transaction.runInTransaction(() -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree, command, null);
+                Transaction.getCurrent().include(tree, command, null);
             });
 
             assertEquals(1, tree.submitted.size());
@@ -313,7 +313,7 @@ public class StagedTransactionTest {
 
         Transaction.runInTransaction(() -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree, command, null);
+                Transaction.getCurrent().include(tree, command, null);
             }, Type.WRITE_THROUGH);
 
             assertEquals(1, tree.submitted.size());
@@ -328,11 +328,11 @@ public class StagedTransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             new TextNode("expected")),
                     null);
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
 
             // This change is applied outside the transaction and will make it
@@ -356,17 +356,17 @@ public class StagedTransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             new TextNode("expected")),
                     null);
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
 
             assertNull(TestUtil.readConfirmedRootValue(tree));
 
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand("expected"), null);
             }, Type.WRITE_THROUGH);
 
@@ -385,11 +385,11 @@ public class StagedTransactionTest {
             throws InterruptedException, ExecutionException {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             null),
                     null);
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
 
             tree.commitSingleCommand(
@@ -409,15 +409,15 @@ public class StagedTransactionTest {
             throws InterruptedException, ExecutionException {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             null),
                     null);
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
 
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand("unexpected"), null);
             }, Type.WRITE_THROUGH);
 
@@ -436,11 +436,11 @@ public class StagedTransactionTest {
         AsyncTestTree tree = new AsyncTestTree();
 
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             new TextNode("expected")),
                     null);
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
         });
 
@@ -461,11 +461,11 @@ public class StagedTransactionTest {
             throws InterruptedException, ExecutionException {
         AsyncTestTree tree = new AsyncTestTree();
         var operation = Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
                             null),
                     null);
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
         });
 
@@ -601,7 +601,7 @@ public class StagedTransactionTest {
 
             Transaction.runInTransaction(() -> {
                 for (LockOrderTree tree : trees) {
-                    Transaction.getCurrent().apply(tree,
+                    Transaction.getCurrent().include(tree,
                             TestUtil.writeRootValueCommand(), null);
                 }
             });

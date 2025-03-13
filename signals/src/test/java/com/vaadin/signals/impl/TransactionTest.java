@@ -38,7 +38,7 @@ public class TransactionTest {
         TreeRevision revision = transaction.read(tree);
         assertSame(tree.submitted(), revision);
 
-        transaction.apply(tree, TestUtil.writeRootValueCommand(), null);
+        transaction.include(tree, TestUtil.writeRootValueCommand(), null);
         assertNotNull(TestUtil.readSubmittedRootValue(tree));
     }
 
@@ -74,7 +74,7 @@ public class TransactionTest {
             Transaction transaction = Transaction.getCurrent();
             assertInstanceOf(StagedTransaction.class, transaction);
 
-            transaction.apply(tree, command, null);
+            transaction.include(tree, command, null);
             assertEquals(List.of(), tree.submitted,
                     "Nothing should be submitted before the transaction ends");
         });
@@ -103,7 +103,7 @@ public class TransactionTest {
 
         assertThrows(RuntimeException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand(), handler);
                 throw new RuntimeException();
             });
@@ -121,7 +121,7 @@ public class TransactionTest {
 
         assertThrows(RuntimeException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand(), handler);
                 throw new RuntimeException();
             }, Type.WRITE_THROUGH);
@@ -165,7 +165,7 @@ public class TransactionTest {
 
         TransactionOperation<Void> operation = Transaction
                 .runInTransaction(() -> {
-                    Transaction.getCurrent().apply(tree,
+                    Transaction.getCurrent().include(tree,
                             TestUtil.writeRootValueCommand(), handler);
                 }, Type.WRITE_THROUGH);
 
@@ -183,7 +183,7 @@ public class TransactionTest {
 
         TransactionOperation<Void> operation = Transaction
                 .runInTransaction(() -> {
-                    Transaction.getCurrent().apply(tree,
+                    Transaction.getCurrent().include(tree,
                             TestUtil.failingCommand(), handler);
                 }, Type.WRITE_THROUGH);
 
@@ -220,7 +220,7 @@ public class TransactionTest {
             JsonNode beforeUpdate = TestUtil.readTransactionRootValue(tree);
             assertNull(beforeUpdate);
 
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand(), null);
 
             assertNotNull(TestUtil.readSubmittedRootValue(tree));
@@ -274,7 +274,7 @@ public class TransactionTest {
             TestUtil.readTransactionRootValue(tree);
 
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand(), null);
             }, Type.WRITE_THROUGH);
 
@@ -307,7 +307,7 @@ public class TransactionTest {
 
         assertThrows(IllegalStateException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand(), null);
             }, Type.READ_ONLY);
         });
@@ -319,7 +319,7 @@ public class TransactionTest {
 
         assertThrows(IllegalStateException.class, () -> {
             Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand(), null);
             }, Type.READ_ONLY);
         });
@@ -330,7 +330,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(true);
 
         Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().apply(tree,
+            Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand(), null);
         }, Type.READ_ONLY);
 
@@ -343,7 +343,7 @@ public class TransactionTest {
 
         Transaction.runInTransaction(() -> {
             Transaction.runWithoutTransaction(() -> {
-                Transaction.getCurrent().apply(tree,
+                Transaction.getCurrent().include(tree,
                         TestUtil.writeRootValueCommand(), null);
             });
         }, Type.READ_ONLY);

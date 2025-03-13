@@ -39,7 +39,7 @@ public abstract class Transaction {
         }
 
         @Override
-        public void submit(SignalTree tree, SignalCommand command,
+        public void include(SignalTree tree, SignalCommand command,
                 Consumer<CommandResult> resultHandler, boolean applyToTree) {
             if (readonly() && tree.type() != SignalTree.Type.COMPUTED) {
                 throw new IllegalStateException(
@@ -92,14 +92,14 @@ public abstract class Transaction {
         }
 
         @Override
-        public void submit(SignalTree tree, SignalCommand command,
+        public void include(SignalTree tree, SignalCommand command,
                 Consumer<CommandResult> resultHandler, boolean applyToTree) {
-            super.submit(tree, command, resultHandler, applyToTree);
+            super.include(tree, command, resultHandler, applyToTree);
 
             getOrCreateReadRevision(tree).apply(command, null);
 
             // Let an outer transaction update its own read revision
-            outer.submit(tree, command, null, false);
+            outer.include(tree, command, null, false);
         }
 
         @Override
@@ -346,14 +346,17 @@ public abstract class Transaction {
     }
 
     /**
-     * Submits the given command to the given tree in the context of this
-     * transaction.
+     * Includes the given command to the given tree in the context of this
+     * transaction and optionally also sets the command to be applied to the
+     * underlying signal tree. Depending on the transaction type, an applied
+     * command may be applied immediately, collected to be applied upon
+     * committing, or rejected with an {@link IllegalStateException}.
      *
      * @param tree
      *            the signal tree against which to run the command, not
      *            <code>null</code>
      * @param command
-     *            the command to apply, not <code>null</code>
+     *            the command to include, not <code>null</code>
      * @param resultHandler
      *            the handler of the command result, or <code>null</code> to
      *            ignore the result
@@ -362,12 +365,13 @@ public abstract class Transaction {
      *            <code>false</code> to only update the transaction's
      *            repeatable-read revision
      */
-    public abstract void submit(SignalTree tree, SignalCommand command,
+    protected abstract void include(SignalTree tree, SignalCommand command,
             Consumer<CommandResult> resultHandler, boolean applyToTree);
 
     /**
-     * Applies the given command to the given tree in the context of this
-     * transaction. Depending on the transaction type, the command may be
+     * Includes the given command to the given tree in the context of this
+     * transaction and sets the command to be applied to the underlying signal
+     * tree. Depending on the transaction type, an applied command may be
      * applied immediately, collected to be applied upon committing, or rejected
      * with an {@link IllegalStateException}.
      *
@@ -380,9 +384,9 @@ public abstract class Transaction {
      *            the handler of the command result, or <code>null</code> to
      *            ignore the result
      */
-    public void apply(SignalTree tree, SignalCommand command,
+    public void include(SignalTree tree, SignalCommand command,
             Consumer<CommandResult> resultHandler) {
-        submit(tree, command, resultHandler, true);
+        include(tree, command, resultHandler, true);
     }
 
     /**
