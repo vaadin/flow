@@ -29,6 +29,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import elemental.json.JsonObject;
@@ -59,6 +60,22 @@ public abstract class AbstractRpcInvocationHandler
             getLogger().debug("Ignoring RPC for detached node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
+        }
+
+        // Allow handling of RPC request if any listener for the event type or
+        // the synchronized property have enabled allowInert.
+        if (node.isInert() && node.hasFeature(ElementListenerMap.class)) {
+            ElementListenerMap listenerMap = node
+                    .getFeature(ElementListenerMap.class);
+            if (invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)
+                    && listenerMap.hasAllowInertForType(invocationJson
+                            .getString(JsonConstants.RPC_EVENT_TYPE))) {
+                return handleNode(node, invocationJson);
+            } else if (invocationJson.hasKey(JsonConstants.RPC_PROPERTY)
+                    && listenerMap.hasAllowInertForProperty(invocationJson
+                            .getString(JsonConstants.RPC_PROPERTY))) {
+                return handleNode(node, invocationJson);
+            }
         }
 
         // ignore RPC requests from the client side for the nodes that are

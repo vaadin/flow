@@ -512,4 +512,21 @@ public class ElementListenerMap extends NodeMap {
                 .reduce(DisabledUpdateMode::mostPermissive).orElse(null);
     }
 
+    public boolean hasAllowInertForType(String eventType) {
+        if (listeners == null) {
+            return false;
+        }
+        return listeners.values().stream().flatMap(List::stream)
+                .filter(wrapper -> eventType.equals(wrapper.getEventType()))
+                .anyMatch(wrapper -> wrapper.allowInert);
+    }
+
+    public boolean hasAllowInertForProperty(String propertyName) {
+        if (listeners == null) {
+            return false;
+        }
+        return listeners.values().stream().flatMap(List::stream)
+                .filter(wrapper -> wrapper.isPropertySynchronized(propertyName))
+                .anyMatch(wrapper -> wrapper.allowInert);
+    }
 }
