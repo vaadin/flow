@@ -158,6 +158,9 @@ public final class JacksonUtils {
         if (jsonValue instanceof JsonObject) {
             return mapElemental((JsonObject) jsonValue);
         }
+        if (jsonValue instanceof JsonArray) {
+            return mapElemental((JsonArray) jsonValue);
+        }
         if (jsonValue instanceof JsonNumber) {
             return objectMapper.valueToTree(jsonValue.asNumber());
         }
