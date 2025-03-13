@@ -1,0 +1,1 @@
+window.alpha = 1;
