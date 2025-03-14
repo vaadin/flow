@@ -31,6 +31,7 @@ import java.util.stream.Stream.Builder;
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.template.Id;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
@@ -178,9 +179,13 @@ public abstract class Component
                 throw new IllegalArgumentException(getClass().getName()
                         + ": event type must not be null for @Synchronize annotation");
             }
-            element.addPropertyChangeListener(info.getProperty(), eventType,
-                    NOOP_PROPERTY_LISTENER)
+            DomListenerRegistration propertyListener = element
+                    .addPropertyChangeListener(info.getProperty(), eventType,
+                            NOOP_PROPERTY_LISTENER)
                     .setDisabledUpdateMode(info.getUpdateMode());
+            if (info.getAllowInert()) {
+                propertyListener.allowInert();
+            }
         });
     }
 

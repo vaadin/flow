@@ -512,4 +512,25 @@ public class ElementListenerMap extends NodeMap {
                 .reduce(DisabledUpdateMode::mostPermissive).orElse(null);
     }
 
+    /**
+     * Returns {@code true} if any listener for the given property has
+     * allowInert enabled. Note that this means that enabling allowInert for any
+     * listener for a certain property will effectively allow it for all
+     * listeners for said property.
+     *
+     * @param propertyName
+     *            the property name to check, not <code>null</code>
+     * @return {@code true} if allowInert is enabled for any listener for the
+     *         given property, {@code false otherwise}
+     */
+    public boolean hasAllowInertForProperty(String propertyName) {
+        assert propertyName != null;
+
+        if (listeners == null) {
+            return false;
+        }
+        return listeners.values().stream().flatMap(List::stream)
+                .filter(wrapper -> wrapper.isPropertySynchronized(propertyName))
+                .anyMatch(wrapper -> wrapper.allowInert);
+    }
 }

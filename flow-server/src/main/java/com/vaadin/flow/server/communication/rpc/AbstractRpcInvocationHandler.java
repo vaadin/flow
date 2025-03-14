@@ -66,9 +66,15 @@ public abstract class AbstractRpcInvocationHandler
         if (node.isInactive()) {
             logHandlingIgnoredMessage(node, "inactive (disabled or invisible)");
             return Optional.empty();
-        } else if (!allowInert(ui, invocationJson) && node.isInert()) {
-            logHandlingIgnoredMessage(node, "inert");
-            return Optional.empty();
+        } else if (node.isInert()) {
+            if (allowInert(ui, invocationJson)) {
+                // Allow handling of RPC request if any listener for the event
+                // type or the synchronized property have enabled allowInert.
+                return handleNode(node, invocationJson);
+            } else {
+                logHandlingIgnoredMessage(node, "inert");
+                return Optional.empty();
+            }
         } else {
             return handleNode(node, invocationJson);
         }
