@@ -158,6 +158,9 @@ public final class JacksonUtils {
         if (jsonValue instanceof JsonObject) {
             return mapElemental((JsonObject) jsonValue);
         }
+        if (jsonValue instanceof JsonArray) {
+            return mapElemental((JsonArray) jsonValue);
+        }
         if (jsonValue instanceof JsonNumber) {
             return objectMapper.valueToTree(jsonValue.asNumber());
         }
@@ -554,7 +557,7 @@ public final class JacksonUtils {
      * @param <T>
      *            type of result instance
      */
-    public static <T> T readToObject(ObjectNode jsonObject, Class<T> tClass) {
+    public static <T> T readToObject(JsonNode jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.treeToValue(jsonObject, tClass);
@@ -575,7 +578,7 @@ public final class JacksonUtils {
      * @param <T>
      *            type of result instance
      */
-    public static <T> T readValue(ObjectNode jsonValue, Class<T> tClass) {
+    public static <T> T readValue(JsonNode jsonValue, Class<T> tClass) {
         return readToObject(jsonValue, tClass);
     }
 
@@ -590,7 +593,7 @@ public final class JacksonUtils {
      * @param <T>
      *            type of result instance
      */
-    public static <T> T readValue(ObjectNode jsonValue,
+    public static <T> T readValue(JsonNode jsonValue,
             TypeReference<T> typeReference) {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
@@ -608,7 +611,7 @@ public final class JacksonUtils {
      *            Java object to convert
      * @return converted JSON value
      */
-    public static ObjectNode writeValue(Object object) {
+    public static BaseJsonNode writeValue(Object object) {
         return objectMapper.valueToTree(object);
     }
 

@@ -28,12 +28,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 
@@ -361,6 +365,17 @@ public class ComponentEventBus implements Serializable {
                     || type == Element.class) {
                 eventDataObjects.add(parseStateNodeIdToComponentReference(
                         domEvent, type, expression));
+            } else if (JsonNode.class.isAssignableFrom(type)) {
+                // TODO: remove when domEvent uses jackson.
+                JsonNode jsonValue;
+                JsonValue eventValue = domEvent.getEventData().get(expression);
+                if (eventValue == null) {
+                    jsonValue = JacksonUtils.nullNode();
+                } else {
+                    jsonValue = JacksonUtils.mapElemental(eventValue);
+                }
+                Object value = JacksonCodec.decodeAs(jsonValue, type);
+                eventDataObjects.add(value);
             } else {
                 JsonValue jsonValue = domEvent.getEventData().get(expression);
                 if (jsonValue == null) {
