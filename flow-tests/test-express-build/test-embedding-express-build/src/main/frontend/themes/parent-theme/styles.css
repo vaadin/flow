@@ -1,0 +1,5 @@
+/*
+Parent theme added only to ensure that exported web components do not add
+style sheet link to the document when the theme does not provide a document.css
+file
+*/
