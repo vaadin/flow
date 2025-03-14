@@ -151,6 +151,6 @@ public class FileWatcherTest {
 
     private void createFile(String path) throws IOException {
         File newFile = new File(path);
-        newFile.createNewFile();
+        Files.writeString(newFile.toPath(), "some text");
     }
 }
