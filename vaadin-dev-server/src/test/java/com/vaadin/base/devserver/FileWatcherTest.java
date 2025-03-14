@@ -27,11 +27,16 @@ public class FileWatcherTest {
 
         watcher.start();
 
-        File newFile = new File(dir, "newFile.txt");
-        newFile.createNewFile();
+        try {
+            File newFile = new File(dir, "newFile.txt");
+            newFile.createNewFile();
 
-        Thread.sleep(50); // The watcher is supposed to be triggered immediately
-        Assert.assertEquals(newFile, changed.get());
+            Thread.sleep(50); // The watcher is supposed to be triggered
+                              // immediately
+            Assert.assertEquals(newFile, changed.get());
+        } finally {
+            watcher.stop();
+        }
     }
 
     @Test
@@ -66,20 +71,22 @@ public class FileWatcherTest {
                 .mockStatic(ApplicationConfiguration.class)) {
             appConfig.when(() -> ApplicationConfiguration.get(Mockito.any()))
                     .thenReturn(config);
-            new ExternalDependencyWatcher(vaadinContext, jarFrontendResources);
+            try (var watcher = new ExternalDependencyWatcher(vaadinContext,
+                    jarFrontendResources)) {
 
-            assertFileCountFound(jarFrontendResources, 0);
+                assertFileCountFound(jarFrontendResources, 0);
 
-            createFile(rootPorjectResourceFrontend + "/somestyles.css");
-            assertFileCountFound(jarFrontendResources, 1);
+                createFile(rootPorjectResourceFrontend + "/somestyles.css");
+                assertFileCountFound(jarFrontendResources, 1);
 
-            createFile(subProjectLegacyFrontend + "/somejs.js");
-            assertFileCountFound(jarFrontendResources, 2);
+                createFile(subProjectLegacyFrontend + "/somejs.js");
+                assertFileCountFound(jarFrontendResources, 2);
 
-            Assert.assertEquals("somestyles.css",
-                    jarFrontendResources.listFiles()[0].getName());
-            Assert.assertEquals("somejs.js",
-                    jarFrontendResources.listFiles()[1].getName());
+                Assert.assertEquals("somestyles.css",
+                        jarFrontendResources.listFiles()[0].getName());
+                Assert.assertEquals("somejs.js",
+                        jarFrontendResources.listFiles()[1].getName());
+            }
         }
     }
 
@@ -115,18 +122,20 @@ public class FileWatcherTest {
                 .mockStatic(ApplicationConfiguration.class)) {
             appConfig.when(() -> ApplicationConfiguration.get(Mockito.any()))
                     .thenReturn(config);
-            new ExternalDependencyWatcher(vaadinContext, jarFrontendResources);
+            try (var watcher = new ExternalDependencyWatcher(vaadinContext,
+                    jarFrontendResources)) {
 
-            assertFileCountFound(jarFrontendResources, 0);
+                assertFileCountFound(jarFrontendResources, 0);
 
-            createFile(rootPorjectResourceFrontend + "/somestyles.css");
-            assertFileCountFound(jarFrontendResources, 1);
+                createFile(rootPorjectResourceFrontend + "/somestyles.css");
+                assertFileCountFound(jarFrontendResources, 1);
 
-            createFile(subProjectLegacyFrontend + "/somejs.js");
-            assertFileCountFound(jarFrontendResources, 1);
+                createFile(subProjectLegacyFrontend + "/somejs.js");
+                assertFileCountFound(jarFrontendResources, 1);
 
-            Assert.assertEquals("somestyles.css",
-                    jarFrontendResources.listFiles()[0].getName());
+                Assert.assertEquals("somestyles.css",
+                        jarFrontendResources.listFiles()[0].getName());
+            }
         }
     }
 
