@@ -3,6 +3,7 @@ package com.vaadin.base.devserver;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -141,11 +142,14 @@ public class FileWatcherTest {
 
     private void assertFileCountFound(File directory, int count)
             throws InterruptedException {
-        Thread.sleep(300);
+        Thread.sleep(500);
+        File[] files = directory.listFiles();
+        System.out.println("============ Files found ==========="
+                + Arrays.toString(files));
         Assert.assertEquals(
                 "Wrong amount of copied files found when there should be "
                         + count + ".",
-                count, directory.listFiles().length);
+                count, files.length);
 
     }
 
