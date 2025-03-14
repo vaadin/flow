@@ -64,7 +64,7 @@ public class FileWatcherTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getStringProperty(
                 InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null))
-                .thenReturn("./../fakeproject");
+                .thenReturn("./,./fakeproject");
         Mockito.when(config.getProjectFolder()).thenReturn(projectFolder);
 
         try (MockedStatic<ApplicationConfiguration> appConfig = Mockito
