@@ -141,7 +141,7 @@ public class FileWatcherTest {
 
     private void assertFileCountFound(File directory, int count)
             throws InterruptedException {
-        Thread.sleep(100);
+        Thread.sleep(300);
         Assert.assertEquals(
                 "Wrong amount of copied files found when there should be "
                         + count + ".",
