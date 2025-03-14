@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -429,11 +430,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     .forEach(element -> ElementUtil.fromJsoup(element)
                             .ifPresent(elementsForShadows::add));
 
+            File frontendDirectory = FrontendUtils
+                    .getProjectFrontendDir(config);
+
             // Add document.css link to the document
-            BootstrapHandler.getStylesheetLinks(context, "document.css")
+            BootstrapHandler
+                    .getStylesheetLinks(context, "document.css",
+                            frontendDirectory)
                     .forEach(link -> UI.getCurrent().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
-                            link));
+                            modifyPath(serviceUrl, link)));
         }
 
         WebComponentConfigurationRegistry
