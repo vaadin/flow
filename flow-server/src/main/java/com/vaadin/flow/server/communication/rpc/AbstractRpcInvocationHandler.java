@@ -29,7 +29,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import elemental.json.JsonObject;
@@ -70,8 +69,7 @@ public abstract class AbstractRpcInvocationHandler
         } else if (node.isInert()) {
             if (allowInert(ui, invocationJson)) {
                 // Allow handling of RPC request if any listener for the event
-                // type or
-                // the synchronized property have enabled allowInert.
+                // type or the synchronized property have enabled allowInert.
                 return handleNode(node, invocationJson);
             } else {
                 logHandlingIgnoredMessage(node, "inert");
