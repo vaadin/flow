@@ -71,12 +71,6 @@
             <artifactId>flow-polymer2lit</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-react</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <!-- Needed for lambdas in Mojos -->
@@ -113,6 +107,7 @@
                     <localRepositoryPath>target/local-repo</localRepositoryPath>
                     <extraArtifacts>
                         <artifact>com.vaadin:flow-client:${project.version}</artifact>
+                        <artifact>com.vaadin:flow-react:${project.version}</artifact>
                     </extraArtifacts>
                     <streamLogsOnFailures>true</streamLogsOnFailures>
                     <settingsFile>src/it/settings.xml</settingsFile>
