@@ -82,7 +82,8 @@ public class AllowInertSynchronizedPropertyView extends AbstractDivView {
                             state.setText("closed");
                         }
                     });
-            readNativeDetailsStateButton.setId(READ_NATIVE_DETAILS_STATE_BUTTON);
+            readNativeDetailsStateButton
+                    .setId(READ_NATIVE_DETAILS_STATE_BUTTON);
 
             add(new Text("A modal dialog"), readNativeDetailsStateButton);
 
