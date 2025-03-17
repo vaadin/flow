@@ -193,7 +193,7 @@ public class NativeDetails extends HtmlComponent
      *
      * @return whether details are expanded or collapsed
      */
-    @Synchronize(property = "open", value = "toggle")
+    @Synchronize(property = "open", value = "toggle", allowInert = true)
     public boolean isOpen() {
         return getElement().getProperty("open", false);
     }
