@@ -694,8 +694,8 @@ public class Element extends Node<Element> {
      * Sets the given property to the given JSON value.
      * <p>
      * Please note that this method does not accept <code>null</code> as a
-     * value, since {@link Json#createNull()} should be used instead for JSON
-     * values.
+     * value, since {@link com.vaadin.flow.internal.JacksonUtils#nullNode()}
+     * should be used instead for JSON values.
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
@@ -994,12 +994,8 @@ public class Element extends Node<Element> {
                     return Double.NaN;
                 }
             }
-        } else if (value instanceof NumericNode) {
-            return ((NumericNode) value).asDouble(Double.NaN);
         } else if (value instanceof BooleanNode) {
             return ((BooleanNode) value).booleanValue() ? 1 : 0;
-        } else if (value instanceof TextNode) {
-            return ((TextNode) value).asDouble(Double.NaN);
         } else if (value instanceof JsonNode) {
             return ((JsonNode) value).asDouble(Double.NaN);
         } else {

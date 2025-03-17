@@ -260,8 +260,8 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         TypeHandler<P> typeHandler = (TypeHandler<P>) typeHandlers.get(clazz);
         if (typeHandler == null && BaseJsonNode.class.isAssignableFrom(clazz)) {
             typeHandler = getJsonHandler((Class) clazz);
-        }
-        if (typeHandler == null && JsonValue.class.isAssignableFrom(clazz)) {
+        } else if (typeHandler == null
+                && JsonValue.class.isAssignableFrom(clazz)) {
             typeHandler = getHandler((Class) clazz);
         }
         if (typeHandler == null) {
