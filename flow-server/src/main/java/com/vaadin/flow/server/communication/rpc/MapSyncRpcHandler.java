@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
@@ -119,6 +120,21 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+        StateNode node = ui.getInternals().getStateTree()
+                .getNodeById(getNodeId(invocationJson));
+        if (node != null && node.hasFeature(ElementListenerMap.class)) {
+            ElementListenerMap listenerMap = node
+                    .getFeature(ElementListenerMap.class);
+            return invocationJson.hasKey(JsonConstants.RPC_PROPERTY)
+                    && listenerMap.hasAllowInertForProperty(invocationJson
+                            .getString(JsonConstants.RPC_PROPERTY));
+        } else {
+            return super.allowInert(ui, invocationJson);
+        }
     }
 
     private Optional<Runnable> enqueuePropertyUpdate(StateNode node,
