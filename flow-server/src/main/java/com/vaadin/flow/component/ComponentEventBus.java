@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
+import elemental.json.JsonNull;
 import elemental.json.JsonValue;
 
 /**
@@ -366,16 +367,13 @@ public class ComponentEventBus implements Serializable {
                 eventDataObjects.add(parseStateNodeIdToComponentReference(
                         domEvent, type, expression));
             } else if (JsonNode.class.isAssignableFrom(type)) {
-                // TODO: remove when domEvent uses jackson.
-                JsonNode jsonValue;
+                // TODO: Decode and remove if when domEvent uses jackson.
                 JsonValue eventValue = domEvent.getEventData().get(expression);
-                if (eventValue == null) {
-                    jsonValue = JacksonUtils.nullNode();
+                if (eventValue == null || eventValue instanceof JsonNull) {
+                    eventDataObjects.add(null);
                 } else {
-                    jsonValue = JacksonUtils.mapElemental(eventValue);
+                    eventDataObjects.add(JacksonUtils.mapElemental(eventValue));
                 }
-                Object value = JacksonCodec.decodeAs(jsonValue, type);
-                eventDataObjects.add(value);
             } else {
                 JsonValue jsonValue = domEvent.getEventData().get(expression);
                 if (jsonValue == null) {
