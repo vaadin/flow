@@ -29,6 +29,8 @@ public class FrontendScannerConfig {
 
     static final Predicate<Artifact> DEFAULT_FILTER = withDefaults()::shouldScan;
 
+    private final boolean silent;
+
     private boolean enabled = true;
 
     private boolean includeOutputDirectory = true;
@@ -36,6 +38,14 @@ public class FrontendScannerConfig {
     private List<ArtifactMatcher> includes = new ArrayList<>();
 
     private List<ArtifactMatcher> excludes = new ArrayList<>();
+
+    public FrontendScannerConfig() {
+        this.silent = false;
+    }
+
+    private FrontendScannerConfig(boolean silent) {
+        this.silent = silent;
+    }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
@@ -83,24 +93,32 @@ public class FrontendScannerConfig {
         }
         if (!excludes.isEmpty() && excludes.stream()
                 .anyMatch(matcher -> matcher.matches(artifact))) {
-            LOGGER.debug(
-                    "Artifact {} should no be scanned because matching exclusion rules",
-                    artifact.getId());
+            log("Artifact {} rejected by exclusion rules", artifact.getId());
             return false;
         }
         if (!includes.isEmpty() && includes.stream()
                 .noneMatch(matcher -> matcher.matches(artifact))) {
-            LOGGER.debug(
-                    "Artifact {} should no be scanned because not matching inclusion rules",
+            log("Artifact {} rejected because not matching inclusion rules",
                     artifact.getId());
             return false;
         }
-        LOGGER.debug("Artifact {} should be scanned", artifact.getId());
+        log("Artifact {} accepted", artifact.getId());
         return true;
     }
 
+    private void log(String message, Object... args) {
+        if (!silent && LOGGER.isDebugEnabled()) {
+            LOGGER.debug(message, args);
+        }
+    }
+
+    // Vaadin artifact should always be scanned to prevent the user ignoring
+    // them by mistake; however, well know Vaadin artifact that do not contain
+    // any frontend reference can be safely excluded.
+    // In addition, logging is turned off to prevent confusion with user
+    // configured scanning rules.
     private static FrontendScannerConfig withDefaults() {
-        FrontendScannerConfig out = new FrontendScannerConfig();
+        FrontendScannerConfig out = new FrontendScannerConfig(true);
         out.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher("com.vaadin", "*"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
