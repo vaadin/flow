@@ -132,6 +132,13 @@ public class FrontendScannerConfig {
         return out;
     }
 
+    @Override
+    public String toString() {
+        return "FrontendScannerConfig { enabled=" + enabled
+                + ", includeOutputDirectory=" + includeOutputDirectory
+                + ", includes=" + includes + ", excludes=" + excludes + '}';
+    }
+
     /**
      * Matches artifacts: can use * as wildcard but only at the beginning or
      * ending of the rule For example, 'com.vaadin*', '*.vaadin' and
@@ -214,5 +221,16 @@ public class FrontendScannerConfig {
             }
         }
 
+        @Override
+        public String toString() {
+            return (this.groupIdPattern != null
+                    && !this.groupIdPattern.isBlank() ? this.groupIdPattern
+                            : "*")
+                    + ':'
+                    + (this.artifactPattern != null
+                            && !this.artifactPattern.isBlank()
+                                    ? this.artifactPattern
+                                    : "*");
+        }
     }
 }

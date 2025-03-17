@@ -293,6 +293,10 @@ public final class Reflector {
                         ? ":" + artifact.getClassifier()
                         : "");
 
+        if (scannerConfig != null && scannerConfig.isEnabled()) {
+            log.debug("Frontend scanner configuration enabled: {}",
+                    scannerConfig);
+        }
         Predicate<Artifact> shouldScan = scannerConfig == null
                 ? artifact -> true
                 : FrontendScannerConfig.DEFAULT_FILTER
