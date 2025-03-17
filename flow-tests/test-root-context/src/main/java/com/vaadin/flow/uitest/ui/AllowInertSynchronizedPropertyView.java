@@ -74,7 +74,7 @@ public class AllowInertSynchronizedPropertyView extends AbstractDivView {
     public class Dialog extends Div {
 
         public Dialog() {
-            final NativeButton toggleNativeDetailsButton = new NativeButton(
+            final NativeButton readNativeDetailsStateButton = new NativeButton(
                     "Read Native Details State", event -> {
                         if (nativeDetails.isOpen()) {
                             state.setText("opened");
@@ -82,9 +82,9 @@ public class AllowInertSynchronizedPropertyView extends AbstractDivView {
                             state.setText("closed");
                         }
                     });
-            toggleNativeDetailsButton.setId(READ_NATIVE_DETAILS_STATE_BUTTON);
+            readNativeDetailsStateButton.setId(READ_NATIVE_DETAILS_STATE_BUTTON);
 
-            add(new Text("A modal dialog"), toggleNativeDetailsButton);
+            add(new Text("A modal dialog"), readNativeDetailsStateButton);
 
             getStyle().set("position", "fixed").set("inset", "50% 50%")
                     .set("border", "1px solid black");
