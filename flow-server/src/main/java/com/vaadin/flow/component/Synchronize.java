@@ -71,4 +71,13 @@ public @interface Synchronize {
      * @return the property update mode for disabled element
      */
     DisabledUpdateMode allowUpdates() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
+
+    /**
+     * Makes this property able to synchronize even when the related node is
+     * inert.
+     *
+     * @return {@code true} to allow inert synchronization, {@code false} to
+     *         disallow. Defaults to {@code false}.
+     */
+    boolean allowInert() default false;
 }
