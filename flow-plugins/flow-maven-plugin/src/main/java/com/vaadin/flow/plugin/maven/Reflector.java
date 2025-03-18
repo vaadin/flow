@@ -431,8 +431,8 @@ public final class Reflector {
      * <p>
      * </p>
      * If the class or resource cannot be resolved against the given URLs, it
-     * tries to load them from a provided give class loader and lastly fallbacks
-     * to Platform class loader in case of failure.
+     * tries to load them from a provided class loader and lastly fallbacks to
+     * Platform class loader in case of failure.
      */
     static final class ReflectorClassLoader extends URLClassLoader {
         private final ClassLoader delegate;
@@ -590,6 +590,11 @@ public final class Reflector {
         throw new NoSuchFieldException(fieldName);
     }
 
+    /*
+     * To simplify "transferring" Mojo configuration instances from one
+     * classloader to another, the easiest and safest way is to serialize them
+     * to JSON and deserialized into the target classloader.
+     */
     private static Object cloneWithTargetClassloader(Object source,
             Class<?> targetClass)
             throws JsonEncodingException, JsonDecodingException {

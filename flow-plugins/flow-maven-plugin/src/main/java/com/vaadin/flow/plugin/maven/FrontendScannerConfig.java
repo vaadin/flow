@@ -18,14 +18,23 @@ package com.vaadin.flow.plugin.maven;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.apache.maven.artifact.Artifact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Configuration class for filtering Maven artifacts to be scanned by the
+ * plugin. This class allows enabling or disabling the scanner and defining
+ * inclusion and exclusion rules.
+ */
 @Reflector.Cloneable
 public class FrontendScannerConfig {
+
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(FrontendScannerConfig.class);
 
     static final Predicate<Artifact> DEFAULT_FILTER = withDefaults()::shouldScan;
 
@@ -35,9 +44,9 @@ public class FrontendScannerConfig {
 
     private boolean includeOutputDirectory = true;
 
-    private List<ArtifactMatcher> includes = new ArrayList<>();
+    private final List<ArtifactMatcher> includes = new ArrayList<>();
 
-    private List<ArtifactMatcher> excludes = new ArrayList<>();
+    private final List<ArtifactMatcher> excludes = new ArrayList<>();
 
     public FrontendScannerConfig() {
         this.silent = false;
@@ -47,46 +56,97 @@ public class FrontendScannerConfig {
         this.silent = silent;
     }
 
+    /**
+     * Sets whether the frontend scanner is enabled or not.
+     *
+     * @param enabled
+     *            {@code true} to enable frontend scan filtering, otherwise
+     *            {@code false}.
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    /**
+     * Indicates whether the frontend scanner is enabled. Default is
+     * {@code true}.
+     */
     public boolean isEnabled() {
         return enabled;
     }
 
+    /**
+     * Sets if the output directory should be included in the scan.
+     *
+     * @param includeOutputDirectory
+     *            {@code true} to scan output directory, otherwise
+     *            {@code false}.
+     */
     public void setIncludeOutputDirectory(boolean includeOutputDirectory) {
         this.includeOutputDirectory = includeOutputDirectory;
     }
 
+    /**
+     * Determines if the output directory should be included in the scan.
+     * Default is {@code true}.
+     */
     public boolean isIncludeOutputDirectory() {
         return includeOutputDirectory;
     }
 
+    /**
+     * Gets the list of artifact matchers specifying which artifacts should be
+     * excluded from the scan.
+     */
     public List<ArtifactMatcher> getExcludes() {
         return excludes;
     }
 
+    /**
+     * Adds an artifact matcher to the exclude list.
+     *
+     * @param artifactMatcher
+     *            the artifact matcher to be excluded, not {@literal null}.
+     */
     public void addExclude(ArtifactMatcher artifactMatcher) {
-        excludes.add(artifactMatcher);
+        excludes.add(Objects.requireNonNull(artifactMatcher,
+                "Artifact matcher must not be null"));
     }
 
+    /**
+     * Gets the ist of artifact matchers specifying which artifacts should be
+     * included in the scan.
+     */
     public List<ArtifactMatcher> getIncludes() {
         return includes;
     }
 
+    /**
+     * Adds an artifact matcher to the include list.
+     *
+     * @param artifactMatcher
+     *            the artifact matcher to be included, not {@literal null}.
+     */
     public void addInclude(ArtifactMatcher artifactMatcher) {
-        includes.add(artifactMatcher);
+        includes.add(Objects.requireNonNull(artifactMatcher,
+                "Artifact matcher must not be null"));
     }
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(FrontendScannerConfig.class);
-
-    // Verifies if the given artifact should be analyzed by the frontend scanner
-    // Exclusions have higher priority and are checked first; if exclusion rules
-    // pass, it evaluates inclusion rules.
-    // returns true if there are no rules to evaluate or if the artifact matches
-    // all rules, otherwise false.
+    /**
+     * Determines whether the given artifact should be analyzed by the frontend
+     * scanner.
+     * <p>
+     * Exclusions have higher priority and are checked first. If an artifact
+     * matches an exclusion rule, it is not scanned. If no exclusion rule
+     * applies, inclusion rules are evaluated.
+     * </p>
+     *
+     * @param artifact
+     *            the artifact to be evaluated
+     * @return {@code true} if the configuration is disabled or there are no
+     *         rules to evaluate or if the artifact matches all applicable
+     *         rules, otherwise {@code false}
+     */
     boolean shouldScan(Artifact artifact) {
         if (!enabled) {
             return true;
@@ -140,9 +200,18 @@ public class FrontendScannerConfig {
     }
 
     /**
-     * Matches artifacts: can use * as wildcard but only at the beginning or
-     * ending of the rule For example, 'com.vaadin*', '*.vaadin' and
-     * '*.vaadin.*' are valid, but 'com.*.vaadin' is not
+     * Represents a pattern-based matcher for Maven artifacts.
+     * <p>
+     * Patterns can use the wildcard {@code *}, but only at the beginning or end
+     * of the rule. Examples of valid patterns:
+     * <ul>
+     * <li>{@code com.vaadin*}</li>
+     * <li>{@code *.vaadin}</li>
+     * <li>{@code *.vaadin.*}</li>
+     * <li>{@code *}</li>
+     * </ul>
+     * Invalid example: {@code com.*.vaadin}
+     * </p>
      */
     public static class ArtifactMatcher {
         // setters do not exactly match field names to prevent Maven field
@@ -150,32 +219,75 @@ public class FrontendScannerConfig {
         private String groupIdPattern;
         private String artifactPattern;
 
+        /**
+         * Creates an undefined instance that matches everything.
+         */
         public ArtifactMatcher() {
         }
 
+        /**
+         * Creates a matcher for the given {@code group} and
+         * {@code artifact name} patterns.
+         */
         public ArtifactMatcher(String groupId, String artifactId) {
             this.groupIdPattern = groupId;
             this.artifactPattern = artifactId;
         }
 
+        /**
+         * Gets the pattern for matching the artifact's group ID.
+         *
+         * @return the pattern for matching the artifact's group ID; can be
+         *         {@literal null}.
+         */
         public String getGroupId() {
             return groupIdPattern;
         }
 
+        /**
+         * Sets the pattern for matching the artifact's group ID.
+         * <p>
+         * </p>
+         * The argument must be a valid pattern as describe in the class
+         * Javadoc. {@literal null} is and allowed and value, and it acts like
+         * setting {@code *}, meaning every group ID is allowed.
+         */
         public void setGroupId(String groupId) {
             validatePattern(groupId);
             this.groupIdPattern = groupId;
         }
 
+        /**
+         * Gets the pattern for matching the artifact's artifact ID.
+         *
+         * @return the pattern for matching the artifact's artifact ID; can be
+         *         {@literal null}.
+         */
         public String getArtifactId() {
             return artifactPattern;
         }
 
+        /**
+         * Sets the pattern for matching the artifact's artifact ID.
+         * <p>
+         * </p>
+         * The argument must be a valid pattern as describe in the class
+         * Javadoc. {@literal null} is and allowed and value, and it acts like
+         * setting {@code *}, meaning every artifact ID is allowed.
+         */
         public void setArtifactId(String artifactId) {
             validatePattern(artifactId);
             this.artifactPattern = artifactId;
         }
 
+        /**
+         * Evaluates whether a given artifact matches the configured patterns.
+         *
+         * @param artifact
+         *            the artifact to be checked.
+         * @return {@code true} if the artifact matches the patterns,
+         *         {@code false} otherwise.
+         */
         public boolean matches(Artifact artifact) {
             if (artifact == null) {
                 return false;

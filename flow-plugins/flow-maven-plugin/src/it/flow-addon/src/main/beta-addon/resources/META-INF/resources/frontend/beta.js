@@ -1,1 +1,1 @@
-window.alpha = 1;
+window.beta = 1;
