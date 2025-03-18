@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -429,11 +430,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     .forEach(element -> ElementUtil.fromJsoup(element)
                             .ifPresent(elementsForShadows::add));
 
+            File frontendDirectory = FrontendUtils
+                    .getProjectFrontendDir(config);
+
             // Add document.css link to the document
-            BootstrapHandler.getStylesheetLinks(context, "document.css")
+            BootstrapHandler
+                    .getStylesheetLinks(context, "document.css",
+                            frontendDirectory)
                     .forEach(link -> UI.getCurrent().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
-                            link));
+                            modifyPath(serviceUrl, link)));
         }
 
         WebComponentConfigurationRegistry
@@ -622,8 +628,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             return false;
         }
 
-        ObjectNode json = JacksonUtils.mapElemental(
-                new UidlWriter().createUidl(context.getUI(), true, true));
+        ObjectNode json = new UidlWriter().createUidl(context.getUI(), true,
+                true);
         json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
         json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
                 context.getUI().getCsrfToken());

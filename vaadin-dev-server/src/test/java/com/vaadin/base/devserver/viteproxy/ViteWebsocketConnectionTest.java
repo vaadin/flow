@@ -65,11 +65,12 @@ public class ViteWebsocketConnectionTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 7000)
     public void waitForConnection_clientWebsocketAvailable_blocksUntilConnectionIsEstablished()
             throws ExecutionException, InterruptedException {
         CountDownLatch connectionLatch = new CountDownLatch(1);
         CountDownLatch closeLatch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
         handlerSupplier = (exchange) -> {
             // Simulate connection delay
             Thread.sleep(500);
@@ -78,9 +79,9 @@ public class ViteWebsocketConnectionTest {
         long startTime = System.nanoTime();
         ViteWebsocketConnection viteConnection = new ViteWebsocketConnection(
                 httpServer.getAddress().getPort(), "/VAADIN", "proto", x -> {
-                }, () -> {
-                    closeLatch.countDown();
-                }, err -> {
+                }, closeLatch::countDown, err -> {
+                    error.set(err);
+                    connectionLatch.countDown();
                 }) {
             @Override
             public void onOpen(WebSocket webSocket) {
@@ -88,9 +89,16 @@ public class ViteWebsocketConnectionTest {
                 connectionLatch.countDown();
             }
         };
-        connectionLatch.await(2, TimeUnit.SECONDS);
+        boolean established = connectionLatch.await(5, TimeUnit.SECONDS);
         long elapsedTime = Duration.ofNanos(System.nanoTime() - startTime)
                 .toMillis();
+        if (error.get() != null) {
+            throw new AssertionError(
+                    "Websocket connection failed: " + error.get().getMessage(),
+                    error.get());
+        }
+        Assert.assertTrue("Connection NOT established. Elapsed time "
+                + elapsedTime + " ms", established);
         Assert.assertTrue(
                 "Should have waited for connection to be established (elapsed time: "
                         + elapsedTime + ")",
@@ -98,7 +106,7 @@ public class ViteWebsocketConnectionTest {
         Assert.assertTrue(
                 "Should not have been blocked too long after connection (elapsed time: "
                         + elapsedTime + ")",
-                elapsedTime < 1000);
+                elapsedTime < 2500);
         if (!closeLatch.await(500, TimeUnit.MILLISECONDS)) {
             viteConnection.close();
             closeLatch.await(500, TimeUnit.MILLISECONDS);
@@ -115,10 +123,13 @@ public class ViteWebsocketConnectionTest {
                 "/VAADIN", "proto", x -> {
                 }, () -> {
                 }, err -> errorLatch.countDown());
-        errorLatch.await(2, TimeUnit.SECONDS);
+        if (!errorLatch.await(5, TimeUnit.SECONDS)) {
+            Assert.fail(
+                    "Expecting connection failure, but not happened in 5 seconds");
+        }
     }
 
-    @Test(timeout = 2000)
+    @Test(timeout = 5000)
     public void close_clientWebsocketNotAvailable_dontBlock()
             throws ExecutionException, InterruptedException {
         AtomicReference<Throwable> connectionError = new AtomicReference<>();
@@ -136,7 +147,7 @@ public class ViteWebsocketConnectionTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test(timeout = 2000)
+    @Test(timeout = 3500)
     public void close_clientWebsocketClose_dontBlockIndefinitely()
             throws ExecutionException, InterruptedException,
             NoSuchFieldException, InvocationTargetException,

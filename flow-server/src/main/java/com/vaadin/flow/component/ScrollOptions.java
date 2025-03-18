@@ -3,8 +3,9 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Locale;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Options for scrollIntoView.
@@ -123,7 +124,7 @@ public class ScrollOptions implements Serializable {
      * @return a json object as a string
      */
     public String toJson() {
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         if (behavior != Behavior.AUTO) {
             json.put("behavior", behavior.name().toLowerCase(Locale.ENGLISH));
         }

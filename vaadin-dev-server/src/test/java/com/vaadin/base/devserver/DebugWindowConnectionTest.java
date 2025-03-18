@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
@@ -28,13 +29,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static org.mockito.Mockito.times;
 
@@ -135,9 +134,9 @@ public class DebugWindowConnectionTest {
 
         reload.reload();
 
-        JsonObject reloadCommand = Json.createObject();
+        ObjectNode reloadCommand = JacksonUtils.createObjectNode();
         reloadCommand.put("command", "reload");
-        String reloadJson = reloadCommand.toJson();
+        String reloadJson = reloadCommand.toString();
         Mockito.verify(broadcaster).broadcast(reloadJson, resource1);
         Mockito.verify(broadcaster).broadcast(reloadJson, resource2);
     }

@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.atmosphere.cpr.AtmosphereFramework;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +56,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
@@ -205,6 +207,7 @@ public class SpringInstantiatorTest {
                 return super.createDeploymentConfiguration(initParameters);
             }
         };
+        String servletName = SpringServlet.class.getSimpleName();
 
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
@@ -236,12 +239,19 @@ public class SpringInstantiatorTest {
                 .thenReturn(lookup);
 
         Mockito.when(config.getServletContext()).thenReturn(servletContext);
-
+        Mockito.when(config.getServletName()).thenReturn(servletName);
         Mockito.when(config.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getServerInfo()).thenReturn("MockServer");
+        // Prevent Atmosphere initialization by providing a mock framework
+        // instance. Push is not required by calling tests, and initialization
+        // would anyway fail because of mocking Servlet environment
+        Mockito.when(servletContext.getAttribute(
+                JSR356WebsocketInitializer.getAttributeName(servletName)))
+                .thenReturn(Mockito.mock(AtmosphereFramework.class));
         servlet.init(config);
         return servlet.getService();
     }

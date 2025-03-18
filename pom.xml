@@ -91,7 +91,7 @@
         <hibernate.validator.version>8.0.2.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.18.2</jackson.version>
+        <jackson.version>2.18.3</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
@@ -109,7 +109,7 @@
         <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>9.3.10</testbench.version>
-        <jetty.version>12.0.16</jetty.version>
+        <jetty.version>12.0.17</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
         <maven.version>3.9.9</maven.version>
@@ -119,7 +119,7 @@
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
-        <jsoup.version>1.18.3</jsoup.version>
+        <jsoup.version>1.19.1</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
         <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
         <atmosphere.client.version>4.0.1</atmosphere.client.version>
@@ -270,7 +270,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.16.0</version>
+                <version>5.16.1</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>

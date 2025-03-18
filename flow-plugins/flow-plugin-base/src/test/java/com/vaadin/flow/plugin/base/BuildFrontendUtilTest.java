@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +40,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -150,11 +150,15 @@ public class BuildFrontendUtilTest {
                 .when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(Mockito.any());
 
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(new PwaConfiguration());
         try (MockedStatic<FrontendUtils> util = Mockito
                 .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
                     Mockito.any())).thenReturn(true);
-            BuildFrontendUtil.runNodeUpdater(adapter);
+            BuildFrontendUtil.runNodeUpdater(adapter, frontendDependencies);
         }
 
         Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
@@ -524,7 +528,11 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
 
-        BuildFrontendUtil.runNodeUpdater(adapter);
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(new PwaConfiguration());
+        BuildFrontendUtil.runNodeUpdater(adapter, frontendDependencies);
 
         File generatedFeatureFlagsFile = new File(adapter.generatedTsFolder(),
                 FEATURE_FLAGS_FILE_NAME);
@@ -532,9 +540,9 @@ public class BuildFrontendUtilTest {
                 .readString(generatedFeatureFlagsFile.toPath())
                 .replace("\r\n", "\n");
 
-        Assert.assertTrue("Example feature flag is not set",
+        Assert.assertTrue("Example feature should not be set at build time",
                 featureFlagsJs.contains(
-                        "window.Vaadin.featureFlags.exampleFeatureFlag = true;\n"));
+                        "window.Vaadin.featureFlags.exampleFeatureFlag = false;\n"));
     }
 
     private void fillAdapter() throws URISyntaxException {

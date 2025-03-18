@@ -58,7 +58,7 @@ public class FeatureFlags implements Serializable {
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
     public static final Feature EXAMPLE = new Feature(
-            "Example feature. Will be removed once the first real feature flag is added",
+            "Example feature. Internally used for testing purposes. Does not have any effect on production applications.",
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
@@ -109,6 +109,11 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/flow-components/issues/6998", true,
             null);
 
+    public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = new Feature(
+            "Form Layout auto-responsive mode enabled by default",
+            "defaultAutoResponsiveFormLayout",
+            "https://github.com/vaadin/platform/issues/7172", true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -140,6 +145,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(REACT19));
         features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
         features.add(new Feature(LAYOUT_COMPONENT_IMPROVEMENTS));
+        features.add(new Feature(DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT));
         loadProperties();
     }
 

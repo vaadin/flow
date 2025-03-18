@@ -49,7 +49,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonBoolean;
 import elemental.json.JsonNull;
+import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -105,13 +107,36 @@ public final class JacksonUtils {
     }
 
     /**
+     * Map JsonArray to ArrayNode.
+     *
+     * @param jsonArray
+     *            JsonArray to change
+     * @return ArrayNode of elemental json array object or null for null
+     *         jsonArray
+     */
+    public static ArrayNode mapElemental(JsonArray jsonArray) {
+        if (jsonArray == null || jsonArray instanceof JsonNull) {
+            return null;
+        }
+        try {
+            return (ArrayNode) objectMapper.readTree(jsonArray.toJson());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Map JsonObject to ObjectNode.
      *
      * @param jsonObject
      *            JsonObject to change
-     * @return ObjectNode of elemental json object
+     * @return ObjectNode of elemental json object object or null for null
+     *         jsonObject
      */
     public static ObjectNode mapElemental(JsonObject jsonObject) {
+        if (jsonObject == null) {
+            return null;
+        }
         try {
             return (ObjectNode) objectMapper.readTree(jsonObject.toJson());
         } catch (JsonProcessingException e) {
@@ -129,6 +154,18 @@ public final class JacksonUtils {
     public static BaseJsonNode mapElemental(JsonValue jsonValue) {
         if (jsonValue == null || jsonValue instanceof JsonNull) {
             return nullNode();
+        }
+        if (jsonValue instanceof JsonObject) {
+            return mapElemental((JsonObject) jsonValue);
+        }
+        if (jsonValue instanceof JsonArray) {
+            return mapElemental((JsonArray) jsonValue);
+        }
+        if (jsonValue instanceof JsonNumber) {
+            return objectMapper.valueToTree(jsonValue.asNumber());
+        }
+        if (jsonValue instanceof JsonBoolean) {
+            return objectMapper.valueToTree(jsonValue.asBoolean());
         }
         return objectMapper.valueToTree(jsonValue.asString());
     }
@@ -520,7 +557,7 @@ public final class JacksonUtils {
      * @param <T>
      *            type of result instance
      */
-    public static <T> T readToObject(ObjectNode jsonObject, Class<T> tClass) {
+    public static <T> T readToObject(JsonNode jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.treeToValue(jsonObject, tClass);
@@ -541,7 +578,7 @@ public final class JacksonUtils {
      * @param <T>
      *            type of result instance
      */
-    public static <T> T readValue(ObjectNode jsonValue, Class<T> tClass) {
+    public static <T> T readValue(JsonNode jsonValue, Class<T> tClass) {
         return readToObject(jsonValue, tClass);
     }
 
@@ -556,7 +593,7 @@ public final class JacksonUtils {
      * @param <T>
      *            type of result instance
      */
-    public static <T> T readValue(ObjectNode jsonValue,
+    public static <T> T readValue(JsonNode jsonValue,
             TypeReference<T> typeReference) {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
@@ -574,7 +611,7 @@ public final class JacksonUtils {
      *            Java object to convert
      * @return converted JSON value
      */
-    public static ObjectNode writeValue(Object object) {
+    public static BaseJsonNode writeValue(Object object) {
         return objectMapper.valueToTree(object);
     }
 
