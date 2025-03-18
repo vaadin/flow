@@ -48,6 +48,9 @@ public class FrontendScannerConfig {
 
     private final List<ArtifactMatcher> excludes = new ArrayList<>();
 
+    /**
+     * Creates a new empty configuration, accepting all artifacts.
+     */
     public FrontendScannerConfig() {
         this.silent = false;
     }
@@ -68,8 +71,11 @@ public class FrontendScannerConfig {
     }
 
     /**
-     * Indicates whether the frontend scanner is enabled. Default is
+     * Indicates whether the frontend scanning filtering is enabled. Default is
      * {@code true}.
+     *
+     * @return {@code true} if frontend scanning filtering is enabled, otherwise
+     *         {@code false}.
      */
     public boolean isEnabled() {
         return enabled;
@@ -89,6 +95,9 @@ public class FrontendScannerConfig {
     /**
      * Determines if the output directory should be included in the scan.
      * Default is {@code true}.
+     *
+     * @return {@code true} if output directory should be included in the scan,
+     *         otherwise {@code false}.
      */
     public boolean isIncludeOutputDirectory() {
         return includeOutputDirectory;
@@ -97,6 +106,8 @@ public class FrontendScannerConfig {
     /**
      * Gets the list of artifact matchers specifying which artifacts should be
      * excluded from the scan.
+     *
+     * @return the list of artifact exclusions.
      */
     public List<ArtifactMatcher> getExcludes() {
         return excludes;
@@ -116,6 +127,8 @@ public class FrontendScannerConfig {
     /**
      * Gets the ist of artifact matchers specifying which artifacts should be
      * included in the scan.
+     *
+     * @return the list of artifact inclusions.
      */
     public List<ArtifactMatcher> getIncludes() {
         return includes;
@@ -136,10 +149,10 @@ public class FrontendScannerConfig {
      * Determines whether the given artifact should be analyzed by the frontend
      * scanner.
      * <p>
+     * </p>
      * Exclusions have higher priority and are checked first. If an artifact
      * matches an exclusion rule, it is not scanned. If no exclusion rule
      * applies, inclusion rules are evaluated.
-     * </p>
      *
      * @param artifact
      *            the artifact to be evaluated
@@ -202,6 +215,7 @@ public class FrontendScannerConfig {
     /**
      * Represents a pattern-based matcher for Maven artifacts.
      * <p>
+     * </p>
      * Patterns can use the wildcard {@code *}, but only at the beginning or end
      * of the rule. Examples of valid patterns:
      * <ul>
@@ -211,7 +225,6 @@ public class FrontendScannerConfig {
      * <li>{@code *}</li>
      * </ul>
      * Invalid example: {@code com.*.vaadin}
-     * </p>
      */
     public static class ArtifactMatcher {
         // setters do not exactly match field names to prevent Maven field
@@ -228,6 +241,13 @@ public class FrontendScannerConfig {
         /**
          * Creates a matcher for the given {@code group} and
          * {@code artifact name} patterns.
+         *
+         * @param groupId
+         *            the pattern for matching the artifact's group ID; can be
+         *            {@literal null}.
+         * @param artifactId
+         *            the pattern for matching the artifact's artifact ID; can
+         *            be {@literal null}.
          */
         public ArtifactMatcher(String groupId, String artifactId) {
             this.groupIdPattern = groupId;
@@ -251,6 +271,10 @@ public class FrontendScannerConfig {
          * The argument must be a valid pattern as describe in the class
          * Javadoc. {@literal null} is and allowed and value, and it acts like
          * setting {@code *}, meaning every group ID is allowed.
+         *
+         * @param groupId
+         *            the pattern for matching the artifact's group ID; can be
+         *            {@literal null}.
          */
         public void setGroupId(String groupId) {
             validatePattern(groupId);
@@ -274,6 +298,10 @@ public class FrontendScannerConfig {
          * The argument must be a valid pattern as describe in the class
          * Javadoc. {@literal null} is and allowed and value, and it acts like
          * setting {@code *}, meaning every artifact ID is allowed.
+         *
+         * @param artifactId
+         *            the pattern for matching the artifact's artifact ID; can
+         *            be {@literal null}.
          */
         public void setArtifactId(String artifactId) {
             validatePattern(artifactId);

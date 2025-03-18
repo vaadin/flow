@@ -181,8 +181,7 @@ public final class Reflector {
     /**
      * Creates a copy of the given Flow mojo, loading classes the isolated
      * classloader.
-     * <p>
-     * </p>
+     *
      * Loads the given mojo class from the isolated class loader and then
      * creates a new instance for it and fills all field copying values from the
      * original mojo. The input mojo must have a public no-args constructor.
@@ -221,6 +220,8 @@ public final class Reflector {
      *            the maven project.
      * @param mojoExecution
      *            the current mojo execution.
+     * @param scannerConfig
+     *            the frontend scanner filtering configuration.
      * @return a Reflector instance for the current maven execution.
      */
     public static Reflector of(MavenProject project,
