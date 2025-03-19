@@ -29,6 +29,12 @@ import org.slf4j.LoggerFactory;
  * Configuration class for filtering Maven artifacts to be scanned by the
  * plugin. This class allows enabling or disabling the scanner and defining
  * inclusion and exclusion rules.
+ * <p>
+ * </p>
+ * Exclusions have higher priority and are checked first. If an artifact matches
+ * an exclusion rule, it is not scanned. If no exclusion rule applies, inclusion
+ * rules are evaluated. If the artifact doesn't even match the inclusion rule,
+ * it is not scanned.
  */
 @Reflector.Cloneable
 public class FrontendScannerConfig {

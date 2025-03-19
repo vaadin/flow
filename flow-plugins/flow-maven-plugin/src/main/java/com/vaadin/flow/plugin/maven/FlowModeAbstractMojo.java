@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import javax.inject.Inject;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -291,8 +292,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean frontendIgnoreVersionChecks;
 
     /**
-     * Allows to fine tune frontend scanning by defining which artifacts should
-     * be included or excluded during the scanning process.
+     * Allows to fine tune frontend resources detection by defining which
+     * artifacts should be included or excluded during the class scanning
+     * process.
      */
     @Parameter
     private FrontendScannerConfig frontendScanner;
