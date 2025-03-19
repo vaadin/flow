@@ -37,6 +37,7 @@ import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Javadoc;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.marker.Markers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -120,6 +121,10 @@ public class FixMissingJavadocsForNewMethods extends Recipe {
                     var methods = classToMethodNames.get(fqn);
                     if (!methods.isEmpty()) {
                         if (methods.contains(method.getSimpleName())) {
+
+                            // TextComment textComment = new TextComment(false, "Gangnam style", " ", Markers.EMPTY);
+                            // return method.withComments(List.of(textComment));
+
                             // add @since tag
                             // method.getComments().stream().anyMatch(Javadoc.DocComment.class::isInstance);
                             // List<Annotation> annotations = new ArrayList<>();
