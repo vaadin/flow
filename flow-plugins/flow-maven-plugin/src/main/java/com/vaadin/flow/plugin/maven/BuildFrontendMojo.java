@@ -40,6 +40,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -137,8 +138,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
-        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
-                npmFolder(), frontendDirectory(), getClassFinder());
+        Options options = new Options(null, getClassFinder(), npmFolder())
+                .withFrontendDirectory(frontendDirectory())
+                .withFrontendGeneratedFolder(generatedTsFolder());
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(options);
         try {
             BuildFrontendUtil.runNodeUpdater(this);
         } catch (ExecutionFailedException | URISyntaxException exception) {
