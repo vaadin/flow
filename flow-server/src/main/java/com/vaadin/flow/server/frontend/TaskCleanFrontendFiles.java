@@ -74,15 +74,15 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
         // If we have an existing package.json or run Hilla, do not remove
         // node_modules
-        if (existingFiles
-                .contains(new File(projectRoot, Constants.PACKAGE_JSON))
-                || FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                        options.getClassFinder())) {
+        boolean hillaUsed = FrontendUtils.isHillaUsed(
+                options.getFrontendDirectory(), options.getClassFinder());
+
+        if (existingFiles.contains(
+                new File(projectRoot, Constants.PACKAGE_JSON)) || hillaUsed) {
             existingFiles.add(new File(projectRoot, NODE_MODULES));
         }
         // If hilla is not used clean generated hilla files.
-        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                options.getClassFinder())) {
+        if (!hillaUsed) {
             hillaGenerated.forEach(
                     file -> new File(options.getFrontendGeneratedFolder(), file)
                             .delete());
