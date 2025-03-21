@@ -507,10 +507,14 @@ public class PluginEffectiveConfiguration(
 
     public val frontendHotdeploy: Provider<Boolean> =
         extension.frontendHotdeploy
-            .convention(effectiveFrontendDirectory.map { frontendDirectory ->
-                hillaAvailable.get() &&
-                        FrontendUtils.isHillaViewsUsed(frontendDirectory)
-            })
+            .convention(
+                effectiveFrontendDirectory.zip(
+                    hillaAvailable
+                ) { frontendDirectory, hasHilla ->
+                    hasHilla &&
+                            FrontendUtils.isHillaViewsUsed(frontendDirectory)
+                }
+            )
             .overrideWithSystemPropertyFlag(
                 project,
                 InitParameters.FRONTEND_HOTDEPLOY
