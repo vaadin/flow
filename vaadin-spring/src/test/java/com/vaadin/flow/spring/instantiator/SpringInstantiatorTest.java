@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.spring.instantiator;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +22,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,6 +34,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -72,6 +72,16 @@ public class SpringInstantiatorTest {
     @Configuration
     @ComponentScan
     public static class TestConfiguration {
+
+        // Expose at least one bean definition so that the configuration class
+        // get proxied
+        @Bean
+        Dummy dummy() {
+            return new Dummy();
+        }
+
+        static class Dummy {
+        }
 
     }
 
