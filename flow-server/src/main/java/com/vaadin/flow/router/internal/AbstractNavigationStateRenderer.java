@@ -149,6 +149,7 @@ public abstract class AbstractNavigationStateRenderer
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
+        ui.getInternals().setLocationForRefresh(event.getLocation());
 
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
@@ -325,17 +326,14 @@ public abstract class AbstractNavigationStateRenderer
             }
         } else if (NavigationTrigger.REFRESH != event.getTrigger()
                 && !event.isForwardTo()
-                && (!ui.getInternals().hasLastHandledLocation()
+                && (event.getUI().getInternals().getActiveViewLocation() == null
                         || !event.getLocation().getPathWithQueryParameters()
-                                .equals(ui.getInternals()
-                                        .getLastHandledLocation()
+                                .equals(event.getUI().getInternals()
+                                        .getActiveViewLocation()
                                         .getPathWithQueryParameters()))) {
-
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
-
-            ui.getInternals().setLastHandledNavigation(event.getLocation());
         } else if (ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled()) {
             if (shouldPushHistoryState(event)) {
