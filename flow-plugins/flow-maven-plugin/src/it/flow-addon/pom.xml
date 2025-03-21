@@ -21,7 +21,30 @@
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
+        <custom.source.directory>src/main/java</custom.source.directory>
     </properties>
+
+    <build>
+        <sourceDirectory>${custom.source.directory}</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clean-only-classes</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <directory>${project.build.outputDirectory}</directory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -55,6 +78,34 @@
                 <resources>
                     <resource>
                         <directory>${project.basedir}/src/main/fake-plugin-resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>alpha-addon</id>
+            <properties>
+                <custom.source.directory>src/main/alpha-addon/java</custom.source.directory>
+            </properties>
+            <build>
+                <finalName>alpha-addon-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/alpha-addon/resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>beta-addon</id>
+            <properties>
+                <custom.source.directory>src/main/beta-addon/java</custom.source.directory>
+            </properties>
+            <build>
+                <finalName>beta-addon-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/beta-addon/resources</directory>
                     </resource>
                 </resources>
             </build>

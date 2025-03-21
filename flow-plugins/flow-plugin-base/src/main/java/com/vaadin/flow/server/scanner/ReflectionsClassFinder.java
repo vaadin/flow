@@ -24,13 +24,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javassist.bytecode.ClassFile;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
+import org.reflections.scanners.Scanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.NameHelper;
+import org.reflections.util.QueryBuilder;
 import org.reflections.vfs.Vfs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +71,9 @@ public class ReflectionsClassFinder implements ClassFinder {
                 .addClassLoaders(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
 
+        ConfigurationBuilder.DEFAULT_SCANNERS
+                .forEach(configurationBuilder::addScanners);
+        configurationBuilder.addScanners(PackageScanner.INSTANCE);
         configurationBuilder
                 .setInputsFilter(resourceName -> resourceName.endsWith(".class")
                         && !resourceName.endsWith("module-info.class"));
@@ -108,6 +116,18 @@ public class ReflectionsClassFinder implements ClassFinder {
     @Override
     public URL getResource(String name) {
         return classLoader.getResource(name);
+    }
+
+    @Override
+    public boolean shouldInspectClass(String className) {
+        if (!reflections
+                .get(PackageScanner.INSTANCE
+                        .of(PackageScanner.extractPackageName(className)))
+                .isEmpty()) {
+            return classLoader.getResource(
+                    className.replace('.', '/') + ".class") != null;
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -210,4 +230,31 @@ public class ReflectionsClassFinder implements ClassFinder {
         }
     };
 
+    private static class PackageScanner
+            implements Scanner, QueryBuilder, NameHelper {
+
+        private final static PackageScanner INSTANCE = new PackageScanner();
+
+        @Override
+        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
+            String packageName = extractPackageName(classFile.getName());
+            if (!packageName.isEmpty()) {
+                return List.of(entry(packageName, packageName));
+            }
+            return List.of();
+        }
+
+        @Override
+        public String index() {
+            return "PackageScanner";
+        }
+
+        static String extractPackageName(String className) {
+            int dot = className.lastIndexOf('.');
+            if (dot != -1) {
+                return className.substring(0, dot);
+            }
+            return "";
+        }
+    }
 }

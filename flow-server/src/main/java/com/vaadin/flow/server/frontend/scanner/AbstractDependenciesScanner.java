@@ -53,7 +53,7 @@ abstract class AbstractDependenciesScanner
         return finder;
     }
 
-    protected final boolean isExperimental(String className) {
+    protected final boolean isDisabledExperimentalClass(String className) {
         return featureFlags != null && featureFlags.getFeatures().stream()
                 .anyMatch(f -> !f.isEnabled()
                         && className.equals(f.getComponentClassName()));

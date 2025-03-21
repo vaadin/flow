@@ -107,6 +107,7 @@
                     <localRepositoryPath>target/local-repo</localRepositoryPath>
                     <extraArtifacts>
                         <artifact>com.vaadin:flow-client:${project.version}</artifact>
+                        <artifact>com.vaadin:flow-react:${project.version}</artifact>
                     </extraArtifacts>
                     <streamLogsOnFailures>true</streamLogsOnFailures>
                     <settingsFile>src/it/settings.xml</settingsFile>

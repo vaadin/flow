@@ -72,6 +72,8 @@ public class FrontendDependenciesTest {
         Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
                 .getClassLoader().getResource(invocation.getArgument(0)))
                 .when(classFinder).getResource(Mockito.anyString());
+        Mockito.when(classFinder.shouldInspectClass(Mockito.anyString()))
+                .thenReturn(true);
 
         Mockito.when(classFinder.loadClass(UI.class.getName()))
                 .thenReturn((Class) UI.class);
