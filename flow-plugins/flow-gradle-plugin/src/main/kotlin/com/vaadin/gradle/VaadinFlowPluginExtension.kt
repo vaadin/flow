@@ -19,7 +19,6 @@ import java.io.File
 import java.io.Serializable
 import javax.inject.Inject
 import com.vaadin.flow.internal.StringUtil
-import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
@@ -31,9 +30,11 @@ import groovy.lang.Closure
 import groovy.lang.DelegatesTo
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
@@ -328,7 +329,7 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 public class PluginEffectiveConfiguration(
     project: Project,
     extension: VaadinFlowPluginExtension
-) :Serializable {
+) : Serializable {
 
     internal val projectDir = project.projectDir
     internal val projectName = project.name
@@ -339,6 +340,30 @@ public class PluginEffectiveConfiguration(
 
     public val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
+
+    public val dependencyScope: Property<String> = extension.dependencyScope
+        .convention(sourceSetName.map {
+            if (it == "main") {
+                "runtimeClasspath"
+            } else {
+                "${it}RuntimeClasspath"
+            }
+        })
+
+
+    internal val hillaAvailable: Provider<Boolean> =
+        project.configurations.getByName(dependencyScope.get())
+            .incoming.artifacts.resolvedArtifacts
+            .map { result ->
+                result.filter {
+                    it.id is ModuleComponentArtifactIdentifier && it.id.componentIdentifier is ModuleComponentIdentifier
+                }.map {
+                    (it.id.componentIdentifier as ModuleComponentIdentifier).moduleIdentifier
+                }.any {
+                    it.group == "com.vaadin" && it.name == "hilla-endpoint"
+                }
+            }
+
 
     public val webpackOutputDirectory: Provider<File> =
         extension.webpackOutputDirectory
@@ -470,15 +495,6 @@ public class PluginEffectiveConfiguration(
 
     public val classpathFilter: ClasspathFilter = extension.classpathFilter
 
-    public val dependencyScope: Property<String> = extension.dependencyScope
-        .convention(sourceSetName.map {
-            if (it == "main") {
-                "runtimeClasspath"
-            } else {
-                "${it}RuntimeClasspath"
-            }
-        })
-
     public val processResourcesTaskName: Property<String> =
         extension.processResourcesTaskName
             .convention(sourceSetName.map {
@@ -491,8 +507,9 @@ public class PluginEffectiveConfiguration(
 
     public val frontendHotdeploy: Provider<Boolean> =
         extension.frontendHotdeploy
-            .convention(effectiveFrontendDirectory.map {
-                FrontendUtils.isHillaUsed(it)
+            .convention(effectiveFrontendDirectory.map { frontendDirectory ->
+                hillaAvailable.get() &&
+                        FrontendUtils.isHillaViewsUsed(frontendDirectory)
             })
             .overrideWithSystemPropertyFlag(
                 project,
@@ -549,7 +566,10 @@ public class PluginEffectiveConfiguration(
 
     public val frontendIgnoreVersionChecks: Provider<Boolean> = extension
         .frontendIgnoreVersionChecks.convention(false)
-        .overrideWithSystemPropertyFlag(project, FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)
+        .overrideWithSystemPropertyFlag(
+            project,
+            FrontendUtils.PARAM_IGNORE_VERSION_CHECKS
+        )
 
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
