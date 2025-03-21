@@ -2040,6 +2040,7 @@ public class UI extends Component
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
         try {
+            getInternals().setLastHandledNavigation(location);
             NavigationEvent navigationEvent = new NavigationEvent(
                     getInternals().getRouter(), location, this, trigger);
 

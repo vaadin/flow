@@ -975,15 +975,6 @@ public class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
-        Assert.assertTrue("pushState invocation is expected.",
-                pushStateCalled.get());
-        Assert.assertTrue(pushStateLocations.stream()
-                .anyMatch(location -> location.getPath().equals("regular")));
-
-        pushStateCalled.set(false);
-
-        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
         Assert.assertFalse(
                 "No pushState invocation is expected when navigating to the current location.",
                 pushStateCalled.get());
