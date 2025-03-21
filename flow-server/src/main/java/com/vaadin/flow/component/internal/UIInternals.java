@@ -1115,8 +1115,18 @@ public class UIInternals implements Serializable {
     public void setLastHandledNavigation(Location location) {
         lastHandledNavigation = location;
         if (location != null) {
-            locationForRefresh = location;
+            setLocationForRefresh(location);
         }
+    }
+
+    /**
+     * Store refresh location for refreshCurrentRoute.
+     *
+     * @param location
+     *            current location.
+     */
+    public void setLocationForRefresh(Location location) {
+        locationForRefresh = location;
     }
 
     /**
@@ -1158,7 +1168,7 @@ public class UIInternals implements Serializable {
      * Clear latest handled navigation location.
      */
     public void clearLastHandledNavigation() {
-        setLastHandledNavigation(null);
+        lastHandledNavigation = null;
     }
 
     /**
