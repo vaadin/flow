@@ -1,0 +1,588 @@
+package com.vaadin.signals;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.impl.CommandResult;
+import com.vaadin.signals.impl.ComputedSignal;
+import com.vaadin.signals.impl.Effect;
+import com.vaadin.signals.impl.SignalTree;
+import com.vaadin.signals.impl.StagedTransaction;
+import com.vaadin.signals.impl.Transaction;
+import com.vaadin.signals.impl.Transaction.Type;
+import com.vaadin.signals.impl.UsageTracker;
+import com.vaadin.signals.operations.InsertOperation;
+import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.operations.TransactionOperation;
+
+/**
+ * Base type for all signals. A signal is a reactive value holder with automatic
+ * subscription and unsubscription of listeners.
+ * <p>
+ * Reactivity is based on {@link #effect(Runnable)} callbacks that detect the
+ * signals used during invocation. The callback will be run again whenever
+ * there's a change to any of the signal instances used in the previous
+ * invocation. Detection is based on running {@link #value()}. {@link #peek()}
+ * can be used to read the value within an effect without registering a
+ * dependency.
+ * <p>
+ * A signal may be synchronized across a cluster. In that case, changes to the
+ * signal value are only confirmed asynchronously. The regular signal
+ * {@link #value()} returns the assumed value based on local modifications
+ * whereas {@link #peekConfirmed()} gives access to the confirmed value.
+ * 
+ * @param <T>
+ *            the signal value type
+ */
+public abstract class Signal<T> {
+    private final SignalTree tree;
+    private final Id id;
+    private final Predicate<SignalCommand> validator;
+
+    /**
+     * Signal validator that accepts anything. This is defined as a constant to
+     * enable using <code>==</code> to detect and optimize cases where no
+     * validation is applied.
+     */
+    protected static final Predicate<SignalCommand> ANYTHING_GOES = anything -> true;
+
+    /**
+     * Creates a new signal instance with the given id and validator for the
+     * given signal tree.
+     * 
+     * @param tree
+     *            the signal tree that contains the value for this signal, not
+     *            <code>null</code>
+     * @param id
+     *            the id of the signal node within the signal tree, not
+     *            <code>null</code>
+     * @param validator
+     *            the validator to use, not <code>null</code>
+     */
+    protected Signal(SignalTree tree, Id id,
+            Predicate<SignalCommand> validator) {
+        this.tree = Objects.requireNonNull(tree);
+        this.validator = Objects.requireNonNull(validator);
+        this.id = Objects.requireNonNull(id);
+    }
+
+    /**
+     * Gets the current value of this signal. The value is read in a way that
+     * takes the current transaction into account and in the case of clustering
+     * also changes that have been submitted to the cluster but not yet
+     * confirmed.
+     * <p>
+     * Reading the value in a regular (i.e. {@link Type#STAGED}) transaction
+     * makes the transaction depend on the value so that the transaction fails
+     * in case the signal value is changed concurrently.
+     * <p>
+     * Reading the value inside an {@link #effect(Runnable)} or
+     * {@link #computed(Supplier)} callback sets up that effect or computed
+     * signal to depend on the signal.
+     * 
+     * @return the signal value
+     */
+    public T value() {
+        Transaction transaction = Transaction.getCurrent();
+        Optional<Data> node = transaction.read(tree).data(id);
+
+        if (transaction instanceof StagedTransaction) {
+            // TODO No point in registering dependency if lastUpdate was set
+            // earlier in the same transaction
+            Id lastUpdate = node.map(Data::lastUpdate).orElse(Id.ZERO);
+            submit(new SignalCommand.LastUpdateCondition(Id.random(), id,
+                    lastUpdate));
+        }
+
+        /*
+         * Extract value before registering since extracting sets up state that
+         * is used by registerDepedency in the case of computed signals.
+         */
+        T value = extractValue(node);
+        registerUsage();
+        return value;
+    }
+
+    /**
+     * Reads the value without setting up any dependencies. This method returns
+     * the same value as {@link #value()} but without creating a dependency when
+     * used inside a transaction, effect or computed signal.
+     * 
+     * @return the signal value
+     */
+    public T peek() {
+        return extractValue(Transaction.getCurrent().read(tree).data(id));
+    }
+
+    /**
+     * Reads the confirmed value without setting up any dependencies. The
+     * confirmed value doesn't consider changes in the current transaction or
+     * changes that have been submitted but not yet confirmed in a cluster.
+     * 
+     * @return the confirmed signal value
+     */
+    public T peekConfirmed() {
+        return extractValue(tree.confirmed().data(id));
+    }
+
+    /**
+     * Gets the validator used by this signal instance.
+     * 
+     * @return the used validator, not <code>null</code>
+     */
+    protected Predicate<SignalCommand> validator() {
+        return validator;
+    }
+
+    /**
+     * Merges the validator used by this signal with the given validator. This
+     * chains the two validators so that both must accept any change but it
+     * additionally avoids redundant chaining in case either validator is
+     * {@link #ANYTHING_GOES}.
+     * 
+     * @param validator
+     *            the validator to merge, not <code>null</code>
+     * @return a combined validator, not <code>null</code>
+     */
+    protected Predicate<SignalCommand> mergeValidators(
+            Predicate<SignalCommand> validator) {
+        if (this.validator == ANYTHING_GOES) {
+            return validator;
+        } else if (validator == ANYTHING_GOES) {
+            return this.validator;
+        } else {
+            return this.validator.and(validator);
+        }
+    }
+
+    /**
+     * Extracts the value for this signal from the given signal data node.
+     * 
+     * @param node
+     *            the data node to extract the value from, not <code>null</code>
+     * @return the signal value
+     */
+    protected abstract T extractValue(Optional<Data> node);
+
+    /**
+     * Gets the usage type that should be registered when this signal is
+     * accessed.
+     * 
+     * @return the usage type of this signal, not <code>null</code>
+     */
+    protected abstract UsageTracker.UsageType usageType();
+
+    private boolean isValid(SignalCommand command) {
+        if (command instanceof SignalCommand.ConditionCommand) {
+            return true;
+        } else if (command instanceof SignalCommand.TransactionCommand tx) {
+            return tx.commands().stream().allMatch(this::isValid);
+        } else {
+            return validator.test(command);
+        }
+    }
+
+    /**
+     * Submits a command for this signal and updates the given operation using
+     * the given result converted once the command result is confirmed. The
+     * command is submitted through the current {@link Transaction} and it uses
+     * the current {@link Outbox} for delivering the result update.
+     * 
+     * @param <R>
+     *            the result type
+     * @param <O>
+     *            the operation rtype
+     * @param command
+     *            the command to submit, not <code>null</code>
+     * @param resultConverter
+     *            a callback for creating an operation result value based on the
+     *            command result, not <code>null</code>
+     * @param operation
+     *            the operation to update with the eventual result, not
+     *            <code>null</code>
+     * @return the provided operation, for chaining
+     */
+    protected <R, O extends SignalOperation<R>> O submit(SignalCommand command,
+            Function<CommandResult.Accept, R> resultConverter, O operation) {
+        // Remove is issued through the parent but targets the child
+        assert command instanceof SignalCommand.RemoveCommand
+                || id.equals(command.targetNodeId());
+
+        if (!isValid(command)) {
+            throw new UnsupportedOperationException();
+        }
+
+        Executor dispatcher = SignalEnvironment.synchronousDispatcher();
+
+        Transaction.getCurrent().include(tree, command, result -> {
+            operation.result().completeAsync(() -> {
+                if (result instanceof CommandResult.Accept accept) {
+                    return new SignalOperation.Result<>(
+                            resultConverter.apply(accept));
+                } else if (result instanceof CommandResult.Reject reject) {
+                    return new SignalOperation.Error<>(reject.reason());
+                } else {
+                    throw new RuntimeException(
+                            "Unsupported result type: " + result);
+                }
+            }, dispatcher);
+        });
+
+        return operation;
+    }
+
+    /**
+     * Submits a command for this signal and updates the given operation without
+     * a value once the command result is confirmed. This is a shorthand for
+     * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
+     * operations that don't have a result value.
+     * 
+     * @param <O>
+     *            the operation type
+     * @param command
+     *            the command to submit, not <code>null</code>
+     * @param operation
+     *            the operation to update with the eventual result, not
+     *            <code>null</code>
+     * @return the provided operation, for chaining
+     */
+    protected <O extends SignalOperation<Void>> O submitVoidOperation(
+            SignalCommand command, O operation) {
+        return submit(command, success -> null, operation);
+    }
+
+    /**
+     * Submits a command for this signal and creates and insert operation that
+     * is updated once the command result is confirmed. This is a shorthand for
+     * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
+     * insert operations.
+     * 
+     * @param <I>
+     *            the insert operation type
+     * @param command
+     *            the command to submit, not <code>null</code>
+     * @param childFactory
+     *            callback used to create a signal instance in the insert
+     *            operation, not <code>null</code>
+     * @return the created insert operation, not <code>null</code>
+     */
+    protected <I extends Signal<?>> InsertOperation<I> submitInsert(
+            SignalCommand command, Function<Id, I> childFactory) {
+        return submitVoidOperation(command,
+                new InsertOperation<>(childFactory.apply(command.commandId())));
+    }
+
+    /**
+     * Submits a command for this signal and uses the provided result converter
+     * to updates the created operation once the command result is confirmed.
+     * This is a shorthand for
+     * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
+     * using the default operation type.
+     * 
+     * @param <R>
+     *            the operation result value
+     * @param command
+     *            the command to submit, not <code>null</code>
+     * @param resultConverter
+     *            a callback for creating an operation result value based on the
+     *            command result, not <code>null</code>
+     * @return the created operation instance, not <code>null</code>
+     */
+    protected <R> SignalOperation<R> submit(SignalCommand command,
+            Function<CommandResult.Accept, R> resultConverter) {
+        return submit(command, resultConverter, new SignalOperation<R>());
+    }
+
+    /**
+     * Submits a command for this signal and updates the created operation
+     * without a value once the command result is confirmed. This is a shorthand
+     * for {@link #submit(SignalCommand, Function, SignalOperation)} in the case
+     * of using the default operation type and no result value.
+     * 
+     * @param command
+     *            the command to submit, not <code>null</code>
+     * @return the created operation instance, not <code>null</code>
+     */
+    protected SignalOperation<Void> submit(SignalCommand command) {
+        return submitVoidOperation(command, new SignalOperation<Void>());
+    }
+
+    /**
+     * Gets the unique id of this signal instance. The id will be the same for
+     * other signal instances backed by the same data, e.g. in the case of using
+     * {@link #asNode()} to create a signal of different type.
+     * 
+     * @return the signal id, not null
+     */
+    public Id id() {
+        return id;
+    }
+
+    /**
+     * Gets the signal tree that stores the value for this signal.
+     * 
+     * @return the signal tree, not <code>null</code>
+     */
+    protected SignalTree tree() {
+        return tree;
+    }
+
+    /**
+     * Registers this signal as used with the current usage tracker.
+     * 
+     * @see UsageTracker
+     */
+    protected void registerUsage() {
+        UsageTracker.registerUsage(tree, id, usageType());
+    }
+
+    /**
+     * Converts this signal into a node signal. This allows further conversion
+     * into any specific signal type through the methods in {@link NodeSignal}.
+     * The converted signal is backed by the same underlying data and uses the
+     * same validator as this signal.
+     * 
+     * @return this signal as a node signal, not <code>null</code>
+     */
+    public NodeSignal asNode() {
+        if (this instanceof NodeSignal node) {
+            return node;
+        } else {
+            return new NodeSignal(tree, id, validator);
+        }
+    }
+
+    /**
+     * Helper to submit a clear command. This is a helper is re-defined as
+     * public in the signal types where a clear operation makes sense.
+     * 
+     * @return the created signal operation instance, not <code>null</code>
+     */
+    protected SignalOperation<Void> clear() {
+        return submit(new SignalCommand.ClearCommand(Id.random(), id()));
+    }
+
+    /**
+     * Helper to submit a remove command. This is a helper is re-defined as
+     * public in the signal types where a remove operation makes sense.
+     * 
+     * @return the created signal operation instance, not <code>null</code>
+     */
+    protected SignalOperation<Void> remove(Signal<?> child) {
+        return submit(
+                new SignalCommand.RemoveCommand(Id.random(), child.id, id()));
+    }
+
+    /**
+     * Helper to convert the given object to JSON using the global signal object
+     * mapper.
+     * 
+     * @see SignalEnvironment
+     * 
+     * @param value
+     *            the object to convert to JSON
+     * @return the converted JSON node, not <code>null</code>
+     */
+    protected static JsonNode toJson(Object value) {
+        return SignalEnvironment.objectMapper().valueToTree(value);
+    }
+
+    /**
+     * Helper to convert the given JSON to a Java instance of the given type
+     * using the global signal object mapper.
+     * 
+     * @see SignalEnvironment
+     * 
+     * @param <T>
+     *            the target type
+     * @param value
+     *            the JSON value to convert
+     * @param targetType
+     *            the target type, not <code>null</code>
+     * @return the converted Java instance
+     */
+    protected static <T> T fromJson(JsonNode value, Class<T> targetType) {
+        try {
+            return SignalEnvironment.objectMapper().treeToValue(value,
+                    targetType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Helper to convert the value of the given node into Java object of the
+     * given type.
+     * 
+     * @param <T>
+     *            the Java object type
+     * @param node
+     *            the signal node to read the value from, not <code>null</code>
+     * @param valueType
+     *            the type to convert to, not <code>null</code>
+     * @return the converted Java instance
+     */
+    protected static <T> T nodeValue(Node node, Class<T> valueType) {
+        assert node instanceof Data;
+
+        return fromJson(((Data) node).value(), valueType);
+    }
+
+    /*
+     * These are a bunch of public access points to API that is originally
+     * implemented in classes in the .impl package. These methods are unit
+     * tested from the same class that tests the implementation class.
+     */
+
+    /**
+     * Creates a signal effect with the given action. A action is run when the
+     * effect is created and is subsequently run again whenever there's a change
+     * to any signal value that was read during the last invocation.
+     * 
+     * @param action
+     *            the effect action to use, not <code>null</code>
+     * @return a callback used to close the effect so that it no longer listens
+     *         to signal changes, not <code>null</code>
+     */
+    public static Runnable effect(Runnable action) {
+        Effect effect = new Effect(action);
+        return effect::close;
+    }
+
+    /**
+     * Creates a new computed signal with the given computation callback. A
+     * computed signal behaves like a regular signal except that the value is
+     * not directly set but instead computed from other signals. The computed
+     * signal is automatically updated if any of the used signals are updated.
+     * The computation is lazy so that it only runs when its value is accessed
+     * and only if the previously computed value might have been invalidated by
+     * dependent signal changes.
+     * 
+     * @param <T>
+     *            the signal type
+     * @param computation
+     *            the computation callback, not <code>null</code>
+     * @return the computed signal, not <code>null</code>
+     */
+    public static <T> Signal<T> computed(Supplier<T> computation) {
+        return new ComputedSignal<>(computation);
+    }
+
+    /**
+     * Creates a computed signal based on a mapper function that is passed the
+     * value of this signal. If the mapper function accesses other signal
+     * values, then the computed signal will also depend on those signals.
+     * 
+     * @param <C>
+     *            the computed signal type
+     * @param mapper
+     *            the mapper function to use, not <code>null</code>
+     * @return the computed signal, not <code>null</code>
+     */
+    public <C> Signal<C> map(Function<T, C> mapper) {
+        return computed(() -> mapper.apply(value()));
+    }
+
+    /**
+     * Runs the provided supplier in a transaction. All signal operations
+     * performed within the transaction will be staged and atomically committed
+     * at the end of the transaction. The commit fails and doesn't apply any of
+     * the commands if any of the commands fail. Reading a signal value within a
+     * transaction will make the transaction depend on that value so that the
+     * transaction fails if the signal value has been changed concurrently.
+     * <p>
+     * The value returned by the supplier will be available from the returned
+     * operation instance. The result of the operation will be set based on
+     * whether the transaction was successfully committed once the status is
+     * confirmed.
+     * 
+     * @see #runInTransaction(Runnable)
+     * 
+     * @param <T>
+     *            the type returned by the supplier
+     * @param transactionTask
+     *            the supplier to run, not <code>null</code>
+     * @return a transaction operation containing the supplier return value and
+     *         the eventual result
+     */
+    public static <T> TransactionOperation<T> runInTransaction(
+            Supplier<T> transactionTask) {
+        return Transaction.runInTransaction(transactionTask);
+    }
+
+    /**
+     * Runs the provided runnable in a transaction. All signal operations
+     * performed within the transaction will be staged and atomically committed
+     * at the end of the transaction. The commit fails and doesn't apply any of
+     * the commands if any of the commands fail. Reading a signal value within a
+     * transaction will make the transaction depend on that value so that the
+     * transaction fails if the signal value has been changed concurrently.
+     * <p>
+     * The result of the operation will be set based on whether the transaction
+     * was successfully committed once the status is confirmed.
+     * 
+     * @see #runInTransaction(Supplier)
+     * 
+     * @param transactionTask
+     *            the runnable to run, not <code>null</code>
+     * @return a transaction operation containing the supplier return value and
+     *         the eventual result
+     */
+    public static TransactionOperation<Void> runInTransaction(
+            Runnable transactionTask) {
+        return Transaction.runInTransaction(transactionTask);
+    }
+
+    /**
+     * Runs the given supplier outside any transaction and returns the supplied
+     * value. The current transaction will be restored after the task has been
+     * run.
+     *
+     * @param <T>
+     *            the supplier type
+     * @param task
+     *            the supplier to run, not <code>null</code>
+     * @return the value returned from the supplier
+     */
+    public static <T> T runWithoutTransaction(Supplier<T> task) {
+        return Transaction.runWithoutTransaction(task);
+    }
+
+    /**
+     * Runs the given task outside any transaction. The current transaction will
+     * be restored after the task has been run.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     */
+    public static void runWithoutTransaction(Runnable task) {
+        Transaction.runWithoutTransaction(task);
+    }
+
+    /**
+     * Runs the given supplier without tracking dependencies for signals that
+     * are read within the supplier. This has the same effect as {@link #peek()}
+     * but is effective for an entire code block rather than just a single
+     * invocation.
+     * 
+     * @param <T>
+     *            the supplier type
+     * @param task
+     *            the supplier task to run, not <code>null</code>
+     * @return the value returned from the supplier
+     */
+    public static <T> T untracked(Supplier<T> task) {
+        /*
+         * Note that there's no Runnable overload since the whole point of
+         * untracked is to read values.
+         */
+        return UsageTracker.untracked(task);
+    }
+}
