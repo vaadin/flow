@@ -24,7 +24,7 @@ import com.vaadin.signals.impl.UsageTracker.UsageType;
  * The signal value will be lazily re-computed when needed after the value has
  * changed for any of the signals that were used when computing the previous
  * value.
- * 
+ *
  * @param <T>
  *            the value type
  */
@@ -41,7 +41,7 @@ public class ComputedSignal<T> extends Signal<T> {
 
     /**
      * Creates a new computed signal with the provided compute callback.
-     * 
+     *
      * @param computation
      *            a callback that returns the computed value, not null
      */

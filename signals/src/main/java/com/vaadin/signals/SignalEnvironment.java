@@ -35,7 +35,7 @@ public class SignalEnvironment {
      * Initialized the global signal environment if not already initialized. The
      * provided values are ignored if the environment is already initialized.
      * The environment must be initialized before signals are used.
-     * 
+     *
      * @param objectMapper
      *            the object mapper to use, not <code>null</code>
      * @param dispatcher
@@ -56,7 +56,7 @@ public class SignalEnvironment {
     /**
      * Initializes the global signal environment. The environment must be
      * initialized before signals are used.
-     * 
+     *
      * @param objectMapper
      *            the object mapper to use, not <code>null</code>
      * @param dispatcher
@@ -73,7 +73,7 @@ public class SignalEnvironment {
 
     /**
      * Checks whether the environment is already initialized.
-     * 
+     *
      * @return <code>true</code> if initialized, <code>false</code> if not
      *         initialized
      */
@@ -92,7 +92,7 @@ public class SignalEnvironment {
      * needs to preserve ordering within the context that it belongs to (which
      * is up to the implementation to define) so that operation results are
      * published in order of confirmation.
-     * 
+     *
      * @param dispatcherOverride
      *            a supplier that can return a dispatcher to use or
      *            <code>null</code> to not provide any dispatcher under those
@@ -121,7 +121,7 @@ public class SignalEnvironment {
     /**
      * Gets the object mapper to use for converting signal values to and from
      * their underlying JSON representation
-     * 
+     *
      * @return the object mapper, not <code>null</code>
      * @throws IllegalStateException
      *             if the environment has not yet been initialized
@@ -133,7 +133,7 @@ public class SignalEnvironment {
     /**
      * Gets the dispatcher that was set when the environment was initialized
      * without looking up overrides.
-     * 
+     *
      * @return the configured dispatcher, not <code>null</code>
      * @throws IllegalStateException
      *             if the environment has not yet been initialized
@@ -149,7 +149,7 @@ public class SignalEnvironment {
      * submitted. This method uses a dispatcher override if any supplier matches
      * and otherwise uses the dispatcher provided when the environment was
      * initialized.
-     * 
+     *
      * @return the dispatcher to use, not <code>null</code>
      * @throws IllegalStateException
      *             if the environment has not yet been initialized
@@ -164,7 +164,7 @@ public class SignalEnvironment {
      * same context are run in the order they have been submitted. This method
      * uses a dispatcher override if any supplier matches and otherwise uses a
      * dispatcher that runs tasks on the invoking thread.
-     * 
+     *
      * @return the dispatcher to use, not <code>null</code>
      * @throws IllegalStateException
      *             if the environment has not yet been initialized

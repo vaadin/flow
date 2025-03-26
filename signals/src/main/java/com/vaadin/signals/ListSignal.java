@@ -33,7 +33,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * structure. Each value in the list is accessed as a separate
  * {@link ValueSignal} instance which enables atomic updates to the value of
  * that list entry.
- * 
+ *
  * @param <T>
  *            the element type
  */
@@ -84,7 +84,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
          * Gets the insertion position immediately after the given signal.
          * Inserting after <code>null</code> is interpreted as inserting after
          * the start of the list, i.e. as the first child.
-         * 
+         *
          * @param after
          *            the signal to insert after, or <code>null</code> to insert
          *            first
@@ -98,7 +98,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
          * Gets the insertion position immediately before the given signal.
          * Inserting before <code>null</code> signal is interpreted as inserting
          * before the end of the list, i.e. as the last child.
-         * 
+         *
          * @param before
          *            the signal to insert before, or <code>null</code> to
          *            insert last
@@ -114,7 +114,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
          * interpreted as inserting after the start of the list, i.e. as the
          * first child. Inserting before <code>null</code> signal is interpreted
          * as inserting before the end of the list, i.e. as the last child.
-         * 
+         *
          * @param after
          *            the signal to insert after, or <code>null</code> to insert
          *            first
@@ -142,7 +142,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     /**
      * Creates a new list signal with the given element type. The signal does
      * not support clustering.
-     * 
+     *
      * @param elementType
      *            the element type, not <code>null</code>
      */
@@ -154,7 +154,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     /**
      * Creates a new list signal instance with the given id and validator for
      * the given signal tree with the given element type.
-     * 
+     *
      * @param tree
      *            the signal tree that contains the value for this signal, not
      *            <code>null</code>
@@ -189,7 +189,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
 
     /**
      * Inserts a value as the first entry in this list.
-     * 
+     *
      * @param value
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
@@ -206,7 +206,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
 
     /**
      * Inserts a value as the last entry in this list.
-     * 
+     *
      * @param value
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
@@ -219,7 +219,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     /**
      * Inserts a value at the given position in this list. The operation fails
      * if the position is not valid at the time when the operation is processed.
-     * 
+     *
      * @param value
      *            the value to insert
      * @param at
@@ -238,7 +238,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * Moves the given child signal to the given position in this list. The
      * operation fails if the child is not a child or if this list of if
      * position is not valid at the time when the operation is processed.
-     * 
+     *
      * @param child
      *            the child signal to move, not <code>null</code>
      * @param to
@@ -258,7 +258,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     /**
      * Removes the given child from this list. The operation fails if the child
      * is not a child of this list at the time when the operation is processed.
-     * 
+     *
      * @param child
      *            the child to remove, not <code>null</code>
      * @return an operation containing the the eventual result
@@ -287,7 +287,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * returned operation will be resolved as successful if the given child is a
      * child of this list and at the given position when the operation is
      * processed.
-     * 
+     *
      * @param child
      *            the child to test, not <code>null</code>
      * @param expectedPosition
@@ -307,7 +307,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * returned operation will be resolved as successful if the given child is a
      * child of this list and at the given position when the operation is
      * processed.
-     * 
+     *
      * @param child
      *            the child to test, not <code>null</code>
      * @param expectedPosition
@@ -329,7 +329,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @param validator
      *            the validator to use, not <code>null</code>
      * @return a new list signal that uses the validator, not <code>null</code>
@@ -345,7 +345,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @return the new readonly list signal, not <code>null</code>
      */
     public ListSignal<T> asReadonly() {

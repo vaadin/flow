@@ -8,7 +8,7 @@ import com.vaadin.signals.Signal;
  * An operation that inserts a new child signal into a list or map. In addition
  * to the regular signal operation, there's also direct access to the newly
  * inserted child signal.
- * 
+ *
  * @param <T>
  *            the type of the newly inserted signal
  */
@@ -19,7 +19,7 @@ public class InsertOperation<T extends Signal<?>>
 
     /**
      * Creates a new insert operation based on the new signal instance.
-     * 
+     *
      * @param newSignal
      *            the new signal instance, not <code>null</code>
      */
@@ -31,7 +31,7 @@ public class InsertOperation<T extends Signal<?>>
      * Gets the newly inserted signal instance. The instance can be used
      * immediately even in cases where the result of the operation is not
      * immediately confirmed.
-     * 
+     *
      * @return the newly inserted signal instance, not <code>null</code>
      */
     public T signal() {

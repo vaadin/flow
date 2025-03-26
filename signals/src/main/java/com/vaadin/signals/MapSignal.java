@@ -21,7 +21,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * to the map structure. Each value in the map is accessed as a separate
  * {@link ValueSignal} instance which enables atomic updates to the value of
  * that map entry.
- * 
+ *
  * @param <T>
  *            the element type
  */
@@ -32,7 +32,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
     /**
      * Creates a new map signal with the given element type. The signal does not
      * support clustering.
-     * 
+     *
      * @param elementType
      *            the element type, not <code>null</code>
      */
@@ -44,7 +44,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
     /**
      * Creates a new map signal instance with the given id and validator for the
      * given signal tree with the given element type.
-     * 
+     *
      * @param tree
      *            the signal tree that contains the value for this signal, not
      *            <code>null</code>
@@ -87,7 +87,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * value at the time when this operation was confirmed. The previous value
      * is <code>null</code> if no entry existed or if it existed with a
      * <code>null</code> value.
-     * 
+     *
      * @param key
      *            the key to use, not <code>null</code>
      * @param value
@@ -117,7 +117,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * corresponds to the given key regardless of whether an entry existed for
      * the key. The operation will be resolved as successful regardless of
      * whether they key was already used.
-     * 
+     *
      * @param key
      *            the key to use, not <code>null</code>
      * @param value
@@ -137,7 +137,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * successful if a mapping existed and as a failure if there was no mapping.
      * In case of a successful operation, the result value will be the value
      * associated with the key when the operation was processed.
-     * 
+     *
      * @param key
      *            the key to use, not <code>null</code>
      * @return an operation containing the the eventual result
@@ -176,8 +176,8 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * {@link #runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given child is a
      * mapped to the given key in this map when the operation is processed.
-     * 
-     * 
+     *
+     *
      * @param key
      *            the key to check, not <code>null</code>
      * @param expectedChild
@@ -196,7 +196,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * {@link #runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given key has a
      * mapping in this map when the operation is processed.
-     * 
+     *
      * @param key
      *            the key to check, not <code>null</code>
      * @return an operation containing the the eventual result
@@ -211,7 +211,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * {@link #runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given key has no
      * mapping in this map when the operation is processed.
-     * 
+     *
      * @param key
      *            the key to check, not <code>null</code>
      * @return an operation containing the the eventual result
@@ -230,7 +230,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @param validator
      *            the validator to use, not <code>null</code>
      * @return a new map signal that uses the validator, not <code>null</code>
@@ -246,7 +246,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @return the new readonly map signal, not <code>null</code>
      */
     public MapSignal<T> asReadonly() {

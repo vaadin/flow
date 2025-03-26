@@ -2,7 +2,7 @@ package com.vaadin.signals.operations;
 
 /**
  * An operation that can be cancelled.
- * 
+ *
  * @param <T>
  *            the result type
  */
@@ -20,7 +20,7 @@ public class CancelableOperation<T> extends SignalOperation<T> {
 
     /**
      * Checks whether this operation has been canceled.
-     * 
+     *
      * @return <code>true</code> if the operation is canceled
      */
     public boolean isCancelled() {

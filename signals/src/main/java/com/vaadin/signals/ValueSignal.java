@@ -20,7 +20,7 @@ import com.vaadin.signals.operations.CancelableOperation;
  * It's recommended to use immutable values and this is partially enforced by
  * the way a new instance is created from the underlying JSON data every time
  * the value is read.
- * 
+ *
  * @param <T>
  *            the signal value type
  */
@@ -31,7 +31,7 @@ public class ValueSignal<T> extends Signal<T> {
      * Creates a new value signal with the given initial value. The type of the
      * signal will be based on the type ({@link #getClass()}) of the initial
      * value instance. The signal does not support clustering.
-     * 
+     *
      * @param initialValue
      *            the initial value to use, not <code>null</code>
      */
@@ -45,7 +45,7 @@ public class ValueSignal<T> extends Signal<T> {
     /**
      * Creates a new value signal of the given type with no value. The signal
      * does not support clustering.
-     * 
+     *
      * @param valueType
      *            the value type, not <code>null</code>
      */
@@ -57,7 +57,7 @@ public class ValueSignal<T> extends Signal<T> {
     /**
      * Creates a new value signal instance with the given id and validator for
      * the given signal tree with the given value type.
-     * 
+     *
      * @param tree
      *            the signal tree that contains the value for this signal, not
      *            <code>null</code>
@@ -79,7 +79,7 @@ public class ValueSignal<T> extends Signal<T> {
      * Sets the value of this signal. The result of the returned operation will
      * be resolved with the previous value at the time when this operation was
      * confirmed.
-     * 
+     *
      * @param value
      *            the value to set
      * @return an operation containing the the eventual result
@@ -110,7 +110,7 @@ public class ValueSignal<T> extends Signal<T> {
      * result of the returned operation will be resolved as successful if the
      * expected value was present and resolved as unsuccessful if any other
      * value was present when the operation is processed.
-     * 
+     *
      * @param expectedValue
      *            the expected value
      * @param newValue
@@ -146,7 +146,7 @@ public class ValueSignal<T> extends Signal<T> {
      * would occur after the original transaction has already been committed.
      * For this reason, the whole operation completely bypasses all transaction
      * handling.
-     * 
+     *
      * @param updater
      *            the value update callback, not <code>null</code>
      * @return an operation containing the the eventual result
@@ -196,7 +196,7 @@ public class ValueSignal<T> extends Signal<T> {
      * transaction}. The result of the returned operation will be resolved as
      * successful if the expected value was present and resolved as unsuccessful
      * if any other value was present when the operation is processed.
-     * 
+     *
      * @param expectedValue
      *            the expected value
      * @return an operation containing the the eventual result
@@ -216,7 +216,7 @@ public class ValueSignal<T> extends Signal<T> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @param validator
      *            the validator to use, not <code>null</code>
      * @return a new value signal that uses the validator, not <code>null</code>
@@ -231,7 +231,7 @@ public class ValueSignal<T> extends Signal<T> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @return the new readonly value signal, not <code>null</code>
      */
     public ValueSignal<T> asReadonly() {

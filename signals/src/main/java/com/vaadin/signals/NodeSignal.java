@@ -43,7 +43,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
         /**
          * Creates a new state snapshot based on the given JSON value, list
          * children and map children.
-         * 
+         *
          * @param value
          *            the JSON value, or <code>null</code> if there is no value
          * @param listChildren
@@ -64,7 +64,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
 
         /**
          * Gets the value as the given type.
-         * 
+         *
          * @param <T>
          *            the value type
          * @param valueType
@@ -77,7 +77,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
 
         /**
          * Gets the parent node of this signal.
-         * 
+         *
          * @return the parent node, or <code>null</code> for the root node
          */
         public NodeSignal parent() {
@@ -86,7 +86,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
 
         /**
          * Gets a list with the children accessed by order.
-         * 
+         *
          * @return a list of children, not <code>null</code>
          */
         public List<NodeSignal> listChildren() {
@@ -95,7 +95,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
 
         /**
          * Gets a map of the children accessed by key.
-         * 
+         *
          * @return a list of map children, not <code>null</code>
          */
         public Map<String, NodeSignal> mapChildren() {
@@ -113,7 +113,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
 
     /**
      * Creates a new node signal based on the given tree, node id and validator.
-     * 
+     *
      * @param tree
      *            the tree to use, not <code>null</code>
      * @param id
@@ -149,7 +149,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
     /**
      * Creates a value signal backed by this node. The new signal uses the same
      * validator as this signal.
-     * 
+     *
      * @param <T>
      *            the value type
      * @param valueType
@@ -164,7 +164,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * Creates a number signal backed by this node. The new signal uses the same
      * validator as this signal. Accessing the value of the signal will throw an
      * exception if the underlying value is not a JSON number.
-     * 
+     *
      * @return this signal as a number signal, not <code>null</code>
      */
     public NumberSignal asNumber() {
@@ -176,7 +176,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * validator as this signal. Accessing the value of child signal will throw
      * an exception if the underlying value cannot be JSON deserialized as the
      * provided element type.
-     * 
+     *
      * @param <T>
      *            the element type
      * @param elementType
@@ -192,7 +192,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * validator as this signal. Accessing the value of child signal will throw
      * an exception if the underlying value cannot be JSON deserialized as the
      * provided element type.
-     * 
+     *
      * @param <T>
      *            the element type
      * @param elementType
@@ -207,7 +207,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * Inserts a new node with the given value as a list node at the given list
      * position. The operation fails if the position is not valid at the time
      * when the operation is processed.
-     * 
+     *
      * @param value
      *            the value to insert
      * @param at
@@ -225,7 +225,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * Inserts a new node with no value as a list node at the given list
      * position. The operation fails if the position is not valid at the time
      * when the operation is processed.
-     * 
+     *
      * @param at
      *            the insert position, not <code>null</code>
      * @return an operation containing a signal for the inserted entry and the
@@ -239,7 +239,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * Associates the given value with the given key. If a map child already
      * exists for the given key, then the value of that node is updated. If no
      * map child exists, then a new node is created with the given value.
-     * 
+     *
      * @param key
      *            the key to use, not <code>null</code>
      * @param value
@@ -257,7 +257,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * corresponds to the given key regardless of whether a node existed for the
      * key. The operation will be resolved as successful regardless of whether
      * they key was already used.
-     * 
+     *
      * @param key
      *            the key to use, not <code>null</code>
      * @param value
@@ -275,7 +275,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * must be a member of the same node tree. It will be detached from its
      * current location in the tree. The operation fails if the position is not
      * valid at the time when the operation is processed.
-     * 
+     *
      * @param node
      *            the signal to adopt, not <code>null</code>
      * @param at
@@ -292,7 +292,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * a member of the same node tree. It will be detached from its current
      * location in the tree. The operation fails if there is already a map child
      * with the same key at the time when the operation is processed.
-     * 
+     *
      * @param node
      *            the signal to adopt, not <code>null</code>
      * @param key
@@ -307,7 +307,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
     /**
      * Removes the given child from this node. The operation fails if the child
      * is not a child of this node at the time when the operation is processed.
-     * 
+     *
      * @param child
      *            the child to remove, not <code>null</code>
      * @return an operation containing the the eventual result
@@ -321,7 +321,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * Removes the map child with the given key. The operation will be resolved
      * as successful if a mapping existed and as a failure if there was no
      * mapping when the operation was processed.
-     * 
+     *
      * @param key
      *            the key to use, not <code>null</code>
      * @return an operation containing the the eventual result
@@ -333,7 +333,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
 
     /**
      * Removes all list children and map children from this node.
-     * 
+     *
      * @return an operation containing the the eventual result
      */
     public SignalOperation<Void> clear() {
@@ -349,7 +349,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @param validator
      *            the validator to use, not <code>null</code>
      * @return a new node signal that uses the validator, not <code>null</code>
@@ -364,7 +364,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @return the new readonly node signal, not <code>null</code>
      */
     public NodeSignal asReadonly() {

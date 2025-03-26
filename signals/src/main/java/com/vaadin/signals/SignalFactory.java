@@ -42,7 +42,7 @@ public interface SignalFactory {
 
     /**
      * Gets a node signal for the given name.
-     * 
+     *
      * @param name
      *            the name to use, not <code>null</code>
      * @return a node signal, not <code>null</code>
@@ -51,7 +51,7 @@ public interface SignalFactory {
 
     /**
      * Gets a value signal of the given type for the given name.
-     * 
+     *
      * @param <T>
      *            the value type
      * @param name
@@ -69,7 +69,7 @@ public interface SignalFactory {
      * it with the provided default value if the signal doesn't already have a
      * value. If the implementation returns an existing signal instance that
      * already had a non-null value, then the provided default value is ignored.
-     * 
+     *
      * @param <T>
      *            the value type
      * @param name
@@ -99,7 +99,7 @@ public interface SignalFactory {
      * non-null value, then the provided default value is ignored. The signal
      * value type is based on the type ({@link #getClass()}) of the default
      * value instance.
-     * 
+     *
      * @param <T>
      *            the value type
      * @param name
@@ -119,7 +119,7 @@ public interface SignalFactory {
 
     /**
      * Gets a number signal for the given name.
-     * 
+     *
      * @param name
      *            the name to use, not <code>null</code>
      * @return a number signal, not <code>null</code>
@@ -131,7 +131,7 @@ public interface SignalFactory {
     /**
      * Gets a number signal for the given name and initializes it with the
      * provided default value if the signal doesn't already have a value.
-     * 
+     *
      * @param name
      *            the name to use, not <code>null</code>
      * @param defaultValue
@@ -144,7 +144,7 @@ public interface SignalFactory {
 
     /**
      * Gets a list signal with the given element type for the given name.
-     * 
+     *
      * @param <T>
      *            the element type
      * @param name
@@ -159,7 +159,7 @@ public interface SignalFactory {
 
     /**
      * Gets a map signal with the given element type for the given name.
-     * 
+     *
      * @param <T>
      *            the element type
      * @param name
@@ -180,7 +180,7 @@ public interface SignalFactory {
      * <p>
      * This is an optional operation. Implementations that don't support removal
      * throw {@link UnsupportedOperationException}.
-     * 
+     *
      * @param name
      *            the name to remove, not {@link NullPointerException}
      * @throws UnsupportedOperationException
@@ -197,7 +197,7 @@ public interface SignalFactory {
      * <p>
      * This is an optional operation. Implementations that don't support
      * clearing may throw {@link UnsupportedOperationException}.
-     * 
+     *
      * @throws UnsupportedOperationException
      *             if this implementation doesn't support clearing
      */

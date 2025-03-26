@@ -58,7 +58,7 @@ public class UsageTracker {
 
     /**
      * A single instance of accessing the value of a node.
-     * 
+     *
      * @param tree
      *            the signal tree that the node belongs to, not
      *            <code>null</code>
@@ -75,7 +75,7 @@ public class UsageTracker {
         /**
          * Checks whether the reference value has changed according to the
          * current transaction.
-         * 
+         *
          * @return <code>true</code> if the value has changed,
          *         <code>false</code> if the value is the same
          */
@@ -92,7 +92,7 @@ public class UsageTracker {
 
         /**
          * Checks whether any of the provided usage changes has changes.
-         * 
+         *
          * @param usages
          *            a collection of node usage instances to check, not
          *            <code>null</code>
@@ -113,7 +113,7 @@ public class UsageTracker {
     /**
      * Runs the given task while tracking all cases where a node value is used.
      * The task is run in a read-only transaction.
-     * 
+     *
      * @param task
      *            the task to run, not <code>null</code>
      * @return a set of node usages, not <code>null</code>
@@ -136,7 +136,7 @@ public class UsageTracker {
     /**
      * Runs the given supplier without tracking signal usage even if a usage
      * tracker is active.
-     * 
+     *
      * @param <T>
      *            the supplier type
      * @param task
@@ -162,7 +162,7 @@ public class UsageTracker {
     /**
      * Registers usage of a node value with the current usage tracker, if one is
      * present.
-     * 
+     *
      * @param tree
      *            the signal tree of the used node, not <code>null</code>
      * @param nodeId
@@ -182,7 +182,7 @@ public class UsageTracker {
 
     /**
      * Checks whether a usage tracker is currently active.
-     * 
+     *
      * @return <code>true</code> if a usage tracker is active
      */
     public static boolean isActive() {

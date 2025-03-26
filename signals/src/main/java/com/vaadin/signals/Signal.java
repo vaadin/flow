@@ -37,7 +37,7 @@ import com.vaadin.signals.operations.TransactionOperation;
  * signal value are only confirmed asynchronously. The regular signal
  * {@link #value()} returns the assumed value based on local modifications
  * whereas {@link #peekConfirmed()} gives access to the confirmed value.
- * 
+ *
  * @param <T>
  *            the signal value type
  */
@@ -56,7 +56,7 @@ public abstract class Signal<T> {
     /**
      * Creates a new signal instance with the given id and validator for the
      * given signal tree.
-     * 
+     *
      * @param tree
      *            the signal tree that contains the value for this signal, not
      *            <code>null</code>
@@ -86,7 +86,7 @@ public abstract class Signal<T> {
      * Reading the value inside an {@link #effect(Runnable)} or
      * {@link #computed(Supplier)} callback sets up that effect or computed
      * signal to depend on the signal.
-     * 
+     *
      * @return the signal value
      */
     public T value() {
@@ -114,7 +114,7 @@ public abstract class Signal<T> {
      * Reads the value without setting up any dependencies. This method returns
      * the same value as {@link #value()} but without creating a dependency when
      * used inside a transaction, effect or computed signal.
-     * 
+     *
      * @return the signal value
      */
     public T peek() {
@@ -125,7 +125,7 @@ public abstract class Signal<T> {
      * Reads the confirmed value without setting up any dependencies. The
      * confirmed value doesn't consider changes in the current transaction or
      * changes that have been submitted but not yet confirmed in a cluster.
-     * 
+     *
      * @return the confirmed signal value
      */
     public T peekConfirmed() {
@@ -134,7 +134,7 @@ public abstract class Signal<T> {
 
     /**
      * Gets the validator used by this signal instance.
-     * 
+     *
      * @return the used validator, not <code>null</code>
      */
     protected Predicate<SignalCommand> validator() {
@@ -146,7 +146,7 @@ public abstract class Signal<T> {
      * chains the two validators so that both must accept any change but it
      * additionally avoids redundant chaining in case either validator is
      * {@link #ANYTHING_GOES}.
-     * 
+     *
      * @param validator
      *            the validator to merge, not <code>null</code>
      * @return a combined validator, not <code>null</code>
@@ -164,7 +164,7 @@ public abstract class Signal<T> {
 
     /**
      * Extracts the value for this signal from the given signal data node.
-     * 
+     *
      * @param node
      *            the data node to extract the value from, not <code>null</code>
      * @return the signal value
@@ -174,7 +174,7 @@ public abstract class Signal<T> {
     /**
      * Gets the usage type that should be registered when this signal is
      * accessed.
-     * 
+     *
      * @return the usage type of this signal, not <code>null</code>
      */
     protected abstract UsageTracker.UsageType usageType();
@@ -194,7 +194,7 @@ public abstract class Signal<T> {
      * the given result converted once the command result is confirmed. The
      * command is submitted through the current {@link Transaction} and it uses
      * the current {@link Outbox} for delivering the result update.
-     * 
+     *
      * @param <R>
      *            the result type
      * @param <O>
@@ -243,7 +243,7 @@ public abstract class Signal<T> {
      * a value once the command result is confirmed. This is a shorthand for
      * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
      * operations that don't have a result value.
-     * 
+     *
      * @param <O>
      *            the operation type
      * @param command
@@ -263,7 +263,7 @@ public abstract class Signal<T> {
      * is updated once the command result is confirmed. This is a shorthand for
      * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
      * insert operations.
-     * 
+     *
      * @param <I>
      *            the insert operation type
      * @param command
@@ -285,7 +285,7 @@ public abstract class Signal<T> {
      * This is a shorthand for
      * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
      * using the default operation type.
-     * 
+     *
      * @param <R>
      *            the operation result value
      * @param command
@@ -305,7 +305,7 @@ public abstract class Signal<T> {
      * without a value once the command result is confirmed. This is a shorthand
      * for {@link #submit(SignalCommand, Function, SignalOperation)} in the case
      * of using the default operation type and no result value.
-     * 
+     *
      * @param command
      *            the command to submit, not <code>null</code>
      * @return the created operation instance, not <code>null</code>
@@ -318,7 +318,7 @@ public abstract class Signal<T> {
      * Gets the unique id of this signal instance. The id will be the same for
      * other signal instances backed by the same data, e.g. in the case of using
      * {@link #asNode()} to create a signal of different type.
-     * 
+     *
      * @return the signal id, not null
      */
     public Id id() {
@@ -327,7 +327,7 @@ public abstract class Signal<T> {
 
     /**
      * Gets the signal tree that stores the value for this signal.
-     * 
+     *
      * @return the signal tree, not <code>null</code>
      */
     protected SignalTree tree() {
@@ -336,7 +336,7 @@ public abstract class Signal<T> {
 
     /**
      * Registers this signal as used with the current usage tracker.
-     * 
+     *
      * @see UsageTracker
      */
     protected void registerUsage() {
@@ -348,7 +348,7 @@ public abstract class Signal<T> {
      * into any specific signal type through the methods in {@link NodeSignal}.
      * The converted signal is backed by the same underlying data and uses the
      * same validator as this signal.
-     * 
+     *
      * @return this signal as a node signal, not <code>null</code>
      */
     public NodeSignal asNode() {
@@ -362,7 +362,7 @@ public abstract class Signal<T> {
     /**
      * Helper to submit a clear command. This is a helper is re-defined as
      * public in the signal types where a clear operation makes sense.
-     * 
+     *
      * @return the created signal operation instance, not <code>null</code>
      */
     protected SignalOperation<Void> clear() {
@@ -372,7 +372,7 @@ public abstract class Signal<T> {
     /**
      * Helper to submit a remove command. This is a helper is re-defined as
      * public in the signal types where a remove operation makes sense.
-     * 
+     *
      * @return the created signal operation instance, not <code>null</code>
      */
     protected SignalOperation<Void> remove(Signal<?> child) {
@@ -383,9 +383,9 @@ public abstract class Signal<T> {
     /**
      * Helper to convert the given object to JSON using the global signal object
      * mapper.
-     * 
+     *
      * @see SignalEnvironment
-     * 
+     *
      * @param value
      *            the object to convert to JSON
      * @return the converted JSON node, not <code>null</code>
@@ -397,9 +397,9 @@ public abstract class Signal<T> {
     /**
      * Helper to convert the given JSON to a Java instance of the given type
      * using the global signal object mapper.
-     * 
+     *
      * @see SignalEnvironment
-     * 
+     *
      * @param <T>
      *            the target type
      * @param value
@@ -420,7 +420,7 @@ public abstract class Signal<T> {
     /**
      * Helper to convert the value of the given node into Java object of the
      * given type.
-     * 
+     *
      * @param <T>
      *            the Java object type
      * @param node
@@ -445,7 +445,7 @@ public abstract class Signal<T> {
      * Creates a signal effect with the given action. A action is run when the
      * effect is created and is subsequently run again whenever there's a change
      * to any signal value that was read during the last invocation.
-     * 
+     *
      * @param action
      *            the effect action to use, not <code>null</code>
      * @return a callback used to close the effect so that it no longer listens
@@ -464,7 +464,7 @@ public abstract class Signal<T> {
      * The computation is lazy so that it only runs when its value is accessed
      * and only if the previously computed value might have been invalidated by
      * dependent signal changes.
-     * 
+     *
      * @param <T>
      *            the signal type
      * @param computation
@@ -479,7 +479,7 @@ public abstract class Signal<T> {
      * Creates a computed signal based on a mapper function that is passed the
      * value of this signal. If the mapper function accesses other signal
      * values, then the computed signal will also depend on those signals.
-     * 
+     *
      * @param <C>
      *            the computed signal type
      * @param mapper
@@ -502,9 +502,9 @@ public abstract class Signal<T> {
      * operation instance. The result of the operation will be set based on
      * whether the transaction was successfully committed once the status is
      * confirmed.
-     * 
+     *
      * @see #runInTransaction(Runnable)
-     * 
+     *
      * @param <T>
      *            the type returned by the supplier
      * @param transactionTask
@@ -527,9 +527,9 @@ public abstract class Signal<T> {
      * <p>
      * The result of the operation will be set based on whether the transaction
      * was successfully committed once the status is confirmed.
-     * 
+     *
      * @see #runInTransaction(Supplier)
-     * 
+     *
      * @param transactionTask
      *            the runnable to run, not <code>null</code>
      * @return a transaction operation containing the supplier return value and
@@ -571,7 +571,7 @@ public abstract class Signal<T> {
      * are read within the supplier. This has the same effect as {@link #peek()}
      * but is effective for an entire code block rather than just a single
      * invocation.
-     * 
+     *
      * @param <T>
      *            the supplier type
      * @param task

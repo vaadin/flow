@@ -25,7 +25,7 @@ public class NumberSignal extends ValueSignal<Double> {
     /**
      * Creates a new number signal with the given value. The signal does not
      * support clustering.
-     * 
+     *
      * @param initialValue
      *            the initial value
      */
@@ -36,7 +36,7 @@ public class NumberSignal extends ValueSignal<Double> {
     /**
      * Creates a new number signal instance with the given id and validator for
      * the given signal tree.
-     * 
+     *
      * @param tree
      *            the signal tree that contains the value for this signal, not
      *            <code>null</code>
@@ -56,8 +56,8 @@ public class NumberSignal extends ValueSignal<Double> {
      * The value is decremented if the delta is negative. The result of the
      * returned operation will be resolved with the update value at the time
      * when this operation was confirmed.
-     * 
-     * 
+     *
+     *
      * @param delta
      *            the increment amount
      * @return an operation containing the the eventual result
@@ -84,7 +84,7 @@ public class NumberSignal extends ValueSignal<Double> {
      * Gets the value of this signal as an integer. This method works in the
      * same way was {@link #value()} with regards to transactions and dependency
      * tracking.
-     * 
+     *
      * @return the signal value as an integer
      */
     public int valueAsInt() {
@@ -94,7 +94,7 @@ public class NumberSignal extends ValueSignal<Double> {
     /**
      * Sets the value of this signal as an integer. This method works in the
      * same way was {@link #value(Double)} with regards to transactions.
-     * 
+     *
      * @param value
      *            the integer value to set
      * @return an operation containing the the eventual result
@@ -113,7 +113,7 @@ public class NumberSignal extends ValueSignal<Double> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @param validator
      *            the validator to use, not <code>null</code>
      * @return a new number signal that uses the validator, not
@@ -128,7 +128,7 @@ public class NumberSignal extends ValueSignal<Double> {
      * <p>
      * This signal will keep its current configuration and changes applied
      * through this instance will be visible through the wrapped instance.
-     * 
+     *
      * @return the new readonly number signal, not <code>null</code>
      */
     public NumberSignal asReadonly() {
@@ -140,7 +140,7 @@ public class NumberSignal extends ValueSignal<Double> {
      * passed the value of this signal. If the mapper function accesses other
      * signal values, then the computed signal will also depend on those
      * signals.
-     * 
+     *
      * @param <C>
      *            the computed signal type
      * @param mapper
