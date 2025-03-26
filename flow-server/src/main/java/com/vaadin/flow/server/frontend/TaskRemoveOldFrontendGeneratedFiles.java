@@ -125,12 +125,12 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
     }
 
     private Predicate<Path> isKnownUnhandledFile() {
-        Path flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendFolder).toPath()
-                .toAbsolutePath();
-        Path flowGeneratedWebComponentImports = FrontendUtils
+        Path flowGeneratedImports = normalizePath(
+                FrontendUtils.getFlowGeneratedImports(frontendFolder).toPath()
+                        .toAbsolutePath());
+        Path flowGeneratedWebComponentImports = normalizePath(FrontendUtils
                 .getFlowGeneratedWebComponentsImports(frontendFolder).toPath()
-                .toAbsolutePath();
+                .toAbsolutePath());
         Set<Path> knownFiles = new HashSet<>();
         knownFiles.add(flowGeneratedImports);
         knownFiles.add(flowGeneratedWebComponentImports);
