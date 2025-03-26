@@ -15,11 +15,15 @@
  */
 package com.vaadin.gradle
 
-import com.vaadin.flow.plugin.base.BuildFrontendUtil
+import java.io.File
+import java.io.Serializable
+import javax.inject.Inject
 import com.vaadin.flow.internal.StringUtil
+import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
+import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import com.vaadin.flow.server.frontend.installer.NodeInstaller
 import com.vaadin.flow.server.frontend.installer.Platform
@@ -27,12 +31,11 @@ import groovy.lang.Closure
 import groovy.lang.DelegatesTo
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import java.io.File
-import java.nio.charset.StandardCharsets
-import javax.inject.Inject
+import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
@@ -323,6 +326,29 @@ public class PluginEffectiveConfiguration(
     public val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
 
+    public val dependencyScope: Property<String> = extension.dependencyScope
+        .convention(sourceSetName.map {
+            if (it == "main") {
+                "runtimeClasspath"
+            } else {
+                "${it}RuntimeClasspath"
+            }
+        })
+
+
+    internal val hillaAvailable: Provider<Boolean> =
+        project.configurations.getByName(dependencyScope.get())
+            .incoming.artifacts.resolvedArtifacts
+            .map { result ->
+                result.filter {
+                    it.id is ModuleComponentArtifactIdentifier && it.id.componentIdentifier is ModuleComponentIdentifier
+                }.map {
+                    (it.id.componentIdentifier as ModuleComponentIdentifier).moduleIdentifier
+                }.any {
+                    it.group == "com.vaadin" && it.name == "hilla-endpoint"
+                }
+            }
+
     public val webpackOutputDirectory: Provider<File> = extension.webpackOutputDirectory
         .convention(sourceSetName.map { File(project.getBuildResourcesDir(it), Constants.VAADIN_WEBAPP_RESOURCES) })
 
@@ -331,6 +357,17 @@ public class PluginEffectiveConfiguration(
 
     public val frontendDirectory: Provider<File> = extension.frontendDirectory
         .convention(File(project.projectDir, FrontendUtils.DEFAULT_FRONTEND_DIR))
+
+    // Replacement for BuildFrontendUtil.getFrontendDirectory(adapter)
+    // to avoid circular dependencies between PluginEffectiveConfiguration
+    // and GradlePluginAdapter
+    public val effectiveFrontendDirectory: Provider<File> =
+        npmFolder.zip(frontendDirectory) { npmFolder, frontendDirectory ->
+            FrontendUtils.getLegacyFrontendFolderIfExists(
+                npmFolder,
+                frontendDirectory
+            )
+        }
 
     public val generateBundle: Provider<Boolean> = extension.generateBundle
         .convention(true)
@@ -401,15 +438,6 @@ public class PluginEffectiveConfiguration(
 
     public val classpathFilter: ClasspathFilter = extension.classpathFilter
 
-    public val dependencyScope: Property<String> = extension.dependencyScope
-        .convention(sourceSetName.map {
-            if (it == "main") {
-                "runtimeClasspath"
-            } else {
-                "${it}RuntimeClasspath"
-            }
-        })
-
     public val processResourcesTaskName: Property<String> = extension.processResourcesTaskName
         .convention(sourceSetName.map {
             if (it == "main") {
@@ -419,9 +447,17 @@ public class PluginEffectiveConfiguration(
             }
         })
 
-    public val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
-        .convention(FrontendUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(GradlePluginAdapter(project, this, true))))
-        .overrideWithSystemPropertyFlag(InitParameters.FRONTEND_HOTDEPLOY)
+    public val frontendHotdeploy: Provider<Boolean> =
+        extension.frontendHotdeploy
+            .convention(
+                effectiveFrontendDirectory.zip(
+                    hillaAvailable
+                ) { frontendDirectory, hasHilla ->
+                    hasHilla &&
+                            FrontendUtils.isHillaViewsUsed(frontendDirectory)
+                }
+            )
+            .overrideWithSystemPropertyFlag(InitParameters.FRONTEND_HOTDEPLOY)
 
     public val ciBuild: Provider<Boolean> = extension.ciBuild
         .convention(false)
