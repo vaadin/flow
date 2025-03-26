@@ -5,35 +5,30 @@ import org.openrewrite.NlsRewrite.DisplayName;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.JavadocVisitor;
 import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.J.Annotation;
-import org.openrewrite.java.tree.J.ClassDeclaration;
-import org.openrewrite.java.tree.J.Identifier;
 import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.Javadoc.Author;
+import org.openrewrite.java.tree.Javadoc.DocComment;
+import org.openrewrite.java.tree.Javadoc.See;
+import org.openrewrite.java.tree.Javadoc.Since;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Javadoc;
 import org.openrewrite.java.tree.Space;
@@ -75,8 +70,7 @@ public class FixMissingJavadocsForNewMethods extends Recipe {
     private void parseReportFile(String pathToReportFile) throws IOException {
         for (String line : Files.readAllLines(Paths.get(pathToReportFile))) {
 
-            // signatures can be quite complex, i.e., new: method java.lang.Class<? extends
-            // com.vaadin.flow.router.RouterLayout>
+            // signatures can be quite complex, i.e., new: method java.lang.Class<? extends com.vaadin.flow.router.RouterLayout>
             // com.vaadin.flow.server.RouteRegistry::getLayout(java.lang.String)
             // TODO 'manual' type erasure -> remove generics
             Matcher matcher = pattern.matcher(line);
@@ -104,16 +98,13 @@ public class FixMissingJavadocsForNewMethods extends Recipe {
     }
 
     @Override
-    public boolean causesAnotherCycle() {
-        return false;
-    }
-
-    @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
 
+
             @Override
             public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, ExecutionContext p) {
+                var md = super.visitMethodDeclaration(method, p);
 
                 var classDeclaration = getCursor().firstEnclosing(J.ClassDeclaration.class);
                 if (classDeclaration.getType() instanceof JavaType.FullyQualified) {
@@ -121,24 +112,38 @@ public class FixMissingJavadocsForNewMethods extends Recipe {
                     var methods = classToMethodNames.get(fqn);
                     if (!methods.isEmpty()) {
                         if (methods.contains(method.getSimpleName())) {
-
-                            // TextComment textComment = new TextComment(false, "Gangnam style", " ", Markers.EMPTY);
-                            // return method.withComments(List.of(textComment));
-
-                            // add @since tag
-                            // method.getComments().stream().anyMatch(Javadoc.DocComment.class::isInstance);
-                            // List<Annotation> annotations = new ArrayList<>();
-                            // // new Annotation(null, Space.EMPTY, Markers.EMPTY, J.Identifier.build("Y U NO WORK") , null)
-                            // return method.withLeadingAnnotations( annotations );
+                            if(md.getComments().isEmpty()){
+                                Javadoc.See see = new See(UUID.randomUUID(), Markers.EMPTY, null, method, null, null);
+                                DocComment doc = new DocComment(UUID.randomUUID(), Markers.EMPTY, List.of(see), md.getPrefix().getWhitespace());
+                                return md.withComments(List.of(doc));
+                            }
+                            //make sure we don't add '@version' twice
+                            if (!md.getComments().stream().anyMatch(c -> c.toString().contains("foobar"))) {
+                                TextComment textComment = new TextComment(true, "foobar",
+                                        md.getPrefix().getWhitespace(), Markers.EMPTY);
+                                return md.withComments(ListUtils.concat(md.getComments(), textComment));
+                            }
                         }
 
                     }
                 }
                 
-                return super.visitMethodDeclaration(method, p);
+                return md;
             }
 
         };
+
+    }
+        
+
+    class AddJavadocVisitor extends JavadocVisitor<ExecutionContext> {
+
+        public AddJavadocVisitor() {
+            super(new JavaIsoVisitor<>());
+        }
+
+
+
     }
 
 }
