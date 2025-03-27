@@ -160,6 +160,7 @@ public abstract class AbstractNavigationStateRenderer
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
+        // Always clear partial chain on navigation handling start.
         partialChain = null;
         ui.getInternals().setLocationForRefresh(event.getLocation());
 
@@ -279,9 +280,9 @@ public abstract class AbstractNavigationStateRenderer
             }
             chain.addAll(maybeChain.get());
 
-            // I partialMatch is set to true check if the cache contains a chain
-            // and possibly request extended details to get window name to
-            // select cached chain.
+            // If partialMatch is set to true check if the cache contains a
+            // chain and possibly request extended details to get window name
+            // to select cached chain.
             if (chain.isEmpty() && isPreservePartialTarget(
                     navigationState.getNavigationTarget(), routeLayoutTypes)) {
                 UI ui = event.getUI();
@@ -302,8 +303,8 @@ public abstract class AbstractNavigationStateRenderer
                                     .getWindowName());
                     if (partialChain != null) {
                         disconnectElements(partialChain, ui);
-                        // Remove all router layout contents as parts will be
-                        // only reused.
+                        // Remove all router layout contents as parts are
+                        // reused and there is no old chain to remove against.
                         for (int i = 0; i < partialChain.size() - 1; i++) {
                             HasElement child = partialChain.get(i);
                             RouterLayout parent = (RouterLayout) partialChain
@@ -1172,6 +1173,15 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
+    /**
+     * Get a preserved chain by window name only ignoring location path.
+     *
+     * @param session
+     *            current session
+     * @param windowName
+     *            window name to get cached view stack for
+     * @return view stack cache if available for window name
+     */
     static List<HasElement> getWindowPreservedChain(VaadinSession session,
             String windowName) {
         final PreservedComponentCache cache = session
