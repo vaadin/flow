@@ -90,6 +90,8 @@ public abstract class AbstractNavigationStateRenderer
 
     private LocationChangeEvent locationChangeEvent = null;
 
+    private List<HasElement> partialChain;
+
     /**
      * Creates a new renderer for the given navigation state.
      *
@@ -129,7 +131,7 @@ public abstract class AbstractNavigationStateRenderer
      */
     @SuppressWarnings("unchecked")
     // Non-private for testing purposes
-    static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
+    <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
             NavigationEvent event, boolean lastElement) {
         UI ui = event.getUI();
         Instantiator instantiator = Instantiator.get(ui);
@@ -143,6 +145,14 @@ public abstract class AbstractNavigationStateRenderer
                                 .getApplicationClass(component)
                                 .equals(routeTargetType))
                         .findAny();
+        if (currentInstance.isEmpty() && !forceInstantiation
+                && partialChain != null) {
+            currentInstance = partialChain.stream()
+                    .filter(component -> instantiator
+                            .getApplicationClass(component)
+                            .equals(routeTargetType))
+                    .findAny();
+        }
         return (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
     }
@@ -150,6 +160,7 @@ public abstract class AbstractNavigationStateRenderer
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
+        partialChain = null;
         ui.getInternals().setLocationForRefresh(event.getLocation());
 
         final Class<? extends Component> routeTargetType = navigationState
@@ -267,6 +278,41 @@ public abstract class AbstractNavigationStateRenderer
                 return true;
             }
             chain.addAll(maybeChain.get());
+
+            // I partialMatch is set to true check if the cache contains a chain
+            // and possibly request extended details to get window name to
+            // select cached chain.
+            if (chain.isEmpty() && isPreservePartialTarget(
+                    navigationState.getNavigationTarget(), routeLayoutTypes)) {
+                UI ui = event.getUI();
+                if (ui.getInternals().getExtendedClientDetails() == null) {
+                    PreservedComponentCache cache = ui.getSession()
+                            .getAttribute(PreservedComponentCache.class);
+                    if (cache != null && !cache.isEmpty()) {
+                        // As there is a cached chain we get the client details
+                        // to get the window name so we can determine if the
+                        // cache contains a chain for us to use.
+                        ui.getPage().retrieveExtendedClientDetails(
+                                details -> handle(event));
+                        return true;
+                    }
+                } else {
+                    partialChain = getWindowPreservedChain(ui.getSession(),
+                            ui.getInternals().getExtendedClientDetails()
+                                    .getWindowName());
+                    if (partialChain != null) {
+                        disconnectElements(partialChain, ui);
+                        // Remove all router layout contents as parts will be
+                        // only reused.
+                        for (int i = 0; i < partialChain.size() - 1; i++) {
+                            HasElement child = partialChain.get(i);
+                            RouterLayout parent = (RouterLayout) partialChain
+                                    .get(i + 1);
+                            parent.removeRouterLayoutContent(child);
+                        }
+                    }
+                }
+            }
         } else {
             // Create an empty chain which gets populated later in
             // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
@@ -966,29 +1012,33 @@ public abstract class AbstractNavigationStateRenderer
             if (maybePreserved.isPresent()) {
                 // Re-use preserved chain for this route
                 ArrayList<HasElement> chain = maybePreserved.get();
-                final HasElement root = chain.get(chain.size() - 1);
-                final Component component = (Component) chain.get(0);
-                final Optional<UI> maybePrevUI = component.getUI();
-
-                if (maybePrevUI.isPresent() && maybePrevUI.get().equals(ui)) {
-                    return Optional.of(chain);
-                }
-
-                // Remove the top-level component from the tree
-                root.getElement().removeFromTree(false);
-
-                // Transfer all remaining UI child elements (typically dialogs
-                // and notifications) to the new UI
-                maybePrevUI.ifPresent(prevUi -> {
-                    ui.getInternals().moveElementsFrom(prevUi);
-                    prevUi.close();
-                });
+                disconnectElements(chain, ui);
 
                 return Optional.of(chain);
             }
         }
 
         return Optional.of(new ArrayList<>(0));
+    }
+
+    private static void disconnectElements(List<HasElement> chain, UI ui) {
+        final HasElement root = chain.get(chain.size() - 1);
+        final Component component = (Component) chain.get(0);
+        final Optional<UI> maybePrevUI = component.getUI();
+
+        if (maybePrevUI.isPresent() && maybePrevUI.get().equals(ui)) {
+            return;
+        }
+
+        // Remove the top-level component from the tree
+        root.getElement().removeFromTree(false);
+
+        // Transfer all remaining UI child elements (typically dialogs
+        // and notifications) to the new UI
+        maybePrevUI.ifPresent(prevUi -> {
+            ui.getInternals().moveElementsFrom(prevUi);
+            prevUi.close();
+        });
     }
 
     /**
@@ -1079,6 +1129,18 @@ public abstract class AbstractNavigationStateRenderer
                         .isAnnotationPresent(PreserveOnRefresh.class));
     }
 
+    private static boolean isPreservePartialTarget(
+            Class<? extends Component> routeTargetType,
+            List<Class<? extends RouterLayout>> routeLayoutTypes) {
+        return (routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)
+                && routeTargetType.getAnnotation(PreserveOnRefresh.class)
+                        .partialMatch())
+                || routeLayoutTypes.stream().anyMatch(layoutType -> layoutType
+                        .isAnnotationPresent(PreserveOnRefresh.class)
+                        && layoutType.getAnnotation(PreserveOnRefresh.class)
+                                .partialMatch());
+    }
+
     // maps window.name to (location, chain)
     private static class PreservedComponentCache
             extends HashMap<String, Pair<String, ArrayList<HasElement>>> {
@@ -1107,6 +1169,17 @@ public abstract class AbstractNavigationStateRenderer
             return Optional.of(cache.get(windowName).getSecond());
         } else {
             return Optional.empty();
+        }
+    }
+
+    static List<HasElement> getWindowPreservedChain(VaadinSession session,
+            String windowName) {
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && cache.containsKey(windowName)) {
+            return cache.get(windowName).getSecond();
+        } else {
+            return null;
         }
     }
 
