@@ -409,7 +409,6 @@ public final class Reflector {
                 }
             }
         }
-        // return new ReflectorClassLoader(urls.toArray(new URL[0]),
         return new ReflectorClassLoader(urls.toArray(new URL[0]),
                 filteredUrls.toArray(new URL[0]), mavenApiClassLoader);
     }

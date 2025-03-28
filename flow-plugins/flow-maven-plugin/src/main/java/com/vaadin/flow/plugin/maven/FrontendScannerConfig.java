@@ -89,6 +89,11 @@ public class FrontendScannerConfig {
 
     /**
      * Sets if the output directory should be included in the scan.
+     * <p>
+     * </p>
+     * Can be turned on to make scanning faster if the maven module itself does
+     * not have classes referencing frontend resources or Vaadin components or
+     * add-ons.
      *
      * @param includeOutputDirectory
      *            {@code true} to scan output directory, otherwise
@@ -116,7 +121,7 @@ public class FrontendScannerConfig {
      * @return the list of artifact exclusions.
      */
     public List<ArtifactMatcher> getExcludes() {
-        return excludes;
+        return List.copyOf(excludes);
     }
 
     /**
@@ -137,7 +142,7 @@ public class FrontendScannerConfig {
      * @return the list of artifact inclusions.
      */
     public List<ArtifactMatcher> getIncludes() {
-        return includes;
+        return List.copyOf(includes);
     }
 
     /**
@@ -358,8 +363,11 @@ public class FrontendScannerConfig {
 
         private static void validatePattern(String pattern) {
             if (pattern != null) {
+                long wildcards = pattern.chars().filter(c -> c == '*').count();
                 int idx = pattern.indexOf('*');
-                if (idx > 0 && idx < pattern.length() - 2) {
+                int lastIdx = pattern.lastIndexOf('*');
+                if (wildcards > 2 || (idx > 0 && idx < pattern.length() - 1)
+                        || (lastIdx > 0 && lastIdx < pattern.length() - 1)) {
                     throw new IllegalArgumentException("Invalid pattern: '"
                             + pattern
                             + "'. * can be only at the begin and the end of the pattern");

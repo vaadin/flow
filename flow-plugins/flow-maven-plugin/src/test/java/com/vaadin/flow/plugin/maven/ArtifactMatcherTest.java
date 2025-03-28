@@ -38,6 +38,16 @@ public class ArtifactMatcherTest {
                 () -> matcher.setGroupId("com.*.vaadin"));
         Assert.assertThrows(IllegalArgumentException.class,
                 () -> matcher.setGroupId("c*.vaadi*n"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("*.vaa*din.*"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("*.vaa*din"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("**.vaadin"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("com.vaa*din*"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("com.vaadi**"));
     }
 
     @Test
@@ -54,6 +64,16 @@ public class ArtifactMatcherTest {
                 () -> matcher.setGroupId("va*din"));
         Assert.assertThrows(IllegalArgumentException.class,
                 () -> matcher.setGroupId("v*di*n"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("v*d*i*n"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("*di*n"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("**din"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("vadi**"));
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> matcher.setGroupId("vadi*n*"));
     }
 
     @Test
