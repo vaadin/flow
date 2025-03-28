@@ -45,4 +45,14 @@ import java.lang.annotation.Target;
 @Inherited
 @Documented
 public @interface PreserveOnRefresh {
+
+    /**
+     * Set to true if refresh should also reuse partial chain components of
+     * stored view chain.
+     * <p>
+     * default false.
+     *
+     * @return {@code true} if partial chain match should be checked and used
+     */
+    boolean partialMatch() default false;
 }
