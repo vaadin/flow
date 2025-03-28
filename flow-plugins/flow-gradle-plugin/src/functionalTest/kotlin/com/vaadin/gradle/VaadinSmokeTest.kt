@@ -16,19 +16,22 @@
 package com.vaadin.gradle
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import kotlin.io.path.div
+import kotlin.io.path.writeText
 import kotlin.test.assertContains
 import kotlin.test.expect
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendUtils
+import com.fasterxml.jackson.databind.JsonNode
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Test
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 
 /**
@@ -495,6 +498,114 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 )
             }
         }
+    }
+
+    // When Hilla is detected, frontend hot deploy should be automatically
+    // enabled and as a consequence prepare frontend task should create react
+    // related files
+    @Test
+    fun vaadinPrepareFrontend_hillaAvailable_frontendHotDeployEnabled() {
+        // Setup a project local maven repo to simulate the presence of Hilla
+        val fakeHillaVersion = "0.0.0.localtest";
+        val projectLocalMavenRepo = testProject.newFolder("libs").absoluteFile
+        val hillaEndpointFolder =
+            projectLocalMavenRepo.toPath() / "com" / "vaadin" / "hilla-endpoint" / fakeHillaVersion
+        Files.createDirectories(hillaEndpointFolder)
+
+        // hilla-endpoint-stub.jar contains only stub for com.vaadin.hilla.EndpointController.class
+        val hillaEndpointJar =
+            hillaEndpointFolder / "hilla-endpoint-${fakeHillaVersion}.jar"
+        Files.copy(
+            File(javaClass.classLoader.getResource("hilla-endpoint-stub.jar").path).toPath(),
+            hillaEndpointJar, StandardCopyOption.REPLACE_EXISTING
+        )
+        val hillaEndpointPom =
+            hillaEndpointFolder / "hilla-endpoint-${fakeHillaVersion}.pom"
+        hillaEndpointPom.writeText(
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+                xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>hilla-endpoint</artifactId>
+                <version>${fakeHillaVersion}</version>
+                <name>Fake Hilla Endpoint</name>
+            </project>
+            """.trimIndent()
+        )
+        enableHilla()
+
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                maven {
+                    url = '${projectLocalMavenRepo.toURI().toURL()}'
+                }
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                flatDir {
+                   dirs("libs")
+                }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:hilla-endpoint:${fakeHillaVersion}")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+            }
+        """.trimIndent()
+        )
+
+        val flowTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "flow/Flow.tsx"
+        )
+        val vaadinReactTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "vaadin-react.tsx"
+        )
+
+        testProject.build("vaadinPrepareFrontend")
+        expect(
+            true,
+            "Expected Flow.tsx to be created when Hilla is available"
+        ) { flowTsx.exists() }
+        expect(
+            true,
+            "Expected vaadin-react.tsx to be created when Hilla is available"
+        ) { vaadinReactTsx.exists() }
+    }
+
+    // When Hilla is not available, frontend hot deploy should not be enabled
+    // by default and react related files should not be created
+    @Test
+    fun vaadinPrepareFrontend_hillaNotAvailable_frontendHotDeployNotEnabled() {
+        val flowTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "flow/Flow.tsx"
+        )
+        val vaadinReactTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "vaadin-react.tsx"
+        )
+
+        testProject.build("vaadinPrepareFrontend")
+        expect(
+            false,
+            "Expected Flow.tsx not to be created when Hilla is not available"
+        ) { flowTsx.exists() }
+        expect(
+            false,
+            "Expected vaadin-react.tsx not to be created when Hilla is not available"
+        ) { vaadinReactTsx.exists() }
     }
 
     private fun enableHilla() {
