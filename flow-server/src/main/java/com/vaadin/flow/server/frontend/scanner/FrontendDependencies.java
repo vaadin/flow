@@ -158,7 +158,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents,
             FeatureFlags featureFlags) {
-        this(finder, generateEmbeddableWebComponents, null, true);
+        this(finder, generateEmbeddableWebComponents, featureFlags, true);
     }
 
     public FrontendDependencies(ClassFinder finder,
@@ -916,7 +916,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // factories. This is the reason of having just a blacklist of some
         // common name-spaces that would not have components.
         // We also exclude Feature-Flag classes
-        return className != null && !isExperimental(className)
+        return className != null && getFinder().shouldInspectClass(className)
+                && !isDisabledExperimentalClass(className)
                 && !NOT_VISITABLE_CLASS_PATTERN.matcher(className).matches();
     }
 
