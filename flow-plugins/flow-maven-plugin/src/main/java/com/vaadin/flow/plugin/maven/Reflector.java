@@ -18,6 +18,11 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -30,15 +35,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.internal.JsonEncodingException;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
@@ -57,6 +70,7 @@ public final class Reflector {
     private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
             "org.reflections:reflections:jar",
             "org.zeroturnaround:zt-exec:jar");
+    private static final Logger log = LoggerFactory.getLogger(Reflector.class);
 
     private final URLClassLoader isolatedClassLoader;
     private List<String> dependenciesIncompatibility;
@@ -68,7 +82,7 @@ public final class Reflector {
      * @param isolatedClassLoader
      *            class loader to be used to create mojo instances.
      */
-    public Reflector(URLClassLoader isolatedClassLoader) {
+    Reflector(URLClassLoader isolatedClassLoader) {
         this.isolatedClassLoader = isolatedClassLoader;
     }
 
@@ -167,8 +181,7 @@ public final class Reflector {
     /**
      * Creates a copy of the given Flow mojo, loading classes the isolated
      * classloader.
-     * <p>
-     * </p>
+     *
      * Loads the given mojo class from the isolated class loader and then
      * creates a new instance for it and fills all field copying values from the
      * original mojo. The input mojo must have a public no-args constructor.
@@ -207,13 +220,15 @@ public final class Reflector {
      *            the maven project.
      * @param mojoExecution
      *            the current mojo execution.
+     * @param scannerConfig
+     *            the frontend scanner filtering configuration.
      * @return a Reflector instance for the current maven execution.
      */
     public static Reflector of(MavenProject project,
-            MojoExecution mojoExecution) {
+            MojoExecution mojoExecution, FrontendScannerConfig scannerConfig) {
         List<String> dependenciesIncompatibility = new ArrayList<>();
-        URLClassLoader classLoader = createIsolatedClassLoader(project,
-                mojoExecution, dependenciesIncompatibility);
+        ReflectorClassLoader classLoader = createIsolatedClassLoader(project,
+                mojoExecution, scannerConfig, dependenciesIncompatibility);
         Reflector reflector = new Reflector(classLoader);
         reflector.dependenciesIncompatibility = dependenciesIncompatibility;
         return reflector;
@@ -239,46 +254,71 @@ public final class Reflector {
         if (classFinder == null) {
             Class<?> classFinderImplClass = loadClass(
                     ReflectionsClassFinder.class.getName());
+            URL[] scanURLs = ReflectTools
+                    .getGetter(isolatedClassLoader.getClass(), "urlsToScan")
+                    .map(m -> {
+                        try {
+                            return (URL[]) m.invoke(isolatedClassLoader);
+                        } catch (Exception e) {
+                            log.debug(
+                                    "Cannot get scan URLs from Reflector classloader. Fallback to full URL set.");
+                        }
+                        return null;
+                    }).orElseGet(isolatedClassLoader::getURLs);
             classFinder = classFinderImplClass
-                    .getConstructor(ClassLoader.class, URL[].class).newInstance(
-                            isolatedClassLoader, isolatedClassLoader.getURLs());
+                    .getConstructor(ClassLoader.class, URL[].class)
+                    .newInstance(isolatedClassLoader, scanURLs);
         }
         return classFinder;
     }
 
-    private static URLClassLoader createIsolatedClassLoader(
+    private static ReflectorClassLoader createIsolatedClassLoader(
             MavenProject project, MojoExecution mojoExecution,
+            FrontendScannerConfig scannerConfig,
             List<String> dependenciesIncompatibility) {
         List<URL> urls = new ArrayList<>();
+        List<URL> filteredUrls = new ArrayList<>();
         String outputDirectory = project.getBuild().getOutputDirectory();
         if (outputDirectory != null) {
-            urls.add(FlowFileUtils.convertToUrl(new File(outputDirectory)));
+            URL outputDirURL = FlowFileUtils
+                    .convertToUrl(new File(outputDirectory));
+            urls.add(outputDirURL);
+            if (scannerConfig == null
+                    || scannerConfig.isIncludeOutputDirectory()) {
+                filteredUrls.add(outputDirURL);
+            }
         }
-
         Function<Artifact, String> keyMapper = artifact -> artifact.getGroupId()
                 + ":" + artifact.getArtifactId() + ":" + artifact.getType()
                 + ((artifact.getClassifier() != null)
                         ? ":" + artifact.getClassifier()
                         : "");
 
-        Map<String, Artifact> projectDependencies = new HashMap<>(project
-                .getArtifacts().stream()
-                // Exclude all maven artifacts to prevent class loading clash
-                // with maven.api class realm
-                .filter(artifact -> !DEPENDENCIES_GROUP_EXCLUSIONS
-                        .contains(artifact.getGroupId()))
-                .filter(artifact -> artifact.getFile() != null
-                        && artifact.getArtifactHandler().isAddedToClasspath()
-                        && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
-                                || Artifact.SCOPE_RUNTIME
-                                        .equals(artifact.getScope())
-                                || Artifact.SCOPE_SYSTEM
-                                        .equals(artifact.getScope())
-                                || (Artifact.SCOPE_PROVIDED
-                                        .equals(artifact.getScope())
-                                        && artifact.getFile().getPath().matches(
-                                                INCLUDE_FROM_COMPILE_DEPS_REGEX))))
-                .collect(Collectors.toMap(keyMapper, Function.identity())));
+        if (scannerConfig != null && scannerConfig.isEnabled()) {
+            log.debug("Frontend scanner configuration enabled: {}",
+                    scannerConfig);
+        }
+        Predicate<Artifact> shouldScan = scannerConfig == null
+                ? artifact -> true
+                : FrontendScannerConfig.DEFAULT_FILTER
+                        .or(scannerConfig::shouldScan);
+
+        record FilterableArtifact(Artifact artifact, boolean scan) {
+        }
+
+        Map<String, FilterableArtifact> projectDependencies = new HashMap<>(
+                project.getArtifacts().stream()
+                        // Exclude all maven artifacts to prevent class loading
+                        // clash
+                        // with maven.api class realm
+                        .filter(artifact -> !DEPENDENCIES_GROUP_EXCLUSIONS
+                                .contains(artifact.getGroupId()))
+                        .filter(Reflector::isProductionDependency)
+                        .map(artifact -> new FilterableArtifact(artifact,
+                                shouldScan.test(artifact)))
+                        .collect(Collectors.toMap(
+                                item -> keyMapper.apply(item.artifact),
+                                Function.identity())));
 
         if (mojoExecution != null) {
 
@@ -306,11 +346,11 @@ public final class Reflector {
             // 1: dependency defined by the plugin only
             Map<Integer, List<Artifact>> potentialDuplicates = pluginDependencies
                     .stream().collect(Collectors.groupingBy(pluginArtifact -> {
-                        Artifact projectArtifact = projectDependencies
+                        FilterableArtifact projectArtifact = projectDependencies
                                 .get(keyMapper.apply(pluginArtifact));
                         if (projectArtifact == null) {
                             return 1;
-                        } else if (projectArtifact.getId()
+                        } else if (projectArtifact.artifact.getId()
                                 .equals(pluginArtifact.getId())) {
                             return 0;
                         }
@@ -323,7 +363,9 @@ public final class Reflector {
                     String key = keyMapper.apply(pluginArtifact);
                     return String.format(
                             "%s: project version [%s], plugin version [%s]",
-                            key, projectDependencies.get(key).getBaseVersion(),
+                            key,
+                            projectDependencies.get(key).artifact
+                                    .getBaseVersion(),
                             pluginArtifact.getBaseVersion());
                 }).forEach(dependenciesIncompatibility::add);
             }
@@ -331,14 +373,20 @@ public final class Reflector {
             // Add dependencies defined only by the plugin
             if (potentialDuplicates.containsKey(1)) {
                 potentialDuplicates.get(1)
-                        .forEach(artifact -> projectDependencies
-                                .put(keyMapper.apply(artifact), artifact));
+                        .forEach(artifact -> projectDependencies.put(
+                                keyMapper.apply(artifact),
+                                new FilterableArtifact(artifact, false)));
             }
         }
 
-        projectDependencies.values().stream()
-                .map(artifact -> FlowFileUtils.convertToUrl(artifact.getFile()))
-                .forEach(urls::add);
+        for (FilterableArtifact item : projectDependencies.values()) {
+            URL url = FlowFileUtils.convertToUrl(item.artifact.getFile());
+            if (item.scan) {
+                filteredUrls.add(url);
+            }
+            urls.add(url);
+        }
+
         ClassLoader mavenApiClassLoader;
         if (mojoExecution != null) {
             ClassRealm pluginClassRealm = mojoExecution.getMojoDescriptor()
@@ -361,17 +409,39 @@ public final class Reflector {
                 }
             }
         }
-        return new CombinedClassLoader(urls.toArray(new URL[0]),
-                mavenApiClassLoader);
+        return new ReflectorClassLoader(urls.toArray(new URL[0]),
+                filteredUrls.toArray(new URL[0]), mavenApiClassLoader);
     }
 
-    // Tries to load class from the give class loader and fallbacks
-    // to Platform class loader in case of failure.
-    private static class CombinedClassLoader extends URLClassLoader {
-        private final ClassLoader delegate;
+    // TODO: include also provided scope
+    private static boolean isProductionDependency(Artifact artifact) {
+        return artifact.getFile() != null
+                && artifact.getArtifactHandler().isAddedToClasspath()
+                && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
+                        || Artifact.SCOPE_RUNTIME.equals(artifact.getScope())
+                        || Artifact.SCOPE_SYSTEM.equals(artifact.getScope())
+                        || (Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+                                && artifact.getFile().getPath().matches(
+                                        INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+    }
 
-        private CombinedClassLoader(URL[] urls, ClassLoader delegate) {
+    /**
+     * A URL class loader implementation with delegation to a provided class
+     * loader and Platform class loader.
+     * <p>
+     * </p>
+     * If the class or resource cannot be resolved against the given URLs, it
+     * tries to load them from a provided class loader and lastly fallbacks to
+     * Platform class loader in case of failure.
+     */
+    static final class ReflectorClassLoader extends URLClassLoader {
+        private final ClassLoader delegate;
+        private final URL[] urlsToScan;
+
+        private ReflectorClassLoader(URL[] urls, URL[] urlsToScan,
+                ClassLoader delegate) {
             super(urls, null);
+            this.urlsToScan = urlsToScan;
             this.delegate = delegate;
         }
 
@@ -416,6 +486,15 @@ public final class Reflector {
             }
             return resources;
         }
+
+        /**
+         * Returns the search path of URLs for frontend dependency scan.
+         *
+         * @return the search path of URLs for frontend dependency scan.
+         */
+        public URL[] getUrlsToScan() {
+            return urlsToScan;
+        }
     }
 
     private void copyFields(FlowModeAbstractMojo sourceMojo, Object targetMojo)
@@ -455,20 +534,45 @@ public final class Reflector {
             throw ex;
         }
 
+        Class<?> sourceFieldType = sourceField.getType();
         Class<?> targetFieldType = targetField.getType();
-        if (!targetFieldType.isAssignableFrom(sourceField.getType())) {
-            String message = "Field " + targetFieldType.getName() + " in class "
-                    + targetClass.getName() + " of type "
-                    + targetFieldType.getName()
-                    + " is loaded from different class loaders."
-                    + " Source class loader: "
-                    + sourceField.getType().getClassLoader()
-                    + ", Target class loader: "
-                    + targetFieldType.getClassLoader()
-                    + ". This is likely a bug in the Vaadin Maven plugin."
-                    + " Please, report the error on the issue tracker.";
-            sourceMojo.logError(message);
-            throw new NoSuchFieldException(message);
+        if (!targetFieldType.isAssignableFrom(sourceFieldType)) {
+            if (sourceField.isAnnotationPresent(Cloneable.class)
+                    || sourceFieldType.isAnnotationPresent(Cloneable.class)) {
+                try {
+                    value = cloneWithTargetClassloader(value, targetFieldType);
+                } catch (JsonEncodingException | JsonDecodingException e) {
+                    String message = "Field " + targetField.getName()
+                            + " in class " + targetClass.getName() + " of type "
+                            + targetFieldType.getName()
+                            + " is loaded from different class loaders. "
+                            + " Source class is annotated with @"
+                            + Cloneable.class.getName() + " but the JSON "
+                            + ((e instanceof JsonEncodingException) ? "encoding"
+                                    : "decoding")
+                            + " operation failed. Source class loader: "
+                            + sourceFieldType.getClassLoader()
+                            + ", Target class loader: "
+                            + targetFieldType.getClassLoader()
+                            + ". This is likely a bug in the Vaadin Maven plugin."
+                            + " Please, report the error on the issue tracker.";
+                    sourceMojo.logError(message);
+                    throw e;
+                }
+            } else {
+                String message = "Field " + targetField.getName() + " in class "
+                        + targetClass.getName() + " of type "
+                        + targetFieldType.getName()
+                        + " is loaded from different class loaders."
+                        + " Source class loader: "
+                        + sourceFieldType.getClassLoader()
+                        + ", Target class loader: "
+                        + targetFieldType.getClassLoader()
+                        + ". This is likely a bug in the Vaadin Maven plugin."
+                        + " Please, report the error on the issue tracker.";
+                sourceMojo.logError(message);
+                throw new NoSuchFieldException(message);
+            }
         }
         targetField.setAccessible(true);
         targetField.set(targetMojo, value);
@@ -484,6 +588,43 @@ public final class Reflector {
             }
         }
         throw new NoSuchFieldException(fieldName);
+    }
+
+    /*
+     * To simplify "transferring" Mojo configuration instances from one
+     * classloader to another, the easiest and safest way is to serialize them
+     * to JSON and deserialized into the target classloader.
+     */
+    private static Object cloneWithTargetClassloader(Object source,
+            Class<?> targetClass)
+            throws JsonEncodingException, JsonDecodingException {
+        ObjectMapper mapper = JacksonUtils.getMapper();
+        String json;
+        try {
+            json = mapper.writeValueAsString(source);
+        } catch (JsonProcessingException e) {
+            throw new JsonEncodingException("Cannot encode "
+                    + targetClass.getName() + " object to JSON", e);
+        }
+        try {
+            return mapper.readValue(json, targetClass);
+        } catch (JsonProcessingException e) {
+            throw new JsonDecodingException("Cannot decode JSON to "
+                    + targetClass.getName() + " object", e);
+        }
+    }
+
+    /**
+     * Marks a type as cloneable by Reflector into a different classloader.
+     * <p>
+     * </p>
+     * Annotated class must be serializable and deserializable into JSON.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.TYPE, ElementType.FIELD })
+    @Documented
+    public @interface Cloneable {
+
     }
 
 }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import javax.inject.Inject;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -290,6 +291,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
     private boolean frontendIgnoreVersionChecks;
 
+    /**
+     * Allows to fine tune frontend resources detection by defining which
+     * artifacts should be included or excluded during the class scanning
+     * process.
+     */
+    @Parameter
+    private FrontendScannerConfig frontendScanner;
+
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     private ClassFinder classFinder;
 
@@ -421,7 +430,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return true if Hilla is available, false otherwise
      */
     public static boolean isHillaAvailable(MavenProject mavenProject) {
-        return Reflector.of(mavenProject, null).getResource(
+        return Reflector.of(mavenProject, null, null).getResource(
                 "com/vaadin/hilla/EndpointController.class") != null;
     }
 
@@ -770,7 +779,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     + " and phase " + mojoExecution.getLifecyclePhase());
             return Reflector.adapt(pluginContext.get(reflectorKey));
         }
-        Reflector reflector = Reflector.of(project, mojoExecution);
+        Reflector reflector = Reflector.of(project, mojoExecution,
+                frontendScanner);
         if (pluginContext != null) {
             pluginContext.put(reflectorKey, reflector);
             getLog().debug("Cached Reflector for plugin " + pluginKey
