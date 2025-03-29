@@ -17,7 +17,7 @@
     "@babel/preset-react": "7.26.3",
     "rollup-plugin-visualizer": "5.14.0",
     "rollup-plugin-brotli": "3.1.0",
-    "vite-plugin-checker": "0.8.0",
+    "vite-plugin-checker": "0.9.1",
     "workbox-build": "7.3.0",
     "transform-ast": "2.4.4"
   }
