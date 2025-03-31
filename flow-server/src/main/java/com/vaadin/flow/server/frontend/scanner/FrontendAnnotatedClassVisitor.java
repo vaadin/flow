@@ -129,8 +129,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     /**
      * Return all values of a repeated annotation parameter in the occurrence
-     * order. For instance `getValues("value")` will return 'Bar' and 'Baz'
-     * when we have the following code:
+     * order. For instance `getValues("value")` will return 'Bar' and 'Baz' when
+     * we have the following code:
      *
      * <pre>
      * <code>
