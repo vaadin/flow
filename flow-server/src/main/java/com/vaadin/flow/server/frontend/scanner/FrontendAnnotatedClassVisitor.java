@@ -128,9 +128,9 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Return all values of a repeated annotation parameter. For instance
-     * `getValues("value")` will return 'Bar' and 'Baz' when we have the
-     * following code:
+     * Return all values of a repeated annotation parameter in the occurrence
+     * order. For instance `getValues("value")` will return 'Bar' and 'Baz'
+     * when we have the following code:
      *
      * <pre>
      * <code>
@@ -144,7 +144,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *
      * @param parameter
      *            the annotation parameter used for getting values
-     * @return a set of all values found
+     * @return an ordered set of all values found
      */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getValues(String parameter) {
@@ -155,8 +155,9 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     /**
      * Return all parameter values of a repeated annotation when they share the
-     * same value for a key parameter. For example `getValuesForKey("value",
-     * "foo", "other")` will return 'aa' and 'bb' if we have the following code:
+     * same value for a key parameter in the occurrence order. For example
+     * `getValuesForKey("value", "foo", "other")` will return 'aa' and 'bb' when
+     * we have the following code:
      *
      * <pre>
      * <code>
@@ -173,7 +174,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *            the shared value
      * @param property
      *            the parameter name of the value to return
-     * @return a set of all values found
+     * @return an ordered set of all values found
      */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getValuesForKey(String key, String value,
