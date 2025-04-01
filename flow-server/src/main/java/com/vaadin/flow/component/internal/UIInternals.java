@@ -812,6 +812,7 @@ public class UIInternals implements Serializable {
      * chain is empty. If the chain contains elements the given list is ignored.
      *
      * @param layouts
+     *            router layouts to be shown after navigation
      */
     public void setRouterTargetChain(List<RouterLayout> layouts) {
         if (routerTargetChain.isEmpty()) {

@@ -150,7 +150,6 @@ public abstract class AbstractNavigationStateRenderer
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
-        // Always clear partial chain on navigation handling start.
         ui.getInternals().setLocationForRefresh(event.getLocation());
 
         final Class<? extends Component> routeTargetType = navigationState
