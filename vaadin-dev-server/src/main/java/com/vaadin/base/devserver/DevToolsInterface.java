@@ -15,6 +15,10 @@
  */
 package com.vaadin.base.devserver;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
+
 import elemental.json.JsonObject;
 
 /**
@@ -30,5 +34,18 @@ public interface DevToolsInterface {
      * @param data
      *            data, specific to the command
      */
-    void send(String command, JsonObject data);
+    @Deprecated
+    default void send(String command, JsonObject data) {
+        send(command, JacksonUtils.mapElemental(data));
+    }
+
+    /**
+     * Sends the given message to the client side.
+     *
+     * @param command
+     *            the command to send
+     * @param data
+     *            data, specific to the command
+     */
+    void send(String command, JsonNode data);
 }

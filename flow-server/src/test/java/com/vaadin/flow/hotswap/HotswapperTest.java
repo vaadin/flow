@@ -944,6 +944,92 @@ public class HotswapperTest {
     }
 
     @Test
+    public void onHotswap_pushDisabled_forcePageReload_fullReloadTriggered()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+
+        Hotswapper.forcePageReload(service, true);
+        hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload).reload();
+    }
+
+    @Test
+    public void onHotswap_pushDisabled_forcePageReloadWithSystemProperty_fullReloadTriggered()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+
+        String reload = System.getProperty(Hotswapper.FORCE_RELOAD_PROPERTY);
+        System.setProperty(Hotswapper.FORCE_RELOAD_PROPERTY, "true");
+        try {
+            hotswapper.onHotswap(new String[] { MyRoute.class.getName() },
+                    true);
+        } finally {
+            if (reload != null) {
+                System.setProperty(Hotswapper.FORCE_RELOAD_PROPERTY, reload);
+            } else {
+                System.clearProperty(Hotswapper.FORCE_RELOAD_PROPERTY);
+            }
+        }
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload).reload();
+    }
+
+    @Test
+    public void onHotswap_pushEnabled_forcePageReload_fullReloadTriggered()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+        ui.enablePush();
+
+        Hotswapper.forcePageReload(service, true);
+        hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload).reload();
+    }
+
+    @Test
+    public void onHotswap_pushEnabled_forcePageReloadWithSystemProperty_fullReloadTriggered()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+        ui.enablePush();
+
+        String reload = System.getProperty(Hotswapper.FORCE_RELOAD_PROPERTY);
+        System.setProperty(Hotswapper.FORCE_RELOAD_PROPERTY, "true");
+        try {
+            hotswapper.onHotswap(new String[] { MyRoute.class.getName() },
+                    true);
+        } finally {
+            if (reload != null) {
+                System.setProperty(Hotswapper.FORCE_RELOAD_PROPERTY, reload);
+            } else {
+                System.clearProperty(Hotswapper.FORCE_RELOAD_PROPERTY);
+            }
+        }
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload).reload();
+    }
+
+    @Test
     public void register_developmentMode_trackingListenerInstalled() {
         AtomicBoolean sessionInitInstalled = new AtomicBoolean();
         AtomicBoolean sessionDestroyInstalled = new AtomicBoolean();

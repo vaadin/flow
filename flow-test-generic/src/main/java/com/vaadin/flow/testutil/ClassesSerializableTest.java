@@ -87,7 +87,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.ExternalDependencyWatcher",
                 "com\\.vaadin\\.base\\.devserver\\.FileWatcher",
                 "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
-                "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
+                "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde.*",
                 "com\\.vaadin\\.base\\.devserver\\.RestartMonitor",
                 "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
                 "com\\.vaadin\\.base\\.devserver\\.editor..*",

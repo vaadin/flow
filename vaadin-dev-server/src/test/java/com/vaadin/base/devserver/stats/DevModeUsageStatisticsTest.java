@@ -19,7 +19,10 @@ package com.vaadin.base.devserver.stats;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.testutil.TestUtils;
 
 import com.vaadin.pro.licensechecker.MachineId;
@@ -27,8 +30,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
@@ -284,8 +285,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 project.get(StatisticsConstants.FIELD_MACHINE_ID).asText());
     }
 
-    private static JsonObject wrapStats(String data) {
-        JsonObject wrapped = Json.createObject();
+    private static JsonNode wrapStats(String data) {
+        ObjectNode wrapped = JacksonUtils.createObjectNode();
         wrapped.put("browserData", data);
         return wrapped;
     }

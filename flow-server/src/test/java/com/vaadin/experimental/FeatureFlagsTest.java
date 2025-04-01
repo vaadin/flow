@@ -136,8 +136,9 @@ public class FeatureFlagsTest {
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
         Assert.assertTrue("Feature should have been enabled",
                 featureFlags.isEnabled(FeatureFlags.EXAMPLE));
-        Assert.assertEquals(
-                "# Example feature. Will be removed once the first real feature flag is added\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
+        Assert.assertEquals(String.format(
+                "# %s\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
+                FeatureFlags.EXAMPLE.getTitle()),
                 FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8));
 

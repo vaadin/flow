@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.hotswap;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -55,8 +58,6 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.Json;
 
 /**
  * Entry point for application classes hot reloads.
@@ -85,6 +86,13 @@ import elemental.json.Json;
  * {@link VaadinHotswapper} interface.
  * <p>
  * </p>
+ * By default, Hotswapper determines the best browser page refresh strategy, but
+ * a full page reload can be forced by setting the
+ * {@code vaadin.hotswap.forcePageReload} system property. Hotswap tools can
+ * alter the behavior at runtime by calling
+ * {@link #forcePageReload(VaadinService, boolean)}
+ * <p>
+ * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
@@ -93,6 +101,14 @@ import elemental.json.Json;
  */
 public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         SessionDestroyListener, UIInitListener {
+
+    /**
+     * Configuration name for the system parameter that determines whether
+     * Hotswapper should always trigger a full page reload instead of computing
+     * an appropriate UI refresh strategy.
+     */
+    public static final String FORCE_RELOAD_PROPERTY = "vaadin.hotswap.forcePageReload";
+
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Hotswapper.class);
     private final Set<VaadinSession> sessions = ConcurrentHashMap.newKeySet();
@@ -185,7 +201,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             ResourceBundle.clearCache();
 
             // Trigger any potential Hilla translation updates
-            liveReload.sendHmrEvent("translations-update", Json.createObject());
+            liveReload.sendHmrEvent("translations-update",
+                    JacksonUtils.createObjectNode());
 
             // Trigger any potential Flow translation updates
             EnumMap<UIRefreshStrategy, List<UI>> refreshActions = new EnumMap<>(
@@ -259,9 +276,18 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 vaadinSession.getLockInstance().unlock();
             }
         }
-        EnumMap<UIRefreshStrategy, List<UI>> refreshActions = computeRefreshStrategies(
-                classes, redefined);
-        boolean uiTreeNeedsRefresh = !refreshActions.isEmpty();
+        forceBrowserReload = forceBrowserReload
+                || getForceReloadHolder(vaadinService).shouldReloadPage();
+
+        boolean uiTreeNeedsRefresh = false;
+        EnumMap<UIRefreshStrategy, List<UI>> refreshActions = null;
+
+        // When a full page reload is requested it does not make sense to
+        // compute refresh strategy
+        if (!forceBrowserReload) {
+            refreshActions = computeRefreshStrategies(classes, redefined);
+            uiTreeNeedsRefresh = !refreshActions.isEmpty();
+        }
         if (forceBrowserReload || uiTreeNeedsRefresh) {
             triggerClientUpdate(refreshActions, forceBrowserReload);
         }
@@ -447,8 +473,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             EnumMap<UIRefreshStrategy, List<UI>> uisToRefresh,
             boolean forceReload) {
 
-        boolean refreshRequested = uisToRefresh
-                .containsKey(UIRefreshStrategy.REFRESH);
+        boolean refreshRequested = !forceReload
+                && uisToRefresh.containsKey(UIRefreshStrategy.REFRESH);
 
         // If some UI has push not enabled, BrowserLiveReload should be used to
         // trigger a client update. However, BrowserLiveReload broadcasts the
@@ -546,6 +572,59 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             return Optional.of(hotswapper);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Instructs the {@link Hotswapper} if a full page reload should always be
+     * triggered instead of detecting the best UI refresh strategy.
+     *
+     * @param vaadinService
+     *            the {@link VaadinService} instance.
+     * @param forceReload
+     *            {@literal true} to always force a page reload,
+     *            {@literal false} to let the {@link Hotswapper} decide the
+     *            refresh strategy.
+     */
+    public static void forcePageReload(VaadinService vaadinService,
+            boolean forceReload) {
+        Objects.requireNonNull(vaadinService, "VaadinService cannot be null");
+        getForceReloadHolder(vaadinService).activate(forceReload);
+    }
+
+    /**
+     * Gets whether a forced full page reload is triggered on class changes.
+     *
+     * @param vaadinService
+     *            the {@link VaadinService} instance.
+     * @return {@literal true} if full page reload if forced, otherwise
+     *         {@literal false}.
+     */
+    public static boolean isForcedPageReload(VaadinService vaadinService) {
+        return getForceReloadHolder(vaadinService).isActive();
+    }
+
+    private static ForcePageReloadHolder getForceReloadHolder(
+            VaadinService vaadinService) {
+        return vaadinService.getContext().getAttribute(
+                ForcePageReloadHolder.class, ForcePageReloadHolder::new);
+    }
+
+    private static class ForcePageReloadHolder implements Serializable {
+
+        private final AtomicBoolean forceReload = new AtomicBoolean(false);
+
+        void activate(boolean active) {
+            forceReload.set(active);
+        }
+
+        boolean isActive() {
+            return forceReload.get();
+        }
+
+        boolean shouldReloadPage() {
+            return forceReload.get()
+                    || Boolean.getBoolean(FORCE_RELOAD_PROPERTY);
+        }
     }
 
 }

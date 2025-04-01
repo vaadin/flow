@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -149,6 +150,7 @@ public abstract class AbstractNavigationStateRenderer
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
+        ui.getInternals().setLocationForRefresh(event.getLocation());
 
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
@@ -408,17 +410,14 @@ public abstract class AbstractNavigationStateRenderer
             }
         } else if (NavigationTrigger.REFRESH != event.getTrigger()
                 && !event.isForwardTo()
-                && (!ui.getInternals().hasLastHandledLocation()
+                && (event.getUI().getInternals().getActiveViewLocation() == null
                         || !event.getLocation().getPathWithQueryParameters()
-                                .equals(ui.getInternals()
-                                        .getLastHandledLocation()
+                                .equals(event.getUI().getInternals()
+                                        .getActiveViewLocation()
                                         .getPathWithQueryParameters()))) {
-
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
-
-            ui.getInternals().setLastHandledNavigation(event.getLocation());
         } else if (ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled()) {
             if (shouldPushHistoryState(event)) {
@@ -930,7 +929,7 @@ public abstract class AbstractNavigationStateRenderer
         Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC, null, true);
+                NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true);
     }
 
     /**

@@ -15,4 +15,5 @@
  */
 
 // Resource loaded from project dependency
-export const serverSideRoutes = []
+export const serverSideRoutes = [];
+export const registerGlobalClickHandler = () => {};
