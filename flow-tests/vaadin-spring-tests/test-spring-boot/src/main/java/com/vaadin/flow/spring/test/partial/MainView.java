@@ -17,7 +17,6 @@
 package com.vaadin.flow.spring.test.partial;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.spring.annotation.RouteScope;
@@ -25,7 +24,6 @@ import com.vaadin.flow.spring.annotation.RouteScopeOwner;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 
 @Route(value = "main", layout = MainLayout.class)
-@PreserveOnRefresh
 @RouteScope
 @RouteScopeOwner(MainLayout.class)
 @SpringComponent

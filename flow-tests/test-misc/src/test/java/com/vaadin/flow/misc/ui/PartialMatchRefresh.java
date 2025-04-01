@@ -28,6 +28,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static com.vaadin.flow.misc.ui.partial.MainLayout.EVENT_LOG_ID;
 import static com.vaadin.flow.misc.ui.partial.MainLayout.RESET_ID;
+import static com.vaadin.flow.misc.ui.partial.RootLayout.ROOT_EVENT_LOG_ID;
 import static com.vaadin.flow.misc.ui.partial.SecondView.SECOND_ID;
 
 @NotThreadSafe
@@ -36,6 +37,9 @@ public class PartialMatchRefresh extends ChromeBrowserTest {
     @Test
     public void whenUpdatingUrl_parentChainShouldBeReused() {
         open();
+
+        Assert.assertEquals("1: RootLayout: constructor",
+                $(DivElement.class).id(ROOT_EVENT_LOG_ID).getText());
 
         Assert.assertEquals("1: MainLayout: constructor",
                 $(DivElement.class).id(EVENT_LOG_ID).getText());
@@ -46,6 +50,9 @@ public class PartialMatchRefresh extends ChromeBrowserTest {
 
         Assert.assertTrue("Couldn't find second view text div",
                 $(DivElement.class).id(SECOND_ID).isDisplayed());
+
+        Assert.assertEquals("1: RootLayout: constructor",
+                $(DivElement.class).id(ROOT_EVENT_LOG_ID).getText());
         Assert.assertEquals("1: MainLayout: constructor",
                 $(DivElement.class).id(EVENT_LOG_ID).getText());
 

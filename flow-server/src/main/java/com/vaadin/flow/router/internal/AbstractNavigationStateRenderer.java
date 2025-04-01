@@ -90,8 +90,6 @@ public abstract class AbstractNavigationStateRenderer
 
     private LocationChangeEvent locationChangeEvent = null;
 
-    private List<HasElement> partialChain;
-
     /**
      * Creates a new renderer for the given navigation state.
      *
@@ -145,14 +143,6 @@ public abstract class AbstractNavigationStateRenderer
                                 .getApplicationClass(component)
                                 .equals(routeTargetType))
                         .findAny();
-        if (currentInstance.isEmpty() && !forceInstantiation
-                && partialChain != null) {
-            currentInstance = partialChain.stream()
-                    .filter(component -> instantiator
-                            .getApplicationClass(component)
-                            .equals(routeTargetType))
-                    .findAny();
-        }
         return (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
     }
@@ -161,7 +151,6 @@ public abstract class AbstractNavigationStateRenderer
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
         // Always clear partial chain on navigation handling start.
-        partialChain = null;
         ui.getInternals().setLocationForRefresh(event.getLocation());
 
         final Class<? extends Component> routeTargetType = navigationState
@@ -298,19 +287,26 @@ public abstract class AbstractNavigationStateRenderer
                         return true;
                     }
                 } else {
-                    partialChain = getWindowPreservedChain(ui.getSession(),
+                    Optional<List<HasElement>> partialChain = getWindowPreservedChain(
+                            ui.getSession(),
                             ui.getInternals().getExtendedClientDetails()
                                     .getWindowName());
-                    if (partialChain != null) {
-                        disconnectElements(partialChain, ui);
-                        // Remove all router layout contents as parts are
-                        // reused and there is no old chain to remove against.
-                        for (int i = 0; i < partialChain.size() - 1; i++) {
-                            HasElement child = partialChain.get(i);
-                            RouterLayout parent = (RouterLayout) partialChain
-                                    .get(i + 1);
-                            parent.removeRouterLayoutContent(child);
+                    if (partialChain.isPresent()) {
+                        List<HasElement> oldChain = partialChain.get();
+                        disconnectElements(oldChain, ui);
+
+                        List<RouterLayout> routerLayouts = new ArrayList<>();
+
+                        for (HasElement hasElement : oldChain) {
+                            if (hasElement instanceof RouterLayout) {
+                                routerLayouts.add((RouterLayout) hasElement);
+                            } else {
+                                // Remove any non element from their parent to
+                                // not get old or duplicate route content
+                                hasElement.getElement().removeFromParent();
+                            }
                         }
+                        ui.getInternals().setRouterTargetChain(routerLayouts);
                     }
                 }
             }
@@ -1168,9 +1164,8 @@ public abstract class AbstractNavigationStateRenderer
         if (cache != null && cache.containsKey(windowName) && cache
                 .get(windowName).getFirst().equals(location.getPath())) {
             return Optional.of(cache.get(windowName).getSecond());
-        } else {
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 
     /**
@@ -1182,15 +1177,14 @@ public abstract class AbstractNavigationStateRenderer
      *            window name to get cached view stack for
      * @return view stack cache if available for window name
      */
-    static List<HasElement> getWindowPreservedChain(VaadinSession session,
-            String windowName) {
+    static Optional<List<HasElement>> getWindowPreservedChain(
+            VaadinSession session, String windowName) {
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         if (cache != null && cache.containsKey(windowName)) {
-            return cache.get(windowName).getSecond();
-        } else {
-            return null;
+            return Optional.of(cache.get(windowName).getSecond());
         }
+        return Optional.empty();
     }
 
     static void setPreservedChain(VaadinSession session, String windowName,

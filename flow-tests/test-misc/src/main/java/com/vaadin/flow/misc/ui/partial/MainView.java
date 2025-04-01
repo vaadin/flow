@@ -17,12 +17,10 @@
 package com.vaadin.flow.misc.ui.partial;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
 @Route(value = "main", layout = MainLayout.class)
-@PreserveOnRefresh
 public class MainView extends Div {
 
     public MainView() {

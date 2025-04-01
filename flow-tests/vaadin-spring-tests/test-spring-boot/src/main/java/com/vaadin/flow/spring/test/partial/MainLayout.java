@@ -18,10 +18,10 @@ package com.vaadin.flow.spring.test.partial;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RouterLayout;
 
-@PreserveOnRefresh(partialMatch = true)
+@ParentLayout(RootLayout.class)
 public class MainLayout extends Div implements RouterLayout {
 
     public static final String EVENT_LOG_ID = "event-log";

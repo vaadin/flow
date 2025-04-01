@@ -17,11 +17,9 @@
 package com.vaadin.flow.misc.ui.partial;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "second", layout = MainLayout.class)
-@PreserveOnRefresh
 public class SecondView extends Div {
     public static final String SECOND_ID = "hello-second";
 

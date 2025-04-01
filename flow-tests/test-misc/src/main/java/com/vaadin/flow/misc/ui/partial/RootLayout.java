@@ -18,26 +18,26 @@ package com.vaadin.flow.misc.ui.partial;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouterLayout;
 
-@ParentLayout(RootLayout.class)
-public class MainLayout extends Div implements RouterLayout {
+@PreserveOnRefresh(partialMatch = true)
+public class RootLayout extends Div implements RouterLayout {
 
-    public static final String EVENT_LOG_ID = "event-log";
-    public static final String RESET_ID = "reset-log";
+    public static final String ROOT_EVENT_LOG_ID = "root-event-log";
+    public static final String ROOT_RESET_ID = "root-reset-log";
 
     private static int eventCounter = 0;
 
     private final Div log = new Div();
 
-    public MainLayout() {
+    public RootLayout() {
         log.setText(++eventCounter + ": " + getClass().getSimpleName()
                 + ": constructor");
-        log.setId(EVENT_LOG_ID);
+        log.setId(ROOT_EVENT_LOG_ID);
         NativeButton reset = new NativeButton("Reset count",
                 e -> eventCounter = 0);
-        reset.setId(RESET_ID);
+        reset.setId(ROOT_RESET_ID);
         add(log, reset);
     }
 }
