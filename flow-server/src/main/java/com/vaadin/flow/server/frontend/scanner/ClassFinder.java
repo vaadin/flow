@@ -174,6 +174,7 @@ public interface ClassFinder extends Serializable {
         public ClassLoader getClassLoader() {
             return classFinder.getClassLoader();
         }
+
     }
 
     /**
@@ -253,4 +254,23 @@ public interface ClassFinder extends Serializable {
         Class<T> parent = loadClass(name);
         return getSubTypesOf(parent);
     }
+
+    /**
+     * Determines whether the specified class should be inspected for
+     * Vaadin-related resources.
+     * <p>
+     * </p>
+     * The default implementation always returns {@code true}, meaning all
+     * classes are considered inspectable. Implementations may override this
+     * method to provide custom filtering logic.
+     *
+     * @param className
+     *            the fully qualified name of the class
+     * @return {@code true} if the class should be inspected, otherwise
+     *         {@code false}
+     */
+    default boolean shouldInspectClass(String className) {
+        return true;
+    }
+
 }
