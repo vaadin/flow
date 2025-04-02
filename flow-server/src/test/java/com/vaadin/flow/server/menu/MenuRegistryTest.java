@@ -91,6 +91,7 @@ public class MenuRegistryTest {
 
     @Before
     public void init() {
+        MenuRegistry.clearFileRoutesCache();
         closeable = MockitoAnnotations.openMocks(this);
         servletContext = new MockServletContext();
         vaadinContext = new MockVaadinContext(servletContext);
@@ -133,6 +134,7 @@ public class MenuRegistryTest {
 
     @After
     public void cleanup() throws Exception {
+        MenuRegistry.clearFileRoutesCache();
         frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
