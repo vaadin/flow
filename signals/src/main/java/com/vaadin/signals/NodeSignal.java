@@ -3,8 +3,8 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.signals.ListSignal.ListPosition;
@@ -131,14 +131,15 @@ public class NodeSignal extends Signal<NodeSignalState> {
     }
 
     @Override
-    protected NodeSignalState extractValue(Optional<Data> maybeNode) {
-        return maybeNode.map(data -> {
-            Id parentId = data.parent();
-            return new NodeSignalState(data.value(),
-                    parentId != null ? child(parentId) : null,
-                    ListSignal.children(data, this::child),
-                    MapSignal.children(data, this::child));
-        }).orElse(null);
+    protected NodeSignalState extractValue(Data data) {
+        if (data == null) {
+            return null;
+        }
+        Id parentId = data.parent();
+        return new NodeSignalState(data.value(),
+                parentId != null ? child(parentId) : null,
+                ListSignal.children(data, this::child),
+                MapSignal.children(data, this::child));
     }
 
     @Override
@@ -382,5 +383,44 @@ public class NodeSignal extends Signal<NodeSignalState> {
     @Override
     public int hashCode() {
         return Objects.hash(tree(), id(), validator());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("NodeSignal[");
+
+        NodeSignalState value = peek();
+        if (value != null) {
+            boolean needsComma = false;
+
+            if (value.value != null) {
+                builder.append("value: ").append(value.value);
+                needsComma = true;
+            }
+
+            if (!value.listChildren.isEmpty()) {
+                if (needsComma) {
+                    builder.append(", ");
+                }
+                builder.append("listChildren: ")
+                        .append(value.listChildren.stream()
+                                .map(NodeSignal::toString)
+                                .collect(Collectors.joining(", ", "[", "]")));
+                needsComma = true;
+            }
+
+            if (!value.mapChildren.isEmpty()) {
+                if (needsComma) {
+                    builder.append(", ");
+                }
+                builder.append("mapChildren: ").append(value.mapChildren
+                        .entrySet().stream()
+                        .map(entry -> entry.getKey() + " = " + entry.getValue())
+                        .collect(Collectors.joining(", ", "[", "]")));
+            }
+        }
+
+        builder.append(']');
+        return builder.toString();
     }
 }

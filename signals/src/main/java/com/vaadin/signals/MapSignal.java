@@ -4,15 +4,15 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
-import com.vaadin.signals.impl.UsageTracker.UsageType;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
+import com.vaadin.signals.impl.UsageTracker.UsageType;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -67,10 +67,12 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
     }
 
     @Override
-    protected Map<String, ValueSignal<T>> extractValue(
-            Optional<Data> maybeNode) {
-        return maybeNode.map(node -> MapSignal.children(node, this::child))
-                .orElseGet(Map::of);
+    protected Map<String, ValueSignal<T>> extractValue(Data data) {
+        if (data == null) {
+            return Map.of();
+        } else {
+            return children(data, this::child);
+        }
     }
 
     @Override
@@ -275,6 +277,13 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
     @Override
     public int hashCode() {
         return Objects.hash(tree(), id(), validator(), elementType);
+    }
+
+    @Override
+    public String toString() {
+        return peek().entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue().value())
+                .collect(Collectors.joining(", ", "MapSignal[", "]"));
     }
 
 }

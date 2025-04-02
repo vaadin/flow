@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -53,9 +52,9 @@ public class ComputedSignal<T> extends Signal<T> {
     @Override
     protected void registerUsage() {
         if (UsageTracker.isActive()) {
-            Optional<Data> node = Transaction.getCurrent().read(tree())
-                    .data(id());
-            ComputedState state = readState(node);
+            Data data = Transaction.getCurrent().read(tree()).data(id())
+                    .orElse(null);
+            ComputedState state = readState(data);
             if (state != null) {
                 /*
                  * Synchronized to avoid memory corruption if invalidation
@@ -76,7 +75,7 @@ public class ComputedSignal<T> extends Signal<T> {
                             .observeNextChange(dependency.nodeId(), () -> {
                                 if (invalidated.compareAndSet(false, true)) {
                                     cleanups.forEach(Runnable::run);
-                                    getValidState(node);
+                                    getValidState(data);
                                 }
                             });
                     cleanups.add(cleanup);
@@ -94,8 +93,8 @@ public class ComputedSignal<T> extends Signal<T> {
         }
     }
 
-    private ComputedState getValidState(Optional<Data> node) {
-        ComputedState state = readState(node);
+    private ComputedState getValidState(Data data) {
+        ComputedState state = readState(data);
 
         if (state == null || NodeUsage.hasChanges(state.dependencies)) {
             Object[] holder = new Object[1];
@@ -112,9 +111,17 @@ public class ComputedSignal<T> extends Signal<T> {
         return state;
     }
 
-    private static ComputedState readState(Optional<Data> node) {
-        return node.map(Data::value).map(ComputedSignal::extractState)
-                .orElse(null);
+    private static ComputedState readState(Data data) {
+        if (data == null) {
+            return null;
+        }
+
+        JsonNode value = data.value();
+        if (value == null) {
+            return null;
+        }
+
+        return extractState(value);
     }
 
     private static ComputedState extractState(JsonNode json) {
@@ -122,13 +129,13 @@ public class ComputedSignal<T> extends Signal<T> {
         return (ComputedState) pojoNode.getPojo();
     }
 
-    static Object extractValue(Data node) {
-        return extractState(node.value()).value;
+    static Object extractRawValue(Data data) {
+        return extractState(data.value()).value;
     }
 
     @Override
-    protected T extractValue(Optional<Data> node) {
-        ComputedState state = getValidState(node);
+    protected T extractValue(Data data) {
+        ComputedState state = getValidState(data);
 
         @SuppressWarnings("unchecked")
         T value = (T) state.value;

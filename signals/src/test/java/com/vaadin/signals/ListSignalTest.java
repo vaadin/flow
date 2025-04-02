@@ -96,10 +96,10 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertLast("last").signal();
 
         InsertOperation<ValueSignal<String>> operation = signal
-                .insertAt("middle", ListPosition.before(null));
+                .insertAt("afterLast", ListPosition.before(null));
 
         assertSuccess(operation);
-        assertChildren(signal, "first", "last", "middle");
+        assertChildren(signal, "first", "last", "afterLast");
     }
 
     @Test
@@ -109,7 +109,7 @@ public class ListSignalTest extends SignalTestBase {
         ValueSignal<String> last = signal.insertLast("last").signal();
 
         InsertOperation<ValueSignal<String>> operation = signal
-                .insertAt("middle", ListPosition.between(last, first));
+                .insertAt("invalid", ListPosition.between(last, first));
 
         assertFailure(operation);
         assertChildren(signal, "first", "last");
@@ -150,7 +150,7 @@ public class ListSignalTest extends SignalTestBase {
     }
 
     @Test
-    void moveTo_invalidLocation_moveFaield() {
+    void moveTo_invalidLocation_moveFailed() {
         ListSignal<String> signal = new ListSignal<>(String.class);
         ValueSignal<String> first = signal.insertFirst("first").signal();
         ValueSignal<String> middle = signal.insertLast("middle").signal();
@@ -349,6 +349,15 @@ public class ListSignalTest extends SignalTestBase {
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
 
         assertNotEquals(operationChild, other);
+    }
+
+    @Test
+    void toString_includesValue() {
+        ListSignal<String> signal = new ListSignal<>(String.class);
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        assertEquals("ListSignal[one, two]", signal.toString());
     }
 
     static void assertChildren(ListSignal<String> signal,

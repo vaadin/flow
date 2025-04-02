@@ -38,7 +38,7 @@ public class UsageTracker {
         /**
          * Usage of the computed value. Only applicable for computed signals.
          */
-        COMPUTED(ComputedSignal::extractValue),
+        COMPUTED(ComputedSignal::extractRawValue),
 
         /**
          * Usage of any kind of data in a signal.

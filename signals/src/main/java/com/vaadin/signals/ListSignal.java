@@ -17,9 +17,9 @@ package com.vaadin.signals;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.SignalTree;
@@ -177,9 +177,12 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     }
 
     @Override
-    protected List<ValueSignal<T>> extractValue(Optional<Data> maybeNode) {
-        return maybeNode.map(node -> ListSignal.children(node, this::child))
-                .orElseGet(List::of);
+    protected List<ValueSignal<T>> extractValue(Data data) {
+        if (data == null) {
+            return List.of();
+        } else {
+            return children(data, this::child);
+        }
     }
 
     @Override
@@ -301,17 +304,15 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     }
 
     /**
-     * Checks that the given child is at the given position in this list. This
-     * operation is only meaningful to use as a condition in a
+     * Checks that the given signal is a child in this list. This operation is
+     * only meaningful to use as a condition in a
      * {@link #runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given child is a
      * child of this list and at the given position when the operation is
      * processed.
      *
      * @param child
-     *            the child to test, not <code>null</code>
-     * @param expectedPosition
-     *            the expected position of the child, not <code>null</code>
+     *            the child to look for test, not <code>null</code>
      * @return an operation containing the the eventual result
      */
     public SignalOperation<Void> verifyChild(Signal<?> child) {
@@ -364,6 +365,12 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     @Override
     public int hashCode() {
         return Objects.hash(tree(), id(), validator(), elementType);
+    }
+
+    @Override
+    public String toString() {
+        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
+                .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 
 }

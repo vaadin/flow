@@ -125,4 +125,11 @@ public class NumberSignalTest extends SignalTestBase {
         assertNotEquals(signal.asNode().asValue(Double.class), signal);
     }
 
+    @Test
+    void toString_includesValue() {
+        NumberSignal signal = new NumberSignal(1);
+
+        assertEquals("NumberSignal[1.0]", signal.toString());
+    }
+
 }

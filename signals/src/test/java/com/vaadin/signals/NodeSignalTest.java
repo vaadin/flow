@@ -456,4 +456,26 @@ public class NodeSignalTest extends SignalTestBase {
 
         assertNotEquals(operationChild, other);
     }
+
+    @Test
+    void toString_includesValue() {
+        NodeSignal signal = new NodeSignal();
+
+        assertEquals("NodeSignal[]", signal.toString());
+
+        signal.asValue(String.class).value("value");
+        assertEquals("NodeSignal[value: \"value\"]", signal.toString());
+
+        signal.insertValue("listChild", ListPosition.last());
+        assertEquals(
+                "NodeSignal[value: \"value\","
+                        + " listChildren: [NodeSignal[value: \"listChild\"]]]",
+                signal.toString());
+
+        signal.putValue("key", "mapChild");
+        assertEquals("NodeSignal[value: \"value\","
+                + " listChildren: [NodeSignal[value: \"listChild\"]],"
+                + " mapChildren: [key = NodeSignal[value: \"mapChild\"]]]",
+                signal.toString());
+    }
 }

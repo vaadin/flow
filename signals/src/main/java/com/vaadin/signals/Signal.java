@@ -105,7 +105,7 @@ public abstract class Signal<T> {
          * Extract value before registering since extracting sets up state that
          * is used by registerDepedency in the case of computed signals.
          */
-        T value = extractValue(node);
+        T value = extractValue(node.orElse(null));
         registerUsage();
         return value;
     }
@@ -118,7 +118,8 @@ public abstract class Signal<T> {
      * @return the signal value
      */
     public T peek() {
-        return extractValue(Transaction.getCurrent().read(tree).data(id));
+        return extractValue(
+                Transaction.getCurrent().read(tree).data(id).orElse(null));
     }
 
     /**
@@ -129,7 +130,7 @@ public abstract class Signal<T> {
      * @return the confirmed signal value
      */
     public T peekConfirmed() {
-        return extractValue(tree.confirmed().data(id));
+        return extractValue(tree.confirmed().data(id).orElse(null));
     }
 
     /**
@@ -165,11 +166,12 @@ public abstract class Signal<T> {
     /**
      * Extracts the value for this signal from the given signal data node.
      *
-     * @param node
-     *            the data node to extract the value from, not <code>null</code>
+     * @param data
+     *            the data node to extract the value from, or <code>null</code>
+     *            if the node doesn't exist in the tree
      * @return the signal value
      */
-    protected abstract T extractValue(Optional<Data> node);
+    protected abstract T extractValue(Data data);
 
     /**
      * Gets the usage type that should be registered when this signal is

@@ -541,6 +541,13 @@ public class ValueSignalTest extends SignalTestBase {
         assertNotEquals(signal, signal.asNode().asValue(Double.class));
     }
 
+    @Test
+    void toString_includesValue() {
+        ValueSignal<String> signal = new ValueSignal<>("signal value");
+
+        assertEquals("ValueSignal[signal value]", signal.toString());
+    }
+
     public static class AsyncValueSignal extends ValueSignal<String> {
         public AsyncValueSignal() {
             super(new AsyncTestTree(), Id.ZERO, ANYTHING_GOES, String.class);

@@ -2,18 +2,17 @@ package com.vaadin.signals;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.impl.UsageTracker.UsageType;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.impl.UsageTracker.UsageType;
 import com.vaadin.signals.operations.CancelableOperation;
+import com.vaadin.signals.operations.SignalOperation;
 
 /**
  * A signal containing a value. The value is updated as a single atomic change.
@@ -82,7 +81,7 @@ public class ValueSignal<T> extends Signal<T> {
      *
      * @param value
      *            the value to set
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<T> value(T value) {
         assert value == null || valueType.isInstance(value);
@@ -94,8 +93,12 @@ public class ValueSignal<T> extends Signal<T> {
     }
 
     @Override
-    protected T extractValue(Optional<Data> maybeNode) {
-        return maybeNode.map(node -> nodeValue(node, valueType)).orElse(null);
+    protected T extractValue(Data data) {
+        if (data == null) {
+            return null;
+        } else {
+            return nodeValue(data, valueType);
+        }
     }
 
     @Override
@@ -253,5 +256,10 @@ public class ValueSignal<T> extends Signal<T> {
     @Override
     public int hashCode() {
         return Objects.hash(tree(), id(), validator(), valueType);
+    }
+
+    @Override
+    public String toString() {
+        return "ValueSignal[" + peek() + "]";
     }
 }

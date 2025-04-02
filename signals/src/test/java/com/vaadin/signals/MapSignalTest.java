@@ -327,6 +327,15 @@ public class MapSignalTest extends SignalTestBase {
         assertNotEquals(operationChild, other);
     }
 
+    @Test
+    void toString_includesValue() {
+        MapSignal<String> signal = new MapSignal<>(String.class);
+        signal.put("key1", "value1");
+        signal.put("key2", "value2");
+
+        assertEquals("MapSignal[key1=value1, key2=value2]", signal.toString());
+    }
+
     private void assertChildren(MapSignal<String> signal,
             String... expectedKeyValuePairs) {
         assertEquals(0, expectedKeyValuePairs.length % 2);

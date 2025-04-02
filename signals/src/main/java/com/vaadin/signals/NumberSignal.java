@@ -163,4 +163,9 @@ public class NumberSignal extends ValueSignal<Double> {
     public int hashCode() {
         return Objects.hash(tree(), id(), validator());
     }
+
+    @Override
+    public String toString() {
+        return "NumberSignal[" + peek() + "]";
+    }
 }
