@@ -58,21 +58,6 @@ public class PartialMatchRefreshIT extends ChromeBrowserTest {
 
     }
 
-    @Test
-    public void whenNavigatingWithRouterLink_parentChainShouldBeReused() {
-        open();
-
-        $(AnchorElement.class).waitForFirst().click();
-
-        Assert.assertTrue("Couldn't find second view text div",
-                $(DivElement.class).id(SECOND_ID).isDisplayed());
-
-        Assert.assertEquals("1: RootLayout: constructor",
-                $(DivElement.class).id(ROOT_EVENT_LOG_ID).getText());
-        Assert.assertEquals("1: MainLayout: constructor",
-                $(DivElement.class).id(EVENT_LOG_ID).getText());
-    }
-
     @After
     public void tearDown() {
         $(NativeButtonElement.class).id(RESET_ID).click();

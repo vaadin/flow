@@ -812,6 +812,7 @@ public class UIInternals implements Serializable {
      * chain is empty. If the chain contains elements the given list is ignored.
      *
      * @param layouts
+     *            stored router target chain to set as last navigated chain
      */
     public void setRouterTargetChain(List<RouterLayout> layouts) {
         if (routerTargetChain.isEmpty()) {

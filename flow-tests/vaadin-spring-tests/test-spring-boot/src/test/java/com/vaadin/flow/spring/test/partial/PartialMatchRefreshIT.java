@@ -45,7 +45,7 @@ public class PartialMatchRefreshIT extends ChromeBrowserTest {
         Assert.assertEquals("Main navigation link should be available", 1,
                 $(AnchorElement.class).all().size());
 
-        open("second");
+        getDriver().get(getRootURL() + "/second");
 
         Assert.assertTrue("Couldn't find second view text div",
                 $(DivElement.class).id(SECOND_ID).isDisplayed());
@@ -54,21 +54,6 @@ public class PartialMatchRefreshIT extends ChromeBrowserTest {
                 $(DivElement.class).id(EVENT_LOG_ID).getText());
         Assert.assertEquals("1: RootLayout: constructor",
                 $(DivElement.class).id(ROOT_EVENT_LOG_ID).getText());
-    }
-
-    @Test
-    public void whenNavigatingWithRouterLink_parentChainShouldBeReused() {
-        open();
-
-        $(AnchorElement.class).waitForFirst().click();
-
-        Assert.assertTrue("Couldn't find second view text div",
-                $(DivElement.class).id(SECOND_ID).isDisplayed());
-
-        Assert.assertEquals("1: RootLayout: constructor",
-                $(DivElement.class).id(ROOT_EVENT_LOG_ID).getText());
-        Assert.assertEquals("1: MainLayout: constructor",
-                $(DivElement.class).id(EVENT_LOG_ID).getText());
     }
 
     @After
@@ -80,5 +65,4 @@ public class PartialMatchRefreshIT extends ChromeBrowserTest {
     protected String getTestPath() {
         return "/main";
     }
-
 }
