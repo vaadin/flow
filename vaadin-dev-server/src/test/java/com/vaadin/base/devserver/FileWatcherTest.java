@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -85,10 +86,14 @@ public class FileWatcherTest {
                 createFile(subProjectLegacyFrontend + "/somejs.js");
                 assertFileCountFound(jarFrontendResources, 2);
 
-                Assert.assertEquals("somestyles.css",
-                        jarFrontendResources.listFiles()[0].getName());
-                Assert.assertEquals("somejs.js",
-                        jarFrontendResources.listFiles()[1].getName());
+                // Map files as listFiles makes no promises on ordering
+                List<String> frontendFiles = Arrays
+                        .stream(jarFrontendResources.listFiles())
+                        .map(File::getName).toList();
+                Assert.assertTrue("No 'somestyles.css' file found",
+                        frontendFiles.contains("somestyles.css"));
+                Assert.assertTrue("No 'somejs.js' file found",
+                        frontendFiles.contains("somejs.js"));
             }
         }
     }
