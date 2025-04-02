@@ -17,8 +17,14 @@
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.flow.server.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +92,25 @@ public class DevModeUsageStatistics {
             StatisticsStorage storage, StatisticsSender sender) {
 
         getLogger().debug("Telemetry enabled");
+
+        final Path statisticDirPath = storage.getUsageStatisticsFile().getParentFile().toPath();
+        final Path firstSeenPath = statisticDirPath.resolve("telemetry-notice-seen.txt");
+        if(!Files.exists(firstSeenPath)) {
+            // Inspired by https://learn.microsoft.com/en-us/dotnet/core/tools/telemetry#disclosure
+            getLogger().info("Telemetry");
+            getLogger().info("---------");
+            getLogger().info("Vaadin collects usage data in oder to help us improve your experience. "
+                + "You can opt-out of telemetry by setting the {} environment variable.",
+                Constants.TELEMETRY_OPT_OUT_ENV_VARIABLE);
+            getLogger().info("Read more about Vaadin telemetry at: PUT_YOUR_LINK_HERE");
+
+            try {
+                Files.createDirectories(statisticDirPath);
+                Files.writeString(firstSeenPath, Instant.now().toString());
+            } catch (IOException ioe) {
+                getLogger().warn("Failed to create statistics first seen file", ioe);
+            }
+        }
 
         storage.access(() -> {
             instance = new DevModeUsageStatistics(projectFolder, storage);
