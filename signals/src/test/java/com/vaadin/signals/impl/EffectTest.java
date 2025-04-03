@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.MapSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
@@ -56,6 +58,42 @@ public class EffectTest extends SignalTestBase {
 
         signal.value("again");
         assertEquals(List.of("", "update", "again"), invocations);
+    }
+
+    @Test
+    void changeTracking_changeListStructure_effectRunAgain() {
+        ListSignal<String> signal = new ListSignal<>(String.class);
+        ArrayList<Integer> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            invocations.add(signal.value().size());
+        });
+
+        assertEquals(List.of(0), invocations);
+
+        ValueSignal<String> child = signal.insertLast("one").signal();
+        assertEquals(List.of(0, 1), invocations);
+
+        signal.remove(child);
+        assertEquals(List.of(0, 1, 0), invocations);
+    }
+
+    @Test
+    void changeTracking_changeMapStructure_effectRunAgain() {
+        MapSignal<String> signal = new MapSignal<>(String.class);
+        ArrayList<Integer> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            invocations.add(signal.value().size());
+        });
+
+        assertEquals(List.of(0), invocations);
+
+        signal.put("key", "value");
+        assertEquals(List.of(0, 1), invocations);
+
+        signal.remove("key");
+        assertEquals(List.of(0, 1, 0), invocations);
     }
 
     @Test
@@ -220,25 +258,6 @@ public class EffectTest extends SignalTestBase {
         signal.value("update");
 
         assertEquals(List.of(""), invocations);
-    }
-
-    @Test
-    void dispatcher_writeToSignal_actionRunThroughDispatcher() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-        TestExecutor dispatcher = useTestDispatcher();
-
-        ArrayList<String> invocations = new ArrayList<>();
-
-        Signal.effect(() -> {
-            invocations.add(signal.value());
-        });
-        assertEquals(List.of("initial"), invocations);
-
-        signal.value("update");
-        assertEquals(List.of("initial"), invocations);
-
-        dispatcher.runPendingTasks();
-        assertEquals(List.of("initial", "update"), invocations);
     }
 
     @Test

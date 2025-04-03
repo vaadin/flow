@@ -263,8 +263,8 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the key to use, not <code>null</code>
      * @param value
      *            the value to set
-     * @return an operation containing a signal for the entry and the
-     *         eventual result
+     * @return an operation containing a signal for the entry and the eventual
+     *         result
      */
     public InsertOperation<NodeSignal> putIfAbsent(String key) {
         return submitInsert(new SignalCommand.PutIfAbsentCommand(Id.random(),

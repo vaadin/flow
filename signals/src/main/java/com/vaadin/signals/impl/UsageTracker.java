@@ -45,7 +45,7 @@ public class UsageTracker {
          */
         ALL(Data::lastUpdate);
 
-        private Function<Data, Object> extractor;
+        private final Function<Data, Object> extractor;
 
         private UsageType(Function<Data, Object> extractor) {
             this.extractor = extractor;

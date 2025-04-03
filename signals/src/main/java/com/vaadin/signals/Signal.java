@@ -94,8 +94,10 @@ public abstract class Signal<T> {
         Optional<Data> node = transaction.read(tree).data(id);
 
         if (transaction instanceof StagedTransaction) {
-            // TODO No point in registering dependency if lastUpdate was set
-            // earlier in the same transaction
+            /*
+             * This could be optimized to avoid creating the command if
+             * lastUpdate has already been set in the same transaction
+             */
             Id lastUpdate = node.map(Data::lastUpdate).orElse(Id.ZERO);
             submit(new SignalCommand.LastUpdateCondition(Id.random(), id,
                     lastUpdate));
@@ -195,7 +197,8 @@ public abstract class Signal<T> {
      * Submits a command for this signal and updates the given operation using
      * the given result converted once the command result is confirmed. The
      * command is submitted through the current {@link Transaction} and it uses
-     * the current {@link Outbox} for delivering the result update.
+     * {@link SignalEnvironment#synchronousDispatcher()} for delivering the
+     * result update.
      *
      * @param <R>
      *            the result type
