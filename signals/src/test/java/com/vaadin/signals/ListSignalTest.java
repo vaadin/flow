@@ -20,7 +20,7 @@ import com.vaadin.signals.operations.SignalOperation;
 
 public class ListSignalTest extends SignalTestBase {
     @Test
-    void constuctor_initialValue_isEmpty() {
+    void constructor_initialValue_isEmpty() {
         ListSignal<String> signal = new ListSignal<>(String.class);
 
         int size = signal.value().size();

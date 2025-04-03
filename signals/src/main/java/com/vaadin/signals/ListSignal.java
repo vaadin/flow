@@ -196,7 +196,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * @param value
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
-     *         the eventual result
+     *         eventual result
      */
     public InsertOperation<ValueSignal<T>> insertFirst(T value) {
         return insertAt(value, ListPosition.first());
@@ -213,7 +213,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * @param value
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
-     *         the eventual result
+     *         eventual result
      */
     public InsertOperation<ValueSignal<T>> insertLast(T value) {
         return insertAt(value, ListPosition.last());
@@ -228,7 +228,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * @param at
      *            the insert position, not <code>null</code>
      * @return an operation containing a signal for the inserted entry and the
-     *         the eventual result
+     *         eventual result
      */
     public InsertOperation<ValueSignal<T>> insertAt(T value, ListPosition at) {
         return submitInsert(
@@ -246,7 +246,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *            the child signal to move, not <code>null</code>
      * @param to
      *            the position to move to, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> moveTo(Signal<T> child, ListPosition to) {
         var verifyChild = new SignalCommand.PositionCondition(Id.random(), id(),
@@ -264,7 +264,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *
      * @param child
      *            the child to remove, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> remove(ValueSignal<T> child) {
         // Override to make public
@@ -276,7 +276,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      * with a {@link NodeSignal} that has map children, then the map children
      * will also be removed.
      *
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> clear() {
         // Override to make public
@@ -295,7 +295,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *            the child to test, not <code>null</code>
      * @param expectedPosition
      *            the expected position of the child, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyPosition(Signal<?> child,
             ListPosition expectedPosition) {
@@ -313,7 +313,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *
      * @param child
      *            the child to look for test, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyChild(Signal<?> child) {
         return verifyPosition(child, new ListPosition(null, null));

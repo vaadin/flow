@@ -94,7 +94,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      *            the key to use, not <code>null</code>
      * @param value
      *            the value to set
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<T> put(String key, T value) {
         return submit(
@@ -124,7 +124,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      *            the key to use, not <code>null</code>
      * @param value
      *            the value to set
-     * @return an operation containing a signal for the entry and the the
+     * @return an operation containing a signal for the entry and the
      *         eventual result
      */
     public InsertOperation<ValueSignal<T>> putIfAbsent(String key, T value) {
@@ -142,7 +142,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      *
      * @param key
      *            the key to use, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<T> remove(String key) {
         return submit(new SignalCommand.RemoveByKeyCommand(Id.random(), id(),
@@ -159,7 +159,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * a {@link NodeSignal} that has list children, then the list children will
      * also be removed.
      *
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> clear() {
         // Override to make public
@@ -184,7 +184,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      *            the key to check, not <code>null</code>
      * @param expectedChild
      *            the expected child signal, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyKey(String key,
             Signal<?> expectedChild) {
@@ -201,7 +201,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      *
      * @param key
      *            the key to check, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyHasKey(String key) {
         return submitKeyCondition(key, null);
@@ -216,7 +216,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      *
      * @param key
      *            the key to check, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyKeyAbsent(String key) {
         return submitKeyCondition(key, Id.ZERO);

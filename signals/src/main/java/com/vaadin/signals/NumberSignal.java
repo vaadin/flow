@@ -60,7 +60,7 @@ public class NumberSignal extends ValueSignal<Double> {
      *
      * @param delta
      *            the increment amount
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Double> incrementBy(double delta) {
         return submit(
@@ -97,7 +97,7 @@ public class NumberSignal extends ValueSignal<Double> {
      *
      * @param value
      *            the integer value to set
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Double> value(int value) {
         return value(Double.valueOf(value));

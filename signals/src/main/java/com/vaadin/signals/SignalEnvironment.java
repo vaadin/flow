@@ -32,7 +32,7 @@ public class SignalEnvironment {
     }
 
     /**
-     * Initialized the global signal environment if not already initialized. The
+     * Initializes the global signal environment if not already initialized. The
      * provided values are ignored if the environment is already initialized.
      * The environment must be initialized before signals are used.
      *

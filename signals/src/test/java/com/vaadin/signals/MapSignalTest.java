@@ -25,7 +25,7 @@ import com.vaadin.signals.operations.SignalOperation;
 public class MapSignalTest extends SignalTestBase {
 
     @Test
-    void constuctor_initialValue_isEmpty() {
+    void constructor_initialValue_isEmpty() {
         MapSignal<String> signal = new MapSignal<>(String.class);
 
         int size = signal.value().size();

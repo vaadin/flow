@@ -245,7 +245,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the key to use, not <code>null</code>
      * @param value
      *            the value to set
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> putValue(String key, Object value) {
         return submit(new SignalCommand.PutCommand(Id.random(), id(),
@@ -263,7 +263,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the key to use, not <code>null</code>
      * @param value
      *            the value to set
-     * @return an operation containing a signal for the entry and the the
+     * @return an operation containing a signal for the entry and the
      *         eventual result
      */
     public InsertOperation<NodeSignal> putIfAbsent(String key) {
@@ -281,7 +281,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the signal to adopt, not <code>null</code>
      * @param at
      *            the target list location, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> adoptAt(Signal<?> node, ListPosition at) {
         return submit(new SignalCommand.AdoptAtCommand(Id.random(), id(),
@@ -298,7 +298,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the signal to adopt, not <code>null</code>
      * @param key
      *            the key to use, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> adoptAs(Signal<?> signal, String key) {
         return submit(new SignalCommand.AdoptAsCommand(Id.random(), id(),
@@ -311,7 +311,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *
      * @param child
      *            the child to remove, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> remove(NodeSignal child) {
         // Override to make public
@@ -325,7 +325,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *
      * @param key
      *            the key to use, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> remove(String key) {
         return submit(new SignalCommand.RemoveByKeyCommand(Id.random(), id(),
@@ -335,7 +335,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
     /**
      * Removes all list children and map children from this node.
      *
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> clear() {
         // Override to make public

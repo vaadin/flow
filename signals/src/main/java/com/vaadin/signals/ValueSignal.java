@@ -118,7 +118,7 @@ public class ValueSignal<T> extends Signal<T> {
      *            the expected value
      * @param newValue
      *            the new value
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
@@ -152,7 +152,7 @@ public class ValueSignal<T> extends Signal<T> {
      *
      * @param updater
      *            the value update callback, not <code>null</code>
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public CancelableOperation<T> update(UnaryOperator<T> updater) {
         CancelableOperation<T> operation = new CancelableOperation<>();
@@ -202,7 +202,7 @@ public class ValueSignal<T> extends Signal<T> {
      *
      * @param expectedValue
      *            the expected value
-     * @return an operation containing the the eventual result
+     * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyValue(T expectedValue) {
         return submit(new SignalCommand.ValueCondition(Id.random(), id(),

@@ -200,7 +200,7 @@ public abstract class Signal<T> {
      * @param <R>
      *            the result type
      * @param <O>
-     *            the operation rtype
+     *            the operation type
      * @param command
      *            the command to submit, not <code>null</code>
      * @param resultConverter
