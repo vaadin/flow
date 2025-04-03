@@ -108,7 +108,7 @@ public class DevModeUsageStatistics {
                 Files.createDirectories(statisticDirPath);
                 Files.writeString(firstSeenPath, Instant.now().toString());
             } catch (IOException ioe) {
-                getLogger().warn("Failed to create statistics first seen file", ioe);
+                getLogger().warn("Failed to create telemetry notice first seen file", ioe);
             }
         }
 
