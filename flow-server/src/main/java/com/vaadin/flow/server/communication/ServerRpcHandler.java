@@ -349,6 +349,14 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().debug(
                         "Eager UI close ignored for @PreserveOnRefresh view");
             } else {
+                PushConnection pushConnection = ui.getInternals()
+                        .getPushConnection();
+                if (pushConnection != null) {
+                    // Disconnect push before closing ui to not generate
+                    // empty request that blocks close as client is already
+                    // closed at this time.
+                    pushConnection.disconnect();
+                }
                 ui.close();
                 getLogger().debug("UI closed with a beacon request");
             }
