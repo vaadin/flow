@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -144,15 +145,14 @@ public class FileWatcherTest {
         }
     }
 
-    private void assertFileCountFound(File directory, int count)
-            throws InterruptedException {
-        Thread.sleep(500);
-        File[] files = directory.listFiles();
-        Assert.assertEquals(
-                "Wrong amount of copied files found when there should be "
-                        + count + ". Current files were: "
-                        + Arrays.toString(files),
-                count, files.length);
+    private void assertFileCountFound(File directory, int count) {
+        Awaitility.await().untilAsserted(directory::listFiles, files -> {
+            Assert.assertEquals(
+                    "Wrong amount of copied files found when there should be "
+                            + count + ". Current files were: "
+                            + Arrays.toString(files),
+                    count, files.length);
+        });
 
     }
 
