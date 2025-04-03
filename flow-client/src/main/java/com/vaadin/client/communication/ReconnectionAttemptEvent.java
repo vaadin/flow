@@ -23,7 +23,7 @@ import com.google.gwt.event.shared.EventHandler;
  * Event fired when a reconnection attempt is requested.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 24.7
  */
 public class ReconnectionAttemptEvent
         extends Event<ReconnectionAttemptEvent.Handler> {
