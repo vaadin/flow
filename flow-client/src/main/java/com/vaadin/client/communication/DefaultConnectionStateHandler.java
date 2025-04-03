@@ -228,7 +228,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         // do not need to start a new one
         if (reconnectAttempt == 1) {
             // Try once immediately
-            Console.warn("Immediate reconnect attempt for " + payload);
+            Console.debug("Immediate reconnect attempt for " + payload);
             doReconnect(payload);
         } else {
             scheduledReconnect = new Timer() {
@@ -238,7 +238,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                         scheduledReconnect.cancel();
                     }
                     scheduledReconnect = null;
-                    Console.warn("Scheduled reconnect attempt "
+                    Console.debug("Scheduled reconnect attempt "
                             + reconnectAttempt + " for " + payload);
                     doReconnect(payload);
                 }

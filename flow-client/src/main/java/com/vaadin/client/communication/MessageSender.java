@@ -229,10 +229,12 @@ public class MessageSender {
             // been already sent and enqueued.
             if (!payload.hasKey(ApplicationConstants.SERVER_SYNC_ID)) {
                 messageQueue.add(payload);
-                Console.log(
-                        "Message not sent because other messages are pending. Added to the queue.");
+                Console.debug(
+                        "Message not sent because other messages are pending. Added to the queue: "
+                                + payload.toJson());
             } else {
-                Console.log("Message not sent because already queued");
+                Console.debug("Message not sent because already queued: "
+                        + payload.toJson());
             }
             return;
         }
