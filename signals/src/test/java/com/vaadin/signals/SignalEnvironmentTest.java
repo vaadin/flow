@@ -21,24 +21,6 @@ public class SignalEnvironmentTest extends SignalTestBase {
      */
 
     @Test
-    void initialize_nullValues_throwsNpe() {
-        assertThrows(NullPointerException.class, () -> {
-            SignalEnvironment.initialize(null, Runnable::run);
-        });
-
-        assertThrows(NullPointerException.class, () -> {
-            SignalEnvironment.initialize(new ObjectMapper(), null);
-        });
-    }
-
-    @Test
-    void initialize_alradyInitialzed_throwsIse() {
-        assertThrows(IllegalStateException.class, () -> {
-            SignalEnvironment.initialize(new ObjectMapper(), Runnable::run);
-        });
-    }
-
-    @Test
     void tryInitialize_nullValues_throwsNpe() {
         assertThrows(NullPointerException.class, () -> {
             SignalEnvironment.tryInitialize(null, Runnable::run);

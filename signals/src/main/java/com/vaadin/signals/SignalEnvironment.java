@@ -40,7 +40,7 @@ public class SignalEnvironment {
      *            the object mapper to use, not <code>null</code>
      * @param dispatcher
      *            the asynchronous dispatcher to use, not <code>null</code>
-     * @return <code>true</code> if the provided values were used to initialized
+     * @return <code>true</code> if the provided values were used to initialize
      *         the environment, <code>false</code> if the environment was
      *         already initialized
      */
@@ -51,24 +51,6 @@ public class SignalEnvironment {
 
         return state.compareAndSet(null,
                 new InitializationState(objectMapper, dispatcher));
-    }
-
-    /**
-     * Initializes the global signal environment. The environment must be
-     * initialized before signals are used.
-     *
-     * @param objectMapper
-     *            the object mapper to use, not <code>null</code>
-     * @param dispatcher
-     *            the asynchronous dispatcher to use, not <code>null</code>
-     * @throws IllegalStateException
-     *             if the environment is already initialized
-     */
-    public static void initialize(ObjectMapper objectMapper,
-            Executor dispatcher) {
-        if (!tryInitialize(objectMapper, dispatcher)) {
-            throw new IllegalStateException("Can be initialized only once");
-        }
     }
 
     /**
