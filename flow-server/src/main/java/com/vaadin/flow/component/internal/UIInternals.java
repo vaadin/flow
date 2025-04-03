@@ -808,6 +808,19 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Populate the routerTargetChain with RouterLayouts, but only if the target
+     * chain is empty. If the chain contains elements the given list is ignored.
+     *
+     * @param layouts
+     *            stored router target chain to set as last navigated chain
+     */
+    public void setRouterTargetChain(List<RouterLayout> layouts) {
+        if (routerTargetChain.isEmpty()) {
+            routerTargetChain.addAll(layouts);
+        }
+    }
+
+    /**
      * Shows a route target in the related UI. This method is intended for
      * framework use only. Use {@link UI#navigate(String)} to change the route
      * target that is shown in a UI.

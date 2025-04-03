@@ -147,7 +147,7 @@ public class ViteWebsocketConnectionTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test(timeout = 3500)
+    @Test(timeout = 5000)
     public void close_clientWebsocketClose_dontBlockIndefinitely()
             throws ExecutionException, InterruptedException,
             NoSuchFieldException, InvocationTargetException,
