@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -399,7 +400,7 @@ public class FrontendUtils {
     /**
      * Creates a process builder for the given list of program and arguments. If
      * the program is defined as an absolute path, then the directory that
-     * contains the program is also appended to PATH so that the it can locate
+     * contains the program is also appended to PATH so that it can locate
      * related tools.
      *
      * @param command
@@ -407,6 +408,24 @@ public class FrontendUtils {
      * @return a configured process builder
      */
     public static ProcessBuilder createProcessBuilder(List<String> command) {
+        return createProcessBuilder(command, Function.identity());
+    }
+
+    /**
+     * Creates a process builder for the given list of program and arguments. If
+     * the program is defined as an absolute path, then the directory that
+     * contains the program is also appended to PATH so that it can locate
+     * related tools.
+     *
+     * @param command
+     *            a list with the program and arguments
+     * @param adjustProcessBuilder
+     *            the function to make changes to the created instance of
+     *            ProcessBuilder
+     * @return a configured process builder
+     */
+    public static ProcessBuilder createProcessBuilder(List<String> command,
+            Function<ProcessBuilder, ProcessBuilder> adjustProcessBuilder) {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
         /*
@@ -443,7 +462,7 @@ public class FrontendUtils {
             environment.put(pathEnvVar, path);
         }
 
-        return processBuilder;
+        return adjustProcessBuilder.apply(processBuilder);
     }
 
     /**
@@ -866,14 +885,36 @@ public class FrontendUtils {
      */
     public static String executeCommand(List<String> command)
             throws CommandExecutionException {
+        return executeCommand(command, Function.identity());
+    }
+
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @param adjustProcessBuilder
+     *            the function to make changes to the created instance of
+     *            ProcessBuilder
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally.
+     */
+    public static String executeCommand(List<String> command,
+            Function<ProcessBuilder, ProcessBuilder> adjustProcessBuilder)
+            throws CommandExecutionException {
         try {
-            Process process = FrontendUtils.createProcessBuilder(command)
+            Process process = FrontendUtils
+                    .createProcessBuilder(command, adjustProcessBuilder)
                     .start();
 
             CompletableFuture<Pair<String, String>> streamConsumer = consumeProcessStreams(
                     process);
             int exitCode = process.waitFor();
             Pair<String, String> outputs = streamConsumer.get();
+
+            process.destroy();
+
             if (exitCode != 0) {
                 throw new CommandExecutionException(exitCode,
                         outputs.getFirst(), outputs.getSecond());

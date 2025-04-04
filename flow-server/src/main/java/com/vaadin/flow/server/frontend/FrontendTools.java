@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
+import java.util.StringJoiner;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,6 +179,8 @@ public class FrontendTools {
     private boolean forceAlternativeNode;
     private final boolean useGlobalPnpm;
     private final boolean autoUpdate;
+
+    private String viteExecutable;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -794,6 +797,24 @@ public class FrontendTools {
                 getNpmExecutable(false));
         npmVersionCommand.add("--version"); // NOSONAR
         return FrontendUtils.getVersion("npm", npmVersionCommand);
+    }
+
+    public String getNpmPackageExecutable(String packageName, String binName,
+            File cwd) throws CommandExecutionException {
+        if (viteExecutable == null) {
+            var script = """
+                    var jsonPath = require.resolve('%packageName%/package.json');
+                    var json = require(jsonPath);
+                    console.log(path.resolve(path.dirname(jsonPath), json.bin['%binName%']));
+                    """
+                    .replace("%packageName%", packageName)
+                    .replace("%binName%", binName);
+            viteExecutable = FrontendUtils.executeCommand(
+                    List.of(getNodeExecutable(), "--eval", script),
+                    (builder) -> builder.directory(cwd));
+        }
+
+        return viteExecutable;
     }
 
     /**
