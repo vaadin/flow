@@ -11,12 +11,16 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.concurrent.CompletableFuture;
 
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -133,5 +137,46 @@ public class ServerRpcHandlerTest {
         ui.getInternals().setSession(session);
 
         handler.handleRpc(ui, Mockito.mock(Reader.class), request);
+    }
+
+    @Test
+    public void handleRpc_pushEnabled_unloadBeacon_doNoGeneratePayload()
+            throws InvalidUIDLSecurityKeyException, IOException {
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+
+        Mockito.doAnswer(i -> {
+            // Introduce a small delay to hold the lock during disconnect
+            Thread.sleep(30);
+            return null;
+        }).when(resource).close();
+        Mockito.doAnswer(i -> {
+            // Introduce a small delay to hold the lock during message push
+            Thread.sleep(30);
+            return CompletableFuture.completedFuture(null);
+        }).when(broadcaster).broadcast(ArgumentMatchers.any(),
+                ArgumentMatchers.any(AtmosphereResource.class));
+
+        AtmospherePushConnection pushConnection = new AtmospherePushConnection(
+                ui);
+        pushConnection.connect(resource);
+        Mockito.when(uiInternals.getPushConnection())
+                .thenReturn(pushConnection);
+
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"UNLOAD\": true, \"clientId\":0}");
+        ServerRpcHandler handler = new ServerRpcHandler();
+
+        Assert.assertEquals("Push should be connected",
+                AtmospherePushConnection.State.CONNECTED,
+                pushConnection.getState());
+
+        handler.handleRpc(ui, reader, request);
+
+        Assert.assertEquals("Push should be disconnected after beacon unload",
+                AtmospherePushConnection.State.DISCONNECTED,
+                pushConnection.getState());
+        Mockito.verifyNoInteractions(broadcaster);
     }
 }
