@@ -129,7 +129,7 @@ public class NetworkInterruptionIT extends ChromeBrowserTestWithProxy {
     }
 
     private void waitForReconnectAttempts() {
-        waitForLogMessage("Reconnect attempt 2 for XHR");
+        waitForLogMessage("Reconnect attempt 4 for XHR");
     }
 
     private void ensureNoSystemErrorFromServer() {

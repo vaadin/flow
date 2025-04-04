@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -83,6 +84,17 @@ public class MessageSender {
     public MessageSender(Registry registry) {
         this.registry = registry;
         this.pushConnectionFactory = GWT.create(PushConnectionFactory.class);
+        this.registry.getRequestResponseTracker()
+                .addReconnectionAttemptHandler(ev -> {
+                    Console.debug(
+                            "Re-sending queued messages to the server (attempt "
+                                    + ev.getAttempt() + ") ...");
+                    // Try to reconnect by sending queued messages.
+                    // Stops the resend timer, since it will anyway not make any
+                    // request during reconnection process.
+                    resetTimer();
+                    doSendInvocationsToServer();
+                });
     }
 
     /**
@@ -128,7 +140,12 @@ public class MessageSender {
             registry.getRequestResponseTracker().startRequest();
             sendPayload(payload);
             return;
-        } else if (hasQueuedMessages() && resendMessageTimer == null) {
+        } else if (hasQueuedMessages()) {
+            Console.debug("Sending queued messages to server");
+            if (resendMessageTimer != null) {
+                // Stopping resend timer and re-send immediately
+                resetTimer();
+            }
             sendPayload(messageQueue.get(0));
             return;
         }
@@ -212,6 +229,12 @@ public class MessageSender {
             // been already sent and enqueued.
             if (!payload.hasKey(ApplicationConstants.SERVER_SYNC_ID)) {
                 messageQueue.add(payload);
+                Console.debug(
+                        "Message not sent because other messages are pending. Added to the queue: "
+                                + payload.toJson());
+            } else {
+                Console.debug("Message not sent because already queued: "
+                        + payload.toJson());
             }
             return;
         }
@@ -255,7 +278,6 @@ public class MessageSender {
         } else {
             Console.debug("send XHR");
             registry.getXhrConnection().send(payload);
-
             resetTimer();
             // resend last payload if response hasn't come in.
             resendMessageTimer = new Timer() {
@@ -264,11 +286,16 @@ public class MessageSender {
                     resendMessageTimer
                             .schedule(registry.getApplicationConfiguration()
                                     .getMaxMessageSuspendTimeout() + 500);
+                    // Avoid re-sending the message if a request is still in
+                    // progress.
+                    // If the response to the message has not yet been processed
+                    // the reconnection attempt listener takes care of resending
+                    // the queued message.
                     if (!registry.getRequestResponseTracker()
                             .hasActiveRequest()) {
                         registry.getRequestResponseTracker().startRequest();
+                        registry.getXhrConnection().send(payload);
                     }
-                    registry.getXhrConnection().send(payload);
                 }
             };
             resendMessageTimer.schedule(registry.getApplicationConfiguration()

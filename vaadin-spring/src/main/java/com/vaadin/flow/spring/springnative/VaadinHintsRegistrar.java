@@ -36,6 +36,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         // Bundles, build info etc
         hints.resources().registerPattern("META-INF/VAADIN/*");
         hints.resources().registerPattern("vaadin-i18n/*");
+        hints.resources().registerPattern("vaadin-featureflags.properties");
 
         // Random classes that need reflection
         for (String cls : getClasses()) {

@@ -15,8 +15,6 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
-import jakarta.websocket.CloseReason.CloseCodes;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -30,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
+import jakarta.websocket.CloseReason.CloseCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,6 +152,10 @@ public class ViteWebsocketConnection implements Listener {
      *             if there is a problem with the connection
      */
     public void close() throws InterruptedException, ExecutionException {
+        if (clientWebsocket == null) {
+            getLogger().debug("Connection already closed");
+            return;
+        }
         getLogger().debug("Closing the connection");
         if (clientWebsocket.isDone()) {
             WebSocket client = clientWebsocket.get();
