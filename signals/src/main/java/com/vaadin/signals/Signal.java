@@ -195,7 +195,7 @@ public abstract class Signal<T> {
 
     /**
      * Submits a command for this signal and updates the given operation using
-     * the given result converted once the command result is confirmed. The
+     * the given result converter once the command result is confirmed. The
      * command is submitted through the current {@link Transaction} and it uses
      * {@link SignalEnvironment#synchronousDispatcher()} for delivering the
      * result update.
