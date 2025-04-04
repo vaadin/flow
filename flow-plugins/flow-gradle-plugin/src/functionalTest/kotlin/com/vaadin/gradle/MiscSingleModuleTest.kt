@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
@@ -39,7 +39,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             plugins {
                 id 'war'
                 id 'org.gretty' version '4.0.3'
-                id("com.vaadin")
+                id("com.vaadin.flow")
             }
             repositories {
                 mavenLocal()
@@ -103,7 +103,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             plugins {
                 id 'war'
                 id 'org.gretty' version '4.0.3'
-                id("com.vaadin")
+                id("com.vaadin.flow")
             }
             repositories {
                 mavenLocal()
@@ -136,7 +136,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 """
             plugins {
                 id 'java'
-                id("com.vaadin")
+                id("com.vaadin.flow")
             }
             repositories {
                 mavenLocal()
@@ -185,7 +185,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 """
             plugins {
                 id 'java'
-                id("com.vaadin")
+                id("com.vaadin.flow")
             }
             repositories {
                 mavenLocal()
@@ -256,7 +256,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id 'org.springframework.boot' version '$springBootVersion'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
                 id 'java'
-                id("com.vaadin")
+                id("com.vaadin.flow")
             }
             
             repositories {
@@ -362,7 +362,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             plugins {
                 id 'war'
                 id 'org.gretty' version '4.0.3'
-                id("com.vaadin")
+                id("com.vaadin.flow")
             }
             repositories {
                 mavenLocal()
@@ -417,7 +417,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText(
                 """
             plugins {
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -438,7 +438,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -464,7 +464,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -492,7 +492,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -523,7 +523,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testIncludeExclude() {
         testProject.buildFile.writeText("""
             plugins {
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -571,7 +571,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id 'java'
                 id 'org.springframework.boot' version '3.3.4'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-                id("com.vaadin")
+                id("com.vaadin.flow")
             }
             
             repositories {
@@ -656,7 +656,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -683,7 +683,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
