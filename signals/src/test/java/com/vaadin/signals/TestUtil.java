@@ -1,9 +1,17 @@
 package com.vaadin.signals;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.ExecutionException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.Transaction;
+import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.operations.SignalOperation.Result;
+import com.vaadin.signals.operations.SignalOperation.ResultOrError;
 
 public class TestUtil {
     public static SignalCommand writeRootValueCommand(String value) {
@@ -32,4 +40,36 @@ public class TestUtil {
         return Transaction.getCurrent().read(tree).data(Id.ZERO).get().value();
     }
 
+    public static <T> T assertSuccess(SignalOperation<T> operation) {
+        if (assertCompleted(operation) instanceof Result<T> result) {
+            return result.value();
+        } else {
+            throw new AssertionError();
+        }
+    }
+
+    public static void assertFailure(SignalOperation<?> operation) {
+        ResultOrError<?> resultOrError = assertCompleted(operation);
+
+        assertFalse(resultOrError.successful());
+    }
+
+    private static <T> ResultOrError<T> assertCompleted(
+            SignalOperation<T> operation) {
+        assertTrue(operation.result().isDone());
+
+        try {
+            return operation.result().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    /*
+     * Helper to run package-private tree getter from tests in sub packages.
+     */
+    public static SignalTree tree(Signal<?> signal) {
+        return signal.tree();
+    }
 }
