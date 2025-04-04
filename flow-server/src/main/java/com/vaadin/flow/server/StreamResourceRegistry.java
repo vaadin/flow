@@ -102,6 +102,43 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
+     * Registers a stream resource in the session and returns registration
+     * handler.
+     * <p>
+     * You can get resource URI to use it in the application (e.g. set an
+     * attribute value or property value) via the registration handler. The
+     * registration handler should be used to unregister resource when it's not
+     * needed anymore. Note that it is the developer's responsibility to
+     * unregister resources. Otherwise resources won't be garbage collected
+     * until the session expires which causes memory leak.
+     *
+     * @param elementRequestHandler
+     *            element request handler to register
+     * @return registration handler
+     */
+    public StreamRegistration registerResource(
+            ElementRequestHandler elementRequestHandler) {
+        AbstractStreamResource wrappedResource = wrap(elementRequestHandler);
+        session.checkHasLock(
+                "Session needs to be locked when registering stream resources.");
+        StreamRegistration registration = new Registration(this,
+                wrappedResource.getId(), wrappedResource.getName());
+        res.put(registration.getResourceUri(), wrappedResource);
+        return registration;
+    }
+
+    private AbstractStreamResource wrap(
+            ElementRequestHandler elementRequestHandler) {
+        return new AbstractStreamResource() {
+            @Override
+            public String getName() {
+                return elementRequestHandler.getUrlPostfix();
+            }
+
+        };
+    }
+
+    /**
      * Unregister a stream receiver resource.
      *
      * @param resource
