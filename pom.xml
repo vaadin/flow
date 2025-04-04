@@ -102,7 +102,7 @@
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
@@ -248,7 +248,7 @@
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>9.7.1</version>
+                <version>9.8</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
@@ -281,6 +281,11 @@
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-all</artifactId>
                 <version>1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.3.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
