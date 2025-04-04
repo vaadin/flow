@@ -144,7 +144,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(10, menuItems.size());
@@ -158,7 +158,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), nestedLoginRequiredRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(0, menuItems.size());
@@ -171,7 +171,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(false);
 
         Assert.assertEquals(13, menuItems.size());
@@ -191,7 +191,7 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(false);
         Assert.assertEquals(15, menuItems.size());
 
@@ -218,6 +218,8 @@ public class MenuRegistryTest {
             throws IOException {
         Mockito.when(deploymentConfiguration.isProductionMode())
                 .thenReturn(true);
+        // Clear any production mode execution route contents
+        MenuRegistry.clearFileRoutesCache();
 
         tmpDir.newFolder("META-INF", "VAADIN");
         File clientFiles = new File(tmpDir.getRoot(),
@@ -232,11 +234,14 @@ public class MenuRegistryTest {
             menuRegistry.when(() -> MenuRegistry.getClassLoader())
                     .thenReturn(mockClassLoader);
 
-            Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+            Map<String, AvailableViewInfo> menuItems = MenuRegistry
                     .getMenuItems(true);
 
             Assert.assertEquals(10, menuItems.size());
             assertClientRoutes(menuItems);
+        } finally {
+            // Clear our routes from production mode cache
+            MenuRegistry.clearFileRoutesCache();
         }
     }
 
@@ -247,7 +252,7 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(2, menuItems.size());
@@ -266,7 +271,7 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(12, menuItems.size());
@@ -307,7 +312,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(13, menuItems.size());
@@ -336,7 +341,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(11, menuItems.size());
