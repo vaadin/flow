@@ -245,7 +245,7 @@ public class ValueSignal<T> extends Signal<T> {
     public boolean equals(Object obj) {
         // Explicitly checking getClass() to avoid accidental equality with
         // NumberSignal
-        return this == obj || obj instanceof ValueSignal other
+        return this == obj || obj instanceof ValueSignal<?> other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator())

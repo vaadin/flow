@@ -214,7 +214,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * @param at
      *            the insert position, not <code>null</code>
      * @return an operation containing a signal for the inserted entry and the
-     *         the eventual result
+     *         eventual result
      */
     public InsertOperation<NodeSignal> insertValue(Object value,
             ListPosition at) {
@@ -230,7 +230,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * @param at
      *            the insert position, not <code>null</code>
      * @return an operation containing a signal for the inserted entry and the
-     *         the eventual result
+     *         eventual result
      */
     public InsertOperation<NodeSignal> insert(ListPosition at) {
         return insertValue(null, at);
@@ -261,8 +261,6 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *
      * @param key
      *            the key to use, not <code>null</code>
-     * @param value
-     *            the value to set
      * @return an operation containing a signal for the entry and the eventual
      *         result
      */
@@ -294,7 +292,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * location in the tree. The operation fails if there is already a map child
      * with the same key at the time when the operation is processed.
      *
-     * @param node
+     * @param signal
      *            the signal to adopt, not <code>null</code>
      * @param key
      *            the key to use, not <code>null</code>

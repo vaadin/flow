@@ -47,7 +47,7 @@ public class UsageTracker {
 
         private final Function<Data, Object> extractor;
 
-        private UsageType(Function<Data, Object> extractor) {
+        UsageType(Function<Data, Object> extractor) {
             this.extractor = extractor;
         }
 
