@@ -162,7 +162,8 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *            the id of the signal node within the signal tree, not
      *            <code>null</code>
      * @param validator
-     *            the validator to use, not <code>null</code>
+     *            the validator to check operations submitted to this singal,
+     *            not <code>null</code>
      * @param elementType
      *            the element type, not <code>null</code>
      */
@@ -351,6 +352,11 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      */
     public ListSignal<T> asReadonly() {
         return withValidator(anything -> false);
+    }
+
+    public NodeSignal asNode() {
+        // Override to make public
+        return super.asNode();
     }
 
     @Override

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,7 +165,7 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void track_noUsage_emptyResult() {
-        Set<NodeUsage> result = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> result = UsageTracker.track(() -> {
         });
         assertEquals(0, result.size());
     }
@@ -159,7 +174,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_singleRegister_singleResult() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> result = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> result = UsageTracker.track(() -> {
             UsageTracker.registerUsage(TestUtil.tree(signal), signal.id(),
                     UsageType.VALUE);
         });
@@ -177,7 +192,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_multipleRegister_multipleResults() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> result = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> result = UsageTracker.track(() -> {
             UsageTracker.registerUsage(TestUtil.tree(signal), signal.id(),
                     UsageType.VALUE);
             UsageTracker.registerUsage(TestUtil.tree(signal), signal.id(),
@@ -191,7 +206,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_duplicateRegister_singleResult() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> result = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> result = UsageTracker.track(() -> {
             UsageTracker.registerUsage(TestUtil.tree(signal), signal.id(),
                     UsageType.VALUE);
             UsageTracker.registerUsage(TestUtil.tree(signal), signal.id(),
@@ -205,7 +220,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_readValueInCallback_tracked() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> trackUsage = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> trackUsage = UsageTracker.track(() -> {
             signal.value();
         });
 
@@ -216,7 +231,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_peekInCallback_notTracked() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> trackUsage = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> trackUsage = UsageTracker.track(() -> {
             signal.peek();
         });
 
@@ -227,7 +242,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_peekConfirmedInCallback_notTracked() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> trackUsage = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> trackUsage = UsageTracker.track(() -> {
             signal.peekConfirmed();
         });
 
@@ -238,7 +253,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_writeInCallback_notAllowedNoUsageTracked() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> trackUsage = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> trackUsage = UsageTracker.track(() -> {
             assertThrows(IllegalStateException.class, () -> {
                 signal.value("update");
             });
@@ -251,7 +266,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void untracked_registerDependency_notRegistered() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> result = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> result = UsageTracker.track(() -> {
             Signal.untracked(() -> {
                 UsageTracker.registerUsage(TestUtil.tree(signal), signal.id(),
                         UsageType.VALUE);
@@ -266,7 +281,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void untracked_writeInCallback_allowedNoUsageTracked() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Set<NodeUsage> result = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> result = UsageTracker.track(() -> {
             Signal.untracked(() -> {
                 signal.value("update");
                 return null;
@@ -289,7 +304,7 @@ public class UsageTrackerTest extends SignalTestBase {
          * Empty trackUsage to show that the registered usage wasn't just stored
          * for later
          */
-        Set<NodeUsage> result = UsageTracker.trackUsage(() -> {
+        Set<NodeUsage> result = UsageTracker.track(() -> {
         });
 
         assertEquals(0, result.size());
@@ -297,7 +312,7 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void isActive_activeInsideTrackerInactiveOutsdide() {
-        UsageTracker.trackUsage(() -> {
+        UsageTracker.track(() -> {
             assertTrue(UsageTracker.isActive());
 
             Signal.untracked(() -> {

@@ -1,7 +1,6 @@
 package com.vaadin.signals;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -17,6 +16,7 @@ import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.StagedTransaction;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.Transaction.Type;
+import com.vaadin.signals.impl.TreeRevision;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
@@ -64,13 +64,38 @@ public abstract class Signal<T> {
      *            the id of the signal node within the signal tree, not
      *            <code>null</code>
      * @param validator
-     *            the validator to use, not <code>null</code>
+     *            the validator to check operations submitted to this singal,
+     *            not <code>null</code>
      */
     protected Signal(SignalTree tree, Id id,
             Predicate<SignalCommand> validator) {
         this.tree = Objects.requireNonNull(tree);
         this.validator = Objects.requireNonNull(validator);
         this.id = Objects.requireNonNull(id);
+    }
+
+    /**
+     * Gets the data node for this signal in the given tree revision.
+     *
+     * @param revision
+     *            the tree revision to read from, not <code>null</code>
+     * @return the data node, or <code>null</code> if there is no node for this
+     *         signal in the revision
+     */
+    protected Data data(TreeRevision revision) {
+        return revision.data(id()).orElse(null);
+    }
+
+    /**
+     * Gets the data node for this signal in the given transaction.
+     *
+     * @param transaction
+     *            the transaction to read from, not <code>null</code>
+     * @return the data node, or <code>null</code> if there is no node for this
+     *         signal in the transaction
+     */
+    protected Data data(Transaction transaction) {
+        return data(transaction.read(tree()));
     }
 
     /**
@@ -91,23 +116,22 @@ public abstract class Signal<T> {
      */
     public T value() {
         Transaction transaction = Transaction.getCurrent();
-        Optional<Data> node = transaction.read(tree).data(id);
+        Data data = data(transaction);
 
-        if (transaction instanceof StagedTransaction) {
+        if (transaction instanceof StagedTransaction && data != null) {
             /*
              * This could be optimized to avoid creating the command if
              * lastUpdate has already been set in the same transaction
              */
-            Id lastUpdate = node.map(Data::lastUpdate).orElse(Id.ZERO);
-            submit(new SignalCommand.LastUpdateCondition(Id.random(), id,
-                    lastUpdate));
+            submit(new SignalCommand.LastUpdateCondition(Id.random(), id(),
+                    data.lastUpdate()));
         }
 
         /*
          * Extract value before registering since extracting sets up state that
          * is used by registerDepedency in the case of computed signals.
          */
-        T value = extractValue(node.orElse(null));
+        T value = extractValue(data);
         registerUsage();
         return value;
     }
@@ -120,8 +144,7 @@ public abstract class Signal<T> {
      * @return the signal value
      */
     public T peek() {
-        return extractValue(
-                Transaction.getCurrent().read(tree).data(id).orElse(null));
+        return extractValue(data(Transaction.getCurrent()));
     }
 
     /**
@@ -132,7 +155,7 @@ public abstract class Signal<T> {
      * @return the confirmed signal value
      */
     public T peekConfirmed() {
-        return extractValue(tree.confirmed().data(id).orElse(null));
+        return extractValue(data(tree().confirmed()));
     }
 
     /**
@@ -156,12 +179,13 @@ public abstract class Signal<T> {
      */
     protected Predicate<SignalCommand> mergeValidators(
             Predicate<SignalCommand> validator) {
-        if (this.validator == ANYTHING_GOES) {
+        Predicate<SignalCommand> own = validator();
+        if (own == ANYTHING_GOES) {
             return validator;
         } else if (validator == ANYTHING_GOES) {
-            return this.validator;
+            return own;
         } else {
-            return this.validator.and(validator);
+            return own.and(validator);
         }
     }
 
@@ -189,7 +213,7 @@ public abstract class Signal<T> {
         } else if (command instanceof SignalCommand.TransactionCommand tx) {
             return tx.commands().stream().allMatch(this::isValid);
         } else {
-            return validator.test(command);
+            return validator().test(command);
         }
     }
 
@@ -218,7 +242,7 @@ public abstract class Signal<T> {
             Function<CommandResult.Accept, R> resultConverter, O operation) {
         // Remove is issued through the parent but targets the child
         assert command instanceof SignalCommand.RemoveCommand
-                || id.equals(command.targetNodeId());
+                || id().equals(command.targetNodeId());
 
         if (!isValid(command)) {
             throw new UnsupportedOperationException();
@@ -226,7 +250,7 @@ public abstract class Signal<T> {
 
         Executor dispatcher = SignalEnvironment.synchronousDispatcher();
 
-        Transaction.getCurrent().include(tree, command, result -> {
+        Transaction.getCurrent().include(tree(), command, result -> {
             operation.result().completeAsync(() -> {
                 if (result instanceof CommandResult.Accept accept) {
                     return new SignalOperation.Result<>(
@@ -345,7 +369,7 @@ public abstract class Signal<T> {
      * @see UsageTracker
      */
     protected void registerUsage() {
-        UsageTracker.registerUsage(tree, id, usageType());
+        UsageTracker.registerUsage(tree(), id(), usageType());
     }
 
     /**
@@ -356,12 +380,12 @@ public abstract class Signal<T> {
      *
      * @return this signal as a node signal, not <code>null</code>
      */
-    public NodeSignal asNode() {
-        if (this instanceof NodeSignal node) {
-            return node;
-        } else {
-            return new NodeSignal(tree, id, validator);
-        }
+    protected NodeSignal asNode() {
+        // This method is protected to avoid exposing in cases where it doesn't
+        // make sense
+        assert (!(this instanceof NodeSignal));
+
+        return new NodeSignal(tree(), id(), validator());
     }
 
     /**
@@ -382,7 +406,7 @@ public abstract class Signal<T> {
      */
     protected SignalOperation<Void> remove(Signal<?> child) {
         return submit(
-                new SignalCommand.RemoveCommand(Id.random(), child.id, id()));
+                new SignalCommand.RemoveCommand(Id.random(), child.id(), id()));
     }
 
     /**

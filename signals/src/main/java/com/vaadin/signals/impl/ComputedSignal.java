@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
@@ -52,8 +67,7 @@ public class ComputedSignal<T> extends Signal<T> {
     @Override
     protected void registerUsage() {
         if (UsageTracker.isActive()) {
-            Data data = Transaction.getCurrent().read(tree()).data(id())
-                    .orElse(null);
+            Data data = data(Transaction.getCurrent());
             ComputedState state = readState(data);
             if (state != null) {
                 /*
@@ -99,7 +113,7 @@ public class ComputedSignal<T> extends Signal<T> {
         if (state == null || NodeUsage.hasChanges(state.dependencies)) {
             Object[] holder = new Object[1];
             Set<NodeUsage> dependencies = UsageTracker
-                    .trackUsage(() -> holder[0] = computation.get());
+                    .track(() -> holder[0] = computation.get());
             Object value = holder[0];
 
             state = new ComputedState(value, List.copyOf(dependencies));

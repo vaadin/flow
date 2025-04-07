@@ -44,7 +44,8 @@ public class NumberSignal extends ValueSignal<Double> {
      *            the id of the signal node within the signal tree, not
      *            <code>null</code>
      * @param validator
-     *            the validator to use, not <code>null</code>
+     *            the validator to check operations submitted to this singal,
+     *            not <code>null</code>
      */
     protected NumberSignal(SignalTree tree, Id id,
             Predicate<SignalCommand> validator) {
