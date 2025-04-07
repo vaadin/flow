@@ -419,13 +419,13 @@ public class FrontendUtils {
      *
      * @param command
      *            a list with the program and arguments
-     * @param adjustProcessBuilder
+     * @param configureProcessBuilder
      *            the function to make changes to the created instance of
      *            ProcessBuilder
      * @return a configured process builder
      */
     public static ProcessBuilder createProcessBuilder(List<String> command,
-            Function<ProcessBuilder, ProcessBuilder> adjustProcessBuilder) {
+            Function<ProcessBuilder, ProcessBuilder> configureProcessBuilder) {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
         /*
@@ -462,7 +462,7 @@ public class FrontendUtils {
             environment.put(pathEnvVar, path);
         }
 
-        return adjustProcessBuilder.apply(processBuilder);
+        return configureProcessBuilder.apply(processBuilder);
     }
 
     /**
@@ -893,7 +893,7 @@ public class FrontendUtils {
      *
      * @param command
      *            the command to be executed and it's arguments.
-     * @param adjustProcessBuilder
+     * @param configureProcessBuilder
      *            the function to make changes to the created instance of
      *            ProcessBuilder
      * @return process output string.
@@ -901,11 +901,11 @@ public class FrontendUtils {
      *             if the process completes exceptionally.
      */
     public static String executeCommand(List<String> command,
-            Function<ProcessBuilder, ProcessBuilder> adjustProcessBuilder)
+            Function<ProcessBuilder, ProcessBuilder> configureProcessBuilder)
             throws CommandExecutionException {
         try {
             Process process = FrontendUtils
-                    .createProcessBuilder(command, adjustProcessBuilder)
+                    .createProcessBuilder(command, configureProcessBuilder)
                     .start();
 
             CompletableFuture<Pair<String, String>> streamConsumer = consumeProcessStreams(
