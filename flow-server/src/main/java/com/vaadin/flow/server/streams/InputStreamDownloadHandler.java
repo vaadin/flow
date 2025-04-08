@@ -19,10 +19,11 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
 
 /**
@@ -64,27 +65,31 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
         this.name = name;
     }
 
+    public InputStreamDownloadHandler(
+            SerializableFunction<DownloadRequest, DownloadResponse> handler,
+            String name, TransferProgressListener listener) {
+        this(handler, name);
+        addTransferProgressListener(listener);
+    }
+
     @Override
-    public void handleDownloadRequest(DownloadRequest event) {
-        DownloadResponse download = handler.apply(event);
-        VaadinResponse response = event.getResponse();
+    public void handleTransferRequest(DownloadRequest downloadRequest) {
+        DownloadResponse download = handler.apply(downloadRequest);
+        VaadinResponse response = downloadRequest.getResponse();
         if (download.hasError()) {
             response.setStatus(download.getError());
             return;
         }
 
-        final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream();
+        try (OutputStream outputStream = downloadRequest.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            int n;
-            while ((n = read(event.getSession(), inputStream, buf)) >= 0) {
-                outputStream.write(buf, 0, n);
-            }
+            transfer(inputStream, outputStream, downloadRequest,
+                    getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw new RuntimeException(ioe);
+            notifyError(downloadRequest, ioe);
+            throw new UncheckedIOException(ioe);
         }
 
         response.setContentType(download.getContentType());

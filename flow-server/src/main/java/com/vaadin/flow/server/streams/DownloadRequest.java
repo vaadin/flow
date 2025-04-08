@@ -14,29 +14,42 @@
  * the License.
  */
 
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Class containing data on requested client download.
  *
  * @since 24.8
  */
-public record DownloadRequest(VaadinRequest request, VaadinResponse response,
-        VaadinSession session, String fileName, String contentType,
-        Element owningElement) implements Serializable {
+public class DownloadRequest extends TransferRequest {
+
+    /**
+     * Create a new download event with required data.
+     *
+     * @param request
+     *            current request
+     * @param response
+     *            current response to write response data to
+     * @param session
+     *            current session
+     * @param fileName
+     *            defined download file name
+     */
+    public DownloadRequest(VaadinRequest request, VaadinResponse response,
+            VaadinSession session, String fileName) {
+        super(request, response, session, fileName);
+    }
 
     /**
      * Returns a <code>OutputStream</code> for writing binary data in the
@@ -50,7 +63,7 @@ public record DownloadRequest(VaadinRequest request, VaadinResponse response,
      */
     public OutputStream getOutputStream() {
         try {
-            return response.getOutputStream();
+            return getResponse().getOutputStream();
         } catch (IOException e) {
             LoggerFactory.getLogger(DownloadRequest.class)
                     .error("Error getting output stream", e);
@@ -71,76 +84,11 @@ public record DownloadRequest(VaadinRequest request, VaadinResponse response,
      */
     public PrintWriter getWriter() {
         try {
-            return response.getWriter();
+            return getResponse().getWriter();
         } catch (IOException e) {
             LoggerFactory.getLogger(DownloadRequest.class)
                     .error("Error getting print writer");
             throw new UncheckedIOException("Error getting writer", e);
         }
-    }
-
-    /**
-     * Get {@link VaadinRequest} for download event.
-     *
-     * @return vaadin request
-     */
-    public VaadinRequest getRequest() {
-        return request;
-    }
-
-    /**
-     * Get {@link VaadinResponse} for download event.
-     *
-     * @return vaadin response
-     */
-    public VaadinResponse getResponse() {
-        return response;
-    }
-
-    /**
-     * Get {@link VaadinSession} for download event.
-     *
-     * @return vaadin session
-     */
-    public VaadinSession getSession() {
-        return session;
-    }
-
-    /**
-     * Get the set file name.
-     *
-     * @return file name
-     */
-    public String getFileName() {
-        return fileName == null ? "" : fileName;
-    }
-
-    /**
-     * Get the content type for the data to download.
-     *
-     * @return set content type
-     */
-    public String getContentType() {
-        return contentType;
-    }
-
-    /**
-     * Get owner {@link Component} for this event.
-     *
-     * @return owning component or null in none defined
-     */
-    public Component getOwningComponent() {
-        return owningElement.getComponent().orElse(null);
-    }
-
-    /**
-     * Get the UI instance for this request.
-     *
-     * @return Current UI
-     */
-    public UI getUI() {
-        Optional<Component> component = owningElement.getComponent();
-        return component.map(value -> value.getUI().orElseGet(UI::getCurrent))
-                .orElseGet(UI::getCurrent);
     }
 }

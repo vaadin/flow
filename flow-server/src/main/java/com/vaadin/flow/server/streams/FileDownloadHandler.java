@@ -20,9 +20,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
-import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -61,26 +62,41 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
         this.name = name;
     }
 
-    @Override
-    public void handleDownloadRequest(DownloadRequest event) {
-        VaadinSession session = event.getSession();
-        VaadinResponse response = event.getResponse();
+    /**
+     * Create a download handler for given file and desired download name also
+     * adding a given progress listener.
+     *
+     * @param file
+     *            file to download
+     * @param name
+     *            url postfix name to use instead of file name
+     * @param listener
+     *            listener for transfer progress events
+     */
+    public FileDownloadHandler(File file, String name,
+            TransferProgressListener listener) {
+        this(file, name);
+        addTransferProgressListener(listener);
+    }
 
-        final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream();
+    @Override
+    public void handleTransferRequest(DownloadRequest downloadRequest) {
+        VaadinResponse response = downloadRequest.getResponse();
+        long fileLength = file.length();
+        downloadRequest.withSize(fileLength);
+
+        try (OutputStream outputStream = downloadRequest.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            int n;
-            while ((n = read(session, inputStream, buf)) >= 0) {
-                outputStream.write(buf, 0, n);
-            }
+            transfer(inputStream, outputStream, downloadRequest,
+                    getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw new RuntimeException(ioe);
+            notifyError(downloadRequest, ioe);
+            throw new UncheckedIOException(ioe);
         }
-        response.setContentType(event.getContentType());
-        response.setContentLength(Math.toIntExact(file.length()));
+        response.setContentType(downloadRequest.getContentType());
+        response.setContentLength(Math.toIntExact(fileLength));
     }
 
     @Override

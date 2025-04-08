@@ -19,7 +19,9 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -27,31 +29,32 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @since 24.8
  */
-public abstract class AbstractDownloadHandler implements DownloadHandler {
+public abstract class AbstractDownloadHandler
+        extends AbstractTransferProgressAwareHandler<DownloadRequest>
+        implements DownloadHandler {
 
-    /**
-     * Read buffer amount of bytes from the input stream.
-     *
-     * @param session
-     *            vaadin session in use
-     * @param source
-     *            input stream source
-     * @param buffer
-     *            byte buffer to read into
-     * @return amount of bytes read into buffer
-     * @throws IOException
-     *             If the first byte cannot be read for any reason other than
-     *             the end of the file, if the input stream has been closed, or
-     *             if some other I/O error occurs.
-     */
-    protected int read(VaadinSession session, InputStream source, byte[] buffer)
-            throws IOException {
-        session.lock();
-        try {
-            return source.read(buffer);
-        } finally {
-            session.unlock();
-        }
+    @Override
+    public void handleDownloadRequest(DownloadRequest event) {
+        handleTransferProcessAwareRequest(event);
     }
 
+    @Override
+    public AbstractDownloadHandler whenStart(
+            SerializableRunnable startHandler) {
+        return (AbstractDownloadHandler) super.whenStart(startHandler);
+    }
+
+    @Override
+    public AbstractDownloadHandler onProgress(
+            SerializableBiConsumer<Long, Long> progressHandler,
+            long progressIntervalInBytes) {
+        return (AbstractDownloadHandler) super.onProgress(progressHandler,
+                progressIntervalInBytes);
+    }
+
+    @Override
+    public AbstractDownloadHandler whenComplete(
+            SerializableBiConsumer<CompletionStatus, Long> completeHandler) {
+        return (AbstractDownloadHandler) super.whenComplete(completeHandler);
+    }
 }
