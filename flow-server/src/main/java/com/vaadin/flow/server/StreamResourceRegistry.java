@@ -118,7 +118,8 @@ public class StreamResourceRegistry implements Serializable {
      */
     public StreamRegistration registerResource(
             ElementRequestHandler elementRequestHandler) {
-        AbstractStreamResource wrappedResource = wrap(elementRequestHandler);
+        AbstractStreamResource wrappedResource = new ElementStreamResource(
+                elementRequestHandler);
         session.checkHasLock(
                 "Session needs to be locked when registering stream resources.");
         StreamRegistration registration = new Registration(this,
@@ -127,15 +128,23 @@ public class StreamResourceRegistry implements Serializable {
         return registration;
     }
 
-    private AbstractStreamResource wrap(
-            ElementRequestHandler elementRequestHandler) {
-        return new AbstractStreamResource() {
-            @Override
-            public String getName() {
-                return elementRequestHandler.getUrlPostfix();
-            }
+    public static class ElementStreamResource extends AbstractStreamResource {
+        ElementRequestHandler elementRequestHandler;
 
-        };
+        public ElementStreamResource(
+                ElementRequestHandler elementRequestHandler) {
+            this.elementRequestHandler = elementRequestHandler;
+        }
+
+        public ElementRequestHandler getElementRequestHandler() {
+            return elementRequestHandler;
+        }
+
+        @Override
+        public String getName() {
+            return elementRequestHandler.getUrlPostfix() == null ? ""
+                    : elementRequestHandler.getUrlPostfix();
+        }
     }
 
     /**
