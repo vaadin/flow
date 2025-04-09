@@ -65,7 +65,7 @@ jobs:
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
-          eval $cmd -T 2C -q || eval $cmd
+          eval $cmd -T 2C || eval $cmd
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
