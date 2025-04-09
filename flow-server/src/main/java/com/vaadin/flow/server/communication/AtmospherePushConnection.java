@@ -466,6 +466,11 @@ public class AtmospherePushConnection
         boolean alreadySeen(int lastSeenOnClient) {
             return serverSyncId <= lastSeenOnClient;
         }
+
+        @Override
+        public String toString() {
+            return "PushMessage " + serverSyncId + ", body: " + message;
+        }
     }
 
     /**
