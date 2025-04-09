@@ -113,7 +113,9 @@ public final class ViteHandler extends AbstractDevServerRunner {
     @Override
     protected File getServerBinary() {
         try {
-            return getFrontendTools().getNpmPackageExecutable("vite", "vite", getProjectRoot()).toFile();
+            return getFrontendTools()
+                    .getNpmPackageExecutable("vite", "vite", getProjectRoot())
+                    .toFile();
         } catch (FrontendUtils.CommandExecutionException e) {
             throw new RuntimeException("Vite not found", e);
         }
