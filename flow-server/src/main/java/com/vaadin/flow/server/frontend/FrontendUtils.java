@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -407,7 +408,7 @@ public class FrontendUtils {
      * @return a configured process builder
      */
     public static ProcessBuilder createProcessBuilder(List<String> command) {
-        return createProcessBuilder(command, Function.identity());
+        return createProcessBuilder(command, UnaryOperator.identity());
     }
 
     /**
@@ -420,11 +421,11 @@ public class FrontendUtils {
      *            a list with the program and arguments
      * @param configureProcessBuilder
      *            the function to make changes to the created instance of
-     *            ProcessBuilder
+     *            ProcessBuilder, not {@literal null}.
      * @return a configured process builder
      */
     public static ProcessBuilder createProcessBuilder(List<String> command,
-            Function<ProcessBuilder, ProcessBuilder> configureProcessBuilder) {
+            UnaryOperator<ProcessBuilder> configureProcessBuilder) {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
         /*
@@ -884,7 +885,7 @@ public class FrontendUtils {
      */
     public static String executeCommand(List<String> command)
             throws CommandExecutionException {
-        return executeCommand(command, Function.identity());
+        return executeCommand(command, UnaryOperator.identity());
     }
 
     /**
@@ -894,13 +895,13 @@ public class FrontendUtils {
      *            the command to be executed and it's arguments.
      * @param configureProcessBuilder
      *            the function to make changes to the created instance of
-     *            ProcessBuilder
+     *            ProcessBuilder, not {@literal null}.
      * @return process output string.
      * @throws CommandExecutionException
      *             if the process completes exceptionally.
      */
     public static String executeCommand(List<String> command,
-            Function<ProcessBuilder, ProcessBuilder> configureProcessBuilder)
+            UnaryOperator<ProcessBuilder> configureProcessBuilder)
             throws CommandExecutionException {
         try {
             Process process = FrontendUtils

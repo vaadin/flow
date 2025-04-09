@@ -902,8 +902,8 @@ public class FrontendToolsTest {
                 }
                 """.getBytes());
         var vite = tools.getNpmPackageExecutable("vite", "vite", projectDir);
-        Assert.assertEquals(projectDir.toPath()
-                .resolve("node_modules/vite/bin/vite.js").toString() + "\n",
+        Assert.assertEquals(
+                projectDir.toPath().resolve("node_modules/vite/bin/vite.js"),
                 vite);
     }
 

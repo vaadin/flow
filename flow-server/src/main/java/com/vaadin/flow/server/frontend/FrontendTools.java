@@ -811,15 +811,15 @@ public class FrontendTools {
     public Path getNpmPackageExecutable(String packageName, String binName,
             File cwd) throws CommandExecutionException {
         var script = """
-                var jsonPath = require.resolve('%packageName%/package.json');
+                var jsonPath = require.resolve('%s/package.json');
                 var json = require(jsonPath);
-                console.log(path.resolve(path.dirname(jsonPath), json.bin['%binName%']));
+                console.log(path.resolve(path.dirname(jsonPath), json.bin['%s']));
                 """
-                .replace("%packageName%", packageName)
-                .replace("%binName%", binName);
-        return Paths.get(FrontendUtils.executeCommand(
-                List.of(getNodeExecutable(), "--eval", script),
-                (builder) -> builder.directory(cwd)));
+                .formatted(packageName, binName);
+        return Paths.get(FrontendUtils
+                .executeCommand(List.of(getNodeExecutable(), "--eval", script),
+                        (builder) -> builder.directory(cwd))
+                .trim());
     }
 
     /**
