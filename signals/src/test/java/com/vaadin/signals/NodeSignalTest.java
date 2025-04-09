@@ -433,13 +433,11 @@ public class NodeSignalTest extends SignalTestBase {
         assertEquals(signal, copy);
         assertEquals(signal.hashCode(), copy.hashCode());
 
-        NodeSignal asValue = signal.asNode();
-        assertEquals(signal, asValue);
-        assertEquals(signal.hashCode(), asValue.hashCode());
+        assertEquals(signal, signal.asValue(String.class).asNode());
 
         assertNotEquals(signal, new NodeSignal());
         assertNotEquals(signal, signal.asReadonly());
-        assertNotEquals(signal, signal.asNode().asList(Double.class));
+        assertNotEquals(signal, signal.asList(Double.class));
     }
 
     @Test
