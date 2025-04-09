@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -792,7 +794,21 @@ public class FrontendTools {
         return FrontendUtils.getVersion("npm", npmVersionCommand);
     }
 
-    public String getNpmPackageExecutable(String packageName, String binName,
+    /**
+     * Gives a path to the executable (bin) JS file of the given package using
+     * the native node resolution mechanism.
+     *
+     * @param packageName
+     *            the name of the package.
+     * @param binName
+     *            the name of the specific executable.
+     * @param cwd
+     *            the current working directory.
+     * @return the path to the executable.
+     * @throws CommandExecutionException
+     *             if the node resolution fails.
+     */
+    public Path getNpmPackageExecutable(String packageName, String binName,
             File cwd) throws CommandExecutionException {
         var script = """
                 var jsonPath = require.resolve('%packageName%/package.json');
@@ -801,9 +817,9 @@ public class FrontendTools {
                 """
                 .replace("%packageName%", packageName)
                 .replace("%binName%", binName);
-        return FrontendUtils.executeCommand(
+        return Paths.get(FrontendUtils.executeCommand(
                 List.of(getNodeExecutable(), "--eval", script),
-                (builder) -> builder.directory(cwd));
+                (builder) -> builder.directory(cwd)));
     }
 
     /**
