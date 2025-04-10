@@ -11,9 +11,6 @@ package com.vaadin.flow.server;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,8 +106,7 @@ public class PwaRegistry implements Serializable {
         baseImage = getBaseImage(logo);
 
         if (baseImage == null) {
-            LoggerFactory.getLogger(PwaRegistry.class)
-                    .error("Image is not found or can't be loaded: " + logo);
+            getLogger().error("Image is not found or can't be loaded: " + logo);
         } else {
             // initialize icons
             icons = initializeIcons();
