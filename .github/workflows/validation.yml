@@ -65,7 +65,8 @@ jobs:
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
-          eval $cmd -T 2C || eval $cmd
+          #eval $cmd -T 2C || eval $cmd
+          eval $cmd
       - name: Thread dump
         if: cancelled()
         run: |
