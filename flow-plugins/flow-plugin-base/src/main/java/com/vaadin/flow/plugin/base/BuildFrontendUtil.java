@@ -534,10 +534,11 @@ public class BuildFrontendUtil {
             buildExecutable = frontendTools.getNpmPackageExecutable(packageName,
                     binaryName, adapter.npmFolder()).toFile();
         } catch (FrontendUtils.CommandExecutionException e) {
-            throw new IllegalStateException(String.format(
-                    "Unable to get the \"%s\" binary path for the \"%s\" npm package. Double"
-                            + " check that the plugin is executed correctly",
-                    packageName, binaryName));
+            throw new IllegalStateException(String.format("""
+                    Unable to locate %s executable. Expected the "%s" npm \
+                    package to be installed and to provide the "%s" binary. \
+                    Double check that the npm dependencies are installed.""",
+                    toolName, packageName, binaryName));
         }
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
