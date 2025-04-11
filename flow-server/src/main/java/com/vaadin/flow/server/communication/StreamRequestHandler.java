@@ -30,6 +30,7 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -107,11 +108,13 @@ public class StreamRequestHandler implements RequestHandler {
 
         if (abstractStreamResource.isPresent()) {
             AbstractStreamResource resource = abstractStreamResource.get();
-            if (resource instanceof StreamResource) {
+            if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
+                elementRequest.getElementRequestHandler().handleRequest(request,
+                        response, session, null);
+            } else if (resource instanceof StreamResource) {
                 resourceHandler.handleRequest(session, request, response,
                         (StreamResource) resource);
-            } else if (resource instanceof StreamReceiver) {
-                StreamReceiver streamReceiver = (StreamReceiver) resource;
+            } else if (resource instanceof StreamReceiver streamReceiver) {
                 String[] parts = parsePath(pathInfo);
 
                 receiverHandler.handleRequest(session, request, response,

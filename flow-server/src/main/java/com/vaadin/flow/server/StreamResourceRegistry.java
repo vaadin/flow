@@ -107,8 +107,8 @@ public class StreamResourceRegistry implements Serializable {
      * <p>
      * You can get resource URI to use it in the application (e.g. set an
      * attribute value or property value) via the registration handler. The
-     * registration handler should be used to unregister resource when it's not
-     * needed anymore. Note that it is the developer's responsibility to
+     * registration handler should be used to unregister the resource when it's
+     * not needed anymore. Note that it is the developer's responsibility to
      * unregister resources. Otherwise resources won't be garbage collected
      * until the session expires which causes memory leak.
      *
@@ -118,7 +118,8 @@ public class StreamResourceRegistry implements Serializable {
      */
     public StreamRegistration registerResource(
             ElementRequestHandler elementRequestHandler) {
-        AbstractStreamResource wrappedResource = wrap(elementRequestHandler);
+        AbstractStreamResource wrappedResource = new ElementStreamResource(
+                elementRequestHandler);
         session.checkHasLock(
                 "Session needs to be locked when registering stream resources.");
         StreamRegistration registration = new Registration(this,
@@ -127,15 +128,29 @@ public class StreamResourceRegistry implements Serializable {
         return registration;
     }
 
-    private AbstractStreamResource wrap(
-            ElementRequestHandler elementRequestHandler) {
-        return new AbstractStreamResource() {
-            @Override
-            public String getName() {
-                return elementRequestHandler.getUrlPostfix();
-            }
+    /**
+     * Internal wrapper class for wrapping {@link ElementRequestHandler}
+     * instances as {@link AbstractStreamResource} compatible instances.
+     *
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    public static class ElementStreamResource extends AbstractStreamResource {
+        ElementRequestHandler elementRequestHandler;
 
-        };
+        public ElementStreamResource(
+                ElementRequestHandler elementRequestHandler) {
+            this.elementRequestHandler = elementRequestHandler;
+        }
+
+        public ElementRequestHandler getElementRequestHandler() {
+            return elementRequestHandler;
+        }
+
+        @Override
+        public String getName() {
+            return elementRequestHandler.getUrlPostfix() == null ? ""
+                    : elementRequestHandler.getUrlPostfix();
+        }
     }
 
     /**

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
@@ -7,21 +22,21 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Request handler callback for handing client-server or server-client data
- * transfer for a specific element.
+ * transfer scoped to a specific (owner) element.
  */
 @FunctionalInterface
 public interface ElementRequestHandler extends Serializable {
 
     /**
      * Request handler callback for handing client-server or server-client data
-     * transfer for a specific element.
+     * transfer scoped to a specific (owner) element.
      *
      * @param request
      *            VaadinRequest request to handle
      * @param response
      *            VaadinResponse response to handle
      * @param session
-     *            VaadinSession current session
+     *            VaadinSession current VaadinSession
      * @param owner
      *            Element owner element
      */
@@ -56,7 +71,8 @@ public interface ElementRequestHandler extends Serializable {
      * Controls whether request handler is invoked when the owner element is
      * disabled.
      *
-     * @return the most permissive DisabledUpdateMode for this request handler.
+     * @return the currently set DisabledUpdateMode for this request handler.
+     *         Defaults to {@literal ONLY_WHEN_ENABLED}.
      */
     default DisabledUpdateMode getDisabledUpdateMode() {
         return DisabledUpdateMode.ONLY_WHEN_ENABLED;
