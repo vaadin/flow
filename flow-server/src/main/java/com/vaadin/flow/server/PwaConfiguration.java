@@ -8,12 +8,12 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import javax.servlet.ServletContext;
 
 /**
  * Holds the configuration from the {@link PWA} annotation.
@@ -48,40 +48,83 @@ public class PwaConfiguration implements Serializable {
     private final List<String> offlineResources;
     private final boolean enableInstallPrompt;
 
+    /**
+     * Creates the configuration using default PWA parameters.
+     */
+    public PwaConfiguration() {
+        this(false, "/", DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
+                DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
+                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, "", new String[0],
+                false);
+    }
+
     protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
-        rootUrl = hasContextPath(servletContext)
+        this(true, rootUrlPath(servletContext), pwa.name(),
+                pwa.shortName().substring(0,
+                        Math.min(pwa.shortName().length(), 12)),
+                pwa.description(), pwa.backgroundColor(), pwa.themeColor(),
+                checkPath(pwa.iconPath()), checkPath(pwa.manifestPath()),
+                checkPath(pwa.offlinePath()), pwa.display(),
+                pwa.startPath().replaceAll("^/+", ""), pwa.offlineResources(),
+                pwa.enableInstallPrompt());
+    }
+
+    /**
+     * Constructs a configuration from individual values.
+     *
+     * @param enabled
+     *            is PWA enabled
+     * @param name
+     *            the application name
+     * @param shortName
+     *            the application short name
+     * @param description
+     *            the description of the application
+     * @param backgroundColor
+     *            the background color
+     * @param themeColor
+     *            the theme color
+     * @param iconPath
+     *            the icon file path
+     * @param manifestPath
+     *            the `manifest.webmanifest` file path
+     * @param offlinePath
+     *            the static offline HTML file path
+     * @param display
+     *            the display mode
+     * @param startPath
+     *            the start path
+     * @param offlineResources
+     *            the list of files to add for pre-caching
+     * @param enableInstallPrompt
+     *            is install prompt resources injection enabled.
+     */
+    public PwaConfiguration(boolean enabled, String rootUrl, String name,
+            String shortName, String description, String backgroundColor,
+            String themeColor, String iconPath, String manifestPath,
+            String offlinePath, String display, String startPath,
+            String[] offlineResources, boolean enableInstallPrompt) {
+        this.rootUrl = rootUrl;
+        this.appName = name;
+        this.shortName = shortName.substring(0,
+                Math.min(shortName.length(), 12));
+        this.description = description;
+        this.backgroundColor = backgroundColor;
+        this.themeColor = themeColor;
+        this.iconPath = iconPath;
+        this.manifestPath = manifestPath;
+        this.offlinePath = offlinePath;
+        this.display = display;
+        this.startPath = startPath;
+        this.enabled = enabled;
+        this.offlineResources = Arrays.asList(offlineResources);
+        this.enableInstallPrompt = enableInstallPrompt;
+    }
+
+    private static String rootUrlPath(ServletContext servletContext) {
+        return hasContextPath(servletContext)
                 ? servletContext.getContextPath() + "/"
                 : "/";
-        if (pwa != null) {
-            appName = pwa.name();
-            shortName = pwa.shortName().substring(0,
-                    Math.min(pwa.shortName().length(), 12));
-            description = pwa.description();
-            backgroundColor = pwa.backgroundColor();
-            themeColor = pwa.themeColor();
-            iconPath = checkPath(pwa.iconPath());
-            manifestPath = checkPath(pwa.manifestPath());
-            offlinePath = checkPath(pwa.offlinePath());
-            display = pwa.display();
-            startPath = pwa.startPath().replaceAll("^/+", "");
-            enabled = true;
-            offlineResources = Arrays.asList(pwa.offlineResources());
-            enableInstallPrompt = pwa.enableInstallPrompt();
-        } else {
-            appName = DEFAULT_NAME;
-            shortName = "Flow PWA";
-            description = "";
-            backgroundColor = DEFAULT_BACKGROUND_COLOR;
-            themeColor = DEFAULT_THEME_COLOR;
-            iconPath = DEFAULT_ICON;
-            manifestPath = DEFAULT_PATH;
-            offlinePath = DEFAULT_OFFLINE_PATH;
-            display = DEFAULT_DISPLAY;
-            startPath = "";
-            enabled = false;
-            offlineResources = Collections.emptyList();
-            enableInstallPrompt = false;
-        }
     }
 
     private static boolean hasContextPath(ServletContext servletContext) {

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -136,5 +137,12 @@ public interface FrontendDependenciesScanner extends Serializable {
      * @return the set of JS files
      */
     Set<String> getClasses();
+
+    /**
+     * Get the {@link PwaConfiguration} of the application.
+     *
+     * @return the PWA configuration
+     */
+    PwaConfiguration getPwaConfiguration();
 
 }

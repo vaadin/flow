@@ -32,6 +32,10 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -47,6 +51,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 
+    protected static final String ERROR_INVALID_PWA_ANNOTATION = "There can only be one @PWA annotation per application and it must be set on "
+            + "the application's parent layout, or in a view annotated with @Route";
     private static final String COULD_NOT_LOAD_ERROR_MSG = "Could not load annotation class ";
 
     private static final String VALUE = "value";
@@ -54,6 +60,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
+    private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
     private Set<String> scripts = new LinkedHashSet<>();
@@ -125,6 +132,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         cssData = discoverCss();
 
         discoverTheme();
+        pwaConfiguration = discoverPwa();
 
         modules = calculateModules(regularModules, themeModules);
         getLogger().info("Visited {} classes. Took {} ms.", getClasses().size(),
@@ -159,6 +167,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     @Override
     public AbstractTheme getTheme() {
         return themeInstance;
+    }
+
+    @Override
+    public PwaConfiguration getPwaConfiguration() {
+        return pwaConfiguration;
     }
 
     @Override
@@ -430,6 +443,74 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     String.format("Annotation '%s' has no method named `%s",
                             target, methodName),
                     e);
+        }
+    }
+
+    private PwaConfiguration discoverPwa() {
+        try {
+            Class<? extends Annotation> loadedPWAAnnotation = getFinder()
+                    .loadClass(PWA.class.getName());
+
+            Set<Class<?>> annotatedClasses = getFinder()
+                    .getAnnotatedClasses(loadedPWAAnnotation);
+            if (annotatedClasses.isEmpty()) {
+                return new PwaConfiguration();
+            } else if (annotatedClasses.size() != 1) {
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + ". Found " + annotatedClasses.size()
+                        + " implementations: " + annotatedClasses);
+            }
+
+            Class<?> hopefullyCorrectPWAHolder = annotatedClasses.iterator()
+                    .next();
+            Class<? extends Annotation> routeAnnotationClass = getFinder()
+                    .loadClass(Route.class.getName());
+            Class<? extends Annotation> routeLayoutClass = getFinder()
+                    .loadClass(RouterLayout.class.getName());
+
+            if (!hopefullyCorrectPWAHolder
+                    .isAnnotationPresent(routeAnnotationClass)
+                    && !routeLayoutClass
+                            .isAssignableFrom(hopefullyCorrectPWAHolder)) {
+                throw new IllegalStateException(
+                        ERROR_INVALID_PWA_ANNOTATION + " but was found on "
+                                + hopefullyCorrectPWAHolder.getName());
+
+            }
+
+            Annotation pwa = annotationFinder
+                    .apply(hopefullyCorrectPWAHolder, loadedPWAAnnotation)
+                    .get(0);
+
+            String name = invokeAnnotationMethodAsString(pwa, "name");
+            String shortName = invokeAnnotationMethodAsString(pwa, "shortName");
+            String description = invokeAnnotationMethodAsString(pwa,
+                    "description");
+            String backgroundColor = invokeAnnotationMethodAsString(pwa,
+                    "backgroundColor");
+            String themeColor = invokeAnnotationMethodAsString(pwa,
+                    "themeColor");
+            String iconPath = invokeAnnotationMethodAsString(pwa, "iconPath");
+            String manifestPath = invokeAnnotationMethodAsString(pwa,
+                    "manifestPath");
+            String offlinePath = invokeAnnotationMethodAsString(pwa,
+                    "offlinePath");
+            String display = invokeAnnotationMethodAsString(pwa, "display");
+            String startPath = invokeAnnotationMethodAsString(pwa, "startPath");
+            String[] offlineResources = (String[]) invokeAnnotationMethod(pwa,
+                    "offlineResources");
+            boolean enableInstallPrompt = (Boolean) invokeAnnotationMethod(pwa,
+                    "enableInstallPrompt");
+
+            assert shortName != null; // required in @PWA annotation
+
+            return new PwaConfiguration(true, "/", name, shortName, description,
+                    backgroundColor, themeColor, iconPath, manifestPath,
+                    offlinePath, display, startPath, offlineResources,
+                    enableInstallPrompt);
+        } catch (ClassNotFoundException exception) {
+            throw new IllegalStateException(
+                    "Could not load PWA annotation class", exception);
         }
     }
 

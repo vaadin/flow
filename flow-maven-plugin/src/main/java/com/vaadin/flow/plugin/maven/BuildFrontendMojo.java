@@ -197,6 +197,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         // @formatter:off
         new NodeTasks.Builder(getClassFinder(project),
                 npmFolder, generatedFolder, frontendDirectory)
+                .withWebpack(webpackOutputDirectory, null,
+                        null)
                         .runNpmInstall(runNpmInstall)
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)

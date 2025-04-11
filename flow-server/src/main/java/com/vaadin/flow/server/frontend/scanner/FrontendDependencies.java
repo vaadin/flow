@@ -35,6 +35,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -53,11 +56,16 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
  */
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
+    protected static final String ERROR_INVALID_PWA_ANNOTATION = "There can only be one @PWA annotation per application and it must be set on "
+            + "the application's parent layout, or in a view annotated with @Route";
+
     private final HashMap<String, EndPointData> endPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final Set<String> visited = new HashSet<>();
+
+    private PwaConfiguration pwaConfiguration;
 
     /**
      * Default Constructor.
@@ -95,6 +103,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             computeApplicationTheme();
             computePackages();
+            computePwaConfiguration();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
         } catch (ClassNotFoundException | InstantiationException
@@ -112,6 +121,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public Map<String, String> getPackages() {
         return packages;
+    }
+
+    /**
+     * Get the PWA configuration of the application.
+     *
+     * @return the PWA configuration
+     */
+    @Override
+    public PwaConfiguration getPwaConfiguration() {
+        return this.pwaConfiguration;
     }
 
     /**
@@ -386,6 +405,67 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             packages.put(dependency, version);
         }
+    }
+
+    /**
+     * Find the class with a {@link com.vaadin.flow.server.PWA} annotation and
+     * read it into a {@link com.vaadin.flow.server.PwaConfiguration} object.
+     *
+     * @throws ClassNotFoundException
+     */
+    private void computePwaConfiguration() throws ClassNotFoundException {
+        FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
+                getFinder(), PWA.class.getName());
+        Class<? extends Annotation> routeAnnotationClass = getFinder()
+                .loadClass(Route.class.getName());
+        Class<? extends Annotation> routeLayoutClass = getFinder()
+                .loadClass(RouterLayout.class.getName());
+
+        for (Class<?> hopefullyCorrectPWAHolder : getFinder()
+                .getAnnotatedClasses(PWA.class.getName())) {
+            // PWA annotation must be on a Route annotated class or on
+            // a parent layout
+            if (!hopefullyCorrectPWAHolder
+                    .isAnnotationPresent(routeAnnotationClass)
+                    && !routeLayoutClass
+                            .isAssignableFrom(hopefullyCorrectPWAHolder)) {
+                throw new IllegalStateException(
+                        ERROR_INVALID_PWA_ANNOTATION + " but was found on "
+                                + hopefullyCorrectPWAHolder.getName());
+
+            }
+            pwaVisitor.visitClass(hopefullyCorrectPWAHolder.getName());
+        }
+
+        Set<String> dependencies = pwaVisitor.getValues("name");
+        if (dependencies.size() > 1) {
+            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                    + " Found " + dependencies.size() + " implementations: "
+                    + dependencies);
+        }
+        if (dependencies.isEmpty()) {
+            this.pwaConfiguration = new PwaConfiguration();
+            return;
+        }
+
+        String name = pwaVisitor.getValue("name");
+        String shortName = pwaVisitor.getValue("shortName");
+        String description = pwaVisitor.getValue("description");
+        String backgroundColor = pwaVisitor.getValue("backgroundColor");
+        String themeColor = pwaVisitor.getValue("themeColor");
+        String iconPath = pwaVisitor.getValue("iconPath");
+        String manifestPath = pwaVisitor.getValue("manifestPath");
+        String offlinePath = pwaVisitor.getValue("offlinePath");
+        String display = pwaVisitor.getValue("display");
+        String startPath = pwaVisitor.getValue("startPath");
+        List<String> offlineResources = pwaVisitor.getValue("offlineResources");
+        boolean enableInstallPrompt = pwaVisitor
+                .getValue("enableInstallPrompt");
+
+        this.pwaConfiguration = new PwaConfiguration(true, "/", name, shortName,
+                description, backgroundColor, themeColor, iconPath,
+                manifestPath, offlinePath, display, startPath,
+                offlineResources.toArray(new String[] {}), enableInstallPrompt);
     }
 
     private static Logger log() {
