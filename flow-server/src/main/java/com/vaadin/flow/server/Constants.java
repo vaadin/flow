@@ -378,11 +378,27 @@ public final class Constants implements Serializable {
     public static final String VAADIN_MAPPING = "VAADIN/";
 
     /**
+     * The static resources root folder.
+     */
+    public static final String VAADIN_WEBAPP = "webapp/";
+
+    /**
+     * The generated PWA icons folder.
+     */
+    public static final String VAADIN_PWA_ICONS = "pwa-icons/";
+
+    /**
      * The path to meta-inf/VAADIN/ where static resources are put on the
      * servlet.
      */
     public static final String VAADIN_SERVLET_RESOURCES = META_INF
             + VAADIN_MAPPING;
+
+    /**
+     * The path to webapp/ public resources root.
+     */
+    public static final String VAADIN_WEBAPP_RESOURCES = VAADIN_SERVLET_RESOURCES
+            + VAADIN_WEBAPP;
 
     /**
      * The static build resources folder.

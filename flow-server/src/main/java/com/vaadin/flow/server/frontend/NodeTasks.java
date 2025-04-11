@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -538,6 +539,13 @@ public class NodeTasks implements FallibleCommand {
                     builder.frontendResourcesDirectory));
         }
 
+        PwaConfiguration pwa;
+        if (frontendDependencies != null) {
+            pwa = frontendDependencies.getPwaConfiguration();
+        } else {
+            pwa = new PwaConfiguration();
+        }
+
         if (builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty()) {
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
@@ -559,6 +567,10 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
                     builder.frontendDirectory));
+        }
+        if (builder.productionMode && pwa.isEnabled()) {
+            commands.add(new TaskGeneratePWAIcons(pwa, classFinder,
+                    builder.webpackOutputDirectory));
         }
     }
 
