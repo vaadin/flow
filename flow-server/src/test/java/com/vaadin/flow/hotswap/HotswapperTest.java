@@ -1019,7 +1019,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_forcePageReload_loadedClass_fullReloadTriggered()
+    public void onHotswap_pushEnabled_forcePageReload_loadedClass_noReload()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
