@@ -944,7 +944,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_forcePageReload_fullReloadTriggered()
+    public void onHotswap_pushDisabled_forcePageReload_redefinedClass_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -957,6 +957,22 @@ public class HotswapperTest {
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).refresh(anyBoolean());
         Mockito.verify(liveReload).reload();
+    }
+
+    @Test
+    public void onHotswap_pushDisabled_forcePageReload_loadedClass_notReload()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+
+        Hotswapper.forcePageReload(service, true);
+        hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, false);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload, never()).reload();
     }
 
     @Test
@@ -986,7 +1002,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_forcePageReload_fullReloadTriggered()
+    public void onHotswap_pushEnabled_forcePageReload_redefinedClass_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1000,6 +1016,23 @@ public class HotswapperTest {
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).refresh(anyBoolean());
         Mockito.verify(liveReload).reload();
+    }
+
+    @Test
+    public void onHotswap_pushEnabled_forcePageReload_loadedClass_noReload()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+        ui.enablePush();
+
+        Hotswapper.forcePageReload(service, true);
+        hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, false);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload, never()).reload();
     }
 
     @Test

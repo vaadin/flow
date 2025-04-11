@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.frontend;
 
 import javax.imageio.ImageIO;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,12 +24,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,11 +92,13 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             BufferedImage baseImage = loadBaseImage(iconURL);
             createGeneratedIconsFolder();
 
+            ExecutorService executor = Executors.newFixedThreadPool(4);
             CompletableFuture<?>[] iconsGenerators = PwaRegistry
                     .getIconTemplates(pwaConfiguration.getIconPath()).stream()
                     .map(icon -> new InternalPwaIcon(icon, baseImage))
-                    .map(this::generateIcon).toArray(CompletableFuture[]::new);
-
+                    .map(this::generateIcon)
+                    .map(task -> CompletableFuture.runAsync(task, executor))
+                    .toArray(CompletableFuture[]::new);
             try {
                 CompletableFuture.allOf(iconsGenerators).join();
             } catch (CompletionException ex) {
@@ -111,6 +113,8 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             } catch (CancellationException ex) {
                 throw new ExecutionFailedException(
                         "PWA icons generation failed", ex);
+            } finally {
+                executor.shutdown();
             }
         } finally {
             if (headless == null) {
@@ -170,16 +174,16 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         return iconURL;
     }
 
-    private CompletableFuture<?> generateIcon(InternalPwaIcon icon) {
+    private Runnable generateIcon(InternalPwaIcon icon) {
         Path iconPath = generatedIconsPath.resolve(icon.getRelHref()
                 .substring(1).replace('/', File.separatorChar));
-        return CompletableFuture.runAsync(() -> {
+        return () -> {
             try (OutputStream os = Files.newOutputStream(iconPath)) {
                 icon.write(os);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
-        });
+        };
     }
 
     private static class InternalPwaIcon extends PwaIcon {
@@ -194,5 +198,6 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         protected BufferedImage getBaseImage() {
             return baseImage;
         }
+
     }
 }
