@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 /**
@@ -114,12 +115,15 @@ public class StreamResourceRegistry implements Serializable {
      *
      * @param elementRequestHandler
      *            element request handler to register
+     * @param owner
+     *            owner element this request handler is scoped to
+     *
      * @return registration handler
      */
     public StreamRegistration registerResource(
-            ElementRequestHandler elementRequestHandler) {
+            ElementRequestHandler elementRequestHandler, Element owner) {
         AbstractStreamResource wrappedResource = new ElementStreamResource(
-                elementRequestHandler);
+                elementRequestHandler, owner);
         session.checkHasLock(
                 "Session needs to be locked when registering stream resources.");
         StreamRegistration registration = new Registration(this,
@@ -135,11 +139,13 @@ public class StreamResourceRegistry implements Serializable {
      * For internal use only. May be renamed or removed in a future release.
      */
     public static class ElementStreamResource extends AbstractStreamResource {
-        ElementRequestHandler elementRequestHandler;
+        private final ElementRequestHandler elementRequestHandler;
+        private final Element owner;
 
         public ElementStreamResource(
-                ElementRequestHandler elementRequestHandler) {
+                ElementRequestHandler elementRequestHandler, Element owner) {
             this.elementRequestHandler = elementRequestHandler;
+            this.owner = owner;
         }
 
         public ElementRequestHandler getElementRequestHandler() {
@@ -150,6 +156,10 @@ public class StreamResourceRegistry implements Serializable {
         public String getName() {
             return elementRequestHandler.getUrlPostfix() == null ? ""
                     : elementRequestHandler.getUrlPostfix();
+        }
+
+        public Element getOwner() {
+            return owner;
         }
     }
 

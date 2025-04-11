@@ -110,7 +110,7 @@ public class StreamRequestHandler implements RequestHandler {
             AbstractStreamResource resource = abstractStreamResource.get();
             if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
                 elementRequest.getElementRequestHandler().handleRequest(request,
-                        response, session, null);
+                        response, session, elementRequest.getOwner());
             } else if (resource instanceof StreamResource) {
                 resourceHandler.handleRequest(session, request, response,
                         (StreamResource) resource);
