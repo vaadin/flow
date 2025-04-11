@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -109,8 +110,15 @@ public class StreamRequestHandler implements RequestHandler {
         if (abstractStreamResource.isPresent()) {
             AbstractStreamResource resource = abstractStreamResource.get();
             if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
-                elementRequest.getElementRequestHandler().handleRequest(request,
-                        response, session, elementRequest.getOwner());
+                Element owner = elementRequest.getOwner();
+                if (owner.getNode().isInert() && !elementRequest
+                        .getElementRequestHandler().allowInert()) {
+                    return false;
+                } else {
+                    elementRequest.getElementRequestHandler().handleRequest(
+                            request, response, session,
+                            elementRequest.getOwner());
+                }
             } else if (resource instanceof StreamResource) {
                 resourceHandler.handleRequest(session, request, response,
                         (StreamResource) resource);
