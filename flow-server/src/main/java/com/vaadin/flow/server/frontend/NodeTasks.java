@@ -71,6 +71,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateHilla.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateWebpack.class,
             TaskUpdateVite.class,
@@ -202,9 +203,9 @@ public class NodeTasks implements FallibleCommand {
                     options.localResourcesFolder));
         }
 
+        PwaConfiguration pwa;
         if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             String themeName = "";
-            PwaConfiguration pwa;
             if (frontendDependencies != null) {
                 if (frontendDependencies.getThemeDefinition() != null) {
                     themeName = frontendDependencies.getThemeDefinition()
@@ -220,16 +221,19 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateVite(options.npmFolder,
                     options.buildDirectory));
         } else if (options.enableWebpackConfigUpdate) {
-            PwaConfiguration pwaConfiguration = frontendDependencies
-                    .getPwaConfiguration();
+            pwa = frontendDependencies.getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(options.frontendDirectory,
                     options.npmFolder, options.webappResourcesDirectory,
                     options.resourceOutputDirectory,
                     new File(options.generatedFolder, IMPORTS_NAME),
-                    options.useLegacyV14Bootstrap, pwaConfiguration,
+                    options.useLegacyV14Bootstrap, pwa,
                     options.buildDirectory));
+        } else {
+            pwa = new PwaConfiguration();
         }
-
+        if (options.productionMode && pwa.isEnabled()) {
+            commands.add(new TaskGeneratePWAIcons(options, pwa));
+        }
         if (options.enableImportsUpdate) {
             commands.add(new TaskUpdateImports(classFinder,
                     frontendDependencies,
