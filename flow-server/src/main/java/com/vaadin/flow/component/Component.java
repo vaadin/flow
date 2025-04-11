@@ -839,6 +839,7 @@ public abstract class Component
             try {
                 out.defaultWriteObject();
             } finally {
+                CurrentInstance.clearAll();
                 CurrentInstance.restoreInstances(instances);
             }
         } else {
@@ -858,6 +859,7 @@ public abstract class Component
             try {
                 in.defaultReadObject();
             } finally {
+                CurrentInstance.clearAll();
                 CurrentInstance.restoreInstances(instances);
             }
         } else {

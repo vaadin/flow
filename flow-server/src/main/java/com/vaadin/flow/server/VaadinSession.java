@@ -1110,6 +1110,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
+            CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(old);
         }
     }
@@ -1142,6 +1143,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 stream.writeObject(new StreamResourceRegistry(this));
             }
         } finally {
+            CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(instanceMap);
         }
     }
