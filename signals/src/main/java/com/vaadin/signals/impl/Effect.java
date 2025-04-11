@@ -15,14 +15,11 @@
  */
 package com.vaadin.signals.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.vaadin.signals.SignalEnvironment;
-import com.vaadin.signals.impl.UsageTracker.NodeUsage;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
  * Applies a side effect based on signal value changes. An effect is based on a
@@ -33,11 +30,11 @@ import com.vaadin.signals.impl.UsageTracker.NodeUsage;
  * the most recent invocation.
  */
 public class Effect {
-    private final List<Runnable> registrations = new ArrayList<>();
     private final Executor dispatcher = SignalEnvironment
             .asynchronousDispatcher();
 
-    private Set<NodeUsage> dependencies = Set.of();
+    private Usage dependencies;
+    private Runnable registration;
 
     // Non-final to allow clearing when the effect is closed
     private Runnable action;
@@ -51,7 +48,7 @@ public class Effect {
     }
 
     private void revalidate() {
-        assert registrations.isEmpty();
+        assert registration == null;
 
         if (action == null) {
             // closed
@@ -59,12 +56,10 @@ public class Effect {
         }
 
         dependencies = UsageTracker.track(action);
-
-        for (NodeUsage dependency : dependencies) {
-            Runnable registration = dependency.tree().observeNextChange(
-                    dependency.nodeId(), this::scheduleInvalidate);
-            registrations.add(registration);
-        }
+        registration = dependencies.onNextChange(() -> {
+            scheduleInvalidate();
+            return false;
+        });
     }
 
     private void scheduleInvalidate() {
@@ -76,18 +71,16 @@ public class Effect {
     private synchronized void invalidate() {
         invalidateScheduled.set(false);
 
-        if (!NodeUsage.hasChanges(dependencies)) {
-            return;
-        }
-
         clearRegistrations();
 
         revalidate();
     }
 
     private void clearRegistrations() {
-        registrations.forEach(Runnable::run);
-        registrations.clear();
+        if (registration != null) {
+            registration.run();
+            registration = null;
+        }
     }
 
     /**
@@ -97,6 +90,6 @@ public class Effect {
     public synchronized void close() {
         clearRegistrations();
         action = null;
-        dependencies = Set.of();
+        dependencies = null;
     }
 }

@@ -18,10 +18,12 @@ package com.vaadin.signals;
 import static com.vaadin.signals.TestUtil.assertFailure;
 import static com.vaadin.signals.TestUtil.assertSuccess;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.impl.Transaction;
+import com.vaadin.signals.impl.UsageTracker;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -328,6 +332,21 @@ public class ListSignalTest extends SignalTestBase {
             readonlyChild.value("update");
         });
         assertChildren(signal, "child");
+    }
+
+    @Test
+    void usageTracking_changeDifferentValues_onlyListChangeDetected() {
+        ListSignal<String> signal = new ListSignal<>(String.class);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        signal.asNode().asValue(String.class).value("value");
+        assertFalse(usage.hasChanges());
+
+        signal.insertLast("insert");
+        assertTrue(usage.hasChanges());
     }
 
     @Test

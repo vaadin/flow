@@ -16,8 +16,10 @@ import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.StagedTransaction;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.Transaction.Type;
+import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.TreeRevision;
 import com.vaadin.signals.impl.UsageTracker;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;
@@ -132,7 +134,9 @@ public abstract class Signal<T> {
          * is used by registerDepedency in the case of computed signals.
          */
         T value = extractValue(data);
-        registerUsage();
+        if (UsageTracker.isActive()) {
+            UsageTracker.registerUsage(createUsage(transaction));
+        }
         return value;
     }
 
@@ -200,12 +204,17 @@ public abstract class Signal<T> {
     protected abstract T extractValue(Data data);
 
     /**
-     * Gets the usage type that should be registered when this signal is
-     * accessed.
+     * Gets a reference value that will be used to determine whether a
+     * dependency based on previous usage should be invalidated. This is done by
+     * getting one reference value when the dependency occurs and then comparing
+     * that to the current value to determine if the value has changed.
      *
-     * @return the usage type of this signal, not <code>null</code>
+     * @param data
+     *            the data node to read from, not <code>null</code>
+     * @return a reference value to use for validity checks, may be
+     *         <code>null</code>
      */
-    protected abstract UsageTracker.UsageType usageType();
+    protected abstract Object usageChangeValue(Data data);
 
     private boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
@@ -364,12 +373,54 @@ public abstract class Signal<T> {
     }
 
     /**
-     * Registers this signal as used with the current usage tracker.
+     * Creates a usage instance based on the current state of this signal.
      *
-     * @see UsageTracker
+     * @param transaction
+     *            the transaction for which the usage occurs, not
+     *            <code>null</code>
+     * @return a usage instance, not <code>null</code>
      */
-    protected void registerUsage() {
-        UsageTracker.registerUsage(tree(), id(), usageType());
+    protected Usage createUsage(Transaction transaction) {
+        Object originalValue = usageChangeValue(data(transaction));
+
+        return new Usage() {
+            @Override
+            public boolean hasChanges() {
+                return !Objects.equals(originalValue,
+                        usageChangeValue(data(Transaction.getCurrent())));
+            }
+
+            @Override
+            public Runnable onNextChange(TransientListener listener) {
+                SignalTree tree = tree();
+
+                /*
+                 * Lock the tree to ensure no changes happen between when we
+                 * check for changes and when we add the change listener.
+                 */
+                tree.getLock().lock();
+                try {
+                    if (hasChanges()) {
+                        boolean keep = listener.invoke();
+                        if (!keep) {
+                            return () -> {
+                            };
+                        }
+                    }
+
+                    return tree.observeNextChange(id(), () -> {
+                        if (hasChanges()) {
+                            return listener.invoke();
+                        } else {
+                            return true;
+                        }
+                    });
+                } finally {
+                    tree.getLock().unlock();
+                }
+
+            }
+        };
     }
 
     /**

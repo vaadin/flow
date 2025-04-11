@@ -25,7 +25,6 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.UsageTracker.UsageType;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -118,8 +117,8 @@ public class ValueSignal<T> extends Signal<T> {
     }
 
     @Override
-    protected UsageType usageType() {
-        return UsageType.VALUE;
+    protected Object usageChangeValue(Data data) {
+        return data.value();
     }
 
     /**

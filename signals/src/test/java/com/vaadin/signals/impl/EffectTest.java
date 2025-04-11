@@ -250,6 +250,24 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void changeTracking_noOpChange_effectNotRunButRemainsActive() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            invocations.add(signal.value());
+        });
+
+        assertEquals(List.of("value"), invocations);
+
+        signal.value("value");
+        assertEquals(List.of("value"), invocations);
+
+        signal.value("update");
+        assertEquals(List.of("value", "update"), invocations);
+    }
+
+    @Test
     void callback_updateSignal_throws() {
         ValueSignal<String> signal = new ValueSignal<>("value");
 

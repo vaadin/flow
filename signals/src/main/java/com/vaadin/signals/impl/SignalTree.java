@@ -82,7 +82,7 @@ public abstract class SignalTree {
         SYNCHRONOUS;
     }
 
-    private final Map<Id, List<Runnable>> observers = new HashMap<>();
+    private final Map<Id, List<TransientListener>> observers = new HashMap<>();
 
     private final Id id = Id.random();
 
@@ -186,8 +186,8 @@ public abstract class SignalTree {
      * Registers an observer for a node in this tree. The observer will be
      * invoked the next time the corresponding node is updated in the submitted
      * snapshot. The observer is removed when invoked and needs to be registered
-     * again if it's still relevant. It is safe to register the observer again
-     * from within the callback.
+     * again if it's still relevant unless it returns <code>true</code>. It is
+     * safe to register the observer again from within the callback.
      *
      * @param nodeId
      *            the id of the node to observe, not <code>null</code>
@@ -197,14 +197,14 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the observer before it's
      *         triggered, not <code>null</code>
      */
-    public Runnable observeNextChange(Id nodeId, Runnable observer) {
+    public Runnable observeNextChange(Id nodeId, TransientListener observer) {
         assert nodeId != null;
         assert observer != null;
 
         return getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
 
-            List<Runnable> list = observers.computeIfAbsent(nodeId,
+            List<TransientListener> list = observers.computeIfAbsent(nodeId,
                     ignore -> new ArrayList<>());
 
             list.add(observer);
@@ -235,15 +235,20 @@ public abstract class SignalTree {
                 Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
                 Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
 
-                if (oldNode != newNode
-                        && !oldNode.lastUpdate().equals(newNode.lastUpdate())) {
-                    List<Runnable> copy = List.copyOf(list);
+                if (oldNode != newNode) {
+                    List<TransientListener> copy = List.copyOf(list);
 
-                    // Assuming there will immediately be a new dependent for
-                    // the same node so not clearing the map entry.
+                    /*
+                     * Assuming there will immediately be a new observer for the
+                     * same node so not clearing the map entry.
+                     */
                     list.clear();
 
-                    copy.forEach(Runnable::run);
+                    for (TransientListener observer : copy) {
+                        if (observer.invoke()) {
+                            list.add(observer);
+                        }
+                    }
                 }
             });
         });

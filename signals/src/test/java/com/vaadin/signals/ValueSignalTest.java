@@ -27,18 +27,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.vaadin.signals.SignalCommand.SetCommand;
 import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.NodeUsage;
-import com.vaadin.signals.impl.UsageTracker.UsageType;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;
@@ -337,20 +334,123 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void usageTracking_readValueWithUsageTracker_usageContainsValue() {
+    void usageTracking_changingSignalValue_usageDetectsValueChange() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
 
-        Set<NodeUsage> usages = UsageTracker.track(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.value();
         });
 
-        assertEquals(1, usages.size());
-        NodeUsage usage = usages.iterator().next();
+        assertFalse(usage.hasChanges());
 
-        assertEquals(signal.tree(), usage.tree());
-        assertEquals(signal.id(), usage.nodeId());
-        assertEquals(UsageType.VALUE, usage.type());
-        assertEquals(TextNode.valueOf("initial"), usage.referenceValue());
+        usage.onNextChange(() -> {
+            count.incrementAndGet();
+            return false;
+        });
+
+        signal.value("update");
+        assertEquals(1, count.intValue());
+        assertTrue(usage.hasChanges());
+
+        signal.value("anohter");
+        assertEquals(1, count.intValue());
+    }
+
+    @Test
+    void usageTracking_repeatingChangeListener_usageDetectsFollowingValueChange() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        usage.onNextChange(() -> {
+            count.incrementAndGet();
+            return true;
+        });
+
+        signal.value("update");
+        assertEquals(1, count.intValue());
+
+        signal.value("anohter");
+        assertEquals(2, count.intValue());
+    }
+
+    @Test
+    void usageTracking_noOpChange_listenerNotNotifiedButRemainsActive() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        usage.onNextChange(() -> {
+            count.incrementAndGet();
+            return false;
+        });
+
+        signal.value("initial");
+        assertEquals(0, count.intValue());
+        assertFalse(usage.hasChanges());
+
+        signal.value("update");
+        assertEquals(1, count.intValue());
+        assertTrue(usage.hasChanges());
+    }
+
+    @Test
+    void usageTracking_unrelatedChange_listenerNotNotifiedButRemainsActive() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        usage.onNextChange(() -> {
+            count.incrementAndGet();
+            return false;
+        });
+
+        signal.asNode().putValue("key", "value");
+        assertEquals(0, count.intValue());
+        assertFalse(usage.hasChanges());
+
+        signal.value("update");
+        assertEquals(1, count.intValue());
+        assertTrue(usage.hasChanges());
+    }
+
+    @Test
+    void usageTracking_registerAfterChange_listenerCalledImmediately() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger falseCount = new AtomicInteger();
+        AtomicInteger trueCount = new AtomicInteger();
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        signal.value("update");
+
+        usage.onNextChange(() -> {
+            falseCount.incrementAndGet();
+            return false;
+        });
+        assertEquals(1, falseCount.intValue());
+
+        usage.onNextChange(() -> {
+            trueCount.incrementAndGet();
+            return true;
+        });
+        assertEquals(1, trueCount.intValue());
+
+        signal.value("again");
+        assertEquals(1, falseCount.intValue());
+        assertEquals(2, trueCount.intValue());
     }
 
     @Test

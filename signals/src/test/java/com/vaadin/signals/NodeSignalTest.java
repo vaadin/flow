@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.NodeSignal.NodeSignalState;
+import com.vaadin.signals.impl.UsageTracker;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -421,6 +424,30 @@ public class NodeSignalTest extends SignalTestBase {
             readonlyChild.asValue(String.class).value("update");
         });
         assertEquals("child", readonlyChild.value().value(String.class));
+    }
+
+    @Test
+    void usageTracking_changeDifferentValues_anyChangeDetected() {
+        NodeSignal signal = new NodeSignal();
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        signal.asValue(String.class).value("value");
+        assertTrue(usage.hasChanges());
+
+        usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+        signal.insertValue("insert", ListPosition.last());
+        assertTrue(usage.hasChanges());
+
+        usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+        signal.putValue("key", "value");
+        assertTrue(usage.hasChanges());
     }
 
     @Test

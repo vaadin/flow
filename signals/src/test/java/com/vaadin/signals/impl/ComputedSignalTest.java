@@ -133,7 +133,7 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void effect_noOpChangeInComputedDependency_effectNotRunAgain() {
+    void effect_noOpChangeInComputedDependency_effectNotRunAgainButRemainsActive() {
         ValueSignal<String> source = new ValueSignal<>("value1");
         AtomicInteger count = new AtomicInteger();
 
@@ -154,6 +154,10 @@ public class ComputedSignalTest extends SignalTestBase {
 
         assertEquals(2, count.get());
         assertEquals(List.of(6), invocations);
+
+        source.value("value");
+        assertEquals(3, count.get());
+        assertEquals(List.of(6, 5), invocations);
     }
 
     @Test
@@ -185,15 +189,6 @@ public class ComputedSignalTest extends SignalTestBase {
 
         WeakReference<Object> ref = new WeakReference<Object>(signal);
         signal = null;
-
-        /*
-         * XXX There's currently a limitation that the computed signal has a
-         * listener on the underlying signal until the next time it's
-         * invalidated. Work around that to enable testing the big picture by
-         * triggering a redundant invalidation before testing that it was
-         * garbage collected.
-         */
-        source.value(source.value());
 
         assertTrue(waitForGarbageCollection(ref));
     }

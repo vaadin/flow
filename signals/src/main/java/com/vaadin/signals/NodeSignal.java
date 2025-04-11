@@ -27,7 +27,6 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal.NodeSignalState;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
-import com.vaadin.signals.impl.UsageTracker.UsageType;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -159,8 +158,8 @@ public class NodeSignal extends Signal<NodeSignalState> {
     }
 
     @Override
-    protected UsageType usageType() {
-        return UsageType.ALL;
+    protected Object usageChangeValue(Data data) {
+        return data.lastUpdate();
     }
 
     /**

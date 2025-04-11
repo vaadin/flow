@@ -34,6 +34,8 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.impl.UsageTracker;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -303,6 +305,21 @@ public class MapSignalTest extends SignalTestBase {
             readonlyChild.value("update");
         });
         assertChildren(signal, "key", "value");
+    }
+
+    @Test
+    void usageTracking_changeDifferentValues_onlyMapChangeDetected() {
+        MapSignal<String> signal = new MapSignal<>(String.class);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        signal.asNode().asValue(String.class).value("value");
+        assertFalse(usage.hasChanges());
+
+        signal.put("key", "value");
+        assertTrue(usage.hasChanges());
     }
 
     @Test

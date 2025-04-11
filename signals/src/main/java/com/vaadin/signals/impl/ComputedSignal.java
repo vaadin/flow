@@ -15,11 +15,7 @@
  */
 package com.vaadin.signals.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -30,8 +26,7 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
-import com.vaadin.signals.impl.UsageTracker.NodeUsage;
-import com.vaadin.signals.impl.UsageTracker.UsageType;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
  * A signal with a value that is computed based on the value of other signals.
@@ -48,10 +43,13 @@ public class ComputedSignal<T> extends Signal<T> {
      * This state is never supposed to be synchronized across a cluster or to
      * Hilla clients.
      */
-    private record ComputedState(Object value, List<NodeUsage> dependencies) {
+    private record ComputedState(Object value, Usage dependencies) {
     }
 
     private final Supplier<T> computation;
+
+    private int dependentCount = 0;
+    private Runnable dependencyRegistration;
 
     /**
      * Creates a new computed signal with the provided compute callback.
@@ -64,59 +62,73 @@ public class ComputedSignal<T> extends Signal<T> {
         this.computation = Objects.requireNonNull(computation);
     }
 
+    private void revalidateAndListen() {
+        if (dependencyRegistration != null) {
+            dependencyRegistration.run();
+        }
+        ComputedState state = getValidState(data(Transaction.getCurrent()));
+        dependencyRegistration = state.dependencies.onNextChange(() -> {
+            revalidateAndListen();
+            return Boolean.FALSE;
+        });
+    }
+
+    private synchronized void increaseDependents() {
+        if (dependentCount++ == 0) {
+            revalidateAndListen();
+        }
+    }
+
+    private synchronized void decreaseDependents() {
+        if (--dependentCount == 0) {
+            dependencyRegistration.run();
+            dependencyRegistration = null;
+        }
+    }
+
     @Override
-    protected void registerUsage() {
-        if (UsageTracker.isActive()) {
-            Data data = data(Transaction.getCurrent());
-            ComputedState state = readState(data);
-            if (state != null) {
-                /*
-                 * Synchronized to avoid memory corruption if invalidation
-                 * happens before registration has finished
-                 */
-                List<Runnable> cleanups = Collections
-                        .synchronizedList(new ArrayList<>());
+    protected Usage createUsage(Transaction transaction) {
+        Usage baseUsage = super.createUsage(transaction);
 
-                // Ensure invalidation runs exactly once
-                AtomicBoolean invalidated = new AtomicBoolean();
-
-                for (NodeUsage dependency : state.dependencies) {
-                    /*
-                     * Revalidate if any dependency changes. This will in turn
-                     * notify our dependencies.
-                     */
-                    Runnable cleanup = dependency.tree()
-                            .observeNextChange(dependency.nodeId(), () -> {
-                                if (invalidated.compareAndSet(false, true)) {
-                                    cleanups.forEach(Runnable::run);
-                                    getValidState(data);
-                                }
-                            });
-                    cleanups.add(cleanup);
-
-                    if (invalidated.get()) {
-                        // Make sure cleanup was done for this one
-                        cleanup.run();
-                        // Stop registering if already invalidated
-                        break;
-                    }
-                }
+        return new Usage() {
+            @Override
+            public boolean hasChanges() {
+                return baseUsage.hasChanges();
             }
 
-            super.registerUsage();
-        }
+            @Override
+            public Runnable onNextChange(TransientListener listener) {
+                increaseDependents();
+                AtomicBoolean removed = new AtomicBoolean();
+
+                Runnable cleanup = baseUsage.onNextChange(() -> {
+                    boolean keep = listener.invoke();
+                    if (!keep && !removed.getAndSet(true)) {
+                        decreaseDependents();
+                    }
+                    return keep;
+                });
+
+                return () -> {
+                    cleanup.run();
+                    if (!removed.getAndSet(true)) {
+                        decreaseDependents();
+                    }
+                };
+            }
+        };
     }
 
     private ComputedState getValidState(Data data) {
         ComputedState state = readState(data);
 
-        if (state == null || NodeUsage.hasChanges(state.dependencies)) {
+        if (state == null || state.dependencies.hasChanges()) {
             Object[] holder = new Object[1];
-            Set<NodeUsage> dependencies = UsageTracker
+            Usage dependencies = UsageTracker
                     .track(() -> holder[0] = computation.get());
             Object value = holder[0];
 
-            state = new ComputedState(value, List.copyOf(dependencies));
+            state = new ComputedState(value, dependencies);
 
             submit(new SignalCommand.SetCommand(Id.random(), id(),
                     new POJONode(state)));
@@ -143,10 +155,6 @@ public class ComputedSignal<T> extends Signal<T> {
         return (ComputedState) pojoNode.getPojo();
     }
 
-    static Object extractRawValue(Data data) {
-        return extractState(data.value()).value;
-    }
-
     @Override
     protected T extractValue(Data data) {
         ComputedState state = getValidState(data);
@@ -157,8 +165,8 @@ public class ComputedSignal<T> extends Signal<T> {
     }
 
     @Override
-    protected UsageType usageType() {
-        return UsageType.COMPUTED;
+    protected Object usageChangeValue(Data data) {
+        return extractState(data.value()).value;
     }
 
     @Override
