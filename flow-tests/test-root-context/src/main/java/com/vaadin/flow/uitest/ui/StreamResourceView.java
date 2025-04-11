@@ -16,12 +16,15 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.DownloadEvent;
+import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -49,6 +52,22 @@ public class StreamResourceView extends Div {
         Anchor percentDownload = new Anchor("", "Download file%.jpg");
         percentDownload.setHref(percentResource);
         percentDownload.setId("percent-link");
+
+        DownloadHandler downloadHandler = new DownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+                try {
+                    event.getWriter().print("foo");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public String getUrlPostfix() {
+                return "file+.jpg";
+            }
+        };
 
         add(download, plusDownload, percentDownload);
 
