@@ -86,6 +86,8 @@ public class FileWatcherTest {
                 try (var watcher = new ExternalDependencyWatcher(vaadinContext,
                         jarFrontendResources)) {
 
+                    Awaitility.await().until(watcher::isStarted);
+
                     assertFileCountFound(jarFrontendResources, 0);
 
                     createFile(rootProjectResourceFrontend + "/somestyles.css");

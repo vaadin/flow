@@ -169,6 +169,10 @@ public class ExternalDependencyWatcher implements Closeable {
         watchers.clear();
     }
 
+    boolean isStarted() {
+        return watchers.stream().allMatch(FileWatcher::isStarted);
+    }
+
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());
     }
