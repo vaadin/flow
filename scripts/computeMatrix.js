@@ -35,8 +35,8 @@ const globalExclusions = [
 //  Live Reload Multimodule test needs being executed in the same container
 const moduleWeights = {
   'flow-client': { weight: 8 },
-  'flow-server': { weight: 5 },
-  'vaadin-dev-server': { weight: 2 },
+  'flow-server': { weight: 6 },
+  'vaadin-dev-server': { weight: 3 },
   'flow-data': { weight: 2 },
   'flow-bom': { weight: 2 },
   'flow-polymer-template': { weight: 2 },
@@ -132,8 +132,8 @@ const moduleWeights = {
   'flow-tests/test-custom-frontend-directory/test-themes-custom-frontend-directory': { weight: 5 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 5 },
   'flow-tests/test-ccdm': { weight: 4 },
-  'flow-plugins/flow-maven-plugin': { weight: 4 },
-  'flow-plugins/flow-gradle-plugin': { weight: 4 },
+  'flow-plugins/flow-maven-plugin': { weight: 22 },
+  'flow-plugins/flow-gradle-plugin': { weight: 6 },
   'flow-tests/test-frontend/vite-embedded-webcomponent-resync': { weight: 4 },
   'flow-tests/test-frontend/vite-embedded-webcomponent-resync-ws': { weight: 4 },
   'flow-tests/test-frontend/vite-embedded-webcomponent-resync-wsxhr': { weight: 4 },
