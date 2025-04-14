@@ -15,6 +15,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -90,6 +91,15 @@ public class PwaIcon implements Serializable {
         }
 
         setRelativeName();
+    }
+
+    protected PwaIcon(PwaIcon icon) {
+        this.width = icon.width;
+        this.height = icon.height;
+        this.baseName = icon.baseName;
+        this.domain = icon.domain;
+        this.shouldBeCached = icon.shouldBeCached;
+        this.attributes.putAll(icon.attributes);
     }
 
     /**
@@ -227,6 +237,25 @@ public class PwaIcon implements Serializable {
         } catch (IOException ioe) {
             throw new UncheckedIOException("Failed to write an image ", ioe);
         }
+    }
+
+    void setImage(InputStream image) throws IOException {
+        if (image != null) {
+            data = image.readAllBytes();
+            fileHash = Arrays.hashCode(data);
+            setRelativeName();
+        }
+    }
+
+    /**
+     * Gets if the icon can be written on a stream or not.
+     *
+     * @return {@literal true} if the icon can be written, otherwise
+     *         {@literal false}.
+     * @see #write(OutputStream)
+     */
+    boolean isAvailable() {
+        return data != null || registry.getBaseImage() != null;
     }
 
     /**
