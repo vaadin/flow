@@ -64,6 +64,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -103,7 +104,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
         WebComponentExporterFactory.class, NpmPackage.class,
         NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
         CssImport.class, CssImport.Container.class, JavaScript.class,
-        JavaScript.Container.class, Theme.class, NoTheme.class,
+        JavaScript.Container.class, Theme.class, NoTheme.class, PWA.class,
         HasErrorParameter.class })
 @WebListener
 public class DevModeInitializer
