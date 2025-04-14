@@ -113,7 +113,9 @@ public class StreamRequestHandler implements RequestHandler {
                 Element owner = elementRequest.getOwner();
                 if (owner.getNode().isInert() && !elementRequest
                         .getElementRequestHandler().allowInert()) {
-                    return false;
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return true;
                 } else {
                     elementRequest.getElementRequestHandler().handleRequest(
                             request, response, session,
