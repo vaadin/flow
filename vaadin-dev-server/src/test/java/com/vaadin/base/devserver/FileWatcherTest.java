@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.awaitility.Awaitility;
@@ -49,48 +50,62 @@ public class FileWatcherTest {
     @Test
     public void externalDependencyWatcher_setViaParameter_TriggeredForModification()
             throws Exception {
-        File projectFolder = temporaryFolder.newFolder("projectFolder");
 
-        String metaInf = "/src/main/resources/META-INF/";
-        String rootProjectResourceFrontend = projectFolder.getAbsolutePath()
-                + metaInf + "resources/frontend";
-        String subProjectLegacyFrontend = projectFolder.getAbsolutePath()
-                + "/fakeproject" + metaInf + "frontend";
+        String loggerSettingKey = "org.slf4j.simpleLogger.log."
+                + FileWatcher.class.getPackageName();
+        try {
 
-        new File(rootProjectResourceFrontend).mkdirs();
-        new File(subProjectLegacyFrontend).mkdirs();
+            System.setProperty(loggerSettingKey, "debug");
+            File projectFolder = temporaryFolder.newFolder("projectFolder");
 
-        File jarFrontendResources = temporaryFolder
-                .newFolder("jarFrontendResources");
+            String metaInf = "/src/main/resources/META-INF/";
+            String rootProjectResourceFrontend = projectFolder.getAbsolutePath()
+                    + metaInf + "resources/frontend";
+            String subProjectLegacyFrontend = projectFolder.getAbsolutePath()
+                    + "/fakeproject" + metaInf + "frontend";
 
-        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getStringProperty(
-                InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null))
-                .thenReturn("./,./fakeproject");
-        Mockito.when(config.getProjectFolder()).thenReturn(projectFolder);
+            new File(rootProjectResourceFrontend).mkdirs();
+            new File(subProjectLegacyFrontend).mkdirs();
 
-        try (MockedStatic<ApplicationConfiguration> appConfig = Mockito
-                .mockStatic(ApplicationConfiguration.class)) {
-            appConfig.when(() -> ApplicationConfiguration.get(Mockito.any()))
-                    .thenReturn(config);
-            try (var watcher = new ExternalDependencyWatcher(vaadinContext,
-                    jarFrontendResources)) {
+            File jarFrontendResources = temporaryFolder
+                    .newFolder("jarFrontendResources");
 
-                assertFileCountFound(jarFrontendResources, 0);
+            VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+            ApplicationConfiguration config = Mockito
+                    .mock(ApplicationConfiguration.class);
+            Mockito.when(config.getStringProperty(
+                    InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null))
+                    .thenReturn("./,./fakeproject");
+            Mockito.when(config.getProjectFolder()).thenReturn(projectFolder);
 
-                createFile(rootProjectResourceFrontend + "/somestyles.css");
-                assertFileCountFound(jarFrontendResources, 1);
+            try (MockedStatic<ApplicationConfiguration> appConfig = Mockito
+                    .mockStatic(ApplicationConfiguration.class)) {
+                appConfig
+                        .when(() -> ApplicationConfiguration.get(Mockito.any()))
+                        .thenReturn(config);
+                try (var watcher = new ExternalDependencyWatcher(vaadinContext,
+                        jarFrontendResources)) {
 
-                createFile(subProjectLegacyFrontend + "/somejs.js");
-                assertFileCountFound(jarFrontendResources, 2);
+                    assertFileCountFound(jarFrontendResources, 0);
 
-                Assert.assertEquals("somestyles.css",
-                        jarFrontendResources.listFiles()[0].getName());
-                Assert.assertEquals("somejs.js",
-                        jarFrontendResources.listFiles()[1].getName());
+                    createFile(rootProjectResourceFrontend + "/somestyles.css");
+                    assertFileCountFound(jarFrontendResources, 1);
+
+                    createFile(subProjectLegacyFrontend + "/somejs.js");
+                    assertFileCountFound(jarFrontendResources, 2);
+
+                    // Map files as listFiles makes no promises on ordering
+                    List<String> frontendFiles = Arrays
+                            .stream(jarFrontendResources.listFiles())
+                            .map(File::getName).toList();
+                    Assert.assertTrue("No 'somestyles.css' file found",
+                            frontendFiles.contains("somestyles.css"));
+                    Assert.assertTrue("No 'somejs.js' file found",
+                            frontendFiles.contains("somejs.js"));
+                }
             }
+        } finally {
+            System.clearProperty(loggerSettingKey);
         }
     }
 
