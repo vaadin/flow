@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -136,7 +137,7 @@ public class ViteWebsocketConnectionTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test(timeout = 2000)
+    @Test
     public void close_clientWebsocketClose_dontBlockIndefinitely()
             throws ExecutionException, InterruptedException,
             NoSuchFieldException, InvocationTargetException,
@@ -170,7 +171,11 @@ public class ViteWebsocketConnectionTest {
                 });
         ReflectTools.setJavaFieldValue(connection, clientWebsocketField,
                 CompletableFuture.completedFuture(mockWebSocket));
-        connection.close();
+        Awaitility.await().atMost(2, TimeUnit.SECONDS).until(() -> {
+            connection.close();
+            return ReflectTools.getJavaFieldValue(connection,
+                    clientWebsocketField) == null;
+        });
         Assert.assertNull("Websocket connection failed", connectionError.get());
     }
 
