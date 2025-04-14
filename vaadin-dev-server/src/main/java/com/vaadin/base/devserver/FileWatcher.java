@@ -68,6 +68,11 @@ public class FileWatcher {
         });
     }
 
+    // visible for test
+    boolean isWatching() {
+        return watcher.getListener().isWatching();
+    }
+
     /**
      * Stops the file watching.
      *
