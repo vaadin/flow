@@ -32,7 +32,9 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * A signal with a value that is computed based on the value of other signals.
  * The signal value will be lazily re-computed when needed after the value has
  * changed for any of the signals that were used when computing the previous
- * value.
+ * value. An {@link Signal#effect(Runnable) effect} or computed signal that uses
+ * the value from a computed signal will not be invalidated if the computation
+ * is run again but produces the same value as before.
  *
  * @param <T>
  *            the value type

@@ -60,6 +60,9 @@ public class NodeSignal extends Signal<NodeSignalState> {
          *
          * @param value
          *            the JSON value, or <code>null</code> if there is no value
+         * @param parent
+         *            the parent node, nor <code>null</code> for the value of
+         *            the root node
          * @param listChildren
          *            a list of children accessed by order, or an empty list if
          *            there are no list children. Not <code>null</code>.
@@ -231,7 +234,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<NodeSignal> insertValue(Object value,
+    public InsertOperation<NodeSignal> insertChildWithValue(Object value,
             ListPosition at) {
         return submitInsert(new SignalCommand.InsertCommand(Id.random(), id(),
                 null, toJson(value), at), this::child);
@@ -247,14 +250,18 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<NodeSignal> insert(ListPosition at) {
-        return insertValue(null, at);
+    public InsertOperation<NodeSignal> insertChild(ListPosition at) {
+        return insertChildWithValue(null, at);
     }
 
     /**
      * Associates the given value with the given key. If a map child already
      * exists for the given key, then the value of that node is updated. If no
      * map child exists, then a new node is created with the given value.
+     * <p>
+     * Note that this operation does not give direct access to the child signal
+     * that was created or updated. Use
+     * {@link #putChildWithValue(String, Object)} for that purpose.
      *
      * @param key
      *            the key to use, not <code>null</code>
@@ -262,7 +269,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> putValue(String key, Object value) {
+    public SignalOperation<Void> putChildWithValue(String key, Object value) {
         return submit(new SignalCommand.PutCommand(Id.random(), id(),
                 Objects.requireNonNull(key), toJson(value)));
     }
@@ -279,7 +286,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * @return an operation containing a signal for the entry and the eventual
      *         result
      */
-    public InsertOperation<NodeSignal> putIfAbsent(String key) {
+    public InsertOperation<NodeSignal> putChildIfAbsent(String key) {
         return submitInsert(new SignalCommand.PutIfAbsentCommand(Id.random(),
                 id(), null, Objects.requireNonNull(key), null), this::child);
     }
@@ -326,7 +333,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the child to remove, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> remove(NodeSignal child) {
+    public SignalOperation<Void> removeChild(NodeSignal child) {
         // Override to make public
         return super.remove(child);
     }
@@ -340,7 +347,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the key to use, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> remove(String key) {
+    public SignalOperation<Void> removeChild(String key) {
         return submit(new SignalCommand.RemoveByKeyCommand(Id.random(), id(),
                 Objects.requireNonNull(key)));
     }

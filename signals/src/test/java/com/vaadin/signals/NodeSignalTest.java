@@ -56,8 +56,8 @@ public class NodeSignalTest extends SignalTestBase {
     void insertValue_emptyNode_getsChildNodeWithValue() {
         NodeSignal signal = new NodeSignal();
 
-        InsertOperation<NodeSignal> operation = signal.insertValue("value",
-                ListPosition.last());
+        InsertOperation<NodeSignal> operation = signal
+                .insertChildWithValue("value", ListPosition.last());
 
         assertSuccess(operation);
 
@@ -136,7 +136,7 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal signal = new NodeSignal();
         ListSignal<String> asList = signal.asList(String.class);
 
-        signal.insertValue("last", ListPosition.last());
+        signal.insertChildWithValue("last", ListPosition.last());
 
         List<ValueSignal<String>> value = asList.value();
         assertEquals(1, value.size());
@@ -163,7 +163,7 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal signal = new NodeSignal();
         MapSignal<String> asMap = signal.asMap(String.class);
 
-        signal.putValue("key", "value");
+        signal.putChildWithValue("key", "value");
 
         Map<String, ValueSignal<String>> value = asMap.value();
 
@@ -177,11 +177,11 @@ public class NodeSignalTest extends SignalTestBase {
      */
 
     @Test
-    void insert_emptyNode_insertsEmptyListChild() {
+    void insertChild_emptyNode_insertsEmptyListChild() {
         NodeSignal signal = new NodeSignal();
 
         InsertOperation<NodeSignal> operation = signal
-                .insert(ListPosition.last());
+                .insertChild(ListPosition.last());
         NodeSignal child = operation.signal();
 
         assertEquals(List.of(child), signal.value().listChildren());
@@ -189,10 +189,10 @@ public class NodeSignalTest extends SignalTestBase {
     }
 
     @Test
-    void putIfAbsent_emptyNode_insertsEmptyMapChild() {
+    void putChildIfAbsent_emptyNode_insertsEmptyMapChild() {
         NodeSignal signal = new NodeSignal();
 
-        InsertOperation<NodeSignal> operation = signal.putIfAbsent("key");
+        InsertOperation<NodeSignal> operation = signal.putChildIfAbsent("key");
         NodeSignal child = operation.signal();
         assertEquals(Map.of("key", child), signal.value().mapChildren());
         assertEquals(null, child.value().value(String.class));
@@ -202,8 +202,8 @@ public class NodeSignalTest extends SignalTestBase {
     void adpotAt_existingChild_orderChanged() {
         NodeSignal signal = new NodeSignal();
 
-        NodeSignal a = signal.insert(ListPosition.last()).signal();
-        NodeSignal b = signal.insert(ListPosition.last()).signal();
+        NodeSignal a = signal.insertChild(ListPosition.last()).signal();
+        NodeSignal b = signal.insertChild(ListPosition.last()).signal();
 
         SignalOperation<Void> operation = signal.adoptAt(a,
                 ListPosition.last());
@@ -217,8 +217,8 @@ public class NodeSignalTest extends SignalTestBase {
     void adoptAt_nestedStructure_hierarchyChagned() {
         NodeSignal signal = new NodeSignal();
 
-        NodeSignal parent = signal.insert(ListPosition.last()).signal();
-        NodeSignal child = parent.insert(ListPosition.last()).signal();
+        NodeSignal parent = signal.insertChild(ListPosition.last()).signal();
+        NodeSignal child = parent.insertChild(ListPosition.last()).signal();
 
         assertEquals(parent, child.value().parent());
 
@@ -235,8 +235,8 @@ public class NodeSignalTest extends SignalTestBase {
     void adoptAt_addParentToChild_rejected() {
         NodeSignal signal = new NodeSignal();
 
-        NodeSignal parent = signal.insert(ListPosition.last()).signal();
-        NodeSignal child = parent.insert(ListPosition.last()).signal();
+        NodeSignal parent = signal.insertChild(ListPosition.last()).signal();
+        NodeSignal child = parent.insertChild(ListPosition.last()).signal();
 
         SignalOperation<Void> operation = child.adoptAt(parent,
                 ListPosition.first());
@@ -247,7 +247,7 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void adoptAt_adoptMapChild_noLongerMapChild() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.putIfAbsent("key").signal();
+        NodeSignal child = signal.putChildIfAbsent("key").signal();
 
         assertEquals(List.of(), signal.value().listChildren());
 
@@ -260,7 +260,7 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void adoptAs_existingChild_keyChanged() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.putIfAbsent("key").signal();
+        NodeSignal child = signal.putChildIfAbsent("key").signal();
 
         SignalOperation<Void> operation = signal.adoptAs(child, "update");
 
@@ -272,8 +272,8 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void adoptAs_nestedStructure_hierarchyChanged() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal parent = signal.putIfAbsent("parent").signal();
-        NodeSignal child = parent.putIfAbsent("child").signal();
+        NodeSignal parent = signal.putChildIfAbsent("parent").signal();
+        NodeSignal child = parent.putChildIfAbsent("child").signal();
 
         assertEquals(parent, child.value().parent());
 
@@ -289,8 +289,8 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void adoptAs_addParentToChild_rejected() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal parent = signal.putIfAbsent("parent").signal();
-        NodeSignal child = parent.putIfAbsent("child").signal();
+        NodeSignal parent = signal.putChildIfAbsent("parent").signal();
+        NodeSignal child = parent.putChildIfAbsent("child").signal();
 
         SignalOperation<Void> operation = child.adoptAs(parent, "child");
 
@@ -300,7 +300,7 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void adoptAs_adoptListChild_noLongerListChild() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.insert(ListPosition.last()).signal();
+        NodeSignal child = signal.insertChild(ListPosition.last()).signal();
 
         assertEquals(Map.of(), signal.value().mapChildren());
 
@@ -312,18 +312,18 @@ public class NodeSignalTest extends SignalTestBase {
     }
 
     @Test
-    void removeByNode_listAndMapNodes_nodesRemoved() {
+    void removeChildByNode_listAndMapNodes_nodesRemoved() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal listChild = signal.insert(ListPosition.last()).signal();
-        NodeSignal mapChild = signal.putIfAbsent("key").signal();
+        NodeSignal listChild = signal.insertChild(ListPosition.last()).signal();
+        NodeSignal mapChild = signal.putChildIfAbsent("key").signal();
 
-        SignalOperation<Void> mapRemoveOp = signal.remove(mapChild);
+        SignalOperation<Void> mapRemoveOp = signal.removeChild(mapChild);
         assertSuccess(mapRemoveOp);
 
         assertNull(mapChild.value());
         assertEquals(Map.of(), signal.value().mapChildren());
 
-        SignalOperation<Void> listRemoveOp = signal.remove(listChild);
+        SignalOperation<Void> listRemoveOp = signal.removeChild(listChild);
         assertSuccess(listRemoveOp);
 
         assertNull(listChild.value());
@@ -331,11 +331,11 @@ public class NodeSignalTest extends SignalTestBase {
     }
 
     @Test
-    void removeByString_mapNode_nodeRemoved() {
+    void removeChildByString_mapNode_nodeRemoved() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.putIfAbsent("key").signal();
+        NodeSignal child = signal.putChildIfAbsent("key").signal();
 
-        SignalOperation<Void> mapRemoveOp = signal.remove("key");
+        SignalOperation<Void> mapRemoveOp = signal.removeChild("key");
         assertSuccess(mapRemoveOp);
 
         assertNull(child.value());
@@ -345,8 +345,8 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void clear_listAndMapNodes_nodesRemoved() {
         NodeSignal signal = new NodeSignal();
-        NodeSignal listChild = signal.insert(ListPosition.last()).signal();
-        NodeSignal mapChild = signal.putIfAbsent("key").signal();
+        NodeSignal listChild = signal.insertChild(ListPosition.last()).signal();
+        NodeSignal mapChild = signal.putChildIfAbsent("key").signal();
 
         SignalOperation<Void> operation = signal.clear();
         assertSuccess(operation);
@@ -376,8 +376,8 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignalState value = signal.value();
 
         signal.asValue(String.class).value("value");
-        signal.insert(ListPosition.last());
-        signal.putIfAbsent("key");
+        signal.insertChild(ListPosition.last());
+        signal.putChildIfAbsent("key");
 
         assertEquals(null, value.value(String.class));
         assertEquals(List.of(), value.listChildren());
@@ -394,8 +394,8 @@ public class NodeSignalTest extends SignalTestBase {
             return true;
         });
 
-        NodeSignal child = wrapper.insertValue("child", ListPosition.last())
-                .signal();
+        NodeSignal child = wrapper
+                .insertChildWithValue("child", ListPosition.last()).signal();
 
         assertEquals(1, validatedCommands.size());
         assertInstanceOf(SignalCommand.InsertCommand.class,
@@ -410,7 +410,7 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void readonly_makeChangesToRoottAndChild_allChangesRejected() {
         NodeSignal signal = new NodeSignal();
-        signal.insertValue("child", ListPosition.last()).signal();
+        signal.insertChildWithValue("child", ListPosition.last()).signal();
 
         NodeSignal readonly = signal.asReadonly();
         NodeSignal readonlyChild = readonly.value().listChildren().get(0);
@@ -440,13 +440,13 @@ public class NodeSignalTest extends SignalTestBase {
         usage = UsageTracker.track(() -> {
             signal.value();
         });
-        signal.insertValue("insert", ListPosition.last());
+        signal.insertChildWithValue("insert", ListPosition.last());
         assertTrue(usage.hasChanges());
 
         usage = UsageTracker.track(() -> {
             signal.value();
         });
-        signal.putValue("key", "value");
+        signal.putChildWithValue("key", "value");
         assertTrue(usage.hasChanges());
     }
 
@@ -471,8 +471,9 @@ public class NodeSignalTest extends SignalTestBase {
     void equalsHashCode_listChildren() {
         NodeSignal signal = new NodeSignal();
 
-        NodeSignal operationChild = signal.insert(ListPosition.last()).signal();
-        NodeSignal other = signal.insert(ListPosition.last()).signal();
+        NodeSignal operationChild = signal.insertChild(ListPosition.last())
+                .signal();
+        NodeSignal other = signal.insertChild(ListPosition.last()).signal();
 
         NodeSignal valueChild = signal.value().listChildren().get(0);
 
@@ -486,8 +487,8 @@ public class NodeSignalTest extends SignalTestBase {
     void equalsHashCode_mapChildren() {
         NodeSignal signal = new NodeSignal();
 
-        NodeSignal operationChild = signal.putIfAbsent("child").signal();
-        NodeSignal other = signal.putIfAbsent("other").signal();
+        NodeSignal operationChild = signal.putChildIfAbsent("child").signal();
+        NodeSignal other = signal.putChildIfAbsent("other").signal();
 
         NodeSignal valueChild = signal.value().mapChildren().get("child");
 
@@ -506,13 +507,13 @@ public class NodeSignalTest extends SignalTestBase {
         signal.asValue(String.class).value("value");
         assertEquals("NodeSignal[value: \"value\"]", signal.toString());
 
-        signal.insertValue("listChild", ListPosition.last());
+        signal.insertChildWithValue("listChild", ListPosition.last());
         assertEquals(
                 "NodeSignal[value: \"value\","
                         + " listChildren: [NodeSignal[value: \"listChild\"]]]",
                 signal.toString());
 
-        signal.putValue("key", "mapChild");
+        signal.putChildWithValue("key", "mapChild");
         assertEquals("NodeSignal[value: \"value\","
                 + " listChildren: [NodeSignal[value: \"listChild\"]],"
                 + " mapChildren: [key = NodeSignal[value: \"mapChild\"]]]",

@@ -415,7 +415,7 @@ public class ValueSignalTest extends SignalTestBase {
             return false;
         });
 
-        signal.asNode().putValue("key", "value");
+        signal.asNode().putChildWithValue("key", "value");
         assertEquals(0, count.intValue());
         assertFalse(usage.hasChanges());
 

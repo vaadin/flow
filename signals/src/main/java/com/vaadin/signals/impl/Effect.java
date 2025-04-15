@@ -22,12 +22,12 @@ import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
- * Applies a side effect based on signal value changes. An effect is based on a
- * callback that is initially run when the effect is created and then it's run.
- * Dependencies are automatically registered for all signals that are read from
- * the callback. The callback is run again whenever the value of any of those
- * signals change. Dependencies are always updated based the signals read during
- * the most recent invocation.
+ * Applies a side effect based on signal value changes. An effect is a callback
+ * that is initially run when the effect is created, and subsequently run again
+ * whenever any dependency changes. Dependencies are automatically registered
+ * for all signals that are read from the callback. The callback is run again
+ * whenever there's a change to any dependency. Dependencies are always updated
+ * based the signals read during the most recent invocation.
  */
 public class Effect {
     private final Executor dispatcher = SignalEnvironment
@@ -84,10 +84,10 @@ public class Effect {
     }
 
     /**
-     * Close this effect to unregister all current dependencies and prevent the
-     * action from running again.
+     * Disposes this effect by unregistering all current dependencies and
+     * preventing the action from running again.
      */
-    public synchronized void close() {
+    public synchronized void dispose() {
         clearRegistrations();
         action = null;
         dependencies = null;

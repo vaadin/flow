@@ -104,6 +104,10 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * value at the time when this operation was confirmed. The previous value
      * is <code>null</code> if no entry existed or if it existed with a
      * <code>null</code> value.
+     * <p>
+     * Note that this operation does not give direct access to the child signal
+     * that was created or updated. Use {@link #putIfAbsent(String, Object)} for
+     * that purpose.
      *
      * @param key
      *            the key to use, not <code>null</code>

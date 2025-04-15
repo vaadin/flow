@@ -196,12 +196,8 @@ public class UsageTracker {
      * Registers a usage with the current usage tracker. This method should be
      * run only if usage tracking is {@link #isActive() active}.
      *
-     * @param tree
-     *            the signal tree of the used node, not <code>null</code>
-     * @param nodeId
-     *            the id of the used node, not <code>null</code>
-     * @param type
-     *            the usage type, not <code>null</code>
+     * @param usage
+     *            the usage instance to register, not <code>null</code>
      */
     public static void registerUsage(Usage usage) {
         Collection<Usage> tracker = currentTracker.get();

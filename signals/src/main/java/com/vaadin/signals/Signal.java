@@ -533,7 +533,7 @@ public abstract class Signal<T> {
      */
     public static Runnable effect(Runnable action) {
         Effect effect = new Effect(action);
-        return effect::close;
+        return effect::dispose;
     }
 
     /**
@@ -543,7 +543,10 @@ public abstract class Signal<T> {
      * signal is automatically updated if any of the used signals are updated.
      * The computation is lazy so that it only runs when its value is accessed
      * and only if the previously computed value might have been invalidated by
-     * dependent signal changes.
+     * dependent signal changes. An {@link Signal#effect(Runnable) effect} or
+     * computed signal that uses the value from a computed signal will not be
+     * invalidated if the computation is run again but produces the same value
+     * as before.
      *
      * @param <T>
      *            the signal type

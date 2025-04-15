@@ -220,7 +220,7 @@ public class EffectTest extends SignalTestBase {
 
         assertEquals(List.of("value"), invocations);
 
-        signal.asNode().putValue("key", "value");
+        signal.asNode().putChildWithValue("key", "value");
         assertEquals(List.of("value"), invocations);
     }
 
