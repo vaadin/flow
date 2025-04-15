@@ -30,13 +30,13 @@ public interface SignalFactory {
      * A signal factory that always returns a new instance that is not shared.
      * This factory does not support the optional removal methods.
      */
-    public static final SignalFactory IN_MEMORY_EXCLUSIVE = ignore -> new NodeSignal();
+    SignalFactory IN_MEMORY_EXCLUSIVE = ignore -> new NodeSignal();
 
     /**
      * A signal factory that always returns the same signal for the same name
      * within the same JVM. This factory supports the optional removal methods.
      */
-    public static final SignalFactory IN_MEMORY_SHARED = new SignalFactory() {
+    SignalFactory IN_MEMORY_SHARED = new SignalFactory() {
         private final Map<String, NodeSignal> instances = new ConcurrentHashMap<>();
 
         @Override

@@ -116,7 +116,7 @@ public class UsageTracker {
         Runnable onNextChange(TransientListener listener);
     }
 
-    private static Usage NO_USAGE = new Usage() {
+    private static final Usage NO_USAGE = new Usage() {
         @Override
         public boolean hasChanges() {
             return false;

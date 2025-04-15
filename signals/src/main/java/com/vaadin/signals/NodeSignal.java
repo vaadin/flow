@@ -110,7 +110,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
         /**
          * Gets a map of the children accessed by key.
          *
-         * @return a list of map children, not <code>null</code>
+         * @return a map of children, not <code>null</code>
          */
         public Map<String, NodeSignal> mapChildren() {
             return mapChildren;
@@ -272,7 +272,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      * already exist. The returned operation has a reference to a signal that
      * corresponds to the given key regardless of whether a node existed for the
      * key. The operation will be resolved as successful regardless of whether
-     * they key was already used.
+     * the key was already used.
      *
      * @param key
      *            the key to use, not <code>null</code>
