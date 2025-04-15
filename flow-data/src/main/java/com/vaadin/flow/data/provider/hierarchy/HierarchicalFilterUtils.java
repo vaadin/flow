@@ -64,11 +64,6 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
-        public T getParentItem(T item) {
-            return getDataProvider().getParentItem(item);
-        }
-
-        @Override
         public boolean isFlatHierarchy() {
             return getDataProvider().isFlatHierarchy();
         }
@@ -139,11 +134,6 @@ final class HierarchicalFilterUtils {
         @Override
         public int getDepth(T item) {
             return getDataProvider().getDepth(item);
-        }
-
-        @Override
-        public T getParentItem(T item) {
-            return getDataProvider().getParentItem(item);
         }
 
         @Override
