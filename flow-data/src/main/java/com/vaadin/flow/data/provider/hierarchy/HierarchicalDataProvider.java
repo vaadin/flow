@@ -112,11 +112,6 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      */
     public boolean hasChildren(T item);
 
-    default T getParentItem(T item) {
-        throw new UnsupportedOperationException(
-                "getParentItem is not implemented for this data provider");
-    }
-
     default int getDepth(T item) {
         throw new UnsupportedOperationException(
                 "getDepth operation is not implemented for this data provider");
