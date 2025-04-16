@@ -279,7 +279,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
         return super.asNode();
     }
 
-    protected static <T extends Signal<?>> Map<String, T> children(Data node,
+    static <T extends Signal<?>> Map<String, T> children(Data node,
             Function<Id, T> factory) {
         LinkedHashMap<String, T> children = new LinkedHashMap<String, T>();
 

@@ -94,7 +94,7 @@ public class NumberSignal extends ValueSignal<Double> {
 
     /**
      * Sets the value of this signal as an integer. This method works in the
-     * same way was {@link #value(Double)} with regards to transactions.
+     * same way was the regular value setter with regards to transactions.
      *
      * @param value
      *            the integer value to set

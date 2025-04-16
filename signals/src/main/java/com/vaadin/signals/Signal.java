@@ -480,6 +480,9 @@ public abstract class Signal<T> {
      * Helper to submit a remove command. This is a helper is re-defined as
      * public in the signal types where a remove operation makes sense.
      *
+     * @param child
+     *            the child signal to remove, not <code>null</code>
+     *
      * @return the created signal operation instance, not <code>null</code>
      */
     protected SignalOperation<Void> remove(Signal<?> child) {
@@ -549,7 +552,7 @@ public abstract class Signal<T> {
      */
 
     /**
-     * Creates a signal effect with the given action. A action is run when the
+     * Creates a signal effect with the given action. The action is run when the
      * effect is created and is subsequently run again whenever there's a change
      * to any signal value that was read during the last invocation.
      *
@@ -559,7 +562,7 @@ public abstract class Signal<T> {
      *         to signal changes, not <code>null</code>
      */
     public static Runnable effect(Runnable action) {
-        Effect effect = new Effect(action);
+        Effect effect = new Effect(Objects.requireNonNull(action));
         return effect::dispose;
     }
 

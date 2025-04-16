@@ -41,7 +41,16 @@ public class Effect {
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
+    /**
+     * Creates a signal effect with the given action. The action is run when the
+     * effect is created and is subsequently run again whenever there's a change
+     * to any signal value that was read during the last invocation.
+     *
+     * @param action
+     *            the action to use, not <code>null</code>
+     */
     public Effect(Runnable action) {
+        assert action != null;
         this.action = action;
 
         revalidate();

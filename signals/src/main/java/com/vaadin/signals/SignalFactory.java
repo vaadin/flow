@@ -112,8 +112,8 @@ public interface SignalFactory {
      * provided default value if the signal doesn't already have a value. If the
      * implementation returns an existing signal instance that already had a
      * non-null value, then the provided default value is ignored. The signal
-     * value type is based on the type ({@link #getClass()}) of the default
-     * value instance.
+     * value type is based on the type ({@link Object#getClass()}) of the
+     * default value instance.
      *
      * @param <T>
      *            the value type

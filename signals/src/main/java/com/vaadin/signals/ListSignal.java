@@ -202,7 +202,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
         return insertAt(value, ListPosition.first());
     }
 
-    protected static <T extends Signal<?>> List<T> children(Data node,
+    static <T extends Signal<?>> List<T> children(Data node,
             Function<Id, T> factory) {
         return node.listChildren().stream().map(factory).toList();
     }

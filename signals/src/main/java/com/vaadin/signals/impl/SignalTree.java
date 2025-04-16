@@ -218,7 +218,7 @@ public abstract class SignalTree {
      * All notified observers are removed. It is safe for an observer to
      * register itself again when it is invoked.
      *
-     * @see #observeNextChange(Id, Runnable)
+     * @see #observeNextChange(Id, TransientListener)
      *
      * @param oldSnapshot
      *            the old snapshot, not <code>null</code>
