@@ -16,17 +16,18 @@
 
 package com.vaadin.flow;
 
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
 
-@Route("com.vaadin.flow.BackNavFirstView")
-public class BackNavFirstView extends Div {
+@Route("com.vaadin.flow.AnchorView")
+public class AnchorView extends Div {
 
-    public BackNavFirstView() {
-        add(new NativeButton("Server side navigation", event -> getUI()
-                .ifPresent(ui -> ui.navigate(BackNavSecondView.class))));
-        add(new RouterLink("Client side navigation", BackNavSecondView.class));
+    public AnchorView() {
+        Anchor navigation = new Anchor("com.vaadin.flow.NavigationView",
+                "Navigation");
+        navigation.setId(NavigationView.ANCHOR_ID);
+        add(new Span("AnchorView"), new Div(), navigation);
     }
 }
