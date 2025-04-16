@@ -245,7 +245,8 @@ public abstract class SignalTree {
                     list.clear();
 
                     for (TransientListener observer : copy) {
-                        if (observer.invoke()) {
+                        boolean listenToNext = observer.invoke();
+                        if (listenToNext) {
                             list.add(observer);
                         }
                     }

@@ -64,58 +64,104 @@ public class ComputedSignal<T> extends Signal<T> {
         this.computation = Objects.requireNonNull(computation);
     }
 
-    private void revalidateAndListen() {
+    /**
+     * As long as nobody listens to changes to this computed signal, we can just
+     * re-compute on demand every time the value is read. But when there's at
+     * least one active listener, we need to actively listen to changes in our
+     * dependencies.
+     * <p>
+     * Whenever a dependency changes, we run {@link #getValidState(Data)}. This
+     * causes the compute callback to run again. If that leads to a new value in
+     * the tree, then the {@link Usage} from the super class will be triggered
+     * which in notifies out external listeners.
+     * <p>
+     * We have just a single set of internal listeners on our dependencies even
+     * if there are multiple external listeners so that the compute callback is
+     * run only once. We keep track of how many active external listeners we
+     * have so that our internal listener is active if and only if there's at
+     * least one active external listener.
+     */
+    private synchronized void revalidateAndListen() {
+        // Clear listeners on old dependencies
         if (dependencyRegistration != null) {
             dependencyRegistration.run();
         }
+
+        // Run compute callback to get new dependencies
         ComputedState state = getValidState(data(Transaction.getCurrent()));
+
+        // Listen to the new dependencies
         dependencyRegistration = state.dependencies.onNextChange(() -> {
             revalidateAndListen();
-            return Boolean.FALSE;
+            return false;
         });
     }
 
-    private synchronized void increaseDependents() {
+    /**
+     * Increase the number of active external listeners and start listening to
+     * our dependencies if previously had no external listener.
+     *
+     * @return a callback to count back down again, not <code>null</code>
+     */
+    private synchronized Runnable countActiveExternalListener() {
         if (dependentCount++ == 0) {
             revalidateAndListen();
         }
+
+        // Avoid counting down multiple times
+        AtomicBoolean removed = new AtomicBoolean();
+
+        return () -> {
+            if (!removed.getAndSet(true)) {
+                synchronized (ComputedSignal.this) {
+                    /*
+                     * Decrease the number of active external listeners and stop
+                     * listening to our dependencies if there are no more
+                     * external listeners.
+                     */
+                    if (--dependentCount == 0) {
+                        dependencyRegistration.run();
+                        dependencyRegistration = null;
+                    }
+                }
+            }
+        };
     }
 
-    private synchronized void decreaseDependents() {
-        if (--dependentCount == 0) {
-            dependencyRegistration.run();
-            dependencyRegistration = null;
-        }
-    }
-
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The usage instance from the super implementation is wrapped to count how
+     * many active external listeners there are. The external listener might
+     * become inactive either by returning <code>false</code> or through
+     * explicit unregistering, so both those sources are wrapped to accurately
+     * keep track of when the listener is no longer active.
+     */
     @Override
     protected Usage createUsage(Transaction transaction) {
-        Usage baseUsage = super.createUsage(transaction);
+        Usage superUsage = super.createUsage(transaction);
 
         return new Usage() {
             @Override
             public boolean hasChanges() {
-                return baseUsage.hasChanges();
+                return superUsage.hasChanges();
             }
 
             @Override
             public Runnable onNextChange(TransientListener listener) {
-                increaseDependents();
-                AtomicBoolean removed = new AtomicBoolean();
+                Runnable uncount = countActiveExternalListener();
 
-                Runnable cleanup = baseUsage.onNextChange(() -> {
-                    boolean keep = listener.invoke();
-                    if (!keep && !removed.getAndSet(true)) {
-                        decreaseDependents();
+                Runnable superCleanup = superUsage.onNextChange(() -> {
+                    boolean listenToNext = listener.invoke();
+                    if (!listenToNext) {
+                        uncount.run();
                     }
-                    return keep;
+                    return listenToNext;
                 });
 
                 return () -> {
-                    cleanup.run();
-                    if (!removed.getAndSet(true)) {
-                        decreaseDependents();
-                    }
+                    superCleanup.run();
+                    uncount.run();
                 };
             }
         };

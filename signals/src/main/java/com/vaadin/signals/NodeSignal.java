@@ -31,8 +31,15 @@ import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
 /**
- * A signal representing a node in a tree structure. The node can have a value
- * and child nodes accessed either by order ("list child") or key ("map child").
+ * A signal representing a node in a tree structure. The {@link #value()} of a
+ * node signal is an immutable object that consists of:
+ * <ul>
+ * <li>the node's own value</li>
+ * <li>the parent node</li>
+ * <li>child nodes accessed by order (list children)</li>
+ * <li>child nodes accessed by key (map children</li>
+ * </ul>
+ *
  * A child node is always either a list child or a map child but it cannot have
  * both roles at the same time. The {@link #value()} of a detached node is
  * <code>null</code>.
@@ -162,12 +169,17 @@ public class NodeSignal extends Signal<NodeSignalState> {
 
     @Override
     protected Object usageChangeValue(Data data) {
+        /*
+         * Any change in the node changes the value() of a node signal so it's
+         * easiest to use the update id to represent the changing of the value.
+         */
         return data.lastUpdate();
     }
 
     /**
-     * Creates a value signal backed by this node. The new signal uses the same
-     * validator as this signal.
+     * Creates a value signal backed by the node value of this node. The value
+     * of the value signal is the same as {@link NodeSignalState#value(Class)}
+     * of this signal. The new signal uses the same validator as this signal.
      *
      * @param <T>
      *            the value type
@@ -180,9 +192,11 @@ public class NodeSignal extends Signal<NodeSignalState> {
     }
 
     /**
-     * Creates a number signal backed by this node. The new signal uses the same
-     * validator as this signal. Accessing the value of the signal will throw an
-     * exception if the underlying value is not a JSON number.
+     * Creates a number signal backed by the node value of this node. The value
+     * of the number signal is the same as {@link NodeSignalState#value(Class)}
+     * of this signal. The new signal uses the same validator as this signal.
+     * Accessing the value of the signal will throw an exception if the
+     * underlying value is not a JSON number.
      *
      * @return this signal as a number signal, not <code>null</code>
      */
@@ -191,10 +205,12 @@ public class NodeSignal extends Signal<NodeSignalState> {
     }
 
     /**
-     * Creates a list signal backed by this node. The new signal uses the same
-     * validator as this signal. Accessing the value of child signal will throw
-     * an exception if the underlying value cannot be JSON deserialized as the
-     * provided element type.
+     * Creates a list signal backed by the list children of this node. The value
+     * of the list signal is the same as {@link NodeSignalState#listChildren()}
+     * of this signal. The new signal uses the same validator as this signal.
+     * Accessing the value of child signal will throw an exception if the
+     * underlying value cannot be JSON deserialized as the provided element
+     * type.
      *
      * @param <T>
      *            the element type
@@ -207,10 +223,12 @@ public class NodeSignal extends Signal<NodeSignalState> {
     }
 
     /**
-     * Creates a map signal backed by this node. The new signal uses the same
-     * validator as this signal. Accessing the value of child signal will throw
-     * an exception if the underlying value cannot be JSON deserialized as the
-     * provided element type.
+     * Creates a map signal backed by the map children of this node. The value
+     * of the map signal is the same as {@link NodeSignalState#mapChildren()} of
+     * this signal. The new signal uses the same validator as this
+     * signal.Accessing the value of child signal will throw an exception if the
+     * underlying value cannot be JSON deserialized as the provided element
+     * type.
      *
      * @param <T>
      *            the element type

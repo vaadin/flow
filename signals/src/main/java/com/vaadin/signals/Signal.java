@@ -208,6 +208,9 @@ public abstract class Signal<T> {
      * dependency based on previous usage should be invalidated. This is done by
      * getting one reference value when the dependency occurs and then comparing
      * that to the current value to determine if the value has changed.
+     * <p>
+     * The implementation should return an object that changes if and only if
+     * the {@link #value()} of this signal changes.
      *
      * @param data
      *            the data node to read from, not <code>null</code>
@@ -381,6 +384,7 @@ public abstract class Signal<T> {
      * @return a usage instance, not <code>null</code>
      */
     protected Usage createUsage(Transaction transaction) {
+        // Capture so that we can use it later
         Object originalValue = usageChangeValue(data(transaction));
 
         return new Usage() {
@@ -395,23 +399,46 @@ public abstract class Signal<T> {
                 SignalTree tree = tree();
 
                 /*
-                 * Lock the tree to ensure no changes happen between when we
-                 * check for changes and when we add the change listener.
+                 * Lock the tree to eliminate the risk that it processes a
+                 * change after checking for previous changes but before adding
+                 * a listener to the tree, since the listener would in that case
+                 * miss that change
                  */
                 tree.getLock().lock();
                 try {
+                    /*
+                     * Run the listener right away if there's already a change.
+                     */
                     if (hasChanges()) {
-                        boolean keep = listener.invoke();
-                        if (!keep) {
+                        boolean listenToNext = listener.invoke();
+                        /*
+                         * If the listener is no longer interested in changes
+                         * after an initial invocation, then return without
+                         * adding a listener to the tree and thus without
+                         * anything to clean up.
+                         */
+                        if (!listenToNext) {
                             return () -> {
                             };
                         }
                     }
 
                     return tree.observeNextChange(id(), () -> {
+                        /*
+                         * Only invoke the listener if the tree change is
+                         * relevant in the context of this usage instance
+                         */
                         if (hasChanges()) {
+                            /*
+                             * Run listener and let it decide if we should keep
+                             * listening to the tree
+                             */
                             return listener.invoke();
                         } else {
+                            /*
+                             * Keep listening to the tree since the listener
+                             * hasn't yet been invoked
+                             */
                             return true;
                         }
                     });

@@ -68,11 +68,11 @@ public class UsageTracker {
                         if (closed) {
                             return false;
                         }
-                        boolean keep = listener.invoke();
-                        if (!keep) {
+                        boolean listenToNext = listener.invoke();
+                        if (!listenToNext) {
                             close();
                         }
-                        return keep;
+                        return listenToNext;
                     }
                 }
 
