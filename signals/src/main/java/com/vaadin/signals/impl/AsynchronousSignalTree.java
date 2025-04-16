@@ -21,6 +21,9 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
     private Snapshot submitted = new Snapshot(id(), true);
 
+    /**
+     * Creates a new asynchronous signal tree.
+     */
     protected AsynchronousSignalTree() {
         super(Type.ASYNCHRONOUS);
     }
