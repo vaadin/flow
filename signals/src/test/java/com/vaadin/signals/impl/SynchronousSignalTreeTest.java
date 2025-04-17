@@ -263,7 +263,10 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, count::incrementAndGet);
+        tree.observeNextChange(Id.ZERO, () -> {
+            count.incrementAndGet();
+            return false;
+        });
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
                 Id.ZERO, new DoubleNode(2)));
@@ -274,6 +277,27 @@ public class SynchronousSignalTreeTest {
                 Id.ZERO, new DoubleNode(3)));
 
         assertEquals(1, count.get());
+    }
+
+    @Test
+    void observe_observerReturnsTrue_observerPreserved() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+
+        tree.observeNextChange(Id.ZERO, () -> {
+            count.incrementAndGet();
+            return true;
+        });
+
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(2)));
+
+        assertEquals(1, count.get());
+
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new DoubleNode(3)));
+
+        assertEquals(2, count.get());
     }
 
     @Test
@@ -310,7 +334,9 @@ public class SynchronousSignalTreeTest {
         tree.observeNextChange(Id.ZERO, () -> {
             tree.observeNextChange(Id.ZERO, () -> {
                 count.incrementAndGet();
+                return false;
             });
+            return false;
         });
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
