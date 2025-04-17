@@ -335,13 +335,13 @@ public class Binder<BEAN> implements Serializable {
          */
         SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate();
 
-        // * Checks whether this binding should be processed during validation
-        // and
-        // * writing to bean.
-        // *
-        // * @return {@literal true} if this binding should be processed,
-        // * {@literal false} if this binding should be ignored
-        // */
+        /**
+         * Checks whether this binding should be processed during validation and
+         * writing to bean.
+         *
+         * @return {@literal true} if this binding should be processed,
+         *         {@literal false} if this binding should be ignored
+         */
         default boolean isApplied() {
             return getIsAppliedPredicate().test(this);
         }
