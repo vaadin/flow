@@ -84,13 +84,8 @@ public class StreamResourceRegistryTest {
     public void registerElementResourceHandler_registrationResultCanBeFound() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        ElementRequestHandler handler = new ElementRequestHandler() {
-            @Override
-            public void handleRequest(VaadinRequest request,
-                    VaadinResponse response, VaadinSession session,
-                    Element owner) {
-                // nop
-            }
+        ElementRequestHandler handler = (request, response, session, owner) -> {
+            // nop
         };
         Element owner = Mockito.mock(Element.class);
         StreamRegistration registration = registry.registerResource(handler,
@@ -133,9 +128,13 @@ public class StreamResourceRegistryTest {
     public void unregisterElementResourceHandler_resourceIsRemoved() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
-        StreamRegistration registration = registry.registerResource(resource);
+        ElementRequestHandler handler = (request, response, session, owner) -> {
+            // nop
+        };
+        Element owner = Mockito.mock(Element.class);
+        StreamRegistration registration = registry.registerResource(handler,
+                owner);
+
         Assert.assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
