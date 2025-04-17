@@ -68,7 +68,7 @@ public abstract class TreeRevision {
      *
      * @see #originalInserts()
      *
-     * @return
+     * @return the owner id, not <code>null</code>
      */
     public Id ownerId() {
         return ownerId;
