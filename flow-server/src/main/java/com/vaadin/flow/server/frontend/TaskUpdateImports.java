@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 
@@ -36,9 +35,10 @@ import com.vaadin.flow.theme.Theme;
 public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
-        UpdateMainImportsFile(ClassFinder classFinder, Options options,
-                FrontendDependenciesScanner scanner) {
-            super(options, scanner, classFinder);
+        UpdateMainImportsFile(Options options,
+                FrontendDependenciesScanner scanner,
+                GeneratedFilesSupport generatedFilesSupport) {
+            super(options, scanner, generatedFilesSupport);
         }
 
         @Override
@@ -53,25 +53,30 @@ public class TaskUpdateImports extends NodeUpdater {
 
     }
 
+    private GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
+
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDepScanner
      *            a reusable frontend dependencies scanner
      * @param options
      *            options for the task
      */
-    TaskUpdateImports(ClassFinder finder,
-            FrontendDependenciesScanner frontendDepScanner, Options options) {
-        super(finder, frontendDepScanner, options);
+    TaskUpdateImports(FrontendDependenciesScanner frontendDepScanner,
+            Options options) {
+        super(frontendDepScanner, options);
+    }
+
+    @Override
+    public void setGeneratedFileSupport(GeneratedFilesSupport support) {
+        this.generatedFilesSupport = support;
     }
 
     @Override
     public void execute() {
-        UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
-                options, frontDeps);
+        UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(options,
+                frontDeps, generatedFilesSupport);
         mainUpdate.run();
     }
 
@@ -79,7 +84,8 @@ public class TaskUpdateImports extends NodeUpdater {
         String lockFile;
         String toolName = TaskRunNpmInstall.getToolName(options);
         if (options.isEnableBun()) {
-            lockFile = Constants.PACKAGE_LOCK_BUN;
+            lockFile = Constants.PACKAGE_LOCK_BUN + "/"
+                    + Constants.PACKAGE_LOCK_BUN_1_2;
         } else if (options.isEnablePnpm()) {
             lockFile = Constants.PACKAGE_LOCK_YAML;
         } else {

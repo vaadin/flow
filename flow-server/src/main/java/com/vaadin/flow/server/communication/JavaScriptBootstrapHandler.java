@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,11 +22,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
@@ -42,11 +46,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-import elemental.json.impl.JsonUtil;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
@@ -150,7 +149,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         BootstrapContext context = super.createAndInitUI(UI.class, request,
                 response, session);
-        JsonObject config = context.getApplicationParameters();
+        ObjectNode config = context.getApplicationParameters();
 
         String requestURL = getRequestUrl(request);
 
@@ -217,24 +216,24 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return BootstrapHandlerHelper.getServiceUrl(vaadinRequest);
     }
 
-    private JsonObject getStats() {
-        JsonObject stats = Json.createObject();
+    private ObjectNode getStats() {
+        ObjectNode stats = JacksonUtils.createObjectNode();
         UsageStatistics.getEntries().forEach(entry -> {
             String name = entry.getName();
             String version = entry.getVersion();
 
-            JsonObject json = Json.createObject();
+            ObjectNode json = JacksonUtils.createObjectNode();
             json.put("is", name);
             json.put("version", version);
 
-            String escapedName = Json.create(name).toJson();
-            stats.put(escapedName, json);
+            String escapedName = JacksonUtils.createNode(name).toString();
+            stats.set(escapedName, json);
         });
         return stats;
     }
 
-    private JsonValue getErrors(VaadinService service) {
-        JsonObject errors = Json.createObject();
+    private JsonNode getErrors(VaadinService service) {
+        ObjectNode errors = JacksonUtils.createObjectNode();
         Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                 .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
@@ -243,15 +242,15 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                 errors.put("webpack-dev-server", errorMsg);
             }
         }
-        return errors.keys().length > 0 ? errors : Json.createNull();
+        return JacksonUtils.getKeys(errors).isEmpty() ? JacksonUtils.nullNode()
+                : errors;
     }
 
-    private void writeResponse(VaadinResponse response, JsonObject json)
+    private void writeResponse(VaadinResponse response, ObjectNode json)
             throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpURLConnection.HTTP_OK);
-        response.getOutputStream()
-                .write(JsonUtil.stringify(json).getBytes("UTF-8"));
+        response.getOutputStream().write(json.toString().getBytes("UTF-8"));
     }
 
     /**
@@ -266,20 +265,21 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
      *            the vaadin session.
      * @return the initial application JSON.
      */
-    protected JsonObject getInitialJson(VaadinRequest request,
+    protected ObjectNode getInitialJson(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
 
         BootstrapContext context = createAndInitUI(UI.class, request, response,
                 session);
 
-        JsonObject initial = Json.createObject();
+        ObjectNode initial = JacksonUtils.createObjectNode();
 
         boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
 
-        JsonObject appConfig = context.getApplicationParameters();
+        ObjectNode appConfig = context.getApplicationParameters();
 
-        appConfig.put("productionMode", Json.create(productionMode));
+        appConfig.put("productionMode",
+                JacksonUtils.createNode(productionMode));
         appConfig.put("appId", context.getAppId());
         appConfig.put("uidl", getInitialUidl(context.getUI()));
         initial.put("appConfig", appConfig);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.TaskGenerateTsConfig.ERROR_MESSAGE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -32,14 +34,19 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
+@NotThreadSafe
 public class TaskGenerateTsConfigTest {
-    static private String LATEST_VERSION = "9";
+    private static final CharSequence DEFAULT_ES_TARGET = "es2022";
+    private static final CharSequence NEWER_ES_TARGET = "es2023";
+
+    static private String LATEST_VERSION = "9.1";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -57,6 +64,7 @@ public class TaskGenerateTsConfigTest {
                 .withFeatureFlags(featureFlags);
 
         taskGenerateTsConfig = new TaskGenerateTsConfig(options);
+        taskGenerateTsConfig.warningEmitted = false;
     }
 
     @Test
@@ -92,7 +100,7 @@ public class TaskGenerateTsConfigTest {
         String content = IOUtils.toString(
                 taskGenerateTsConfig.getGeneratedFile().toURI(),
                 StandardCharsets.UTF_8);
-        content = content.replace("es2020", "es2019");
+        content = content.replace(DEFAULT_ES_TARGET, "es2019");
         try (FileWriter fw = new FileWriter(
                 taskGenerateTsConfig.getGeneratedFile(),
                 StandardCharsets.UTF_8)) {
@@ -113,28 +121,56 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void viteShouldNotDowngradeFromEs2021() throws Exception {
-        // Write a file with es2021
+    public void viteShouldUpgradeFromEs2020() throws Exception {
+        // Write a file with es2019
         taskGenerateTsConfig.execute();
         String content = IOUtils.toString(
                 taskGenerateTsConfig.getGeneratedFile().toURI(),
                 StandardCharsets.UTF_8);
-        content = content.replace("es2020", "es2021");
+        content = content.replace(DEFAULT_ES_TARGET, "es2020");
         try (FileWriter fw = new FileWriter(
                 taskGenerateTsConfig.getGeneratedFile(),
                 StandardCharsets.UTF_8)) {
             fw.write(content);
         }
-        Assert.assertTrue("The config file should use es2021", IOUtils
+        Assert.assertTrue("The config file should use es2020", IOUtils
                 .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                .contains("\"target\": \"es2021\""));
+                .contains("\"target\": \"es2020\""));
+        taskGenerateTsConfig.execute();
+        Assert.assertFalse(
+                "Vite should have upgraded the config file to not use es2020",
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"es2020\""));
+
+    }
+
+    @Test
+    public void viteShouldNotDowngradeFromNewerEsVersion() throws Exception {
+        // Write a file with es2020
+        taskGenerateTsConfig.execute();
+        String content = IOUtils.toString(
+                taskGenerateTsConfig.getGeneratedFile().toURI(),
+                StandardCharsets.UTF_8);
+        content = content.replace(DEFAULT_ES_TARGET, NEWER_ES_TARGET);
+        try (FileWriter fw = new FileWriter(
+                taskGenerateTsConfig.getGeneratedFile(),
+                StandardCharsets.UTF_8)) {
+            fw.write(content);
+        }
+        Assert.assertTrue("The config file should use " + NEWER_ES_TARGET,
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"" + NEWER_ES_TARGET + "\""));
         taskGenerateTsConfig.execute();
         Assert.assertTrue("Vite should not have changed the config file",
                 IOUtils.toString(
                         taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                        .contains("\"target\": \"es2021\""));
+                        .contains("\"target\": \"" + NEWER_ES_TARGET + "\""));
 
     }
 
@@ -204,20 +240,43 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void tsConfigHasCustomCodes_updatesAndThrows() throws IOException {
+    public void tsConfigHasCustomCodes_updatesAndLogsWarning()
+            throws IOException, ExecutionFailedException {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
-        try {
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
             taskGenerateTsConfig.execute();
-        } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains(
-                    "TypeScript config file 'tsconfig.json' has been updated to the latest"));
-            String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
-            Assert.assertTrue(tsConfigString.contains(
-                    "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
-            return;
         }
-        Assert.fail("Expected exception to be thrown");
+        String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
+        Assert.assertTrue(tsConfigString.contains(
+                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+        Assert.assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
+    }
+
+    @Test
+    public void warningIsLoggedOnlyOncePerRun()
+            throws IOException, ExecutionFailedException {
+        File tsconfig = writeTestTsConfigContent(
+                "tsconfig-custom-content.json");
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsConfig.execute();
+            Assert.assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
+            logger.clearLogs();
+            tsconfig.delete();
+            writeTestTsConfigContent("tsconfig-custom-content.json");
+            taskGenerateTsConfig.execute();
+            Assert.assertFalse(logger.getLogs().contains(ERROR_MESSAGE));
+        }
     }
 
     @Test

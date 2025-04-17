@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -493,33 +493,58 @@ public class ReflectTools implements Serializable {
                 return proxyClass.cast(constructor.get().newInstance(
                         Array.newInstance(paramType.getComponentType(), 0)));
             }
-        } catch (InstantiationException e) {
-            if (originalClass.isMemberClass()
-                    && !Modifier.isStatic(originalClass.getModifiers())) {
-                throw new IllegalArgumentException(String.format(
-                        CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
-                        originalClass.getName()), e);
-            } else {
-                throw new IllegalArgumentException(String.format(
-                        CREATE_INSTANCE_FAILED, originalClass.getName()), e);
-            }
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(
-                    String.format(CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION,
-                            originalClass.getName()),
-                    e);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(String.format(
-                    CREATE_INSTANCE_FAILED, originalClass.getName()), e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException(String.format(
-                    CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
-                    originalClass.getName()), e);
+        } catch (Exception e) {
+            throw convertInstantiationException(e, originalClass);
         }
-
         throw new IllegalArgumentException(String.format(
                 CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
                 originalClass.getName()));
+    }
+
+    /**
+     * Helper to handle all exceptions which might occur during class
+     * instantiation and returns an {@link IllegalArgumentException} with a
+     * descriptive error message hinting of what might be wrong with the class
+     * that could not be instantiated. Descriptive message is derived based on
+     * the information about the {@code clazz}.
+     *
+     * @param exception
+     *            original exception
+     * @param clazz
+     *            instantiation target class
+     * @return an IllegalArgumentException with descriptive message
+     */
+    public static IllegalArgumentException convertInstantiationException(
+            Exception exception, Class<?> clazz) {
+        if (exception instanceof InstantiationException) {
+            if (clazz.isMemberClass()
+                    && !Modifier.isStatic(clazz.getModifiers())) {
+                return new IllegalArgumentException(String.format(
+                        CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
+                        clazz.getName()), exception);
+            } else {
+                return new IllegalArgumentException(
+                        String.format(CREATE_INSTANCE_FAILED, clazz.getName()),
+                        exception);
+            }
+        } else if (exception instanceof IllegalAccessException) {
+            return new IllegalArgumentException(
+                    String.format(CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION,
+                            clazz.getName()),
+                    exception);
+        } else if (exception instanceof IllegalArgumentException) {
+            return new IllegalArgumentException(
+                    String.format(CREATE_INSTANCE_FAILED, clazz.getName()),
+                    exception);
+        } else if (exception instanceof InvocationTargetException) {
+            return new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
+                    clazz.getName()), exception);
+        }
+
+        return new IllegalArgumentException(String.format(
+                CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
+                clazz.getName()));
     }
 
     /**

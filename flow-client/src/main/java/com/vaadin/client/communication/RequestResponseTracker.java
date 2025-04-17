@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,14 +15,15 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import com.vaadin.client.communication.MessageSender.ResynchronizationState;
+import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Registry;
+import com.vaadin.client.communication.MessageSender.ResynchronizationState;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 
 /**
@@ -112,7 +113,8 @@ public class RequestResponseTracker {
         if ((registry.getUILifecycle().isRunning()
                 && registry.getServerRpcQueue().isFlushPending())
                 || registry.getMessageSender()
-                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER) {
+                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER
+                || registry.getMessageSender().hasQueuedMessages()) {
             // Send the pending RPCs immediately.
             // This might be an unnecessary optimization as ServerRpcQueue has a
             // finally scheduled command which trigger the send if we do not do
@@ -171,6 +173,18 @@ public class RequestResponseTracker {
             ResponseHandlingEndedEvent.Handler handler) {
         return eventBus.addHandler(ResponseHandlingEndedEvent.getType(),
                 handler);
+    }
+
+    /**
+     * Adds a handler for {@link ReconnectionAttemptEvent}s.
+     *
+     * @param handler
+     *            the handler to add
+     * @return a registration object which can be used to remove the handler
+     */
+    public HandlerRegistration addReconnectionAttemptHandler(
+            ReconnectionAttemptEvent.Handler handler) {
+        return eventBus.addHandler(ReconnectionAttemptEvent.getType(), handler);
     }
 
 }

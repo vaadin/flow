@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -36,13 +41,11 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -78,24 +81,24 @@ public class ElementListenerMap extends NodeMap {
                     });
         }
 
-        public JsonValue toJson() {
+        public JsonNode toJson() {
             if (debounceSettings.isEmpty()) {
-                return Json.create(false);
+                return JacksonUtils.createNode(false);
             } else if (debounceSettings.size() == 1
                     && debounceSettings.containsKey(Integer.valueOf(0))) {
                 // Shorthand if only debounce is a dummy filter debounce
-                return Json.create(true);
+                return JacksonUtils.createNode(true);
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
                         .map(entry -> Stream.concat(
-                                Stream.of(
-                                        Json.create(entry.getKey().intValue())),
+                                Stream.of(JacksonUtils
+                                        .createNode(entry.getKey().intValue())),
                                 entry.getValue().stream()
                                         .map(DebouncePhase::getIdentifier)
-                                        .map(Json::create))
-                                .collect(JsonUtils.asArray()))
-                        .collect(JsonUtils.asArray());
+                                        .map(JacksonUtils::createNode))
+                                .collect(JacksonUtils.asArray()))
+                        .collect(JacksonUtils.asArray());
             }
 
         }
@@ -114,6 +117,7 @@ public class ElementListenerMap extends NodeMap {
         private int debounceTimeout = 0;
         private EnumSet<DebouncePhase> debouncePhases = NO_TIMEOUT_PHASES;
         private List<SerializableRunnable> unregisterHandlers;
+        private boolean allowInert;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
                 String type, DomEventListener origin) {
@@ -265,6 +269,12 @@ public class ElementListenerMap extends NodeMap {
                     .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                             + propertyName);
         }
+
+        @Override
+        public DomListenerRegistration allowInert() {
+            allowInert = true;
+            return this;
+        }
     }
 
     /**
@@ -383,7 +393,7 @@ public class ElementListenerMap extends NodeMap {
     private void updateEventSettings(String eventType) {
         Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
                 eventType);
-        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
+        ObjectNode eventSettingsJson = JacksonUtils.createObject(eventSettings,
                 ExpressionSettings::toJson);
 
         ConstantPoolKey constantPoolKey = new ConstantPoolKey(
@@ -427,7 +437,16 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
-        boolean isElementEnabled = event.getSource().isEnabled();
+        final boolean isElementEnabled = event.getSource().isEnabled();
+
+        final boolean isNavigationRequest = UI.BrowserNavigateEvent.EVENT_NAME
+                .equals(event.getType())
+                || UI.BrowserLeaveNavigationEvent.EVENT_NAME
+                        .equals(event.getType())
+                || UI.BrowserRefreshEvent.EVENT_NAME.equals(event.getType());
+
+        final boolean inert = event.getSource().getNode().isInert();
+
         List<DomEventListenerWrapper> typeListeners = listeners
                 .get(event.getType());
         if (typeListeners == null) {
@@ -436,6 +455,15 @@ public class ElementListenerMap extends NodeMap {
 
         List<DomEventListener> listeners = new ArrayList<>();
         for (DomEventListenerWrapper wrapper : typeListeners) {
+            if (!isNavigationRequest && inert && !wrapper.allowInert) {
+                // drop as inert
+                LoggerFactory.getLogger(ElementListenerMap.class.getName())
+                        .info("Ignored listener invocation for {} event from "
+                                + "the client side for an inert {} element",
+                                event.getType(), event.getSource().getTag());
+                continue;
+            }
+
             if ((isElementEnabled
                     || DisabledUpdateMode.ALWAYS.equals(wrapper.mode))
                     && wrapper.matchesFilter(event.getEventData())
@@ -484,4 +512,25 @@ public class ElementListenerMap extends NodeMap {
                 .reduce(DisabledUpdateMode::mostPermissive).orElse(null);
     }
 
+    /**
+     * Returns {@code true} if any listener for the given property has
+     * allowInert enabled. Note that this means that enabling allowInert for any
+     * listener for a certain property will effectively allow it for all
+     * listeners for said property.
+     *
+     * @param propertyName
+     *            the property name to check, not <code>null</code>
+     * @return {@code true} if allowInert is enabled for any listener for the
+     *         given property, {@code false otherwise}
+     */
+    public boolean hasAllowInertForProperty(String propertyName) {
+        assert propertyName != null;
+
+        if (listeners == null) {
+            return false;
+        }
+        return listeners.values().stream().flatMap(List::stream)
+                .filter(wrapper -> wrapper.isPropertySynchronized(propertyName))
+                .anyMatch(wrapper -> wrapper.allowInert);
+    }
 }

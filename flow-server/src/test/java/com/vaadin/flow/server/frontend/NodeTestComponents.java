@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -157,7 +157,9 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
      * Lumo component theme class implementation.
      */
     @JsModule("@vaadin/vaadin-lumo-styles/color.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/color-global.js")
     @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/typography-global.js")
     @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
     @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
     @JsModule("@vaadin/vaadin-lumo-styles/style.js")

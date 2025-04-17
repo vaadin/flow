@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,7 +38,7 @@ import java.util.stream.Stream;
  *      Inline Frame element</a>
  */
 @Tag(Tag.IFRAME)
-public class IFrame extends HtmlComponent {
+public class IFrame extends HtmlComponent implements HasAriaLabel {
 
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault("src", "");
@@ -82,18 +85,21 @@ public class IFrame extends HtmlComponent {
      * Sandbox types.
      */
     public enum SandboxType {
-        RESTRICT_ALL(""), ALLOW_FORMS("allow-forms"), ALLOW_MODALS(
-                "allow-modals"), ALLOW_ORIENTATION_LOCK(
-                        "allow-orientation-lock"), ALLOW_POINTER_LOCK(
-                                "allow-pointer-lock"), ALLOW_POPUPS(
-                                        "allow-popups"), ALLOW_POPUPS_TO_ESCAPE_SANDBOX(
-                                                "allow-popups-to-escape-sandbox"), ALLOW_PRESENTATION(
-                                                        "allow-presentation"), ALLOW_SAME_ORIGIN(
-                                                                "allow-same-origin"), ALLOW_SCRIPTS(
-                                                                        "allow-scripts"), ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
-                                                                                "allow-storage-access-by-user-activation"), ALLOW_TOP_NAVIGATION(
-                                                                                        "allow-top-navigation"), ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
-                                                                                                "allow-top-navigation-by-user-activation");
+        RESTRICT_ALL(""),
+        ALLOW_FORMS("allow-forms"),
+        ALLOW_MODALS("allow-modals"),
+        ALLOW_ORIENTATION_LOCK("allow-orientation-lock"),
+        ALLOW_POINTER_LOCK("allow-pointer-lock"),
+        ALLOW_POPUPS("allow-popups"),
+        ALLOW_POPUPS_TO_ESCAPE_SANDBOX("allow-popups-to-escape-sandbox"),
+        ALLOW_PRESENTATION("allow-presentation"),
+        ALLOW_SAME_ORIGIN("allow-same-origin"),
+        ALLOW_SCRIPTS("allow-scripts"),
+        ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
+                "allow-storage-access-by-user-activation"),
+        ALLOW_TOP_NAVIGATION("allow-top-navigation"),
+        ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
+                "allow-top-navigation-by-user-activation");
 
         private final String value;
 
@@ -138,6 +144,19 @@ public class IFrame extends HtmlComponent {
      */
     public void setSrc(String src) {
         set(srcDescriptor, src);
+    }
+
+    /**
+     * Sets the source of the iframe with a source URL with the URL of the given
+     * {@link StreamResource}.
+     *
+     * @see #setSrc(String)
+     *
+     * @param src
+     *            the resource value, not null
+     */
+    public void setSrc(AbstractStreamResource src) {
+        getElement().setAttribute("src", src);
     }
 
     /**

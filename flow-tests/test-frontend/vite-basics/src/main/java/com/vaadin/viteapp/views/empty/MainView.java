@@ -13,13 +13,14 @@ import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 
 @Route("")
 @JsModule("./jsonloader.js")
-@JsModule("package-outside-npm/index.js")
-@JsModule("package2-outside-npm/index.js")
+@JsModule("@vaadin/test-package-outside-npm/index.js")
+@JsModule("@vaadin/test-package2-outside-npm/index.js")
 @JsModule("./testscopebuttonloader.js")
 @JsModule("./testscopemaploader.js")
 @JsModule("./importdir.js")
 @JsModule("./bad.ts")
 @JsModule("./testfile.css.js")
+@JsModule("./toplevelawait-main.js")
 @CssImport(value = "./cssimport-textfield.css", themeFor = "vaadin-text-field")
 @CssImport(value = "./cssimport.css")
 public class MainView extends Div {

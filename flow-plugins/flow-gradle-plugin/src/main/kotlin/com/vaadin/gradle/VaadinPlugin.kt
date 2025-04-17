@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2024 Vaadin Ltd
+ *    Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.gradle.util.GradleVersion
  */
 public class VaadinPlugin : Plugin<Project> {
     public companion object {
-        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "7.6"
+        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.7"
     }
 
     override fun apply(project: Project) {
@@ -42,16 +42,24 @@ public class VaadinPlugin : Plugin<Project> {
             extensionName = "vaadinPlatform"
         }
         project.extensions.create(extensionName, VaadinFlowPluginExtension::class.java)
+        val config = PluginEffectiveConfiguration.get(project)
 
         project.tasks.apply {
-            register("vaadinClean", VaadinCleanTask::class.java)
-            register("vaadinPrepareFrontend", VaadinPrepareFrontendTask::class.java)
-            register("vaadinBuildFrontend", VaadinBuildFrontendTask::class.java)
-            register("vaadinConvertPolymer", VaadinConvertPolymerTask::class.java)
+            register("vaadinClean", VaadinCleanTask::class.java) {
+                it.configure(config)
+            }
+            register("vaadinPrepareFrontend", VaadinPrepareFrontendTask::class.java) {
+                it.configure(config)
+            }
+            register("vaadinBuildFrontend", VaadinBuildFrontendTask::class.java) {
+                it.configure(config)
+            }
+            register("vaadinConvertPolymer", VaadinConvertPolymerTask::class.java) {
+                it.configure(project, config)
+            }
         }
 
         project.afterEvaluate {
-            val config = PluginEffectiveConfiguration.get(it)
 
             // add a new source-set folder for generated stuff, by default `vaadin-generated`
             it.getSourceSet(config.sourceSetName.get()).resources.srcDirs(
@@ -70,13 +78,20 @@ public class VaadinPlugin : Plugin<Project> {
                 }
             }
 
+            val toolsService = project.gradle.sharedServices.registerIfAbsent(
+                "vaadinTools",
+                FrontendToolService::class.java
+            ) {
+                it.parameters.getToolsSettings().set(config.toolsSettings)
+            }
+
             // make sure all dependent projects have finished building their jars, otherwise
             // the Vaadin classpath scanning will not work properly. See
             // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
             // for more details.
             project.tasks.getByName("vaadinPrepareFrontend").dependsOn(
                 project.configurations.getByName(config.dependencyScope.get()).jars
-            )
+            ).usesService(toolsService)
 
             if (config.alwaysExecutePrepareFrontend.get()) {
                 project.tasks.getByName("vaadinPrepareFrontend")

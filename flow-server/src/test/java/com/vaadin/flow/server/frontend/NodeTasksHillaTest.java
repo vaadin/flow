@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,23 +15,31 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
-import org.junit.*;
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.io.File;
-import java.io.IOException;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.*;
-import static org.mockito.Mockito.*;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 public class NodeTasksHillaTest {
 
@@ -85,13 +93,15 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(lookup).lookup(ClassFinder.class);
-        return new Options(lookup, new File(userDir)).withBuildDirectory(TARGET)
+        File npmFolder = new File(userDir);
+        return new Options(lookup, npmFolder).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(new File(userDir,
                         FrontendUtils.GENERATED
                                 + FrontendUtils.JAR_RESOURCES_FOLDER))
                 .withFrontendGeneratedFolder(new File(userDir))
+                .withBuildResultFolders(npmFolder, npmFolder)
                 .setJavaResourceFolder(propertiesDir);
     }
 
@@ -107,7 +117,14 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        new NodeTasks(options).execute();
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
+
+            new NodeTasks(options).execute();
+        }
+
         verifyHillaEngine(true);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,17 +24,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.testutil.TestUtils;
-
-import elemental.json.JsonObject;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -82,16 +80,16 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_createPackageJson() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new MockOptions(getClassFinder(), npmFolder)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
 
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(options);
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
-        JsonObject deps = task.getPackageJson().getObject("dependencies");
-        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_DEPS));
-        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_JARS));
+        JsonNode deps = task.getPackageJson().get("dependencies");
+        Assert.assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_DEPS));
+        Assert.assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_JARS));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,
@@ -110,10 +108,12 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - resourceInFolder.js.map
         File dir = TestUtils.getTestFolder(fsDir);
 
-        Options options = new Options(Mockito.mock(Lookup.class), null);
+        Options options = new MockOptions(null);
         options.withJarFrontendResourcesFolder(frontendDepsFolder)
                 .copyResources(jars(jar, dir));
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(options);
+        GeneratedFilesSupport generatedFileSupport = new GeneratedFilesSupport();
+        task.setGeneratedFileSupport(generatedFileSupport);
 
         task.execute();
 
@@ -162,6 +162,12 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "JSX resource source map should have been copied from jar file",
                 files.contains("test.jsx.map"));
+
+        Assert.assertEquals("Generated files should have been tracked",
+                files.stream()
+                        .map(path -> frontendDepsFolder.toPath().resolve(path))
+                        .collect(Collectors.toSet()),
+                generatedFileSupport.getFiles());
     }
 
     private static Set<File> jars(File... files) {

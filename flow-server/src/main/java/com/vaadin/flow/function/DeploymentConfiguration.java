@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -331,12 +331,26 @@ public interface DeploymentConfiguration
     }
 
     /**
-     * Check if the React Router is enabled for the project instead of Vaadin
-     * router.
+     * Check if the React is enabled for the project, including React router
+     * instead of Vaadin router.
      *
-     * @return {@code true} if React Router is used, on by default
+     * @return {@code true} if React is used, default is {@code true}
      */
-    default boolean isReactRouterEnabled() {
-        return getBooleanProperty(InitParameters.REACT_ROUTER_ENABLED, true);
+    default boolean isReactEnabled() {
+        return getBooleanProperty(InitParameters.REACT_ENABLE, true);
+    }
+
+    /**
+     * Gets the application name that is by default generated based on the
+     * project build settings, e.g. maven's groupId and artifactId, and can be
+     * configured with the 'vaadin.applicationIdentifier' configuration
+     * parameter. This parameter is used for tracking daily active users per
+     * application.
+     *
+     * @return this application's name
+     */
+    default String getApplicationName() {
+        return getStringProperty(InitParameters.APPLICATION_IDENTIFIER,
+                "default-project-id");
     }
 }

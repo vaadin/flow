@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,8 @@ package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 import java.util.Set;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -97,6 +99,26 @@ public interface WebComponentConfiguration<C extends Component>
      * @return web component binding which can be used by the web component host
      *         to communicate with the component it is hosting
      */
+    WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
+            Element element, JsonNode newAttributeDefaults);
+
+    /**
+     * Creates a new {@link WebComponentBinding} instance.
+     *
+     * @param instantiator
+     *            {@link com.vaadin.flow.di.Instantiator} used to construct
+     *            instances
+     * @param element
+     *            element which acts as the root element for the exported
+     *            {@code component} instance
+     * @param newAttributeDefaults
+     *            {@link JsonObject} containing default overrides set by the
+     *            user defining the component on a web page. These defaults are
+     *            set using the web component's attributes.
+     * @return web component binding which can be used by the web component host
+     *         to communicate with the component it is hosting
+     */
+    @Deprecated
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
             Element element, JsonObject newAttributeDefaults);
 

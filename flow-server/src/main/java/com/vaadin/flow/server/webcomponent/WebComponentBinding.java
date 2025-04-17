@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,14 +20,19 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 
+import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
@@ -54,7 +59,7 @@ public final class WebComponentBinding<C extends Component>
      * Constructs a new {@code WebComponentBinding}. The bound {@link Component}
      * is given via {@code component} parameter. The web component properties
      * are bound by calling
-     * {@link #bindProperty(PropertyConfigurationImpl, boolean, elemental.json.JsonValue)};
+     * {@link #bindProperty(PropertyConfigurationImpl, boolean, JsonNode)};
      *
      * @param component
      *            component which exposes {@code properties} as web component.
@@ -116,7 +121,36 @@ public final class WebComponentBinding<C extends Component>
      *             if the {@code jsonValue} cannot be converted to the type of
      *             the property identified by {@code propertyName}.
      */
+    @Deprecated
     public void updateProperty(String propertyName, JsonValue jsonValue) {
+        Objects.requireNonNull(propertyName,
+                "Parameter 'propertyName' must not be null!");
+
+        Class<? extends Serializable> propertyType = getPropertyType(
+                propertyName);
+
+        Serializable value = jsonValueToConcreteType(jsonValue, propertyType);
+        updateProperty(propertyName, value);
+    }
+
+    /**
+     * Updates a property bound to the {@code component}. Converts the {@code
+     * jsonValue} into the correct type if able and then calls
+     * {@link #updateProperty(String, java.io.Serializable)}.
+     *
+     * @param propertyName
+     *            name of the property, not {@code null}
+     * @param jsonValue
+     *            new value to set for the property
+     * @throws NullPointerException
+     *             if {@code propertyName} is {@code null}
+     * @throws IllegalArgumentException
+     *             if no bound property can be found for {@code propertyName}
+     * @throws IllegalArgumentException
+     *             if the {@code jsonValue} cannot be converted to the type of
+     *             the property identified by {@code propertyName}.
+     */
+    public void updateProperty(String propertyName, BaseJsonNode jsonValue) {
         Objects.requireNonNull(propertyName,
                 "Parameter 'propertyName' must not be null!");
 
@@ -173,6 +207,27 @@ public final class WebComponentBinding<C extends Component>
     /**
      * Adds a property to {@code this} web component binding based on the {@code
      * propertyConfiguration}. If a property with an existing name is bound, the
+     * previous binding is removed. Starting value for the property is set to
+     * {@code null}.
+     *
+     * @param propertyConfiguration
+     *            property configuration, not {@code null}
+     * @param overrideDefault
+     *            set to {@code true} if the property should be initialized with
+     *            {@literal null} instead of default value found in
+     *            {@link PropertyData}
+     * @throws NullPointerException
+     *             if {@code propertyConfiguration} is {@code null}
+     */
+    public void bindProperty(
+            PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
+            boolean overrideDefault) {
+        bindProperty(propertyConfiguration, overrideDefault, (JsonNode) null);
+    }
+
+    /**
+     * Adds a property to {@code this} web component binding based on the {@code
+     * propertyConfiguration}. If a property with an existing name is bound, the
      * previous binding is removed.
      *
      * @param propertyConfiguration
@@ -188,6 +243,49 @@ public final class WebComponentBinding<C extends Component>
      * @throws NullPointerException
      *             if {@code propertyConfiguration} is {@code null}
      */
+    public void bindProperty(
+            PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
+            boolean overrideDefault, JsonNode startingValue) {
+        Objects.requireNonNull(propertyConfiguration,
+                "Parameter 'propertyConfiguration' cannot be null!");
+
+        final SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
+                .getOnChangeHandler();
+
+        final Serializable selectedStartingValue = !overrideDefault
+                ? propertyConfiguration.getPropertyData().getDefaultValue()
+                : jsonValueToConcreteType(startingValue,
+                        propertyConfiguration.getPropertyData().getType());
+
+        final PropertyBinding<? extends Serializable> binding = new PropertyBinding<>(
+                propertyConfiguration.getPropertyData(),
+                consumer == null ? null
+                        : value -> consumer.accept(component, value),
+                selectedStartingValue);
+
+        properties.put(propertyConfiguration.getPropertyData().getName(),
+                binding);
+    }
+
+    /**
+     * Adds a property to {@code this} web component binding based on the {@code
+     * propertyConfiguration}. If a property with an existing name is bound, the
+     * previous binding is removed.
+     *
+     * @param propertyConfiguration
+     *            property configuration, not {@code null}
+     * @param overrideDefault
+     *            set to {@code true} if the property should be initialized with
+     *            {@code startingValue} instead of default value found in
+     *            {@link PropertyData}
+     * @param startingValue
+     *            starting value for the property. Can be {@code null}.
+     *            {@code overrideDefault} must be {@code true} for this value to
+     *            have any effect
+     * @throws NullPointerException
+     *             if {@code propertyConfiguration} is {@code null}
+     */
+    @Deprecated
     public void bindProperty(
             PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
             boolean overrideDefault, JsonValue startingValue) {
@@ -212,6 +310,7 @@ public final class WebComponentBinding<C extends Component>
                 binding);
     }
 
+    @Deprecated
     private Serializable jsonValueToConcreteType(JsonValue jsonValue,
             Class<? extends Serializable> type) {
         Objects.requireNonNull(type, "Parameter 'type' must not be null!");
@@ -226,6 +325,31 @@ public final class WebComponentBinding<C extends Component>
             throw new IllegalArgumentException(
                     String.format("Received '%s' was not convertible to '%s'",
                             JsonValue.class.getName(), type.getName()));
+        }
+    }
+
+    private Serializable jsonValueToConcreteType(JsonNode jsonValue,
+            Class<? extends Serializable> type) {
+        Objects.requireNonNull(type, "Parameter 'type' must not be null!");
+
+        if (JacksonCodec.canEncodeWithoutTypeInfo(type)) {
+            Serializable value = null;
+            if (jsonValue != null) {
+                value = JacksonCodec.decodeAs(jsonValue, type);
+            }
+            return value;
+        } else if (JsonCodec.canEncodeWithoutTypeInfo(type)) {
+            // TODO: Remove when ClientCallable works with jackson types only.
+            Serializable value = null;
+            if (jsonValue != null && !(jsonValue instanceof NullNode)) {
+                value = JsonCodec.decodeAs(Json.parse(jsonValue.toString()),
+                        type);
+            }
+            return value;
+        } else {
+            throw new IllegalArgumentException(
+                    String.format("Received '%s' was not convertible to '%s'",
+                            jsonValue.getClass().getName(), type.getName()));
         }
     }
 

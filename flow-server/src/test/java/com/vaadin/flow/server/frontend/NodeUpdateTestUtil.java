@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -85,7 +85,9 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-lumo-styles/icons.js",
                 "@vaadin/vaadin-lumo-styles/style.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/typography-global.js",
                 "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/color-global.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
                 "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",

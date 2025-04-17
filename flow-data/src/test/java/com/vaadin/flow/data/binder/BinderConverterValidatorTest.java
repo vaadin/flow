@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -321,6 +321,7 @@ public class BinderConverterValidatorTest
         assertEquals(msg1, error.getMessage().get());
         assertEquals(nameField, error.getField());
         assertEquals(msg1, nameField.getErrorMessage());
+        Assert.assertTrue(nameField.isInvalid());
     }
 
     @Test
@@ -658,10 +659,12 @@ public class BinderConverterValidatorTest
 
         // should not have error shown when initialized
         assertThat(lastNameField.getErrorMessage(), isEmptyString());
+        Assert.assertFalse(lastNameField.isInvalid());
 
         // Set a value that breaks the validation
         lastNameField.setValue("");
         assertNotNull(lastNameField.getErrorMessage());
+        Assert.assertTrue(lastNameField.isInvalid());
 
         // add status label to show bean level error
         TestLabel statusLabel = new TestLabel();

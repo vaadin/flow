@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,9 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,6 +35,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.Hierarch
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -222,6 +225,33 @@ public class HierarchicalCommunicatorDataTest {
     }
 
     @Test
+    public void expandRoot_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+
+        dataProvider = new TreeDataProvider<>(treeData) {
+
+            @Override
+            public Stream<Item> fetchChildren(
+                    HierarchicalQuery<Item, SerializablePredicate<Item>> query) {
+                return super.fetchChildren(query)
+                        .onClose(() -> streamIsClosed.set(true));
+            }
+        };
+
+        communicator.setDataProvider(dataProvider, null);
+
+        communicator.expand(ROOT);
+        fakeClientCommunication();
+
+        communicator.setParentRequestedRange(0, 50, ROOT);
+        fakeClientCommunication();
+
+        communicator.reset();
+
+        Assert.assertTrue(streamIsClosed.get());
+    }
+
+    @Test
     public void expandRoot_filterOutAllChildren_clearCalled() {
         parentClearCalled = false;
 
@@ -339,22 +369,15 @@ public class HierarchicalCommunicatorDataTest {
         private static VaadinSession findOrCreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
+                DataCommunicatorTest.MockService service = Mockito
+                        .mock(DataCommunicatorTest.MockService.class);
+                Mockito.when(service.getRouteRegistry())
+                        .thenReturn(Mockito.mock(RouteRegistry.class));
                 session = new DataCommunicatorTest.AlwaysLockedVaadinSession(
-                        null);
+                        service);
                 VaadinSession.setCurrent(session);
             }
             return session;
         }
     }
-
-    public static class AlwaysLockedVaadinSession
-            extends DataCommunicatorTest.MockVaadinSession {
-
-        public AlwaysLockedVaadinSession(VaadinService service) {
-            super(service);
-            lock();
-        }
-
-    }
-
 }

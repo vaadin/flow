@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,6 +39,26 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement findElement = findElement(By.className("newInput"));
         Assert.assertEquals("Value from js", findElement.getAttribute("value"));
+    }
+
+    @Test
+    public void testElementExecuteJavaScriptWithAwait() {
+        open();
+        getButton("elementAwaitButton").click();
+        WebElement result = waitUntil(
+                d -> findElement(By.id("elementAwaitResult")));
+        Assert.assertEquals("Element execute JS await result: 42",
+                result.getText());
+    }
+
+    @Test
+    public void testPageExecuteJavaScriptWithAwait() {
+        open();
+        getButton("pageAwaitButton").click();
+        WebElement result = waitUntil(
+                d -> findElement(By.id("pageAwaitResult")));
+        Assert.assertEquals("Page execute JS await result: 72",
+                result.getText());
     }
 
     private WebElement getButton(String id) {

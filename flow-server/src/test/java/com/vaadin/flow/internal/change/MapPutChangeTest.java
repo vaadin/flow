@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,13 @@
 
 package com.vaadin.flow.internal.change;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.nodefeature.AbstractNodeFeatureTest;
@@ -26,11 +30,6 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 public class MapPutChangeTest {
     private NodeMap feature = AbstractNodeFeatureTest
@@ -40,38 +39,39 @@ public class MapPutChangeTest {
     public void testJson() {
         MapPutChange change = new MapPutChange(feature, "some", "string");
 
-        JsonObject json = change.toJson(null);
+        ObjectNode json = change.toJson(null);
 
         Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber(JsonConstants.CHANGE_NODE));
+                json.get(JsonConstants.CHANGE_NODE).intValue());
         Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
-                (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
+                json.get(JsonConstants.CHANGE_FEATURE).intValue());
         Assert.assertEquals(JsonConstants.CHANGE_TYPE_PUT,
-                json.getString(JsonConstants.CHANGE_TYPE));
+                json.get(JsonConstants.CHANGE_TYPE).textValue());
         Assert.assertEquals("some",
-                json.getString(JsonConstants.CHANGE_MAP_KEY));
+                json.get(JsonConstants.CHANGE_MAP_KEY).textValue());
         Assert.assertEquals("string",
-                json.getString(JsonConstants.CHANGE_PUT_VALUE));
+                json.get(JsonConstants.CHANGE_PUT_VALUE).textValue());
     }
 
     @Test
     public void testJsonValueTypes() {
-        JsonValue stringValue = getValue("string");
-        Assert.assertSame(JsonType.STRING, stringValue.getType());
-        Assert.assertEquals("string", stringValue.asString());
+        JsonNode stringValue = getValue("string");
+        Assert.assertSame(JsonNodeType.STRING, stringValue.getNodeType());
+        Assert.assertEquals("string", stringValue.textValue());
 
-        JsonValue numberValue = getValue(Integer.valueOf(1));
-        Assert.assertSame(JsonType.NUMBER, numberValue.getType());
-        Assert.assertEquals(1, numberValue.asNumber(), 0);
+        JsonNode numberValue = getValue(Integer.valueOf(1));
+        Assert.assertSame(JsonNodeType.NUMBER, numberValue.getNodeType());
+        Assert.assertEquals(1, numberValue.intValue(), 0);
 
-        JsonValue booleanValue = getValue(Boolean.TRUE);
-        Assert.assertSame(JsonType.BOOLEAN, booleanValue.getType());
+        JsonNode booleanValue = getValue(Boolean.TRUE);
+        Assert.assertSame(JsonNodeType.BOOLEAN, booleanValue.getNodeType());
         Assert.assertTrue(booleanValue.asBoolean());
 
-        JsonObject jsonInput = Json.createObject();
-        JsonValue jsonValue = getValue(jsonInput);
-        Assert.assertSame(JsonType.OBJECT, jsonValue.getType());
-        Assert.assertSame(jsonInput, jsonValue);
+        ObjectNode jsonInput = JacksonUtils.createObjectNode();
+        JsonNode jsonValue = getValue(jsonInput);
+        Assert.assertSame(JsonNodeType.OBJECT, jsonValue.getNodeType());
+        // Should use same when all *Change classes populateJson updated
+        Assert.assertEquals(jsonInput, jsonValue);
     }
 
     @Test
@@ -79,17 +79,17 @@ public class MapPutChangeTest {
         StateNode value = StateNodeTest.createEmptyNode("value");
         MapPutChange change = new MapPutChange(feature, "myKey", value);
 
-        JsonObject json = change.toJson(null);
-        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_PUT_VALUE));
+        ObjectNode json = change.toJson(null);
+        Assert.assertFalse(json.has(JsonConstants.CHANGE_PUT_VALUE));
 
-        JsonValue nodeValue = json.get(JsonConstants.CHANGE_PUT_NODE_VALUE);
-        Assert.assertSame(JsonType.NUMBER, nodeValue.getType());
-        Assert.assertEquals(value.getId(), (int) nodeValue.asNumber());
+        JsonNode nodeValue = json.get(JsonConstants.CHANGE_PUT_NODE_VALUE);
+        Assert.assertSame(JsonNodeType.NUMBER, nodeValue.getNodeType());
+        Assert.assertEquals(value.getId(), nodeValue.intValue());
     }
 
-    private JsonValue getValue(Object input) {
+    private JsonNode getValue(Object input) {
         MapPutChange change = new MapPutChange(feature, "myKey", input);
-        JsonObject json = change.toJson(null);
+        ObjectNode json = change.toJson(null);
         return json.get(JsonConstants.CHANGE_PUT_VALUE);
     }
 

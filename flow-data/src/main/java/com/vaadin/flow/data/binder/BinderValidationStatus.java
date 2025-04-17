@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,10 @@ import com.vaadin.flow.function.SerializablePredicate;
  * <p>
  * Note: if there are any field level validation errors, the bean level
  * validation is not run.
+ * <p>
+ * Note: if the status change is triggered via automatic validation due to a
+ * changed field value, the field validation statuses will only cover the
+ * changed fields.
  * <p>
  * Use {@link Binder#setValidationStatusHandler(BinderValidationStatusHandler)}
  * to handle form level validation status changes.

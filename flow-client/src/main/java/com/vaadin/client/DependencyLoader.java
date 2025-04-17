@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -171,7 +171,7 @@ public class DependencyLoader {
         if (!lazyDependencies.isEmpty()) {
             runWhenEagerDependenciesLoaded(
                     () -> Scheduler.get().scheduleDeferred(() -> {
-                        Console.log(
+                        Console.debug(
                                 "Finished loading eager dependencies, loading lazy.");
                         lazyDependencies.forEach((loader,
                                 url) -> loadLazyDependency(url, loader));

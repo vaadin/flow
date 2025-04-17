@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -148,5 +148,12 @@ public class CallbackDataProvider<T, F>
         assert itemId != null
                 : "CallbackDataProvider got null as an id for item: " + item;
         return itemId;
+    }
+
+    @Override
+    public String toString() {
+        return "CallbackDataProvider(" + "fetchCallback=" + fetchCallback
+                + ", countCallback=" + countCallback + ", idGetter=" + idGetter
+                + ')';
     }
 }

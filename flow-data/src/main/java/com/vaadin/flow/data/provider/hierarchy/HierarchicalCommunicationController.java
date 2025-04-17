@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,6 +78,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
 
     // Update ids that have been confirmed since the last flush
     private final HashSet<Integer> confirmedUpdates = new HashSet<>();
+
+    private boolean hasUniqueKeyProviderSupplier;
 
     /**
      * Constructs communication controller with support for hierarchical data
@@ -255,16 +257,18 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
 
-        fetchItems.apply(parentKey, range).forEach(bean -> {
-            boolean mapperHasKey = keyMapper.has(bean);
-            String key = keyMapper.key(bean);
-            if (mapperHasKey) {
-                // Ensure latest instance from provider is used
-                keyMapper.refresh(bean);
-                passivatedByUpdate.values().forEach(set -> set.remove(key));
-            }
-            activeKeys.add(key);
-        });
+        try (Stream<T> stream = fetchItems.apply(parentKey, range)) {
+            stream.forEach(bean -> {
+                boolean mapperHasKey = keyMapper.has(bean);
+                String key = keyMapper.key(bean);
+                if (mapperHasKey) {
+                    // Ensure latest instance from provider is used
+                    keyMapper.refresh(bean);
+                    passivatedByUpdate.values().forEach(set -> set.remove(key));
+                }
+                activeKeys.add(key);
+            });
+        }
         return activeKeys;
     }
 
@@ -317,7 +321,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         if (passivated != null) {
             passivated.forEach(key -> {
                 T item = keyMapper.get(key);
-                if (item != null) {
+                if (item != null && (hasUniqueKeyProviderSupplier
+                        || !mapper.isExpanded(item))) {
                     dataGenerator.destroyData(item);
                     keyMapper.remove(item);
                 }
@@ -337,6 +342,11 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         json.put("key", keyMapper.key(item));
         dataGenerator.generateData(item, json);
         return json;
+    }
+
+    public void setHasUniqueKeyProviderSupplier(
+            boolean hasUniqueKeyProviderSupplier) {
+        this.hasUniqueKeyProviderSupplier = hasUniqueKeyProviderSupplier;
     }
 
     private static final void withMissing(Range expected, Range actual,

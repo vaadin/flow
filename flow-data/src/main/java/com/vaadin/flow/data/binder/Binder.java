@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.data.binder;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,9 +55,11 @@ import com.vaadin.flow.data.converter.DefaultConverterFactory;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.BeanValidator;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
@@ -256,6 +259,31 @@ public class Binder<BEAN> implements Serializable {
         public boolean isValidatorsDisabled();
 
         /**
+         * Sets up this binding to either enable or disable the default field
+         * validator (e.g. min/max validators in DatePicker). This binding-level
+         * setting will override the Binder-level setting for this property.
+         *
+         * Defaults to {@literal null}.
+         *
+         * @param defaultValidatorEnabled
+         *            {@literal true} to enable default validator for this
+         *            binding, {@literal false} to disable it, {@literal null}
+         *            to reset (fall back to Binder-level setting)
+         * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
+         *      toggle default validators for all bound fields.
+         */
+        void setDefaultValidatorEnabled(Boolean defaultValidatorEnabled);
+
+        /**
+         * Returns if default validator of bound field is enabled.
+         *
+         * @return {@literal true} if default validator is enabled for this
+         *         binding, {@literal false} if it is disabled, {@literal null}
+         *         if falls back to Binder-level setting
+         */
+        Boolean isDefaultValidatorEnabled();
+
+        /**
          * Define whether the value should be converted back to the presentation
          * in the field when a converter is used in binding.
          * <p>
@@ -294,6 +322,18 @@ public class Binder<BEAN> implements Serializable {
          *         changes, otherwise {@literal false}.
          */
         boolean hasChanges();
+
+        /**
+         * Used in comparison of the current value of a field with its initial
+         * value.
+         * <p>
+         * Once set, the value of the field that binding uses will be compared
+         * with the initial value for hasChanged.
+         * </p>
+         *
+         * @return the predicate to use for equality comparison
+         */
+        SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate();
     }
 
     /**
@@ -656,7 +696,7 @@ public class Binder<BEAN> implements Serializable {
          *            the type to convert to
          * @param converter
          *            the converter to use, not null
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with the specified converter
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
@@ -692,7 +732,8 @@ public class Binder<BEAN> implements Serializable {
          * @param toPresentation
          *            the function which can convert from the new target type to
          *            the old target type
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with a new converter that maps
+         *         between {@code TARGET} and {@code NEWTARGET}
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
@@ -736,7 +777,7 @@ public class Binder<BEAN> implements Serializable {
          * @param errorMessage
          *            the error message to use if conversion using
          *            <code>toModel</code> fails
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with the appropriate type
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
@@ -754,7 +795,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @param nullRepresentation
          *            the value to use instead of {@code null}
-         * @return a new binding with null representation handling.
+         * @return this BindingBuilder with null representation handling.
          */
         default BindingBuilder<BEAN, TARGET> withNullRepresentation(
                 TARGET nullRepresentation) {
@@ -823,6 +864,24 @@ public class Binder<BEAN> implements Serializable {
          */
         BindingBuilder<BEAN, TARGET> withValidationStatusHandler(
                 BindingValidationStatusHandler handler);
+
+        /**
+         * Sets up this binding to either enable or disable the default field
+         * validator (e.g. min/max validators in DatePicker). This binding-level
+         * setting will override the Binder-level setting for this property.
+         *
+         * By default, all bindings will use the Binder-level setting if no
+         * value is set for them.
+         *
+         * @param defaultValidatorEnabled
+         *            {@literal true} to enable default validator for this
+         *            binding, {@literal false} to disable it
+         * @return this binding, for chaining
+         * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
+         *      toggle default validators for all bound fields.
+         */
+        BindingBuilder<BEAN, TARGET> withDefaultValidator(
+                boolean defaultValidatorEnabled);
 
         /**
          * Sets the field to be required. This means two things:
@@ -905,6 +964,26 @@ public class Binder<BEAN> implements Serializable {
          */
         public BindingBuilder<BEAN, TARGET> asRequired(
                 Validator<TARGET> customRequiredValidator);
+
+        /**
+         * Sets the {@code equalityPredicate} used to compare the current value
+         * of a field with its initial value.
+         * <p>
+         * By default it is {@literal null}, meaning the initial value
+         * comparison is not active. Once it is set, the value of the field will
+         * be compared with its initial value. If the value of the field is set
+         * back to its initial value, it will not be considered as having
+         * uncommitted changes.
+         * </p>
+         *
+         * @param equalityPredicate
+         *            the predicate to use for equality comparison
+         * @return this {@code BindingBuilder}, for method chaining
+         */
+        public default BindingBuilder<BEAN, TARGET> withEqualityPredicate(
+                SerializableBiPredicate<TARGET, TARGET> equalityPredicate) {
+            return this;
+        }
     }
 
     /**
@@ -938,6 +1017,15 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean asRequiredSet;
 
+        private Boolean defaultValidatorEnabled;
+
+        /**
+         * A predicate used to compare the current value of a field with its
+         * initial value. By default it is {@literal null} meaning that the
+         * initial value comparison is not active
+         */
+        private SerializableBiPredicate<TARGET, TARGET> equalityPredicate = null;
+
         /**
          * Creates a new binding builder associated with the given field.
          * Initializes the builder with the given converter chain and status
@@ -960,6 +1048,17 @@ public class Binder<BEAN> implements Serializable {
             this.binder = binder;
             this.converterValidatorChain = converterValidatorChain;
             this.statusHandler = statusHandler;
+
+            if (field instanceof HasValidator hasValidator) {
+                SerializableSupplier<Boolean> shouldValidate = () -> binding != null
+                        && Optional
+                                .ofNullable(binding.isDefaultValidatorEnabled())
+                                .orElse(getBinder()
+                                        .isDefaultValidatorsEnabled());
+                withValidator((val, ctx) -> shouldValidate.get()
+                        ? hasValidator.getDefaultValidator().apply(val, ctx)
+                        : ValidationResult.ok());
+            }
         }
 
         Converter<FIELDVALUE, ?> getConverterValidatorChain() {
@@ -974,16 +1073,28 @@ public class Binder<BEAN> implements Serializable {
 
             BindingImpl<BEAN, FIELDVALUE, TARGET> binding = new BindingImpl<>(
                     this, getter, setter);
+            // Setting the binding field value has been moved up here to fix a
+            // regression NPE https://github.com/vaadin/flow/issues/18608 which
+            // breaks tests of Grid component: UpdateEditorComponentIT,
+            // DynamicEditorKBNavigationIT and
+            // GridViewEditorIT.dynamicNotBufferedEditor*
+            this.binding = binding;
 
             // Remove existing binding for same field to avoid potential
-            // multiple application of converter
-            getBinder().bindings.removeIf(
-                    registeredBinding -> registeredBinding.getField() == field);
+            // multiple application of converter and value change listeners
+            List<Binding<BEAN, ?>> bindingsToRemove = getBinder().bindings
+                    .stream().filter(registeredBinding -> registeredBinding
+                            .getField() == field)
+                    .toList();
+            if (!bindingsToRemove.isEmpty()) {
+                bindingsToRemove.forEach(Binding::unbind);
+                getBinder().bindings.removeAll(bindingsToRemove);
+            }
             getBinder().bindings.add(binding);
             if (getBinder().getBean() != null) {
                 binding.initFieldValue(getBinder().getBean(), true);
             }
-            if (setter == null) {
+            if (setter == null && !binder.isRecord) {
                 binding.getField().setReadOnly(true);
             }
             getBinder().fireStatusChangeEvent(false);
@@ -992,7 +1103,6 @@ public class Binder<BEAN> implements Serializable {
             if (getBinder().incompleteBindings != null) {
                 getBinder().incompleteBindings.remove(getField());
             }
-            this.binding = binding;
 
             return binding;
         }
@@ -1037,7 +1147,7 @@ public class Binder<BEAN> implements Serializable {
             ValueProvider<BEAN, ?> getter = definition.getGetter();
             Setter<BEAN, ?> setter = readOnly ? null
                     : definition.getSetter().orElse(null);
-            if (!readOnly && setter == null) {
+            if (!readOnly && setter == null && !binder.isRecord) {
                 getLogger().info(
                         propertyName + " does not have an accessible setter");
             }
@@ -1104,6 +1214,14 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
+        public BindingBuilder<BEAN, TARGET> withDefaultValidator(
+                boolean defaultValidatorEnabled) {
+            checkUnbound();
+            this.defaultValidatorEnabled = defaultValidatorEnabled;
+            return this;
+        }
+
+        @Override
         public BindingBuilder<BEAN, TARGET> asRequired(
                 ErrorMessageProvider errorMessageProvider) {
             return asRequired(Validator.from(
@@ -1126,6 +1244,15 @@ public class Binder<BEAN> implements Serializable {
             });
         }
 
+        @Override
+        public BindingBuilder<BEAN, TARGET> withEqualityPredicate(
+                SerializableBiPredicate<TARGET, TARGET> equalityPredicate) {
+            Objects.requireNonNull(equalityPredicate,
+                    "equality predicate cannot be null");
+            this.equalityPredicate = equalityPredicate;
+            return this;
+        }
+
         /**
          * Implements {@link #withConverter(Converter)} method with additional
          * possibility to disable (reset) default null representation converter.
@@ -1140,7 +1267,7 @@ public class Binder<BEAN> implements Serializable {
          * @param resetNullRepresentation
          *            if {@code true} then default null representation will be
          *            deactivated (if not yet), otherwise it won't be removed
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with the appropriate type
          * @param <NEWTARGET>
          *            the type to convert to
          * @throws IllegalStateException
@@ -1238,6 +1365,12 @@ public class Binder<BEAN> implements Serializable {
 
         private Registration onValidationStatusChange;
 
+        private Boolean defaultValidatorEnabled;
+
+        private SerializableBiPredicate<TARGET, TARGET> equalityPredicate;
+
+        private TARGET initialValue;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1246,6 +1379,10 @@ public class Binder<BEAN> implements Serializable {
             statusHandler = builder.statusHandler;
             this.asRequiredSet = builder.asRequiredSet;
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
+
+            defaultValidatorEnabled = builder.defaultValidatorEnabled;
+
+            equalityPredicate = builder.equalityPredicate;
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
@@ -1364,14 +1501,15 @@ public class Binder<BEAN> implements Serializable {
          * @return the value context
          */
         protected ValueContext createValueContext() {
-            return createValueContext(field);
+            return createValueContext(binder, field);
         }
 
-        static ValueContext createValueContext(HasValue<?, ?> field) {
+        static ValueContext createValueContext(Binder binder,
+                HasValue<?, ?> field) {
             if (field instanceof Component) {
-                return new ValueContext((Component) field, field);
+                return new ValueContext(binder, (Component) field, field);
             }
-            return new ValueContext(null, field, findLocale());
+            return new ValueContext(binder, null, field, findLocale());
         }
 
         /**
@@ -1433,6 +1571,10 @@ public class Binder<BEAN> implements Serializable {
             if (binder != null) {
                 // Inform binder of changes; if setBean: writeIfValid
                 getBinder().handleFieldValueChange(this);
+                // Compare the value with initial value, and remove the binder
+                // from changed bindings if reverted
+                removeFromChangedBindingsIfReverted(
+                        getBinder()::removeFromChangedBindings);
                 getBinder().fireEvent(event);
             }
         }
@@ -1490,6 +1632,7 @@ public class Binder<BEAN> implements Serializable {
                 FIELDVALUE convertedValue = convertToFieldType(modelValue);
                 try {
                     field.setValue(convertedValue);
+                    initialValue = modelValue;
                 } catch (RuntimeException e) {
                     /*
                      * Add an additional hint to the exception for the typical
@@ -1516,7 +1659,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void setReadOnly(boolean readOnly) {
-            if (setter == null && !readOnly) {
+            if (!binder.isRecord && this.setter == null && !readOnly) {
                 throw new IllegalStateException(
                         "Binding with a null setter has to be read-only");
             }
@@ -1567,6 +1710,17 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
+        public void setDefaultValidatorEnabled(
+                Boolean defaultValidatorEnabled) {
+            this.defaultValidatorEnabled = defaultValidatorEnabled;
+        }
+
+        @Override
+        public Boolean isDefaultValidatorEnabled() {
+            return defaultValidatorEnabled;
+        }
+
+        @Override
         public void setConvertBackToPresentation(
                 boolean convertBackToPresentation) {
             this.convertBackToPresentation = convertBackToPresentation;
@@ -1609,6 +1763,36 @@ public class Binder<BEAN> implements Serializable {
             }
 
             return this.binder.hasChanges(this);
+        }
+
+        @Override
+        public SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate() {
+            return equalityPredicate;
+        }
+
+        /**
+         * compares the new value of the field with its initial value, and
+         * removes the current binding from the {@code changeBindings}, but only
+         * if {@code equalityPredicate} is set, or
+         * {@link #isChangeDetectionEnabled()} returns true.
+         *
+         * @param removeBindingAction
+         *            the binding consumer that removes the binding from the
+         *            {@code changeBindings}
+         */
+        private void removeFromChangedBindingsIfReverted(
+                SerializableConsumer<Binding<BEAN, TARGET>> removeBindingAction) {
+            if (binder.isChangeDetectionEnabled()
+                    || equalityPredicate != null) {
+                doConversion().ifOk(convertedValue -> {
+                    SerializableBiPredicate<TARGET, TARGET> effectivePredicate = equalityPredicate == null
+                            ? Objects::equals
+                            : equalityPredicate;
+                    if (effectivePredicate.test(initialValue, convertedValue)) {
+                        removeBindingAction.accept(this);
+                    }
+                });
+            }
         }
     }
 
@@ -1699,6 +1883,10 @@ public class Binder<BEAN> implements Serializable {
 
     private BEAN bean;
 
+    private boolean isRecord;
+
+    private Class<BEAN> beanType;
+
     private final Collection<Binding<BEAN, ?>> bindings = new ArrayList<>();
 
     private Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteBindings;
@@ -1724,6 +1912,10 @@ public class Binder<BEAN> implements Serializable {
 
     private boolean fieldsValidationStatusChangeListenerEnabled = true;
 
+    private boolean defaultValidatorsEnabled = true;
+
+    private boolean changeDetectionEnabled = false;
+
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
      * finding and resolving property names for
@@ -1739,8 +1931,8 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties.
+     * Creates a new binder that uses reflection based on the provided bean or
+     * record type to resolve its properties.
      *
      * Nested properties are resolved lazily, when bound to a field.
      *
@@ -1749,6 +1941,10 @@ public class Binder<BEAN> implements Serializable {
      */
     public Binder(Class<BEAN> beanType) {
         this(BeanPropertySet.get(beanType));
+        isRecord = beanType.isRecord();
+        if (isRecord) {
+            this.beanType = beanType;
+        }
     }
 
     /**
@@ -1779,8 +1975,8 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties.
+     * Creates a new binder that uses reflection based on the provided bean or
+     * record type to resolve its properties.
      *
      * If {@code scanNestedDefinitions} is true, nested properties are detected
      * eagerly. Otherwise, they will be discovered lazily when the property is
@@ -1794,6 +1990,10 @@ public class Binder<BEAN> implements Serializable {
     public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
         this(BeanPropertySet.get(beanType, scanNestedDefinitions,
                 PropertyFilterDefinition.getDefaultFilter()));
+        isRecord = beanType.isRecord();
+        if (isRecord) {
+            this.beanType = beanType;
+        }
     }
 
     /**
@@ -1823,20 +2023,26 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Informs the Binder that a value in Binding was changed. This method will
-     * trigger validating and writing of the whole bean if using
-     * {@link #setBean(Object)}. If using {@link #readBean(Object)} only the
-     * field validation for the given Binding is run.
+     * Informs the Binder that a value in Binding was changed.
+     *
+     * If {@link #readBean(Object)} was used, this method will only validate the
+     * changed binding and ignore state of other bindings.
+     *
+     * If {@link #setBean(Object)} was used, all pending changed bindings will
+     * be validated and non-changed ones will be ignored. The changed value will
+     * be written to the bean immediately, assuming that Binder-level validators
+     * also pass.
      *
      * @param binding
      *            the binding whose value has been changed
      */
     protected void handleFieldValueChange(Binding<BEAN, ?> binding) {
         changedBindings.add(binding);
-        if (getBean() != null) {
-            doWriteIfValid(getBean(), changedBindings);
+
+        if (getBean() == null) {
+            binding.validate();
         } else {
-            validate(binding);
+            doWriteIfValid(getBean(), changedBindings);
         }
     }
 
@@ -1877,12 +2083,8 @@ public class Binder<BEAN> implements Serializable {
         // clear previous errors for this field and any bean level validation
         clearError(field);
         getStatusLabel().ifPresent(label -> label.setText(""));
-
         return createBinding(field, createNullRepresentationAdapter(field),
-                this::handleValidationStatus)
-                .withValidator(field instanceof HasValidator
-                        ? ((HasValidator) field).getDefaultValidator()
-                        : Validator.alwaysPass());
+                this::handleValidationStatus);
     }
 
     /**
@@ -2126,9 +2328,17 @@ public class Binder<BEAN> implements Serializable {
      * back to their corresponding property values of the bean as long as the
      * bean is bound.
      * <p>
-     * Any change made in one of the fields also runs validation for all the
-     * fields {@link Binding} and bean level validation for this binder (bean
-     * level validators are added using {@link Binder#withValidator(Validator)}.
+     * Note: Any change made in one of the bound fields runs validation for only
+     * the changed {@link Binding}, and additionally any bean level validation
+     * for this binder (bean level validators are added using
+     * {@link Binder#withValidator(Validator)}. As a result, the bean set via
+     * this method is not guaranteed to always be in a valid state. This means
+     * also that possible {@link StatusChangeListener} and
+     * {@link BinderValidationStatusHandler} are called indicating a successful
+     * validation, even though some bindings can be in a state that would not
+     * pass validation. If bean validity is required at all times,
+     * {@link #readBean(Object)} and {@link #writeBean(Object)} should be used
+     * instead.
      * <p>
      * After updating each field, the value is read back from the field and the
      * bean's property value is updated if it has been changed from the original
@@ -2142,8 +2352,14 @@ public class Binder<BEAN> implements Serializable {
      * @param bean
      *            the bean to edit, or {@code null} to remove a currently bound
      *            bean and clear bound fields
+     * @throws IllegalStateException
+     *             if the Binder's model type is record
      */
     public void setBean(BEAN bean) {
+        if (isRecord) {
+            throw new IllegalStateException(
+                    "setBean can't be used with records, call readBean instead");
+        }
         checkBindingsCompleted("setBean");
         if (bean == null) {
             if (this.bean != null) {
@@ -2173,20 +2389,20 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Reads the bound property values from the given bean to the corresponding
-     * fields.
+     * Reads the bound property values from the given bean or record to the
+     * corresponding fields.
      * <p>
-     * The bean is not otherwise associated with this binder; in particular its
-     * property values are not bound to the field value changes. To achieve
-     * that, use {@link #setBean(Object)}.
+     * The bean or record is not otherwise associated with this binder; in
+     * particular its property values are not bound to the field value changes.
+     * To achieve that, use {@link #setBean(Object)}.
      *
      * @see #setBean(Object)
      * @see #writeBeanIfValid(Object)
      * @see #writeBean(Object)
      *
      * @param bean
-     *            the bean whose property values to read or {@code null} to
-     *            clear bound fields
+     *            the bean or record whose property values to read or
+     *            {@code null} to clear bound fields
      */
     public void readBean(BEAN bean) {
         checkBindingsCompleted("readBean");
@@ -2209,6 +2425,29 @@ public class Binder<BEAN> implements Serializable {
                     BinderValidationStatus.createUnresolvedStatus(this));
             fireStatusChangeEvent(false);
         }
+    }
+
+    /**
+     * Reads the bound property values from the given record to the
+     * corresponding fields.
+     * <p>
+     * The record is not otherwise associated with this binder; in particular
+     * its property values are not bound to the field value changes.
+     *
+     * @see #writeRecord()
+     *
+     * @param record
+     *            the record whose property values to read or {@code null} to
+     *            clear bound fields
+     * @throws IllegalArgumentException
+     *             if the given object's type is not a record
+     */
+    public void readRecord(BEAN record) {
+        if (!isRecord) {
+            throw new IllegalArgumentException(
+                    "readRecord method can't be used with beans, call readBean instead");
+        }
+        readBean(record);
     }
 
     /**
@@ -2242,6 +2481,7 @@ public class Binder<BEAN> implements Serializable {
      * thrown.
      *
      * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object, Collection)
      * @see #readBean(Object)
      * @see #setBean(Object)
      *
@@ -2252,11 +2492,92 @@ public class Binder<BEAN> implements Serializable {
      *             if some of the bound field values fail to validate
      */
     public void writeBean(BEAN bean) throws ValidationException {
-        BinderValidationStatus<BEAN> status = doWriteIfValid(bean, bindings);
+        writeBean(bean, bindings);
+    }
+
+    /**
+     * Writes changes from the given bindings to the given bean if all
+     * validators (binding and bean level) pass.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, the given bean is updated and bean
+     * level validators are run on the updated bean. If any bean level validator
+     * fails, the bean updates are reverted and a {@code ValidationException} is
+     * thrown.
+     *
+     * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     * @see #writeChangedBindingsToBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     * @param bindingsToWrite
+     *            Collection of bindings to use in writing the bean
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     * @throws IllegalArgumentException
+     *             if bindingsToWrite contains bindings not belonging to this
+     *             Binder
+     */
+    public void writeBean(BEAN bean,
+            Collection<Binding<BEAN, ?>> bindingsToWrite)
+            throws ValidationException {
+        if (!bindings.containsAll(bindingsToWrite)) {
+            throw new IllegalArgumentException(
+                    "Can't write bean using binding that is not bound to this Binder.");
+        }
+        BinderValidationStatus<BEAN> status = doWriteIfValid(bean,
+                bindingsToWrite);
         if (status.hasErrors()) {
             throw new ValidationException(status.getFieldValidationErrors(),
                     status.getBeanValidationErrors());
         }
+    }
+
+    /**
+     * Writes changes from the changed bindings to the given bean if all
+     * validators (binding and bean level) pass. If the bean is the same
+     * instance where Binder read the bean, this method updates the bean with
+     * the changes.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, the given bean is updated and bean
+     * level validators are run on the updated bean. If any bean level validator
+     * fails, the bean updates are reverted and a {@code ValidationException} is
+     * thrown.
+     *
+     * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     */
+    public void writeChangedBindingsToBean(BEAN bean)
+            throws ValidationException {
+        writeBean(bean, getChangedBindings());
+    }
+
+    /**
+     * Get the immutable Set of changed bindings.
+     *
+     * @see #hasChanges()
+     *
+     * @return Immutable set of bindings.
+     */
+    public Set<Binding<BEAN, ?>> getChangedBindings() {
+        return Collections.unmodifiableSet(changedBindings);
     }
 
     /**
@@ -2322,6 +2643,103 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Writes values from the bound fields to a new record instance if all
+     * validators (binding and bean level) pass. This method can only be used if
+     * Binder was originally configured to use a record type.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, a record is intanciated and bean
+     * level validators are run on the new record. If any bean level validator
+     * fails a {@code ValidationException} is thrown.
+     *
+     * @see #readBean(Object)
+     *
+     * @return a record instance with current values
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     * @throws IllegalStateException
+     *             if a record component does not have a binding, or if the
+     *             Binder's model type is bean
+     * @throws IllegalArgumentException
+     *             if record instantiation fails for any reason
+     */
+    public BEAN writeRecord() throws ValidationException {
+        if (!isRecord) {
+            throw new IllegalStateException(
+                    "writeRecord methods can't be used with beans, call writeBean instead");
+        }
+        BEAN record = null;
+        List<ValidationResult> binderResults = Collections.emptyList();
+
+        // make a copy of the incoming bindings to avoid their modifications
+        // during validation
+        Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
+                bindings);
+
+        // First run fields level validation, if no validation errors then
+        // create a record.
+        List<BindingValidationStatus<?>> bindingResults = currentBindings
+                .stream().map(b -> b.validate(false))
+                .collect(Collectors.toList());
+
+        if (bindingResults.stream()
+                .noneMatch(BindingValidationStatus::isError)) {
+            // Field level validation can be skipped as it was done already
+            boolean validatorsDisabledStatus = isValidatorsDisabled();
+            setValidatorsDisabled(true);
+            // Fetch all conversion results
+            List<Result<?>> values = new ArrayList<>();
+            for (RecordComponent rc : beanType.getRecordComponents()) {
+                String name = rc.getName();
+                if (boundProperties.containsKey(name)) {
+                    Result<?> value = ((BindingImpl<BEAN, ?, ?>) boundProperties
+                            .get(name)).doConversion();
+                    values.add(value);
+                } else {
+                    throw new IllegalStateException(
+                            "Unable to create record since no "
+                                    + "binding was found for record component '"
+                                    + name
+                                    + "'. Please create bindings for all record components "
+                                    + "using their names as the propertyName.");
+                }
+            }
+            setValidatorsDisabled(validatorsDisabledStatus);
+
+            // Gather successfully converted values
+            final List<Object> convertedValues = new ArrayList<>();
+            values.forEach(value -> value.ifOk(convertedValues::add));
+
+            try {
+                record = beanType.cast(beanType.getDeclaredConstructors()[0]
+                        .newInstance(convertedValues.toArray()));
+            } catch (Exception e) {
+                throw ReflectTools.convertInstantiationException(e, beanType);
+            }
+
+            // Now run bean level validation against the created record
+            bean = record;
+            binderResults = validateBean(bean);
+            bean = null;
+            if (binderResults.stream().noneMatch(ValidationResult::isError)) {
+                changedBindings.clear();
+            }
+        }
+
+        // Generate status object and fire events.
+        BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(this,
+                bindingResults, binderResults);
+        getValidationStatusHandler().statusChange(status);
+        fireStatusChangeEvent(!status.isOk());
+        if (!status.isOk()) {
+            throw new ValidationException(bindingResults, binderResults);
+        }
+        return record;
+    }
+
+    /**
      * Writes the field values into the given bean if all field level validators
      * pass. Runs bean level validators on the bean after writing.
      * <p>
@@ -2334,10 +2752,16 @@ public class Binder<BEAN> implements Serializable {
      *            the set of bindings to write to the bean
      * @return a list of field validation errors if such occur, otherwise a list
      *         of bean validation errors.
+     * @throws IllegalStateException
+     *             if the Binder's model type is record
      */
     @SuppressWarnings("unchecked")
     private BinderValidationStatus<BEAN> doWriteIfValid(BEAN bean,
             Collection<Binding<BEAN, ?>> bindings) {
+        if (isRecord) {
+            throw new IllegalStateException(
+                    "writeBean methods can't be used with records, call writeRecord instead");
+        }
         Objects.requireNonNull(bean, "bean cannot be null");
         List<ValidationResult> binderResults = Collections.emptyList();
 
@@ -2347,9 +2771,10 @@ public class Binder<BEAN> implements Serializable {
                 bindings);
 
         // First run fields level validation, if no validation errors then
-        // update bean. Note that this will validate all bindings.
-        List<BindingValidationStatus<?>> bindingResults = getBindings().stream()
-                .map(b -> b.validate(false)).collect(Collectors.toList());
+        // update bean.
+        List<BindingValidationStatus<?>> bindingResults = currentBindings
+                .stream().map(b -> b.validate(false))
+                .collect(Collectors.toList());
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -2404,12 +2829,17 @@ public class Binder<BEAN> implements Serializable {
      *            the set of bindings to write to the bean
      * @param forced
      *            disable validators during write if true
+     * @throws IllegalStateException
+     *             if the Binder's model type is record
      */
     @SuppressWarnings({ "unchecked" })
     private void doWriteDraft(BEAN bean, Collection<Binding<BEAN, ?>> bindings,
             boolean forced) {
         Objects.requireNonNull(bean, "bean cannot be null");
-
+        if (isRecord) {
+            throw new IllegalStateException(
+                    "writeBean methods can't be used with records, call writeRecord instead");
+        }
         if (!forced) {
             bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
                     .writeFieldValue(bean));
@@ -2611,38 +3041,6 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Validates the target binding. Also runs validation for all other
-     * bindings, and if possible, bean-level validations as well.
-     *
-     * {@link BinderValidationStatusHandler} is called with only the status of
-     * the target binding.
-     *
-     * {@link StatusChangeEvent} is fired with current binder validation status
-     *
-     * @param targetBinding
-     *            target binding for validation
-     */
-    private void validate(Binding<BEAN, ?> targetBinding) {
-        List<BindingValidationStatus<?>> bindingValidationStatuses = validateBindings();
-
-        List<ValidationResult> beanStatuses = new ArrayList<>();
-        if (getBean() != null) {
-            beanStatuses.addAll(validateBean(getBean()));
-        }
-        BindingValidationStatus<?> status = bindingValidationStatuses.stream()
-                .filter(s -> targetBinding.equals(s.getBinding())).findFirst()
-                .orElse(null);
-
-        getValidationStatusHandler().statusChange(new BinderValidationStatus<>(
-                this, Collections.singletonList(status),
-                Collections.emptyList()));
-
-        fireStatusChangeEvent(bindingValidationStatuses.stream()
-                .anyMatch(BindingValidationStatus::isError)
-                || beanStatuses.stream().anyMatch(ValidationResult::isError));
-    }
-
-    /**
      * Runs all currently configured field level validators, as well as all bean
      * level validators if a bean is currently set with
      * {@link #setBean(Object)}, and returns whether any of the validators
@@ -2699,9 +3097,36 @@ public class Binder<BEAN> implements Serializable {
     private List<ValidationResult> validateBean(BEAN bean) {
         Objects.requireNonNull(bean, "bean cannot be null");
         return validators.stream()
-                .map(validator -> validator.apply(bean, new ValueContext()))
+                .map(validator -> validator.apply(bean, new ValueContext(this)))
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
                         Collections::unmodifiableList));
+    }
+
+    /**
+     * Sets up the Binder to either enable or disable the default field
+     * validators (e.g. min/max validators in DatePicker) of all bound fields.
+     * This Binder-level setting can be overridden for each binding via either
+     * the binding object itself, or the binding builder.
+     * <p>
+     * Defaults to {@literal true}.
+     *
+     * @param defaultValidatorsEnabled
+     *            {@literal true} to enable default validators of bound fields,
+     *            {@literal false} to disable them
+     */
+    public void setDefaultValidatorsEnabled(boolean defaultValidatorsEnabled) {
+        this.defaultValidatorsEnabled = defaultValidatorsEnabled;
+    }
+
+    /**
+     * Returns the Binder-level setting for enabling default validators of bound
+     * fields.
+     *
+     * @return {@literal true} if default validators of bound fields are
+     *         enabled, {@literal false} if they are disabled
+     */
+    public boolean isDefaultValidatorsEnabled() {
+        return defaultValidatorsEnabled;
     }
 
     /**
@@ -3105,7 +3530,8 @@ public class Binder<BEAN> implements Serializable {
      *            to set them to read-write
      */
     public void setReadOnly(boolean readOnly) {
-        getBindings().stream().filter(binding -> binding.getSetter() != null)
+        getBindings().stream()
+                .filter(binding -> isRecord || binding.getSetter() != null)
                 .forEach(field -> field.setReadOnly(readOnly));
     }
 
@@ -3586,8 +4012,15 @@ public class Binder<BEAN> implements Serializable {
         if (bindings.remove(binding)) {
             boundProperties.entrySet()
                     .removeIf(entry -> entry.getValue().equals(binding));
-            changedBindings.remove(binding);
+            removeFromChangedBindings(binding);
         }
+    }
+
+    /**
+     * Removes (internally) the {@code Binding} from the changed bindings
+     */
+    private void removeFromChangedBindings(Binding<BEAN, ?> binding) {
+        changedBindings.remove(binding);
     }
 
     /**
@@ -3645,6 +4078,37 @@ public class Binder<BEAN> implements Serializable {
      */
     public boolean isFieldsValidationStatusChangeListenerEnabled() {
         return fieldsValidationStatusChangeListenerEnabled;
+    }
+
+    /**
+     * Sets change/revert detection enabled or disabled. When set to
+     * {@literal true}, any binding that is first changed and then reverted to
+     * its original value will be removed from the list of changed bindings.
+     *
+     * By default, {@link Objects#equals(Object, Object)} is used for value
+     * comparison, but it can be overridden on binding level using
+     * {@link BindingBuilder#withEqualityPredicate(SerializableBiPredicate)}.
+     *
+     * @param changeDetectionEnabled
+     *            Boolean value
+     */
+    public void setChangeDetectionEnabled(boolean changeDetectionEnabled) {
+        this.changeDetectionEnabled = changeDetectionEnabled;
+    }
+
+    /**
+     * Returns if change/revert detection is enabled. When set to
+     * {@literal true}, any binding that is first changed and then reverted to
+     * its original value will be removed from the list of changed bindings.
+     *
+     * By default, {@link Objects#equals(Object, Object)} is used for value
+     * comparison, but it can be overridden on binding level using
+     * {@link BindingBuilder#withEqualityPredicate(SerializableBiPredicate)}.
+     *
+     * @return Boolean value
+     */
+    public boolean isChangeDetectionEnabled() {
+        return changeDetectionEnabled;
     }
 
     /**

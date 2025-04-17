@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,7 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.function.BiConsumer;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -31,6 +31,7 @@ import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.LitUtils;
 import com.vaadin.client.PolymerUtils;
+import com.vaadin.client.ReactUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
@@ -736,11 +737,20 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
             Object domValue = WidgetUtil.getJsProperty(element, name);
+            Optional<Object> previousDomValue = mapProperty
+                    .getPreviousDomValue();
+
+            // User might have modified DOM value during server round-trip.
+            // That is why we only want to update to the tree value if the tree
+            // value is different from the pre-server-round-trip DOM value.
+            boolean updateToTreeValue = previousDomValue
+                    .map(o -> !WidgetUtil.equals(treeValue, o)).orElse(true);
+
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
-            if (WidgetUtil.isUndefined(domValue)
-                    || !WidgetUtil.equals(domValue, treeValue)) {
+            if (updateToTreeValue && (WidgetUtil.isUndefined(domValue)
+                    || !WidgetUtil.equals(domValue, treeValue))) {
                 Reactive.runWithComputation(null,
                         () -> WidgetUtil.setJsProperty(element, name,
                                 PolymerUtils.createModelTree(treeValue)));
@@ -752,6 +762,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // the value
             WidgetUtil.setJsProperty(element, name, null);
         }
+        mapProperty.clearPreviousDomValue();
     }
 
     private void updateStyleProperty(MapProperty mapProperty, Element element) {
@@ -878,6 +889,23 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
             handleTemplateInTemplate(context, node, object, reactivePhase);
+        } else if (NodeProperties.INJECT_BY_NAME.equals(type)) {
+            String name = object.getString(NodeProperties.PAYLOAD);
+            String address = "name='" + name + "'";
+
+            Supplier<Element> elementLookup = () -> ElementUtil
+                    .getElementByName(context.htmlNode, name);
+
+            if (!ReactUtils.isInitialized(elementLookup)) {
+                ReactUtils.addReadyCallback((Element) context.htmlNode, name,
+                        () -> {
+                            doAppendVirtualChild(context, node, false,
+                                    elementLookup, name, address);
+                        });
+                return;
+            }
+            doAppendVirtualChild(context, node, reactivePhase, elementLookup,
+                    name, address);
         } else {
             assert false : "Unexpected payload type " + type;
         }
@@ -1299,6 +1327,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 eventData.put(expressionString, expressionValue);
             }
         }
+        synchronizeProperties.forEach(name -> {
+            NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+            MapProperty mapProperty = map.getProperty(name);
+            Object domValue = WidgetUtil.getJsProperty(element, name);
+            mapProperty.setPreviousDomValue(domValue);
+        });
 
         JsMap<String, Runnable> commands = JsCollections.map();
         synchronizeProperties.forEach(name -> commands.set(name,

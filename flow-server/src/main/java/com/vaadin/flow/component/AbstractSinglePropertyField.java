@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -29,6 +30,7 @@ import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -128,6 +130,8 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
                 Boolean.FALSE);
         addHandler(Element::setProperty, Element::getProperty, Integer.class,
                 Integer.valueOf(0));
+        typeHandlers.put(BaseJsonNode.class,
+                getJsonHandler(BaseJsonNode.class));
         typeHandlers.put(JsonValue.class, getHandler(JsonValue.class));
     }
 
@@ -254,7 +258,10 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private <P> TypeHandler<P> findHandler(Class<P> clazz) {
         TypeHandler<P> typeHandler = (TypeHandler<P>) typeHandlers.get(clazz);
-        if (typeHandler == null && JsonValue.class.isAssignableFrom(clazz)) {
+        if (typeHandler == null && BaseJsonNode.class.isAssignableFrom(clazz)) {
+            typeHandler = getJsonHandler((Class) clazz);
+        } else if (typeHandler == null
+                && JsonValue.class.isAssignableFrom(clazz)) {
             typeHandler = getHandler((Class) clazz);
         }
         if (typeHandler == null) {
@@ -366,6 +373,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         propertyWriter.accept((C) this, newPresentationValue);
     }
 
+    @Deprecated
     private static <P extends JsonValue> TypeHandler<P> getHandler(
             Class<P> type) {
         ElementGetter<P> getter = (element, property, defaultValue) -> {
@@ -376,6 +384,18 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         };
         ElementSetter<P> setter = (element, property, value) -> element
                 .setPropertyJson(property, value);
+        return new TypeHandler<P>(setter, getter, null);
+    }
+
+    private static <P extends BaseJsonNode> TypeHandler<P> getJsonHandler(
+            Class<P> type) {
+        ElementGetter<P> getter = (element, property, defaultValue) -> {
+            Serializable value = element.getPropertyRaw(property);
+            // JsonValue is passed straight through, other primitive
+            // values are jsonified
+            return type.cast(JacksonCodec.encodeWithoutTypeInfo(value));
+        };
+        ElementSetter<P> setter = Element::setPropertyJson;
         return new TypeHandler<P>(setter, getter, null);
     }
 

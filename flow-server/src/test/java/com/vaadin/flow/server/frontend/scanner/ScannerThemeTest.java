@@ -103,7 +103,8 @@ public class ScannerThemeTest {
         // since it has @JsModule annotation which makes it easy to verify
         // that the Theme was actually visited and modules collected
 
-        FrontendDependencies deps = new FrontendDependencies(finder) {
+        FrontendDependencies deps = new FrontendDependencies(finder, true, null,
+                true) {
             @Override
             Class<? extends AbstractTheme> getDefaultTheme()
                     throws IOException {
@@ -137,7 +138,8 @@ public class ScannerThemeTest {
         Mockito.doReturn(Theme4.class).when(finder)
                 .loadClass(FrontendDependencies.LUMO);
 
-        FrontendDependencies deps = new FrontendDependencies(finder);
+        FrontendDependencies deps = new FrontendDependencies(finder, true, null,
+                true);
         assertEquals(
                 "Theme4 should have been returned when default theme was selected",
                 Theme4.class, deps.getThemeDefinition().getTheme());
@@ -150,7 +152,7 @@ public class ScannerThemeTest {
         DefaultClassFinder finder = spy(new DefaultClassFinder(
                 Collections.singleton(RootViewWithTheme.class)));
 
-        new FrontendDependencies(finder);
+        new FrontendDependencies(finder, true, null, true);
         verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,8 +51,10 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
@@ -997,6 +999,18 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void getItem_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+        dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
+                null);
+
+        fakeClientCommunication();
+        dataCommunicator.getItem(0);
+
+        Assert.assertTrue(streamIsClosed.get());
+    }
+
+    @Test
     public void itemCountEstimateAndStep_defaults() {
         Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
                 pageSize * 4);
@@ -1300,14 +1314,18 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_maxLimitValue_pagesCalculatedProperly() {
-        AbstractDataProvider<Item,Object>dataProvider=createDataProvider(42);dataProvider=Mockito.spy(dataProvider);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                42);
+        dataProvider = Mockito.spy(dataProvider);
 
-        dataCommunicator.setDataProvider(dataProvider,null);dataCommunicator.setPageSize(2_000_000_000);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(2_000_000_000);
         // We check the page number calculation does not lead to integer
         // overflow, and not throw thus
-        dataCommunicator.fetchFromProvider(0,Integer.MAX_VALUE);
+        dataCommunicator.fetchFromProvider(0, Integer.MAX_VALUE);
 
-        Mockito.verify(dataProvider,Mockito.times(1)).fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider, Mockito.times(1))
+                .fetch(Mockito.any(Query.class));
     }
 
     @Test
@@ -1351,6 +1369,18 @@ public class DataCommunicatorTest {
         Assert.assertEquals(13, itemList.size());
         Assert.assertEquals(new Item(101), itemList.get(0));
 
+    }
+
+    @Test
+    public void fetchFromProvider_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+        dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
+                null);
+        dataCommunicator.setRequestedRange(0, 50);
+
+        fakeClientCommunication();
+
+        Assert.assertTrue(streamIsClosed.get());
     }
 
     @Test
@@ -1737,6 +1767,11 @@ public class DataCommunicatorTest {
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
+        return createDataProvider(new AtomicBoolean());
+    }
+
+    private AbstractDataProvider<Item, Object> createDataProvider(
+            AtomicBoolean streamIsClosed) {
         return new AbstractDataProvider<Item, Object>() {
             @Override
             public boolean isInMemory() {
@@ -1752,7 +1787,8 @@ public class DataCommunicatorTest {
             public Stream<Item> fetch(Query<Item, Object> query) {
                 return asParallelIfRequired(IntStream.range(query.getOffset(),
                         query.getLimit() + query.getOffset()))
-                        .mapToObj(Item::new);
+                        .mapToObj(Item::new)
+                        .onClose(() -> streamIsClosed.set(true));
             }
         };
     }
@@ -1805,10 +1841,21 @@ public class DataCommunicatorTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new AlwaysLockedVaadinSession(null);
+                MockService service = Mockito.mock(MockService.class);
+                Mockito.when(service.getRouteRegistry())
+                        .thenReturn(Mockito.mock(RouteRegistry.class));
+                session = new AlwaysLockedVaadinSession(service);
                 VaadinSession.setCurrent(session);
             }
             return session;
+        }
+    }
+
+    public static class MockService extends VaadinServletService {
+
+        @Override
+        public RouteRegistry getRouteRegistry() {
+            return super.getRouteRegistry();
         }
     }
 

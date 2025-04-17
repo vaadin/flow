@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,6 @@ import com.vaadin.flow.utils.LookupImpl;
 
 /**
  * Gives access to plugin-specific implementations and configurations.
- *
  */
 public interface PluginAdapterBase {
 
@@ -127,6 +126,16 @@ public interface PluginAdapterBase {
     void logDebug(CharSequence debugMessage);
 
     /**
+     * Delegates a debug-Message to a logger.
+     *
+     * @param debugMessage
+     *            to be logged.
+     * @param throwable
+     *            to be logged.
+     */
+    void logDebug(CharSequence debugMessage, Throwable throwable);
+
+    /**
      * Delegates a info-Message to a logger.
      *
      * @param infoMessage
@@ -140,8 +149,15 @@ public interface PluginAdapterBase {
      * @param warningMessage
      *            to be logged.
      */
-
     void logWarn(CharSequence warningMessage);
+
+    /**
+     * delegates a error-Message to a logger.
+     *
+     * @param errorMessage
+     *            to be logged.
+     */
+    void logError(CharSequence errorMessage);
 
     /**
      * Delegates a warning-Message to a logger.
@@ -303,9 +319,49 @@ public interface PluginAdapterBase {
     boolean isPrepareFrontendCacheDisabled();
 
     /**
-     * Set react router as enabled or disabled.
+     * Set React enabled or disabled.
      *
-     * @return {@code true} for react router and {@code false} for vaadin-router
+     * @return {@code true} for enable React and {@code false} for using Vaadin
+     *         router and excluding React dependencies
      */
-    boolean isReactRouterEnabled();
+    boolean isReactEnabled();
+
+    /**
+     * Gets the application identifier.
+     * <p>
+     * The application identifier is usually computed against project unique
+     * information, such as hashed {@literal groupId} and {@literal artifactId},
+     * but it can be any kind of not blank string.
+     *
+     * @return application identifier, never {@literal null} nor
+     *         {@literal blank}.
+     */
+    String applicationIdentifier();
+
+    /**
+     * Get the list of project file extensions.
+     * <p>
+     * File extensions are given with or without . prefix eg "png" and ".png"
+     * are both accepted.
+     *
+     * @return list of project file extensions
+     */
+    List<String> frontendExtraFileExtensions();
+
+    /**
+     * Whether to exclude Vaadin web component npm packages in packages.json.
+     *
+     * @return {@code true} to exclude Vaadin web component npm packages.
+     */
+    boolean isNpmExcludeWebComponents();
+
+    /**
+     * Whether to ignore node/npm tool version checks or not.
+     *
+     * Note that disabling frontend tools version checking could cause failing
+     * builds and other issues that are difficult to debug.
+     *
+     * @return {@code true} to ignore node/npm tool version checks
+     */
+    boolean isFrontendIgnoreVersionChecks();
 }

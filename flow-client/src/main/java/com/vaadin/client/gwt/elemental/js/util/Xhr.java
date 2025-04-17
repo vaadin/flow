@@ -18,6 +18,7 @@ package com.vaadin.client.gwt.elemental.js.util;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.xhr.client.ReadyStateChangeHandler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.Console;
 
 import elemental.client.Browser;
@@ -88,6 +89,23 @@ public class Xhr {
      */
     public static XMLHttpRequest get(String url, Callback callback) {
         return request(create(), "GET", url, callback);
+    }
+
+    /**
+     * Send a GET request to the <code>url</code> including credentials in XHR,
+     * and dispatch updates to the <code>callback</code>.
+     *
+     * @param url
+     *            the URL
+     * @param callback
+     *            the callback to be notified
+     * @return a reference to the sent XmlHttpRequest
+     */
+    public static XMLHttpRequest getWithCredentials(String url,
+            Callback callback) {
+        XMLHttpRequest request = create();
+        request.setWithCredentials(true);
+        return request(request, "GET", url, callback);
     }
 
     /**

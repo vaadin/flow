@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -87,8 +87,10 @@ public class RequiredFieldConfiguratorUtil {
             Converter converter = ((BindingBuilderImpl<?, ?, ?>) binding)
                     .getConverterValidatorChain();
 
+            Binder<?> binder = ((BindingBuilderImpl<?, ?, ?>) binding)
+                    .getBinder();
             Result<?> result = converter.convertToModel(field.getEmptyValue(),
-                    BindingImpl.createValueContext(field));
+                    BindingImpl.createValueContext(binder, field));
 
             if (!result.isError()) {
                 Object convertedEmptyValue = result

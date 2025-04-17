@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -25,7 +28,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -35,19 +38,17 @@ import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 
 @RunWith(Parameterized.class)
 public class BundleValidationTest {
 
-    public static final String BLANK_PACKAGE_JSON_WITH_HASH = "{\n \"dependencies\": {},"
-            + "\"vaadin\": { \"hash\": \"a5\"} \n}";
+    public static final String BLANK_PACKAGE_JSON_WITH_HASH = "{\n \"dependencies\": {}, \"vaadin\": { \"hash\": \"a5\"} \n}";
 
     public static final String PACKAGE_JSON_DEPENDENCIES = "packageJsonDependencies";
     public static final String ENTRY_SCRIPTS = "entryScripts";
@@ -102,13 +103,14 @@ public class BundleValidationTest {
 
     @Before
     public void init() {
-        options = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot()).withBuildDirectory("target");
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader()));
+        options = new MockOptions(finder, temporaryFolder.getRoot())
+                .withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
         options.withProductionMode(mode.isProduction());
         bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
                 : Constants.DEV_BUNDLE_NAME;
-        finder = Mockito.mock(ClassFinder.class);
         frontendUtils = Mockito.mockStatic(FrontendUtils.class,
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
@@ -134,27 +136,28 @@ public class BundleValidationTest {
         }
     }
 
-    private JsonObject getBasicStats() {
-        JsonObject stats = Json.createObject();
+    private ObjectNode getBasicStats() {
+        ObjectNode stats = JacksonUtils.createObjectNode();
 
-        JsonObject packageJsonDependencies = Json.createObject();
-        JsonObject frontendHashes = Json.createObject();
-        JsonObject themeJsonContents = Json.createObject();
+        ObjectNode packageJsonDependencies = JacksonUtils.createObjectNode();
+        ObjectNode frontendHashes = JacksonUtils.createObjectNode();
+        ObjectNode themeJsonContents = JacksonUtils.createObjectNode();
 
-        JsonArray entryScripts = Json.createArray();
-        JsonArray bundleImports = Json.createArray();
+        ArrayNode entryScripts = JacksonUtils.createArrayNode();
+        ArrayNode bundleImports = JacksonUtils.createArrayNode();
 
-        stats.put(PACKAGE_JSON_DEPENDENCIES, packageJsonDependencies);
-        stats.put(ENTRY_SCRIPTS, entryScripts);
-        stats.put(BUNDLE_IMPORTS, bundleImports);
-        stats.put(FRONTEND_HASHES, frontendHashes);
-        stats.put(THEME_JSON_CONTENTS, themeJsonContents);
+        stats.set(PACKAGE_JSON_DEPENDENCIES, packageJsonDependencies);
+        stats.set(ENTRY_SCRIPTS, entryScripts);
+        stats.set(BUNDLE_IMPORTS, bundleImports);
+        stats.set(FRONTEND_HASHES, frontendHashes);
+        stats.set(THEME_JSON_CONTENTS, themeJsonContents);
         stats.put(PACKAGE_JSON_HASH, "aHash");
 
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependenciesScanner.class), options) {
             @Override
             public void execute() {
+                // NO-OP
             }
         };
 
@@ -165,8 +168,7 @@ public class BundleValidationTest {
                     dependency.getValue());
         }
 
-        bundleImports.set(bundleImports.length(),
-                "./generated/jar-resources/theme-util.js");
+        bundleImports.add("./generated/jar-resources/theme-util.js");
         frontendHashes.put("theme-util.js",
                 BundleValidationUtil.calculateHash(THEME_UTIL_JS));
         jarResources.put("theme-util.js", THEME_UTIL_JS);
@@ -176,7 +178,7 @@ public class BundleValidationTest {
     @Test
     public void noDevBundle_bundleCompilationRequires() {
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
+                Mockito.mock(FrontendDependenciesScanner.class), mode);
         Assert.assertTrue("Bundle should require creation if not available",
                 needsBuild);
     }
@@ -191,7 +193,7 @@ public class BundleValidationTest {
                 .thenReturn(null);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
+                Mockito.mock(FrontendDependenciesScanner.class), mode);
         Assert.assertTrue("Missing stats.json should require bundling",
                 needsBuild);
     }
@@ -203,9 +205,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -213,14 +214,14 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Matching hashes should not require compilation",
                 needsBuild);
     }
@@ -233,9 +234,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -243,9 +243,9 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
@@ -254,7 +254,7 @@ public class BundleValidationTest {
                 .thenReturn(Collections.singleton(AllEagerAppConf.class));
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "'LoadDependenciesOnStartup' annotation requires build",
                 needsBuild);
@@ -267,9 +267,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -279,14 +278,14 @@ public class BundleValidationTest {
         packages.put("@vaadin/text", "1.0.0");
         Mockito.when(depScanner.getPackages()).thenReturn(packages);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Missing npmPackage should require bundling",
                 needsBuild);
     }
@@ -298,24 +297,31 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"}, "
-                + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5",
+                    "@vaadin/text":"1.0.0"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Bundle missing module dependency should rebuild",
                 needsBuild);
     }
@@ -327,9 +333,8 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -337,15 +342,16 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "1.0.0");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -358,10 +364,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -369,30 +381,30 @@ public class BundleValidationTest {
         File versions = new File(temporaryFolder.getRoot(),
                 Constants.VAADIN_CORE_VERSIONS_JSON);
         versions.createNewFile();
-        // @formatter:off
-        FileUtils.write(versions, "{"
-                + "  \"core\": {\n"
-                + "    \"vaadin-router\": {\n"
-                + "      \"jsVersion\": \"2.0.3\",\n"
-                + "      \"npmName\": \"@vaadin/router\",\n"
-                + "      \"releasenotes\": true\n"
-                + "    },"
-                + "  },"
-                + "  \"platform\": \"123-SNAPSHOT\""
-                + "}");
-        // @formatter:on
+        FileUtils.write(versions, """
+                {
+                  "core": {
+                    "vaadin-router": {
+                      "jsVersion": "2.0.3",
+                      "npmName": "@vaadin/router",
+                      "releasenotes": true
+                    }
+                  },
+                  "platform": "123-SNAPSHOT"
+                }
+                """, StandardCharsets.UTF_8);
 
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "2.0.3");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "2.0.3");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "vaadin-core-versions.json should have updated version to expected.",
                 needsBuild);
@@ -405,11 +417,17 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\",\n"
-                        + "\"@vaadin/text\": \"1.0.0\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5",
+                    "@vaadin/text": "1.0.0"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -418,15 +436,16 @@ public class BundleValidationTest {
         packages.put("@vaadin/text", "2.1.0");
         Mockito.when(depScanner.getPackages()).thenReturn(packages);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.9.2");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "2.1.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.9.2");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "2.1.0");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -439,30 +458,36 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
-                + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
-                + "  \"devDependencies\": {\n" + "  }\n" + "}",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5"
+                  },
+                  "devDependencies": {}
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "1.0.0");
         stats.put(PACKAGE_JSON_HASH,
                 "af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6");
-        stats.getArray(ENTRY_SCRIPTS).set(0,
-                "VAADIN/build/indexhtml-aa31f040.js");
+        ((ArrayNode) stats.get(ENTRY_SCRIPTS))
+                .add("VAADIN/build/indexhtml-aa31f040.js");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -475,25 +500,30 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
-                + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
-                + "  \"devDependencies\": {\n" + "  }\n" + "}",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5"
+                  },
+                  "devDependencies": {}
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Missing npmPackage in stats.json should require compilation",
                 needsBuild);
@@ -506,24 +536,30 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -536,33 +572,38 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"~1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "~1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.6");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.6");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("No compilation if tilde range only patch update",
                 needsBuild);
 
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.1");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.1");
         setupFrontendUtilsMock(stats);
 
-        needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
-                finder, mode);
+        needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
         Assert.assertTrue(
                 "Compilation required if minor version change for tilde range",
                 needsBuild);
@@ -575,34 +616,39 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "No compilation if caret range only minor version update",
                 needsBuild);
 
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "2.0.0");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "2.0.0");
         setupFrontendUtilsMock(stats);
 
-        needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
-                finder, mode);
+        needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
         Assert.assertTrue(
                 "Compilation required if major version change for caret range",
                 needsBuild);
@@ -615,28 +661,35 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {\"@polymer/iron-list\": \"3.1.0\", "
-                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
-                        + "\"vaadin\": { \"dependencies\": {"
-                        + "\"@polymer/iron-list\": \"3.1.0\", "
-                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
-                        + "\"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@polymer/iron-list": "3.1.0",
+                    "@vaadin/vaadin-accordion": "23.3.7"
+                  },
+                  "vaadin": {
+                    "dependencies": {
+                      "@polymer/iron-list": "3.1.0",
+                      "@vaadin/vaadin-accordion": "23.3.7"
+                    },
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/accordion",
-                "24.0.0.beta2");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/accordion", "24.0.0.beta2");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("No compilation expected if package.json has "
                 + "only dependencies from older Vaadin version not "
                 + "presenting in a newer version", needsBuild);
@@ -650,20 +703,21 @@ public class BundleValidationTest {
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = BundleValidationUtil
-                .getDefaultPackageJson(options, depScanner, finder, null)
-                .getObject(NodeUpdater.VAADIN_DEP_KEY)
-                .getString(NodeUpdater.HASH_KEY);
+                .getDefaultPackageJson(options, depScanner, null)
+                .get(NodeUpdater.VAADIN_DEP_KEY).get(NodeUpdater.HASH_KEY)
+                .textValue();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("@vaadin/text",
+                "1.0.0");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Default package.json should be built and validated",
                 needsBuild);
     }
@@ -676,19 +730,19 @@ public class BundleValidationTest {
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = BundleValidationUtil
-                .getDefaultPackageJson(options, depScanner, finder, null)
-                .getObject(NodeUpdater.VAADIN_DEP_KEY)
-                .getString(NodeUpdater.HASH_KEY);
+                .getDefaultPackageJson(options, depScanner, null)
+                .get(NodeUpdater.VAADIN_DEP_KEY).get(NodeUpdater.HASH_KEY)
+                .textValue();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Missing NpmPackage with default bundle should require rebuild",
                 needsBuild);
@@ -702,19 +756,19 @@ public class BundleValidationTest {
                 .thenReturn(Collections.emptyMap());
 
         String defaultHash = BundleValidationUtil
-                .getDefaultPackageJson(options, depScanner, finder, null)
-                .getObject(NodeUpdater.VAADIN_DEP_KEY)
-                .getString(NodeUpdater.HASH_KEY);
+                .getDefaultPackageJson(options, depScanner, null)
+                .get(NodeUpdater.VAADIN_DEP_KEY).get(NodeUpdater.HASH_KEY)
+                .textValue();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Default package.json should be built and validated",
                 needsBuild);
     }
@@ -726,10 +780,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -740,19 +800,19 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(0,
-                "@Frontend/generated/jar-resources/dndConnector-es6.js");
-        bundleImports.set(1, "@polymer/paper-input/paper-input.js");
-        bundleImports.set(2, "@vaadin/common-frontend/ConnectionIndicator.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports
+                .add("@Frontend/generated/jar-resources/dndConnector-es6.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/common-frontend/ConnectionIndicator.js");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Compilation required as stats.json missing import",
                 needsBuild);
     }
@@ -764,10 +824,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -778,23 +844,20 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("All imports in stats, no compilation required",
                 needsBuild);
     }
@@ -806,10 +869,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -821,23 +890,20 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getTheme())
                 .thenReturn(new NodeTestComponents.LumoTest());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "All themed imports in stats, no compilation required",
                 needsBuild);
@@ -850,10 +916,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -861,13 +933,12 @@ public class BundleValidationTest {
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "./generated/jar-resources/TodoTemplate.js");
-        stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("./generated/jar-resources/TodoTemplate.js");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("TodoTemplate.js",
                 BundleValidationUtil.calculateHash(fileContent));
         jarResources.put("TodoTemplate.js", fileContent);
 
@@ -877,7 +948,7 @@ public class BundleValidationTest {
                 .thenReturn(temporaryFolder.getRoot());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar fronted file content hash should match.",
                 needsBuild);
     }
@@ -889,10 +960,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -900,11 +977,11 @@ public class BundleValidationTest {
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        stats.getArray(BUNDLE_IMPORTS).set(0,
-                "Frontend/generated/jar-resources/TodoTemplate.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/generated/jar-resources/TodoTemplate.js");
 
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
@@ -917,10 +994,10 @@ public class BundleValidationTest {
         devBundleUtils
                 .when(() -> DevBundleUtils.findBundleStatsJson(
                         temporaryFolder.getRoot(), "target"))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Content should not have been validated.",
                 needsBuild);
     }
@@ -932,10 +1009,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -943,12 +1026,12 @@ public class BundleValidationTest {
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        stats.getArray(BUNDLE_IMPORTS).set(0,
-                "Frontend/generated/jar-resources/TodoTemplate.js");
-        stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ((ArrayNode) (ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/generated/jar-resources/TodoTemplate.js");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("TodoTemplate.js",
                 "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
 
         devBundleUtils.when(() -> DevBundleUtils
@@ -962,10 +1045,10 @@ public class BundleValidationTest {
         devBundleUtils
                 .when(() -> DevBundleUtils.findBundleStatsJson(
                         temporaryFolder.getRoot(), "target"))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Jar fronted file content hash should not be a match.",
                 needsBuild);
@@ -977,7 +1060,7 @@ public class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         File stylesheetFile = new File(temporaryFolder.getRoot(),
-                "frontend/my-styles.css");
+                DEFAULT_FRONTEND_DIR + "my-styles.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         boolean created = stylesheetFile.createNewFile();
         Assert.assertTrue(created);
@@ -990,17 +1073,17 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/my-styles.css?inline")));
 
-        JsonObject stats = getBasicStats();
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(), "Frontend/my-styles.css");
-        stats.getObject(FRONTEND_HASHES).put("my-styles.css",
+        ObjectNode stats = getBasicStats();
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("Frontend/my-styles.css");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("my-styles.css",
                 "0d94fe659d24e1e56872b47fc98d9f09227e19816c62a3db709bad347fbd0cdd");
 
         setupFrontendUtilsMock(stats);
         jarResources.put("my-styles.css", "body{color:yellow}");
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "CSS 'inline' suffix should be ignored for imports checking",
                 needsBuild);
@@ -1017,14 +1100,16 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
 
-        JsonObject stats = getBasicStats();
-        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
-        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts", "old_hash");
+        ObjectNode stats = getBasicStats();
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
+                "old_hash");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Project frontend file change should trigger rebuild",
                 needsBuild);
     }
@@ -1041,16 +1126,16 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
 
-        JsonObject stats = getBasicStats();
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(), "Frontend/views/lit-view.ts");
-        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+        ObjectNode stats = getBasicStats();
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
                 "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "No bundle rebuild expected when no changes in frontend file",
                 needsBuild);
@@ -1066,15 +1151,16 @@ public class BundleValidationTest {
                 Collections.singletonMap(ChunkInfo.GLOBAL, Collections
                         .singletonList("Frontend/views/lit-view.ts")));
 
-        JsonObject stats = getBasicStats();
-        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
-        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+        ObjectNode stats = getBasicStats();
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
                 "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Project frontend file delete should trigger rebuild",
                 needsBuild);
     }
@@ -1087,13 +1173,13 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
         stats.remove(THEME_JSON_CONTENTS);
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Shouldn't rebuild the bundle if no reused themes",
                 needsBuild);
     }
@@ -1107,7 +1193,8 @@ public class BundleValidationTest {
 
         // create custom-theme folder with no theme.json
         File jarResourcesFolder = new File(temporaryFolder.getRoot(),
-                "frontend/generated/jar-resources/themes/custom-theme");
+                DEFAULT_FRONTEND_DIR
+                        + "generated/jar-resources/themes/custom-theme");
         boolean created = jarResourcesFolder.mkdirs();
         Assert.assertTrue(created);
 
@@ -1117,7 +1204,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(getBasicStats());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when the new theme has no theme.json",
                 needsBuild);
@@ -1138,7 +1225,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(getBasicStats());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when a new reusable theme is added",
                 needsBuild);
@@ -1155,14 +1242,14 @@ public class BundleValidationTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("other-theme",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("other-theme",
                 "other-theme-hash");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when a new reusable theme is added",
                 needsBuild);
@@ -1181,19 +1268,24 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
-                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
-                + "  \"assets\": {\n"
-                + "    \"@fortawesome/fontawesome-free\": {\n"
-                + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
-                + "      \"webfonts/**\": \"webfonts\"\n" + "    }\n" + "  }\n"
-                + "}");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("reusable-theme",
+                """
+                        {
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.min.css"],
+                          "assets": {
+                            "@fortawesome/fontawesome-free": {
+                              "svgs/brands/**": "fontawesome/svgs/brands",
+                              "webfonts/**": "webfonts"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when the assets updated",
                 needsBuild);
@@ -1211,22 +1303,28 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
-                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
-                + "  \"assets\": {\n"
-                + "    \"@fortawesome/fontawesome-free\": {\n"
-                + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
-                + "      \"webfonts/**\": \"webfonts\"\n" + "    },\n"
-                + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                + "    }\n" + "  }\n" + "}\n");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("reusable-theme",
+                """
+                        {
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.min.css"],
+                          "assets": {
+                            "@fortawesome/fontawesome-free": {
+                              "svgs/brands/**": "fontawesome/svgs/brands",
+                              "webfonts/**": "webfonts"
+                            },
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
+                              "dist/line-awesome/fonts/**": "line-awesome/dist/line-awesome/fonts"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when the themes not changed",
                 needsBuild);
@@ -1247,13 +1345,13 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
         stats.remove(THEME_JSON_CONTENTS);
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json",
                 needsBuild);
@@ -1265,8 +1363,8 @@ public class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}",
                 "my-theme");
-        new File(temporaryFolder.getRoot(), "frontend/themes/my-parent-theme")
-                .mkdirs();
+        new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + "themes/my-parent-theme").mkdirs();
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1276,14 +1374,14 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 "{\"lumoImports\": [\"typography\"]}");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when parent theme is used",
                 needsBuild);
@@ -1301,17 +1399,17 @@ public class BundleValidationTest {
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
-        new File(temporaryFolder.getRoot(), "frontend/themes/my-theme")
-                .mkdirs();
+        new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + "themes/my-theme").mkdirs();
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 "{\"lumoImports\": [\"typography\"]}");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when project has no theme.json",
                 needsBuild);
@@ -1321,12 +1419,68 @@ public class BundleValidationTest {
     public void themeJsonUpdates_statsAndProjectThemeJsonEquals_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("""
+                {
+                  "boolean-property": true,
+                  "numeric-property": 42.42,
+                  "string-property": "foo",
+                  "array-property": ["one", "two"],
+                  "object-property": {
+                    "foo": "bar"
+                  }
+                }
+                """, "my-theme");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("my-theme", """
+                {
+
+
+
+
+
+                  "boolean-property": true,
+                  "numeric-property": 42.42,
+                  "string-property": "foo",
+                  "array-property": ["one", "two"],
+                  "object-property": {
+                    "foo": "bar"
+                  }
+                }
+                """);
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse(
+                "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
+                needsBuild);
+    }
+
+    @Test
+    public void themeJsonUpdates_bundleMissesSomeEntries_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub(
-                "{\n" + "  \"boolean-property\": true,\n"
-                        + "  \"numeric-property\": 42.42,\n"
-                        + "  \"string-property\": \"foo\",\n"
-                        + "  \"array-property\": [\"one\", \"two\"],\n"
-                        + "  \"object-property\": { \"foo\": \"bar\" }\n" + "}",
+                """
+                        {
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
+                          "assets": {
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
+                            }
+                          }
+                        }
+                        """,
                 "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1337,54 +1491,24 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
-                "{\n\n\n\n\n\n" + "  \"boolean-property\": true,\n"
-                        + "  \"numeric-property\": 42.42,\n"
-                        + "  \"string-property\": \"foo\",\n"
-                        + "  \"array-property\": [\"one\", \"two\"],\n"
-                        + "  \"object-property\": { \"foo\": \"bar\" }\n"
-                        + "}");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
+                """
+                        {
+                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "assets": {
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
+                              "dist/line-awesome/fonts/**": "line-awesome/dist/line-awesome/fonts"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
-        Assert.assertFalse(
-                "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
-                needsBuild);
-    }
-
-    @Test
-    public void themeJsonUpdates_bundleMissesSomeEntries_bundleRebuild()
-            throws IOException {
-        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\n"
-                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.css\"],"
-                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "    }\n  }\n}", "my-theme");
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
-
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, "{\n"
-                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
-                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                + "    }\n" + "  }\n" + "}");
-
-        setupFrontendUtilsMock(stats);
-
-        boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should rebuild when project theme.json adds extra entries",
                 needsBuild);
@@ -1394,9 +1518,13 @@ public class BundleValidationTest {
     public void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\n"
-                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"]\n"
-                + "}", "my-theme");
+        createProjectThemeJsonStub(
+                """
+                        {
+                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"]
+                        }
+                        """,
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1406,18 +1534,24 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, "{\n"
-                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
-                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                + "    }\n" + "  }\n" + "}");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
+                """
+                        {
+                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "assets": {
+                            "line-awesome": {
+                              "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
+                              "dist/line-awesome/fonts/**": "line-awesome/dist/line-awesome/fonts"
+                            }
+                          }
+                        }
+                        """);
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Shouldn't re-bundle when the dev bundle already have all"
                         + " the entries defined in the project's theme.json",
@@ -1439,12 +1573,12 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when project has theme"
                         + ".json but stats doesn't",
@@ -1468,13 +1602,13 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, "{}");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation, "{}");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should rebuild when 'theme.json' from parent theme in "
                         + "frontend folder adds extra entries",
@@ -1488,7 +1622,8 @@ public class BundleValidationTest {
                 false, false);
         Assert.assertTrue(
                 "Should rebuild when Shadow DOM Stylesheets are present "
-                        + " in 'frontend/<theme>/components' folder",
+                        + " in '" + DEFAULT_FRONTEND_DIR
+                        + "<theme>/components' folder",
                 needsBuild);
     }
 
@@ -1649,7 +1784,8 @@ public class BundleValidationTest {
     public void indexTsAdded_rebuildRequired() throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        File frontendFolder = temporaryFolder.newFolder(FrontendUtils.FRONTEND);
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
         indexTs.createNewFile();
@@ -1659,21 +1795,22 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Adding 'index.ts' should require bundling",
                 needsBuild);
     }
 
     @Test
     public void changeInIndexTs_rebuildRequired() throws IOException {
-        createPackageJsonStub("{\"dependencies\": {}, "
-                + "\"vaadin\": { \"hash\": \"aHash\"} }");
-        File frontendFolder = temporaryFolder.newFolder(FrontendUtils.FRONTEND);
+        createPackageJsonStub(
+                "{\"dependencies\": {}, \"vaadin\": { \"hash\": \"aHash\"} }");
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
         indexTs.createNewFile();
@@ -1683,14 +1820,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(FrontendUtils.INDEX_TS,
                 "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "'index.ts' equal content should not require bundling",
                 needsBuild);
@@ -1698,8 +1835,7 @@ public class BundleValidationTest {
         FileUtils.write(indexTs, "window.alert('hello');",
                 StandardCharsets.UTF_8);
 
-        needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
-                finder, mode);
+        needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
         Assert.assertTrue(
                 "changed content for 'index.ts' should require bundling",
                 needsBuild);
@@ -1712,15 +1848,110 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(FrontendUtils.INDEX_TS,
                 "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("'index.ts' delete should require re-bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void indexHtmlNotChanged_rebuildNotRequired() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
+        indexHtml.createNewFile();
+        String defaultIndexHtml = new String(TaskGenerateIndexHtml.class
+                .getResourceAsStream(INDEX_HTML).readAllBytes(),
+                StandardCharsets.UTF_8);
+        FileUtils.write(indexHtml, defaultIndexHtml, StandardCharsets.UTF_8);
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
+                BundleValidationUtil.calculateHash(defaultIndexHtml));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse("Default 'index.html' should not require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void indexHtmlChanged_productionMode_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
+        indexHtml.createNewFile();
+        String defaultIndexHtml = new String(
+                getClass().getResourceAsStream(INDEX_HTML).readAllBytes(),
+                StandardCharsets.UTF_8);
+        String customIndexHtml = defaultIndexHtml.replace("<body>",
+                "<body><div>custom content</div>");
+        FileUtils.write(indexHtml, customIndexHtml, StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
+                BundleValidationUtil.calculateHash(defaultIndexHtml));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In production mode, custom 'index.html' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void indexHtmlChanged_developmentMode_rebuildNotRequired()
+            throws IOException {
+        Assume.assumeFalse(mode.isProduction());
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
+        indexHtml.createNewFile();
+        String defaultIndexHtml = new String(
+                getClass().getResourceAsStream(INDEX_HTML).readAllBytes(),
+                StandardCharsets.UTF_8);
+        String customIndexHtml = defaultIndexHtml.replace("<body>",
+                "<body><div>custom content</div>");
+        FileUtils.write(indexHtml, customIndexHtml, StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(INDEX_HTML,
+                BundleValidationUtil.calculateHash(defaultIndexHtml));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse(
+                "In dev mode, custom 'index.html' should not require bundling",
                 needsBuild);
     }
 
@@ -1732,18 +1963,18 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
+        ObjectNode stats = getBasicStats();
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add(
                 "Frontend/generated/jar-resources/vaadin-spreadsheet/vaadin-spreadsheet.js");
-        stats.getObject(FRONTEND_HASHES).put(
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
                 "vaadin-spreadsheet/vaadin-spreadsheet.js",
                 "e545ad23a2d1d4b3a3370a0305dd71c15bbfc645216f50c6e327bd818b7484c4");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not require bundling if component JS is missing in jar-resources",
                 needsBuild);
@@ -1763,14 +1994,14 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getCss()).thenReturn(Collections.singletonMap(
                 ChunkInfo.GLOBAL, Collections.singletonList(cssData)));
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
         // Should not throw an IllegalStateException:
         // "Failed to find the following css files in the...."
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle if CSS is imported from META-INF/resources",
                 needsBuild);
@@ -1785,12 +2016,12 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
                 needsBuild);
@@ -1805,13 +2036,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
+                "file:my-pkg");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Shouldn't re-bundle when referencing local packages in package.json",
                 needsBuild);
@@ -1826,14 +2058,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg",
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
                 "./another-folder");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle when local packages have different values",
                 needsBuild);
@@ -1848,13 +2080,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "1.0.0");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
+                "1.0.0");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle when local package in package.json but parsable version in stats",
                 needsBuild);
@@ -1869,13 +2102,14 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES)).put("my-pkg",
+                "file:my-pkg");
 
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle when local package in stats but parsable version in package.json",
                 needsBuild);
@@ -1890,24 +2124,30 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"}, "
-                + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "1.7.5", "@vaadin/text":"1.0.0"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.5");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Rebuild should be skipped", needsBuild);
     }
 
@@ -1918,7 +2158,7 @@ public class BundleValidationTest {
         options.withForceProductionBuild(true);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
+                Mockito.mock(FrontendDependenciesScanner.class), mode);
         Assert.assertTrue(
                 "Production bundle required due to force.production.bundle flag.",
                 needsBuild);
@@ -1932,10 +2172,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1948,30 +2194,27 @@ public class BundleValidationTest {
 
         File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson());
+        FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
         DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
                 bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar fronted file content hash should match.",
                 needsBuild);
     }
@@ -1984,10 +2227,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2000,30 +2249,27 @@ public class BundleValidationTest {
 
         File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson());
+        FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
         ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
                 bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar fronted file content hash should match.",
                 needsBuild);
     }
@@ -2034,10 +2280,16 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "@vaadin/router": "^1.7.5"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2050,24 +2302,21 @@ public class BundleValidationTest {
 
         File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
-        JsonObject stats = getBasicStats();
-        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.8.6");
-        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(bundleImports.length(),
-                "@polymer/paper-input/paper-input.js");
-        bundleImports.set(bundleImports.length(),
-                "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(bundleImports.length(),
-                "Frontend/generated/jar-resources/dndConnector-es6.js");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/router", "1.8.6");
+        ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
+        bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.add("@polymer/paper-input/paper-input.js");
+        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports
+                .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
         File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
-        FileUtils.write(statsFile, stats.toJson());
+        FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
         if (mode.isProduction()) {
             ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
@@ -2084,8 +2333,39 @@ public class BundleValidationTest {
         }
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar frontend file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
+    public void defaultDevBundleExists_noCompressedDevBundleFile_reactDisabled_buildRequired()
+            throws IOException {
+        options.withReact(false);
+        Assume.assumeTrue(!mode.isProduction());
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        ObjectNode stats = getBasicStats();
+
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(
+                finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toString());
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "Dev bundle build is expected when react is disabled and using otherwise default dev bundle.",
                 needsBuild);
     }
 
@@ -2097,30 +2377,137 @@ public class BundleValidationTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
-                        + "    \"react-dom\": \"18.2.0\",\n"
-                        + "    \"react-router-dom\": \"6.18.0\",\n"
-                        + "    \"@types/react\": \"18.2.37\",\n"
-                        + "    \"@types/react-dom\": \"18.2.15\"}, "
-                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "react": "18.2.0",
+                    "react-dom": "18.2.0",
+                    "react-router": "7.0.0"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
 
         URL url = Mockito.mock(URL.class);
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
-                .thenReturn(stats.toJson());
+                .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar frontend file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
+    public void defaultProdBundleExists_noCompressedProdBundleFileAndWithVersionsJsonExclusions_noBuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        frontendUtils
+                .when(() -> FrontendUtils.isReactModuleAvailable(Mockito.any()))
+                .thenAnswer(q -> true);
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, """
+                {
+                  "dependencies": {
+                    "react": "18.2.0",
+                    "react-dom": "18.2.0",
+                    "react-router": "7.0.0"
+                  },
+                  "vaadin": {
+                    "hash": "aHash"
+                  }
+                }
+                """, StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages()).thenReturn(
+                Collections.singletonMap("@vaadin/button", "2.0.0"));
+
+        File versions = new File(temporaryFolder.getRoot(),
+                Constants.VAADIN_CORE_VERSIONS_JSON);
+        versions.createNewFile();
+        FileUtils.write(versions, """
+                {
+                  "core": {
+                    "vaadin-button": {
+                      "jsVersion": "2.0.0",
+                      "npmName": "@vaadin/button"
+                    }
+                  },
+                  "react": {
+                    "react-components": {
+                      "exclusions": ["@vaadin/button"],
+                      "jsVersion": "24.4.0",
+                      "mode": "react",
+                      "npmName": "@vaadin/react-components"
+                    }
+                  },
+                  "platform": "123-SNAPSHOT"
+                }
+                """, StandardCharsets.UTF_8);
+
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versions.toURI().toURL());
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
+                .put("@vaadin/react-components", "24.4.0");
+
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(
+                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toString());
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse("Jar frontend file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
+    public void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_buildRequired()
+            throws IOException {
+        options.withReact(false);
+        Assume.assumeTrue(mode.isProduction());
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        ObjectNode stats = getBasicStats();
+
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(
+                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toString());
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "Prod bundle build is expected when react is disabled and using otherwise default prod bundle.",
                 needsBuild);
     }
 
@@ -2140,8 +2527,9 @@ public class BundleValidationTest {
     private void createThemeJsonStub(String content, String theme,
             boolean projectTheme) throws IOException {
         String themeLocation = projectTheme ? "" : "generated/jar-resources/";
-        File themeJson = new File(temporaryFolder.getRoot(), "frontend/"
-                + themeLocation + "themes/" + theme + "/theme.json");
+        File themeJson = new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + themeLocation + "themes/" + theme
+                        + "/theme.json");
         FileUtils.forceMkdir(themeJson.getParentFile());
         boolean created = themeJson.createNewFile();
         Assert.assertTrue(created);
@@ -2150,20 +2538,20 @@ public class BundleValidationTest {
 
     private void createProjectFrontendFileStub() throws IOException {
         File frontendFile = new File(temporaryFolder.getRoot(),
-                "frontend/views/lit-view.ts");
+                DEFAULT_FRONTEND_DIR + "views/lit-view.ts");
         FileUtils.forceMkdir(frontendFile.getParentFile());
         boolean created = frontendFile.createNewFile();
         Assert.assertTrue(created);
         FileUtils.write(frontendFile, "Some codes", StandardCharsets.UTF_8);
     }
 
-    private void setupFrontendUtilsMock(JsonObject stats) {
+    private void setupFrontendUtilsMock(ObjectNode stats) {
         if (mode.isProduction()) {
             prodBundleUtils
                     .when(() -> ProdBundleUtils.findBundleStatsJson(
                             Mockito.any(File.class),
                             Mockito.any(ClassFinder.class)))
-                    .thenReturn(stats.toJson());
+                    .thenReturn(stats.toString());
         } else {
             devBundleUtils
                     .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any(),
@@ -2172,7 +2560,7 @@ public class BundleValidationTest {
             devBundleUtils
                     .when(() -> DevBundleUtils.findBundleStatsJson(
                             temporaryFolder.getRoot(), "target"))
-                    .thenAnswer(q -> stats.toJson());
+                    .thenAnswer(q -> stats.toString());
         }
         frontendUtils
                 .when(() -> FrontendUtils.getJarResourceString(
@@ -2234,7 +2622,7 @@ public class BundleValidationTest {
                 + "themes/" + ((useParentTheme) ? "parent-theme" : "my-theme")
                 + "/components/";
         File stylesheetFile = new File(temporaryFolder.getRoot(),
-                "frontend/" + themeLocation + "vaadin-text-field.css");
+                DEFAULT_FRONTEND_DIR + themeLocation + "vaadin-text-field.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         boolean created = stylesheetFile.createNewFile();
         Assert.assertTrue(created);
@@ -2249,33 +2637,34 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        JsonObject stats = getBasicStats();
+        ObjectNode stats = getBasicStats();
         if (useParentTheme) {
-            stats.getObject(THEME_JSON_CONTENTS).put("parent-theme",
+            ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("parent-theme",
                     themeContents);
-            stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
+            ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("my-theme",
                     themeWithParentContents);
         } else {
-            stats.getObject(THEME_JSON_CONTENTS).put("my-theme", themeContents);
+            ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("my-theme",
+                    themeContents);
         }
-        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, themeContents);
+        ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
+                themeContents);
         if (bundled) {
-            stats.getObject(FRONTEND_HASHES)
+            ((ObjectNode) stats.get(FRONTEND_HASHES))
                     .put(themeLocation + "vaadin-text-field.css",
                             BundleValidationUtil.calculateHash(String.format(
                                     cssTemplate,
                                     (contentChanged) ? "red" : "blue")));
         }
         for (String path : otherBundledComponentCss) {
-            stats.getObject(FRONTEND_HASHES).put(themeLocation + path,
+            ((ObjectNode) stats.get(FRONTEND_HASHES)).put(themeLocation + path,
                     BundleValidationUtil.calculateHash(
                             "[part=\"input-field\"]{background: green; }"));
         }
 
         setupFrontendUtilsMock(stats);
 
-        return BundleValidationUtil.needsBuild(options, depScanner, finder,
-                mode);
+        return BundleValidationUtil.needsBuild(options, depScanner, mode);
     }
 
 }

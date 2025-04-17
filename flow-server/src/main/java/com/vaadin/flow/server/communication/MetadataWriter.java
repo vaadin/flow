@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,13 @@ package com.vaadin.flow.server.communication;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Serializes miscellaneous metadata to JSON.
@@ -54,9 +54,9 @@ public class MetadataWriter implements Serializable {
      * @return JSON object with the metadata
      *
      */
-    public JsonObject createMetadata(UI ui, boolean repaintAll, boolean async,
+    public ObjectNode createMetadata(UI ui, boolean repaintAll, boolean async,
             SystemMessages messages) {
-        JsonObject meta = Json.createObject();
+        ObjectNode meta = JacksonUtils.createObjectNode();
 
         if (repaintAll) {
             meta.put("repaintAll", true);
@@ -86,11 +86,11 @@ public class MetadataWriter implements Serializable {
                 }
                 int redirectInterval = newTimeoutInterval + 15;
 
-                JsonObject redirect = Json.createObject();
+                ObjectNode redirect = JacksonUtils.createObjectNode();
                 redirect.put("interval", redirectInterval);
                 redirect.put("url", url);
 
-                meta.put("timedRedirect", redirect);
+                meta.set("timedRedirect", redirect);
             }
             timeoutInterval = newTimeoutInterval;
         }

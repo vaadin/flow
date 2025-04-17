@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,12 @@
 
 package com.vaadin.flow.spring.test;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.slf4j.LoggerFactory;
 
 public class RouteBasicIT extends AbstractSpringTest {
 
@@ -36,5 +39,38 @@ public class RouteBasicIT extends AbstractSpringTest {
         findElement(By.id("foo")).click();
 
         waitUntil(driver -> isElementPresent(By.id("singleton-in-ui")));
+    }
+
+    @Test
+    public void uiScopedProxiedTargetView_shouldUseSameViewInstance()
+            throws Exception {
+        getDriver().get(getTestURL() + "proxied");
+        waitForDevServer();
+
+        String prevUuid = null;
+        AtomicReference<String> prevCounter = new AtomicReference<>("");
+        for (int i = 0; i < 5; i++) {
+            String uuid = waitUntil(d -> d.findElement(By.id("COMPONENT_ID")))
+                    .getText();
+
+            waitUntil(d -> !prevCounter.get()
+                    .equals(d.findElement(By.id("CLICK_COUNTER")).getText()));
+
+            if (prevUuid != null) {
+                Assert.assertEquals("UUID should not have been changed",
+                        prevUuid, uuid);
+            } else {
+                prevUuid = uuid;
+            }
+            String counter = findElement(By.id("CLICK_COUNTER")).getText();
+            Assert.assertEquals(
+                    "Parameter and counter should have the same value",
+                    "P:" + i + ", C:" + i, counter);
+
+            prevCounter.set(counter);
+
+            $("a").first().click();
+        }
+
     }
 }

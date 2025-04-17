@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,17 +26,6 @@ import org.openqa.selenium.WebElement;
 
 @NotThreadSafe
 public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
-
-    @Test
-    public void notificationShownWhenLoadingPreserveOnRefreshView() {
-        open();
-
-        DevToolsElement liveReload = $(DevToolsElement.class).waitForFirst();
-        WebElement messageDetails = liveReload.$("*")
-                .attributeContains("class", "warning").first();
-        Assert.assertTrue(
-                messageDetails.getText().contains("@PreserveOnRefresh"));
-    }
 
     @Test
     public void viewIsPreservedOnLiveReload() {

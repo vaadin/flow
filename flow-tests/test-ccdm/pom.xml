@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.4-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -47,7 +47,7 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
-                    <reactRouterEnabled>false</reactRouterEnabled>
+                    <reactEnable>false</reactEnable>
                 </configuration>
             </plugin>
         </plugins>

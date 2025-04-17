@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,13 +30,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
 public class ThemeLiveReloadIT extends ChromeBrowserTest {
 
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
-    private static final String THEME_FOLDER = "frontend/themes/app-theme/";
+    private static final String THEME_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR
+            + "/themes/app-theme/";
 
     private File baseDir;
     private File testStylesCSSFile;
@@ -156,7 +158,8 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     private void copyFontFile() {
         try {
             File copyFontFrom = new File(baseDir,
-                    "frontend/fonts/ostrich-sans-regular.ttf");
+                    FrontendUtils.DEFAULT_FRONTEND_DIR
+                            + "/fonts/ostrich-sans-regular.ttf");
             FileUtils.copyFile(copyFontFrom, fontFile);
             waitUntil(driver -> fontFile.exists());
         } catch (IOException e) {

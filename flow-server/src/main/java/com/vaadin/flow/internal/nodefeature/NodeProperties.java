@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,11 @@ public final class NodeProperties {
     public static final String PAYLOAD = "payload";
 
     /**
+     * Key for {@link ElementData#getJavaClass()}.
+     */
+    public static final String JAVA_CLASS = "jc";
+
+    /**
      * Key for {@link TextNodeMap#getText()}.
      */
     public static final String TEXT = "text";
@@ -62,6 +67,11 @@ public final class NodeProperties {
      * JsonObject {@code @id} type value for {@link VirtualChildrenList}.
      */
     public static final String INJECT_BY_ID = "@id";
+
+    /**
+     * JsonObject {@code @name} type value for {@link VirtualChildrenList}.
+     */
+    public static final String INJECT_BY_NAME = "@name";
 
     /**
      * JsonObject template-in-template type value for

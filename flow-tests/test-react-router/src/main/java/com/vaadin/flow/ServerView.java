@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,10 +19,16 @@ package com.vaadin.flow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.WildcardParameter;
 
 @Route("com.vaadin.flow.ServerView")
-public class ServerView extends Div {
+public class ServerView extends Div implements HasUrlParameter<String> {
+
+    private final Span setParameterSpan = new Span();
+    private int setParameterCount = 0;
 
     public ServerView() {
         NativeButton serverNavigation = new NativeButton(
@@ -31,7 +37,15 @@ public class ServerView extends Div {
                             .navigate(NavigationView.class);
                 });
         serverNavigation.setId(NavigationView.SERVER_ID);
+        setParameterSpan.setId(NavigationView.SET_PARAMETER_COUNTER_ID);
 
-        add(new Span("ServerView"), new Div(), serverNavigation);
+        add(new Span("ServerView"), new Div(), serverNavigation, new Div(),
+                setParameterSpan);
+    }
+
+    @Override
+    public void setParameter(BeforeEvent event,
+            @WildcardParameter String parameter) {
+        setParameterSpan.setText("" + ++setParameterCount);
     }
 }

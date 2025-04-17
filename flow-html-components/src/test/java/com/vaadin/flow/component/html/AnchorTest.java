@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,13 +17,13 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.AbstractStreamResource;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.AbstractStreamResource;
 
 public class AnchorTest extends ComponentTest {
 

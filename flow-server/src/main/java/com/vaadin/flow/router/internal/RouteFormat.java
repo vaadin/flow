@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -170,76 +170,6 @@ class RouteFormat implements Serializable {
             return Optional.of(RouteParameterRegex.getName(regex.orElse("")));
         } else {
             return regex;
-        }
-    }
-
-    /**
-     * Define a route url parameter details.
-     */
-    static class ParameterInfo implements Serializable {
-
-        private final String name;
-
-        private final String template;
-
-        private final boolean optional;
-
-        private final boolean varargs;
-
-        private final String regex;
-
-        ParameterInfo(String template) {
-            this.template = template;
-
-            if (!isParameter(template)) {
-                throw new IllegalArgumentException(
-                        "The given string is not a parameter template.");
-            }
-
-            optional = isOptionalParameter(template);
-            if (optional) {
-                template = template.replaceFirst("\\?", "");
-            }
-            varargs = isVarargsParameter(template);
-            if (varargs) {
-                template = template.replaceFirst("\\*", "");
-            }
-
-            // Remove :
-            template = template.substring(1);
-
-            // Extract the template defining the value of the parameter.
-            final int regexStartIndex = template.indexOf('(');
-            if (regexStartIndex != -1) {
-
-                name = template.substring(0, regexStartIndex);
-
-                regex = template.substring(regexStartIndex + 1,
-                        template.length() - 1);
-            } else {
-                name = template;
-                regex = null;
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getTemplate() {
-            return template;
-        }
-
-        public boolean isOptional() {
-            return optional;
-        }
-
-        public boolean isVarargs() {
-            return varargs;
-        }
-
-        public Optional<String> getRegex() {
-            return Optional.ofNullable(regex);
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,7 @@ import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -437,8 +439,12 @@ public class DefaultDeploymentConfiguration
         } else {
             frontendHotdeploy = getBooleanProperty(
                     InitParameters.FRONTEND_HOTDEPLOY,
-                    EndpointRequestUtil.isHillaAvailable());
+                    automaticHotdeployDefault());
         }
+    }
+
+    private boolean automaticHotdeployDefault() {
+        return FrontendUtils.isHillaUsed(getFrontendFolder());
     }
 
 }

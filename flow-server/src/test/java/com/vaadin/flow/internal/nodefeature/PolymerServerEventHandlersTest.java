@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.internal.nodefeature;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,6 +26,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -43,13 +43,12 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.HasCurrentService;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JreJsonArray;
-import net.jcip.annotations.NotThreadSafe;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Vaadin Ltd
@@ -152,18 +151,18 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
         assertEquals(1, methodCollector.size());
         assertEquals(method, methodCollector.iterator().next());
         assertEquals(method.getParameters().length,
-                extractParametersData(method).length());
+                extractParametersData(method).size());
     }
 
-    private JreJsonArray extractParametersData(Method method) {
+    private ArrayNode extractParametersData(Method method) {
         ConstantPoolKey parametersData = (ConstantPoolKey) stateNode
                 .getFeature(PolymerEventListenerMap.class)
                 .get(method.getName());
         assertNotNull(parametersData);
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         parametersData.export(json);
-        return json.get(parametersData.getId());
+        return (ArrayNode) json.get(parametersData.getId());
     }
 
     @Test

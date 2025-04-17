@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -595,41 +595,5 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                         "Child should have this element as a parent");
             }
         }
-    }
-
-    /**
-     * Attaches a child element with the given {@code tagName} which is the next
-     * sibling for the {@code previousSibling}.
-     * <p>
-     * The {@code previousSibling} parameter value can be {@code null} which
-     * means that the very first child with the given {@code tagName} will be
-     * used to attach (if any).
-     * <p>
-     * This method may be used to get a server side element for the client side
-     * DOM element which has been created on the client side aside of the
-     * server.
-     * <p>
-     * The element is not returned right away since it may not exist at all on
-     * the client side and its index in the children list is unknown. The
-     * provided {@code callback} is used instead to provide the mapped
-     * server-side element in case it has been found or report an error if it
-     * doesn't exist.
-     * <p>
-     * This API is experimental and disabled for public usage.
-     *
-     * @param tagName
-     *            the tag name of the element to attach, not {@code null}
-     * @param previousSibling
-     *            previous sibling, may be {@code null}
-     * @param callback
-     *            the callback which will be invoked with a server side element
-     *            instance or an error will be reported, not {@code null}
-     * @return this element
-     */
-    private N attachExistingElement(String tagName, Element previousSibling,
-            ChildElementConsumer callback) {
-        getStateProvider().attachExistingElement(getNode(), tagName,
-                previousSibling, callback);
-        return getSelf();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -35,8 +36,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This is abstract error view for routing exceptions.
@@ -82,12 +83,8 @@ public abstract class AbstractRouteNotFoundError extends Component {
         if (productionMode) {
             template = AbstractRouteNotFoundError.LazyInit.PRODUCTION_MODE_TEMPLATE;
         } else if (routes.isEmpty()) {
-            // The idea of showing a different error page when there are no
-            // routes comes from application generated from start.spring.io, see
-            // https://github.com/vaadin/flow/issues/16432
-            template = readHtmlFile(EndpointRequestUtil.isHillaAvailable()
-                    ? "NoRoutesError_hilla.html"
-                    : "NoRoutesError_dev.html");
+            // Offer a way for people to get started
+            template = readHtmlFile("NoRoutesError_dev.html");
         } else {
             template = readHtmlFile("RouteNotFoundError_dev.html");
         }
@@ -118,8 +115,10 @@ public abstract class AbstractRouteNotFoundError extends Component {
     }
 
     private String getRoutes(BeforeEnterEvent event) {
+        List<Element> routeElements = new ArrayList<>();
         List<RouteData> routes = event.getSource().getRegistry()
                 .getRegisteredRoutes();
+
         Map<String, Class<? extends Component>> routeTemplates = new TreeMap<>();
 
         for (RouteData route : routes) {
@@ -129,12 +128,19 @@ public abstract class AbstractRouteNotFoundError extends Component {
                     .put(alias.getTemplate(), alias.getNavigationTarget()));
         }
 
-        List<Element> routeElements = new ArrayList<>();
         routeTemplates.forEach(
                 (k, v) -> routeElements.add(routeTemplateToHtml(k, v)));
 
+        routeElements.addAll(getClientRoutes());
         return routeElements.stream().map(Element::outerHtml)
                 .collect(Collectors.joining());
+    }
+
+    private List<Element> getClientRoutes() {
+        return FrontendUtils.getClientRoutes().stream()
+                .filter(route -> !route.contains("$layout"))
+                .map(route -> route.replace("$index", ""))
+                .map(this::clientRouteToHtml).toList();
     }
 
     private Element routeTemplateToHtml(String routeTemplate,
@@ -154,6 +160,26 @@ public abstract class AbstractRouteNotFoundError extends Component {
                 text += " (requires parameter)";
             }
 
+            return new Element(Tag.LI).text(text);
+        }
+    }
+
+    private Element clientRouteToHtml(String route) {
+        String text = route;
+        if (text.isEmpty()) {
+            text = "<root>";
+        }
+        if (text.startsWith("/")) {
+            text = text.substring(1);
+        }
+        if (!route.contains(":")) {
+            return elementAsLink(route, text);
+        } else {
+            if (Pattern.compile(":\\w+\\?").matcher(route).find()) {
+                text += " (supports optional parameter)";
+            } else {
+                text += " (requires parameter)";
+            }
             return new Element(Tag.LI).text(text);
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.testbench.TestBenchElement;
+import org.openqa.selenium.By;
 
 public class ComponentAddedViaInitListenerIT extends AbstractSpringTest {
 
@@ -29,6 +30,9 @@ public class ComponentAddedViaInitListenerIT extends AbstractSpringTest {
         TestBenchElement component = $("init-listener-component").first();
         TestBenchElement div = component.$("div").first();
         Assert.assertEquals("Init Listener Component", div.getText());
+
+        // Ensure the class name set by @EventListener style listener is there
+        getDriver().findElement(By.cssSelector(".event-listener-was-here"));
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,10 @@
 
 package com.vaadin.flow.server;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -25,6 +29,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -32,6 +37,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -47,11 +53,8 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionBindingEvent;
-import jakarta.servlet.http.HttpSessionBindingListener;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -77,6 +80,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             .getLogger(VaadinSession.class.getName());
 
     volatile boolean sessionClosedExplicitly = false;
+
+    final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     /**
      * Configuration for the session.
@@ -487,6 +492,31 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public Collection<RequestHandler> getRequestHandlers() {
         checkHasLock();
         return Collections.unmodifiableCollection(requestHandlers);
+    }
+
+    /**
+     * Adds a listener that gets notified when this session is destroyed.
+     *
+     * <p>
+     * This session will be locked and its {@link UI}s will have been removed
+     * when the listener is called.
+     *
+     * <p>
+     * If this session is already closed, no notification is delivered.
+     *
+     * <p>
+     * This method only delivers notifications for this session. To also be
+     * notified about other sessions, use
+     * {@link VaadinService#addSessionDestroyListener}.
+     *
+     * @param listener
+     *            the session destroy listener
+     * @return a handle that can be used for removing the listener
+     * @see VaadinService#addSessionDestroyListener
+     */
+    public Registration addSessionDestroyListener(
+            SessionDestroyListener listener) {
+        return Registration.addAndRemove(destroyListeners, listener);
     }
 
     /**
@@ -1068,37 +1098,53 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
+            // Add-ons may have Listener classes that nullify themselves during
+            // serialization (e.g. Collaboration Kit) and restore instances in
+            // some custom way later on.
+            // Removing null elements prevents application to fail if restore
+            // actions are not applied eagerly
+            requestHandlers.remove(null);
+            destroyListeners.remove(null);
+
             uIs = (Map<Integer, UI>) stream.readObject();
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
+            CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(old);
         }
     }
 
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
-        boolean serializeUIs = true;
+        Map<Class<?>, CurrentInstance> instanceMap = CurrentInstance
+                .setCurrent(this);
+        try {
+            boolean serializeUIs = true;
 
-        // If service is null it has just been deserialized and should be
-        // serialized in
-        // the same way again
-        if (getService() != null) {
-            ApplicationConfiguration appConfiguration = ApplicationConfiguration
-                    .get(getService().getContext());
-            if (!appConfiguration.isProductionMode() && !appConfiguration
-                    .isDevModeSessionSerializationEnabled()) {
-                serializeUIs = false;
+            // If service is null it has just been deserialized and should be
+            // serialized in
+            // the same way again
+            if (getService() != null) {
+                ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                        .get(getService().getContext());
+                if (!appConfiguration.isProductionMode() && !appConfiguration
+                        .isDevModeSessionSerializationEnabled()) {
+                    serializeUIs = false;
+                }
             }
-        }
 
-        stream.defaultWriteObject();
-        if (serializeUIs) {
-            stream.writeObject(uIs);
-            stream.writeObject(resourceRegistry);
-        } else {
-            stream.writeObject(new HashMap<>());
-            stream.writeObject(new StreamResourceRegistry(this));
+            stream.defaultWriteObject();
+            if (serializeUIs) {
+                stream.writeObject(uIs);
+                stream.writeObject(resourceRegistry);
+            } else {
+                stream.writeObject(new HashMap<>());
+                stream.writeObject(new StreamResourceRegistry(this));
+            }
+        } finally {
+            CurrentInstance.clearAll();
+            CurrentInstance.restoreInstances(instanceMap);
         }
     }
 

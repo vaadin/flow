@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,18 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import { useEffect, useRef } from "react";
-import {
-    matchRoutes,
-    NavigateFunction,
-    useLocation,
-    useNavigate
-} from "react-router-dom";
-import { routes } from "Frontend/routes.js";
+/// <reference lib="es2018" />
+import { Flow as _Flow } from 'Frontend/generated/jar-resources/Flow.js';
+import React, { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
+import { matchRoutes, useBlocker, useLocation, useNavigate, type NavigateOptions, useHref } from 'react-router';
+import { createPortal } from 'react-dom';
 
 const flow = new _Flow({
-    imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
+    imports: () => import('Frontend/generated/flow/generated-flow-imports.js')
 });
 
 const router = {
@@ -32,6 +28,10 @@ const router = {
         return Promise.resolve();
     }
 };
+
+const flowReact : { active: boolean } = {
+    active: false,
+}
 
 // ClickHandler for vaadin-router-go event is copied from vaadin/router click.js
 // @ts-ignore
@@ -42,22 +42,24 @@ function getAnchorOrigin(anchor) {
     const protocol = anchor.protocol;
     const defaultHttp = protocol === 'http:' && port === '80';
     const defaultHttps = protocol === 'https:' && port === '443';
-    const host = (defaultHttp || defaultHttps)
-        ? anchor.hostname // does not include the port number (e.g. www.example.org)
-        : anchor.host; // does include the port number (e.g. www.example.org:80)
+    const host =
+        defaultHttp || defaultHttps
+            ? anchor.hostname // does not include the port number (e.g. www.example.org)
+            : anchor.host; // does include the port number (e.g. www.example.org:80)
     return `${protocol}//${host}`;
 }
 
-// @ts-ignore
-export function fireRouterEvent(type, detail) {
-    return !window.dispatchEvent(new CustomEvent(
-        `vaadin-router-${type}`,
-        {cancelable: type === 'go', detail}
-    ));
+function normalizeURL(url: URL): void | string {
+    // ignore click if baseURI does not match the document (external)
+    if (!url.href.startsWith(document.baseURI)) {
+        return;
+    }
+
+    // Normalize path against baseURI
+    return '/' + url.href.slice(document.baseURI.length);
 }
 
-// @ts-ignore
-function vaadinRouterGlobalClickHandler(event) {
+function extractURL(event: MouseEvent): void | URL {
     // ignore the click if the default action is prevented
     if (event.defaultPrevented) {
         return;
@@ -74,28 +76,34 @@ function vaadinRouterGlobalClickHandler(event) {
     }
 
     // find the <a> element that the click is at (or within)
-    let anchor = event.target;
+    let maybeAnchor = event.target;
     const path = event.composedPath
         ? event.composedPath()
-        : (event.path || []);
+        : // @ts-ignore
+        event.path || [];
 
     // example to check: `for...of` loop here throws the "Not yet implemented" error
     for (let i = 0; i < path.length; i++) {
         const target = path[i];
         if (target.nodeName && target.nodeName.toLowerCase() === 'a') {
-            anchor = target;
+            maybeAnchor = target;
             break;
         }
     }
 
-    while (anchor && anchor.nodeName.toLowerCase() !== 'a') {
-        anchor = anchor.parentNode;
+    // @ts-ignore
+    while (maybeAnchor && maybeAnchor.nodeName.toLowerCase() !== 'a') {
+        // @ts-ignore
+        maybeAnchor = maybeAnchor.parentNode;
     }
 
     // ignore the click if not at an <a> element
-    if (!anchor || anchor.nodeName.toLowerCase() !== 'a') {
+    // @ts-ignore
+    if (!maybeAnchor || maybeAnchor.nodeName.toLowerCase() !== 'a') {
         return;
     }
+
+    const anchor = maybeAnchor as HTMLAnchorElement;
 
     // ignore the click if the <a> element has a non-default target
     if (anchor.target && anchor.target.toLowerCase() !== '_self') {
@@ -114,242 +122,563 @@ function vaadinRouterGlobalClickHandler(event) {
 
     // ignore the click if the target URL is a fragment on the current page
     if (anchor.pathname === window.location.pathname && anchor.hash !== '') {
-        lastNavigation = anchor.pathname;
+        // @ts-ignore
         window.location.hash = anchor.hash;
         return;
     }
 
     // ignore the click if the target is external to the app
     // In IE11 HTMLAnchorElement does not have the `origin` property
+    // @ts-ignore
     const origin = anchor.origin || getAnchorOrigin(anchor);
     if (origin !== window.location.origin) {
         return;
     }
 
-    // if none of the above, convert the click into a navigation event
-    const {pathname, search, hash} = anchor;
-    if (fireRouterEvent('go', {pathname, search, hash})) {
-        event.preventDefault();
-        // for a click event, the scroll is reset to the top position.
-        if (event && event.type === 'click') {
-            window.scrollTo(0, 0);
-        }
-    }
+    return new URL(anchor.href, anchor.baseURI);
 }
 
-// We can't initiate useNavigate() from outside React component, so we store it here for use in the navigateEvent.
-let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
-let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
-let lastNavigation: string;
-let prevNavigation: string;
-let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
-
-// @ts-ignore
-function navigateEventHandler(event) {
-    if (event && event.preventDefault) {
-        event.preventDefault();
-    }
-    // @ts-ignore
-    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
-    prevNavigation = lastNavigation;
-
-    // if navigation event route targets a flow view do beforeEnter for the
-    // target path. Server will then handle updates and postpone as needed.
-    if(matched?.length == 1 && matched[0].route.path === "/*") {
-        if (mountedContainer?.onBeforeEnter) {
-            mountedContainer.onBeforeEnter(
-                {
-                    pathname: event.detail.pathname,
-                    search: event.detail.search
-                },
-                {
-                    prevent() {
-                        window.history.pushState(window.history.state, '', prevNavigation);
-                        window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
-                    },
-                    // @ts-ignore
-                    redirect: (path) => {
-                        navigation(path, {replace: false});
-                    }
-                },
-                router,
-            );
-        }
-    } else {
-        // Navigating to a non flow view. If beforeLeave set call that before
-        // navigation. If not postponed clear + navigate will be executed.
-        if (mountedContainer?.onBeforeLeave) {
-            mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
-                prevent() {}
-            }, router);
-        } else {
-            // Navigate to a non flow view. Clean nodes and undefine container.
-            mountedContainer?.parentNode?.removeChild(mountedContainer);
-            mountedContainer = undefined;
-            navigation(event.detail.pathname, {replace: false});
-        }
-    }
-    lastNavigation = event.detail.pathname;
-}
-
-function popstateHandler(event: PopStateEvent) {
-    if (event.state === 'vaadin-router-ignore') {
+function extractPath(event: MouseEvent): void | string {
+    const url = extractURL(event);
+    if (!url) {
         return;
     }
-    const {pathname, search, hash} = window.location;
-    if(pathname === lastNavigation) {
-        return;
-    }
-    // @ts-ignore
-    window.dispatchEvent(new CustomEvent('vaadin-router-go', {
-        cancelable: true,
-        detail: {pathname, search, hash}
-    }));
+    return normalizeURL(url);
 }
 
-export default function Flow() {
-    const ref = useRef<HTMLOutputElement>(null);
-    const {pathname, search, hash} = useLocation();
-    const navigate = useNavigate();
-
-    navigation = navigate;
-    useEffect(() => {
-
-        window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
-        window.addEventListener('vaadin-router-go', navigateEventHandler);
-
-        if(popstateListener) {
-            // If we have gotten the router popstate handle that
-            window.removeEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
-            window.addEventListener('popstate', popstateHandler);
-        } else {
-            // @ts-ignore
-            let popstateListeners = window.getEventListeners('popstate');
-            if (popstateListeners.length > 0) {
-                // pick the first popstate and use that in future.
-
-                popstateListener = popstateListeners[0];
-                window.removeEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
-                window.addEventListener('popstate', popstateHandler);
-            }
-        }
-        if(lastNavigation === pathname) {
+export const registerGlobalClickHandler = () => {
+    window.addEventListener('click', (event: MouseEvent) => {
+        if (flowReact.active) {
             return;
         }
-        flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
-            const outlet = ref.current?.parentNode;
-            if (outlet && outlet !== container.parentNode) {
-                outlet.append(container);
-            }
-            mountedContainer = container;
-            if (container.onBeforeEnter) {
-                container.onBeforeEnter(
-                    {pathname, search},
-                    {
-                        prevent() {},
-                        redirect: navigate
-                    },
-                    router,
-                );
-            }
-        });
-        return () => {
-            window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
-            window.removeEventListener('vaadin-router-go', navigateEventHandler);
-            if (popstateListener) {
-                window.removeEventListener('popstate', popstateHandler);
-                window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
-            }
+        const url = extractURL(event);
+        if (!url) {
+            return;
+        }
+        // ignore click if baseURI does not match the document (external)
+        if (!url.href.startsWith(document.baseURI)) {
+            return;
+        }
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
 
-            let matched = matchRoutes(Array.from(routes), pathname);
+        // Normalize path against baseURI
+        const path = url.pathname + url.search + url.hash;
+        const state = {...window.history.state}
+        if (state.idx !== undefined) {
+            state.idx = state.idx + 1;
+        }
+        window.history.pushState(state, '', path);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    }, { capture: false });
+};
 
-            // if router force navigated using 'Link' we will need to remove
-            // flow from the view
-            if(matched && matched[0].route.path !== "/*") {
-                mountedContainer?.parentNode?.removeChild(mountedContainer);
-                mountedContainer = undefined;
-            }
-        };
-    }, [pathname, search, hash]);
-    return <output ref={ref} />;
+/**
+ * Fire 'vaadin-navigated' event to inform components of navigation.
+ * @param pathname pathname of navigation
+ * @param search search of navigation
+ */
+function fireNavigated(pathname: string, search: string) {
+    setTimeout(() => {
+        window.dispatchEvent(
+            new CustomEvent('vaadin-navigated', {
+                detail: {
+                    pathname,
+                    search
+                }
+            })
+        );
+        // @ts-ignore
+        delete window.Vaadin.Flow.navigation;
+    });
 }
 
-export const serverSideRoutes = [
-    { path: '/*', element: <Flow/> },
-];
+function postpone() {}
 
-(function () {
-    "use strict";
-    [Document, Window].forEach((cst) => {
-        // save the original methods before overwriting them
-        if (typeof cst === "function") {
+const prevent = () => postpone;
+
+type RouterContainer = Awaited<ReturnType<(typeof flow.serverSideRoutes)[0]['action']>>;
+
+type PortalEntry = {
+    readonly children: ReactNode;
+    readonly domNode: HTMLElement;
+};
+
+type FlowPortalProps = React.PropsWithChildren<
+    Readonly<{
+        domNode: HTMLElement;
+        onRemove(): void;
+    }>
+>;
+
+function FlowPortal({ children, domNode, onRemove }: FlowPortalProps) {
+    useEffect(() => {
+        domNode.addEventListener(
+            'flow-portal-remove',
+            (event: Event) => {
+                event.preventDefault();
+                onRemove();
+            },
+            { once: true }
+        );
+    }, []);
+
+    return createPortal(children, domNode);
+}
+
+const ADD_FLOW_PORTAL = 'ADD_FLOW_PORTAL';
+
+type AddFlowPortalAction = Readonly<{
+    type: typeof ADD_FLOW_PORTAL;
+    portal: React.ReactElement<FlowPortalProps>;
+}>;
+
+function addFlowPortal(portal: React.ReactElement<FlowPortalProps>): AddFlowPortalAction {
+    return {
+        type: ADD_FLOW_PORTAL,
+        portal
+    };
+}
+
+const REMOVE_FLOW_PORTAL = 'REMOVE_FLOW_PORTAL';
+
+type RemoveFlowPortalAction = Readonly<{
+    type: typeof REMOVE_FLOW_PORTAL;
+    key: string;
+}>;
+
+function removeFlowPortal(key: string): RemoveFlowPortalAction {
+    return {
+        type: REMOVE_FLOW_PORTAL,
+        key
+    };
+}
+
+function flowPortalsReducer(
+    portals: readonly React.ReactElement<FlowPortalProps>[],
+    action: AddFlowPortalAction | RemoveFlowPortalAction
+) {
+    switch (action.type) {
+        case ADD_FLOW_PORTAL:
+            return [...portals, action.portal];
+        case REMOVE_FLOW_PORTAL:
+            return portals.filter(({ key }) => key !== action.key);
+        default:
+            return portals;
+    }
+}
+
+type NavigateOpts = {
+    to: string;
+    callback: boolean;
+    opts?: NavigateOptions;
+};
+
+type NavigateFn = (to: string, callback: boolean, opts?: NavigateOptions) => void;
+
+/**
+ * A hook providing the `navigate(path: string, opts?: NavigateOptions)` function
+ * with React Router API that has more consistent history updates. Uses internal
+ * queue for processing navigate calls.
+ */
+function useQueuedNavigate(
+    waitReference: React.MutableRefObject<Promise<void> | undefined>,
+    navigated: React.MutableRefObject<boolean>
+): NavigateFn {
+    const navigate = useNavigate();
+    const navigateQueue = useRef<NavigateOpts[]>([]).current;
+    const [navigateQueueLength, setNavigateQueueLength] = useState(0);
+
+    const dequeueNavigation = useCallback(() => {
+        const navigateArgs = navigateQueue.shift();
+        if (navigateArgs === undefined) {
+            // Empty queue, do nothing.
+            return;
+        }
+
+        const blockingNavigate = async () => {
+            if (waitReference.current) {
+                await waitReference.current;
+                waitReference.current = undefined;
+            }
+            navigated.current = !navigateArgs.callback;
+            navigate(navigateArgs.to, navigateArgs.opts);
+            setNavigateQueueLength(navigateQueue.length);
+        };
+        blockingNavigate();
+    }, [navigate, setNavigateQueueLength]);
+
+    const dequeueNavigationAfterCurrentTask = useCallback(() => {
+        queueMicrotask(dequeueNavigation);
+    }, [dequeueNavigation]);
+
+    const enqueueNavigation = useCallback(
+        (to: string, callback: boolean, opts?: NavigateOptions) => {
+            navigateQueue.push({ to: to, callback: callback, opts: opts });
+            setNavigateQueueLength(navigateQueue.length);
+            if (navigateQueue.length === 1) {
+                // The first navigation can be started right after any pending sync
+                // jobs, which could add more navigations to the queue.
+                dequeueNavigationAfterCurrentTask();
+            }
+        },
+        [setNavigateQueueLength, dequeueNavigationAfterCurrentTask]
+    );
+
+    useEffect(
+        () => () => {
+            // The Flow component has rendered, but history might not be
+            // updated yet, as React Router does it asynchronously.
+            // Use microtask callback for history consistency.
+            dequeueNavigationAfterCurrentTask();
+        },
+        [navigateQueueLength, dequeueNavigationAfterCurrentTask]
+    );
+
+    return enqueueNavigation;
+}
+
+function Flow() {
+    const ref = useRef<HTMLOutputElement>(null);
+    const navigate = useNavigate();
+    const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+        navigated.current =
+            navigated.current ||
+            (nextLocation.pathname === currentLocation.pathname &&
+                nextLocation.search === currentLocation.search &&
+                nextLocation.hash === currentLocation.hash);
+        return true;
+    });
+    const location = useLocation();
+    const navigated = useRef<boolean>(false);
+    const blockerHandled = useRef<boolean>(false);
+    const fromAnchor = useRef<boolean>(false);
+    const containerRef = useRef<RouterContainer | undefined>(undefined);
+    const roundTrip = useRef<Promise<void> | undefined>(undefined);
+    const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
+    const basename = useHref('/');
+
+    // portalsReducer function is used as state outside the Flow component.
+    const [portals, dispatchPortalAction] = useReducer(flowPortalsReducer, []);
+
+    const addPortalEventHandler = useCallback(
+        (event: CustomEvent<PortalEntry>) => {
+            event.preventDefault();
+
+            const key = Math.random().toString(36).slice(2);
+            dispatchPortalAction(
+                addFlowPortal(
+                    <FlowPortal
+                        key={key}
+                        domNode={event.detail.domNode}
+                        onRemove={() => dispatchPortalAction(removeFlowPortal(key))}
+                    >
+                        {event.detail.children}
+                    </FlowPortal>
+                )
+            );
+        },
+        [dispatchPortalAction]
+    );
+
+    const navigateEventHandler = useCallback(
+        (event: MouseEvent) => {
+            const path = extractPath(event);
+            if (!path) {
+                return;
+            }
+
+            if (event && event.preventDefault) {
+                event.preventDefault();
+            }
+            navigated.current = false;
+            // When navigation is triggered by click on a link, fromAnchor is set to true
+            // in order to get a server round-trip even when navigating to the same URL again
+            fromAnchor.current = true;
+            navigate(path);
+            // Dispatch close event for overlay drawer on click navigation.
+            window.dispatchEvent(new CustomEvent('close-overlay-drawer'));
+        },
+        [navigate]
+    );
+
+    const vaadinRouterGoEventHandler = useCallback(
+        (event: CustomEvent<URL>) => {
+            const url = event.detail;
+            const path = normalizeURL(url);
+            if (!path) {
+                return;
+            }
+
+            event.preventDefault();
+            navigate(path);
+        },
+        [navigate]
+    );
+
+    const vaadinNavigateEventHandler = useCallback(
+        (event: CustomEvent<{ state: unknown; url: string; replace?: boolean; callback: boolean }>) => {
             // @ts-ignore
-            cst.prototype._addEventListener = cst.prototype.addEventListener;
-            // @ts-ignore
-            cst.prototype._removeEventListener = cst.prototype.removeEventListener;
+            window.Vaadin.Flow.navigation = true;
+            // clean base uri away if for instance redirected to http://localhost/path/user?id=10
+            // else the whole http... will be appended to the url see #19580
+            const path = event.detail.url.startsWith(document.baseURI)
+                ? '/' + event.detail.url.slice(document.baseURI.length)
+                : '/' + event.detail.url;
+            fromAnchor.current = false;
+            queuedNavigate(path, event.detail.callback, { state: event.detail.state, replace: event.detail.replace });
+        },
+        [navigate]
+    );
 
-            cst.prototype.addEventListener = function (type: string, listener: EventListener,
-                                                       useCapture: boolean = false) {
-                // declare listener
-                // @ts-ignore
-                this._addEventListener(type, listener, useCapture);
-
-                // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
-                // @ts-ignore
-                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
-
-                // add listener to  event tracking list
-                // @ts-ignore
-                this.eventListenerList[type].push({ type, listener, useCapture });
+    const redirect = useCallback(
+        (path: string) => {
+            return () => {
+                navigate(path, { replace: true });
             };
+        },
+        [navigate]
+    );
 
-            cst.prototype.removeEventListener = function (type: string, listener: EventListener,
-                                                          useCapture: boolean = false) {
-                // remove listener
-                // @ts-ignore
-                this._removeEventListener(type, listener, useCapture);
+    useEffect(() => {
+        // @ts-ignore
+        window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+        // @ts-ignore
+        window.addEventListener('vaadin-navigate', vaadinNavigateEventHandler);
 
-                // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
-                // @ts-ignore
-                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
+        return () => {
+            // @ts-ignore
+            window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+            // @ts-ignore
+            window.removeEventListener('vaadin-navigate', vaadinNavigateEventHandler);
+        };
+    }, [vaadinRouterGoEventHandler, vaadinNavigateEventHandler]);
 
-                // Find the event in the list, If a listener is registered twice, one
-                // with capture and one without, remove each one separately. Removal of
-                // a capturing listener does not affect a non-capturing version of the
-                // same listener, and vice versa.
-                // @ts-ignore
-                for (let i = 0; i < this.eventListenerList[type].length; i++) {
-                    if (
-                        // @ts-ignore
-                        this.eventListenerList[type][i].listener === listener &&
-                        // @ts-ignore
-                        this.eventListenerList[type][i].useCapture === useCapture
-                    ) {
-                        // @ts-ignore
-                        this.eventListenerList[type].splice(i, 1);
-                        break;
+    useEffect(() => {
+        window.addEventListener('click', navigateEventHandler);
+        flowReact.active = true;
+
+        return () => {
+            containerRef.current?.parentNode?.removeChild(containerRef.current);
+            containerRef.current?.removeEventListener('flow-portal-add', addPortalEventHandler as EventListener);
+            containerRef.current = undefined;
+            window.removeEventListener('click', navigateEventHandler);
+            flowReact.active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (blocker.state === 'blocked') {
+            if (blockerHandled.current) {
+                // Blocker is handled and the new navigation
+                // gets queued to be executed after the current handling ends.
+                const { pathname, state } = blocker.location;
+                // Clear base name to not get /baseName/basename/path
+                const pathNoBase = pathname.substring(basename.length);
+                // path should always start with / else react-router will append to current url
+                queuedNavigate(pathNoBase.startsWith('/') ? pathNoBase : '/' + pathNoBase, true, {
+                    state: state,
+                    replace: true
+                });
+                return;
+            }
+            blockerHandled.current = true;
+            let blockingPromise: any;
+            roundTrip.current = new Promise<void>(
+                (resolve, reject) => (blockingPromise = { resolve: resolve, reject: reject })
+            );
+            // Release blocker handling after promise is fulfilled
+            roundTrip.current.then(
+                () => (blockerHandled.current = false),
+                () => (blockerHandled.current = false)
+            );
+
+            // Proceed to the blocked location, unless the navigation originates from a click on a link.
+            // In that case continue with function execution and perform a server round-trip
+            if (navigated.current && !fromAnchor.current) {
+                blocker.proceed();
+                blockingPromise.resolve();
+                return;
+            }
+            fromAnchor.current = false;
+            const { pathname, search } = blocker.location;
+            const routes = ((window as any)?.Vaadin?.routesConfig || []) as any[];
+            let matched = matchRoutes(Array.from(routes), pathname);
+
+            // Navigation between server routes
+            // @ts-ignore
+            if (matched && matched.filter((path) => path.route?.element?.type?.name === Flow.name).length != 0) {
+                containerRef.current?.onBeforeEnter?.call(
+                    containerRef?.current,
+                    { pathname, search },
+                    {
+                        prevent() {
+                            blocker.reset();
+                            blockingPromise.resolve();
+                            navigated.current = false;
+                        },
+                        redirect,
+                        continue() {
+                            blocker.proceed();
+                            blockingPromise.resolve();
+                        }
+                    },
+                    router
+                );
+                navigated.current = true;
+            } else {
+                // For covering the 'server -> client' use case
+                Promise.resolve(
+                    containerRef.current?.onBeforeLeave?.call(
+                        containerRef?.current,
+                        {
+                            pathname,
+                            search
+                        },
+                        { prevent },
+                        router
+                    )
+                ).then((cmd: unknown) => {
+                    if (cmd === postpone && containerRef.current) {
+                        // postponed navigation: expose existing blocker to Flow
+                        containerRef.current.serverConnected = (cancel) => {
+                            if (cancel) {
+                                blocker.reset();
+                                blockingPromise.resolve();
+                            } else {
+                                blocker.proceed();
+                                blockingPromise.resolve();
+                            }
+                        };
+                    } else {
+                        // permitted navigation: proceed with the blocker
+                        blocker.proceed();
+                        blockingPromise.resolve();
                     }
+                });
+            }
+        }
+    }, [blocker.state, blocker.location]);
+
+    useEffect(() => {
+        if (blocker.state === 'blocked') {
+            return;
+        }
+        if (navigated.current) {
+            navigated.current = false;
+            fireNavigated(location.pathname, location.search);
+            return;
+        }
+        flow.serverSideRoutes[0]
+            .action({ pathname: location.pathname, search: location.search })
+            .then((container) => {
+                const outlet = ref.current?.parentNode;
+                if (outlet && outlet !== container.parentNode) {
+                    outlet.append(container);
+                    container.addEventListener('flow-portal-add', addPortalEventHandler as EventListener);
+                    containerRef.current = container;
                 }
-                // if no more events of the removed event type are left,remove the group
-                // @ts-ignore
-                if (this.eventListenerList[type].length == 0)
-                    // @ts-ignore
-                    delete this.eventListenerList[type];
-            };
+                return container.onBeforeEnter?.call(
+                    container,
+                    { pathname: location.pathname, search: location.search },
+                    {
+                        prevent,
+                        redirect,
+                        continue() {
+                            fireNavigated(location.pathname, location.search);
+                        }
+                    },
+                    router
+                );
+            })
+            .then((result: unknown) => {
+                if (typeof result === 'function') {
+                    result();
+                }
+            });
+    }, [location]);
 
-            // @ts-ignore
-            cst.prototype.getEventListeners = function (type: string) {
-                // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
+    return (
+        <>
+            <output ref={ref} style={{ display: 'none' }} />
+            {portals}
+        </>
+    );
+}
+Flow.type = 'FlowContainer'; // This is for copilot to recognize this
 
-                // return reqested listeners type or all them
-                // @ts-ignore
-                if (type === undefined) return this.eventListenerList;
-                // @ts-ignore
-                return this.eventListenerList[type];
+export const serverSideRoutes = [{ path: '/*', element: <Flow /> }];
+
+/**
+ * Load the script for an exported WebComponent with the given tag
+ *
+ * @param tag name of the exported web-component to load
+ *
+ * @returns Promise(resolve, reject) that is fulfilled on script load
+ */
+export const loadComponentScript = (tag: String): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        useEffect(() => {
+            const script = document.createElement('script');
+            script.src = `/web-component/${tag}.js`;
+            script.onload = function () {
+                resolve();
             };
+            script.onerror = function (err) {
+                reject(err);
+            };
+            document.head.appendChild(script);
+
+            return () => {
+                document.head.removeChild(script);
+            };
+        }, []);
+    });
+};
+
+interface Properties {
+    [key: string]: string;
+}
+
+/**
+ * Load WebComponent script and create a React element for the WebComponent.
+ *
+ * @param tag custom web-component tag name.
+ * @param props optional Properties object to create element attributes with
+ * @param onload optional callback to be called for script onload
+ * @param onerror optional callback for error loading the script
+ */
+export const reactElement = (tag: string, props?: Properties, onload?: () => void, onerror?: (err: any) => void) => {
+    loadComponentScript(tag).then(
+        () => onload?.(),
+        (err) => {
+            if (onerror) {
+                onerror(err);
+            } else {
+                console.error(`Failed to load script for ${tag}.`, err);
+            }
+        }
+    );
+
+    if (props) {
+        return React.createElement(tag, props);
+    }
+    return React.createElement(tag);
+};
+
+export default Flow;
+
+// @ts-ignore
+if (import.meta.hot) {
+    // @ts-ignore
+    import.meta.hot.accept((newModule) => {
+        // A hot module replace for Flow.tsx happens when any JS/TS imported through @JsModule
+        // or similar is updated because this updates generated-flow-imports.js and that in turn
+        // is imported by this file. We have no means of hot replacing those files, e.g. some
+        // custom lit element so we need to reload the page. */
+        if (newModule) {
+            window.location.reload();
         }
     });
-})();
+}

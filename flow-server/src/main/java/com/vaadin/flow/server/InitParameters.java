@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -65,7 +65,7 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String NODE_VERSION = "node.version";
     public static final String NODE_DOWNLOAD_ROOT = "node.download.root";
-    public static final String REACT_ROUTER_ENABLED = "enable.react.router";
+    public static final String REACT_ENABLE = "react.enable";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -108,6 +108,15 @@ public class InitParameters implements Serializable {
      * connections are allowed.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
+
+    /**
+     * The name of the custom HTTP header that contains the client IP address
+     * that is checked to allow access to the dev mode server. The HTTP header
+     * is supposed to contain a single address, and the HTTP request to have a
+     * single occurrence of the header. If not specified, remote address are
+     * read from the {@literal X-Forwarded-For} header.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER = "devmode.remoteAddressHeader";
 
     /**
      * Configuration parameter name for enabling pnpm.
@@ -171,9 +180,20 @@ public class InitParameters implements Serializable {
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 
     /**
+     * Configuration parameter name for adding extra file extensions for stats
+     * bundle to generate hashes for.
+     */
+    public static final String FRONTEND_EXTRA_EXTENSIONS = "devmode.frontendExtraFileExtensions";
+
+    /**
      * I18N provider property.
      */
     public static final String I18N_PROVIDER = "i18n.provider";
+
+    /**
+     * Menu access control property.
+     */
+    public static final String MENU_ACCESS_CONTROL = "menu.access.control";
 
     /**
      * Configuration name for the parameter that determines if Flow should
@@ -257,4 +277,23 @@ public class InitParameters implements Serializable {
      * Configuration name for cleaning or leaving frontend files in build.
      */
     public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
+
+    /**
+     * Configuration name for how long since last browser open before we open a
+     * new tab for the application in development mode.
+     *
+     * Time is given in minutes.
+     */
+    public static final String LAUNCH_BROWSER_DELAY = "launch-browser-delay";
+
+    /**
+     * Configuration name for setting the application identifier.
+     */
+    public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
+
+    /**
+     * Configuration name for excluding npm packages for web components.
+     */
+    public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
+
 }

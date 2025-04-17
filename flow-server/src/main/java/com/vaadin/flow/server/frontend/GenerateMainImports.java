@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,16 +21,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.helpers.NOPLogger;
 
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 /**
  * Collect generated-flow-imports content for project to use to determine if
@@ -42,13 +40,12 @@ import elemental.json.JsonObject;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class GenerateMainImports extends AbstractUpdateImports {
-    private JsonObject statsJson;
+    private JsonNode statsJson;
     private Map<File, List<String>> output;
 
-    public GenerateMainImports(ClassFinder classFinder,
-            FrontendDependenciesScanner frontendDepScanner, Options options,
-            JsonObject statsJson) {
-        super(options, frontendDepScanner, classFinder);
+    public GenerateMainImports(FrontendDependenciesScanner frontendDepScanner,
+            Options options, JsonNode statsJson) {
+        super(options, frontendDepScanner);
         this.statsJson = statsJson;
     }
 
@@ -99,14 +96,14 @@ public class GenerateMainImports extends AbstractUpdateImports {
         // Basically it means theme file import path like:
         // "@vaadin/accordion/theme/lumo/accordion.js" instead of
         // "@vaadin/accordion/src/accordion.js"
-        JsonArray statsBundle = statsJson.hasKey("bundleImports")
-                ? statsJson.getArray("bundleImports")
-                : Json.createArray();
+        ArrayNode statsBundle = statsJson.has("bundleImports")
+                ? (ArrayNode) statsJson.get("bundleImports")
+                : JacksonUtils.createArrayNode();
         importName = importName.replace("Frontend/", "./");
 
-        for (int i = 0; i < statsBundle.length(); i++) {
-            if (importName.equals(
-                    statsBundle.getString(i).replace("Frontend/", "./"))) {
+        for (int i = 0; i < statsBundle.size(); i++) {
+            if (importName.equals(statsBundle.get(i).textValue()
+                    .replace("Frontend/", "./"))) {
                 return true;
             }
         }

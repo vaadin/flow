@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,8 +25,8 @@ import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
@@ -89,13 +89,14 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
     public void destroySession_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         mockUI();
 
-        SpringVaadinSession springSession = (SpringVaadinSession) VaadinSession
-                .getCurrent();
+        VaadinSession session = VaadinSession.getCurrent();
+        VaadinService service = session.getService();
 
-        doCallRealMethod().when(springSession)
-                .addDestroyListener(Mockito.any());
-
-        doCallRealMethod().when(springSession).fireSessionDestroy();
+        doCallRealMethod().when(session)
+                .addSessionDestroyListener(Mockito.any());
+        doCallRealMethod().when(session).getLockInstance();
+        doCallRealMethod().when(session).getPendingAccessQueue();
+        doCallRealMethod().when(session).access(Mockito.any());
 
         VaadinUIScope scope = new VaadinUIScope();
 
@@ -111,12 +112,13 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
         String attribute = VaadinUIScope.class.getName() + "$UIStoreWrapper";
 
         // self control - the attribute name is used by the implementation
-        Assert.assertNotNull(springSession.getAttribute(attribute));
+        Assert.assertNotNull(session.getAttribute(attribute));
 
-        springSession.fireSessionDestroy();
+        service.fireSessionDestroy(session);
+        service.runPendingAccessTasks(session);
 
         Assert.assertEquals(1, count.get());
-        Assert.assertNull(springSession.getAttribute(attribute));
+        Assert.assertNull(session.getAttribute(attribute));
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();

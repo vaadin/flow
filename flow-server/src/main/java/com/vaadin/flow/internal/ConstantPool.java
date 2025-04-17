@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Keeps track of {@link ConstantPoolKey} values that have already been sent to
@@ -77,8 +76,8 @@ public class ConstantPool implements Serializable {
      *
      * @return a JSON object describing all new constants
      */
-    public JsonObject dumpConstants() {
-        JsonObject json = Json.createObject();
+    public ObjectNode dumpConstants() {
+        ObjectNode json = JacksonUtils.createObjectNode();
 
         newKeys.forEach(key -> key.export(json));
         newKeys.clear();

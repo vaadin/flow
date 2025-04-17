@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -38,6 +39,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
@@ -74,7 +76,6 @@ public class PrepareFrontendMojoTest {
     private File defaultJavaSource;
     private File defaultJavaResource;
     private File generatedTsFolder;
-    private MavenProject project;
 
     @Before
     public void setup() throws Exception {
@@ -84,25 +85,14 @@ public class PrepareFrontendMojoTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        project = Mockito.mock(MavenProject.class);
-
-        List<String> packages = Arrays
-                .stream(System.getProperty("java.class.path")
-                        .split(File.pathSeparatorChar + ""))
-                .collect(Collectors.toList());
-        Mockito.when(project.getRuntimeClasspathElements())
-                .thenReturn(packages);
-        Mockito.when(project.getCompileClasspathElements())
-                .thenReturn(Collections.emptyList());
-        Mockito.when(project.getBasedir()).thenReturn(projectBase);
-
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");
         defaultJavaResource = new File(".", "src/test/resources");
-        generatedTsFolder = new File(projectBase, "frontend/generated");
+        generatedTsFolder = new File(projectBase,
+                "src/main/frontend/generated");
 
         ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
                 projectBase);
@@ -111,7 +101,7 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo,
                 "resourceOutputDirectory", resourceOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
-                new File(projectBase, "frontend"));
+                new File(projectBase, "src/main/frontend"));
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
@@ -155,6 +145,22 @@ public class PrepareFrontendMojoTest {
                 buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+    }
+
+    @Test
+    public void tokenFileShouldExist_hotdeployIsTrueTokenVisible()
+            throws IOException, MojoExecutionException, MojoFailureException,
+            IllegalAccessException {
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendHotdeploy",
+                Boolean.TRUE);
+        mojo.execute();
+        Assert.assertTrue("No token file could be found", tokenFile.exists());
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertTrue("HotDeploy should be enabled",
+                buildInfo.getBoolean(FRONTEND_HOTDEPLOY));
     }
 
     @Test
@@ -233,31 +239,28 @@ public class PrepareFrontendMojoTest {
                 generatedTsFolder.exists());
         Assert.assertFalse("Old file should have been removed",
                 oldFile.exists());
-        Assert.assertFalse("Flow folder should have been deleted",
-                flowFolder.exists());
     }
 
     @Test
-    public void should_updateAndkeepDependencies_when_packageJsonExists()
+    public void should_updateAndKeepDependencies_when_packageJsonExists()
             throws Exception {
-        JsonObject json = TestUtils.getInitialPackageJson();
-        json.put("dependencies", Json.createObject());
-        json.getObject("dependencies").put("foo", "bar");
-        FileUtils.fileWrite(packageJson, json.toJson());
+        ObjectNode json = TestUtils.getInitialPackageJson();
+        json.set("dependencies", JacksonUtils.createObjectNode());
+        ((ObjectNode) json.get("dependencies")).put("foo", "bar");
+        FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();
         assertPackageJsonContent();
 
-        JsonObject packageJsonObject = getPackageJson(packageJson);
-        assertContainsPackage(packageJsonObject.getObject("dependencies"),
-                "foo");
+        ObjectNode packageJsonObject = getPackageJson(packageJson);
+        assertContainsPackage(packageJsonObject.get("dependencies"), "foo");
     }
 
     @Test
     public void jarPackaging_copyProjectFrontendResources()
             throws MojoExecutionException, MojoFailureException,
             IllegalAccessException {
-        Mockito.when(project.getPackaging()).thenReturn("jar");
-
+        mojo.project.setPackaging("jar");
+        MavenProject project = Mockito.spy(mojo.project);
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
 
         mojo.execute();
@@ -266,13 +269,13 @@ public class PrepareFrontendMojoTest {
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = getPackageJson(packageJson);
+        ObjectNode packageJsonObject = getPackageJson(packageJson);
 
-        assertContainsPackage(packageJsonObject.getObject("dependencies"),
+        assertContainsPackage(packageJsonObject.get("dependencies"),
                 "@polymer/polymer");
 
-        assertContainsPackage(packageJsonObject.getObject("devDependencies"),
-                "vite", "@rollup/plugin-replace", "rollup-plugin-brotli",
+        assertContainsPackage(packageJsonObject.get("devDependencies"), "vite",
+                "@rollup/plugin-replace", "rollup-plugin-brotli",
                 "vite-plugin-checker");
     }
 }

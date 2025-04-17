@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.testbench.TestBenchElement;
 
 import org.apache.commons.io.FileUtils;
@@ -21,7 +22,8 @@ public class ThemeReloadIT extends ViteDevModeIT {
         Assert.assertEquals("rgba(0, 0, 255, 1)", header.getCssValue("color"));
 
         File baseDir = new File(System.getProperty("user.dir", "."));
-        File themeFolder = new File(baseDir, "frontend/themes/vite-basics/");
+        File themeFolder = new File(baseDir,
+                FrontendUtils.DEFAULT_FRONTEND_DIR + "themes/vite-basics/");
         File stylesCss = new File(themeFolder, "styles.css");
         final String stylesContent = FileUtils.readFileToString(stylesCss,
                 StandardCharsets.UTF_8);

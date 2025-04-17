@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -586,6 +586,29 @@ public class StateNodeTest {
         Assert.assertEquals(0, commandRun.get());
 
         setParent(node, tree.getRootNode());
+        Assert.assertEquals(1, commandRun.get());
+    }
+
+    @Test
+    public void runWhenAttached_detachingNode_childNodeSchedulesCommandOnAttach() {
+        AtomicInteger commandRun = new AtomicInteger(0);
+        StateNode parent = createParentNode("PARENT");
+        StateNode child = createEmptyNode("CHILD");
+        StateTree tree = createStateTree();
+        setParent(parent, tree.getRootNode());
+        setParent(child, parent);
+
+        child.addDetachListener(() -> {
+            child.runWhenAttached(ui -> {
+                Assert.assertEquals(tree.getUI(), ui);
+                commandRun.incrementAndGet();
+            });
+        });
+
+        setParent(parent, null);
+        Assert.assertEquals(0, commandRun.get());
+
+        setParent(parent, tree.getRootNode());
         Assert.assertEquals(1, commandRun.get());
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,7 +45,7 @@ public class LookupImpl implements Lookup {
     @Override
     public <T> T lookup(Class<T> serviceClass) {
         if (ResourceProvider.class.isAssignableFrom(serviceClass)) {
-            return serviceClass.cast(new ResourceProviderImpl());
+            return serviceClass.cast(new ResourceProviderImpl(classFinder));
         }
         return lookupAll(serviceClass).stream().findFirst().orElse(null);
     }

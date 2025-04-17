@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,6 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 /**
  * Implementation of Spring's
@@ -40,31 +38,15 @@ public class VaadinSessionScope extends AbstractScope {
 
     private static class SessionBeanStore extends BeanStore {
 
-        private final Registration sessionDestroyListenerRegistration;
-
         private SessionBeanStore(VaadinSession session) {
             super(session);
-            if (session instanceof SpringVaadinSession) {
-                sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
-            } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
-            }
+            session.addSessionDestroyListener(event -> destroy());
         }
 
         @Override
         Void doDestroy() {
-            try {
-                getVaadinSession().setAttribute(BeanStore.class, null);
-                super.doDestroy();
-            } finally {
-                if (sessionDestroyListenerRegistration != null) {
-                    sessionDestroyListenerRegistration.remove();
-                }
-            }
-            return null;
+            getVaadinSession().setAttribute(BeanStore.class, null);
+            return super.doDestroy();
         }
     }
 
@@ -84,7 +66,7 @@ public class VaadinSessionScope extends AbstractScope {
     @Override
     protected BeanStore getBeanStore() {
         final VaadinSession session = getVaadinSession();
-        session.lock();
+        session.getLockInstance().lock();
         try {
             BeanStore beanStore = session.getAttribute(BeanStore.class);
             if (beanStore == null) {
@@ -93,7 +75,7 @@ public class VaadinSessionScope extends AbstractScope {
             }
             return beanStore;
         } finally {
-            session.unlock();
+            session.getLockInstance().unlock();
         }
     }
 

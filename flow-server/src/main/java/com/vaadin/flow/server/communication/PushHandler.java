@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -50,11 +51,12 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.communication.PushMode;
-
 import elemental.json.JsonException;
 
 /**
@@ -162,7 +164,9 @@ public class PushHandler {
         assert vaadinRequest != null;
 
         try {
-            new ServerRpcHandler().handleRpc(ui, reader, vaadinRequest);
+            new ServerRpcHandler().handleRpc(ui,
+                    SynchronizedRequestHandler.getRequestBody(reader),
+                    vaadinRequest);
             connection.push(false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
@@ -173,7 +177,13 @@ public class PushHandler {
                     resource.getRequest().getRemoteHost());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
+        } catch (DauEnforcementException e) {
+            getLogger().warn(
+                    "Daily Active User limit reached. Blocking new user request");
+            String json = DAUUtils.jsonEnforcementResponse(vaadinRequest, e);
+            sendNotificationAndDisconnect(resource, json);
         }
+
     };
 
     private VaadinServletService service;
@@ -249,7 +259,17 @@ public class PushHandler {
         if (isWebsocket) {
             // For any HTTP request we have already started the request in the
             // servlet
-            service.requestStart(vaadinRequest, null);
+            if (callback == receiveCallback) {
+                // Allow DAU tracking only for received messages, as websocket
+                // connection is not considered a user interaction
+                // Executing through TrackableRequest causes no side effects
+                // when DAU is not enabled.
+                DAUUtils.TrackableOperation.INSTANCE.execute(() -> {
+                    service.requestStart(vaadinRequest, null);
+                });
+            } else {
+                service.requestStart(vaadinRequest, null);
+            }
         }
         try {
             try {
@@ -390,8 +410,14 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                .getLiveReloadFromService(service);
+        Optional<BrowserLiveReload> liveReload = Optional.empty();
+        try {
+            liveReload = BrowserLiveReloadAccessor
+                    .getLiveReloadFromService(service);
+        } catch (IllegalStateException e) {
+            getLogger().debug(
+                    "Could not get live-reload push channel to close it.", e);
+        }
         if (isDebugWindowConnection(resource) && liveReload.isPresent()
                 && liveReload.get().isLiveReload(resource)) {
             liveReload.get().onDisconnect(resource);
@@ -519,8 +545,7 @@ public class PushHandler {
      *            The atmosphere resource to send refresh to
      *
      */
-    private static void sendRefreshAndDisconnect(AtmosphereResource resource)
-            throws IOException {
+    private static void sendRefreshAndDisconnect(AtmosphereResource resource) {
         sendNotificationAndDisconnect(resource, VaadinService
                 .createCriticalNotificationJSON(null, null, null, null));
     }

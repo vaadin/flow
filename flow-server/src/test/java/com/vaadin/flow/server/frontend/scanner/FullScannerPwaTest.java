@@ -27,7 +27,8 @@ public class FullScannerPwaTest extends AbstractScannerPwaTest {
                 .getAnnotatedClasses(clazz);
 
         FullDependenciesScanner fullDependenciesScanner = new FullDependenciesScanner(
-                finder, (type, annotation) -> findPwaAnnotations(type), null);
+                finder, (type, annotation) -> findPwaAnnotations(type), null,
+                true);
         return fullDependenciesScanner.getPwaConfiguration();
     }
 

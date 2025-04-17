@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -188,6 +188,29 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
+    public void servletConfigParameters_nullValues_ignored() throws Exception {
+        Class<NoSettings> servlet = NoSettings.class;
+
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
+        servletConfigParams.put("someKey", null);
+        servletConfigParams.put("someNotNullKey", "NOT_NULL");
+
+        Map<String, String> servletContextParams = new HashMap<>();
+
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
+                        servletConfigParams, servletContextParams));
+
+        Assert.assertFalse(
+                "Expecting null parameter to be ignored, but was in configuration",
+                config.getInitParameters().containsKey("someKey"));
+        Assert.assertTrue(
+                "Expecting not null parameter to be in configuration, but was not",
+                config.getInitParameters().containsKey("someNotNullKey"));
+    }
+
+    @Test
     public void should_readConfigurationFromTokenFile() throws Exception {
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": true", "}"));
@@ -326,7 +349,9 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS,
                 InitParameters.COMPILED_WEB_COMPONENTS_PATH,
                 InitParameters.NODE_VERSION, InitParameters.NODE_DOWNLOAD_ROOT,
-                InitParameters.BUILD_FOLDER));
+                InitParameters.BUILD_FOLDER,
+                InitParameters.APPLICATION_IDENTIFIER,
+                InitParameters.FRONTEND_EXTRA_EXTENSIONS));
         Field[] initParamFields = InitParameters.class.getDeclaredFields();
         String mockTokenJsonString = generateJsonStringFromFields(
                 initParamFields, stringParams);
@@ -402,11 +427,11 @@ public class DeploymentConfigurationFactoryTest {
         for (int i = 0; i < fields.length; i++) {
             try {
                 String paramName = (String) fields[i].get(null);
-                mockTokenJsonString += "'" + paramName + "': ";
+                mockTokenJsonString += "\"" + paramName + "\": ";
                 if (!stringParams.contains(paramName)) {
                     mockTokenJsonString += "true";
                 } else {
-                    mockTokenJsonString += " 'bar'";
+                    mockTokenJsonString += " \"bar\"";
                 }
 
             } catch (IllegalAccessException illegalAccess) {
@@ -427,7 +452,7 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
         VaadinConfig config = mockTokenFileViaContextParam(
-                "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}");
+                "{ \"externalStatsUrl\": \"http://my.server/static/stats.json\"}");
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
 
@@ -450,7 +475,7 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
         VaadinConfig config = mockTokenFileViaContextParam(
-                "{ 'externalStatsFile': true}");
+                "{ \"externalStatsFile\": true}");
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
 
@@ -471,7 +496,7 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
         VaadinConfig config = mockTokenFileViaContextParam(
-                "{ '" + SERVLET_PARAMETER_PRODUCTION_MODE + "': true}");
+                "{ \"" + SERVLET_PARAMETER_PRODUCTION_MODE + "\": true}");
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
 
@@ -546,7 +571,7 @@ public class DeploymentConfigurationFactoryTest {
     @Test
     public void createInitParameters_readDevModeProperties() throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
+                "\"pnpm.enable\": true,", "\"require.home.node\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
@@ -561,7 +586,7 @@ public class DeploymentConfigurationFactoryTest {
     public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
             throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
+                "\"pnpm.enable\": true,", "\"require.home.node\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));

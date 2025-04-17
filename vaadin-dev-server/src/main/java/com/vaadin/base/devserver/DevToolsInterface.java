@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,6 +14,10 @@
  * the License.
  */
 package com.vaadin.base.devserver;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
 
 import elemental.json.JsonObject;
 
@@ -30,5 +34,18 @@ public interface DevToolsInterface {
      * @param data
      *            data, specific to the command
      */
-    void send(String command, JsonObject data);
+    @Deprecated
+    default void send(String command, JsonObject data) {
+        send(command, JacksonUtils.mapElemental(data));
+    }
+
+    /**
+     * Sends the given message to the client side.
+     *
+     * @param command
+     *            the command to send
+     * @param data
+     *            data, specific to the command
+     */
+    void send(String command, JsonNode data);
 }

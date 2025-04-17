@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -66,7 +66,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
             return;
         }
         try {
-            List<String> subProtocols = Collections.singletonList("vite-hmr");
+            List<String> subProtocols = List.of("vite-hmr", "vite-ping");
             ServerEndpointConfig endpointConfig = ServerEndpointConfig.Builder
                     .create(ViteWebsocketEndpoint.class,
                             viteHandler.getPathToVaadinInContext())
@@ -85,8 +85,11 @@ public class ViteWebsocketEndpoint extends Endpoint {
     public void onOpen(Session session, EndpointConfig config) {
         getLogger().debug("Browser ({}) connected to Vite proxy",
                 session.getId());
-        session.setMaxIdleTimeout(60000); // Vite pings every 30s so this needs
-                                          // to be larger
+        // Vite pings every 30s but while you debug in the browser, the pings
+        // will be prevented.
+        // When you resume after debugging, the page will reload if the timeout
+        // was hit, so it is 0 == disabled
+        session.setMaxIdleTimeout(0);
 
         ViteHandler viteHandler = (ViteHandler) config.getUserProperties()
                 .get(VITE_HANDLER);

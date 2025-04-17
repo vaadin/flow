@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,34 +24,28 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
-import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
@@ -75,15 +69,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private IdeIntegration ideIntegration;
-
-    private ThemeEditorMessageHandler themeEditorMessageHandler;
-
     private List<DevToolsMessageHandler> plugins;
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
-                "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
+                "org.zeroturnaround.jrebel.vaadin.JRebelInitializer"));
         IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
                 "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
         IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
@@ -98,9 +88,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
     DebugWindowConnection(ClassLoader classLoader, VaadinContext context) {
         this.classLoader = classLoader;
         this.context = context;
-        this.ideIntegration = new IdeIntegration(
-                ApplicationConfiguration.get(context));
-        this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
 
         findPlugins();
     }
@@ -160,14 +147,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
 
         @Override
-        public void send(String command, JsonObject data) {
-            JsonObject msg = Json.createObject();
+        public void send(String command, JsonNode data) {
+            ObjectNode msg = JacksonUtils.createObjectNode();
             msg.put("command", command);
             if (data != null) {
-                msg.put("data", data);
+                msg.set("data", data);
             }
 
-            debugWindowConnection.send(resource, msg.toJson());
+            debugWindowConnection.send(resource, msg.toString());
         }
 
         @Override
@@ -201,8 +188,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
         } else {
-            getLogger().warn(
-                    "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
+            getLogger().debug(
+                    "Connection denied because of a missing or invalid token. Either the host is not on the 'vaadin.devmode.hosts-allowed' list or it is using an outdated token");
             try {
                 resource.close();
             } catch (IOException e) {
@@ -228,10 +215,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
                 .collect(Collectors.toList())));
 
-        if (themeEditorMessageHandler.isEnabled()) {
-            send(resource, ThemeEditorCommand.STATE,
-                    themeEditorMessageHandler.getState());
-        }
     }
 
     private void send(AtmosphereResource resource, String command,
@@ -268,11 +251,29 @@ public class DebugWindowConnection implements BrowserLiveReload {
         return getRef(resource) != null;
     }
 
-    private void send(JsonObject msg) {
+    /**
+     * Broadcasts the given message to all connected clients.
+     *
+     * @param msg
+     *            the message to broadcast
+     * @deprecated Use {@link #broadcast(ObjectNode)} instead.
+     */
+    @Deprecated
+    public void broadcast(JsonObject msg) {
+        this.broadcast(JacksonUtils.readTree(msg.toJson()));
+    }
+
+    /**
+     * Broadcasts the given message to all connected clients.
+     *
+     * @param msg
+     *            the message to broadcast
+     */
+    public void broadcast(ObjectNode msg) {
         resources.keySet().forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
-                resource.getBroadcaster().broadcast(msg.toJson(), resource);
+                resource.getBroadcaster().broadcast(msg.toString(), resource);
             }
         });
 
@@ -280,18 +281,26 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void reload() {
-        JsonObject msg = Json.createObject();
+        ObjectNode msg = JacksonUtils.createObjectNode();
         msg.put("command", "reload");
-        send(msg);
+        broadcast(msg);
+    }
+
+    @Override
+    public void refresh(boolean refreshLayouts) {
+        ObjectNode msg = JacksonUtils.createObjectNode();
+        msg.put("command", "reload");
+        msg.put("strategy", refreshLayouts ? "full-refresh" : "refresh");
+        broadcast(msg);
     }
 
     @Override
     public void update(String path, String content) {
-        JsonObject msg = Json.createObject();
+        ObjectNode msg = JacksonUtils.createObjectNode();
         msg.put("command", "update");
         msg.put("path", path);
         msg.put("content", content);
-        send(msg);
+        broadcast(msg);
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
@@ -301,17 +310,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
             getLogger().debug("Received live reload heartbeat");
             return;
         }
-        JsonObject json = Json.parse(message);
-        String command = json.getString("command");
-        JsonObject data = json.getObject("data");
+        JsonNode json = JacksonUtils.readTree(message);
+        String command = json.get("command").textValue();
+        JsonNode data = json.get("data");
         if ("setFeature".equals(command)) {
-            FeatureFlags.get(context).setEnabled(data.getString("featureId"),
-                    data.getBoolean("enabled"));
+            FeatureFlags.get(context).setEnabled(
+                    data.get("featureId").textValue(),
+                    data.get("enabled").booleanValue());
         } else if ("reportTelemetry".equals(command)) {
             DevModeUsageStatistics.handleBrowserData(data);
         } else if ("checkLicense".equals(command)) {
-            String name = data.getString("name");
-            String version = data.getString("version");
+            String name = data.get("name").textValue();
+            String version = data.get("version").textValue();
             Product product = new Product(name, version);
             boolean ok;
             String errorMessage = "";
@@ -334,29 +344,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
                         errorMessage);
                 send(resource, "license-check-failed", pm);
             }
-        } else if ("showComponentCreateLocation".equals(command)
-                || "showComponentAttachLocation".equals(command)) {
-            int nodeId = (int) data.getNumber("nodeId");
-            int uiId = (int) data.getNumber("uiId");
-            VaadinSession session = VaadinSession.getCurrent();
-            session.access(() -> {
-                Element element = session.findElement(uiId, nodeId);
-                Optional<Component> c = element.getComponent();
-                if (c.isPresent()) {
-                    if ("showComponentCreateLocation".equals(command)) {
-                        ideIntegration.showComponentCreateInIde(c.get());
-                    } else {
-                        ideIntegration.showComponentAttachInIde(c.get());
-                    }
-                } else {
-                    getLogger().error(
-                            "Only component locations are tracked. The given node id refers to an element and not a component");
-                }
-            });
-        } else if (themeEditorMessageHandler.canHandle(command, data)) {
-            BaseResponse resultData = themeEditorMessageHandler
-                    .handleDebugMessageData(command, data);
-            send(resource, ThemeEditorCommand.RESPONSE, resultData);
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {
@@ -366,7 +353,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     break;
                 }
             }
-            if (!handled) {
+            if (!handled && command != null
+                    && !command.startsWith("copilot-")) {
                 getLogger()
                         .info("Unknown command from the browser: " + command);
             }
@@ -405,6 +393,17 @@ public class DebugWindowConnection implements BrowserLiveReload {
             return;
         }
         resources.put(ref, new FragmentedMessage());
+    }
+
+    @Override
+    public void sendHmrEvent(String event, JsonNode eventData) {
+        ObjectNode msg = JacksonUtils.createObjectNode();
+        msg.put("command", "hmr");
+        ObjectNode data = JacksonUtils.createObjectNode();
+        msg.set("data", data);
+        data.put("event", event);
+        data.set("eventData", eventData);
+        broadcast(msg);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,13 +23,20 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javassist.bytecode.ClassFile;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
+import org.reflections.scanners.Scanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.NameHelper;
+import org.reflections.util.QueryBuilder;
+import org.reflections.vfs.Vfs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,16 +61,35 @@ public class ReflectionsClassFinder implements ClassFinder {
      *            the list of urls for finding classes.
      */
     public ReflectionsClassFinder(URL... urls) {
-        classLoader = new URLClassLoader(urls,
-                Thread.currentThread().getContextClassLoader());
+        this(new URLClassLoader(urls,
+                Thread.currentThread().getContextClassLoader()), urls);
+    }
+
+    public ReflectionsClassFinder(ClassLoader classLoader, URL... urls) {
+        this.classLoader = classLoader;
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .addClassLoaders(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
 
+        ConfigurationBuilder.DEFAULT_SCANNERS
+                .forEach(configurationBuilder::addScanners);
+        configurationBuilder.addScanners(PackageScanner.INSTANCE);
         configurationBuilder
                 .setInputsFilter(resourceName -> resourceName.endsWith(".class")
                         && !resourceName.endsWith("module-info.class"));
-        reflections = new LoggingReflections(configurationBuilder);
+
+        // Adding the custom URL type handler at the end, as a last resort to
+        // prevent warning messages on server logs
+        // Vfs.getDefaultUrlTypes() gets the internal mutable collection
+        List<Vfs.UrlType> defaultUrlTypes = Vfs.getDefaultUrlTypes();
+        if (!defaultUrlTypes.contains(IGNORE_NOT_HANDLED_FILES)) {
+            defaultUrlTypes.add(IGNORE_NOT_HANDLED_FILES);
+        }
+        try {
+            reflections = new LoggingReflections(configurationBuilder);
+        } finally {
+            defaultUrlTypes.remove(IGNORE_NOT_HANDLED_FILES);
+        }
     }
 
     @Override
@@ -90,6 +116,18 @@ public class ReflectionsClassFinder implements ClassFinder {
     @Override
     public URL getResource(String name) {
         return classLoader.getResource(name);
+    }
+
+    @Override
+    public boolean shouldInspectClass(String className) {
+        if (!reflections
+                .get(PackageScanner.INSTANCE
+                        .of(PackageScanner.extractPackageName(className)))
+                .isEmpty()) {
+            return classLoader.getResource(
+                    className.replace('.', '/') + ".class") != null;
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -162,6 +200,61 @@ public class ReflectionsClassFinder implements ClassFinder {
                 }
                 return null;
             }
+        }
+    }
+
+    private static final Vfs.UrlType IGNORE_NOT_HANDLED_FILES = new Vfs.UrlType() {
+
+        public boolean matches(URL url) {
+            // This handler is the last one to be checked.
+            // Valid "file:" URLs should have already been handled by default
+            // URL type handlers.
+            return "file".equals(url.getProtocol());
+        }
+
+        public Vfs.Dir createDir(final URL url) {
+            LOGGER.debug(
+                    "Class finder cannot scan {} URL. Probably pointing to a not existing folder.",
+                    url);
+            return new Vfs.Dir() {
+                @Override
+                public String getPath() {
+                    return url.getPath().replace("\\", "/");
+                }
+
+                @Override
+                public Iterable<Vfs.File> getFiles() {
+                    return Collections.emptyList();
+                }
+            };
+        }
+    };
+
+    private static class PackageScanner
+            implements Scanner, QueryBuilder, NameHelper {
+
+        private final static PackageScanner INSTANCE = new PackageScanner();
+
+        @Override
+        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
+            String packageName = extractPackageName(classFile.getName());
+            if (!packageName.isEmpty()) {
+                return List.of(entry(packageName, packageName));
+            }
+            return List.of();
+        }
+
+        @Override
+        public String index() {
+            return "PackageScanner";
+        }
+
+        static String extractPackageName(String className) {
+            int dot = className.lastIndexOf('.');
+            if (dot != -1) {
+                return className.substring(0, dot);
+            }
+            return "";
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,12 +16,14 @@
 package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -97,6 +99,15 @@ public class PwaIcon implements Serializable {
         }
 
         setRelativeName();
+    }
+
+    protected PwaIcon(PwaIcon icon) {
+        this.width = icon.width;
+        this.height = icon.height;
+        this.baseName = icon.baseName;
+        this.domain = icon.domain;
+        this.shouldBeCached = icon.shouldBeCached;
+        this.attributes.putAll(icon.attributes);
     }
 
     /**
@@ -236,6 +247,25 @@ public class PwaIcon implements Serializable {
         }
     }
 
+    void setImage(InputStream image) throws IOException {
+        if (image != null) {
+            data = image.readAllBytes();
+            fileHash = Arrays.hashCode(data);
+            setRelativeName();
+        }
+    }
+
+    /**
+     * Gets if the icon can be written on a stream or not.
+     *
+     * @return {@literal true} if the icon can be written, otherwise
+     *         {@literal false}.
+     * @see #write(OutputStream)
+     */
+    boolean isAvailable() {
+        return data != null || registry.getBaseImage() != null;
+    }
+
     /**
      * Writes the icon image to output stream.
      *
@@ -246,7 +276,7 @@ public class PwaIcon implements Serializable {
         if (data == null) {
             // New image with wanted size
             // Store byte array and hashcode of image (GeneratedImage)
-            setImage(drawIconImage(registry.getBaseImage()));
+            setImage(drawIconImage(getBaseImage()));
         }
         try {
             outputStream.write(data);
@@ -255,6 +285,11 @@ public class PwaIcon implements Serializable {
                     "Failed to store the icon image into the stream provided",
                     ioe);
         }
+    }
+
+    // visible for test
+    protected BufferedImage getBaseImage() {
+        return registry.getBaseImage();
     }
 
     private BufferedImage drawIconImage(BufferedImage baseImage) {
@@ -296,4 +331,5 @@ public class PwaIcon implements Serializable {
         graphics.dispose();
         return bimage;
     }
+
 }

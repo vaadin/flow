@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.binder;
 
+import java.beans.PropertyDescriptor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -34,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.tests.data.bean.Address;
 import com.vaadin.flow.tests.data.bean.Country;
 import com.vaadin.flow.tests.data.bean.FatherAndSon;
@@ -70,6 +72,9 @@ public class BeanPropertySetTest {
         public String toString() {
             return name + "(" + born + ")";
         }
+    }
+
+    public record TestRecord(String name, int age) {
     }
 
     interface Iface3 extends Iface2, Iface {
@@ -215,6 +220,45 @@ public class BeanPropertySetTest {
 
         Assert.assertEquals("Deserialized definition should be functional",
                 address.getPostalCode(), postalCode);
+    }
+
+    @Test
+    public void testSerializeDeserializeRecord() throws Exception {
+        PropertyDefinition<TestRecord, ?> definition = BeanPropertySet
+                .get(TestRecord.class).getProperty("name")
+                .orElseThrow(AssertionFailedError::new);
+
+        PropertyDefinition<TestRecord, ?> deserializedDefinition = ClassesSerializableUtils
+                .serializeAndDeserialize(definition);
+
+        ValueProvider<TestRecord, ?> getter = deserializedDefinition
+                .getGetter();
+
+        TestRecord testRecord = new TestRecord("someone", 42);
+
+        String name = (String) getter.apply(testRecord);
+
+        Assert.assertEquals("Deserialized definition should be functional",
+                "someone", name);
+
+        PropertyDescriptor namePropertyDescriptor = BeanUtil
+                .getPropertyDescriptor(TestRecord.class, "name");
+        Assert.assertNotNull(namePropertyDescriptor);
+        Assert.assertEquals("Property has unexpected name",
+                namePropertyDescriptor.getName(), "name");
+        Assert.assertEquals("Property read method has unexpected name",
+                namePropertyDescriptor.getReadMethod().getName(), "name");
+
+        Class<?> namePropertyType = BeanUtil.getPropertyType(TestRecord.class,
+                "name");
+        Assert.assertEquals("Property type is unexpected", namePropertyType,
+                String.class);
+
+        // Ensure props for Record are not sorted, but are in code order
+        List<PropertyDefinition<TestRecord, ?>> propertyList = definition
+                .getPropertySet().getProperties().toList();
+        Assert.assertEquals("name", propertyList.get(0).getName());
+        Assert.assertEquals("age", propertyList.get(1).getName());
     }
 
     @Test

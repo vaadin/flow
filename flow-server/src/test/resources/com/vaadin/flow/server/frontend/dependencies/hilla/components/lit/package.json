@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "description": "A list of Hilla Lit components that are added by Flow automatically to package.json",
+  "dependencies": {
+    "@vaadin/hilla-lit-form": "24.4.0-alpha2"
+  },
+  "devDependencies": {
+    "lit-dev-dependency": "1.0.0"
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,9 +30,9 @@ import elemental.json.JsonValue;
  * evaluation.
  * <p>
  * If any of the <code>then</code> or <code>toCompletableFuture</code> methods
- * have been invoked before the snippet is sent to the browser, then the there
- * will be an additional round trip for sending the results of the evaluation
- * back to any registered handler. If the JavaScript execution returns a
+ * have been invoked before the snippet is sent to the browser, then there will
+ * be an additional round trip for sending the results of the evaluation back to
+ * any registered handler. If the JavaScript execution returns a
  * <code>Promise</code>, then the result will be sent to the server only when it
  * is resolved.
  * <p>

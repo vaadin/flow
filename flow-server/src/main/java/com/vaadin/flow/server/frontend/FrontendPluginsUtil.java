@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,11 +24,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -56,16 +55,16 @@ class FrontendPluginsUtil {
      */
     protected static List<String> getPlugins() {
         try {
-            final JsonObject jsonFile = getJsonFile("plugins/plugins.json");
+            final JsonNode jsonFile = getJsonFile("plugins/plugins.json");
             if (jsonFile == null) {
                 throw new IllegalStateException(
                         "Couldn't locate plugins/plugins.json");
             }
 
-            final JsonArray plugins = jsonFile.getArray("plugins");
-            List<String> pluginsToInstall = new ArrayList<>(plugins.length());
-            for (int i = 0; i < plugins.length(); i++) {
-                pluginsToInstall.add(plugins.getString(i));
+            final JsonNode plugins = jsonFile.get("plugins");
+            List<String> pluginsToInstall = new ArrayList<>(plugins.size());
+            for (int i = 0; i < plugins.size(); i++) {
+                pluginsToInstall.add(plugins.get(i).textValue());
             }
             return pluginsToInstall;
         } catch (IOException ioe) {
@@ -83,7 +82,7 @@ class FrontendPluginsUtil {
      * @throws IOException
      *             thrown for problems reading file
      */
-    protected static JsonObject getJsonFile(String jsonFilePath)
+    protected static JsonNode getJsonFile(String jsonFilePath)
             throws IOException {
         final URL urlResource = getResourceUrl(jsonFilePath);
         if (urlResource == null) {
@@ -103,7 +102,7 @@ class FrontendPluginsUtil {
         } else {
             jsonString = FileUtils.readFileToString(jsonFile, UTF_8);
         }
-        return Json.parse(jsonString);
+        return JacksonUtils.readTree(jsonString);
     }
 
     /**

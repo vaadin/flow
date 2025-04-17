@@ -2,8 +2,6 @@ import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import typescript from '@rollup/plugin-typescript';
 
-const { execSync } = require('child_process');
-
 export default defineConfig({
   build: {
     // Write output to resources to include it in Maven package
@@ -12,7 +10,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        devTools: fileURLToPath(new URL('./frontend/vaadin-dev-tools.ts', import.meta.url))
+        devTools: fileURLToPath(new URL('./src/main/frontend/vaadin-dev-tools.ts', import.meta.url))
       },
       output: {
         // Ensure consistent file name for dev tools bundle
@@ -27,20 +25,7 @@ export default defineConfig({
         /^@vaadin.*/,
       ]
     }
-  }
+  },
+  // Preserve import.meta.hot in the built file so it can be replaced in the application instead
+  define: { 'import.meta.hot': 'import.meta.hot' }
 });
-
-const run = () => {
-  const npmrun = 'npx -y tsx export-metadata-script.ts';
-  console.log(`Running "${npmrun}"`);
-  try {
-    console.log(execSync(npmrun, { encoding: 'utf-8', stdio: 'inherit' }));
-  } catch (error) {
-    // Do not fail if this was just skipped
-    if (error.status != 133) {
-      throw error;
-    }
-  }
-};
-
-run();

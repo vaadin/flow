@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -390,5 +390,15 @@ public interface DomListenerRegistration extends Registration {
         addEventData("event.preventDefault()");
         return this;
     }
+
+    /**
+     * Configures the event listener to bypass the server side security checks
+     * for modality. Handle with care! Can be ok when transferring data from
+     * "non-ui" component events through the Element API, like e.g. geolocation
+     * events.
+     *
+     * @return the DomListenerRegistration for further configuration
+     */
+    public DomListenerRegistration allowInert();
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,20 +17,28 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.Menu;
+import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
@@ -42,6 +50,14 @@ import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.AccessCheckDecision;
+import com.vaadin.flow.server.auth.MenuAccessControl;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.NavigationContext;
+import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
 import static java.util.stream.Collectors.toList;
@@ -86,6 +102,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private volatile ConfigureRoutes editing = null;
 
     private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners = new CopyOnWriteArrayList<>();
+
+    private final Map<String, Class<? extends RouterLayout>> layouts = new HashMap<>();
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -196,6 +214,66 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return getRegisteredRoutes(getConfiguration());
     }
 
+    @Override
+    public List<RouteData> getRegisteredAccessibleMenuRoutes(
+            VaadinRequest vaadinRequest,
+            Collection<BeforeEnterListener> accessControls) {
+        if (vaadinRequest == null) {
+            return Collections.emptyList();
+        }
+        final VaadinService vaadinService = vaadinRequest.getService();
+        if (vaadinService == null) {
+            return Collections.emptyList();
+        }
+        MenuAccessControl.PopulateClientMenu populateClientSideMenu = vaadinService
+                .getInstantiator().getMenuAccessControl()
+                .getPopulateClientSideMenu();
+        if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.NEVER) {
+            return Collections.emptyList();
+        }
+
+        List<NavigationAccessControl> navigationAccessControls = findListOf(
+                NavigationAccessControl.class, accessControls);
+        List<ViewAccessChecker> legacyViewAccessCheckers = findListOf(
+                ViewAccessChecker.class, accessControls);
+        if (navigationAccessControls.isEmpty()
+                && legacyViewAccessCheckers.isEmpty()) {
+            return getMenuRouteCandidates().toList();
+        }
+        return getMenuRouteCandidates().filter(route -> navigationAccessControls
+                .stream().allMatch(accessControl -> {
+                    NavigationContext navigationContext = accessControl
+                            .createNavigationContext(
+                                    route.getNavigationTarget(),
+                                    route.getTemplate(), vaadinService,
+                                    vaadinRequest);
+                    return accessControl.checkAccess(navigationContext, true)
+                            .decision() == AccessCheckDecision.ALLOW;
+                })).filter(route -> legacyViewAccessCheckers.stream()
+                        .allMatch(legacyAccessChecker -> {
+                            NavigationContext navigationContext = legacyAccessChecker
+                                    .createNavigationContext(
+                                            route.getNavigationTarget(),
+                                            route.getTemplate(), vaadinService,
+                                            vaadinRequest);
+                            return legacyAccessChecker
+                                    .checkAccess(navigationContext)
+                                    .decision() == AccessCheckDecision.ALLOW;
+                        }))
+                .toList();
+    }
+
+    private Stream<RouteData> getMenuRouteCandidates() {
+        return getRegisteredRoutes().stream()
+                .filter(route -> route.getMenuData() != null);
+    }
+
+    private <T> List<T> findListOf(Class<T> targetType, Collection<?> objects) {
+        return Stream.ofNullable(objects).flatMap(Collection::stream)
+                .filter(event -> targetType.isAssignableFrom(event.getClass()))
+                .map(targetType::cast).toList();
+    }
+
     private List<RouteData> getRegisteredRoutes(
             ConfiguredRoutes configuration) {
         var routePathMap = new HashMap<>(configuration.getRoutesMap());
@@ -232,8 +310,26 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 });
         List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
                 configuration, template);
-        RouteData route = new RouteData(parentLayouts, template,
-                configuration.getParameters(template), target, routeAliases);
+
+        var parameters = configuration.getParameters(template);
+        // exclude route from the menu if it has any required parameters
+        boolean excludeFromMenu = parameters != null && !parameters.isEmpty()
+                && parameters.values().stream().anyMatch(
+                        param -> !param.isOptional() && !param.isVarargs());
+        MenuData menuData = AnnotationReader
+                .getAnnotationFor(target, Menu.class)
+                .map(menu -> new MenuData(
+                        (menu.title() == null || menu.title().isBlank())
+                                ? MenuRegistry.getTitle(target)
+                                : menu.title(),
+                        (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
+                                : menu.order(),
+                        excludeFromMenu,
+                        (menu.icon().isBlank() ? null : menu.icon()), target))
+                .orElse(null);
+
+        RouteData route = new RouteData(parentLayouts, template, parameters,
+                target, routeAliases, menuData);
         registeredRoutes.add(route);
     }
 
@@ -252,7 +348,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             RouteData nonAliasCollection = new RouteData(
                     route.getParentLayouts(), route.getTemplate(),
                     route.getRouteParameters(), route.getNavigationTarget(),
-                    Collections.emptyList());
+                    Collections.emptyList(), route.getMenuData());
 
             flatRoutes.add(nonAliasCollection);
             route.getRouteAliases().forEach(flatRoutes::add);
@@ -307,6 +403,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
+        RouteUtil.checkForClientRouteCollisions(VaadinService.getCurrent(),
+                HasUrlParameterFormat.getTemplate(path, navigationTarget));
         configureWithFullTemplate(path, navigationTarget,
                 (configuration, fullTemplate) -> configuration
                         .setRoute(fullTemplate, navigationTarget, parentChain));
@@ -506,4 +604,73 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Optional.empty();
     }
 
+    @Override
+    public void setLayout(Class<? extends RouterLayout> layout) {
+        if (layout == null || !layout.isAnnotationPresent(Layout.class)) {
+            return;
+        }
+        synchronized (layouts) {
+            layouts.put(layout.getAnnotation(Layout.class).value(), layout);
+        }
+    }
+
+    void updateLayout(Class<? extends RouterLayout> layout) {
+        if (layout == null) {
+            return;
+        }
+        synchronized (layouts) {
+            layouts.entrySet()
+                    .removeIf(entry -> layout.equals(entry.getValue()));
+            if (layout.isAnnotationPresent(Layout.class)) {
+                layouts.put(layout.getAnnotation(Layout.class).value(), layout);
+            }
+        }
+    }
+
+    Collection<Class<?>> getLayouts() {
+        return Set.copyOf(layouts.values());
+    }
+
+    @Override
+    public Class<? extends RouterLayout> getLayout(String path) {
+        Optional<String> first = layouts.keySet().stream()
+                .sorted(pathSortComparator())
+                .filter(key -> pathMatches(path, key)).findFirst();
+        return first.map(layouts::get).orElse(null);
+    }
+
+    @Override
+    public boolean hasLayout(String path) {
+        return layouts.keySet().stream()
+                .anyMatch(key -> pathMatches(path, key));
+    }
+
+    private Comparator<String> pathSortComparator() {
+        return (o1, o2) -> removeStartSlash(o2).split("/").length
+                - removeStartSlash(o1).split("/").length;
+    }
+
+    private boolean pathMatches(String path, String layoutPath) {
+        String[] pathSplit = removeStartSlash(path).split("/");
+        String[] layoutSplit = removeStartSlash(layoutPath).split("/");
+
+        if (layoutSplit.length == 1 && layoutSplit[0].isEmpty()) {
+            return true;
+        }
+
+        if (layoutSplit.length > pathSplit.length) {
+            return false;
+        }
+
+        for (int i = 0; i < layoutSplit.length; i++) {
+            if (!pathSplit[i].equals(layoutSplit[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String removeStartSlash(String path) {
+        return path.startsWith("/") ? path.substring(1, path.length()) : path;
+    }
 }

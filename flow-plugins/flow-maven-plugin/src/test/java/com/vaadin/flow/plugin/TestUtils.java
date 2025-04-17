@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,8 +26,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Shared code to use in the unit tests.
@@ -112,21 +114,21 @@ public final class TestUtils {
         }
     }
 
-    public static JsonObject getInitialPackageJson() {
-        JsonObject packageJson = Json.createObject();
-        JsonObject vaadinPackages = Json.createObject();
+    public static ObjectNode getInitialPackageJson() {
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+        ObjectNode vaadinPackages = JacksonUtils.createObjectNode();
 
-        vaadinPackages.put("dependencies", Json.createObject());
-        JsonObject defaults = vaadinPackages.getObject("dependencies");
+        vaadinPackages.set("dependencies", JacksonUtils.createObjectNode());
+        ObjectNode defaults = (ObjectNode) vaadinPackages.get("dependencies");
         defaults.put("@polymer/polymer", "3.2.0");
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
-        vaadinPackages.put("devDependencies", Json.createObject());
-        defaults = vaadinPackages.getObject("devDependencies");
+        vaadinPackages.set("devDependencies", JacksonUtils.createObjectNode());
+        defaults = (ObjectNode) vaadinPackages.get("devDependencies");
         defaults.put("vite", "3.4.5");
 
         vaadinPackages.put("hash", "");
-        packageJson.put("vaadin", vaadinPackages);
+        packageJson.set("vaadin", vaadinPackages);
 
         return packageJson;
     }

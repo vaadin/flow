@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,16 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -32,6 +35,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
@@ -218,16 +222,14 @@ public class RouteConfiguration implements Serializable {
         }
         String route = RouteUtil.getRoutePath(handledRegistry.getContext(),
                 navigationTarget);
-        handledRegistry.setRoute(route, navigationTarget,
-                RouteUtil.getParentLayouts(handledRegistry.getContext(),
-                        navigationTarget, route));
+        handledRegistry.setRoute(route, navigationTarget, RouteUtil
+                .getParentLayouts(handledRegistry, navigationTarget, route));
 
         for (RouteAlias alias : navigationTarget
                 .getAnnotationsByType(RouteAlias.class)) {
             String path = RouteUtil.getRouteAliasPath(navigationTarget, alias);
-            handledRegistry.setRoute(path, navigationTarget,
-                    RouteUtil.getParentLayouts(handledRegistry.getContext(),
-                            navigationTarget, path));
+            handledRegistry.setRoute(path, navigationTarget, RouteUtil
+                    .getParentLayouts(handledRegistry, navigationTarget, path));
         }
     }
 
@@ -531,4 +533,41 @@ public class RouteConfiguration implements Serializable {
         return false;
     }
 
+    /**
+     * Get the {@link RouteData} for all accessible registered navigation
+     * targets with a menu information. Access checking depends on the active
+     * {@link VaadinService} and {@link VaadinRequest}.
+     * <p>
+     * Automatically adds access controls from UI if available.
+     *
+     * @return list of accessible menu routes available for handled registry
+     */
+    public List<RouteData> getRegisteredAccessibleMenuRoutes() {
+        UI ui = UI.getCurrent();
+        if (ui != null) {
+            List<BeforeEnterListener> accessControls = ui.getInternals()
+                    .getListeners(BeforeEnterHandler.class).stream()
+                    .filter(BeforeEnterListener.class::isInstance)
+                    .map(BeforeEnterListener.class::cast).toList();
+            return getRegisteredAccessibleMenuRoutes(accessControls);
+        }
+
+        return getRegisteredAccessibleMenuRoutes(Collections.emptyList());
+    }
+
+    /**
+     * Get the {@link RouteData} for all accessible registered navigation
+     * targets with a menu information. Access checking depends on the active
+     * {@link VaadinService} and {@link VaadinRequest} and the given collection
+     * of access controls.
+     *
+     * @param accessControls
+     *            the access controls to use for checking access
+     * @return list of accessible menu routes available for handled registry
+     */
+    public List<RouteData> getRegisteredAccessibleMenuRoutes(
+            Collection<BeforeEnterListener> accessControls) {
+        return getHandledRegistry().getRegisteredAccessibleMenuRoutes(
+                VaadinRequest.getCurrent(), accessControls);
+    }
 }

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.4-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-themes-production</artifactId>
     <name>Flow themes tests, production</name>
@@ -48,9 +48,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <reactRouterEnabled>false</reactRouterEnabled>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.jetty.ee10</groupId>

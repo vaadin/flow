@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -129,7 +129,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         Assert.assertTrue(
                 "Expected sw-runtime-resources-precache.js to be imported, but was not",
                 serviceWorkerJS.contains(
-                        "importScripts(\"sw-runtime-resources-precache.js\");"));
+                        "importScripts(\"sw-runtime-resources-precache.js\")"));
 
         serviceWorkerUrl = getRootURL() + "/sw-runtime-resources-precache.js";
         serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);

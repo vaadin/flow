@@ -4,11 +4,15 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
@@ -16,6 +20,7 @@ import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 @Route(value = "admin", layout = MainView.class)
 @PageTitle("Admin View")
 @RolesAllowed("admin")
+@Menu(order = 3)
 public class AdminView extends VerticalLayout {
 
     public final static String ROLE_PREFIX_TEST_BUTTON_ID = "role-prefix-test-button";
@@ -35,14 +40,16 @@ public class AdminView extends VerticalLayout {
         accessRolePrefixedAdminPageFromThread.setId(ROLE_PREFIX_TEST_BUTTON_ID);
         accessRolePrefixedAdminPageFromThread.addClickListener(event -> {
             UI ui = event.getSource().getUI().get();
-            new Thread(() -> {
+            Runnable doNavigation = () -> {
                 try {
                     TimeUnit.MILLISECONDS.sleep(100);
                     ui.access(() -> ui.navigate(RolePrefixedAdminView.class));
                 } catch (InterruptedException e) {
                 }
-
-            }).start();
+            };
+            Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
+                    doNavigation, SecurityContextHolder.getContext());
+            new Thread(wrappedRunnable).start();
         });
         add(accessRolePrefixedAdminPageFromThread);
     }

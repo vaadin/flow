@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,6 +72,28 @@ public enum DefaultConverterFactory implements ConverterFactory {
                 StringToLongConverter::new);
         registerConverterWithMessageProvider(StringToUuidConverter.class,
                 StringToUuidConverter::new);
+        registerConverter(BigDecimalToDoubleConverter.class,
+                BigDecimalToDoubleConverter::new);
+        registerConverter(BigDecimalToIntegerConverter.class,
+                BigDecimalToIntegerConverter::new);
+        registerConverter(DoubleToBigDecimalConverter.class,
+                DoubleToBigDecimalConverter::new);
+        registerConverter(IntegerToBigDecimalConverter.class,
+                IntegerToBigDecimalConverter::new);
+        registerConverter(IntegerToDoubleConverter.class,
+                IntegerToDoubleConverter::new);
+        registerConverter(IntegerToLongConverter.class,
+                IntegerToLongConverter::new);
+        registerConverter(BigDecimalToFloatConverter.class,
+                BigDecimalToFloatConverter::new);
+        registerConverter(BigDecimalToLongConverter.class,
+                BigDecimalToLongConverter::new);
+        registerConverter(LongToBigDecimalConverter.class,
+                LongToBigDecimalConverter::new);
+        registerConverter(FloatToBigDecimalConverter.class,
+                FloatToBigDecimalConverter::new);
+        registerConverter(FloatToDoubleConverter.class,
+                FloatToDoubleConverter::new);
     }
 
     private <C extends Converter<?, ?>> void registerConverter(
@@ -112,7 +134,8 @@ public enum DefaultConverterFactory implements ConverterFactory {
 
         private Key(Class<?> presentationType, Class<?> modelType) {
             assert presentationType != null && modelType != null;
-            this.presentationType = presentationType;
+            this.presentationType = ReflectTools
+                    .convertPrimitiveType(presentationType);
             this.modelType = ReflectTools.convertPrimitiveType(modelType);
         }
 

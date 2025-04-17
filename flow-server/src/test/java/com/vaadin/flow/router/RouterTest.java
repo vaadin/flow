@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,6 +64,7 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -1202,6 +1204,19 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
             event.rerouteToError(NotFoundException.class);
+        }
+    }
+
+    @Route("toAccessDenied")
+    @Tag(Tag.DIV)
+    public static class RedirectToAccessDenied extends Component
+            implements BeforeEnterObserver {
+
+        private static final String MESSAGE = "You are not allowed";
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.rerouteToError(AccessDeniedException.class, MESSAGE);
         }
     }
 
@@ -2840,6 +2855,21 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void rerouteToDefaultAccessDeniedHandler_rerouteToNotFoundPreservingMessage()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(RedirectToAccessDenied.class);
+
+        int result = router.navigate(ui, new Location("toAccessDenied"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Target should have rerouted to not found target.",
+                HttpStatusCode.NOT_FOUND.getCode(), result);
+
+        Assert.assertEquals(RouteNotFoundError.class, getUIComponentClass());
+        assertExceptionComponent(RouteNotFoundError.class,
+                RedirectToAccessDenied.MESSAGE);
+    }
+
+    @Test
     public void forward_and_reroute_at_the_same_time_exception()
             throws InvalidRouteConfigurationException {
         String location = "forwardAndReroute/exception";
@@ -2905,6 +2935,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void ui_navigate_should_only_have_one_history_marking_on_loop()
             throws InvalidRouteConfigurationException {
+        ((MockDeploymentConfiguration) ui.getSession().getService()
+                .getDeploymentConfiguration()).setReactEnabled(false);
+
         setNavigationTargets(LoopByUINavigate.class);
 
         ui.navigate("loop");
@@ -3735,6 +3768,11 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File("front"));
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(new File("./"));
+        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
@@ -3762,6 +3800,11 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File("front"));
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(new File("./"));
+        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";

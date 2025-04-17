@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.spring.test;
 
+import java.util.List;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+
+import com.vaadin.flow.router.internal.ClientRoutesProvider;
 
 @SpringBootApplication
 @Configuration
@@ -29,5 +34,4 @@ public class TestServletInitializer {
     public static void main(String[] args) {
         SpringApplication.run(TestServletInitializer.class, args);
     }
-
 }

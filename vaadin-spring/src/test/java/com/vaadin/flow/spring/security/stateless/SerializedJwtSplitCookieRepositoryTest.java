@@ -3,12 +3,14 @@ package com.vaadin.flow.spring.security.stateless;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class SerializedJwtSplitCookieRepositoryTest {
@@ -142,7 +144,17 @@ public class SerializedJwtSplitCookieRepositoryTest {
     }
 
     @Test
-    public void saveSerializedJwt_resets_cookiePair() {
+    public void saveSerializedJwt_unauthenticatedRequest_doNotSet_cookiePair() {
+        serializedJwtSplitCookieRepository.saveSerializedJwt(null, request,
+                response);
+        Mockito.verify(response, Mockito.never())
+                .addCookie(ArgumentMatchers.any());
+    }
+
+    @Test
+    public void saveSerializedJwt_authenticatedRequest_resets_cookiePair() {
+        Mockito.when(request.getCookies()).thenReturn(new Cookie[] {
+                JWT_SIGNATURE_COOKIE, JWT_HEADER_AND_PAYLOAD_COOKIE });
         serializedJwtSplitCookieRepository.saveSerializedJwt(null, request,
                 response);
         checkResponseCookiePair(null, null, true, 0, CONTEXT_PATH);
@@ -159,6 +171,8 @@ public class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     public void saveSerializedJwt_resetsWithoutMaxAge_after_setExpireIn() {
+        Mockito.when(request.getCookies()).thenReturn(new Cookie[] {
+                JWT_SIGNATURE_COOKIE, JWT_HEADER_AND_PAYLOAD_COOKIE });
         serializedJwtSplitCookieRepository.setExpiresIn(CUSTOM_MAX_AGE);
         serializedJwtSplitCookieRepository.saveSerializedJwt(null, request,
                 response);

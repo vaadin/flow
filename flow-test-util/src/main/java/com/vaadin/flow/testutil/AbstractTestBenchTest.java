@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -183,6 +183,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 "script[src*='web-component/web-component-bootstrap.js']")),
                 // longer timeout to prevent failures during dev-bundle creation
                 60);
+    }
+
+    protected void waitForWebComponent(String tagName) {
+        waitForWebComponentsBootstrap();
+        waitUntil(d -> getCommandExecutor()
+                .executeScript("return await customElements.whenDefined('"
+                        + tagName + "').then(() => true)"));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -56,7 +55,21 @@ public interface AbstractConfiguration extends Serializable {
             return false;
         }
         return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
-                EndpointRequestUtil.isHillaAvailable());
+                FrontendUtils.isHillaUsed(getFrontendFolder()));
+    }
+
+    default File getFrontendFolder() {
+        String frontendFolderPath = getStringProperty(
+                FrontendUtils.PARAM_FRONTEND_DIR,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File frontend = new File(frontendFolderPath);
+        if (!frontend.isAbsolute()) {
+            frontend = new File(getProjectFolder(), frontendFolderPath);
+        }
+
+        return FrontendUtils.getLegacyFrontendFolderIfExists(getProjectFolder(),
+                frontend);
     }
 
     /**
@@ -217,9 +230,9 @@ public interface AbstractConfiguration extends Serializable {
          */
         String baseDirCandidate = System.getProperty("user.dir", ".");
         Path path = Paths.get(baseDirCandidate);
-        if (path.toFile().isDirectory()
-                && (path.resolve("pom.xml").toFile().exists()
-                        || path.resolve("build.gradle").toFile().exists())) {
+        if (path.toFile().isDirectory() && (path.resolve("pom.xml").toFile()
+                .exists() || path.resolve("build.gradle").toFile().exists()
+                || path.resolve("build.gradle.kts").toFile().exists())) {
             return path.toAbsolutePath().toFile();
         } else {
             throw new IllegalStateException(String.format(
@@ -242,8 +255,12 @@ public interface AbstractConfiguration extends Serializable {
      *         {@code src/main/resources}.
      */
     default File getJavaResourceFolder() {
-        return new File(getStringProperty(Constants.JAVA_RESOURCE_FOLDER_TOKEN,
-                "src/main/resources"));
+        File folder = new File(getStringProperty(
+                Constants.JAVA_RESOURCE_FOLDER_TOKEN, "src/main/resources"));
+        if (!folder.isAbsolute()) {
+            folder = new File(getProjectFolder(), folder.getPath());
+        }
+        return folder.getAbsoluteFile();
     }
 
     /**
@@ -255,8 +272,11 @@ public interface AbstractConfiguration extends Serializable {
      *         {@code src/main/java}.
      */
     default File getJavaSourceFolder() {
-        return new File(getStringProperty(
-                Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java"))
-                .getAbsoluteFile();
+        File folder = new File(getStringProperty(
+                Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java"));
+        if (!folder.isAbsolute()) {
+            folder = new File(getProjectFolder(), folder.getPath());
+        }
+        return folder.getAbsoluteFile();
     }
 }

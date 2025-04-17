@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class WebStorageIT extends ChromeBrowserTest {
 
     @Test
-    public void testWebstorageSetAndRemove() {
+    public void testWebStorageSetAndRemove() {
         open();
 
         WebElement input = findElement(By.id("input"));
@@ -49,7 +49,7 @@ public class WebStorageIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void testWebstorageSetAndClear() {
+    public void testWebStorageSetAndClear() {
         open();
 
         WebElement input = findElement(By.id("input"));
@@ -72,4 +72,51 @@ public class WebStorageIT extends ChromeBrowserTest {
                 WebStorageView.VALUE_NOT_SET));
     }
 
+    @Test
+    public void testWebStorageSetAndRemove_completableFuture() {
+        open();
+
+        WebElement input = findElement(By.id("input"));
+        WebElement set = findElement(By.id("setText"));
+        WebElement detect = findElement(By.id("detectCF"));
+        WebElement remove = findElement(By.id("remove"));
+
+        input.clear();
+        input.sendKeys("foobar", "\n");
+
+        set.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), "foobar"));
+
+        remove.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
+                WebStorageView.VALUE_NOT_SET));
+    }
+
+    @Test
+    public void testWebStorageSetAndClear_completableFuture() {
+        open();
+
+        WebElement input = findElement(By.id("input"));
+        WebElement set = findElement(By.id("setText"));
+        WebElement detect = findElement(By.id("detectCF"));
+        WebElement clear = findElement(By.id("clear"));
+
+        input.clear();
+        input.sendKeys("foobar", "\n");
+
+        set.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), "foobar"));
+
+        clear.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
+                WebStorageView.VALUE_NOT_SET));
+    }
 }

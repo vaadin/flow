@@ -1,10 +1,5 @@
 package com.vaadin.flow.component.internal;
 
-import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Optional;
@@ -15,12 +10,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UI.BrowserLeaveNavigationEvent;
+import com.vaadin.flow.component.UI.BrowserNavigateEvent;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
@@ -30,6 +28,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -43,10 +42,17 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class JavaScriptBootstrapUITest {
 
-    private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
+    private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
+    private static final String REACT_PUSHSTATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
 
     private MockServletServiceSessionSetup mocks;
     private UI ui;
@@ -202,13 +208,15 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_allow_navigation() {
-        ui.connectClient("/clean", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // Dirty view is allowed after clean view
-        ui.connectClient("/dirty", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
@@ -216,7 +224,8 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_navigate_when_endingSlash() {
-        ui.connectClient("/clean/", "", "", null, "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/clean/", "", "",
+                null, ""));
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
@@ -224,7 +233,8 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void getChildren_should_notReturnAnEmptyList() {
-        ui.connectClient("/clean", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(1, ui.getChildren().count());
     }
 
@@ -232,7 +242,8 @@ public class JavaScriptBootstrapUITest {
     public void addRemoveComponent_clientSideRouting_addsToBody() {
         final Element uiElement = ui.getElement();
 
-        ui.connectClient("/clean", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         // router outlet is a virtual child that is not reflected on element
         // level
         assertEquals(1, ui.getChildren().count());
@@ -263,7 +274,8 @@ public class JavaScriptBootstrapUITest {
     public void addComponent_clientSideRouterAndNavigation_componentsRemain() {
         final Element uiElement = ui.getElement();
         // trigger route via client
-        ui.connectClient("/clean", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         final RouterLink routerLink = new RouterLink();
         ui.add(routerLink);
 
@@ -280,42 +292,49 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_prevent_navigation_on_dirty() {
-        ui.connectClient("/dirty", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // clean view cannot be rendered after dirty
-        ui.connectClient("/clean", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(Tag.H1,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // an error route cannot be rendered after dirty
-        ui.connectClient("/errr", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/errr", "", "", null, ""));
         assertEquals(Tag.H1,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
     public void should_remove_content_on_leaveNavigation() {
-        ui.connectClient("/clean", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
 
-        ui.leaveNavigation("/client-view", "");
+        ui.leaveNavigation(
+                new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
 
         assertEquals(0, ui.wrapperElement.getChildCount());
     }
 
     @Test
     public void should_keep_content_on_leaveNavigation_postpone() {
-        ui.connectClient("/dirty", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
 
-        ui.leaveNavigation("/client-view", "");
+        ui.leaveNavigation(
+                new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
@@ -323,31 +342,32 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_handle_forward_to_client_side_view_on_beforeEnter() {
-        ui.connectClient("/forwardToClientSideViewOnBeforeEnter", "", "", null,
-                "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true,
+                "/forwardToClientSideViewOnBeforeEnter", "", "", null, ""));
 
         assertEquals("client-view", ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_not_handle_forward_to_client_side_view_on_beforeLeave() {
-        ui.connectClient("/forwardToClientSideViewOnBeforeLeave", "", "", null,
-                "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true,
+                "/forwardToClientSideViewOnBeforeLeave", "", "", null, ""));
 
         assertNull(ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_not_handle_forward_to_client_side_view_on_reroute() {
-        ui.connectClient("/forwardToClientSideViewOnReroute", "", "", null, "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true,
+                "/forwardToClientSideViewOnReroute", "", "", null, ""));
 
         assertNull(ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_handle_forward_to_server_side_view_on_beforeEnter_and_update_url() {
-        ui.connectClient("/forwardToServerSideViewOnBeforeEnter", "", "", null,
-                "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true,
+                "/forwardToServerSideViewOnBeforeEnter", "", "", null, ""));
 
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2,
@@ -366,7 +386,8 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_show_error_page() {
-        ui.connectClient("/err", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/err", "", "", null, ""));
         assertEquals(Tag.DIV, ui.wrapperElement.getChild(0).getTag());
         assertTrue(ui.wrapperElement.toString().contains("Available routes:"));
     }
@@ -393,12 +414,13 @@ public class JavaScriptBootstrapUITest {
 
         UIInternals internals = mockUIInternals();
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mocks.getSession();
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(internals.getSession()).thenReturn(session);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.isReactRouterEnabled()).thenReturn(false);
+        ((MockDeploymentConfiguration) session.getService()
+                .getDeploymentConfiguration()).setReactEnabled(false);
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
@@ -416,15 +438,31 @@ public class JavaScriptBootstrapUITest {
         ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
                 .forClass(Serializable[].class);
 
-        ui.navigate("clean/1");
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
 
-        assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+            menuRegistry
+                    .when(() -> MenuRegistry.hasClientRoute("clean/1", true))
+                    .thenReturn(false);
 
-        final Serializable[] execValues = execArg.getValue();
-        assertEquals(2, execValues.length);
-        assertNull(execValues[0]);
-        assertEquals("clean/1", execValues[1]);
+            ui.navigate("clean/1");
+            Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
+
+            boolean reactEnabled = ui.getSession().getConfiguration()
+                    .isReactEnabled();
+
+            final Serializable[] execValues = execArg.getValue();
+            if (reactEnabled) {
+                assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
+                assertEquals(1, execValues.length);
+                assertEquals("clean/1", execValues[0]);
+            } else {
+                assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+                assertEquals(2, execValues.length);
+                assertNull(execValues[0]);
+                assertEquals("clean/1", execValues[1]);
+            }
+        }
     }
 
     @Test
@@ -446,7 +484,8 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void server_should_not_doClientRoute_when_navigatingToServer() {
-        ui.connectClient("/clean", "", "", null, "");
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2,
                 ui.wrapperElement.getChild(0).getChild(0).getTag());
@@ -464,10 +503,16 @@ public class JavaScriptBootstrapUITest {
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
-        assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+        boolean reactEnabled = ui.getSession().getConfiguration()
+                .isReactEnabled();
 
         final Serializable[] execValues = execArg.getValue();
-        assertEquals(2, execValues.length);
+        if (reactEnabled) {
+            assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
+        } else {
+            assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+        }
+        assertEquals(3, execValues.length);
         assertNull(execValues[0]);
         assertEquals("dirty", execValues[1]);
     }
@@ -490,23 +535,27 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_restoreIndexHtmlTitle() {
-        ui.connectClient("empty", "", "app-shell-title", null, "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "empty", "",
+                "app-shell-title", null, ""));
         assertEquals("", ui.getInternals().getTitle());
-        ui.connectClient("dirty", "", "app-shell-title", null, "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "dirty", "",
+                "app-shell-title", null, ""));
         assertEquals("app-shell-title", ui.getInternals().getTitle());
     }
 
     @Test
     public void should_not_share_dynamic_app_title_for_different_UIs() {
         String dynamicTitle = UUID.randomUUID().toString();
-        ui.connectClient("clean", "", dynamicTitle, null, "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "clean", "",
+                dynamicTitle, null, ""));
         assertEquals(dynamicTitle, ui.getInternals().getTitle());
 
         String anotherDynamicTitle = UUID.randomUUID().toString();
         UI anotherUI = new UI();
         anotherUI.getInternals().setSession(mocks.getSession());
         anotherUI.doInit(null, 0, "anotherUiId");
-        anotherUI.connectClient("clean", "", anotherDynamicTitle, null, "");
+        anotherUI.browserNavigate(new BrowserNavigateEvent(anotherUI, true,
+                "clean", "", anotherDynamicTitle, null, ""));
         assertEquals(anotherDynamicTitle, anotherUI.getInternals().getTitle());
 
         ui.navigate("dirty");

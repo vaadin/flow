@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.File;
 import java.util.Arrays;
 
 import org.junit.After;
@@ -35,6 +36,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import static org.junit.Assert.assertEquals;
@@ -88,9 +90,14 @@ public class InvalidUrlTest {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
+        Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
+        Mockito.when(config.getBuildFolder()).thenReturn("build");
 
         session.lock();
         session.setConfiguration(config);
+        ((MockVaadinServletService) service).setConfiguration(config);
+        CurrentInstance.set(VaadinSession.class, session);
 
         ui.getInternals().setSession(session);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import elemental.client.Browser;
 import elemental.dom.Node;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -222,6 +223,23 @@ public class MessageHandler {
 
         if (!hasResynchronize && registry.getMessageSender()
                 .getResynchronizationState() == ResynchronizationState.WAITING_FOR_RESPONSE) {
+
+            JsonObject json = valueMap.cast();
+            if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
+                JsonArray commands = json
+                        .getArray(JsonConstants.UIDL_KEY_EXECUTE);
+                for (int i = 0; i < commands.length(); i++) {
+                    JsonArray command = commands.getArray(i);
+                    if (command.length() > 0 && "window.location.reload();"
+                            .equals(command.getString(0))) {
+                        Console.warn(
+                                "Executing forced page reload while a resync request is ongoing.");
+                        Browser.getWindow().getLocation().reload();
+                        return;
+                    }
+                }
+            }
+
             Console.warn(
                     "Ignoring message from the server as a resync request is ongoing.");
             return;
@@ -234,7 +252,7 @@ public class MessageHandler {
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
             // is triggered by forceHandleMessage)
-            Console.log("Received resync message with id " + serverId
+            Console.debug("Received resync message with id " + serverId
                     + " while waiting for " + getExpectedServerId());
             lastSeenServerSyncId = serverId - 1;
             removeOldPendingMessages();
@@ -250,7 +268,7 @@ public class MessageHandler {
                 // Some component is doing something that can't be interrupted
                 // (e.g. animation that should be smooth). Enqueue the UIDL
                 // message for later processing.
-                Console.log("Postponing UIDL handling due to lock...");
+                Console.debug("Postponing UIDL handling due to lock...");
             } else {
                 // Unexpected server id
                 if (serverId <= lastSeenServerSyncId) {
@@ -263,7 +281,7 @@ public class MessageHandler {
                 }
 
                 // We are waiting for an earlier message...
-                Console.log("Received message with server id " + serverId
+                Console.debug("Received message with server id " + serverId
                         + " but expected " + getExpectedServerId()
                         + ". Postponing handling until the missing message(s) have been received");
             }
@@ -277,10 +295,10 @@ public class MessageHandler {
         }
 
         /**
-         * Should only prepare resync after the if (locked ||
+         * Should only prepare resync after the (locked ||
          * !isNextExpectedMessage(serverId)) {...} since
          * stateTree.repareForResync() will remove the nodes, and if locked is
-         * true, it will return without handling the message, thus won't adding
+         * true, it will return without handling the message, thus won't add
          * nodes back.
          *
          * This is related to https://github.com/vaadin/flow/issues/8699 It
@@ -301,7 +319,7 @@ public class MessageHandler {
         final Object lock = new Object();
         suspendReponseHandling(lock);
 
-        Console.log("Handling message from server");
+        Console.debug("Handling message from server");
         registry.getRequestResponseTracker()
                 .fireEvent(new ResponseHandlingStartedEvent());
         // Client id must be updated before server id, as server id update can
@@ -324,7 +342,7 @@ public class MessageHandler {
         // Handle redirect
         if (valueMap.containsKey("redirect")) {
             String url = valueMap.getValueMap("redirect").getString("url");
-            Console.log("redirecting to " + url);
+            Console.debug("redirecting to " + url);
             WidgetUtil.redirect(url);
             return;
         }
@@ -368,7 +386,7 @@ public class MessageHandler {
     }
 
     private void handleDependencies(JsonObject inputJson) {
-        Console.log("Handling dependencies");
+        Console.debug("Handling dependencies");
         JsMap<LoadMode, JsonArray> dependencies = JsCollections.map();
         for (LoadMode loadMode : LoadMode.values()) {
             if (inputJson.hasKey(loadMode.name())) {
@@ -423,7 +441,7 @@ public class MessageHandler {
                                         JsonConstants.UIDL_KEY_EXECUTE))));
             }
 
-            Console.log("handleUIDLMessage: "
+            Console.debug("handleUIDLMessage: "
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
@@ -438,9 +456,14 @@ public class MessageHandler {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
                     } else if (uiState != UIState.TERMINATED) {
-                        registry.getSystemErrorHandler()
-                                .handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
+                        // Delay the session expiration handling to prevent
+                        // canceling potential ongoing page redirect/reload
+                        Scheduler.get().scheduleFixedDelay(() -> {
+                            registry.getSystemErrorHandler()
+                                    .handleSessionExpiredError(null);
+                            return false;
+                        }, 250);
                     }
                 } else if (meta.containsKey("appError")
                         && uiState != UIState.TERMINATED) {
@@ -467,7 +490,7 @@ public class MessageHandler {
                 if (fetchStart != 0) {
                     int time = (int) (Duration.currentTimeMillis()
                             - fetchStart);
-                    Console.log("First response processed " + time
+                    Console.debug("First response processed " + time
                             + " ms after fetchStart");
                 }
 
@@ -478,7 +501,7 @@ public class MessageHandler {
             }
 
         } finally {
-            Console.log(" Processing time was "
+            Console.debug(" Processing time was "
                     + String.valueOf(lastProcessingTime) + "ms");
 
             endRequestIfResponse(valueMap);
@@ -502,8 +525,8 @@ public class MessageHandler {
         if (!registry.getApplicationConfiguration().isProductionMode()) {
             try {
                 JsonObject debugJson = tree.getRootNode().getDebugJson();
-                Console.log("StateTree after applying changes:");
-                Console.log(debugJson);
+                Console.debug("StateTree after applying changes:");
+                Console.debug(debugJson);
             } catch (Exception e) {
                 Console.error("Failed to log state tree");
                 Console.error(e);
@@ -639,7 +662,7 @@ public class MessageHandler {
             forceHandleMessage.cancel();
 
             if (!pendingUIDLMessages.isEmpty()) {
-                Console.log(
+                Console.debug(
                         "No more response handling locks, handling pending requests.");
                 handlePendingMessages();
             }
@@ -695,7 +718,7 @@ public class MessageHandler {
             PendingUIDLMessage m = pendingUIDLMessages.get(i);
             int serverId = getServerId(m.json);
             if (serverId != -1 && serverId < getExpectedServerId()) {
-                Console.log("Removing old message with id " + serverId);
+                Console.debug("Removing old message with id " + serverId);
 
                 pendingUIDLMessages.remove(i);
                 i--;
@@ -790,7 +813,7 @@ public class MessageHandler {
         final double start = Profiler.getRelativeTimeMillis();
         try {
             ValueMap json = parseJSONResponse(jsonText);
-            Console.log("JSON parsing took "
+            Console.debug("JSON parsing took "
                     + Profiler.getRelativeTimeString(start) + "ms");
             return json;
         } catch (final Exception e) {

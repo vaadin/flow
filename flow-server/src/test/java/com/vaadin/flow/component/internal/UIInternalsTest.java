@@ -22,7 +22,6 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -34,8 +33,7 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -44,8 +42,8 @@ public class UIInternalsTest {
 
     @Mock
     UI ui;
-    @Mock
-    VaadinService vaadinService;
+
+    MockVaadinServletService vaadinService;
 
     UIInternals internals;
 
@@ -118,13 +116,11 @@ public class UIInternalsTest {
         Element body = new Element("body");
         Mockito.when(ui.getElement()).thenReturn(body);
 
+        vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(vaadinService.getInstantiator())
-                .thenReturn(new DefaultInstantiator(vaadinService));
+        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class));
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
     }
@@ -521,11 +517,39 @@ public class UIInternalsTest {
                 internals.isDirty());
     }
 
+    @Test
+    public void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
+        internals.setTitle("new title");
+        Assert.assertEquals("new title", internals.getTitle());
+
+        Assert.assertEquals("one pending JavaScript invocation should exist", 1,
+                internals.getPendingJavaScriptInvocations().count());
+
+        var pendingJavaScriptInvocation = internals
+                .getPendingJavaScriptInvocations().findFirst().orElse(null);
+        Assert.assertNotNull("pendingJavaScriptInvocation should not be null",
+                pendingJavaScriptInvocation);
+        Assert.assertEquals("new title", pendingJavaScriptInvocation
+                .getInvocation().getParameters().get(0));
+        Assert.assertTrue("document.title should be set via JavaScript",
+                pendingJavaScriptInvocation.getInvocation().getExpression()
+                        .contains("document.title = $0"));
+        Assert.assertTrue(
+                "window.Vaadin.documentTitleSignal.value should be set conditionally via JavaScript",
+                pendingJavaScriptInvocation.getInvocation().getExpression()
+                        .contains(
+                                """
+                                            if(window?.Vaadin?.documentTitleSignal) {
+                                                window.Vaadin.documentTitleSignal.value = $0;
+                                            }
+                                        """
+                                        .stripIndent()));
+    }
+
     private PushConfiguration setUpInitialPush() {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(config);
+        vaadinService.setConfiguration(config);
 
         PushConfiguration pushConfig = Mockito.mock(PushConfiguration.class);
         Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfig);

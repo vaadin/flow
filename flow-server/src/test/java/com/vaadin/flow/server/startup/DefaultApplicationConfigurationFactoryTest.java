@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,7 +55,7 @@ public class DefaultApplicationConfigurationFactoryTest {
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        String content = "{ 'externalStatsFile':true }";
+        String content = "{ \"externalStatsFile\":true }";
         mockClassPathTokenFile(resourceProvider, content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -73,7 +73,7 @@ public class DefaultApplicationConfigurationFactoryTest {
     @Test
     public void create_tokenFileIsSetViaContext_externalStatsFileIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
-        String content = "{ 'externalStatsFile':true }";
+        String content = "{ \"externalStatsFile\":true }";
         VaadinContext context = mockTokenFileViaContextParam(content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -91,7 +91,7 @@ public class DefaultApplicationConfigurationFactoryTest {
     @Test
     public void create_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
-        String content = "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}";
+        String content = "{ \"externalStatsUrl\": \"http://my.server/static/stats.json\"}";
         VaadinContext context = mockTokenFileViaContextParam(content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -117,7 +117,7 @@ public class DefaultApplicationConfigurationFactoryTest {
                 context);
 
         mockClassPathTokenFile(resourceProvider,
-                "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}");
+                "{ \"externalStatsUrl\": \"http://my.server/static/stats.json\"}");
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
         ApplicationConfiguration configuration = factory.create(context);
@@ -154,6 +154,28 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertEquals("foo", propertyNames.get(0));
         Assert.assertEquals("bar",
                 configuration.getStringProperty("foo", null));
+    }
+
+    @Test
+    public void create_tokenFileWithPremiumFlag_premiumFlagIsPropagatedToDeploymentConfiguration()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        String content = "{ \"" + Constants.PREMIUM_FEATURES + "\": true }";
+        mockClassPathTokenFile(resourceProvider, content);
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertTrue(propertyNames.contains(Constants.PREMIUM_FEATURES));
+        Assert.assertTrue(configuration
+                .getBooleanProperty(Constants.PREMIUM_FEATURES, false));
     }
 
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,

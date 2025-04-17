@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import com.vaadin.flow.server.Constants;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -137,6 +138,47 @@ public class HasSizeTest {
     }
 
     @Test
+    public void setSizeFull_addsDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setSizeFull();
+
+        Assert.assertTrue(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertTrue(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+    }
+
+    @Test
+    public void setSizeFull_setSize_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setSizeFull();
+
+        component.setWidth("10px");
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertTrue(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+
+        component.setHeight("10px");
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+    }
+
+    @Test
+    public void setSizeFull_setSizeUndefined_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setSizeFull();
+        component.setSizeUndefined();
+
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+    }
+
+    @Test
     public void setWidthFull() {
         HasSizeComponent component = new HasSizeComponent();
         component.setWidthFull();
@@ -145,11 +187,57 @@ public class HasSizeTest {
     }
 
     @Test
+    public void setWidthFull_addsDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setWidthFull();
+
+        Assert.assertTrue(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+    }
+
+    @Test
+    public void setWidthFull_setWidth_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setWidthFull();
+        component.setWidth("10px");
+
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+    }
+
+    @Test
     public void setHeightFull() {
         HasSizeComponent component = new HasSizeComponent();
         component.setHeightFull();
 
         Assert.assertEquals("100%", component.getHeight());
+    }
+
+    @Test
+    public void setHeightFull_addsDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setHeightFull();
+
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertTrue(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+    }
+
+    @Test
+    public void setHeightFull_setHeight_removesDataAttribute() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setHeightFull();
+        component.setHeight("10px");
+
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
+        Assert.assertFalse(component.getElement()
+                .hasAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
     }
 
     @Test

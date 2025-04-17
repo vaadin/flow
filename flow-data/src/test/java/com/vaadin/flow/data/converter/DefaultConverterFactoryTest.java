@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -116,24 +116,26 @@ public class DefaultConverterFactoryTest {
 
     private Class<?> toPrimitiveTypeIfExist(Class<?> type) {
         if (!type.isPrimitive()) {
-            if (type.equals(Boolean.class)) {
-                type = Boolean.TYPE;
-            } else if (type.equals(Integer.class)) {
-                type = Integer.TYPE;
-            } else if (type.equals(Float.class)) {
-                type = Float.TYPE;
-            } else if (type.equals(Double.class)) {
-                type = Double.TYPE;
-            } else if (type.equals(Byte.class)) {
-                type = Byte.TYPE;
-            } else if (type.equals(Character.class)) {
-                type = Character.TYPE;
-            } else if (type.equals(Short.class)) {
-                type = Short.TYPE;
-            } else if (type.equals(Long.class)) {
-                type = Long.TYPE;
-            }
+            return type;
         }
+        if (type.equals(Boolean.class)) {
+            type = Boolean.TYPE;
+        } else if (type.equals(Integer.class)) {
+            type = Integer.TYPE;
+        } else if (type.equals(Float.class)) {
+            type = Float.TYPE;
+        } else if (type.equals(Double.class)) {
+            type = Double.TYPE;
+        } else if (type.equals(Byte.class)) {
+            type = Byte.TYPE;
+        } else if (type.equals(Character.class)) {
+            type = Character.TYPE;
+        } else if (type.equals(Short.class)) {
+            type = Short.TYPE;
+        } else if (type.equals(Long.class)) {
+            type = Long.TYPE;
+        }
+
         return type;
     }
 

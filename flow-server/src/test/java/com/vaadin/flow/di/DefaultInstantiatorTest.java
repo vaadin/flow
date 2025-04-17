@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,10 @@ package com.vaadin.flow.di;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.SyntheticState;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -73,6 +77,43 @@ public class DefaultInstantiatorTest {
 
         TestComponent component = instantiator.getOrCreate(TestComponent.class);
         Assert.assertNotNull(component);
+    }
+
+    @Test
+    public void getApplicationClass_regularClass_getsSameClass() {
+        VaadinService service = Mockito.mock(VaadinService.class);
+        mockLookup(service);
+
+        DefaultInstantiator instantiator = new DefaultInstantiator(service);
+
+        TestComponent instance = instantiator.getOrCreate(TestComponent.class);
+        Assert.assertSame(TestComponent.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(TestComponent.class,
+                instantiator.getApplicationClass(instance.getClass()));
+    }
+
+    @Test
+    public void getApplicationClass_syntheticClass_getsApplicationClass()
+            throws Exception {
+        VaadinService service = Mockito.mock(VaadinService.class);
+        mockLookup(service);
+        DefaultInstantiator instantiator = new DefaultInstantiator(service);
+
+        Class<? extends TestComponent> syntheticClass = new ByteBuddy()
+                .subclass(TestComponent.class)
+                .modifiers(Visibility.PUBLIC, SyntheticState.SYNTHETIC).make()
+                .load(getClass().getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
+        TestComponent instance = syntheticClass.getDeclaredConstructor()
+                .newInstance();
+
+        Assert.assertNotSame(TestComponent.class, instance.getClass());
+        Assert.assertSame(TestComponent.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(TestComponent.class,
+                instantiator.getApplicationClass(instance.getClass()));
     }
 
     private Lookup mockLookup(VaadinService service) {

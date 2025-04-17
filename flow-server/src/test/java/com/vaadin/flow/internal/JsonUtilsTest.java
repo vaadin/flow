@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -136,23 +135,10 @@ public class JsonUtilsTest {
         Assert.assertEquals(0, a.length());
     }
 
-    public void createObjectStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.objectStream(null));
-    }
-
-    public void createNumberStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.numberStream(null));
-    }
-
-    public void createStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.stream(null));
-    }
-
     @Test
     public void testStream() {
         JsonArray array = createTestArray1();
-        List<JsonValue> list = JsonUtils.stream(array)
-                .collect(Collectors.toList());
+        List<JsonValue> list = JsonUtils.stream(array).toList();
 
         Assert.assertEquals(2, list.size());
         Assert.assertEquals("foo", list.get(0).asString());
@@ -165,8 +151,7 @@ public class JsonUtilsTest {
         JsonArray array = Stream.of(Json.createObject(), createTestObject1(),
                 createTestObject2()).collect(JsonUtils.asArray());
 
-        List<JsonObject> objects = JsonUtils.objectStream(array)
-                .collect(Collectors.toList());
+        List<JsonObject> objects = JsonUtils.objectStream(array).toList();
 
         Assert.assertEquals(3, objects.size());
         Assert.assertTrue(
@@ -331,6 +316,7 @@ public class JsonUtilsTest {
             childBeanList.add(secondChild);
         }
 
+        // these getters are needed for bean serialization:
         public Map<String, Integer> getIntegerMap() {
             return integerMap;
         }

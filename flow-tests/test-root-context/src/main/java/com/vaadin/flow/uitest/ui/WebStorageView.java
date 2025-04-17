@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,11 +32,12 @@ public class WebStorageView extends Div {
         value.setId("input");
         NativeButton setData = new NativeButton();
         NativeButton detect = new NativeButton();
+        NativeButton detectCF = new NativeButton();
         NativeButton remove = new NativeButton();
         NativeButton clear = new NativeButton();
         Div msg = new Div();
         msg.setId("msg");
-        add(value, setData, detect, remove, clear, msg);
+        add(value, setData, detect, detectCF, remove, clear, msg);
 
         value.setValue(LocalDateTime.now().toString());
 
@@ -50,6 +51,18 @@ public class WebStorageView extends Div {
         detect.setId("detect");
         detect.addClickListener(e -> {
             WebStorage.getItem("test", v -> {
+                if (v == null) {
+                    msg.setText(VALUE_NOT_SET);
+                } else {
+                    msg.setText(v);
+                }
+            });
+        });
+
+        detectCF.setText("Detect CompletableFuture");
+        detectCF.setId("detectCF");
+        detectCF.addClickListener(e -> {
+            WebStorage.getItem("test").thenAccept(v -> {
                 if (v == null) {
                     msg.setText(VALUE_NOT_SET);
                 } else {

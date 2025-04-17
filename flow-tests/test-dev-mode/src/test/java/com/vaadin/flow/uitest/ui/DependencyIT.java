@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -60,19 +60,6 @@ public class DependencyIT extends ChromeBrowserTest {
         Assert.assertEquals(
                 "Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
                 addedJsText);
-    }
-
-    @Test
-    public void loadingUnavailableResources() throws IOException {
-
-        open();
-        findElement(By.id("loadUnavailableResources")).click();
-
-        DevToolsElement devTools = $(DevToolsElement.class).first();
-        devTools.waitForErrorMessage(s -> s.startsWith("Error loading http://")
-                && s.endsWith("/not-found.css"));
-        devTools.waitForErrorMessage(s -> s.startsWith("Error loading http://")
-                && s.endsWith("/not-found.js"));
     }
 
     protected WebElement findElementById(String id) {

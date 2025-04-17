@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.spring.instantiator;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +22,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import org.atmosphere.cpr.AtmosphereFramework;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,10 +34,12 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -53,6 +56,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
@@ -64,9 +68,20 @@ public class SpringInstantiatorTest {
     @Autowired
     private ApplicationContext context;
 
+    // NOTE: some test expect configuration to have proxyBeanMethods = true
     @Configuration
     @ComponentScan
     public static class TestConfiguration {
+
+        // Expose at least one bean definition so that the configuration class
+        // get proxied
+        @Bean
+        Dummy dummy() {
+            return new Dummy();
+        }
+
+        static class Dummy {
+        }
 
     }
 
@@ -88,6 +103,17 @@ public class SpringInstantiatorTest {
         public void serviceInit(ServiceInitEvent event) {
         }
 
+    }
+
+    @Component
+    public static class ServiceInitListenerWithSpringEvent {
+
+        boolean called;
+
+        @EventListener
+        public void init(ServiceInitEvent event) {
+            called = true;
+        }
     }
 
     @Component
@@ -126,6 +152,15 @@ public class SpringInstantiatorTest {
 
         Assert.assertTrue(set.contains(TestVaadinServiceInitListener.class));
         Assert.assertTrue(set.contains(JavaSPIVaadinServiceInitListener.class));
+    }
+
+    @Test
+    public void getServiceInitListeners_springEventListener()
+            throws ServletException {
+        getInstantiator(context);
+
+        Assert.assertTrue(context
+                .getBean(ServiceInitListenerWithSpringEvent.class).called);
     }
 
     @Test
@@ -182,6 +217,7 @@ public class SpringInstantiatorTest {
                 return super.createDeploymentConfiguration(initParameters);
             }
         };
+        String servletName = SpringServlet.class.getSimpleName();
 
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
@@ -213,12 +249,19 @@ public class SpringInstantiatorTest {
                 .thenReturn(lookup);
 
         Mockito.when(config.getServletContext()).thenReturn(servletContext);
-
+        Mockito.when(config.getServletName()).thenReturn(servletName);
         Mockito.when(config.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getServerInfo()).thenReturn("MockServer");
+        // Prevent Atmosphere initialization by providing a mock framework
+        // instance. Push is not required by calling tests, and initialization
+        // would anyway fail because of mocking Servlet environment
+        Mockito.when(servletContext.getAttribute(
+                JSR356WebsocketInitializer.getAttributeName(servletName)))
+                .thenReturn(Mockito.mock(AtmosphereFramework.class));
         servlet.init(config);
         return servlet.getService();
     }
@@ -300,4 +343,39 @@ public class SpringInstantiatorTest {
 
         Assert.assertEquals("string", bean);
     }
+
+    @Test
+    public void getApplicationClass_regularClass_getsSameClass()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+        RouteTarget1 instance = instantiator.getOrCreate(RouteTarget1.class);
+        Assert.assertSame(RouteTarget1.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(RouteTarget1.class,
+                instantiator.getApplicationClass(instance.getClass()));
+    }
+
+    @Test
+    public void getApplicationClass_scopedBean_getsApplicationClass()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+        RouteTarget2 instance = context.getBean(RouteTarget2.class);
+        Assert.assertSame(RouteTarget2.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(RouteTarget2.class,
+                instantiator.getApplicationClass(instance.getClass()));
+    }
+
+    @Test
+    public void getApplicationClass_proxiedBean_getsApplicationClass()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+        TestConfiguration instance = context.getBean(TestConfiguration.class);
+        Assert.assertNotSame(TestConfiguration.class, instance.getClass());
+        Assert.assertSame(TestConfiguration.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(TestConfiguration.class,
+                instantiator.getApplicationClass(instance.getClass()));
+    }
+
 }

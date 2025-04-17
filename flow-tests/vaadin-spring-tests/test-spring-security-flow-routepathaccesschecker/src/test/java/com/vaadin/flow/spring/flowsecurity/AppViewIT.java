@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.WebDriver;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
@@ -220,7 +222,8 @@ public class AppViewIT extends AbstractIT {
                 .getResourceAsStream("image.png");
         IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
         tmpFile.deleteOnExit();
-        upload.upload(tmpFile);
+        upload.upload(tmpFile, 0);
+        waitForUploads(upload, 60);
 
         TestBenchElement text = $("p").id("uploadText");
         TestBenchElement img = $("img").id("uploadImage");
@@ -316,6 +319,41 @@ public class AppViewIT extends AbstractIT {
         assertNotFoundView("admin");
     }
 
+    @Test
+    public void client_menu_routes_correct_for_anonymous() {
+        navigateToClientMenuList();
+        assertMenuListContains("PublicView");
+    }
+
+    @Test
+    public void client_menu_routes_correct_for_user() {
+        open(LOGIN_PATH);
+        loginUser();
+        navigateToClientMenuList();
+        assertMenuListContains("PublicView, PrivateView");
+    }
+
+    @Test
+    public void client_menu_routes_correct_for_admin() {
+        open(LOGIN_PATH);
+        loginAdmin();
+        navigateToClientMenuList();
+        assertMenuListContains("PublicView, PrivateView, AdminView");
+    }
+
+    private void assertMenuListContains(String expected) {
+        TestBenchElement menuList = waitUntil(driver -> $("*").id("menu-list"));
+        String menuListText = menuList.getText();
+        Assert.assertTrue(
+                "Expected " + expected + " but actual is " + menuListText,
+                menuListText.contains(expected));
+    }
+
+    private void navigateToClientMenuList() {
+        open("menu-list");
+        assertPathShown("menu-list");
+    }
+
     private void navigateTo(String path) {
         navigateTo(path, true);
     }
@@ -363,6 +401,27 @@ public class AppViewIT extends AbstractIT {
             }
             return new MenuItem(href, text, available);
         }).collect(Collectors.toList());
+    }
+
+    // Workaround for https://github.com/vaadin/flow-components/issues/3646
+    // The issue causes the upload test to be flaky
+    private void waitForUploads(UploadElement element, int maxSeconds) {
+        WebDriver.Timeouts timeouts = getDriver().manage().timeouts();
+        timeouts.scriptTimeout(Duration.ofSeconds(maxSeconds));
+
+        String script = """
+                var callback = arguments[arguments.length - 1];
+                var upload = arguments[0];
+                let intervalId;
+                intervalId = window.setInterval(function() {
+                  var inProgress = upload.files.filter(function(file) { return file.uploading;}).length >0;
+                  if (!inProgress) {
+                    window.clearInterval(intervalId);
+                    callback();
+                  }
+                }, 500);
+                """;
+        getCommandExecutor().getDriver().executeAsyncScript(script, element);
     }
 
 }

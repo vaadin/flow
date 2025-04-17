@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.LoggerFactory;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
 
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
@@ -32,17 +33,15 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
  */
 class VersionsJsonFilter {
 
-    private final JsonObject userManagedDependencies;
-    private final JsonObject vaadinVersions;
+    private final ObjectNode userManagedDependencies;
 
     private final String dependenciesKey;
 
     private static final String OLDER_VERSION_WARNING = "Using user (package.json) pinned version '{}' of '{}' which is older than the current platform version '{}'";
 
-    VersionsJsonFilter(JsonObject packageJson, String dependenciesKey) {
+    VersionsJsonFilter(ObjectNode packageJson, String dependenciesKey) {
         this.dependenciesKey = dependenciesKey;
         userManagedDependencies = collectUserManagedDependencies(packageJson);
-        vaadinVersions = collectFrameworkVersions(packageJson);
     }
 
     /**
@@ -55,9 +54,9 @@ class VersionsJsonFilter {
      *            origin of the version (like a file), used in error message
      * @return filtered versions json
      */
-    JsonObject getFilteredVersions(JsonObject versions, String versionOrigin) {
-        JsonObject json = Json.createObject();
-        for (String key : versions.keys()) {
+    ObjectNode getFilteredVersions(ObjectNode versions, String versionOrigin) {
+        ObjectNode json = JacksonUtils.createObjectNode();
+        for (String key : JacksonUtils.getKeys(versions)) {
             final FrontendVersion version = FrontendUtils
                     .getPackageVersionFromJson(versions, key, versionOrigin);
             if (version == null) {
@@ -75,11 +74,11 @@ class VersionsJsonFilter {
                 if (version.isNewerThan(userManagedVersion)) {
                     LoggerFactory.getLogger("Versions").warn(
                             OLDER_VERSION_WARNING,
-                            userManagedDependencies.getString(key), key,
-                            versions.getString(key));
+                            userManagedDependencies.get(key).textValue(), key,
+                            versions.get(key).textValue());
                 }
             }
-            json.put(key, versions.getString(key));
+            json.put(key, versions.get(key).textValue());
         }
         return json;
     }
@@ -92,16 +91,16 @@ class VersionsJsonFilter {
      *            package.json Json object
      * @return collection of user managed dependencies
      */
-    private JsonObject collectUserManagedDependencies(JsonObject packageJson) {
-        JsonObject json = Json.createObject();
-        JsonObject vaadinDep = collectFrameworkVersions(packageJson);
+    private ObjectNode collectUserManagedDependencies(ObjectNode packageJson) {
+        ObjectNode json = JacksonUtils.createObjectNode();
+        JsonNode vaadinDep = collectFrameworkVersions(packageJson);
 
-        if (packageJson.hasKey(dependenciesKey)) {
-            JsonObject dependencies = packageJson.getObject(dependenciesKey);
+        if (packageJson.has(dependenciesKey)) {
+            JsonNode dependencies = packageJson.get(dependenciesKey);
 
-            for (String key : dependencies.keys()) {
+            for (String key : JacksonUtils.getKeys(dependencies)) {
                 if (isUserChanged(key, vaadinDep, dependencies)) {
-                    json.put(key, dependencies.getString(key));
+                    json.put(key, dependencies.get(key).textValue());
                 }
             }
         }
@@ -109,21 +108,22 @@ class VersionsJsonFilter {
         return json;
     }
 
-    private boolean isUserChanged(String key, JsonObject vaadinDep,
-            JsonObject dependencies) {
-        if (vaadinDep.hasKey(key)) {
+    private boolean isUserChanged(String key, JsonNode vaadinDep,
+            JsonNode dependencies) {
+        if (vaadinDep.has(key)) {
             try {
                 FrontendVersion vaadin = new FrontendVersion(key,
-                        vaadinDep.getString(key));
+                        vaadinDep.get(key).textValue());
                 FrontendVersion dep = new FrontendVersion(key,
-                        dependencies.getString(key));
+                        dependencies.get(key).textValue());
                 return !vaadin.isEqualTo(dep);
             } catch (NumberFormatException nfe) {
                 LoggerFactory.getLogger("VersionsFilter").debug(
                         "Received version with non numbers {} and {}",
-                        vaadinDep.getString(key), dependencies.getString(key));
-                return !vaadinDep.getString(key)
-                        .equals(dependencies.getString(key));
+                        vaadinDep.get(key).textValue(),
+                        dependencies.get(key).textValue());
+                return !vaadinDep.get(key).textValue()
+                        .equals(dependencies.get(key).textValue());
             }
         }
         // User changed if not in vaadin dependency
@@ -137,12 +137,11 @@ class VersionsJsonFilter {
      *            main package.json
      * @return Vaadin dependencies or empty object
      */
-    private JsonObject collectFrameworkVersions(JsonObject packageJson) {
-        if (packageJson.hasKey(VAADIN_DEP_KEY) && packageJson
-                .getObject(VAADIN_DEP_KEY).hasKey(dependenciesKey)) {
-            return packageJson.getObject(VAADIN_DEP_KEY)
-                    .getObject(dependenciesKey);
+    private JsonNode collectFrameworkVersions(ObjectNode packageJson) {
+        if (packageJson.has(VAADIN_DEP_KEY)
+                && packageJson.get(VAADIN_DEP_KEY).has(dependenciesKey)) {
+            return packageJson.get(VAADIN_DEP_KEY).get(dependenciesKey);
         }
-        return Json.createObject();
+        return JacksonUtils.createObjectNode();
     }
 }

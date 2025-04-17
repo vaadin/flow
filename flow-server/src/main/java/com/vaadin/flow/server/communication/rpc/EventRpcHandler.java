@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,12 +17,12 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -64,4 +64,9 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
         return Optional.empty();
     }
 
+    @Override
+    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+        // handled separately in ElementListenerMap
+        return true;
+    }
 }

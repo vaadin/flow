@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,6 +14,10 @@
  * the License.
  */
 package com.vaadin.flow.internal;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import elemental.json.JsonValue;
 
@@ -46,12 +50,16 @@ public class JavaScriptSemantics {
      *         JavaScript semantics, otherwise <code>false</code>
      */
     public static boolean isTrueish(Object value) {
-        if (value == null) {
+        if (value == null || value instanceof NullNode) {
             return false;
         } else if (value instanceof Boolean) {
             return ((Boolean) value).booleanValue();
         } else if (value instanceof JsonValue) {
             return ((JsonValue) value).asBoolean();
+        } else if (value instanceof ObjectNode) {
+            return ((JsonNode) value).asBoolean(true);
+        } else if (value instanceof JsonNode) {
+            return ((JsonNode) value).asBoolean();
         } else if (value instanceof Number) {
             double number = ((Number) value).doubleValue();
             // Special comparison to keep sonarqube happy

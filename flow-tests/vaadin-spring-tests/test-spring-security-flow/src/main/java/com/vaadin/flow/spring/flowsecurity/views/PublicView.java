@@ -1,11 +1,15 @@
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -13,6 +17,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @Route(value = "", layout = MainView.class)
 @PageTitle("Public View")
 @AnonymousAllowed
+@Menu(order = 1)
 public class PublicView extends FlexLayout {
 
     public static final String BACKGROUND_NAVIGATION_ID = "backgroundNavi";
@@ -34,7 +39,7 @@ public class PublicView extends FlexLayout {
         Button backgroundNavigation = new Button(
                 "Navigate to admin view in 1 second", e -> {
                     UI ui = e.getSource().getUI().get();
-                    new Thread(() -> {
+                    Runnable navigateToAdmin = () -> {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e1) {
@@ -42,8 +47,11 @@ public class PublicView extends FlexLayout {
                         ui.access(() -> {
                             ui.navigate(AdminView.class);
                         });
-
-                    }).start();
+                    };
+                    Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
+                            navigateToAdmin,
+                            SecurityContextHolder.getContext());
+                    new Thread(wrappedRunnable).start();
                 });
         backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);
         add(backgroundNavigation);

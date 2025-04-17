@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,7 +36,11 @@ public final class StringUtil {
      * Comment parser state enumeration.
      */
     private enum State {
-        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING, IN_STRING_APOSTROPHE
+        NORMAL,
+        IN_LINE_COMMENT,
+        IN_BLOCK_COMMENT,
+        IN_STRING,
+        IN_STRING_APOSTROPHE
     }
 
     /**
@@ -195,11 +199,28 @@ public final class StringUtil {
      *         returns empty String.
      */
     public static String getHash(String content, Charset charset) {
+        return getHash(content, null, charset);
+    }
+
+    /**
+     * Generate hash for content using a given salt bytes and a given charset
+     * for string byte encoding.
+     *
+     * @param content
+     *            content to hash
+     * @param salt
+     *            salt to be added into hash calculation
+     * @param charset
+     *            charset for encoding
+     * @return hash String for given content. In case content is null or empty *
+     *         returns empty String.
+     */
+    public static String getHash(String content, byte[] salt, Charset charset) {
         if (content == null || content.isEmpty()) {
             return "";
         }
 
-        return bytesToHex(MessageDigestUtil.sha256(content, charset));
+        return bytesToHex(MessageDigestUtil.sha256(content, salt, charset));
     }
 
     private static String bytesToHex(byte[] hash) {

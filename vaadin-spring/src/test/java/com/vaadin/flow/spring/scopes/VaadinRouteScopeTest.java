@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
@@ -37,7 +38,6 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
@@ -58,7 +58,10 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
     @Override
     protected VaadinRouteScope getScope() {
-        return new VaadinRouteScope();
+        VaadinRouteScope scope = new VaadinRouteScope();
+        scope.postProcessBeanFactory(
+                Mockito.mock(ConfigurableListableBeanFactory.class));
+        return scope;
     }
 
     @Test
@@ -89,13 +92,14 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         mockServletContext(ui);
 
-        SpringVaadinSession springSession = (SpringVaadinSession) VaadinSession
-                .getCurrent();
+        VaadinSession session = VaadinSession.getCurrent();
+        VaadinService service = session.getService();
 
-        doCallRealMethod().when(springSession)
-                .addDestroyListener(Mockito.any());
-
-        doCallRealMethod().when(springSession).fireSessionDestroy();
+        doCallRealMethod().when(session)
+                .addSessionDestroyListener(Mockito.any());
+        doCallRealMethod().when(session).getLockInstance();
+        doCallRealMethod().when(session).getPendingAccessQueue();
+        doCallRealMethod().when(session).access(Mockito.any());
 
         VaadinRouteScope scope = initScope(ui);
 
@@ -108,12 +112,13 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
                 + "$RouteStoreWrapper";
 
         // self control - the attribute name is used by the implementation
-        Assert.assertNotNull(springSession.getAttribute(attribute));
+        Assert.assertNotNull(session.getAttribute(attribute));
 
-        springSession.fireSessionDestroy();
+        service.fireSessionDestroy(session);
+        service.runPendingAccessTasks(session);
 
         Assert.assertEquals(1, count.get());
-        Assert.assertNull(springSession.getAttribute(attribute));
+        Assert.assertNull(session.getAttribute(attribute));
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();
@@ -147,7 +152,8 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
 
-        scope.uiInit(new UIInitEvent(ui, ui.getSession().getService()));
+        new VaadinRouteScope.NavigationListenerRegistrar()
+                .uiInit(new UIInitEvent(ui, ui.getSession().getService()));
 
         navigateTo(ui, new NavigationTarget());
 
@@ -194,7 +200,8 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
 
-        scope.uiInit(new UIInitEvent(ui, ui.getSession().getService()));
+        new VaadinRouteScope.NavigationListenerRegistrar()
+                .uiInit(new UIInitEvent(ui, ui.getSession().getService()));
 
         navigateTo(ui, new NavigationTarget());
 
@@ -242,7 +249,8 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
         VaadinRouteScope scope = getScope();
         scope.getBeanStore();
 
-        scope.uiInit(new UIInitEvent(ui, ui.getSession().getService()));
+        new VaadinRouteScope.NavigationListenerRegistrar()
+                .uiInit(new UIInitEvent(ui, ui.getSession().getService()));
         return scope;
     }
 

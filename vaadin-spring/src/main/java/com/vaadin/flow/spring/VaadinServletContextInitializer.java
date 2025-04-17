@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,7 +56,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -68,23 +68,28 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
+import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
+import com.vaadin.flow.spring.io.FilterableResourceResolver;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -130,7 +135,9 @@ public class VaadinServletContextInitializer
             "com/vaadin/external/gwt", "javassist/", "io/methvin",
             "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
             "com/nimbusds", "elemental/util", "elemental/json",
-            "org/reflections", "org/aopalliance", "org/objectweb")
+            "org/reflections", "org/aopalliance", "org/objectweb",
+
+            "com/vaadin/hilla", "com/vaadin/copilot")
             .collect(Collectors.toList());
 
     /**
@@ -142,7 +149,7 @@ public class VaadinServletContextInitializer
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
                     "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "com.vaadin.hilla")
+                    "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
             .collect(Collectors.toList());
 
     /**
@@ -320,7 +327,7 @@ public class VaadinServletContextInitializer
                 getLogger().debug("There are no discovered routes yet. "
                         + "Start to collect all routes from the classpath...");
                 try {
-                    Collection<String> routePackages = null;
+                    Collection<String> routePackages;
                     if (devModeCachingEnabled
                             && ReloadCache.routePackages != null) {
                         routePackages = ReloadCache.routePackages;
@@ -349,6 +356,33 @@ public class VaadinServletContextInitializer
                             "There are {} navigation targets after filtering route classes: {}",
                             navigationTargets.size(), navigationTargets);
 
+                    Collection<String> layoutPackages;
+                    if (devModeCachingEnabled
+                            && ReloadCache.layoutPackages != null) {
+                        layoutPackages = ReloadCache.layoutPackages;
+                    } else {
+                        layoutPackages = getDefaultPackages();
+                    }
+
+                    Set<Class<?>> layoutClasses = findByAnnotation(
+                            layoutPackages, Layout.class)
+                            .collect(Collectors.toSet());
+
+                    if (devModeCachingEnabled) {
+                        ReloadCache.layoutPackages = layoutClasses.stream()
+                                .map(Class::getPackageName)
+                                .collect(Collectors.toSet());
+                    }
+
+                    RouteRegistryInitializer
+                            .validateLayoutAnnotations(layoutClasses);
+
+                    // Collect all layouts to use with Hilla as a main layout
+                    layoutClasses.stream().filter(
+                            clazz -> RouterLayout.class.isAssignableFrom(clazz))
+                            .forEach(clazz -> registry.setLayout(
+                                    (Class<? extends RouterLayout>) clazz));
+
                     RouteConfiguration routeConfiguration = RouteConfiguration
                             .forRegistry(registry);
                     routeConfiguration
@@ -356,7 +390,11 @@ public class VaadinServletContextInitializer
                                     navigationTargets));
                     registry.setPwaConfigurationClass(validatePwaClass(
                             vaadinServletContext, routeClasses.stream()));
-                } catch (InvalidRouteConfigurationException e) {
+
+                } catch (InvalidRouteConfigurationException
+                        | InvalidRouteLayoutConfigurationException e) {
+                    getLogger().error("Route configuration error found:");
+                    getLogger().error(e.getMessage());
                     throw new IllegalStateException(e);
                 }
             } else {
@@ -521,9 +559,8 @@ public class VaadinServletContextInitializer
             collectHandleTypes(devModeHandlerManager.getHandlesTypes(),
                     annotations, superTypes);
 
-            Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
-                    customLoader, annotations, superTypes)
-                    .collect(Collectors.toSet());
+            Set<Class<?>> classes = findClassesForDevMode(basePackages,
+                    annotations, superTypes);
 
             if (devModeCachingEnabled) {
                 classes.addAll(ReloadCache.jarClasses);
@@ -590,6 +627,13 @@ public class VaadinServletContextInitializer
 
     }
 
+    protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
+            List<Class<? extends Annotation>> annotations,
+            List<Class<?>> superTypes) {
+        return findByAnnotationOrSuperType(basePackages, customLoader,
+                annotations, superTypes).collect(Collectors.toSet());
+    }
+
     private class WebComponentServletContextListener
             implements FailFastServletContextListener {
 
@@ -637,20 +681,11 @@ public class VaadinServletContextInitializer
                 initializeDevModeClassCache();
             }
 
-            Set<Class<?>> classes = null;
-            if (devModeCachingEnabled) {
-                classes = ReloadCache.appShellClasses;
-            }
-            if (classes == null) {
-                classes = findByAnnotationOrSuperType(
-                        getVerifiableAnnotationPackages(), customLoader,
-                        VaadinAppShellInitializer.getValidAnnotations(),
-                        VaadinAppShellInitializer.getValidSupers())
-                        .collect(Collectors.toSet());
-                if (devModeCachingEnabled) {
-                    ReloadCache.appShellClasses = classes;
-                }
-            }
+            Set<Class<?>> classes = findByAnnotationOrSuperType(
+                    getVerifiableAnnotationPackages(), customLoader,
+                    VaadinAppShellInitializer.getValidAnnotations(),
+                    VaadinAppShellInitializer.getValidSupers())
+                    .collect(Collectors.toSet());
 
             VaadinAppShellInitializer.init(classes,
                     new VaadinServletContext(event.getServletContext()));
@@ -707,7 +742,7 @@ public class VaadinServletContextInitializer
             customScanOnly = Arrays.stream(onlyScanProperty.split(","))
                     .map(onlyPackage -> onlyPackage.replace('/', '.').trim())
                     .collect(Collectors.toList());
-            customLoader = appContext;
+            customLoader = new CustomResourceLoader(appContext);
         }
 
         if (!customScanOnly.isEmpty() && !neverScan.isEmpty()) {
@@ -744,19 +779,14 @@ public class VaadinServletContextInitializer
                     ((ConfigurableApplicationContext) appContext)
                             .addApplicationListener(new ReloadListener(e -> {
                                 // Updates cached white list and route packages
-                                Set<String> addedPackages = new HashSet<>();
-                                e.getAddedClasses().forEach(c -> {
-                                    if (c.contains("/")) {
-                                        c = c.replaceAll("/", ".");
-                                    }
-                                    if (c.contains(".")) {
-                                        addedPackages.add(c.substring(0,
-                                                c.lastIndexOf(".")));
-                                    }
-                                });
                                 ReloadCache.dynamicWhiteList
-                                        .addAll(addedPackages);
-                                ReloadCache.routePackages.addAll(addedPackages);
+                                        .addAll(e.getAddedPackages());
+                                ReloadCache.dynamicWhiteList
+                                        .addAll(e.getChangedPackages());
+                                ReloadCache.routePackages
+                                        .addAll(e.getAddedPackages());
+                                ReloadCache.routePackages
+                                        .addAll(e.getChangedPackages());
                             }));
                 }
             }
@@ -813,7 +843,7 @@ public class VaadinServletContextInitializer
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Class<? extends Annotation>... annotations) {
-        return findByAnnotation(packages, appContext, annotations);
+        return findByAnnotation(packages, customLoader, annotations);
     }
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
@@ -824,7 +854,7 @@ public class VaadinServletContextInitializer
 
     Stream<Class<?>> findBySuperType(Collection<String> packages,
             Class<?> type) {
-        return findBySuperType(packages, appContext, type);
+        return findBySuperType(packages, customLoader, type);
     }
 
     private Stream<Class<?>> findBySuperType(Collection<String> packages,
@@ -933,13 +963,19 @@ public class VaadinServletContextInitializer
      * with atmosphere we skip known packaged from our resources collection.
      */
     private static class CustomResourceLoader
-            extends PathMatchingResourcePatternResolver {
+            extends FilterableResourceResolver {
 
         private final PrefixTree scanNever = new PrefixTree(DEFAULT_SCAN_NEVER);
 
         private final PrefixTree scanAlways = new PrefixTree(DEFAULT_SCAN_ONLY
                 .stream().map(packageName -> packageName.replace('.', '/'))
                 .collect(Collectors.toList()));
+
+        /**
+         * If true, only filter based on the package.properties in jar/module.
+         * false by default.
+         */
+        private boolean filterOnlyByPackageProperties = false;
 
         public CustomResourceLoader(ResourceLoader resourceLoader,
                 List<String> addedScanNever) {
@@ -949,6 +985,18 @@ public class VaadinServletContextInitializer
                     "addedScanNever shouldn't be null!");
 
             addedScanNever.forEach(scanNever::addPrefix);
+        }
+
+        /**
+         * Constructor sets filterOnlyByPackageProperties to true. Only filter
+         * based on the package.properties in jar/module.
+         *
+         * @param resourceLoader
+         *            Resource loader
+         */
+        public CustomResourceLoader(ResourceLoader resourceLoader) {
+            super(resourceLoader);
+            filterOnlyByPackageProperties = true;
         }
 
         /**
@@ -979,7 +1027,7 @@ public class VaadinServletContextInitializer
 
         private Resource[] collectResources(String locationPattern)
                 throws IOException {
-            List<Resource> resourcesList = new ArrayList<>();
+            Set<Resource> resources = new HashSet<>();
 
             Set<String> skipped = ReloadCache.skippedResources;
             Set<String> valid = ReloadCache.validResources;
@@ -996,23 +1044,28 @@ public class VaadinServletContextInitializer
                     path = originalPath;
                 }
 
-                if (devModeCachingEnabled && skipped.contains(originalPath)) {
+                if (isDevModeCacheUsed() && skipped.contains(originalPath)) {
                     continue;
                 }
 
-                if (devModeCachingEnabled && valid.contains(originalPath)) {
-                    resourcesList.add(resource);
+                if (isDevModeCacheUsed() && valid.contains(originalPath)) {
+                    resources.add(resource);
+                    // Restore root paths to ensure new resources are correctly
+                    // validate and cached after a reload
+                    if (originalPath.endsWith("/")) {
+                        rootPaths.add(originalPath);
+                    }
                 } else {
                     if (path.endsWith(".jar!/")) {
-                        resourcesList.add(resource);
+                        resources.add(resource);
                     } else if (path.endsWith("/")) {
                         rootPaths.add(path);
-                        resourcesList.add(resource);
+                        resources.add(resource);
                     } else {
                         int index = path.lastIndexOf(".jar!/");
                         if (index >= 0) {
                             String relativePath = path.substring(index + 6);
-                            if (devModeCachingEnabled
+                            if (isDevModeCacheUsed()
                                     && relativePath.endsWith(".class")) {
                                 // Stores names of all classes from JARs
                                 String className = relativePath
@@ -1020,30 +1073,33 @@ public class VaadinServletContextInitializer
                                         .replace(".class", "");
                                 ReloadCache.jarClassNames.add(className);
                             }
-                            if (shouldPathBeScanned(relativePath)) {
-                                resourcesList.add(resource);
+                            if (shouldPathBeScanned(relativePath,
+                                    path.substring(0, index))) {
+                                resources.add(resource);
                             }
                         } else {
                             List<String> parents = rootPaths.stream()
-                                    .filter(path::startsWith)
-                                    .collect(Collectors.toList());
+                                    .filter(path::startsWith).toList();
                             if (parents.isEmpty()) {
                                 throw new IllegalStateException(String.format(
                                         "Parent resource of [%s] not found in the resources!",
                                         path));
                             }
-
+                            AtomicBoolean parentIsAllowedByPackageProperties = new AtomicBoolean(
+                                    true);
                             if (parents.stream()
-                                    .anyMatch(parent -> shouldPathBeScanned(
-                                            path.substring(parent.length())))) {
-                                resourcesList.add(resource);
+                                    .allMatch(parent -> shouldPathBeScanned(
+                                            path.substring(parent.length()),
+                                            parent,
+                                            parentIsAllowedByPackageProperties))) {
+                                resources.add(resource);
                             }
                         }
                     }
                 }
 
-                if (devModeCachingEnabled) {
-                    if (resourcesList.contains(resource)) {
+                if (isDevModeCacheUsed()) {
+                    if (resources.contains(resource)) {
                         valid.add(originalPath);
                     } else {
                         skipped.add(originalPath);
@@ -1051,11 +1107,74 @@ public class VaadinServletContextInitializer
                 }
             }
 
-            return resourcesList.toArray(new Resource[0]);
+            return resources.toArray(new Resource[0]);
         }
 
+        private boolean isDevModeCacheUsed() {
+            return !filterOnlyByPackageProperties && devModeCachingEnabled;
+        }
+
+        /**
+         * Checks if the given path should be scanned.
+         *
+         * @param path
+         *            the relative path to check
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
         private boolean shouldPathBeScanned(String path) {
-            return scanAlways.hasPrefix(path) || !scanNever.hasPrefix(path);
+            return filterOnlyByPackageProperties || scanAlways.hasPrefix(path)
+                    || !scanNever.hasPrefix(path);
+        }
+
+        /**
+         * Checks if the given path should be scanned. Checks
+         * package.properties.
+         *
+         * @param path
+         *            the relative path to check
+         * @param rootPath
+         *            the root path of the resource. Also, a key for cached
+         *            properties.
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
+        private boolean shouldPathBeScanned(String path, String rootPath) {
+            return shouldPathBeScanned(path, rootPath, null);
+        }
+
+        /**
+         * Checks if the given path should be scanned. Checks
+         * package.properties.
+         *
+         * @param path
+         *            the relative path to check
+         * @param rootPath
+         *            the root path of the resource. Also, a key for cached
+         *            properties.
+         * @param parentIsAllowedByPackageProperties
+         *            This value is used as a default value for the
+         *            package.properties check. Value of the object may be
+         *            changed, if result changes. null defaults to true.
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
+        private boolean shouldPathBeScanned(String path, String rootPath,
+                AtomicBoolean parentIsAllowedByPackageProperties) {
+            if (shouldPathBeScanned(path)) {
+                // The given parentIsAllowedByPackageProperties ensures that
+                // result from the previous check follows up here as a default
+                // value.
+                boolean defaultValue = parentIsAllowedByPackageProperties == null
+                        || parentIsAllowedByPackageProperties.get();
+                boolean allowed = isAllowedByPackageProperties(rootPath, path,
+                        defaultValue);
+                if (parentIsAllowedByPackageProperties != null) {
+                    parentIsAllowedByPackageProperties.set(allowed);
+                }
+                return allowed;
+            }
+            return false;
         }
     }
 

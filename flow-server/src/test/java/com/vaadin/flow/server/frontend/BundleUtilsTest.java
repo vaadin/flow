@@ -3,10 +3,15 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -17,12 +22,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
@@ -97,18 +99,18 @@ public class BundleUtilsTest {
     }
 
     private void mockStatsJson(String... imports) {
-        JsonObject statsJson = Json.createObject();
-        JsonArray importsArray = Json.createArray();
-        for (int i = 0; i < imports.length; i++) {
-            importsArray.set(i, imports[i]);
+        ObjectNode statsJson = JacksonUtils.createObjectNode();
+        ArrayNode importsArray = JacksonUtils.createArrayNode();
+        for (String anImport : imports) {
+            importsArray.add(anImport);
         }
 
-        statsJson.put("bundleImports", importsArray);
+        statsJson.set("bundleImports", importsArray);
 
         mockStatsJsonLoading(statsJson);
     }
 
-    private void mockStatsJsonLoading(JsonObject statsJson) {
+    private void mockStatsJsonLoading(JsonNode statsJson) {
         MockedStatic<BundleUtils> mock = Mockito.mockStatic(BundleUtils.class);
         mock.when(() -> BundleUtils.loadStatsJson()).thenReturn(statsJson);
         mock.when(() -> BundleUtils.loadBundleImports()).thenCallRealMethod();
@@ -148,18 +150,14 @@ public class BundleUtilsTest {
     @Test
     public void noPackageLockExists_devBundleLockIsCopied_notJarLock()
             throws IOException {
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-
-        Options options = new Options(lookup, temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder.getRoot())
                 .withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -186,21 +184,103 @@ public class BundleUtilsTest {
 
     @Test
     public void noPackageLockExists_jarDevBundleLockIsCopied()
-            throws IOException {
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-
-        Options options = new Options(lookup, temporaryFolder.getRoot())
+            throws IOException, ClassNotFoundException {
+        Options options = new MockOptions(temporaryFolder.getRoot())
                 .withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        File jarHybridPackageLock = new File(options.getNpmFolder(),
+                "hybrid-temp.json");
+        final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
+        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
+
+        Mockito.doThrow(new ClassNotFoundException("No Hilla"))
+                .when(options.getClassFinder())
+                .loadClass("com.vaadin.hilla.EndpointController");
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
+        Mockito.when(options.getClassFinder().getResource(
+                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarHybridPackageLock.toURI().toURL());
+
+        BundleUtils.copyPackageLockFromBundle(options);
+
+        final String packageLockContents = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        Assert.assertEquals("File should be gotten from jar on classpath",
+                jarPackageLockContent, packageLockContents);
+    }
+
+    @Test
+    public void noPackageLockExists_hillaUsed_jarHybridDevBundleLockIsCopied()
+            throws IOException, ClassNotFoundException {
+        Options options = new MockOptions(temporaryFolder.getRoot())
+                .withBuildDirectory("target");
+
+        Path dummyView = options.getFrontendDirectory().toPath()
+                .resolve(Path.of("views", "dummy.tsx"));
+        Files.createDirectories(dummyView.getParent());
+        Files.writeString(dummyView, "const x = 1;");
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        final String jarPackageLockContent = "{ \"jarData\"}";
+        FileUtils.write(jarPackageLock, jarPackageLockContent);
+
+        File jarHybridPackageLock = new File(options.getNpmFolder(),
+                "hybrid-temp.json");
+        final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
+        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
+
+        Mockito.when(options.getClassFinder()
+                .loadClass("com.vaadin.hilla.EndpointController"))
+                .thenReturn(Object.class);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+        Mockito.when(options.getClassFinder().getResource(
+                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarHybridPackageLock.toURI().toURL());
+
+        BundleUtils.copyPackageLockFromBundle(options);
+
+        final String packageLockContents = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        Assert.assertEquals("File should be gotten from jar on classpath",
+                jarHybridPackageLockContent, packageLockContents);
+    }
+
+    @Test
+    public void noPackageLockExists_hillaUsed_hybridPackageLockNotPresentInJar_jarDevBundleIsCopied()
+            throws IOException, ClassNotFoundException {
+        Options options = new MockOptions(temporaryFolder.getRoot())
+                .withBuildDirectory("target");
+
+        Path dummyView = options.getFrontendDirectory().toPath()
+                .resolve(Path.of("views", "dummy.tsx"));
+        Files.createDirectories(dummyView.getParent());
+        Files.writeString(dummyView, "const x = 1;");
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        final String jarPackageLockContent = "{ \"jarData\"}";
+        FileUtils.write(jarPackageLock, jarPackageLockContent);
+
+        Mockito.when(options.getClassFinder()
+                .loadClass("com.vaadin.hilla.EndpointController"))
+                .thenReturn(Object.class);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+        Mockito.when(options.getClassFinder().getResource(
+                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(null);
 
         BundleUtils.copyPackageLockFromBundle(options);
 
@@ -215,18 +295,14 @@ public class BundleUtilsTest {
     @Test
     public void pnpm_noPackageLockExists_devBundleLockYamlIsCopied_notJarLockOrJson()
             throws IOException {
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-
-        Options options = new Options(lookup, temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder.getRoot())
                 .withBuildDirectory("target").withEnablePnpm(true);
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
                 .thenReturn(jarPackageLock.toURI().toURL());
 

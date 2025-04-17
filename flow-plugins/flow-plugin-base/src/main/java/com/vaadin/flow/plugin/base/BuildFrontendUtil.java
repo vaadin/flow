@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,24 +14,6 @@
  * the License.
  */
 package com.vaadin.flow.plugin.base;
-
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
-import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
-import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
-import static com.vaadin.flow.server.InitParameters.REACT_ROUTER_ENABLED;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +33,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -60,10 +45,11 @@ import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.BundleValidationUtil;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -76,11 +62,28 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LocalSubscriptionKey;
 import com.vaadin.pro.licensechecker.Product;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_EXTRA_EXTENSIONS;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
+import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Util class provides all methods a Plugin will need.
@@ -146,21 +149,30 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         Options options = new Options(lookup, adapter.npmFolder())
-                .withFrontendDirectory(adapter.frontendDirectory())
+                .withCleanOldGeneratedFiles(true)
+                .withFrontendHotdeploy(adapter.isFrontendHotdeploy())
+                .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
+                .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                        adapter.servletResourceOutputDirectory())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
-                .createMissingPackageJson(
-                        new File(adapter.npmFolder(), PACKAGE_JSON).exists())
-                .enableImportsUpdate(false).enablePackagesUpdate(false)
-                .withRunNpmInstall(false)
-                .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                .createMissingPackageJson(true).enableImportsUpdate(false)
+                .enablePackagesUpdate(false).withRunNpmInstall(false)
+                .withFrontendGeneratedFolder(
+                        getGeneratedFrontendDirectory(adapter))
                 .withNodeVersion(adapter.nodeVersion())
                 .withNodeDownloadRoot(nodeDownloadRootURI)
                 .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
-                .withProductionMode(false);
+                .withProductionMode(false).withReact(adapter.isReactEnabled())
+                .withFrontendExtraFileExtensions(
+                        adapter.frontendExtraFileExtensions())
+                .withNpmExcludeWebComponents(
+                        adapter.isNpmExcludeWebComponents())
+                .withFrontendIgnoreVersionChecks(
+                        adapter.isFrontendIgnoreVersionChecks());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -182,7 +194,8 @@ public class BuildFrontendUtil {
     private static File getJarFrontendResourcesFolder(
             PluginAdapterBase adapter) {
         return new File(
-                new File(adapter.frontendDirectory(), FrontendUtils.GENERATED),
+                new File(getFrontendDirectory(adapter),
+                        FrontendUtils.GENERATED),
                 FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
@@ -196,6 +209,8 @@ public class BuildFrontendUtil {
         settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
+        settings.setIgnoreVersionChecks(
+                adapter.isFrontendIgnoreVersionChecks());
 
         return settings;
     }
@@ -213,7 +228,7 @@ public class BuildFrontendUtil {
         // token file with the information about the build
         File token = new File(adapter.servletResourceOutputDirectory(),
                 TOKEN_FILE);
-        JsonObject buildInfo = Json.createObject();
+        ObjectNode buildInfo = JacksonUtils.createObjectNode();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
@@ -231,7 +246,7 @@ public class BuildFrontendUtil {
                     e);
         }
         buildInfo.put(FRONTEND_TOKEN,
-                adapter.frontendDirectory().getAbsolutePath());
+                getFrontendDirectory(adapter).getAbsolutePath());
         buildInfo.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                 adapter.javaSourceFolder().getAbsolutePath());
         buildInfo.put(JAVA_RESOURCE_FOLDER_TOKEN,
@@ -241,7 +256,7 @@ public class BuildFrontendUtil {
         buildInfo.put(CONNECT_OPEN_API_FILE_TOKEN,
                 adapter.openApiJsonFile().getAbsolutePath());
         buildInfo.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                adapter.generatedTsFolder().getAbsolutePath());
+                getGeneratedFrontendDirectory(adapter).getAbsolutePath());
 
         buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 adapter.pnpmEnable());
@@ -256,12 +271,22 @@ public class BuildFrontendUtil {
             buildInfo.put(DISABLE_PREPARE_FRONTEND_CACHE, true);
         }
 
-        buildInfo.put(REACT_ROUTER_ENABLED, adapter.isReactRouterEnabled());
+        buildInfo.put(REACT_ENABLE, adapter.isReactEnabled());
+        if (adapter.isNpmExcludeWebComponents()) {
+            buildInfo.put(NPM_EXCLUDE_WEB_COMPONENTS,
+                    adapter.isNpmExcludeWebComponents());
+        }
+
+        if (!adapter.frontendExtraFileExtensions().isEmpty()) {
+            buildInfo.put(FRONTEND_EXTRA_EXTENSIONS,
+                    adapter.frontendExtraFileExtensions().stream()
+                            .collect(Collectors.joining(",")));
+        }
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
-            FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
-                    StandardCharsets.UTF_8.name());
+            FileIOUtils.writeIfChanged(token,
+                    buildInfo.toPrettyString() + "\n");
             // Enable debug to find out problems related with flow modes
 
             if (adapter.isDebugEnabled()) {
@@ -272,7 +297,7 @@ public class BuildFrontendUtil {
                                 + "npmFolder: %s%nToken file: " + "%s%n"
                                 + "Token content: %s%n",
                         adapter.projectBaseDirectory(), adapter.npmFolder(),
-                        token.getAbsolutePath(), buildInfo.toJson()));
+                        token.getAbsolutePath(), buildInfo));
             }
             return token;
         } catch (IOException e) {
@@ -285,12 +310,16 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
+     * @param frontendDependencies
+     *            Frontend dependencies scanner to use. If not set, one will be
+     *            initialized by {@link Options} class later.
      * @throws ExecutionFailedException
      *             - a ExecutionFailedException.
      * @throws URISyntaxException
      *             - - Could not build an URI from nodeDownloadRoot().
      */
-    public static void runNodeUpdater(PluginAdapterBuild adapter)
+    public static void runNodeUpdater(PluginAdapterBuild adapter,
+            FrontendDependenciesScanner frontendDependencies)
             throws ExecutionFailedException, URISyntaxException {
 
         Set<File> jarFiles = adapter.getJarFiles();
@@ -305,10 +334,10 @@ public class BuildFrontendUtil {
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder())
-                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withWebpack(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
@@ -323,7 +352,8 @@ public class BuildFrontendUtil {
                     .withEnablePnpm(adapter.pnpmEnable())
                     .withEnableBun(adapter.bunEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
-                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withFrontendGeneratedFolder(
+                            getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
@@ -332,7 +362,14 @@ public class BuildFrontendUtil {
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withCiBuild(adapter.ciBuild())
                     .withForceProductionBuild(adapter.forceProductionBuild())
-                    .withReactRouter(adapter.isReactRouterEnabled());
+                    .withReact(adapter.isReactEnabled())
+                    .withNpmExcludeWebComponents(
+                            adapter.isNpmExcludeWebComponents())
+                    .withFrontendExtraFileExtensions(
+                            adapter.frontendExtraFileExtensions())
+                    .withFrontendIgnoreVersionChecks(
+                            adapter.isFrontendIgnoreVersionChecks())
+                    .withFrontendDependenciesScanner(frontendDependencies);
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -370,10 +407,10 @@ public class BuildFrontendUtil {
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder()).withProductionMode(false)
-                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withWebpack(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true).useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
@@ -387,7 +424,8 @@ public class BuildFrontendUtil {
                     .withEnablePnpm(adapter.pnpmEnable())
                     .withEnableBun(adapter.bunEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
-                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withFrontendGeneratedFolder(
+                            getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
@@ -397,7 +435,13 @@ public class BuildFrontendUtil {
                     .withBundleBuild(true)
                     .skipDevBundleBuild(adapter.skipDevBundleBuild())
                     .withCompressBundle(adapter.compressBundle())
-                    .withReactRouter(adapter.isReactRouterEnabled());
+                    .withReact(adapter.isReactEnabled())
+                    .withFrontendExtraFileExtensions(
+                            adapter.frontendExtraFileExtensions())
+                    .withNpmExcludeWebComponents(
+                            adapter.isNpmExcludeWebComponents())
+                    .withFrontendIgnoreVersionChecks(
+                            adapter.isFrontendIgnoreVersionChecks());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -408,6 +452,38 @@ public class BuildFrontendUtil {
                             + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
                     throwable);
         }
+    }
+
+    /**
+     * Get the legacy frontend folder if available and new folder doesn't exist.
+     *
+     * @param adapter
+     *            PluginAdapterBase
+     * @return correct folder or legacy folder if not user defined
+     */
+    public static File getFrontendDirectory(PluginAdapterBase adapter) {
+        return FrontendUtils.getLegacyFrontendFolderIfExists(
+                adapter.npmFolder(), adapter.frontendDirectory());
+    }
+
+    /**
+     * The generated folder should be under frontend folder and will be moved to
+     * the legacy package if not changed by the user.
+     *
+     * @param adapter
+     *            PluginAdapterBase
+     * @return correct generated folder as child to frontend
+     */
+    public static File getGeneratedFrontendDirectory(
+            PluginAdapterBase adapter) {
+        if (adapter.generatedTsFolder().toPath()
+                .startsWith(adapter.frontendDirectory().toPath())) {
+            // Possibly move frontend folder.
+            File frontendDirectory = getFrontendDirectory(adapter);
+            return new File(frontendDirectory, GENERATED);
+        }
+        // Return given generated folder
+        return adapter.generatedTsFolder();
     }
 
     /**
@@ -444,17 +520,26 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools) throws TimeoutException {
-        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
+        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
-            FrontendTools frontendTools, String toolName, String executable,
-            Map<String, String> environment, String... params)
-            throws TimeoutException {
+            FrontendTools frontendTools, String toolName, String packageName,
+            String binaryName, Map<String, String> environment,
+            String... params) throws TimeoutException {
 
-        File buildExecutable = new File(adapter.npmFolder(),
-                NODE_MODULES + executable);
+        File buildExecutable;
+        try {
+            buildExecutable = frontendTools.getNpmPackageExecutable(packageName,
+                    binaryName, adapter.npmFolder()).toFile();
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new IllegalStateException(String.format("""
+                    Unable to locate %s executable. Expected the "%s" npm \
+                    package to be installed and to provide the "%s" binary. \
+                    Double check that the npm dependencies are installed.""",
+                    toolName, packageName, binaryName));
+        }
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate %s executable by path '%s'. Double"
@@ -505,8 +590,12 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            the PluginAdapterBase
+     * @param frontendDependencies
+     * @return {@literal true} if license validation is required because of the
+     *         presence of commercial components, otherwise {@literal false}.
      */
-    public static void validateLicenses(PluginAdapterBase adapter) {
+    public static boolean validateLicenses(PluginAdapterBase adapter,
+            FrontendDependenciesScanner frontendDependencies) {
         File outputFolder = adapter.webpackOutputDirectory();
 
         String statsJsonContent = null;
@@ -535,10 +624,8 @@ public class BuildFrontendUtil {
             statsJsonContent = "{}";
         }
 
-        FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, adapter.getClassFinder(), true, null);
         List<Product> commercialComponents = findCommercialFrontendComponents(
-                scanner, statsJsonContent);
+                frontendDependencies, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
 
         for (Product component : commercialComponents) {
@@ -558,7 +645,7 @@ public class BuildFrontendUtil {
                 throw e;
             }
         }
-
+        return !commercialComponents.isEmpty();
     }
 
     private static Logger getLogger() {
@@ -569,18 +656,18 @@ public class BuildFrontendUtil {
             FrontendDependenciesScanner scanner, String statsJsonContent) {
         List<Product> components = new ArrayList<>();
 
-        final JsonObject statsJson = Json.parse(statsJsonContent);
+        final JsonNode statsJson = JacksonUtils.readTree(statsJsonContent);
         Set<String> usedPackages = getUsedPackages(scanner);
-        if (statsJson.hasKey("cvdlModules")) {
-            final JsonObject cvdlModules = statsJson.getObject("cvdlModules");
-            for (String key : cvdlModules.keys()) {
+        if (statsJson.has("cvdlModules")) {
+            final JsonNode cvdlModules = statsJson.get("cvdlModules");
+            for (String key : JacksonUtils.getKeys(cvdlModules)) {
                 if (!usedPackages.contains(key)) {
                     // If product is not used do not collect it.
                     continue;
                 }
-                final JsonObject cvdlModule = cvdlModules.getObject(key);
-                components.add(new Product(cvdlModule.getString("name"),
-                        cvdlModule.getString("version")));
+                final JsonNode cvdlModule = cvdlModules.get(key);
+                components.add(new Product(cvdlModule.get("name").textValue(),
+                        cvdlModule.get("version").textValue()));
             }
         }
         return components;
@@ -659,10 +746,27 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
-     *
+     * @deprecated use {@link #updateBuildFile(PluginAdapterBuild, boolean)}
      */
+    @Deprecated
     public static void updateBuildFile(PluginAdapterBuild adapter) {
+        updateBuildFile(adapter, false);
+    }
 
+    /**
+     * Updates the build info after the bundle has been built by build-frontend.
+     * <p>
+     * Removes the abstract folder paths as they should not be used for prebuilt
+     * bundles and ensures production mode is set to true.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @param licenseRequired
+     *            {@literal true} if a license was required for the production
+     *            build.
+     */
+    public static void updateBuildFile(PluginAdapterBuild adapter,
+            boolean licenseRequired) {
         File tokenFile = getTokenFile(adapter);
         if (!tokenFile.exists()) {
             adapter.logWarn(
@@ -672,13 +776,14 @@ public class BuildFrontendUtil {
         try {
             String json = FileUtils.readFileToString(tokenFile,
                     StandardCharsets.UTF_8.name());
-            JsonObject buildInfo = JsonUtil.parse(json);
+            ObjectNode buildInfo = JacksonUtils.readTree(json);
 
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(NODE_VERSION);
             buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(FRONTEND_HOTDEPLOY);
+            buildInfo.remove(FRONTEND_EXTRA_EXTENSIONS);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_BUN);
             buildInfo.remove(InitParameters.CI_BUILD);
@@ -691,13 +796,63 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
-            buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
+            buildInfo.remove(InitParameters.NPM_EXCLUDE_WEB_COMPONENTS);
+            // Premium features flag is always true, because Vaadin CI server
+            // uses Enterprise sub, thus it's always true.
+            // Thus, resets the premium feature flag and DAU flag before asking
+            // license-server
+            buildInfo.remove(Constants.PREMIUM_FEATURES);
+            buildInfo.remove(Constants.DAU_TOKEN);
 
-            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
+            buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
+            buildInfo.put(APPLICATION_IDENTIFIER,
+                    adapter.applicationIdentifier());
+            if (licenseRequired) {
+                if (LocalSubscriptionKey.get() != null) {
+                    adapter.logInfo("Daily Active User tracking enabled");
+                    buildInfo.put(Constants.DAU_TOKEN, true);
+                    checkLicenseCheckerAtRuntime(adapter);
+                }
+            }
+            if (isControlCenterAvailable(adapter.getClassFinder())
+                    && LicenseChecker.isValidLicense(
+                            "vaadin-commercial-cc-client", null,
+                            BuildType.PRODUCTION)) {
+                adapter.logInfo("Premium Features are enabled");
+                buildInfo.put(Constants.PREMIUM_FEATURES, true);
+            }
+
+            FileUtils.write(tokenFile, buildInfo.toPrettyString() + "\n",
                     StandardCharsets.UTF_8.name());
+            tokenFile.deleteOnExit();
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
         }
+    }
+
+    private static boolean isControlCenterAvailable(ClassFinder classFinder) {
+        if (classFinder == null) {
+            return false;
+        }
+        try {
+            classFinder.loadClass(
+                    "com.vaadin.controlcenter.starter.actuate.endpoint.VaadinActuatorEndpoint");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    private static void checkLicenseCheckerAtRuntime(
+            PluginAdapterBuild adapter) {
+        adapter.checkRuntimeDependency("com.vaadin", "license-checker",
+                logMessage -> adapter.logWarn(
+                        """
+                                Vaadin Subscription used to build the application requires
+                                the artifact com.vaadin:license-checker to be present at runtime.
+
+                                """
+                                + logMessage));
     }
 
     /**

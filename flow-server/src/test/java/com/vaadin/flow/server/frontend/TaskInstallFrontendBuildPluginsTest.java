@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
@@ -34,12 +36,10 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
@@ -95,10 +95,9 @@ public class TaskInstallFrontendBuildPluginsTest {
 
     @Test
     public void pluginsNotAddedToPackageJson() throws IOException {
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
+        Options options = new MockOptions(rootFolder)
                 .withBuildDirectory(BUILD_DIRECTORY);
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
             public void execute() {
@@ -107,13 +106,12 @@ public class TaskInstallFrontendBuildPluginsTest {
 
         task.execute();
 
-        final JsonObject packageJson = nodeUpdater.getPackageJson();
+        final JsonNode packageJson = nodeUpdater.getPackageJson();
 
-        final JsonObject devDependencies = packageJson
-                .getObject(DEV_DEPENDENCIES);
+        final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
         for (String plugin : FrontendPluginsUtil.getPlugins()) {
             Assert.assertFalse("Plugin " + plugin + " added to packageJson",
-                    devDependencies.hasKey("@vaadin/" + plugin));
+                    devDependencies.has("@vaadin/" + plugin));
         }
     }
 
@@ -129,12 +127,12 @@ public class TaskInstallFrontendBuildPluginsTest {
     private void assertPlugin(String plugin) throws IOException {
         final File pluginFolder = getPluginFolder(plugin);
 
-        final JsonArray files = getPluginFiles(pluginFolder);
-        for (int i = 0; i < files.length(); i++) {
+        final ArrayNode files = getPluginFiles(pluginFolder);
+        for (int i = 0; i < files.size(); i++) {
             Assert.assertTrue(
-                    "Missing plugin file " + files.getString(i) + " for "
+                    "Missing plugin file " + files.get(i).textValue() + " for "
                             + plugin,
-                    new File(pluginFolder, files.getString(i)).exists());
+                    new File(pluginFolder, files.get(i).textValue()).exists());
         }
     }
 
@@ -143,14 +141,14 @@ public class TaskInstallFrontendBuildPluginsTest {
         final File pluginFolder = new File(this.getClass().getClassLoader()
                 .getResource(PLUGIN_TARGET + "/" + plugin).getFile());
 
-        final JsonArray files = getPluginFiles(pluginFolder);
-        List<String> fileNames = new ArrayList<>(files.length());
-        for (int i = 0; i < files.length(); i++) {
+        final ArrayNode files = getPluginFiles(pluginFolder);
+        List<String> fileNames = new ArrayList<>(files.size());
+        for (int i = 0; i < files.size(); i++) {
             Assert.assertTrue(
-                    "Missing plugin file " + files.getString(i) + " for "
+                    "Missing plugin file " + files.get(i).textValue() + " for "
                             + plugin,
-                    new File(pluginFolder, files.getString(i)).exists());
-            fileNames.add(files.getString(i));
+                    new File(pluginFolder, files.get(i).textValue()).exists());
+            fileNames.add(files.get(i).textValue());
         }
         final List<String> pluginFiles = Arrays
                 .stream(pluginFolder.listFiles((dir, name) -> FilenameUtils
@@ -170,10 +168,11 @@ public class TaskInstallFrontendBuildPluginsTest {
      * @return
      * @throws IOException
      */
-    private JsonArray getPluginFiles(File pluginFolder) throws IOException {
-        final JsonObject packageJson = Json.parse(FileUtils.readFileToString(
-                new File(pluginFolder, "package.json"), UTF_8));
-        return packageJson.getArray("files");
+    private ArrayNode getPluginFiles(File pluginFolder) throws IOException {
+        final JsonNode packageJson = JacksonUtils
+                .readTree(FileUtils.readFileToString(
+                        new File(pluginFolder, "package.json"), UTF_8));
+        return (ArrayNode) packageJson.get("files");
     }
 
     private File getPluginFolder(String plugin) {

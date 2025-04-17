@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -89,6 +89,8 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
         // Just click on any button to make a request after killing the session
         clickButton(CLOSE_SESSION);
+
+        waitUntil(d -> isSessionExpiredNotificationPresent());
 
         Assert.assertTrue("After enabling the 'Session Expired' notification, "
                 + "the page should not be refreshed "

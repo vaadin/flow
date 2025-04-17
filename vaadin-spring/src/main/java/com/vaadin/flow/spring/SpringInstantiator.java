@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.SpringVersion;
+import org.springframework.util.ClassUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -31,6 +32,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 
 /**
  * Default Spring instantiator that is used if no other instantiator has been
@@ -65,11 +67,20 @@ public class SpringInstantiator extends DefaultInstantiator {
         }
     }
 
+    /**
+     * Gets all service init listeners to use. Registers by default an init
+     * listener that publishes ServiceInitEvent to application context.
+     *
+     * @return stream of service init listeners, not <code>null</code>
+     */
     @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-        Stream<VaadinServiceInitListener> springListeners = context
-                .getBeansOfType(VaadinServiceInitListener.class).values()
-                .stream();
+        Stream<VaadinServiceInitListener> springListeners = Stream
+                .concat(Stream.of(event -> {
+                    // make ServiceInitEvent listenable with @EventListener
+                    context.publishEvent(event);
+                }), context.getBeansOfType(VaadinServiceInitListener.class)
+                        .values().stream());
         return Stream.concat(super.getServiceInitListeners(), springListeners);
     }
 
@@ -92,6 +103,24 @@ public class SpringInstantiator extends DefaultInstantiator {
                                 I18NProvider.class.getSimpleName(), beansCount);
             }
             return super.getI18NProvider();
+        }
+    }
+
+    @Override
+    public MenuAccessControl getMenuAccessControl() {
+        int beansCount = context
+                .getBeanNamesForType(MenuAccessControl.class).length;
+        if (beansCount == 1) {
+            return context.getBean(MenuAccessControl.class);
+        } else {
+            if (loggingEnabled.compareAndSet(true, false)) {
+                LoggerFactory.getLogger(SpringInstantiator.class.getName())
+                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for Menu Access Control, "
+                                + "falling back to the default behavior",
+                                MenuAccessControl.class.getSimpleName(),
+                                beansCount);
+            }
+            return super.getMenuAccessControl();
         }
     }
 
@@ -125,5 +154,10 @@ public class SpringInstantiator extends DefaultInstantiator {
             // If there is no bean, try to instantiate one
             return context.getAutowireCapableBeanFactory().createBean(type);
         }
+    }
+
+    @Override
+    public Class<?> getApplicationClass(Class<?> clazz) {
+        return ClassUtils.getUserClass(clazz);
     }
 }

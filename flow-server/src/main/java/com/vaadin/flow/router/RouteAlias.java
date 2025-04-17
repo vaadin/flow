@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -92,6 +92,15 @@ public @interface RouteAlias {
      * @return route up to here should be absolute
      */
     boolean absolute() default false;
+
+    /**
+     * Marks if Route should apply a {@link Layout} matching route value when no
+     * {@link #layout()} defined. If set to false no layout will be searched
+     * for.
+     *
+     * @return {@code false} skips automatic layout
+     */
+    boolean autoLayout() default true;
 
     /**
      * Internal annotation to enable use of multiple {@link RouteAlias}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.spring;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This event is fired by {@link ReloadListener} when Spring Boot DevTools is
@@ -39,5 +40,21 @@ class ReloadEvent implements Serializable {
 
     public Set<String> getRemovedClasses() {
         return removedClasses;
+    }
+
+    public Set<String> getAddedPackages() {
+        return extractPackageNames(addedClasses);
+    }
+
+    public Set<String> getChangedPackages() {
+        return extractPackageNames(changedClasses);
+    }
+
+    private Set<String> extractPackageNames(Set<String> classNames) {
+        return classNames.stream()
+                .map(name -> name.contains(".")
+                        ? name.substring(0, name.lastIndexOf("."))
+                        : name)
+                .collect(Collectors.toSet());
     }
 }

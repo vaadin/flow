@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -104,6 +105,7 @@ public class VaadinAppShellInitializer
                 .lookup(AppShellPredicate.class);
 
         classes.stream()
+                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
                 // sort classes by putting the app shell in first position
                 .sorted((a, b) -> predicate.isShell(a) ? -1
                         : predicate.isShell(b) ? 1 : 0)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
@@ -292,5 +293,21 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     private RouteRegistry getParentRegistry() {
         return session.getService().getRouteRegistry();
+    }
+
+    @Override
+    public Class<? extends RouterLayout> getLayout(String path) {
+        if (super.hasLayout(path)) {
+            return super.getLayout(path);
+        }
+        return getParentRegistry().getLayout(path);
+    }
+
+    @Override
+    public boolean hasLayout(String path) {
+        if (super.hasLayout(path)) {
+            return true;
+        }
+        return getParentRegistry().hasLayout(path);
     }
 }

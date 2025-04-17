@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,15 +17,14 @@ package com.vaadin.flow.internal.springcsrf;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Element;
 
 import jakarta.servlet.ServletRequest;
 
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinRequest;
-
-import elemental.json.JsonObject;
 
 /**
  * A util class for helping dealing with Spring CSRF token.
@@ -64,18 +63,17 @@ public class SpringCsrfTokenUtil {
     private static Optional<SpringCsrfToken> extractTokenFromBean(
             Object springCsrfToken) {
         if (springCsrfToken != null) {
-            JsonObject springCsrfTokenJson = JsonUtils
+            JsonNode springCsrfTokenJson = JacksonUtils
                     .beanToJson(springCsrfToken);
             if (springCsrfTokenJson != null
-                    && springCsrfTokenJson.hasKey(SPRING_CSRF_TOKEN_PROPERTY)
-                    && springCsrfTokenJson
-                            .hasKey(SPRING_CSRF_HEADER_PROPERTY)) {
+                    && springCsrfTokenJson.has(SPRING_CSRF_TOKEN_PROPERTY)
+                    && springCsrfTokenJson.has(SPRING_CSRF_HEADER_PROPERTY)) {
                 String token = springCsrfTokenJson
-                        .getString(SPRING_CSRF_TOKEN_PROPERTY);
+                        .get(SPRING_CSRF_TOKEN_PROPERTY).textValue();
                 String headerName = springCsrfTokenJson
-                        .getString(SPRING_CSRF_HEADER_PROPERTY);
+                        .get(SPRING_CSRF_HEADER_PROPERTY).textValue();
                 String parameterName = springCsrfTokenJson
-                        .getString(SPRING_CSRF_PARAMETER_PROPERTY);
+                        .get(SPRING_CSRF_PARAMETER_PROPERTY).textValue();
 
                 return Optional.of(
                         new SpringCsrfToken(headerName, parameterName, token));

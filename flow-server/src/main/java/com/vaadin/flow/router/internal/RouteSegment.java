@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -65,7 +65,7 @@ final class RouteSegment implements Serializable {
     /**
      * Parameter details.
      */
-    private RouteFormat.ParameterInfo info;
+    private ParameterInfo info;
 
     /**
      * Parameter matching regex.
@@ -118,7 +118,7 @@ final class RouteSegment implements Serializable {
         this.isRoot = isRoot;
 
         if (RouteFormat.isParameter(segmentTemplate)) {
-            info = new RouteFormat.ParameterInfo(segmentTemplate);
+            info = new ParameterInfo(segmentTemplate);
 
             getRegex().ifPresent(s -> pattern = Pattern.compile(s));
 
@@ -791,9 +791,9 @@ final class RouteSegment implements Serializable {
 
         String messageFormat;
         if (isParameter()) {
-            messageFormat = "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.";
+            messageFormat = RouteUtil.ROUTE_CONFLICT_WITH_PARAMS;
         } else {
-            messageFormat = "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.";
+            messageFormat = RouteUtil.ROUTE_CONFLICT;
         }
 
         String message = String.format(messageFormat,

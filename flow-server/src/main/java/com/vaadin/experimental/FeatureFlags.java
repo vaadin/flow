@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -47,10 +48,17 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 public class FeatureFlags implements Serializable {
 
     public static final String PROPERTIES_FILENAME = "vaadin-featureflags.properties";
+
+    /**
+     * @deprecated Use {@link #SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL} instead.
+     */
+    @Deprecated
     public static final String SYSTEM_PROPERTY_PREFIX = "vaadin.";
 
+    public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
+
     public static final Feature EXAMPLE = new Feature(
-            "Example feature. Will be removed once the first real feature flag is added",
+            "Example feature. Internally used for testing purposes. Does not have any effect on production applications.",
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
@@ -59,15 +67,57 @@ public class FeatureFlags implements Serializable {
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
 
-    public static final Feature WEB_PUSH = new Feature(
-            "Server side WebPush API", "webPush",
-            "https://vaadin.com/docs/latest/configuration/setting-up-webpush",
-            true, "com.vaadin.flow.server.webpush.WebPush");
-
     public static final Feature FORM_FILLER_ADDON = new Feature(
             "Form Filler Add-on", "formFillerAddon",
             "https://github.com/vaadin/form-filler-addon", true,
             "com.vaadin.flow.ai.formfiller.FormFiller");
+
+    public static final Feature HILLA_I18N = new Feature("Hilla I18n API",
+            "hillaI18n",
+            "https://github.com/vaadin/hilla/tree/main/packages/ts/react-i18n",
+            true, null);
+
+    public static final Feature COPILOT_EXPERIMENTAL = new Feature(
+            "Copilot experimental features", "copilotExperimentalFeatures",
+            "https://vaadin.com/docs/latest/tools/copilot", false, null);
+
+    public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
+            "Hilla Full-stack Signals", "fullstackSignals",
+            "https://github.com/vaadin/hilla/discussions/1902", true, null);
+
+    public static final Feature DASHBOARD_COMPONENT = new Feature(
+            "Dashboard component (Pro)", "dashboardComponent",
+            "https://github.com/vaadin/platform/issues/6626", true,
+            "com.vaadin.flow.component.dashboard.Dashboard");
+
+    public static final Feature CARD_COMPONENT = new Feature("Card component",
+            "cardComponent",
+            "https://github.com/vaadin/web-components/issues/5340", true,
+            "com.vaadin.flow.component.card.Card");
+
+    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
+            "Master Detail Layout component", "masterDetailLayoutComponent",
+            "https://github.com/vaadin/platform/issues/7173", true,
+            "com.vaadin.flow.component.masterdetaillayout.MasterDetailLayout");
+
+    public static final Feature REACT19 = new Feature(
+            "React 19 (default in Vaadin 25)", "react19",
+            "https://react.dev/blog/2024/12/05/react-19", true, null);
+
+    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
+            "Accessible disabled buttons", "accessibleDisabledButtons",
+            "https://github.com/vaadin/web-components/issues/4585", true, null);
+
+    public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = new Feature(
+            "HorizontalLayout and VerticalLayout improvements",
+            "layoutComponentImprovements",
+            "https://github.com/vaadin/flow-components/issues/6998", true,
+            null);
+
+    public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = new Feature(
+            "Form Layout auto-responsive mode enabled by default",
+            "defaultAutoResponsiveFormLayout",
+            "https://github.com/vaadin/platform/issues/7172", true, null);
 
     private List<Feature> features = new ArrayList<>();
 
@@ -76,6 +126,10 @@ public class FeatureFlags implements Serializable {
     private final Lookup lookup;
 
     private ApplicationConfiguration configuration;
+
+    private boolean isPropertiesFileChecked = false;
+
+    private boolean isSystemPropertiesChecked = false;
 
     /**
      * Generate FeatureFlags with given lookup data.
@@ -87,8 +141,17 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
+        features.add(new Feature(HILLA_I18N));
+        features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
+        features.add(new Feature(COPILOT_EXPERIMENTAL));
+        features.add(new Feature(DASHBOARD_COMPONENT));
+        features.add(new Feature(CARD_COMPONENT));
+        features.add(new Feature(MASTER_DETAIL_LAYOUT_COMPONENT));
+        features.add(new Feature(REACT19));
+        features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
+        features.add(new Feature(LAYOUT_COMPONENT_IMPROVEMENTS));
+        features.add(new Feature(DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT));
         loadProperties();
     }
 
@@ -178,10 +241,17 @@ public class FeatureFlags implements Serializable {
 
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null || !featureFlagFile.exists()) {
+            // Check once if there are unsupported feature flags in the system
+            // properties
+            checkForUnsupportedSystemProperties();
+
             // Disable all features if no file exists
             for (Feature f : features) {
                 f.setEnabled(
-                        Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX + f.getId()));
+                        Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX + f.getId())
+                                || Boolean.getBoolean(
+                                        SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                                                + f.getId()));
             }
         } else {
             try (FileInputStream propertiesStream = new FileInputStream(
@@ -202,13 +272,19 @@ public class FeatureFlags implements Serializable {
 
             if (propertiesStream != null) {
                 props.load(propertiesStream);
+                // Check once if there are unsupported feature flags in the file
+                checkForUnsupportedFileProperties(props);
             }
+            // Check once if there are unsupported feature flags in the system
+            // properties
+            checkForUnsupportedSystemProperties();
             for (Feature f : features) {
                 // Allow users to override a feature flag with a system property
                 String propertyValue = System.getProperty(
-                        SYSTEM_PROPERTY_PREFIX + f.getId(),
-                        props.getProperty(getPropertyName(f.getId())));
-
+                        SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL + f.getId(),
+                        System.getProperty(SYSTEM_PROPERTY_PREFIX + f.getId(),
+                                props.getProperty(
+                                        getFilePropertyName(f.getId()))));
                 f.setEnabled(Boolean.parseBoolean(propertyValue));
             }
 
@@ -229,7 +305,7 @@ public class FeatureFlags implements Serializable {
                 continue;
             }
             properties.append("# ").append(feature.getTitle()).append("\n");
-            properties.append(getPropertyName(feature.getId()))
+            properties.append(getFilePropertyName(feature.getId()))
                     .append("=true\n");
         }
         if (!featureFlagFile.getParentFile().exists()) {
@@ -283,8 +359,12 @@ public class FeatureFlags implements Serializable {
                 .findFirst();
     }
 
-    private String getPropertyName(String featureId) {
+    private String getFilePropertyName(String featureId) {
         return "com.vaadin.experimental." + featureId;
+    }
+
+    private String getSystemPropertyName(String featureId) {
+        return SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL + featureId;
     }
 
     /**
@@ -333,11 +413,46 @@ public class FeatureFlags implements Serializable {
     public String getEnableHelperMessage(Feature feature) {
         return feature.getTitle()
                 + " is not enabled. Enable it in the debug window or by adding "
-                + getPropertyName(feature.getId())
+                + getFilePropertyName(feature.getId())
                 + "=true to src/main/resources/" + PROPERTIES_FILENAME;
     }
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(FeatureFlags.class);
+    }
+
+    private void checkForUnsupportedFileProperties(Properties fileProps) {
+        if (!isPropertiesFileChecked) {
+            checkForUnsupportedFeatureFlags(fileProps,
+                    this::getFilePropertyName);
+            isPropertiesFileChecked = true;
+        }
+    }
+
+    private void checkForUnsupportedSystemProperties() {
+        if (!isSystemPropertiesChecked) {
+            // Initially, filter all system properties to the ones with our
+            // prefix
+            Properties filteredSystemProps = new Properties();
+            System.getProperties().entrySet().stream()
+                    .filter(property -> property.getKey().toString()
+                            .startsWith(SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL))
+                    .forEach(property -> filteredSystemProps
+                            .put(property.getKey(), property.getValue()));
+            checkForUnsupportedFeatureFlags(filteredSystemProps,
+                    this::getSystemPropertyName);
+            isSystemPropertiesChecked = true;
+        }
+    }
+
+    private void checkForUnsupportedFeatureFlags(Properties props,
+            Function<String, String> propertyWithPrefix) {
+        for (Object property : props.keySet()) {
+            if (features.stream().noneMatch(feature -> propertyWithPrefix
+                    .apply(feature.getId()).equals(property))) {
+                getLogger().warn("Unsupported feature flag is present: {}",
+                        property);
+            }
+        }
     }
 }

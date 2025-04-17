@@ -108,7 +108,10 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
       }
     };
 
-    poller();
+    // Initial poll is not called immediately to give time for
+    // setting the attributes when client is already initialized.
+    // Mainly an issue in dynamic creation for React.
+    setTimeout(poller, 10);
   }
   _getClient() {
     if (_TagCamel_._getClientStrategy){
@@ -122,7 +125,7 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
     return Object.values(clients).find(client => client.exportedWebComponents && client.exportedWebComponents.indexOf('_TagDash_') != -1)
   }
   disconnectedCallback() {
-    this.$server.disconnected();
+    this.$server && this.$server.disconnected();
 
     console.debug("disconnected", this);
   }

@@ -25,11 +25,13 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -105,9 +107,14 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                 .toFile();
 
         Assert.assertFalse(generatedOpenApiJson.exists());
-        devModeStartupListener.onStartup(classes, servletContext);
-        handler = getDevModeHandler();
-        waitForDevServer();
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
+            devModeStartupListener.onStartup(classes, servletContext);
+            handler = getDevModeHandler();
+            waitForDevServer();
+        }
         Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
@@ -132,9 +139,14 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
-        devModeStartupListener.onStartup(classes, servletContext);
-        handler = getDevModeHandler();
-        waitForDevServer();
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
+            devModeStartupListener.onStartup(classes, servletContext);
+            handler = getDevModeHandler();
+            waitForDevServer();
+        }
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,10 @@ package com.vaadin.flow.internal.change;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -64,14 +67,15 @@ public abstract class NodeChange implements Serializable {
      *
      * @return a json representation of this change
      */
-    public JsonObject toJson(ConstantPool constantPool) {
+    public ObjectNode toJson(ConstantPool constantPool) {
         JsonObject json = Json.createObject();
 
         json.put(JsonConstants.CHANGE_NODE, node.getId());
 
         populateJson(json, constantPool);
 
-        return json;
+        // TODO: Use Jackson directly after updating *Change to jackson
+        return JacksonUtils.mapElemental(json);
     }
 
     /**

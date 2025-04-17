@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -55,7 +56,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -65,6 +65,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -123,15 +124,21 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     class UpdateImports extends AbstractUpdateImports {
 
         private Map<File, List<String>> output;
+        private List<String> webComponentImports;
 
-        UpdateImports(ClassFinder classFinder,
-                FrontendDependenciesScanner scanner, Options options) {
-            super(options, scanner, classFinder);
+        UpdateImports(FrontendDependenciesScanner scanner, Options options) {
+            super(options, scanner);
         }
 
         @Override
         protected void writeOutput(Map<File, List<String>> output) {
             this.output = output;
+        }
+
+        @Override
+        List<String> filterWebComponentImports(List<String> lines) {
+            webComponentImports = super.filterWebComponentImports(lines);
+            return webComponentImports;
         }
 
         public Map<File, List<String>> getOutput() {
@@ -171,11 +178,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         featureFlags = Mockito.mock(FeatureFlags.class);
-        options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withTokenFile(tokenFile).withProductionMode(true)
-                .withFeatureFlags(featureFlags).withBundleBuild(true);
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        options = new MockOptions(classFinder, tmpRoot).withTokenFile(tokenFile)
+                .withProductionMode(true).withFeatureFlags(featureFlags)
+                .withBundleBuild(true);
+        updater = new UpdateImports(getScanner(classFinder), options);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(
@@ -239,8 +245,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws Exception {
         ClassFinder classFinder = getClassFinder();
         options.withTokenFile(null);
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        updater = new UpdateImports(getScanner(classFinder), options);
 
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
@@ -400,11 +405,77 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         updater.run();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/color-global.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/typography-global.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
                 "@vaadin/vaadin-lumo-styles/style.js",
                 "@vaadin/vaadin-lumo-styles/icons.js");
+    }
+
+    @Test
+    public void generate_embeddedImports_doNotContainLumoGlobalThemeFiles()
+            throws IOException {
+        updater.run();
+
+        List<String> flowImports = new ArrayList<>(
+                updater.getOutput().get(updater.generatedFlowImports));
+
+        Predicate<String> lumoGlobalsMatcher = Pattern
+                .compile("@vaadin/vaadin-lumo-styles/.*-global.js")
+                .asPredicate();
+        assertTrue(flowImports.stream().anyMatch(lumoGlobalsMatcher));
+
+        assertTrue(
+                "Import for web-components should not contain lumo global imports",
+                updater.webComponentImports.stream()
+                        .noneMatch(lumoGlobalsMatcher));
+
+        // Check that imports other than lumo globals are the same
+        flowImports.removeAll(updater.webComponentImports);
+        assertTrue(
+                "Flow and web-component imports must be the same, except for lumo globals",
+                flowImports.stream().allMatch(lumoGlobalsMatcher));
+
+    }
+
+    @Test
+    public void generate_embeddedImports_addAlsoGlobalStyles()
+            throws IOException {
+        Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
+                UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Pattern injectGlobalCssPattern = Pattern
+                .compile("^\\s*injectGlobalCss\\(([^,]+),.*");
+        Predicate<String> globalCssImporter = injectGlobalCssPattern
+                .asPredicate();
+
+        List<String> globalCss = updater.getOutput()
+                .get(updater.generatedFlowImports).stream()
+                .filter(globalCssImporter).map(line -> {
+                    Matcher matcher = injectGlobalCssPattern.matcher(line);
+                    matcher.find();
+                    return matcher.group(1);
+                }).collect(Collectors.toList());
+
+        assertTrue("Import for web-components should also inject global CSS",
+                updater.webComponentImports.stream()
+                        .anyMatch(globalCssImporter));
+
+        assertTrue(
+                "Should contain function to import global CSS into embedded component",
+                updater.webComponentImports.stream().anyMatch(line -> line
+                        .contains("import { injectGlobalWebcomponentCss }")));
+        globalCss.forEach(css -> assertTrue(
+                "Should register global CSS " + css + " for webcomponent",
+                updater.webComponentImports.stream()
+                        .anyMatch(line -> line.contains(
+                                "injectGlobalWebcomponentCss(" + css + ");"))));
+
     }
 
     @Test
@@ -420,8 +491,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -443,8 +513,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -470,8 +539,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void themeForCssImports_eagerLoaded() throws Exception {
         Class<?>[] testClasses = { ThemeForCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
 
         Map<File, List<String>> output = updater.getOutput();
@@ -588,8 +656,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 DevelopmentAndProductionDependencies.class);
 
         options.withProductionMode(productionMode);
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
 
     }
@@ -630,8 +697,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 LumoTest.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
         String output = String.join("\n", updater.getMergedOutput());
 
@@ -655,8 +721,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder(testClasses);
 
         options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
+        updater = new UpdateImports(getScanner(classFinder), options);
         updater.run();
 
         // Imports are collected as

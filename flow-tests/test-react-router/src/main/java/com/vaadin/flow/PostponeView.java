@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,8 +30,8 @@ public class PostponeView extends Div implements BeforeLeaveObserver {
 
     public static String CONTINUE_ID = "continue-button";
     public static String STAY_ID = "stay-button";
-    public static String NAVIGATION_ID = "to-navigation";
-    public static String NAVIGATION_ROUTER_LINK_ID = "to-navigation";
+    public static String NAVIGATION_ID = "anchor-to-navigation";
+    public static String NAVIGATION_ROUTER_LINK_ID = "routerlink-to-navigation";
 
     private NativeButton navigate, stay;
 

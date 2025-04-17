@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -24,7 +25,9 @@ import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.dnd.EffectAllowed;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -36,11 +39,17 @@ public class DnDView extends Div {
     private int eventCounter = 0;
 
     private boolean data;
+    private boolean dragImage;
+    private Component image = new Image("/images/gift.png", "Gift");
+    private DragSource<Div> dragSource;
 
     public DnDView() {
         setWidth("1000px");
         setHeight("800px");
         getStyle().set("display", "flex");
+
+        Div startLane = createLane("start");
+        Component noEffectsDraggableBox = createDraggableBox(null);
 
         eventLog = new Div();
         eventLog.add(new Text("Events:"));
@@ -53,14 +62,47 @@ public class DnDView extends Div {
             data = !data;
             event.getSource().setText("Data: " + data);
         }));
+        NativeButton toggleThreeImages = new NativeButton("Toggle image",
+                event -> {
+                    if (image instanceof Image) {
+                        image = event.getSource();
+                    } else if (image == event.getSource()) {
+                        image = noEffectsDraggableBox;
+                    } else {
+                        image = new Image("/images/gift.png", "Gift");
+                    }
+                    setDragImage(startLane, image);
+                });
+        toggleThreeImages.setEnabled(false);
+        toggleThreeImages.setId("button-toggle-image");
+        NativeButton addDragSourceWithImage = new NativeButton(
+                "DragImage: add DragSource", event -> {
+                    dragSource.getDragSourceComponent()
+                            .setId("drag-source-with-image");
+                    dragSource.setDragImage(
+                            new Image("/images/gift.png", "Gift"));
+                    add(dragSource.getDragSourceComponent());
+                    eventLog.remove(event.getSource());
+                });
+        addDragSourceWithImage.setId("button-add-drag-source-with-drag-image");
+        NativeButton toggleDragImageEnabled = new NativeButton(
+                "DragImage: " + dragImage, event -> {
+                    dragImage = !dragImage;
+                    toggleThreeImages.setEnabled(dragImage);
+                    event.getSource().setText("DragImage: " + dragImage);
+                    setDragImage(startLane, image);
+                });
+        toggleDragImageEnabled.setId("button-toggle-drag-image-enabled");
+        eventLog.add(toggleDragImageEnabled);
+        eventLog.add(toggleThreeImages);
+        eventLog.add(addDragSourceWithImage);
         eventLog.setHeightFull();
         eventLog.setWidth("400px");
         eventLog.getStyle().set("display", "inline-block").set("border",
                 "2px " + "solid");
         add(eventLog);
 
-        Div startLane = createLane("start");
-        startLane.add(createDraggableBox(null));
+        startLane.add(noEffectsDraggableBox);
         Stream.of(EffectAllowed.values()).map(this::createDraggableBox)
                 .forEach(startLane::add);
 
@@ -82,6 +124,24 @@ public class DnDView extends Div {
 
         add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane,
                 noneDropLane, deactivatedLane);
+
+        dragSource = DragSource.create(new Div("DragSource"));
+        dragSource.addDragStartListener(event -> {
+            addLogEntry("Start: " + event.getComponent().getText());
+            addLogEntry("DragImage: " + dragSource.getDragImage().getElement());
+        });
+    }
+
+    private void setDragImage(Div startLane, Component image) {
+        startLane.getChildren().forEach(component -> {
+            if (component instanceof Div box) {
+                if (dragImage) {
+                    DragSource.configure(box).setDragImage(image, 20, 20);
+                } else {
+                    DragSource.configure(box).setDragImage(null);
+                }
+            }
+        });
     }
 
     private void addLogEntry(String eventDetails) {
@@ -165,6 +225,13 @@ public class DnDView extends Div {
         }
         dragSource.addDragStartListener(event -> {
             addLogEntry("Start: " + event.getComponent().getText());
+            if (dragImage) {
+                Element dragElement = Optional
+                        .ofNullable(DragSource.configure(event.getSource())
+                                .getDragImage())
+                        .map(Component::getElement).orElse(null);
+                addLogEntry("DragImage: " + dragElement);
+            }
             if (data) {
                 dragSource.setDragData(identifier);
             }

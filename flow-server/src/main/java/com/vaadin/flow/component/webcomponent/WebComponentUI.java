@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -44,8 +45,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
-
-import elemental.json.JsonObject;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -77,7 +76,7 @@ public class WebComponentUI extends UI {
         private String tag;
         private String userAssignedId;
         private String webComponentElementId;
-        private JsonObject attributeValues;
+        private JsonNode attributeValues;
 
         /**
          * Creates a new web component connection event.
@@ -104,7 +103,7 @@ public class WebComponentUI extends UI {
                 @EventData("tag") String tag,
                 @EventData("id") String webComponentElementId,
                 @EventData("userAssignedId") String userAssignedId,
-                @EventData("attributeValues") JsonObject attributeValues) {
+                @EventData("attributeValues") JsonNode attributeValues) {
             super(source, true);
             this.tag = tag;
             this.userAssignedId = userAssignedId;
@@ -144,7 +143,7 @@ public class WebComponentUI extends UI {
          *
          * @return the initial attribute values
          */
-        public JsonObject getAttributeJson() {
+        public JsonNode getAttributeJson() {
             return attributeValues;
         }
     }

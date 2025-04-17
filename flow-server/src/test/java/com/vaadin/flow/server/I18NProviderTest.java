@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -85,6 +85,34 @@ public class I18NProviderTest {
         Assert.assertEquals("Locale was not the defined locale",
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
+    }
+
+    @Test
+    public void translate_calls_provider()
+            throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
+                TestProvider.class.getName());
+
+        initServletAndService(config);
+
+        Assert.assertEquals("translate method should return a value",
+                "!foo.bar!", I18NProvider.translate("foo.bar"));
+    }
+
+    @Test
+    public void translate_withoutVaadinService_throwIllegalStateException()
+            throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
+                TestProvider.class.getName());
+
+        initServletAndService(config);
+
+        VaadinService.setCurrent(null);
+
+        Assert.assertThrows(
+                "Should throw exception without active VaadinService",
+                IllegalStateException.class,
+                () -> I18NProvider.translate("foo.bar"));
     }
 
     @Before

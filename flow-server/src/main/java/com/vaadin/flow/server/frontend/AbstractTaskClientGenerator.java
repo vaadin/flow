@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
  *
  * @since 3.0
  */
-public abstract class AbstractTaskClientGenerator implements FallibleCommand {
+public abstract class AbstractTaskClientGenerator
+        extends AbstractFileGeneratorFallibleCommand {
 
     /**
      * Get file content for writing to the generated file.
@@ -62,7 +63,7 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         }
         File generatedFile = getGeneratedFile();
         try {
-            FileIOUtils.writeIfChanged(generatedFile, getFileContent());
+            writeIfChanged(generatedFile, getFileContent());
         } catch (IOException exception) {
             String errorMessage = String.format("Error writing '%s'",
                     generatedFile);

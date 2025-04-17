@@ -1,9 +1,0 @@
-{
-  "parent": "parent-theme",
-  "assets": {
-    "line-awesome": {
-      "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
-      "dist/line-awesome/fonts/**": "line-awesome/dist/line-awesome/fonts"
-    }
-  }
-}

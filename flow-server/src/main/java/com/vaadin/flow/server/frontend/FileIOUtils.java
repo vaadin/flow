@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,9 +20,18 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -135,4 +144,103 @@ public class FileIOUtils {
         return file.getName().endsWith("~");
     }
 
+    /**
+     * Get a list of files in a given directory that match a given glob pattern.
+     *
+     * @param baseDir
+     *            a directory to walk in
+     * @param pattern
+     *            glob pattern to filter files, e.g. "*.js".
+     * @return a list of files matching a given pattern
+     * @throws IOException
+     *             if an I/O error is thrown while walking through the tree in
+     *             base directory
+     */
+    public static List<Path> getFilesByPattern(Path baseDir, String pattern)
+            throws IOException {
+        if (baseDir == null || !baseDir.toFile().exists()) {
+            throw new IllegalArgumentException(
+                    "Base directory is empty or doesn't exist: " + baseDir);
+        }
+
+        if (pattern == null || pattern.isBlank()) {
+            pattern = "*";
+        }
+
+        PathMatcher matcher = FileSystems.getDefault()
+                .getPathMatcher("glob:" + pattern);
+
+        List<Path> matchingPaths = new ArrayList<>();
+        Files.walkFileTree(baseDir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) {
+                if (matcher.matches(file)) {
+                    matchingPaths.add(file);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return matchingPaths;
+    }
+
+    /**
+     * Compare two file content strings ignoring indentation and EOL characters.
+     *
+     * @param content1
+     *            the first file content to compare
+     * @param content2
+     *            the second file content to compare
+     * @param compareFn
+     *            a function to compare the normalized strings
+     * @return true if the normalized strings are equal, false otherwise
+     */
+    public static boolean compareIgnoringIndentationAndEOL(String content1,
+            String content2, BiPredicate<String, String> compareFn) {
+        return compareFn.test(replaceIndentationAndEOL(content1),
+                replaceIndentationAndEOL(content2));
+    }
+
+    /**
+     * Compare two file content strings ignoring indentation, EOL characters and
+     * white space where it does not matter (before and after {, }, ' and :
+     * chars).
+     *
+     * @param content1
+     *            the first file content to compare
+     * @param content2
+     *            the second file content to compare
+     * @param compareFn
+     *            a function to compare the normalized strings
+     * @return true if the normalized strings are equal, false otherwise
+     */
+    public static boolean compareIgnoringIndentationEOLAndWhiteSpace(
+            String content1, String content2,
+            BiPredicate<String, String> compareFn) {
+        return compareFn.test(
+                replaceWhiteSpace(replaceIndentationAndEOL(content1)),
+                replaceWhiteSpace(replaceIndentationAndEOL(content2)));
+    }
+
+    // Normalize EOL and removes indentation and potential EOL at the end of the
+    // FILE
+    private static String replaceIndentationAndEOL(String text) {
+        return text.replace("\r\n", "\n").replaceFirst("\n$", "")
+                .replaceAll("(?m)^(\\s)+", "");
+    }
+
+    private static String replaceWhiteSpace(String text) {
+        for (String character : Stream.of("{", "}", ":", "'", "[", "]")
+                .toList()) {
+            text = replaceWhiteSpaceAround(text, character);
+        }
+        return text;
+    }
+
+    private static String replaceWhiteSpaceAround(String text,
+            String character) {
+        return text
+                .replaceAll(String.format("(\\s)*\\%s", character), character)
+                .replaceAll(String.format("\\%s(\\s)*", character), character);
+    }
 }

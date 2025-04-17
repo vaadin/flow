@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,7 +39,8 @@ import org.slf4j.LoggerFactory;
  *
  * @since 2.0
  */
-public class TaskCopyLocalFrontendFiles implements FallibleCommand {
+public class TaskCopyLocalFrontendFiles
+        extends AbstractFileGeneratorFallibleCommand {
 
     private final Options options;
 
@@ -53,6 +54,11 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         this.options = options;
     }
 
+    private static boolean shouldApplyWriteableFlag() {
+        return !Boolean.parseBoolean(System.getProperty(
+                "vaadin.frontend.disableWritableFlagCheckOnCopy", "false"));
+    }
+
     @Override
     public void execute() {
         File target = options.getJarFrontendResourcesFolder();
@@ -62,7 +68,12 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         if (localResourcesFolder != null
                 && localResourcesFolder.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            copyLocalResources(localResourcesFolder, target);
+            Set<String> files = copyLocalResources(localResourcesFolder,
+                    target);
+            track(files.stream()
+                    .map(path -> target.toPath().resolve(path).toFile())
+                    .toList());
+
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");
@@ -89,16 +100,22 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
             return Collections.emptySet();
         }
         try {
+            long start = System.nanoTime();
             Set<String> handledFiles = new HashSet<>(TaskCopyFrontendFiles
                     .getFilesInDirectory(source, relativePathExclusions));
             FileUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
-            try (Stream<Path> fileStream = Files
-                    .walk(Paths.get(target.getPath()))) {
-                // used with try-with-resources as defined in walk API note
-                fileStream.filter(file -> !Files.isWritable(file)).forEach(
-                        filePath -> filePath.toFile().setWritable(true));
+            if (shouldApplyWriteableFlag()) {
+                try (Stream<Path> fileStream = Files
+                        .walk(Paths.get(target.getPath()))) {
+                    // used with try-with-resources as defined in walk API note
+                    fileStream.filter(file -> !Files.isWritable(file)).forEach(
+                            filePath -> filePath.toFile().setWritable(true));
+                }
             }
+            long ms = (System.nanoTime() - start) / 1000000;
+            log().info("Copied {} local frontend files. Took {} ms.",
+                    handledFiles.size(), ms);
             return handledFiles;
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,47 +15,65 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.project.MavenProject;
-
-import com.vaadin.flow.plugin.base.BuildFrontendUtil;
-import com.vaadin.flow.plugin.base.PluginAdapterBase;
-import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
+import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.plugin.base.BuildFrontendUtil;
+import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.plugin.base.PluginAdapterBuild;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.utils.FlowFileUtils;
+
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * Goal that builds the dev frontend bundle to be used in Express Build mode.
@@ -129,6 +147,9 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
+    @Parameter(defaultValue = "${mojoExecution}")
+    MojoExecution mojoExecution;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -161,11 +182,73 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
-    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
-    private boolean reactRouterEnabled;
+    @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "true")
+    private boolean reactEnable;
+
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
+    private File frontendDirectory;
+
+    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    private boolean npmExcludeWebComponents;
+
+    /**
+     * Set to {@code true} to ignore node/npm tool version checks.
+     */
+    @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
+    private boolean frontendIgnoreVersionChecks;
+
+    static final String CLASSFINDER_FIELD_NAME = "classFinder";
+
+    private ClassFinder classFinder;
 
     @Override
-    public void execute() throws MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
+                .getPluginDescriptor();
+        checkFlowCompatibility(pluginDescriptor);
+
+        Reflector reflector = getOrCreateReflector();
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread()
+                .setContextClassLoader(reflector.getIsolatedClassLoader());
+        try {
+            org.apache.maven.plugin.Mojo task = reflector.createMojo(this);
+            findExecuteMethod(task.getClass()).invoke(task);
+            reflector.logIncompatibilities(getLog()::debug);
+        } catch (MojoExecutionException | MojoFailureException e) {
+            logTroubleshootingHints(reflector, e);
+            throw e;
+        } catch (Exception e) {
+            logTroubleshootingHints(reflector, e);
+            throw new MojoFailureException(e.getMessage(), e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(tccl);
+        }
+    }
+
+    private void logTroubleshootingHints(Reflector reflector, Throwable ex) {
+        reflector.logIncompatibilities(getLog()::warn);
+        if (ex instanceof InvocationTargetException) {
+            ex = ex.getCause();
+        }
+        StringBuilder errorMessage = new StringBuilder(ex.getMessage());
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (cause.getMessage() != null) {
+                errorMessage.append(" ").append(cause.getMessage());
+            }
+            cause = cause.getCause();
+        }
+        getLog().error(
+                "The build process encountered an error: " + errorMessage);
+        logError(
+                "To diagnose the issue, please re-run Maven with the -X option to enable detailed debug logging and identify the root cause.");
+    }
+
+    public void executeInternal() throws MojoFailureException {
         long start = System.nanoTime();
 
         try {
@@ -232,14 +315,19 @@ public class BuildDevBundleMojo extends AbstractMojo
      * @param project
      *            a given MavenProject
      * @return List of ClasspathElements
+     * @deprecated will be removed without replacement.
      */
+    @Deprecated(forRemoval = true)
     public static List<String> getClasspathElements(MavenProject project) {
 
         try {
-            final Stream<String> classpathElements = Stream.concat(
-                    project.getRuntimeClasspathElements().stream(),
-                    project.getCompileClasspathElements().stream().filter(
-                            s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+            final Stream<String> classpathElements = Stream
+                    .of(project.getRuntimeClasspathElements().stream(),
+                            project.getSystemClasspathElements().stream(),
+                            project.getCompileClasspathElements().stream()
+                                    .filter(s -> s.matches(
+                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
+                    .flatMap(Function.identity());
             return classpathElements.collect(Collectors.toList());
         } catch (DependencyResolutionRequiredException e) {
             throw new IllegalStateException(String.format(
@@ -262,21 +350,23 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-        return new File(projectBasedir, FRONTEND);
+        return frontendDirectory;
     }
 
     @Override
     public File generatedTsFolder() {
-        return new File(projectBasedir, FRONTEND + "/generated");
+        return new File(frontendDirectory(), "generated");
     }
 
     @Override
     public ClassFinder getClassFinder() {
-
-        List<String> classpathElements = getClasspathElements(project);
-
-        return BuildFrontendUtil.getClassFinder(classpathElements);
-
+        if (classFinder == null) {
+            URLClassLoader classLoader = getOrCreateReflector()
+                    .getIsolatedClassLoader();
+            classFinder = new ReflectionsClassFinder(classLoader,
+                    classLoader.getURLs());
+        }
+        return classFinder;
     }
 
     @Override
@@ -309,6 +399,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public void logDebug(CharSequence debugMessage, Throwable e) {
+        getLog().debug(debugMessage, e);
+    }
+
+    @Override
     public void logInfo(CharSequence infoMessage) {
         getLog().info(infoMessage);
     }
@@ -319,13 +414,18 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public void logError(CharSequence error) {
+        getLog().error(error);
+    }
+
+    @Override
     public void logWarn(CharSequence warning, Throwable e) {
         getLog().warn(warning, e);
     }
 
     @Override
-    public void logError(CharSequence warning, Throwable e) {
-        getLog().error(warning, e);
+    public void logError(CharSequence error, Throwable e) {
+        getLog().error(error, e);
     }
 
     @Override
@@ -435,8 +535,156 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isReactRouterEnabled() {
-        return reactRouterEnabled;
+    public boolean isReactEnabled() {
+        return reactEnable;
+    }
+
+    @Override
+    public String applicationIdentifier() {
+        return project.getGroupId() + ":" + project.getArtifactId();
+    }
+
+    @Override
+    public List<String> frontendExtraFileExtensions() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean checkRuntimeDependency(String groupId, String artifactId,
+            Consumer<String> missingDependencyMessageConsumer) {
+        return false;
+    }
+
+    @Override
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
+    }
+
+    @Override
+    public boolean isFrontendIgnoreVersionChecks() {
+        return frontendIgnoreVersionChecks;
+    }
+
+    private static URLClassLoader createIsolatedClassLoader(
+            MavenProject project, MojoExecution mojoExecution) {
+        List<URL> urls = new ArrayList<>();
+        String outputDirectory = project.getBuild().getOutputDirectory();
+        if (outputDirectory != null) {
+            urls.add(FlowFileUtils.convertToUrl(new File(outputDirectory)));
+        }
+
+        Function<Artifact, String> keyMapper = artifact -> artifact.getGroupId()
+                + ":" + artifact.getArtifactId();
+
+        Map<String, Artifact> projectDependencies = new HashMap<>(project
+                .getArtifacts().stream()
+                .filter(artifact -> artifact.getFile() != null
+                        && artifact.getArtifactHandler().isAddedToClasspath()
+                        && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
+                                || Artifact.SCOPE_RUNTIME
+                                        .equals(artifact.getScope())
+                                || Artifact.SCOPE_SYSTEM
+                                        .equals(artifact.getScope())
+                                || (Artifact.SCOPE_PROVIDED
+                                        .equals(artifact.getScope())
+                                        && artifact.getFile().getPath().matches(
+                                                INCLUDE_FROM_COMPILE_DEPS_REGEX))))
+                .collect(Collectors.toMap(keyMapper, Function.identity())));
+        if (mojoExecution != null) {
+            mojoExecution.getMojoDescriptor().getPluginDescriptor()
+                    .getArtifacts().stream()
+                    .filter(artifact -> !projectDependencies
+                            .containsKey(keyMapper.apply(artifact)))
+                    .forEach(artifact -> projectDependencies
+                            .put(keyMapper.apply(artifact), artifact));
+        }
+
+        projectDependencies.values().stream()
+                .map(artifact -> FlowFileUtils.convertToUrl(artifact.getFile()))
+                .forEach(urls::add);
+        ClassLoader mavenApiClassLoader;
+        if (mojoExecution != null) {
+            ClassRealm pluginClassRealm = mojoExecution.getMojoDescriptor()
+                    .getPluginDescriptor().getClassRealm();
+            try {
+                mavenApiClassLoader = pluginClassRealm.getWorld()
+                        .getRealm("maven.api");
+            } catch (NoSuchRealmException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            mavenApiClassLoader = org.apache.maven.plugin.Mojo.class
+                    .getClassLoader();
+            if (mavenApiClassLoader instanceof ClassRealm classRealm) {
+                try {
+                    mavenApiClassLoader = classRealm.getWorld()
+                            .getRealm("maven.api");
+                } catch (NoSuchRealmException e) {
+                    // Should never happen. In case, ignore the error and use
+                    // class loader from the Maven class
+                }
+            }
+        }
+        return new URLClassLoader(urls.toArray(URL[]::new),
+                mavenApiClassLoader);
+    }
+
+    private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
+        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin"
+                .equals(artifact.getGroupId())
+                && "flow-server".equals(artifact.getArtifactId());
+        String projectFlowVersion = project.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .orElse(null);
+        String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getVersion).findFirst()
+                .orElse(null);
+        if (projectFlowVersion != null
+                && !Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+            getLog().warn(
+                    "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
+                            + "Flow version for project is "
+                            + projectFlowVersion
+                            + ", Vaadin plugin is built for Flow version "
+                            + pluginFlowVersion + ".");
+        }
+    }
+
+    private Reflector getOrCreateReflector() {
+        Map<String, Object> pluginContext = getPluginContext();
+        String pluginKey = mojoExecution.getPlugin().getKey();
+        String reflectorKey = Reflector.class.getName() + "-" + pluginKey + "-"
+                + mojoExecution.getLifecyclePhase();
+        if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
+            getLog().debug("Using cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+            return Reflector.adapt(pluginContext.get(reflectorKey));
+        }
+        Reflector reflector = Reflector.of(project, mojoExecution);
+        if (pluginContext != null) {
+            pluginContext.put(reflectorKey, reflector);
+            getLog().debug("Cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+        }
+        return reflector;
+    }
+
+    private Method findExecuteMethod(Class<?> taskClass)
+            throws NoSuchMethodException {
+
+        while (taskClass != null && taskClass != Object.class) {
+            try {
+                Method executeInternal = taskClass
+                        .getDeclaredMethod("executeInternal");
+                executeInternal.setAccessible(true);
+                return executeInternal;
+            } catch (NoSuchMethodException e) {
+                // ignore
+            }
+            taskClass = taskClass.getSuperclass();
+        }
+        throw new NoSuchMethodException(
+                "Method executeInternal not found in " + getClass().getName());
     }
 
 }

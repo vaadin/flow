@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,24 +16,33 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.SyntheticState;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
@@ -43,10 +52,15 @@ import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
@@ -56,16 +70,19 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -109,8 +126,8 @@ public class NavigationStateRendererTest {
     }
 
     @Route(value = "regular")
-    private static class RegularView extends Text {
-        RegularView() {
+    public static class RegularView extends Text {
+        public RegularView() {
             super("");
         }
     }
@@ -120,6 +137,8 @@ public class NavigationStateRendererTest {
     private static class PreservedLayout extends Component
             implements RouterLayout {
         PreservedLayout() {
+            addAttachListener(e -> layoutAttachCount.getAndIncrement());
+            layoutUUID = UUID.randomUUID().toString();
         }
     }
 
@@ -128,13 +147,19 @@ public class NavigationStateRendererTest {
     private static class PreservedNestedView extends Text {
         PreservedNestedView() {
             super("");
+            addAttachListener(e -> viewAttachCount.getAndIncrement());
+            viewUUID = UUID.randomUUID().toString();
+        }
+    }
+
+    @Route(value = "proxyable")
+    public static class ProxyableView extends Text {
+        public ProxyableView() {
+            super("");
         }
     }
 
     private Router router;
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void init() {
@@ -144,7 +169,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForSingle() throws Exception {
+    public void getRouterLayoutForSingle() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(RouteParentLayout.class));
 
@@ -157,7 +182,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForSingleParent() throws Exception {
+    public void getRouterLayoutForSingleParent() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -173,7 +198,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForMulipleLayers() throws Exception {
+    public void getRouterLayoutForMulipleLayers() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -191,7 +216,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void instantiatorUse() throws ServiceException {
+    public void instantiatorUse() {
 
         MockVaadinServletService service = new MockVaadinServletService();
         service.init(new MockInstantiator() {
@@ -202,7 +227,7 @@ public class NavigationStateRendererTest {
                 return (T) new Text("foo");
             }
         });
-        MockUI ui = new MockUI(new MockVaadinSession(service));
+        MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));
 
         NavigationEvent event = new NavigationEvent(
                 new Router(new TestRouteRegistry()), new Location(""), ui,
@@ -210,16 +235,77 @@ public class NavigationStateRendererTest {
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
 
-        Component routeTarget = renderer.getRouteTarget(Component.class, event);
+        Component routeTarget = renderer.getRouteTarget(Component.class, event,
+                true);
 
         Assert.assertEquals(Text.class, routeTarget.getClass());
 
         UI.setCurrent(null);
     }
 
+    @Test
+    public void getRouteTarget_supportsProxyClasses() {
+        try {
+            Class<? extends ProxyableView> routeProxyClass = new ByteBuddy()
+                    .subclass(ProxyableView.class)
+                    .modifiers(Visibility.PUBLIC, SyntheticState.SYNTHETIC)
+                    .make().load(ProxyableView.class.getClassLoader(),
+                            ClassLoadingStrategy.Default.WRAPPER)
+                    .getLoaded();
+
+            AtomicInteger routeCreationCounter = new AtomicInteger(0);
+            MockVaadinServletService service = new MockVaadinServletService();
+            service.init(new MockInstantiator() {
+                @Override
+                public <T extends HasElement> T createRouteTarget(
+                        Class<T> routeTargetType, NavigationEvent event) {
+                    Assert.assertEquals(ProxyableView.class, routeTargetType);
+                    routeCreationCounter.incrementAndGet();
+                    return (T) ReflectTools.createInstance(routeProxyClass);
+                }
+            });
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                    service) {
+                @Override
+                public DeploymentConfiguration getConfiguration() {
+                    return configuration;
+                }
+            };
+            Mockito.when(configuration.isReactEnabled()).thenReturn(true);
+            MockUI ui = new MockUI(session);
+
+            NavigationEvent event = new NavigationEvent(
+                    new Router(new TestRouteRegistry()), new Location("child"),
+                    ui, NavigationTrigger.UI_NAVIGATE);
+            NavigationStateRenderer renderer = new NavigationStateRenderer(
+                    navigationStateFromTarget(ProxyableView.class));
+            renderer.handle(event);
+            HasElement view = ui.getInternals().getActiveRouterTargetsChain()
+                    .get(0);
+
+            Component routeTarget = renderer.getRouteTarget(ProxyableView.class,
+                    event, true);
+
+            // Getting route target should not create a new instance
+            Assert.assertEquals(
+                    "Only one view instance should have been created", 1,
+                    routeCreationCounter.get());
+            Assert.assertSame(view, routeTarget);
+        } finally {
+            UI.setCurrent(null);
+        }
+    }
+
     @Route("parent")
+    @Tag("div")
     private static class RouteParentLayout extends Component
             implements RouterLayout {
+        RouteParentLayout() {
+            addAttachListener(e -> layoutAttachCount.getAndIncrement());
+            layoutUUID = UUID.randomUUID().toString();
+        }
     }
 
     @ParentLayout(RouteParentLayout.class)
@@ -233,7 +319,27 @@ public class NavigationStateRendererTest {
     }
 
     @Route(value = "single", layout = RouteParentLayout.class)
+    @Tag("div")
     private static class SingleView extends Component {
+        SingleView() {
+            addAttachListener(e -> viewAttachCount.getAndIncrement());
+            viewUUID = UUID.randomUUID().toString();
+        }
+    }
+
+    @Route(value = "/:samplePersonID?/:action?(edit)")
+    @RouteAlias(value = "")
+    @Tag("div")
+    private static class RootRouteWithParam extends Component
+            implements BeforeEnterObserver {
+        RootRouteWithParam() {
+            addAttachListener(e -> viewAttachCount.getAndIncrement());
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            beforeEnterCount.getAndIncrement();
+        }
     }
 
     @Test
@@ -250,8 +356,8 @@ public class NavigationStateRendererTest {
 
         // given the session has a cache of something at this location
         AbstractNavigationStateRenderer.setPreservedChain(session, "",
-                new Location("preserved"),
-                new ArrayList<>(Arrays.asList(Mockito.mock(Component.class))));
+                new Location("preserved"), new ArrayList<>(Collections
+                        .singletonList(Mockito.mock(Component.class))));
 
         // given a UI that contain no window name with an instrumented Page
         // that records JS invocations
@@ -418,8 +524,7 @@ public class NavigationStateRendererTest {
         // given the session has a cache of PreservedView at this location
         final PreservedView view = new PreservedView();
         AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
-                new Location("preserved"),
-                new ArrayList<>(Arrays.asList(view)));
+                new Location("preserved"), new ArrayList<>(List.of(view)));
 
         // given an old UI that contains the component and an extra element
         MockUI ui0 = new MockUI(session);
@@ -459,14 +564,13 @@ public class NavigationStateRendererTest {
         session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
-        Router router = session.getService().getRouter();
+        router = session.getService().getRouter();
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 new NavigationStateBuilder(router)
                         .withTarget(PreservedNestedView.class)
                         .withPath("preservedNested").build());
         router.getRegistry().setRoute("preservedNested",
-                PreservedNestedView.class,
-                Arrays.asList(PreservedLayout.class));
+                PreservedNestedView.class, List.of(PreservedLayout.class));
 
         // given the session has a cache of PreservedNestedView at this location
         final PreservedLayout layout = new PreservedLayout();
@@ -526,7 +630,7 @@ public class NavigationStateRendererTest {
                 new Location(path,
                         new QueryParameters(Collections.singletonMap("a",
                                 Collections.emptyList()))),
-                new ArrayList<>(Arrays.asList(view)));
+                new ArrayList<>(List.of(view)));
 
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
@@ -549,6 +653,219 @@ public class NavigationStateRendererTest {
         Assert.assertEquals(0, count.get());
     }
 
+    private static AtomicInteger layoutAttachCount;
+    private static AtomicInteger viewAttachCount;
+    private static AtomicInteger beforeEnterCount;
+    private static String layoutUUID;
+    private static String viewUUID;
+
+    @Test
+    public void handle_preserveOnRefreshView_refreshCurrentRouteRecreatesComponents() {
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
+
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to PreservedNestedView
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(PreservedNestedView.class)
+                        .withPath("preservedNested").build());
+        router.getRegistry().setRoute("preservedNested",
+                PreservedNestedView.class, List.of(PreservedLayout.class));
+
+        // given a UI that contain a window name ROOT.123
+        MockUI ui = new MockUI(session);
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ui.getInternals().setExtendedClientDetails(details);
+
+        // when a navigation event reaches the renderer
+        renderer.handle(
+                new NavigationEvent(router, new Location("preservedNested"), ui,
+                        NavigationTrigger.PAGE_LOAD));
+
+        String currentLayoutUUID = layoutUUID;
+        String currentViewUUID = viewUUID;
+
+        Assert.assertEquals(1, layoutAttachCount.get());
+        Assert.assertEquals(1, viewAttachCount.get());
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // Should recreate route component only
+        ui.refreshCurrentRoute(false);
+        Assert.assertEquals(1, layoutAttachCount.get());
+        Assert.assertEquals(2, viewAttachCount.get());
+        Assert.assertEquals(currentLayoutUUID, layoutUUID);
+        Assert.assertNotEquals(currentViewUUID, viewUUID);
+        currentViewUUID = viewUUID;
+
+        // Should recreate route component and parent layout
+        ui.refreshCurrentRoute(true);
+        Assert.assertEquals(2, layoutAttachCount.get());
+        Assert.assertEquals(3, viewAttachCount.get());
+        Assert.assertNotEquals(currentLayoutUUID, layoutUUID);
+        Assert.assertNotEquals(currentViewUUID, viewUUID);
+
+    }
+
+    @Test
+    public void handle_normalView_refreshCurrentRouteRecreatesComponents() {
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
+
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to PreservedNestedView
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router).withTarget(SingleView.class)
+                        .withPath("single").build());
+        router.getRegistry().setRoute("single", SingleView.class,
+                List.of(RouteParentLayout.class));
+
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location("single"), ui,
+                NavigationTrigger.PAGE_LOAD));
+
+        String currentLayoutUUID = layoutUUID;
+        String currentViewUUID = viewUUID;
+
+        Assert.assertEquals(1, layoutAttachCount.get());
+        Assert.assertEquals(1, viewAttachCount.get());
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // Should recreate route component only
+        ui.refreshCurrentRoute(false);
+        Assert.assertEquals(1, layoutAttachCount.get());
+        Assert.assertEquals(2, viewAttachCount.get());
+        Assert.assertEquals(currentLayoutUUID, layoutUUID);
+        Assert.assertNotEquals(currentViewUUID, viewUUID);
+        currentViewUUID = viewUUID;
+
+        // Should recreate route component and parent layout
+        ui.refreshCurrentRoute(true);
+        Assert.assertEquals(2, layoutAttachCount.get());
+        Assert.assertEquals(3, viewAttachCount.get());
+        Assert.assertNotEquals(currentLayoutUUID, layoutUUID);
+        Assert.assertNotEquals(currentViewUUID, viewUUID);
+
+    }
+
+    @Test
+    public void handle_clientNavigation_withMatchingFlowRoute() {
+        viewAttachCount = new AtomicInteger();
+        beforeEnterCount = new AtomicInteger();
+
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to PreservedNestedView
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(RootRouteWithParam.class).withPath("")
+                        .build());
+        router.getRegistry().setRoute("", RootRouteWithParam.class, null);
+
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location(""), ui,
+                NavigationTrigger.PAGE_LOAD));
+
+        Assert.assertEquals(1, beforeEnterCount.get());
+        Assert.assertEquals(1, viewAttachCount.get());
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
+                    .thenReturn(Collections.singletonMap("/client-route",
+                            new AvailableViewInfo("", null, false,
+                                    "/client-route", false, false, null, null,
+                                    null, false)));
+
+            // This should not call attach or beforeEnter on root route
+            renderer.handle(
+                    new NavigationEvent(router, new Location("client-route"),
+                            ui, NavigationTrigger.CLIENT_SIDE));
+
+            Assert.assertEquals(1, beforeEnterCount.get());
+            Assert.assertEquals(1, viewAttachCount.get());
+        }
+    }
+
+    @Test
+    public void handle_refreshRoute_modalComponentsDetached() {
+        beforeEnterCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
+
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to PreservedNestedView
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(RootRouteWithParam.class).withPath("")
+                        .build());
+        router.getRegistry().setRoute("", RootRouteWithParam.class, null);
+
+        @Tag("modal-component")
+        class ModalComponent extends Component {
+            private int attachCount;
+            private int detachCount;
+
+            @Override
+            protected void onAttach(AttachEvent attachEvent) {
+                attachCount++;
+                super.onAttach(attachEvent);
+            }
+
+            @Override
+            protected void onDetach(DetachEvent detachEvent) {
+                detachCount++;
+                super.onDetach(detachEvent);
+            }
+        }
+
+        ModalComponent modalComponent = new ModalComponent();
+        MockUI ui = new MockUI(session);
+        ui.addModal(modalComponent);
+
+        renderer.handle(new NavigationEvent(router, new Location(""), ui,
+                NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, false,
+                true, true));
+
+        Assert.assertEquals(1, modalComponent.attachCount);
+        Assert.assertEquals(1, modalComponent.detachCount);
+    }
+
     private MockVaadinServletService createMockServiceWithInstantiator() {
         MockVaadinServletService service = new MockVaadinServletService();
         service.init(new MockInstantiator() {
@@ -556,8 +873,10 @@ public class NavigationStateRendererTest {
             public <T extends HasElement> T createRouteTarget(
                     Class<T> routeTargetType, NavigationEvent event) {
                 try {
-                    return routeTargetType.newInstance();
-                } catch (InstantiationException | IllegalAccessException e) {
+                    return routeTargetType.getDeclaredConstructor()
+                            .newInstance();
+                } catch (InstantiationException | IllegalAccessException
+                        | NoSuchMethodException | InvocationTargetException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -579,13 +898,14 @@ public class NavigationStateRendererTest {
     public void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
-
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setReactEnabled(false);
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         // When using react router we have the sever do the update in all cases
         // to control the correct timing for url updates
-        configuration.setReactRouterEnabled(false);
+        configuration.setReactEnabled(false);
         session.setConfiguration(configuration);
 
         // given a NavigationStateRenderer mapping to RegularView
@@ -622,7 +942,7 @@ public class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE,
-                null, true));
+                (BaseJsonNode) null, true));
         Assert.assertFalse(
                 "No pushState invocation is expected when forwardTo is true.",
                 pushStateCalled.get());
@@ -657,17 +977,176 @@ public class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
-        Assert.assertTrue("pushState invocation is expected.",
-                pushStateCalled.get());
-        Assert.assertTrue(pushStateLocations.stream()
-                .anyMatch(location -> location.getPath().equals("regular")));
-
-        pushStateCalled.set(false);
-
-        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
         Assert.assertFalse(
                 "No pushState invocation is expected when navigating to the current location.",
                 pushStateCalled.get());
+    }
+
+    @Test
+    public void purgeInactiveUIPreservedChainCache_activeUI_throws() {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        MockUI activeUI = new MockUI(session);
+        Component attachedToActiveUI = new PreservedView();
+        activeUI.add(attachedToActiveUI);
+
+        Assert.assertThrows(IllegalStateException.class,
+                () -> AbstractNavigationStateRenderer
+                        .purgeInactiveUIPreservedChainCache(activeUI));
+
+    }
+
+    @Test
+    public void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        Mockito.when(wrappedSession.getId()).thenReturn("A-SESSION-ID");
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service) {
+            @Override
+            public WrappedSession getSession() {
+                return wrappedSession;
+            }
+        };
+
+        MockUI activeUI = new MockUI(session);
+        Component attachedToActiveUI = new PreservedView();
+        activeUI.add(attachedToActiveUI);
+
+        MockUI inActiveUI = new MockUI(session);
+        Component attachedToInactiveUI = new PreservedView();
+        inActiveUI.add(attachedToInactiveUI);
+        inActiveUI.close();
+
+        // Simulate two tabs on the same view, but one has been closed
+        Location location = new Location("preserved");
+        AbstractNavigationStateRenderer.setPreservedChain(session, "ACTIVE",
+                location,
+                new ArrayList<>(Collections.singletonList(attachedToActiveUI)));
+        AbstractNavigationStateRenderer.setPreservedChain(session, "INACTIVE",
+                location, new ArrayList<>(
+                        Collections.singletonList(attachedToInactiveUI)));
+
+        AbstractNavigationStateRenderer
+                .purgeInactiveUIPreservedChainCache(inActiveUI);
+
+        Optional<ArrayList<HasElement>> active = AbstractNavigationStateRenderer
+                .getPreservedChain(session, "ACTIVE", location);
+        Assert.assertTrue(
+                "Expected preserved chain for active window to be present",
+                active.isPresent());
+
+        Optional<ArrayList<HasElement>> inactive = AbstractNavigationStateRenderer
+                .getPreservedChain(session, "INACTIVE", location);
+        Assert.assertFalse(
+                "Expected preserved chain for inactive window to be removed",
+                inactive.isPresent());
+
+    }
+
+    @Test
+    public void getRouteTarget_usageStatistics() {
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                service) {
+            @Override
+            public DeploymentConfiguration getConfiguration() {
+                return configuration;
+            }
+        };
+        Mockito.when(configuration.isReactEnabled()).thenReturn(true);
+
+        MockUI ui = new MockUI(session);
+        NavigationEvent event = new NavigationEvent(
+                new Router(new TestRouteRegistry()), new Location("home"), ui,
+                NavigationTrigger.UI_NAVIGATE);
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RegularView.class));
+
+        UsageStatistics.removeEntry(Constants.STATISTICS_FLOW_ROUTER);
+
+        renderer.handle(event);
+
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
+                .getName().equals(Constants.STATISTICS_FLOW_ROUTER)));
+    }
+
+    @Layout
+    @Tag("div")
+    public static class MainLayout extends Component implements RouterLayout {
+        private final Element element = new Element("div");
+
+        @Override
+        public Element getElement() {
+            return element;
+        }
+    }
+
+    @Test
+    public void handle_clientNavigationToFlowLayout_setTitleFromClientRoute() {
+        testClientNavigationTitle("Client", true);
+    }
+
+    @Test
+    public void handle_clientNavigation_doNotSetTitleFromClientRoute() {
+        testClientNavigationTitle(null, false);
+    }
+
+    private void testClientNavigationTitle(String expectedDocumentTitle,
+            boolean clientRouteHasFlowLayout) {
+        UI ui = createTestClientNavigationTitleUIForTitleTests();
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
+                    .thenReturn(Collections.singletonMap("/client-route",
+                            new AvailableViewInfo("Client", null, false,
+                                    "/client-route", false, false, null, null,
+                                    null, clientRouteHasFlowLayout)));
+
+            NavigationEvent event = new NavigationEvent(
+                    new Router(new TestRouteRegistry()),
+                    new Location("client-route"), ui,
+                    NavigationTrigger.UI_NAVIGATE);
+            NavigationStateRenderer renderer = new NavigationStateRenderer(
+                    new NavigationStateBuilder(router)
+                            .withTarget(MainLayout.class)
+                            .withPath("client-route").build());
+
+            renderer.handle(event);
+
+            Assert.assertNotNull(ui.getPage());
+            if (expectedDocumentTitle == null) {
+                Mockito.verify(ui.getPage(), Mockito.never())
+                        .setTitle("Client");
+            } else {
+                Mockito.verify(ui.getPage()).setTitle(expectedDocumentTitle);
+            }
+        }
+    }
+
+    private UI createTestClientNavigationTitleUIForTitleTests() {
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                service) {
+            @Override
+            public DeploymentConfiguration getConfiguration() {
+                return configuration;
+            }
+        };
+        Mockito.when(configuration.isReactEnabled()).thenReturn(false);
+        Page page = Mockito.mock(Page.class);
+        Mockito.when(page.getHistory()).thenReturn(Mockito.mock(History.class));
+        return new MockUI(session) {
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
     }
 }

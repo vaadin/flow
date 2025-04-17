@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,10 +19,8 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.nodes.Document;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * A class for exporting {@link UsageStatistics} entries.
@@ -58,11 +56,11 @@ public class UsageStatisticsExporter implements Serializable {
 
     private static String createUsageStatisticsJson(
             UsageStatistics.UsageEntry entry) {
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
 
         json.put("is", entry.getName());
         json.put("version", entry.getVersion());
 
-        return json.toJson();
+        return json.toString();
     }
 }

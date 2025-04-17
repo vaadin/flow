@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
@@ -116,13 +117,18 @@ public abstract class AbstractDevModeTest {
 
     private void mockApplicationConfiguration(
             ApplicationConfiguration appConfig, boolean enablePnpm) {
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
-        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
-
         Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                    .thenReturn(false);
+            Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
+        }
+        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
+
         Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
                 Mockito.anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));

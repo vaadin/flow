@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,7 @@
 
 package com.vaadin.flow.webpush;
 
-import nl.martijndwars.webpush.Subscription;
+import java.util.List;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
@@ -24,6 +24,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.webpush.WebPush;
 import com.vaadin.flow.server.webpush.WebPushMessage;
+import com.vaadin.flow.server.webpush.WebPushSubscription;
 
 @Route("")
 public class WebPushView extends Div {
@@ -44,7 +45,13 @@ public class WebPushView extends Div {
     WebPush webPush;
 
     private final Div log;
-    private Subscription subscription;
+    private final WebPushAction webPushAction = new WebPushAction(
+            "dashboard",
+            "Open Dashboard",
+            "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png"
+    );
+
+    private WebPushSubscription subscription;
 
     public WebPushView() {
         webPush = new WebPush(PUBLIC_KEY, PRIVATE_KEY, "test");
@@ -73,8 +80,25 @@ public class WebPushView extends Div {
 
         notify = new NativeButton("Notify", event -> {
             if (subscription != null) {
+                WebPushOptions webPushOptions = new WebPushOptions(
+                        List.of(webPushAction),
+                        "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
+                        "Testing notification",
+                        "This is my data!",
+                        "rtl",
+                        "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
+                        "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
+                        "de-DE",
+                        true,
+                        true,
+                        false,
+                        "My Notification",
+                        System.currentTimeMillis(),
+                        List.of(500, 500, 500)
+                );
+
                 webPush.sendNotification(subscription,
-                        new WebPushMessage(TEST_TITLE, "Testing notification"));
+                        new WebPushMessage(TEST_TITLE, webPushOptions));
                 addLogEntry("Sent notification");
             } else {
                 addLogEntry("No notification sent due to missing subscription");

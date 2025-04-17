@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,8 +30,6 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
                     });
 
                     if (subscription) {
-                        console.log(subscription);
-                        // console.log(JSON.parse(JSON.stringify(subscription)));
                         return JSON.parse(JSON.stringify(subscription));
                     }
                     throw new Error("Subscription failed. See console for exception.");

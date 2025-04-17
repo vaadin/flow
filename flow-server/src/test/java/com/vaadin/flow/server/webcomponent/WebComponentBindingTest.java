@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,12 +16,14 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.JacksonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -42,8 +44,8 @@ public class WebComponentBindingTest {
         PropertyConfigurationImpl<MyComponent, JsonValue> jsonProperty = new PropertyConfigurationImpl<>(
                 MyComponent.class, "json", JsonValue.class, null);
         jsonProperty.onChange(MyComponent::setJson);
-        binding.bindProperty(integerProperty, false, null);
-        binding.bindProperty(jsonProperty, false, null);
+        binding.bindProperty(integerProperty, false);
+        binding.bindProperty(jsonProperty, false);
     }
 
     @Test
@@ -73,6 +75,19 @@ public class WebComponentBindingTest {
         Assert.assertEquals(5, component.integer);
 
         JsonObject obj = Json.createObject();
+        obj.put("String", "Value");
+
+        binding.updateProperty("json", obj);
+        Assert.assertEquals("{\"String\":\"Value\"}",
+                component.jsonValue.toJson());
+    }
+
+    @Test
+    public void updateValueJackson() {
+        binding.updateProperty("int", 5);
+        Assert.assertEquals(5, component.integer);
+
+        ObjectNode obj = JacksonUtils.createObjectNode();
         obj.put("String", "Value");
 
         binding.updateProperty("json", obj);

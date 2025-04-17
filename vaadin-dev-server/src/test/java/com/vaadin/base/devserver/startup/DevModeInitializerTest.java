@@ -51,6 +51,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -312,8 +313,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private String getFlowGeneratedImports() throws IOException {
         return FileUtils.readFileToString(
-                FrontendUtils.getFlowGeneratedImports(
-                        new File(npmFolder, "frontend")),
+                FrontendUtils.getFlowGeneratedImports(new File(npmFolder,
+                        FrontendUtils.DEFAULT_FRONTEND_DIR)),
                 StandardCharsets.UTF_8);
     }
 
@@ -351,9 +352,14 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     javaSourceFolder.getRoot().getAbsolutePath());
 
             Assert.assertFalse(generatedOpenApiJson.exists());
-            devModeStartupListener.onStartup(classes, servletContext);
-            handler = getDevModeHandler();
-            waitForDevServer();
+            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
+                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                        Mockito.any())).thenReturn(true);
+                devModeStartupListener.onStartup(classes, servletContext);
+                handler = getDevModeHandler();
+                waitForDevServer();
+            }
 
             Mockito.verify(taskGenerateEndpoint, times(1)).execute();
         } finally {
@@ -414,9 +420,14 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     javaSourceFolder.getRoot().getAbsolutePath());
 
-            devModeStartupListener.onStartup(classes, servletContext);
-            handler = getDevModeHandler();
-            waitForDevServer();
+            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
+                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                        Mockito.any())).thenReturn(true);
+                devModeStartupListener.onStartup(classes, servletContext);
+                handler = getDevModeHandler();
+                waitForDevServer();
+            }
 
             Mockito.verify(taskGenerateEndpoint, times(1)).execute();
         } finally {

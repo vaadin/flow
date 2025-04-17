@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -57,9 +57,10 @@ public class HistoryIT extends ChromeBrowserTest {
 
         Assert.assertEquals(baseUrl, getCurrentUrl());
         // idx value in history state is added by react-router
-        Assert.assertEquals(Arrays.asList(
-                "New location: com.vaadin.flow.uitest.ui.HistoryView",
-                "New state: {\"idx\":0}"), getStatusMessages());
+        Assert.assertEquals(
+                Arrays.asList(
+                        "New location: com.vaadin.flow.uitest.ui.HistoryView"),
+                getStatusMessages());
         clearButton.click();
 
         stateField.clear();

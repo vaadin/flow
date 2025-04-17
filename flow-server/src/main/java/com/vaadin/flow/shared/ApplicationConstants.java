@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -192,6 +192,12 @@ public class ApplicationConstants implements Serializable {
      * request.
      */
     public static final String REQUEST_TYPE_WEBCOMPONENT_RESYNC = "webcomponent-resync";
+
+    /**
+     * Request type parameter value indicating a translation properties file
+     * request.
+     */
+    public static final String REQUEST_TYPE_TRANSLATION_FILE = "i18n";
 
     /**
      * Attribute name for marking internal router link anchors.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,8 @@ import com.vaadin.flow.server.Command;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+import elemental.json.impl.JreJsonNull;
 
 @Route("com.vaadin.flow.uitest.ui.HistoryView")
 public class HistoryView extends AbstractDivView {
@@ -52,8 +54,14 @@ public class HistoryView extends AbstractDivView {
         history.setHistoryStateChangeHandler(e -> {
             addStatus("New location: " + e.getLocation().getPath());
 
-            e.getState().ifPresent(
-                    state -> addStatus("New state: " + state.toJson()));
+            e.getState().ifPresent(state -> {
+                if (state instanceof JsonObject) {
+                    JsonValue usr = ((JsonObject) state).get("usr");
+                    if (usr != null && !(usr instanceof JreJsonNull)) {
+                        addStatus("New state: " + usr.toJson());
+                    }
+                }
+            });
         });
     }
 

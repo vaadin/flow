@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,10 +20,17 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
@@ -34,13 +41,15 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReload.Backend;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
@@ -49,7 +58,6 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevToolsToken;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -62,11 +70,8 @@ import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
-
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -106,7 +111,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             htmlElement.attr("lang", locale.getLanguage());
         }
 
-        JsonObject initialJson = Json.createObject();
+        initializeFeatureFlags(indexDocument, request);
+
+        ObjectNode initialJson = JacksonUtils.createObjectNode();
 
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
@@ -205,6 +212,28 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
+    private void initializeFeatureFlags(Document indexDocument,
+            VaadinRequest request) {
+        String script = featureFlagsInitializer(request);
+        Element scriptElement = indexDocument.head().prependElement("script");
+        scriptElement.attr(SCRIPT_INITIAL, "");
+        scriptElement.appendChild(new DataNode(script));
+    }
+
+    static String featureFlagsInitializer(VaadinRequest request) {
+        return FeatureFlags.get(request.getService().getContext()).getFeatures()
+                .stream().filter(Feature::isEnabled)
+                .map(feature -> String.format("activator(\"%s\");",
+                        feature.getId()))
+                .collect(Collectors.joining("\n",
+                        """
+                                window.Vaadin = window.Vaadin || {};
+                                window.Vaadin.featureFlagsUpdaters = window.Vaadin.featureFlagsUpdaters || [];
+                                window.Vaadin.featureFlagsUpdaters.push((activator) => {
+                                """,
+                        "});"));
+    }
+
     private static void addDevBundleTheme(Document document,
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
@@ -222,9 +251,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void applyThemeVariant(Document indexDocument,
-            VaadinContext context) throws IOException {
-        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> indexDocument
-                .head().parent().attr("theme", theme.variant()));
+            VaadinContext context) {
+        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
+            String variant = theme.variant();
+            if (!variant.isEmpty()) {
+                indexDocument.head().parent().attr("theme", variant);
+            }
+        });
     }
 
     private void addStyleTagReferences(Document indexDocument,
@@ -367,7 +400,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             }
         }
 
-        JsonObject devToolsConf = Json.createObject();
+        ObjectNode devToolsConf = JacksonUtils.createObjectNode();
         devToolsConf.put("enable", config.isDevModeLiveReloadEnabled());
         devToolsConf.put("url",
                 BootstrapHandlerHelper.getPushURL(session, request));
@@ -380,7 +413,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
                 window.Vaadin.devToolsConf = %s;
-                    """, devToolsConf.toJson()));
+                """, devToolsConf));
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
 
@@ -392,22 +425,47 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
             VaadinRequest request) {
         String remoteAddress = request.getRemoteAddr();
-        String hostsAllowed = configuration.getStringProperty(
-                InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
+        String hostsAllowedFromCfg = configuration.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
+        String hostsAllowed = (hostsAllowedFromCfg != null
+                && !hostsAllowedFromCfg.isBlank()) ? hostsAllowedFromCfg : null;
 
-        if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed)) {
+        if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed, true)) {
             return false;
         }
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null) {
+        String remoteHeaderIp = configuration.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER, null);
+        if (remoteHeaderIp != null) {
+            return isAllowedDevToolsHost(request.getHeader(remoteHeaderIp),
+                    hostsAllowed, false);
+        }
+
+        Enumeration<String> allForwardedForHeaders = request
+                .getHeaders("X-Forwarded-For");
+        if (allForwardedForHeaders != null
+                && allForwardedForHeaders.hasMoreElements()) {
+            String forwardedFor = String.join(",",
+                    Collections.list(allForwardedForHeaders));
+
             if (forwardedFor.contains(",")) {
                 // X-Forwarded-For: <client>, <proxy1>, <proxy2>
                 // Elements are comma-separated, with optional whitespace
                 // surrounding the commas.
-                forwardedFor = forwardedFor.split(",")[0];
-            }
-            if (!isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed)) {
-                return false;
+                // Validate all hops
+                String[] hops = forwardedFor.split(",");
+                if (hops.length > 0) {
+                    return Stream.of(hops).map(String::trim)
+                            .allMatch(ip -> isAllowedDevToolsHost(ip,
+                                    hostsAllowed, false));
+                } else {
+                    // Potential fake header with no addresses, e.g.
+                    // 'X-Forwarded-For: ,,,'
+                    return false;
+                }
+
+            } else {
+                return isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed,
+                        false);
             }
         }
 
@@ -416,16 +474,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static boolean isAllowedDevToolsHost(String remoteAddress,
-            String hostsAllowed) {
-        if (remoteAddress == null) {
-            // No remote address available so we cannot check...
+            String hostsAllowed, boolean allowLocal) {
+        if (remoteAddress == null || remoteAddress.isBlank()
+                || (hostsAllowed == null && !allowLocal)) {
+            // No check needed if the remote address is not available
+            // or if local addresses must be rejected and there are no host
+            // rules defined
             return false;
         }
-        // Always allow localhost
         try {
             InetAddress inetAddress = InetAddress.getByName(remoteAddress);
             if (inetAddress.isLoopbackAddress()) {
-                return true;
+                return allowLocal;
             }
         } catch (Exception e) {
             getLogger().debug(
@@ -449,23 +509,22 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return false;
     }
 
-    private void addInitialFlow(JsonObject initialJson, Document indexDocument,
+    private void addInitialFlow(ObjectNode initialJson, Document indexDocument,
             VaadinRequest request) {
         SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
                 indexDocument.head(), request);
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + JsonUtil.stringify(initialJson)
-                + ";"));
+                "window.Vaadin.TypeScript= " + initialJson.toString() + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 
-    private void includeInitialUidl(JsonObject initialJson,
+    private void includeInitialUidl(ObjectNode initialJson,
             VaadinSession session, VaadinRequest request,
             VaadinResponse response) {
-        JsonObject initial = getInitialJson(request, response, session);
-        initialJson.put(SCRIPT_INITIAL, initial);
+        ObjectNode initial = getInitialJson(request, response, session);
+        initialJson.set(SCRIPT_INITIAL, initial);
     }
 
     @Override
@@ -554,14 +613,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     protected static void addGeneratedIndexContent(Document targetDocument,
-            JsonObject statsJson) {
+            ObjectNode statsJson) {
 
-        JsonArray indexHtmlGeneratedRows = statsJson
-                .getArray("indexHtmlGenerated");
-        List<String> toAdd = new ArrayList<>();
+        ArrayNode indexHtmlGeneratedRows = (ArrayNode) statsJson
+                .get("indexHtmlGenerated");
 
-        toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows)
-                .map(value -> value.asString()).toList());
+        List<String> toAdd = new ArrayList<>(JacksonUtils
+                .stream(indexHtmlGeneratedRows).map(JsonNode::asText).toList());
 
         for (String row : toAdd) {
             targetDocument.head().append(row);

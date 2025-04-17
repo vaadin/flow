@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.webcomponent;
 
+import java.net.URI;
 import java.util.List;
 
 import org.junit.Assert;
@@ -222,8 +223,12 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final List<WebElement> links = documentHead
                 .findElements(By.tagName("link"));
         Assert.assertEquals(1, links.size());
-        Assert.assertTrue(links.get(0).getAttribute("href")
+        String documentCssURL = links.get(0).getAttribute("href");
+        Assert.assertTrue(documentCssURL
                 .contains("VAADIN/themes/embedded-theme/document.css"));
+        URI documentCssURI = URI.create(documentCssURL);
+        Assert.assertTrue("document.css URL should be absolute, but was "
+                + documentCssURL, documentCssURI.isAbsolute());
     }
 
 }

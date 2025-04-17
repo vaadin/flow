@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -71,4 +71,13 @@ public @interface Synchronize {
      * @return the property update mode for disabled element
      */
     DisabledUpdateMode allowUpdates() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
+
+    /**
+     * Makes this property able to synchronize even when the related node is
+     * inert.
+     *
+     * @return {@code true} to allow inert synchronization, {@code false} to
+     *         disallow. Defaults to {@code false}.
+     */
+    boolean allowInert() default false;
 }

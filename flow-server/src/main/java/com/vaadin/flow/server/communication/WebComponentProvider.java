@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -193,7 +193,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         // get the running script
         boolean productionMode = request.getService()
                 .getDeploymentConfiguration().isProductionMode();
-        return getThisScript(tagName) + "var scriptUri = thisScript.src;"
+
+        return IndexHtmlRequestHandler.featureFlagsInitializer(request)
+                + getThisScript(tagName) + "var scriptUri = thisScript.src;"
                 + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
                 + "');" + "var context = scriptUri.substring(0, index+"
                 + WEB_COMPONENT_PATH.length() + ");"
@@ -229,7 +231,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                         const delay = 200;
                         const poll = async () => {
                           try {
-                            const response = await fetch(bootstrapSrc, { method: 'HEAD', headers: { 'X-DevModePoll': 'true' } });
+                            const response = await fetch(bootstrapSrc, { method: 'HEAD', credentials: 'include', headers: { 'X-DevModePoll': 'true' } });
                             if (response.headers.has('X-DevModePending')) {
                               setTimeout(poll, delay);
                             } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,20 +18,22 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import elemental.json.JsonType;
 
 public class DomEventTest {
     @DomEvent("event")
@@ -104,42 +106,47 @@ public class DomEventTest {
     private <T extends ComponentEvent<Component>> void assertSettings(
             Class<T> eventType, String expectedFilter, int expectedTimeout,
             DebouncePhase... expectedPhases) {
-        JsonObject settings = getEventSettings(eventType);
+        JsonNode settings = getEventSettings(eventType);
 
         if (expectedFilter == null) {
-            Assert.assertArrayEquals(new String[0], settings.keys());
+            Assert.assertEquals(new ArrayList<String>(0),
+                    JacksonUtils.getKeys(settings));
             return;
         }
 
-        Assert.assertArrayEquals(new String[] { expectedFilter },
-                settings.keys());
+        Assert.assertEquals(new ArrayList<String>() {
+            {
+                add(expectedFilter);
+            }
+        }, JacksonUtils.getKeys(settings));
 
         if (expectedTimeout == 0 && expectedPhases.length == 0) {
             Assert.assertEquals(
                     "There should be a boolean instead of empty phase list",
-                    JsonType.BOOLEAN, settings.get(expectedFilter).getType());
-            boolean isFilter = settings.getBoolean(expectedFilter);
+                    JsonNodeType.BOOLEAN,
+                    settings.get(expectedFilter).getNodeType());
+            boolean isFilter = settings.get(expectedFilter).booleanValue();
             Assert.assertTrue("Expression should be used as a filter",
                     isFilter);
             return;
         }
 
-        JsonArray filterSettings = settings.getArray(expectedFilter);
+        ArrayNode filterSettings = (ArrayNode) settings.get(expectedFilter);
 
-        Assert.assertEquals(1, filterSettings.length());
+        Assert.assertEquals(1, filterSettings.size());
 
-        JsonArray filterSetting = filterSettings.getArray(0);
+        ArrayNode filterSetting = (ArrayNode) filterSettings.get(0);
 
         Assert.assertEquals("Debunce timeout should be as expected",
-                expectedTimeout, (int) filterSetting.getNumber(0));
+                expectedTimeout, filterSetting.get(0).intValue());
 
         Assert.assertEquals("Number of phases should be as expected",
-                expectedPhases.length, filterSetting.length() - 1);
+                expectedPhases.length, filterSetting.size() - 1);
 
         for (int i = 0; i < expectedPhases.length; i++) {
             String expectedIdentifier = expectedPhases[i].getIdentifier();
             Assert.assertEquals(expectedIdentifier,
-                    filterSetting.getString(i + 1));
+                    filterSetting.get(i + 1).textValue());
         }
     }
 
@@ -147,7 +154,7 @@ public class DomEventTest {
             JsonObject filterSettings) {
     }
 
-    private <T extends ComponentEvent<Component>> JsonObject getEventSettings(
+    private <T extends ComponentEvent<Component>> JsonNode getEventSettings(
             Class<T> eventType) {
         Component component = new Component(new Element("element")) {
         };
@@ -165,13 +172,12 @@ public class DomEventTest {
         Assert.assertEquals("event", change.getKey());
 
         ConstantPoolKey value = (ConstantPoolKey) change.getValue();
-        JsonObject constantPoolUpdate = Json.createObject();
+        ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
         value.export(constantPoolUpdate);
 
-        String[] keys = constantPoolUpdate.keys();
-        Assert.assertEquals(1, keys.length);
-        JsonObject eventSettings = constantPoolUpdate.getObject(keys[0]);
+        List<String> keys = JacksonUtils.getKeys(constantPoolUpdate);
+        Assert.assertEquals(1, keys.size());
 
-        return eventSettings;
+        return constantPoolUpdate.get(keys.get(0));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -344,17 +344,23 @@ public class StateNode implements Serializable {
         List<StateNode> nodes = new ArrayList<>();
         visitNodeTreeBottomUp(nodes::add);
         nodes.forEach(StateNode::handleOnDetach);
-        for (StateNode node : nodes) {
-            if (node.hasBeenAttached) {
-                node.hasBeenDetached = true;
-                detaching = true;
-                try {
-                    node.fireDetachListeners();
-                } finally {
-                    detaching = false;
+        try {
+            detaching = true;
+            for (StateNode node : nodes) {
+                if (node.hasBeenAttached) {
+                    node.hasBeenDetached = true;
+                    node.detaching = true;
+                    try {
+                        node.fireDetachListeners();
+                    } finally {
+                        node.detaching = false;
+                    }
                 }
             }
+        } finally {
+            detaching = false;
         }
+
     }
 
     /**
@@ -450,7 +456,10 @@ public class StateNode implements Serializable {
             stateNode.hasBeenAttached = false;
             stateNode.hasBeenDetached = false;
         });
-        visitNodeTreeBottomUp(sn -> sn.fireAttachListeners(true));
+        visitNodeTreeBottomUp(sn -> {
+            sn.hasBeenAttached = true;
+            sn.fireAttachListeners(true);
+        });
     }
 
     /**

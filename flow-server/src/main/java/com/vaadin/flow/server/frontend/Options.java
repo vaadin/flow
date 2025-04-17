@@ -8,14 +8,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-
-import elemental.json.JsonObject;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
  * Build a <code>NodeExecutor</code> instance.
@@ -38,7 +40,7 @@ public class Options implements Serializable {
 
     private boolean enableImportsUpdate = false;
 
-    private boolean enableWebpackConfigUpdate = false;
+    private boolean enableConfigUpdate = false;
 
     private boolean runNpmInstall = false;
 
@@ -56,7 +58,7 @@ public class Options implements Serializable {
 
     private boolean useByteCodeScanner = false;
 
-    private JsonObject tokenFileData;
+    private JsonNode tokenFileData;
 
     private File tokenFile;
 
@@ -81,6 +83,10 @@ public class Options implements Serializable {
     private boolean skipDevBundle = false;
 
     private boolean compressBundle = true;
+
+    private List<String> frontendExtraFileExtensions = null;
+
+    private FrontendDependenciesScanner frontendDependenciesScanner;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -121,17 +127,44 @@ public class Options implements Serializable {
 
     private boolean frontendHotdeploy = false;
 
-    private boolean reactRouterEnabled = true;
+    private boolean reactEnable = true;
+
+    private boolean npmExcludeWebComponents = false;
+
+    /**
+     * Removes generated files from a previous execution that are no more
+     * created.
+     */
+    private boolean cleanOldGeneratedFiles = false;
+
+    private boolean frontendIgnoreVersionChecks = false;
 
     /**
      * Creates a new instance.
      *
      * @param lookup
      *            a {@link Lookup} to discover services used by Flow (SPI)
+     * @param npmFolder
+     *            a project's base folder
      */
     public Options(Lookup lookup, File npmFolder) {
+        this(lookup, new ClassFinder.CachedClassFinder(
+                lookup.lookup(ClassFinder.class)), npmFolder);
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * @param lookup
+     *            a {@link Lookup} to discover services used by Flow (SPI)
+     * @param classFinder
+     *            a class finder to use in node tasks
+     * @param npmFolder
+     *            a project's base folder
+     */
+    public Options(Lookup lookup, ClassFinder classFinder, File npmFolder) {
         this.lookup = lookup;
-        this.classFinder = lookup.lookup(ClassFinder.class);
+        this.classFinder = classFinder;
         this.npmFolder = npmFolder;
     }
 
@@ -164,6 +197,26 @@ public class Options implements Serializable {
     }
 
     /**
+     * Sets the folders where frontend build results should be stored.
+     *
+     * @param webappResourcesDirectory
+     *            the directory to set for build tool to output its build
+     *            results, meant for serving from context root.
+     * @param resourceOutputDirectory
+     *            the directory to output generated non-served resources, such
+     *            as the "config/stats.json" stats file, and the
+     *            "config/flow-build-info.json" token file.
+     * @return this builder
+     */
+    public Options withBuildResultFolders(File webappResourcesDirectory,
+            File resourceOutputDirectory) {
+        this.enableConfigUpdate = true;
+        this.webappResourcesDirectory = webappResourcesDirectory;
+        this.resourceOutputDirectory = resourceOutputDirectory;
+        return this;
+    }
+
+    /**
      * Sets the webpack related properties.
      *
      * @param webappResourcesDirectory
@@ -174,21 +227,22 @@ public class Options implements Serializable {
      *            as the "config/stats.json" stats file, and the
      *            "config/flow-build-info.json" token file.
      * @return this builder
+     * @deprecated to be removed, use
+     *             {@link #withBuildResultFolders(File, File)} instead.
      */
+    @Deprecated(since = "24.4", forRemoval = true)
     public Options withWebpack(File webappResourcesDirectory,
             File resourceOutputDirectory) {
-        this.enableWebpackConfigUpdate = true;
-        this.webappResourcesDirectory = webappResourcesDirectory;
-        this.resourceOutputDirectory = resourceOutputDirectory;
-        return this;
+        return withBuildResultFolders(webappResourcesDirectory,
+                resourceOutputDirectory);
     }
 
     /**
-     * Sets whether to enable packages and webpack file updates. Default is
+     * Sets whether to enable packages and frontend file updates. Default is
      * <code>true</code>.
      *
      * @param enablePackagesUpdate
-     *            <code>true</code> to enable packages and webpack update,
+     *            <code>true</code> to enable packages and frontend update,
      *            otherwise <code>false</code>
      * @return this builder
      */
@@ -263,7 +317,7 @@ public class Options implements Serializable {
 
     /**
      * Sets whether copy resources from classpath to the appropriate npm package
-     * folder so as they are available for webpack build.
+     * folder so as they are available for frontend build.
      *
      * @param jars
      *            set of class nodes to be visited. Not {@code null}
@@ -345,6 +399,9 @@ public class Options implements Serializable {
      * @return folder to generate frontend files in
      */
     public File getFrontendGeneratedFolder() {
+        if (frontendGeneratedFolder == null) {
+            return new File(getFrontendDirectory(), FrontendUtils.GENERATED);
+        }
         return frontendGeneratedFolder;
     }
 
@@ -370,7 +427,7 @@ public class Options implements Serializable {
      *            the object to fill with token file data
      * @return the builder, for chaining
      */
-    public Options populateTokenFileData(JsonObject object) {
+    public Options populateTokenFileData(JsonNode object) {
         tokenFileData = object;
         return this;
     }
@@ -519,6 +576,19 @@ public class Options implements Serializable {
     }
 
     /**
+     * Whether to ignore node/npm tool version checks or not. Defaults to
+     * {@code false}.
+     *
+     * @param frontendIgnoreVersionChecks
+     *            {@code true} to ignore node/npm tool version checks
+     */
+    public Options withFrontendIgnoreVersionChecks(
+            boolean frontendIgnoreVersionChecks) {
+        this.frontendIgnoreVersionChecks = frontendIgnoreVersionChecks;
+        return this;
+    }
+
+    /**
      * Checks if running with a dev server (when not in production mode).
      *
      * @return true to run with a dev server, false to run in development bundle
@@ -611,9 +681,9 @@ public class Options implements Serializable {
     }
 
     /**
-     * Get the output directory for webpack output.
+     * Get the output directory for frontend build output.
      *
-     * @return webpackOutputDirectory
+     * @return webappResourcesDirectory
      */
     public File getWebappResourcesDirectory() {
         return webappResourcesDirectory;
@@ -660,7 +730,12 @@ public class Options implements Serializable {
         return this;
     }
 
-    protected FeatureFlags getFeatureFlags() {
+    /**
+     * Get the available feature flags.
+     *
+     * @return FeatureFlags object
+     */
+    public FeatureFlags getFeatureFlags() {
         if (featureFlags == null) {
             featureFlags = new FeatureFlags(lookup);
             if (javaResourceFolder != null) {
@@ -708,8 +783,16 @@ public class Options implements Serializable {
         return enableImportsUpdate;
     }
 
+    public boolean isEnableConfigUpdate() {
+        return enableConfigUpdate;
+    }
+
+    /**
+     * @deprecated use {@link #isEnableConfigUpdate()}
+     */
+    @Deprecated(since = "24.4", forRemoval = true)
     public boolean isEnableWebpackConfigUpdate() {
-        return enableWebpackConfigUpdate;
+        return isEnableConfigUpdate();
     }
 
     public boolean isRunNpmInstall() {
@@ -736,7 +819,7 @@ public class Options implements Serializable {
         return useByteCodeScanner;
     }
 
-    public JsonObject getTokenFileData() {
+    public JsonNode getTokenFileData() {
         return tokenFileData;
     }
 
@@ -862,12 +945,130 @@ public class Options implements Serializable {
         return compressBundle;
     }
 
-    public boolean isReactRouterEnabled() {
-        return reactRouterEnabled;
+    public boolean isReactEnabled() {
+        return reactEnable;
     }
 
-    public Options withReactRouter(boolean reactRouterEnabled) {
-        this.reactRouterEnabled = reactRouterEnabled;
+    public Options withReact(boolean reactEnable) {
+        this.reactEnable = reactEnable;
+        if (reactEnable && !FrontendUtils
+                .isReactRouterRequired(getFrontendDirectory())) {
+            LoggerFactory.getLogger(Options.class).debug(
+                    "Setting reactEnable to false as Vaadin Router is used!");
+            this.reactEnable = false;
+        }
         return this;
+    }
+
+    /**
+     * Sets whether generated files from a previous execution that are no more
+     * created should be removed.
+     * <p>
+     * </p>
+     * By default, the odl generated files are preserved.
+     *
+     * @param clean
+     *            {@literal true} if old generated files should be removed,
+     *            {@literal false} if they should be preserved.
+     *
+     * @return this builder
+     */
+    public Options withCleanOldGeneratedFiles(boolean clean) {
+        this.cleanOldGeneratedFiles = clean;
+        return this;
+    }
+
+    /**
+     * Gets if generated files from a previous execution that are no more
+     * created should be removed.
+     *
+     * @return {@literal true} if old generated files should be removed,
+     *         otherwise {@literal false}.
+     */
+    public boolean isCleanOldGeneratedFiles() {
+        return cleanOldGeneratedFiles;
+    }
+
+    /**
+     * Sets the extra file extensions used in the project.
+     *
+     * @param frontendExtraFileExtensions
+     *            the file extensions to add for the project
+     * @return this builder
+     */
+    public Options withFrontendExtraFileExtensions(
+            List<String> frontendExtraFileExtensions) {
+        this.frontendExtraFileExtensions = frontendExtraFileExtensions;
+        return this;
+    }
+
+    /**
+     * Gets the project file extensions.
+     *
+     * @return the project file extensions
+     */
+    public List<String> getFrontendExtraFileExtensions() {
+        return frontendExtraFileExtensions;
+    }
+
+    /**
+     * Sets whether to exclude web component npm packages in packages.json.
+     *
+     * @return this builder
+     */
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
+    }
+
+    /**
+     * Sets whether to exclude web component npm packages in packages.json.
+     *
+     * @param exclude
+     *            whether to exclude web component npm packages
+     * @return this builder
+     */
+    public Options withNpmExcludeWebComponents(boolean exclude) {
+        this.npmExcludeWebComponents = exclude;
+        return this;
+    }
+
+    /**
+     * Whether to ignore node/npm tool version checks or not.
+     *
+     * @return {@code true} to ignore node/npm tool version checks
+     */
+    public boolean isFrontendIgnoreVersionChecks() {
+        return frontendIgnoreVersionChecks;
+    }
+
+    /**
+     * Sets the frontend dependencies scanner to use.
+     *
+     * @param frontendDependenciesScanner
+     *            frontend dependencies scanner
+     * @return this builder
+     */
+    public Options withFrontendDependenciesScanner(
+            FrontendDependenciesScanner frontendDependenciesScanner) {
+        this.frontendDependenciesScanner = frontendDependenciesScanner;
+        return this;
+    }
+
+    /**
+     * Gets the frontend dependencies scanner to use. If not is not pre-set,
+     * this initializes a new one based on the Options set.
+     *
+     * @return frontend dependencies scanner
+     */
+    public FrontendDependenciesScanner getFrontendDependenciesScanner() {
+        if (frontendDependenciesScanner == null) {
+            boolean reactEnabled = isReactEnabled() && FrontendUtils
+                    .isReactRouterRequired(getFrontendDirectory());
+            frontendDependenciesScanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                    .createScanner(!isUseByteCodeScanner(), getClassFinder(),
+                            isGenerateEmbeddableWebComponents(),
+                            getFeatureFlags(), reactEnabled);
+        }
+        return frontendDependenciesScanner;
     }
 }

@@ -15,13 +15,20 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.experimental.FeatureFlags
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.flow.server.frontend.Options
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
+import com.vaadin.flow.server.frontend.scanner.ClassFinder
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
 import com.vaadin.pro.licensechecker.LicenseChecker
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
@@ -40,9 +47,10 @@ import org.gradle.api.tasks.bundling.Jar
  * * Update [FrontendUtils.WEBPACK_CONFIG] file.
  *
  */
-public open class VaadinBuildFrontendTask : DefaultTask() {
-    private val config: PluginEffectiveConfiguration =
-        PluginEffectiveConfiguration.get(project)
+public abstract class VaadinBuildFrontendTask : DefaultTask() {
+
+    @get:Internal
+    internal abstract val adapter: Property<GradlePluginAdapter>
 
     init {
         group = "Vaadin"
@@ -64,28 +72,53 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         }
     }
 
+    internal fun configure(config: PluginEffectiveConfiguration) {
+        adapter.set(GradlePluginAdapter(this, config, false))
+    }
+
     @TaskAction
     public fun vaadinBuildFrontend() {
+        val config = adapter.get().config
         logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
-        val adapter = GradlePluginAdapter(project, config, false)
         // sanity check
-        val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
+        val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
-        val cleanTask = TaskCleanFrontendFiles(config.npmFolder.get())
-        BuildFrontendUtil.runNodeUpdater(adapter)
+        val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
+            .withFrontendDirectory(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()))
+            .withFrontendGeneratedFolder(config.generatedTsFolder.get())
+        val cleanTask = TaskCleanFrontendFiles(options)
 
-        if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
-                (adapter.servletResourceOutputDirectory())) {
-            BuildFrontendUtil.runFrontendBuild(adapter)
+        val reactEnabled: Boolean = adapter.get().isReactEnabled()
+                && FrontendUtils.isReactRouterRequired(
+            BuildFrontendUtil.getFrontendDirectory(adapter.get())
+        )
+        val featureFlags: FeatureFlags = FeatureFlags(
+            adapter.get().createLookup(adapter.get().getClassFinder())
+        )
+        if (adapter.get().javaResourceFolder() != null) {
+            featureFlags.setPropertiesLocation(adapter.get().javaResourceFolder())
+        }
+        val frontendDependencies: FrontendDependenciesScanner = FrontendDependenciesScannerFactory()
+            .createScanner(
+                !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
+                adapter.get().generateEmbeddableWebComponents(), featureFlags,
+                reactEnabled
+            )
+
+        BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)
+
+        if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
+                (adapter.get().servletResourceOutputDirectory())) {
+            BuildFrontendUtil.runFrontendBuild(adapter.get())
             if (cleanFrontendFiles()) {
                 cleanTask.execute()
             }
         }
         LicenseChecker.setStrictOffline(true)
-        BuildFrontendUtil.validateLicenses(adapter)
+        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter.get(), frontendDependencies)
 
-        BuildFrontendUtil.updateBuildFile(adapter)
+        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired)
     }
 
 
@@ -101,5 +134,17 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
      *
      * @return `true` to remove created files, `false` to keep the files
      */
-    protected open fun cleanFrontendFiles(): Boolean = true
+    protected open fun cleanFrontendFiles(): Boolean {
+        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()),
+                        adapter.get().classFinder)) {
+            /*
+             * Override this to not clean generated frontend files after the
+             * build. For Hilla, the generated files can still be useful for
+             * developers after the build. For example, a developer can use
+             * {@code vite.generated.ts} to run tests with vitest in CI.
+             */
+            return false
+        }
+        return adapter.get().config.cleanFrontendFiles.get()
+    }
 }

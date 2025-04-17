@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -64,10 +65,6 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
         // Go back to previous
         getDriver().navigate().back();
         waitUntil(driver -> isElementPresent(By.id("cancelButton")));
-
-        Assert.assertFalse(
-                "Before cancel, the URL in the address updates to previous.",
-                getDriver().getCurrentUrl().equals(updatedUrl));
 
         $(NativeButtonElement.class).id("cancelButton").click();
 

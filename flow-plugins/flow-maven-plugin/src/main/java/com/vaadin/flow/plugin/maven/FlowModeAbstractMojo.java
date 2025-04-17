@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,34 +15,56 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import javax.inject.Inject;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.build.BuildContext;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
+
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -73,13 +95,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
+    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
 
     /**
      * The folder where flow will put TS API files for client projects.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
+    @Parameter(defaultValue = "${null}")
     private File generatedTsFolder;
 
     /**
@@ -166,6 +188,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
+    @Parameter(defaultValue = "${mojoExecution}")
+    MojoExecution mojoExecution;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -220,14 +245,144 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <p>
      * By default, the frontend server is not used.
      */
-    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "false")
-    private boolean frontendHotdeploy;
+    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "${null}")
+    private Boolean frontendHotdeploy;
 
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
-    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
-    private boolean reactRouterEnabled;
+    @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
+    private Boolean reactEnable;
+
+    @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
+    private boolean npmExcludeWebComponents;
+
+    /**
+     * Parameter for adding file extensions to handle when generating bundles.
+     * Hashes are calculated for these files as part of detecting if a new
+     * bundle should be generated.
+     * <p>
+     * From the commandline use comma separated list
+     * {@code -Ddevmode.frontendExtraFileExtensions="svg,ico"}
+     * <p>
+     * In plugin configuration use comma separated values
+     *
+     * <configuration>
+     * <frontendExtraFileExtensions>svg,ico</frontendExtraFileExtensions>
+     * </configuration>
+     */
+    @Parameter(property = InitParameters.FRONTEND_EXTRA_EXTENSIONS, defaultValue = "${null}")
+    private List<String> frontendExtraFileExtensions;
+
+    /**
+     * Identifier for the application.
+     * <p>
+     * If not specified, defaults to '{@literal groupId:artifactId}'.
+     */
+    @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
+    private String applicationIdentifier;
+
+    /**
+     * Set to {@code true} to ignore node/npm tool version checks.
+     *
+     * Note that disabling frontend tools version checking could cause failing
+     * builds and other issues that are difficult to debug.
+     */
+    @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
+    private boolean frontendIgnoreVersionChecks;
+
+    /**
+     * Allows to fine tune frontend resources detection by defining which
+     * artifacts should be included or excluded during the class scanning
+     * process.
+     */
+    @Parameter
+    private FrontendScannerConfig frontendScanner;
+
+    static final String CLASSFINDER_FIELD_NAME = "classFinder";
+    private ClassFinder classFinder;
+
+    private Consumer<File> buildContextRefresher;
+
+    @Inject
+    void setBuildContext(BuildContext buildContext) {
+        buildContextRefresher = buildContext::refresh;
+    }
+
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
+                .getPluginDescriptor();
+        checkFlowCompatibility(pluginDescriptor);
+
+        Reflector reflector = getOrCreateReflector();
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread()
+                .setContextClassLoader(reflector.getIsolatedClassLoader());
+        try {
+            Mojo task = reflector.createMojo(this);
+            findExecuteMethod(task.getClass()).invoke(task);
+            reflector.logIncompatibilities(getLog()::debug);
+        } catch (MojoExecutionException | MojoFailureException e) {
+            logTroubleshootingHints(reflector, e);
+            throw e;
+        } catch (Exception e) {
+            logTroubleshootingHints(reflector, e);
+            throw new MojoFailureException(e.getMessage(), e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(tccl);
+        }
+    }
+
+    private void logTroubleshootingHints(Reflector reflector, Throwable ex) {
+        reflector.logIncompatibilities(getLog()::warn);
+        if (ex instanceof InvocationTargetException) {
+            ex = ex.getCause();
+        }
+        StringBuilder errorMessage = new StringBuilder(ex.getMessage());
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (cause.getMessage() != null) {
+                errorMessage.append(" ").append(cause.getMessage());
+            }
+            cause = cause.getCause();
+        }
+        getLog().error(
+                "The build process encountered an error: " + errorMessage);
+        logError(
+                "To diagnose the issue, please re-run Maven with the -X option to enable detailed debug logging and identify the root cause.");
+    }
+
+    /**
+     * Perform whatever build-process behavior this <code>Mojo</code>
+     * implements.<br>
+     * This is the main trigger for the <code>Mojo</code> inside the
+     * <code>Maven</code> system, and allows the <code>Mojo</code> to
+     * communicate errors.
+     *
+     * @throws MojoExecutionException
+     *             if an unexpected problem occurs. Throwing this exception
+     *             causes a "BUILD ERROR" message to be displayed.
+     * @throws MojoFailureException
+     *             if an expected problem (such as a compilation failure)
+     *             occurs. Throwing this exception causes a "BUILD FAILURE"
+     *             message to be displayed.
+     */
+    protected abstract void executeInternal()
+            throws MojoExecutionException, MojoFailureException;
+
+    /**
+     * Indicates that the file or folder content has been modified during the
+     * build.
+     *
+     * @param file
+     *            a {@link java.io.File} object.
+     */
+    protected void triggerRefresh(File file) {
+        if (buildContextRefresher != null) {
+            buildContextRefresher.accept(file);
+        }
+    }
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -236,20 +391,78 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @param project
      *            a given MavenProject
      * @return List of ClasspathElements
+     * @deprecated will be removed without replacement.
      */
+    @Deprecated(forRemoval = true)
     public static List<String> getClasspathElements(MavenProject project) {
 
         try {
-            final Stream<String> classpathElements = Stream.concat(
-                    project.getRuntimeClasspathElements().stream(),
-                    project.getCompileClasspathElements().stream().filter(
-                            s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+            final Stream<String> classpathElements = Stream
+                    .of(project.getRuntimeClasspathElements().stream(),
+                            project.getSystemClasspathElements().stream(),
+                            project.getCompileClasspathElements().stream()
+                                    .filter(s -> s.matches(
+                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
+                    .flatMap(Function.identity());
             return classpathElements.collect(Collectors.toList());
         } catch (DependencyResolutionRequiredException e) {
             throw new IllegalStateException(String.format(
                     "Failed to retrieve runtime classpath elements from project '%s'",
                     project), e);
         }
+    }
+
+    /**
+     * Checks if Hilla is available based on the Maven project's classpath.
+     *
+     * @return true if Hilla is available, false otherwise
+     */
+    public boolean isHillaAvailable() {
+        return getOrCreateReflector().getResource(
+                "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available based on the Maven project's classpath.
+     *
+     * @param mavenProject
+     *            Target Maven project
+     * @return true if Hilla is available, false otherwise
+     */
+    public static boolean isHillaAvailable(MavenProject mavenProject) {
+        return Reflector.of(mavenProject, null, null).getResource(
+                "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available and Hilla views are used in the Maven
+     * project based on what is in routes.ts or routes.tsx file.
+     *
+     * @param frontendDirectory
+     *            Target frontend directory.
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public boolean isHillaUsed(File frontendDirectory) {
+        return isHillaAvailable()
+                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
+    }
+
+    /**
+     * Checks if Hilla is available and Hilla views are used in the Maven
+     * project based on what is in routes.ts or routes.tsx file.
+     *
+     * @param mavenProject
+     *            Target Maven project
+     * @param frontendDirectory
+     *            Target frontend directory.
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public static boolean isHillaUsed(MavenProject mavenProject,
+            File frontendDirectory) {
+        return isHillaAvailable(mavenProject)
+                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     @Override
@@ -266,23 +479,26 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-
         return frontendDirectory;
     }
 
     @Override
     public File generatedTsFolder() {
-
-        return generatedTsFolder;
+        if (generatedTsFolder != null) {
+            return generatedTsFolder;
+        }
+        return new File(frontendDirectory(), GENERATED);
     }
 
     @Override
     public ClassFinder getClassFinder() {
-
-        List<String> classpathElements = getClasspathElements(project);
-
-        return BuildFrontendUtil.getClassFinder(classpathElements);
-
+        if (classFinder == null) {
+            URLClassLoader classLoader = getOrCreateReflector()
+                    .getIsolatedClassLoader();
+            classFinder = new ReflectionsClassFinder(classLoader,
+                    classLoader.getURLs());
+        }
+        return classFinder;
     }
 
     @Override
@@ -320,6 +536,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
+    public void logDebug(CharSequence debugMessage, Throwable e) {
+
+        getLog().debug(debugMessage, e);
+
+    }
+
+    @Override
     public void logInfo(CharSequence infoMessage) {
 
         getLog().info(infoMessage);
@@ -333,6 +556,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
+    public void logError(CharSequence error) {
+
+        getLog().error(error);
+    }
+
+    @Override
     public void logWarn(CharSequence warning, Throwable e) {
 
         getLog().warn(warning, e);
@@ -340,9 +569,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public void logError(CharSequence warning, Throwable e) {
+    public void logError(CharSequence error, Throwable e) {
 
-        getLog().error(warning, e);
+        getLog().error(error, e);
 
     }
 
@@ -446,7 +675,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public boolean isFrontendHotdeploy() {
-        return frontendHotdeploy;
+        if (frontendHotdeploy != null) {
+            return frontendHotdeploy;
+        }
+        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
+        return isHillaUsed(frontendDirectory);
     }
 
     @Override
@@ -460,7 +693,99 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isReactRouterEnabled() {
-        return reactRouterEnabled;
+    public boolean isReactEnabled() {
+        if (reactEnable != null) {
+            return reactEnable;
+        }
+        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
+        return FrontendUtils.isReactRouterRequired(frontendDirectory);
+    }
+
+    @Override
+    public String applicationIdentifier() {
+        if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
+            return applicationIdentifier;
+        }
+        return "app-" + StringUtil.getHash(
+                project.getGroupId() + ":" + project.getArtifactId(),
+                StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public List<String> frontendExtraFileExtensions() {
+        if (frontendExtraFileExtensions != null) {
+            return frontendExtraFileExtensions;
+        }
+
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
+    }
+
+    @Override
+    public boolean isFrontendIgnoreVersionChecks() {
+        return frontendIgnoreVersionChecks;
+    }
+
+    private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
+        Predicate<Artifact> isFlowServer = artifact -> "com.vaadin"
+                .equals(artifact.getGroupId())
+                && "flow-server".equals(artifact.getArtifactId());
+        String projectFlowVersion = project.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
+                .orElse(null);
+        String pluginFlowVersion = pluginDescriptor.getArtifacts().stream()
+                .filter(isFlowServer).map(Artifact::getBaseVersion).findFirst()
+                .orElse(null);
+        if (projectFlowVersion != null
+                && !Objects.equals(projectFlowVersion, pluginFlowVersion)) {
+            getLog().warn(
+                    "Vaadin Flow used in project does not match the version expected by the Vaadin plugin. "
+                            + "Flow version for project is "
+                            + projectFlowVersion
+                            + ", Vaadin plugin is built for Flow version "
+                            + pluginFlowVersion + ".");
+        }
+    }
+
+    private Method findExecuteMethod(Class<?> taskClass)
+            throws NoSuchMethodException {
+
+        while (taskClass != null && taskClass != Object.class) {
+            try {
+                Method executeInternal = taskClass
+                        .getDeclaredMethod("executeInternal");
+                executeInternal.setAccessible(true);
+                return executeInternal;
+            } catch (NoSuchMethodException e) {
+                // ignore
+            }
+            taskClass = taskClass.getSuperclass();
+        }
+        throw new NoSuchMethodException(
+                "Method executeInternal not found in " + getClass().getName());
+    }
+
+    private Reflector getOrCreateReflector() {
+        Map<String, Object> pluginContext = getPluginContext();
+        String pluginKey = mojoExecution.getPlugin().getKey();
+        String reflectorKey = Reflector.class.getName() + "-" + pluginKey + "-"
+                + mojoExecution.getLifecyclePhase();
+        if (pluginContext != null && pluginContext.containsKey(reflectorKey)) {
+            getLog().debug("Using cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+            return Reflector.adapt(pluginContext.get(reflectorKey));
+        }
+        Reflector reflector = Reflector.of(project, mojoExecution,
+                frontendScanner);
+        if (pluginContext != null) {
+            pluginContext.put(reflectorKey, reflector);
+            getLog().debug("Cached Reflector for plugin " + pluginKey
+                    + " and phase " + mojoExecution.getLifecyclePhase());
+        }
+        return reflector;
     }
 }

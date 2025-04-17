@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -90,13 +90,15 @@ public class ComponentMetaData {
     public static class SynchronizedPropertyInfo {
         private final String property;
         private final DisabledUpdateMode mode;
+        private final boolean allowInert;
         private final String[] eventNames;
 
         SynchronizedPropertyInfo(String property, String[] eventNames,
-                DisabledUpdateMode mode) {
+                DisabledUpdateMode mode, boolean allowInert) {
             this.property = property;
             this.eventNames = eventNames;
             this.mode = mode;
+            this.allowInert = allowInert;
         }
 
         public String getProperty() {
@@ -109,6 +111,10 @@ public class ComponentMetaData {
 
         public DisabledUpdateMode getUpdateMode() {
             return mode;
+        }
+
+        public boolean getAllowInert() {
+            return allowInert;
         }
     }
 
@@ -262,8 +268,10 @@ public class ComponentMetaData {
             }
 
             String[] eventNames = annotation.value();
-            infos.put(method.getName(), new SynchronizedPropertyInfo(
-                    propertyName, eventNames, annotation.allowUpdates()));
+            infos.put(method.getName(),
+                    new SynchronizedPropertyInfo(propertyName, eventNames,
+                            annotation.allowUpdates(),
+                            annotation.allowInert()));
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,13 +27,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.Feature;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -47,6 +45,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -56,7 +55,6 @@ import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
-import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -86,10 +84,13 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -264,13 +265,23 @@ public class UI extends Component
 
         getInternals().setFullAppId(appId);
 
-        // Create flow reference for the client outlet element
-        wrapperElement = new Element(getInternals().getContainerTag());
+        if (this.isNavigationSupported()) {
+            // Create flow reference for the client outlet element
+            wrapperElement = new Element(getInternals().getContainerTag());
 
-        // Connect server with client
-        getElement().getStateProvider().appendVirtualChild(
-                getElement().getNode(), wrapperElement,
-                NodeProperties.INJECT_BY_ID, appId);
+            // Connect server with client
+            getElement().getStateProvider().appendVirtualChild(
+                    getElement().getNode(), wrapperElement,
+                    NodeProperties.INJECT_BY_ID, appId);
+
+            getEventBus().addListener(BrowserLeaveNavigationEvent.class,
+                    this::leaveNavigation);
+            getEventBus().addListener(BrowserNavigateEvent.class,
+                    this::browserNavigate);
+            getEventBus().addListener(BrowserRefreshEvent.class,
+                    this::browserRefresh);
+
+        }
 
         // Add any dependencies from the UI class
         getInternals().addComponentDependencies(getClass());
@@ -1241,6 +1252,22 @@ public class UI extends Component
     }
 
     /**
+     * Re-navigates to the current route. Also re-instantiates the route target
+     * component, and optionally all layouts in the route chain.
+     *
+     * @param refreshRouteChain
+     *            {@code true} to refresh all layouts in the route chain,
+     *            {@code false} to only refresh the route instance
+     */
+    public void refreshCurrentRoute(boolean refreshRouteChain) {
+        getInternals().refreshCurrentRoute(refreshRouteChain);
+    }
+
+    private void browserRefresh(BrowserRefreshEvent event) {
+        refreshCurrentRoute(event.refreshRouteChain);
+    }
+
+    /**
      * Returns true if this UI instance supports navigation.
      *
      * @return true if this UI instance supports navigation, otherwise false.
@@ -1329,7 +1356,8 @@ public class UI extends Component
                     "The 'execution' parameter may not be null");
         }
 
-        if (component.getUI().isPresent() && component.getUI().get() != this) {
+        Optional<UI> componentUi = component.getUI();
+        if (componentUi.isPresent() && componentUi.get() != this) {
             throw new IllegalArgumentException(
                     "The given component doesn't belong to the UI the task to be executed on");
         }
@@ -1666,7 +1694,11 @@ public class UI extends Component
     }
 
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
-    public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+    public static final String CLIENT_NAVIGATE_TO = """
+            const url = new URL($0, document.baseURI);
+            url["clientNavigation"] = true;
+            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
+            """;
 
     public Element wrapperElement;
     private NavigationState clientViewNavigationState;
@@ -1685,6 +1717,108 @@ public class UI extends Component
         return forwardToClientUrl;
     }
 
+    @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
+    public static class BrowserLeaveNavigationEvent extends ComponentEvent<UI> {
+        public static final String EVENT_NAME = "ui-leave-navigation";
+        private final String route;
+        private final String query;
+
+        /**
+         * Creates a new event instance.
+         *
+         * @param route
+         *            the route the user is navigating to.
+         * @param query
+         *            the query string the user is navigating to.
+         */
+        public BrowserLeaveNavigationEvent(UI source, boolean fromClient,
+                @EventData("route") String route,
+                @EventData("query") String query) {
+            super(source, true);
+            this.route = route;
+            this.query = query;
+        }
+    }
+
+    @DomEvent(BrowserNavigateEvent.EVENT_NAME)
+    public static class BrowserNavigateEvent extends ComponentEvent<UI> {
+        public static final String EVENT_NAME = "ui-navigate";
+
+        private final String route;
+        private final String query;
+        private final String appShellTitle;
+        private final JsonNode historyState;
+        private final String trigger;
+
+        /**
+         * Creates a new event instance.
+         *
+         * @param route
+         *            flow route path that should be attached to the client
+         *            element
+         * @param query
+         *            flow route query string
+         * @param appShellTitle
+         *            client side title of the application shell
+         * @param historyState
+         *            client side history state value
+         * @param trigger
+         *            navigation trigger
+         *
+         */
+        public BrowserNavigateEvent(UI source, boolean fromClient,
+                @EventData("route") String route,
+                @EventData("query") String query,
+                @EventData("appShellTitle") String appShellTitle,
+                @EventData("historyState") JsonNode historyState,
+                @EventData("trigger") String trigger) {
+            super(source, true);
+            this.route = route;
+            this.query = query;
+            this.appShellTitle = appShellTitle;
+            this.historyState = historyState;
+            this.trigger = trigger;
+        }
+
+    }
+
+    /**
+     * Event fired by the client to request a refresh of the user interface, by
+     * re-navigating to the current route.
+     * <p>
+     * </p>
+     * The route target component is re-instantiated, as well as all layouts in
+     * the route chain if the {@code fullRefresh} event flag is active.
+     *
+     * @see #refreshCurrentRoute(boolean)
+     */
+    @DomEvent(BrowserRefreshEvent.EVENT_NAME)
+    public static class BrowserRefreshEvent extends ComponentEvent<UI> {
+        public static final String EVENT_NAME = "ui-refresh";
+
+        private final boolean refreshRouteChain;
+
+        /**
+         * Creates a new event instance.
+         *
+         * @param source
+         *            the UI for which the refresh is requested.
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise. NOTE: for technical
+         *            reason the argument must be added to the constructor, but
+         *            this event the value is always true.
+         * @param refreshRouteChain
+         *            {@code true} to refresh all layouts in the route chain,
+         *            {@code false} to only refresh the route instance
+         */
+        public BrowserRefreshEvent(UI source, boolean fromClient,
+                @EventData("fullRefresh") boolean refreshRouteChain) {
+            super(source, true);
+            this.refreshRouteChain = refreshRouteChain;
+        }
+    }
+
     /**
      * Connect a client with the server side UI. This method is invoked each
      * time client router navigates to a server route.
@@ -1699,29 +1833,41 @@ public class UI extends Component
      *            client side history state value
      * @param trigger
      *            navigation trigger
+     *
+     * @deprecated(forRemoval=true) method is not enabled for client side
+     *                              anymore and connectClient is triggered by
+     *                              DOM event, to be removed in next major 25
      */
-    @ClientCallable
-    @AllowInert
+    @Deprecated
     public void connectClient(String flowRoutePath, String flowRouteQuery,
             String appShellTitle, JsonValue historyState, String trigger) {
+        browserNavigate(new BrowserNavigateEvent(this, false, flowRoutePath,
+                flowRouteQuery, appShellTitle,
+                JacksonUtils.mapElemental(historyState), trigger));
+    }
 
-        if (appShellTitle != null && !appShellTitle.isEmpty()) {
-            getInternals().setAppShellTitle(appShellTitle);
+    /**
+     * Connect a client with the server side UI. This method is invoked each
+     * time client router navigates to a server route.
+     *
+     * @param event
+     *            the event from the browser
+     */
+    public void browserNavigate(BrowserNavigateEvent event) {
+
+        if (event.appShellTitle != null && !event.appShellTitle.isEmpty()) {
+            getInternals().setAppShellTitle(event.appShellTitle);
         }
 
-        final String trimmedRoute = PathUtil.trimPath(flowRoutePath);
-        if (!trimmedRoute.equals(flowRoutePath)) {
-            // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, trimmedRoute);
-        }
+        final String trimmedRoute = PathUtil.trimPath(event.route);
         final Location location = new Location(trimmedRoute,
-                QueryParameters.fromString(flowRouteQuery));
+                QueryParameters.fromString(event.query));
         NavigationTrigger navigationTrigger;
-        if (trigger.isEmpty()) {
+        if (event.trigger.isEmpty()) {
             navigationTrigger = NavigationTrigger.PAGE_LOAD;
-        } else if (trigger.equalsIgnoreCase("link")) {
+        } else if (event.trigger.equalsIgnoreCase("link")) {
             navigationTrigger = NavigationTrigger.ROUTER_LINK;
-        } else if (trigger.equalsIgnoreCase("client")) {
+        } else if (event.trigger.equalsIgnoreCase("client")) {
             navigationTrigger = NavigationTrigger.CLIENT_SIDE;
         } else {
             navigationTrigger = NavigationTrigger.HISTORY;
@@ -1729,8 +1875,7 @@ public class UI extends Component
         if (firstNavigation) {
             firstNavigation = false;
             getPage().getHistory().setHistoryStateChangeHandler(
-                    event -> renderViewForRoute(event.getLocation(),
-                            event.getTrigger()));
+                    e -> renderViewForRoute(e.getLocation(), e.getTrigger()));
 
             if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
                 // Render the route unless it was rendered eagerly
@@ -1739,9 +1884,11 @@ public class UI extends Component
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
+            JsonObject state = event.historyState == null ? null
+                    : Json.parse(event.historyState.toString());
             handler.onHistoryStateChange(
                     new History.HistoryStateChangeEvent(getPage().getHistory(),
-                            historyState, location, navigationTrigger));
+                            state, location, navigationTrigger));
         }
 
         // true if the target is client-view and the push mode is disable
@@ -1751,8 +1898,57 @@ public class UI extends Component
         } else if (isPostponed()) {
             serverPaused();
         } else {
-            acknowledgeClient();
+            // acknowledge client, but cancel if session not open
+            serverConnected(
+                    !getSession().getState().equals(VaadinSessionState.OPEN));
+            replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
+    }
+
+    /**
+     * Do a history replaceState if the trimmed route differs from the event
+     * route and there is no pending replaceState command.
+     *
+     * @param route
+     *            the event.route
+     * @param location
+     *            the location with the trimmed route
+     */
+    private void replaceStateIfDiffersAndNoReplacePending(String route,
+            Location location) {
+        boolean locationChanged = !location.getPath().equals(route)
+                && route.startsWith("/")
+                && !location.getPath().equals(route.substring(1));
+        boolean containsPendingReplace = !getInternals()
+                .containsPendingJavascript("window.history.replaceState")
+                && !getInternals().containsPendingJavascript(
+                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
+        if (locationChanged && containsPendingReplace) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, location);
+        }
+    }
+
+    /**
+     * Check that the view can be leave. This method is invoked when the client
+     * router tries to navigate to a client route while the current route is a
+     * server route.
+     * <p>
+     * This is only called when client route navigates from a server to a client
+     * view.
+     *
+     * @param route
+     *            the route that is navigating to.
+     * @param query
+     *            route query string
+     * @deprecated(forRemoval=true) method is not enabled for client side
+     *                              anymore and leave navigation is triggered by
+     *                              DOM event, to be removed in next major 25
+     */
+    @Deprecated
+    public void leaveNavigation(String route, String query) {
+        leaveNavigation(
+                new BrowserLeaveNavigationEvent(this, false, route, query));
     }
 
     /**
@@ -1763,13 +1959,12 @@ public class UI extends Component
      * This is only called when client route navigates from a server to a client
      * view.
      *
-     * @param route
-     *            the route that is navigating to.
+     * @param event
+     *            the event from the browser
      */
-    @ClientCallable
-    public void leaveNavigation(String route, String query) {
-        navigateToPlaceholder(new Location(PathUtil.trimPath(route),
-                QueryParameters.fromString(query)));
+    public void leaveNavigation(BrowserLeaveNavigationEvent event) {
+        navigateToPlaceholder(new Location(PathUtil.trimPath(event.route),
+                QueryParameters.fromString(event.query)));
 
         // Inform the client whether the navigation should be postponed
         if (isPostponed()) {
@@ -1852,6 +2047,7 @@ public class UI extends Component
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
         try {
+            getInternals().setLastHandledNavigation(location);
             NavigationEvent navigationEvent = new NavigationEvent(
                     getInternals().getRouter(), location, this, trigger);
 
@@ -1868,14 +2064,7 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            if (getInternals().getSession().getConfiguration()
-                    .isReactRouterEnabled()
-                    && getInternals().getContinueNavigationAction() != null) {
-                getInternals().clearLastHandledNavigation();
-            } else {
-                getInternals().clearLastHandledNavigation();
-            }
-
+            getInternals().clearLastHandledNavigation();
         }
     }
 

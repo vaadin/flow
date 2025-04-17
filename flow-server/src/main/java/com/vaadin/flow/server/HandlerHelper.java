@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -91,7 +91,12 @@ public class HandlerHelper implements Serializable {
         /**
          * Page showing that the browser is unsupported.
          */
-        BROWSER_TOO_OLD("oldbrowser");
+        BROWSER_TOO_OLD("oldbrowser"),
+
+        /**
+         * Translation properties file requests.
+         */
+        TRANSLATION_FILE(ApplicationConstants.REQUEST_TYPE_TRANSLATION_FILE);
 
         private final String identifier;
 
@@ -193,6 +198,10 @@ public class HandlerHelper implements Serializable {
         } else if (isInternalRequestInsideServlet(
                 requestedPathWithoutServletMapping.get(),
                 requestTypeParameter)) {
+            return true;
+        } else if (RequestType.PUSH.getIdentifier().equals(requestTypeParameter)
+                && "VAADIN/push"
+                        .equals(requestedPathWithoutServletMapping.get())) {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;

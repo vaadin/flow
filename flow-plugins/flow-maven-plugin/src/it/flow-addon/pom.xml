@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.vaadin.test</groupId>
+    <artifactId>flow-addon</artifactId>
+    <version>1.0.0</version>
+
+    <name>flow-addon</name>
+    <description>
+        Test project to build the JAR file for other tests.
+        Run 'mvn package' on this module and then copy the JAR
+        where needed.
+    </description>
+
+    <properties>
+        <vaadin.version>@project.version@</vaadin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
+        <maven.test.skip>true</maven.test.skip>
+        <custom.source.directory>src/main/java</custom.source.directory>
+    </properties>
+
+    <build>
+        <sourceDirectory>${custom.source.directory}</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clean-only-classes</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <directory>${project.build.outputDirectory}</directory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.11</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>fake-flow-resources</id>
+            <build>
+                <finalName>fake-resources-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/fake-resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>fake-flow-plugin-resources</id>
+            <build>
+                <finalName>fake-resources-plugin-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/fake-plugin-resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>alpha-addon</id>
+            <properties>
+                <custom.source.directory>src/main/alpha-addon/java</custom.source.directory>
+            </properties>
+            <build>
+                <finalName>alpha-addon-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/alpha-addon/resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>beta-addon</id>
+            <properties>
+                <custom.source.directory>src/main/beta-addon/java</custom.source.directory>
+            </properties>
+            <build>
+                <finalName>beta-addon-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/beta-addon/resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

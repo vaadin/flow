@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,5 +55,20 @@ public class TranslationIT extends ChromeBrowserTest {
                 $(SpanElement.class).id("french").getText());
         Assert.assertEquals("日本語",
                 $(SpanElement.class).id("japanese").getText());
+
+        Assert.assertEquals("Default",
+                $(SpanElement.class).id("static-method").getText());
+    }
+
+    @Test
+    public void translationFilesExist_defaultI18NInstantiated_updateFromExternalThreadWorks() {
+        open();
+
+        waitUntilNot(driver -> $(SpanElement.class).id("dynamic").getText()
+                .equals("waiting"));
+
+        Assert.assertEquals(
+                "Dynamic update from thread should have used correct bundle.",
+                "français", $(SpanElement.class).id("dynamic").getText());
     }
 }

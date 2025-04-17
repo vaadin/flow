@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,9 +36,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -68,7 +69,6 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
-            TaskGenerateBootstrap.class,
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
@@ -79,14 +79,17 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
+            TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
-            TaskCleanFrontendFiles.class
+            TaskCleanFrontendFiles.class,
+            TaskRemoveOldFrontendGeneratedFiles.class
         ));
     // @formatter:on
 
@@ -101,33 +104,27 @@ public class NodeTasks implements FallibleCommand {
      *            the options
      */
     public NodeTasks(Options options) {
+        FrontendDependenciesScanner frontendDependencies = options
+                .getFrontendDependenciesScanner();
+
         // Lock file is created in the project root folder and not in target/ so
         // that Maven does not remove it
-        lockFile = new File(options.getNpmFolder(), ".flow-node-tasks.lock")
+        lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
                 .toPath();
 
-        ClassFinder classFinder = new ClassFinder.CachedClassFinder(
-                options.getClassFinder());
-        FrontendDependenciesScanner frontendDependencies = null;
+        ClassFinder classFinder = options.getClassFinder();
 
         Set<String> webComponentTags = new HashSet<>();
-
-        final FeatureFlags featureFlags = options.getFeatureFlags();
 
         if (options.isFrontendHotdeploy()) {
             UsageStatistics.markAsUsed("flow/hotdeploy", null);
         }
 
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
-                || options.isEnableWebpackConfigUpdate()) {
-            frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(!options.isUseByteCodeScanner(), classFinder,
-                            options.isGenerateEmbeddableWebComponents(),
-                            featureFlags);
-
+                || options.isEnableConfigUpdate()) {
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder,
+                        frontendDependencies,
                         Mode.PRODUCTION_PRECOMPILED_BUNDLE);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
@@ -152,10 +149,8 @@ public class NodeTasks implements FallibleCommand {
                 // immediately
                 // and no update tasks are executed before it.
                 if (BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder,
-                        Mode.DEVELOPMENT_BUNDLE)) {
-                    commands.add(
-                            new TaskCleanFrontendFiles(options.getNpmFolder()));
+                        frontendDependencies, Mode.DEVELOPMENT_BUNDLE)) {
+                    commands.add(new TaskCleanFrontendFiles(options));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     BundleUtils.copyPackageLockFromBundle(options);
@@ -192,14 +187,16 @@ public class NodeTasks implements FallibleCommand {
                             webComponentPath -> FilenameUtils.removeExtension(
                                     webComponentPath.getName()))
                             .collect(Collectors.toSet());
+                    UsageStatistics.markAsUsed(
+                            Constants.STATISTIC_HAS_EXPORTED_WC, null);
                 }
             }
 
             TaskUpdatePackages packageUpdater = null;
             if (options.isEnablePackagesUpdate()
                     && options.getJarFrontendResourcesFolder() != null) {
-                packageUpdater = new TaskUpdatePackages(classFinder,
-                        frontendDependencies, options);
+                packageUpdater = new TaskUpdatePackages(frontendDependencies,
+                        options);
                 commands.add(packageUpdater);
             }
 
@@ -260,14 +257,16 @@ public class NodeTasks implements FallibleCommand {
         } else {
             pwa = new PwaConfiguration();
         }
+        if (options.isProductionMode() && pwa.isEnabled()) {
+            commands.add(new TaskGeneratePWAIcons(options, pwa));
+        }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
             commands.add(new TaskUpdateVite(options, webComponentTags));
         }
 
         if (options.isEnableImportsUpdate()) {
-            commands.add(new TaskUpdateImports(classFinder,
-                    frontendDependencies, options));
+            commands.add(new TaskUpdateImports(frontendDependencies, options));
 
             commands.add(new TaskUpdateThemeImport(
                     frontendDependencies.getThemeDefinition(), options));
@@ -275,7 +274,10 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isCopyTemplates()) {
             commands.add(new TaskCopyTemplateFiles(classFinder, options));
+        }
 
+        if (options.isCleanOldGeneratedFiles()) {
+            commands.add(new TaskRemoveOldFrontendGeneratedFiles(options));
         }
     }
 
@@ -284,9 +286,7 @@ public class NodeTasks implements FallibleCommand {
         if (options.isProductionMode() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
-            if (options.isReactRouterEnabled()) {
-                commands.add(new TaskGenerateReactFiles(options));
-            }
+            commands.add(new TaskGenerateReactFiles(options));
             if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));
             }
@@ -313,6 +313,10 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
+        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
+            return;
+        }
         Lookup lookup = options.getLookup();
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
@@ -334,11 +338,17 @@ public class NodeTasks implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         getLock();
         try {
-
             sortCommands(commands);
-
+            GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
             for (FallibleCommand command : commands) {
+                long startTime = System.nanoTime();
+                command.setGeneratedFileSupport(generatedFilesSupport);
                 command.execute();
+                Duration durationInNs = Duration
+                        .ofNanos(System.nanoTime() - startTime);
+                getLogger().debug("Task [ {} ] completed in {} ms",
+                        command.getClass().getSimpleName(),
+                        durationInNs.toMillis());
             }
         } finally {
             releaseLock();
@@ -363,7 +373,7 @@ public class NodeTasks implements FallibleCommand {
                         .of(lockInfo.pid());
 
                 if (processHandle.isPresent()
-                        && processHandle.get().info().commandLine().orElse("")
+                        && normalizeCommandLine(processHandle.get().info())
                                 .equals(lockInfo.commandLine())) {
                     if (!loggedWaiting) {
                         getLogger().info("Waiting for a previous instance of "
@@ -422,8 +432,8 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    public record NodeTasksLockInfo(long pid, String commandLine)
-            implements Serializable {
+    public record NodeTasksLockInfo(long pid,
+            String commandLine) implements Serializable {
     }
 
     private NodeTasksLockInfo readLockFile()
@@ -442,9 +452,14 @@ public class NodeTasks implements FallibleCommand {
     private void writeLockFile() throws IOException {
         ProcessHandle currentProcess = ProcessHandle.current();
         long myPid = currentProcess.pid();
-        String commandLine = currentProcess.info().commandLine().orElse("");
+        String commandLine = normalizeCommandLine(currentProcess.info());
         List<String> lines = List.of(Long.toString(myPid), commandLine);
         Files.write(lockFile, lines, StandardCharsets.UTF_8);
+    }
+
+    private String normalizeCommandLine(ProcessHandle.Info processInfo) {
+        return processInfo.commandLine()
+                .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
     }
 
     private Logger getLogger() {

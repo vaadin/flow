@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -76,14 +76,16 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
+        if (options.isReactEnabled()) {
+            lines.add("import './vaadin-react.js';");
+        }
         if (!options.isProductionMode()) {
             lines.add(DEV_TOOLS_IMPORT);
         }
         lines.addAll(getThemeLines());
 
         for (TypeScriptBootstrapModifier modifier : modifiers) {
-            modifier.modify(lines, options.isProductionMode(),
-                    frontDeps.getThemeDefinition());
+            modifier.modify(lines, options, frontDeps);
         }
         return String.join(System.lineSeparator(), lines);
     }

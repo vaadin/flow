@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,8 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 import java.util.Optional;
+
+import com.vaadin.flow.router.internal.ParameterInfo;
 
 /**
  * Immutable data representing one url parameter.
@@ -56,5 +58,23 @@ public class RouteParameterData implements Serializable {
      */
     public Optional<String> getRegex() {
         return Optional.ofNullable(regex);
+    }
+
+    /**
+     * Return true for optional parameter.
+     *
+     * @return true for optional parameter
+     */
+    public boolean isOptional() {
+        return new ParameterInfo(getTemplate()).isOptional();
+    }
+
+    /**
+     * Return true for parameter with varargs.
+     *
+     * @return true for parameter with varargs
+     */
+    public boolean isVarargs() {
+        return new ParameterInfo(getTemplate()).isVarargs();
     }
 }

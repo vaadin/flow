@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -68,6 +68,8 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Pnpm",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Frontend",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Devmode",
+                "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Bun",
+                "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$React",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar\\$VaadinScanPackages",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer",
@@ -95,6 +97,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor\\$Marker",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinHintsRegistrar",
+                "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinRouteScope(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinSessionScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.AbstractScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinUIScope",
@@ -110,10 +113,11 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler\\$RedirectStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.WebIconsRequestMatcher(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.JwtSecurityContextRepository",
-                "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.JwtSecurityContextRepository\\$UpdateJwtResponseWrapper",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.SerializedJwtSplitCookieRepository",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer\\$SecretKeyConfigurer",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer\\$UpdateJwtCookiesFilter",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer\\$UpdateJWTCookieOnCommitResponseWrapper",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer\\$ClassPathScanner",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer\\$CustomResourceLoader"),
                 super.getExcludedPatterns());

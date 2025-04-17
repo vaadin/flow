@@ -16,9 +16,17 @@
 
 package com.vaadin.gradle
 
+import com.vaadin.flow.internal.JacksonUtils
+import com.vaadin.flow.internal.StringUtil
+import com.vaadin.flow.server.InitParameters
 import org.gradle.testkit.runner.BuildResult
 import org.junit.Test
+import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.writeText
+import kotlin.test.assertContains
 import kotlin.test.expect
+import org.gradle.testkit.runner.TaskOutcome
 
 class MiscMultiModuleTest : AbstractGradleTest() {
     /**
@@ -110,5 +118,168 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect(null) { b.task(":lib:vaadinBuildFrontend") }
         expect(null) { b.task(":vaadinPrepareFrontend") }
         expect(null) { b.task(":vaadinBuildFrontend") }
+
+        val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("app-" + StringUtil.getHash("web",
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
+
+    @Test
+    fun `vaadinBuildFrontend application identifier from custom project name`() {
+        testProject.settingsFile.writeText("""
+            include 'lib', 'web'
+            project(':web').name = 'MY_APP_ID'
+        """.trimIndent())
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+            }
+        """.trimIndent())
+        testProject.newFolder("lib")
+        val webFolder = testProject.newFolder("web")
+        val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
+        webBuildFile.writeText("""
+            apply plugin: 'war'
+            apply plugin: 'com.vaadin'
+            
+            dependencies {
+                implementation project(':lib')
+                implementation("com.vaadin:flow:$flowVersion")
+            }
+
+            vaadin {
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+            }
+        """.trimIndent())
+
+        val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
+        b.expectTaskSucceded("MY_APP_ID:vaadinPrepareFrontend")
+        b.expectTaskSucceded("MY_APP_ID:vaadinBuildFrontend")
+        expect(null) { b.task(":lib:vaadinPrepareFrontend") }
+        expect(null) { b.task(":lib:vaadinBuildFrontend") }
+        expect(null) { b.task(":vaadinPrepareFrontend") }
+        expect(null) { b.task(":vaadinBuildFrontend") }
+
+        val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("app-" + StringUtil.getHash("MY_APP_ID",
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+    }
+
+    @Test
+    fun `vaadinBuildFrontend application identifier from plugin configuration`() {
+        testProject.settingsFile.writeText("include 'lib', 'web'")
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+            }
+        """.trimIndent())
+        testProject.newFolder("lib")
+        val webFolder = testProject.newFolder("web")
+        val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
+        webBuildFile.writeText("""
+            apply plugin: 'war'
+            apply plugin: 'com.vaadin'
+            
+            dependencies {
+                implementation project(':lib')
+                implementation("com.vaadin:flow:$flowVersion")
+            }
+
+            vaadin {
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                applicationIdentifier = 'MY_APP_ID'
+            }
+        """.trimIndent())
+
+        val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
+        b.expectTaskSucceded("web:vaadinPrepareFrontend")
+        b.expectTaskSucceded("web:vaadinBuildFrontend")
+        expect(null) { b.task(":lib:vaadinPrepareFrontend") }
+        expect(null) { b.task(":lib:vaadinBuildFrontend") }
+        expect(null) { b.task(":vaadinPrepareFrontend") }
+        expect(null) { b.task(":vaadinBuildFrontend") }
+
+        val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("MY_APP_ID") { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache() {
+        testProject.settingsFile.writeText("include 'lib', 'web'")
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+            }
+        """.trimIndent())
+        testProject.newFolder("lib")
+        val webFolder = testProject.newFolder("web")
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        webFolder.resolve("src/main/frontend").mkdirs()
+        val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
+        webBuildFile.writeText("""
+            apply plugin: 'war'
+            apply plugin: 'com.vaadin'
+            
+            dependencies {
+                implementation project(':lib')
+                implementation("com.vaadin:flow:$flowVersion")
+            }
+
+            vaadin {
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                applicationIdentifier = 'MY_APP_ID'
+            }
+        """.trimIndent())
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result.expectTaskSucceded("web:vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("web:vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
+
 }

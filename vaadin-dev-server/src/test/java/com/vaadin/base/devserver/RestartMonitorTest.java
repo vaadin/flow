@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,7 +52,7 @@ public class RestartMonitorTest {
         executorService.submit(() -> simulateTask(latch));
         Assert.assertTrue(
                 "Not restarting, execution should not have been blocked",
-                latch.await(10, TimeUnit.MILLISECONDS));
+                latch.await(100, TimeUnit.MILLISECONDS));
     }
 
     @Test

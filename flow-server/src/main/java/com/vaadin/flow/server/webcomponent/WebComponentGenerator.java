@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
@@ -50,7 +53,6 @@ public class WebComponentGenerator {
     private static final String TOKEN_ATTRIBUTE_NAME = "_AttributeName_";
     private static final String TOKEN_CHANGE_EVENT_NAME = "_ChangeEventName_";
     private static final String TOKEN_PROPERTY_NAME = "_PropertyName_";
-    private static final String HTML_TEMPLATE = "webcomponent-template.html";
     private static final String JS_TEMPLATE = "webcomponent-template.js";
     private static final String SCRIPT_TEMPLATE = "webcomponent-script-template.js";
     private static final String CODE_PROPERTY_DEFAULT = "webcomponent-property-default.js";
@@ -254,11 +256,14 @@ public class WebComponentGenerator {
                     "\\'") + "'";
         } else if (JsonValue.class.isAssignableFrom(property.getType())) {
             value = ((JsonValue) property.getDefaultValue()).toJson();
+        } else if (JsonNode.class.isAssignableFrom(property.getType())) {
+            value = property.getDefaultValue().toString();
         } else {
             throw new UnsupportedPropertyTypeException(String.format(
                     "%s is not a currently supported type for a Property."
-                            + " Please use %s instead.",
+                            + " Please use %s or %s instead.",
                     property.getType().getSimpleName(),
+                    JsonNode.class.getSimpleName(),
                     JsonValue.class.getSimpleName()));
         }
         if (value == null) {
@@ -301,9 +306,11 @@ public class WebComponentGenerator {
             return "Number";
         } else if (propertyData.getType() == String.class) {
             return "String";
-        } else if (JsonArray.class.isAssignableFrom(propertyData.getType())) {
+        } else if (JsonArray.class.isAssignableFrom(propertyData.getType())
+                || ArrayNode.class.isAssignableFrom(propertyData.getType())) {
             return "Array";
-        } else if (JsonValue.class.isAssignableFrom(propertyData.getType())) {
+        } else if (JsonValue.class.isAssignableFrom(propertyData.getType())
+                || ObjectNode.class.isAssignableFrom(propertyData.getType())) {
             return "Object";
         } else {
             throw new IllegalStateException(

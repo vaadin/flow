@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,4 +40,16 @@ public interface FallibleCommand {
      *             if there is an execution error
      */
     void execute() throws ExecutionFailedException;
+
+    /**
+     * Accepts {@link GeneratedFilesSupport} utility allows to track generated
+     * files but write them only when the content is changed, preventing
+     * filesystem watchers to be triggered when not required.
+     *
+     * @param support
+     *            the generated file support utility to use.
+     */
+    default void setGeneratedFileSupport(GeneratedFilesSupport support) {
+    }
+
 }

@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-embedding</artifactId>
-        <version>24.4-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-embedding-generic</artifactId>
     <name>Flow Embedding, generic tests</name>
@@ -56,7 +56,7 @@
                             implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
                             <contextPath>/pages</contextPath>
                             <resourceBases>
-                                ${project.basedir}/../webapp/npm
+                                ${project.parent.basedir}/webapp/npm
                             </resourceBases>
                         </contextHandler>
                     </contextHandlers>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -365,7 +365,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 visitDescendants = visitor
                         .visit(NodeVisitor.ElementType.VIRTUAL, element);
             } else if (NodeProperties.INJECT_BY_ID.equals(type)
-                    || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
+                    || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)
+                    || NodeProperties.INJECT_BY_NAME.equals(type)) {
                 visitDescendants = visitor.visit(
                         NodeVisitor.ElementType.VIRTUAL_ATTACHED, element);
             } else {

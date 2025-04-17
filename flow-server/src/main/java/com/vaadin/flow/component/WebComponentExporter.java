@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,13 +25,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.PropertyData;
@@ -90,8 +93,9 @@ public abstract class WebComponentExporter<C extends Component>
         implements Serializable {
 
     private static final List<Class> SUPPORTED_TYPES = Collections
-            .unmodifiableList(Arrays.asList(Boolean.class, String.class,
-                    Integer.class, Double.class, JsonValue.class));
+            .unmodifiableList(
+                    Arrays.asList(Boolean.class, String.class, Integer.class,
+                            Double.class, JsonValue.class, JsonNode.class));
 
     private final String tag;
     private HashMap<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
@@ -245,9 +249,29 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
+    @Deprecated
     public final PropertyConfiguration<C, JsonValue> addProperty(String name,
             JsonValue defaultValue) {
         return addProperty(name, JsonValue.class, defaultValue);
+    }
+
+    /**
+     * Add an {@code JsonValue} property to the exported web component
+     * identified by {@code name}.
+     *
+     * @param name
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
+     * @param defaultValue
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
+    public final PropertyConfiguration<C, BaseJsonNode> addProperty(String name,
+            BaseJsonNode defaultValue) {
+        return addProperty(name, BaseJsonNode.class, defaultValue);
     }
 
     /**
@@ -343,6 +367,14 @@ public abstract class WebComponentExporter<C extends Component>
         public WebComponentBinding<C> createWebComponentBinding(
                 Instantiator instantiator, Element element,
                 JsonObject newAttributeDefaults) {
+            return createWebComponentBinding(instantiator, element,
+                    JacksonUtils.mapElemental(newAttributeDefaults));
+        }
+
+        @Override
+        public WebComponentBinding<C> createWebComponentBinding(
+                Instantiator instantiator, Element element,
+                JsonNode newAttributeDefaults) {
             assert (instantiator != null);
 
             final C componentReference = instantiator
@@ -374,8 +406,8 @@ public abstract class WebComponentExporter<C extends Component>
                     componentReference);
 
             // collect possible new defaults from attributes as JsonValues
-            final Map<String, JsonValue> newDefaultValues = Stream
-                    .of(newAttributeDefaults.keys()).collect(Collectors
+            final Map<String, JsonNode> newDefaultValues = JacksonUtils
+                    .getKeys(newAttributeDefaults).stream().collect(Collectors
                             .toMap(key -> key, newAttributeDefaults::get));
 
             // bind properties onto the WebComponentBinding. Since

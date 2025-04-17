@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.4-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -103,7 +103,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.2</version>
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -292,12 +292,10 @@
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
                 <module>test-live-reload-multimodule</module>
-                <module>test-live-reload-multimodule/pom-devbundle.xml</module>
-                <module>test-theme-editor</module>
+                <module>test-live-reload-multimodule-devbundle</module>
                 <module>test-redeployment</module>
                 <module>test-redeployment-no-cache</module>
 
-                <module>test-scalability</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>
@@ -334,6 +332,10 @@
                 <module>vaadin-spring-tests</module>
                 <module>test-react-router</module>
                 <module>test-react-router/pom-production.xml</module>
+                <module>test-react-adapter</module>
+                <module>test-react-adapter/pom-production.xml</module>
+                <module>test-legacy-frontend</module>
+                <module>test-client-queue</module>
             </modules>
         </profile>
         <profile>

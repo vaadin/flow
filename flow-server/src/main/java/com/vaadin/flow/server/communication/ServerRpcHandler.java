@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,16 +27,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
@@ -46,6 +49,8 @@ import com.vaadin.flow.server.communication.rpc.MapSyncRpcHandler;
 import com.vaadin.flow.server.communication.rpc.NavigationRpcHandler;
 import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
+import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.FlowDauIntegration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -90,6 +95,11 @@ public class ServerRpcHandler implements Serializable {
          *            the request through which the JSON was received
          */
         public RpcRequest(String jsonString, VaadinRequest request) {
+            this(jsonString, request.getService().getDeploymentConfiguration()
+                    .isSyncIdCheckEnabled());
+        }
+
+        public RpcRequest(String jsonString, boolean isSyncIdCheckEnabled) {
             json = JsonUtil.parse(jsonString);
 
             JsonValue token = json.get(ApplicationConstants.CSRF_TOKEN);
@@ -103,8 +113,7 @@ public class ServerRpcHandler implements Serializable {
                 this.csrfToken = csrfToken;
             }
 
-            if (request.getService().getDeploymentConfiguration()
-                    .isSyncIdCheckEnabled()) {
+            if (isSyncIdCheckEnabled && !isUnloadBeaconRequest()) {
                 syncId = (int) json
                         .getNumber(ApplicationConstants.SERVER_SYNC_ID);
             } else {
@@ -122,7 +131,10 @@ public class ServerRpcHandler implements Serializable {
                 clientToServerMessageId = (int) json
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
             } else {
-                getLogger().warn("Server message without client id received");
+                if (!isUnloadBeaconRequest()) {
+                    getLogger()
+                            .warn("Server message without client id received");
+                }
                 clientToServerMessageId = -1;
             }
             invocations = json.getArray(ApplicationConstants.RPC_INVOCATIONS);
@@ -184,7 +196,6 @@ public class ServerRpcHandler implements Serializable {
          * will be shared.
          *
          * @return the raw JSON object that was received from the client
-         *
          */
         public JsonObject getRawJson() {
             return json;
@@ -195,8 +206,6 @@ public class ServerRpcHandler implements Serializable {
         }
 
     }
-
-    private static final int MAX_BUFFER_SIZE = 64 * 1024;
 
     /**
      * Exception thrown then the security key sent by the client does not match
@@ -231,6 +240,19 @@ public class ServerRpcHandler implements Serializable {
     }
 
     /**
+     * Exception thrown when the client side re-sends the same request.
+     */
+    public static class ClientResentPayloadException extends RuntimeException {
+
+        /**
+         * Default constructor for the exception.
+         */
+        public ClientResentPayloadException() {
+            super();
+        }
+    }
+
+    /**
      * Reads JSON containing zero or more serialized RPC calls (including legacy
      * variable changes) and executes the calls.
      *
@@ -248,16 +270,35 @@ public class ServerRpcHandler implements Serializable {
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException {
+        handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
+                request);
+    }
+
+    /**
+     * Reads JSON containing zero or more serialized RPC calls (including legacy
+     * variable changes) and executes the calls.
+     *
+     * @param ui
+     *            The {@link UI} receiving the calls. Cannot be null.
+     * @param message
+     *            The JSON message from the request.
+     * @param request
+     *            The request through which the RPC was received
+     * @throws InvalidUIDLSecurityKeyException
+     *             If the received security key does not match the one stored in
+     *             the session.
+     */
+    public void handleRpc(UI ui, String message, VaadinRequest request)
+            throws InvalidUIDLSecurityKeyException {
         ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
 
-        String changeMessage = getMessage(reader);
-
-        if (changeMessage == null || changeMessage.equals("")) {
+        if (message == null || message.isEmpty()) {
             // The client sometimes sends empty messages, this is probably a bug
             return;
         }
 
-        RpcRequest rpcRequest = new RpcRequest(changeMessage, request);
+        RpcRequest rpcRequest = new RpcRequest(message, request.getService()
+                .getDeploymentConfiguration().isSyncIdCheckEnabled());
 
         // Security: double cookie submission pattern unless disabled by
         // property
@@ -265,9 +306,9 @@ public class ServerRpcHandler implements Serializable {
             throw new InvalidUIDLSecurityKeyException();
         }
 
-        String hashMessage = changeMessage;
+        String hashMessage = message;
         if (hashMessage.length() > 64 * 1024) {
-            hashMessage = changeMessage.substring(0, 64 * 1024);
+            hashMessage = message.substring(0, 64 * 1024);
         }
         byte[] messageHash = MessageDigestUtil.sha256(hashMessage);
 
@@ -292,9 +333,19 @@ public class ServerRpcHandler implements Serializable {
                  * situation is most likely triggered by a timeout or such
                  * causing a message to be resent.
                  */
-                getLogger().info(
-                        "Ignoring old duplicate message from the client. Expected: "
-                                + expectedId + ", got: " + requestId);
+                getLogger().debug(
+                        "Received old duplicate message from the client. Expected: "
+                                + expectedId + ", got: " + requestId
+                                + ". Resending previous response.");
+                throw new ClientResentPayloadException();
+            } else if (rpcRequest.isUnloadBeaconRequest()) {
+                getLogger().debug(
+                        "Ignoring unexpected message id from the client on UNLOAD request. "
+                                + "This could happen for example during login process, if concurrent requests "
+                                + "are sent to the server and one of those changes the session identifier, "
+                                + "causing an UIDL request to be rejected because of session expiration. "
+                                + "Expected client id: {}, got {}.",
+                        expectedId, requestId);
             } else {
                 /*
                  * If the reason for ending up here is intermittent, then we
@@ -309,18 +360,19 @@ public class ServerRpcHandler implements Serializable {
                  */
                 String messageDetails = getMessageDetails(rpcRequest);
                 getLogger().debug("Unexpected message id from the client."
-                        + " Expected sync id: " + expectedId + ", got "
+                        + " Expected client id: " + expectedId + ", got "
                         + requestId + ". Message start: " + messageDetails);
                 throw new UnsupportedOperationException(
                         "Unexpected message id from the client."
-                                + " Expected sync id: " + expectedId + ", got "
-                                + requestId
+                                + " Expected client id: " + expectedId
+                                + ", got " + requestId
                                 + ". more details logged on DEBUG level.");
             }
         } else {
             // Message id ok, process RPCs
             ui.getInternals().setLastProcessedClientToServerId(expectedId,
                     messageHash);
+            enforceIfNeeded(request, rpcRequest);
             handleInvocations(ui, rpcRequest.getRpcInvocationsData());
         }
 
@@ -330,6 +382,15 @@ public class ServerRpcHandler implements Serializable {
                     + "This typically happens because of a bad network connection with packet loss or because of some part of"
                     + " the network infrastructure (load balancer, proxy) terminating a push (websocket or long-polling) connection."
                     + " If you are using push with a proxy, make sure the push timeout is set to be smaller than the proxy connection timeout");
+
+            if (request.getWrappedSession().getAttributeNames().stream()
+                    .anyMatch(name -> name
+                            .startsWith("com.vaadin.server.VaadinSession"))) {
+                getLogger().warn(
+                        "MPR is in use, so full page reload will be done to achieve re-sync.");
+                ui.getPage().reload();
+                return;
+            }
 
             // Run detach listeners and re-attach all nodes again to the
             // state tree, in order to send changes for a full re-build of
@@ -353,7 +414,48 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().debug("UI closed with a beacon request");
             }
         }
+    }
 
+    private void enforceIfNeeded(VaadinRequest request, RpcRequest rpcRequest) {
+        if (DAUUtils.isDauEnabled(request.getService())) {
+            FlowDauIntegration.applyEnforcement(request,
+                    shouldApplyEnforcement(rpcRequest));
+        }
+    }
+
+    private Predicate<VaadinRequest> shouldApplyEnforcement(
+            RpcRequest rpcRequest) {
+        return request -> {
+            // do not apply enforcement when the browser is closing, allow
+            // potential resources be released.
+            if (rpcRequest.isUnloadBeaconRequest()) {
+                return false;
+            }
+            // do not apply enforcement during a resync, user will be blocked
+            // anyway on next request.
+            if (rpcRequest.isResynchronize()) {
+                return false;
+            }
+            JsonArray invocations = rpcRequest.getRpcInvocationsData();
+            if (invocations == null) {
+                // not a user interaction
+                return false;
+            }
+            // Do not enforce if RPC requests contains only poll or return
+            // channel events
+            for (int i = 0; i < invocations.length(); i++) {
+                JsonObject json = invocations.get(i);
+                String type = json.hasKey("type") ? json.getString("type") : "";
+                String event = json.hasKey("event") ? json.getString("event")
+                        : "";
+                if (!JsonConstants.RPC_TYPE_CHANNEL.equals(type)
+                        && (!JsonConstants.RPC_TYPE_EVENT.equals(type)
+                                || !PollEvent.DOM_EVENT_NAME.equals(event))) {
+                    return true;
+                }
+            }
+            return false;
+        };
     }
 
     // Kind of same as in AbstractNavigationStateRenderer, but gets
@@ -487,8 +589,9 @@ public class ServerRpcHandler implements Serializable {
 
     protected String getMessage(Reader reader) throws IOException {
 
-        StringBuilder sb = new StringBuilder(MAX_BUFFER_SIZE);
-        char[] buffer = new char[MAX_BUFFER_SIZE];
+        StringBuilder sb = new StringBuilder(
+                SynchronizedRequestHandler.MAX_BUFFER_SIZE);
+        char[] buffer = new char[SynchronizedRequestHandler.MAX_BUFFER_SIZE];
 
         while (true) {
             int read = reader.read(buffer);

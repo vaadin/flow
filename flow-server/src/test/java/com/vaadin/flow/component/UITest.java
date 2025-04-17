@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -206,8 +207,12 @@ public class UITest {
 
     private static MockUI createAccessableTestUI() {
         // Needs a service to be able to do service.accessSession
-        return new MockUI(
-                new MockVaadinSession(new MockVaadinServletService()));
+        MockVaadinSession session = new MockVaadinSession(
+                new MockVaadinServletService());
+        session.lock();
+        MockUI ui = new MockUI(session);
+        session.unlock();
+        return ui;
     }
 
     private static void initUI(UI ui, String initialLocation,
@@ -238,10 +243,13 @@ public class UITest {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
+        Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
+        Mockito.when(config.getBuildFolder()).thenReturn("build");
 
         session.lock();
         session.setConfiguration(config);
-
+        ((MockVaadinServletService) service).setConfiguration(config);
         ui.getInternals().setSession(session);
 
         RouteConfiguration routeConfiguration = RouteConfiguration

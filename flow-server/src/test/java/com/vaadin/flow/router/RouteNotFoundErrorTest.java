@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -28,7 +31,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 public class RouteNotFoundErrorTest {
 
@@ -58,7 +63,21 @@ public class RouteNotFoundErrorTest {
 
         event.getSource().getRegistry().getRegisteredRoutes();
 
-        page.setErrorParameter(event, param);
+        try (MockedStatic<VaadinService> service = Mockito
+                .mockStatic(VaadinService.class, Mockito.CALLS_REAL_METHODS)) {
+            VaadinService vaadinService = Mockito.mock(VaadinService.class);
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(vaadinService.getDeploymentConfiguration())
+                    .thenReturn(configuration);
+            Mockito.when(configuration.isProductionMode()).thenReturn(true);
+            Mockito.when(configuration.getFrontendFolder())
+                    .thenReturn(new File("front"));
+
+            service.when(() -> VaadinService.getCurrent())
+                    .thenReturn(vaadinService);
+            page.setErrorParameter(event, param);
+        }
 
         MatcherAssert.assertThat(page.getElement().toString(),
                 CoreMatchers.not(CoreMatchers.containsString("bar")));
@@ -72,6 +91,10 @@ public class RouteNotFoundErrorTest {
         ErrorParameter<NotFoundException> param = new ErrorParameter<>(
                 NotFoundException.class, new NotFoundException());
 
+        VaadinService vaadinService = Mockito.mock(VaadinService.class);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(null);
+
         Router router = Mockito.mock(Router.class);
         Mockito.when(event.getSource()).thenReturn(router);
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
@@ -80,7 +103,19 @@ public class RouteNotFoundErrorTest {
 
         event.getSource().getRegistry().getRegisteredRoutes();
 
-        page.setErrorParameter(event, param);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class);
+                MockedStatic<VaadinService> service = Mockito.mockStatic(
+                        VaadinService.class, Mockito.CALLS_REAL_METHODS);) {
+            util.when(() -> FrontendUtils.getProjectFrontendDir(Mockito.any()))
+                    .thenReturn(null);
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                    .thenReturn(false);
+            service.when(() -> VaadinService.getCurrent())
+                    .thenReturn(vaadinService);
+
+            page.setErrorParameter(event, param);
+        }
 
         MatcherAssert.assertThat(page.getElement().toString(),
                 CoreMatchers.containsString("No views found"));
@@ -98,6 +133,7 @@ public class RouteNotFoundErrorTest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(session.getConfiguration()).thenReturn(config);
         Mockito.when(config.isProductionMode()).thenReturn(productionMode);
+        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
         Mockito.when(event.getUI()).thenReturn(ui);
         return event;
     }

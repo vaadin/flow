@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,29 +30,39 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
+
+import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
+import elemental.json.JsonValue;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ObjectPostProcessorConfiguration.class)
@@ -131,8 +141,374 @@ public class AuthenticationContextTest {
     }
 
     @Test
+    public void getGrantedAuthorities_notAuthenticated_emptyResult() {
+        Assert.assertTrue(authContext.getGrantedAuthorities().isEmpty());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getGrantedAuthorities_anonymous_emptyResult() {
+        Assert.assertTrue(authContext.getGrantedAuthorities().isEmpty());
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void getGrantedAuthorities_authenticated_rolesAreIncluded() {
+        var authorities = authContext.getGrantedAuthorities();
+        Assert.assertEquals(2, authorities.size());
+        Assert.assertTrue(
+                authorities.contains(new SimpleGrantedAuthority("ROLE_USER")));
+        Assert.assertTrue(
+                authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void getGrantedAuthorities_authenticated_authoritiesAreIncluded() {
+        var authorities = authContext.getGrantedAuthorities();
+        Assert.assertEquals(2, authorities.size());
+        Assert.assertTrue(
+                authorities.contains(new SimpleGrantedAuthority("AUTH_READ")));
+        Assert.assertTrue(
+                authorities.contains(new SimpleGrantedAuthority("AUTH_WRITE")));
+    }
+
+    @Test
+    public void getGrantedRoles_notAuthenticated_emptyResult() {
+        Assert.assertTrue(authContext.getGrantedRoles().isEmpty());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getGrantedRoles_anonymous_emptyResult() {
+        Assert.assertTrue(authContext.getGrantedRoles().isEmpty());
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void getGrantedRoles_authenticated_rolesAreIncluded() {
+        var roles = authContext.getGrantedRoles();
+        Assert.assertEquals(2, roles.size());
+        Assert.assertTrue(roles.contains("USER"));
+        Assert.assertTrue(roles.contains("ADMIN"));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void getGrantedRoles_authenticated_authoritiesAreNotIncluded() {
+        Assert.assertTrue(authContext.getGrantedRoles().isEmpty());
+    }
+
+    @Test
+    public void hasRole_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasRole("USER"));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void hasRole_anonymous_false() {
+        Assert.assertFalse(authContext.hasRole("ANONYMOUS"));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasRole_hasRole_true() {
+        Assert.assertTrue(authContext.hasRole("USER"));
+        Assert.assertTrue(authContext.hasRole("ADMIN"));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasRole_lacksRole_false() {
+        Assert.assertFalse(authContext.hasRole("SUPERADMIN"));
+    }
+
+    @Test
+    public void hasAnyRole_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAnyRole("USER"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+    }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAnyRole_anonymous_false() {
+        Assert.assertFalse(authContext.hasAnyRole("ANONYMOUS"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("ANONYMOUS")));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasAnyRole_hasRole_true() {
+        Assert.assertTrue(authContext.hasAnyRole("USER"));
+        Assert.assertTrue(authContext.hasAnyRole(List.of("ADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasAnyRole_hasOneOfTheRoles_true() {
+        Assert.assertTrue(authContext.hasAnyRole("USER", "SUPERADMIN"));
+        Assert.assertTrue(
+                authContext.hasAnyRole(List.of("ADMIN", "SUPERADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasAnyRole_lacksRole_false() {
+        Assert.assertFalse(authContext.hasAnyRole("SUPERADMIN"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("SUPERADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAnyRole_noRoles_false() {
+        Assert.assertFalse(authContext.hasAnyRole("USER"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+    }
+
+    @Test
+    public void hasAllRoles_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAllRoles_anonymous_false() {
+        Assert.assertFalse(authContext.hasAllRoles("ANONYMOUS"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("ANONYMOUS")));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasAllRoles_hasRoles_true() {
+        Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertTrue(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER" })
+    public void hasAllRoles_lacksRole_false() {
+        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAllRoles_noRoles_false() {
+        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+    public void hasAuthority_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAuthority("AUTH_READ"));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void hasAuthority_anonymous_false() {
+        Assert.assertFalse(authContext.hasAuthority("ROLE_ANONYMOUS"));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAuthority_hasAuthority_true() {
+        Assert.assertTrue(authContext.hasAuthority("AUTH_READ"));
+        Assert.assertTrue(authContext.hasAuthority("AUTH_WRITE"));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAuthority_lacksAuthority_false() {
+        Assert.assertFalse(authContext.hasAuthority("AUTH_MANAGE"));
+    }
+
+    @Test
+    public void hasAnyAuthority_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
+    }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAnyAuthority_anonymous_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("ROLE_ANONYMOUS"));
+        Assert.assertFalse(
+                authContext.hasAnyAuthority(List.of("ROLE_ANONYMOUS")));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAnyAuthority_hasAuthority_true() {
+        Assert.assertTrue(authContext.hasAnyAuthority("AUTH_READ"));
+        Assert.assertTrue(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
+
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAnyAuthority_hasOneOfTheAuthorities_true() {
+        Assert.assertTrue(
+                authContext.hasAnyAuthority("AUTH_READ", "AUTH_MANAGE"));
+        Assert.assertTrue(authContext
+                .hasAnyAuthority(List.of("AUTH_WRITE", "AUTH_MANAGE")));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAnyAuthority_lacksAuthority_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_MANAGE"));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_MANAGE")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAnyAuthority_noAuthorities_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
+    }
+
+    @Test
+    public void hasAllAuthorities_notAuthenticated_false() {
+        Assert.assertFalse(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAllAuthorities_anonymous_false() {
+        Assert.assertFalse(authContext.hasAllAuthorities("ROLE_ANONYMOUS"));
+        Assert.assertFalse(
+                authContext.hasAllAuthorities(List.of("ROLE_ANONYMOUS")));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAllAuthorities_hasAuthorities_true() {
+        Assert.assertTrue(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertTrue(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ" })
+    public void hasAllAuthorities_lacksAuthority_false() {
+        Assert.assertFalse(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAllAuthorities_noAuthorities_false() {
+        Assert.assertFalse(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    @WithMockUser()
+    public void logout_allowNullResponse() {
+        authContext.setLogoutHandlers(Mockito.mock(LogoutSuccessHandler.class),
+                List.of(Mockito.mock(LogoutHandler.class)));
+        try {
+            CurrentInstance.set(VaadinRequest.class,
+                    Mockito.mock(VaadinServletRequest.class));
+            UI.setCurrent(Mockito.mock(UI.class));
+            mockPush(UI.getCurrent(), Transport.WEBSOCKET_XHR);
+            try {
+                authContext.logout();
+            } catch (NullPointerException e) {
+                Assert.fail("Should not throw NPE");
+            }
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
     @WithMockUser()
     public void logout_handlersEngaged() throws Exception {
+        SetupForLogoutTest setup = getSetupForLogoutTest();
+
+        UI ui = Mockito.mock(UI.class);
+        Mockito.doAnswer(i -> {
+            i.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).accessSynchronously(ArgumentMatchers.any());
+        mockPush(ui);
+        try {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+            UI.setCurrent(ui);
+            authContext.logout();
+
+            Mockito.verify(setup.successHandler()).onLogoutSuccess(
+                    setup.request(), setup.response(), setup.authentication());
+            Mockito.verify(setup.handler2()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+            Mockito.verify(setup.handler1()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    @WithMockUser()
+    public void logout_pushWithWebsocket_handlersEngaged() throws Exception {
+        SetupForLogoutTest setup = getSetupForLogoutTest();
+
+        UI ui = Mockito.mock(UI.class);
+        Mockito.doAnswer(i -> {
+            i.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).accessSynchronously(ArgumentMatchers.any());
+        mockPush(ui, Transport.WEBSOCKET);
+        Page page = Mockito.mock(Page.class);
+        Mockito.when(ui.getPage()).thenReturn(page);
+        Mockito.when(page.executeJs(Mockito.anyString()))
+                .thenReturn(new PendingJavaScriptResult() {
+                    @Override
+                    public boolean cancelExecution() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isSentToBrowser() {
+                        return true;
+                    }
+
+                    @Override
+                    public void then(
+                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<String> errorHandler) {
+                        resultHandler.accept(null);
+                    }
+                });
+        try {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+            UI.setCurrent(ui);
+            authContext.logout();
+
+            Mockito.verify(setup.successHandler()).onLogoutSuccess(
+                    setup.request(), setup.response(), setup.authentication());
+            Mockito.verify(setup.handler2()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+            Mockito.verify(setup.handler1()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    private SetupForLogoutTest getSetupForLogoutTest() {
         Authentication authentication = SecurityContextHolder.getContext()
                 .getAuthentication();
 
@@ -153,26 +529,15 @@ public class AuthenticationContextTest {
                 .mock(VaadinServletResponse.class);
         Mockito.when(vaadinResponse.getHttpServletResponse())
                 .thenReturn(response);
+        return new SetupForLogoutTest(authentication, successHandler, handler1,
+                handler2, request, vaadinRequest, response, vaadinResponse);
+    }
 
-        UI ui = Mockito.mock(UI.class);
-        Mockito.doAnswer(i -> {
-            i.<Command> getArgument(0).execute();
-            return null;
-        }).when(ui).accessSynchronously(ArgumentMatchers.any());
-
-        try {
-            CurrentInstance.set(VaadinRequest.class, vaadinRequest);
-            CurrentInstance.set(VaadinResponse.class, vaadinResponse);
-            UI.setCurrent(ui);
-            authContext.logout();
-
-            Mockito.verify(successHandler).onLogoutSuccess(request, response,
-                    authentication);
-            Mockito.verify(handler2).logout(request, response, authentication);
-            Mockito.verify(handler1).logout(request, response, authentication);
-        } finally {
-            CurrentInstance.clearAll();
-        }
+    private record SetupForLogoutTest(Authentication authentication,
+            LogoutSuccessHandler successHandler, LogoutHandler handler1,
+            LogoutHandler handler2, HttpServletRequest request,
+            VaadinServletRequest vaadinRequest, HttpServletResponse response,
+            VaadinServletResponse vaadinResponse) {
     }
 
     @Test
@@ -228,4 +593,35 @@ public class AuthenticationContextTest {
                 exception.getMessage());
     }
 
+    @Test
+    @WithMockUser(authorities = { "FOO_USER", "FOO_ADMIN" })
+    public void supportsCustomRolePrefixes() {
+        var prefixHolder = new VaadinRolePrefixHolder("FOO_");
+        var authContext = new AuthenticationContext();
+        authContext.setRolePrefixHolder(prefixHolder);
+        Assert.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
+        Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
+        var roles = authContext.getGrantedRoles();
+        Assert.assertTrue(roles.contains("USER"));
+        Assert.assertTrue(roles.contains("ADMIN"));
+    }
+
+    private static void mockPush(UI ui) {
+        mockPush(ui, null);
+    }
+
+    private static void mockPush(UI ui, Transport pushTransport) {
+        UIInternals internals = Mockito.mock(UIInternals.class);
+        PushConnection pushConnection = Mockito.mock(PushConnection.class);
+        PushConfiguration pushConfiguration = Mockito
+                .mock(PushConfiguration.class);
+
+        Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfiguration);
+        Mockito.when(pushConfiguration.getTransport())
+                .thenReturn(pushTransport == null ? Transport.WEBSOCKET_XHR
+                        : pushTransport);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
+        Mockito.when(internals.getPushConnection()).thenReturn(pushConnection);
+        Mockito.when(pushConnection.isConnected()).thenReturn(true);
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,13 @@ public class JsonSerializerTest {
 
     public static enum SomeEnum {
         SOME_VALUE_1, SOME_VALUE_2;
+    }
+
+    public record SomeRecord(String name, int age) {
+    }
+
+    public record RecordWithRecordAndObject(SomeRecord record,
+            ObjectWithSimpleTypes object) {
     }
 
     public static class ObjectWithSimpleTypes {
@@ -197,6 +204,7 @@ public class JsonSerializerTest {
 
         private ObjectWithSimpleTypes object1;
         private ObjectWithSimpleTypes object2;
+        private SomeRecord record;
 
         public ObjectWithSimpleTypes getObject1() {
             return object1;
@@ -212,6 +220,14 @@ public class JsonSerializerTest {
 
         public void setObject2(ObjectWithSimpleTypes object2) {
             this.object2 = object2;
+        }
+
+        public SomeRecord getRecord() {
+            return record;
+        }
+
+        public void setRecord(SomeRecord record) {
+            this.record = record;
         }
     }
 
@@ -383,23 +399,7 @@ public class JsonSerializerTest {
 
     @Test
     public void serializePopulatedObjectWithBasicTypes_returnJsonObjectWithDefinedProperties() {
-        ObjectWithSimpleTypes bean = new ObjectWithSimpleTypes();
-        bean.setStringProperty("someProperty");
-        bean.setIntProperty(1);
-        bean.setIntegerProperty(2);
-        bean.setLongProperty(3);
-        bean.setLongObjectProperty(4l);
-        bean.setShortProperty((short) 5);
-        bean.setShortObjectProperty((short) 6);
-        bean.setDoubleProperty(7);
-        bean.setDoubleObjectProperty(8.0);
-        bean.setByteProperty((byte) 9);
-        bean.setByteObjectProperty((byte) 10);
-        bean.setBooleanProperty(true);
-        bean.setBooleanObjectProperty(false);
-        bean.setCharProperty('c');
-        bean.setCharacterProperty('C');
-        bean.setEnumProperty(SomeEnum.SOME_VALUE_2);
+        ObjectWithSimpleTypes bean = getPopulatedObjectWithSimpleTypes();
 
         JsonValue json = JsonSerializer.toJson(bean);
         Assert.assertTrue("The JsonValue should be instanceof JsonObject",
@@ -465,6 +465,8 @@ public class JsonSerializerTest {
         Assert.assertTrue(jsonObject.get("object1") instanceof JsonNull);
         Assert.assertTrue(jsonObject.hasKey("object2"));
         Assert.assertTrue(jsonObject.get("object2") instanceof JsonNull);
+        Assert.assertTrue(jsonObject.hasKey("record"));
+        Assert.assertTrue(jsonObject.get("record") instanceof JsonNull);
 
         bean = JsonSerializer.toObject(ObjectWithOtherObjects.class, json);
 
@@ -472,28 +474,13 @@ public class JsonSerializerTest {
                 bean);
         Assert.assertNull(bean.getObject1());
         Assert.assertNull(bean.getObject2());
+        Assert.assertNull(bean.getRecord());
     }
 
     @Test
     public void serializeObjectWithObjects_returnJsonObjectWithPopulatedProperties() {
         ObjectWithOtherObjects bean = new ObjectWithOtherObjects();
-        ObjectWithSimpleTypes innerBean = new ObjectWithSimpleTypes();
-        innerBean.setStringProperty("someProperty");
-        innerBean.setIntProperty(1);
-        innerBean.setIntegerProperty(2);
-        innerBean.setLongProperty(3);
-        innerBean.setLongObjectProperty(4l);
-        innerBean.setShortProperty((short) 5);
-        innerBean.setShortObjectProperty((short) 6);
-        innerBean.setDoubleProperty(7);
-        innerBean.setDoubleObjectProperty(8.0);
-        innerBean.setByteProperty((byte) 9);
-        innerBean.setByteObjectProperty((byte) 10);
-        innerBean.setBooleanProperty(true);
-        innerBean.setBooleanObjectProperty(false);
-        innerBean.setCharProperty('c');
-        innerBean.setCharacterProperty('C');
-        innerBean.setEnumProperty(SomeEnum.SOME_VALUE_2);
+        ObjectWithSimpleTypes innerBean = getPopulatedObjectWithSimpleTypes();
         bean.setObject1(innerBean);
 
         innerBean = new ObjectWithSimpleTypes();
@@ -514,6 +501,9 @@ public class JsonSerializerTest {
         innerBean.setCharacterProperty('D');
         innerBean.setEnumProperty(SomeEnum.SOME_VALUE_1);
         bean.setObject2(innerBean);
+
+        SomeRecord record = new SomeRecord("someone", 42);
+        bean.setRecord(record);
 
         JsonValue json = JsonSerializer.toJson(bean);
 
@@ -572,6 +562,11 @@ public class JsonSerializerTest {
                 object.getString("characterProperty").charAt(0));
         Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(),
                 object.getString("enumProperty"));
+
+        object = ((JsonObject) json).getObject("record");
+        Assert.assertNotNull("The record should be not be null", object);
+        Assert.assertEquals("someone", object.getString("name"));
+        Assert.assertEquals(42, object.getNumber("age"), PRECISION);
     }
 
     @Test
@@ -703,6 +698,114 @@ public class JsonSerializerTest {
         assertCollectionItemsAreEqual(bean.getLinkedListOfBooleans(), true,
                 false);
         assertCollectionItemsAreEqual(bean.getArrayListOfDoubles(), 5.0, 6.0);
+    }
+
+    @Test
+    public void serializeRecordWithRecordAndObject_returnJsonObjectWithPopulatedProperties() {
+        SomeRecord record = new SomeRecord("someone", 42);
+        ObjectWithSimpleTypes bean = getPopulatedObjectWithSimpleTypes();
+        RecordWithRecordAndObject mainRecord = new RecordWithRecordAndObject(
+                record, bean);
+
+        JsonValue json = JsonSerializer.toJson(mainRecord);
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
+                json instanceof JsonObject);
+
+        JsonObject object = (JsonObject) json;
+        JsonObject nestedRecord = object.getObject("record");
+        JsonObject nestedObject = object.getObject("object");
+        Assert.assertNotNull(nestedRecord);
+        Assert.assertNotNull(nestedObject);
+
+        Assert.assertEquals("someone", nestedRecord.getString("name"));
+        Assert.assertEquals(42, nestedRecord.getNumber("age"), PRECISION);
+
+        Assert.assertEquals("someProperty",
+                nestedObject.getString("stringProperty"));
+        Assert.assertEquals(1, nestedObject.getNumber("intProperty"),
+                PRECISION);
+        Assert.assertEquals(2, nestedObject.getNumber("integerProperty"),
+                PRECISION);
+        Assert.assertEquals(3, nestedObject.getNumber("longProperty"),
+                PRECISION);
+        Assert.assertEquals(4, nestedObject.getNumber("longObjectProperty"),
+                PRECISION);
+        Assert.assertEquals(5, nestedObject.getNumber("shortProperty"),
+                PRECISION);
+        Assert.assertEquals(6, nestedObject.getNumber("shortObjectProperty"),
+                PRECISION);
+        Assert.assertEquals(7, nestedObject.getNumber("doubleProperty"),
+                PRECISION);
+        Assert.assertEquals(8, nestedObject.getNumber("doubleObjectProperty"),
+                PRECISION);
+        Assert.assertEquals(9, nestedObject.getNumber("byteProperty"),
+                PRECISION);
+        Assert.assertEquals(10, nestedObject.getNumber("byteObjectProperty"),
+                PRECISION);
+        Assert.assertTrue(nestedObject.getBoolean("booleanProperty"));
+        Assert.assertFalse(nestedObject.getBoolean("booleanObjectProperty"));
+        Assert.assertEquals('c',
+                nestedObject.getString("charProperty").charAt(0));
+        Assert.assertEquals('C',
+                nestedObject.getString("characterProperty").charAt(0));
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
+                nestedObject.getString("enumProperty"));
+
+        mainRecord = JsonSerializer.toObject(RecordWithRecordAndObject.class,
+                json);
+        Assert.assertNotNull(mainRecord);
+
+        SomeRecord deserializedRecord = mainRecord.record;
+        Assert.assertEquals("someone", deserializedRecord.name);
+        Assert.assertEquals(42, deserializedRecord.age);
+
+        ObjectWithSimpleTypes deserializedObject = mainRecord.object;
+        Assert.assertEquals("someProperty",
+                deserializedObject.getStringProperty());
+        Assert.assertEquals(1, deserializedObject.getIntProperty());
+        Assert.assertEquals(Integer.valueOf(2),
+                deserializedObject.getIntegerProperty());
+        Assert.assertEquals(3, deserializedObject.getLongProperty());
+        Assert.assertEquals(Long.valueOf(4),
+                deserializedObject.getLongObjectProperty());
+        Assert.assertEquals(5, deserializedObject.getShortProperty());
+        Assert.assertEquals(Short.valueOf((short) 6),
+                deserializedObject.getShortObjectProperty());
+        Assert.assertEquals(7, deserializedObject.getDoubleProperty(), 0.00001);
+        Assert.assertEquals(Double.valueOf(8),
+                deserializedObject.getDoubleObjectProperty());
+        Assert.assertEquals(9, deserializedObject.getByteProperty());
+        Assert.assertEquals(Byte.valueOf((byte) 10),
+                deserializedObject.getByteObjectProperty());
+        Assert.assertEquals(true, deserializedObject.isBooleanProperty());
+        Assert.assertEquals(Boolean.FALSE,
+                deserializedObject.getBooleanObjectProperty());
+        Assert.assertEquals('c', deserializedObject.getCharProperty());
+        Assert.assertEquals((Character) 'C',
+                deserializedObject.getCharacterProperty());
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2,
+                deserializedObject.getEnumProperty());
+    }
+
+    private static ObjectWithSimpleTypes getPopulatedObjectWithSimpleTypes() {
+        ObjectWithSimpleTypes bean = new ObjectWithSimpleTypes();
+        bean.setStringProperty("someProperty");
+        bean.setIntProperty(1);
+        bean.setIntegerProperty(2);
+        bean.setLongProperty(3);
+        bean.setLongObjectProperty(4l);
+        bean.setShortProperty((short) 5);
+        bean.setShortObjectProperty((short) 6);
+        bean.setDoubleProperty(7);
+        bean.setDoubleObjectProperty(8.0);
+        bean.setByteProperty((byte) 9);
+        bean.setByteObjectProperty((byte) 10);
+        bean.setBooleanProperty(true);
+        bean.setBooleanObjectProperty(false);
+        bean.setCharProperty('c');
+        bean.setCharacterProperty('C');
+        bean.setEnumProperty(SomeEnum.SOME_VALUE_2);
+        return bean;
     }
 
     private <T> void assertCollectionItemsAreEqual(Collection<T> collection,

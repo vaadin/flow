@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import javax.crypto.SecretKey;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +43,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -55,8 +55,7 @@ import org.springframework.security.web.access.RequestMatcherDelegatingAccessDen
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
-import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -129,6 +128,7 @@ public abstract class VaadinWebSecurity {
     @PostConstruct
     void afterPropertiesSet() {
         accessControl = accessControlProvider.getIfAvailable();
+        authenticationContext.setRolePrefixHolder(vaadinRolePrefixHolder);
     }
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
@@ -150,6 +150,7 @@ public abstract class VaadinWebSecurity {
             cfg.invalidateHttpSession(true);
             addLogoutHandlers(cfg::addLogoutHandler);
         });
+
         DefaultSecurityFilterChain securityFilterChain = http.build();
         Optional.ofNullable(vaadinRolePrefixHolder)
                 .ifPresent(vaadinRolePrefixHolder -> vaadinRolePrefixHolder
@@ -209,6 +210,9 @@ public abstract class VaadinWebSecurity {
                     .permitAll();
             // Public endpoints are OK to access
             urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
+                    .permitAll();
+            // Checks for known Hilla views
+            urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
                     .permitAll();
             // Public routes are OK to access
             urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
@@ -497,6 +501,10 @@ public abstract class VaadinWebSecurity {
     /**
      * Sets up the login page URI of the OAuth2 provider on the specified
      * HttpSecurity instance.
+     * <p>
+     * </p>
+     * This method also configures a logout success handler that redirects to
+     * the application base URL after logout.
      *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
@@ -509,10 +517,85 @@ public abstract class VaadinWebSecurity {
      */
     protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
             throws Exception {
+        setOAuth2LoginPage(http, oauth2LoginPage, "{baseUrl}");
+    }
+
+    /**
+     * Sets up the login page URI of the OAuth2 provider and the post logout URI
+     * on the specified HttpSecurity instance.
+     * <p>
+     * </p>
+     * The post logout redirect uri can be relative or absolute URI or a
+     * template. The supported uri template variables are: {baseScheme},
+     * {baseHost}, {basePort} and {basePath}.
+     * <p>
+     * </p>
+     * NOTE: "{baseUrl}" is also supported, which is the same as
+     * "{baseScheme}://{baseHost}{basePort}{basePath}" handler.
+     * setPostLogoutRedirectUri("{baseUrl}");
+     *
+     * @param http
+     *            the http security from {@link #filterChain(HttpSecurity)}
+     * @param oauth2LoginPage
+     *            the login page of the OAuth2 provider. This Specifies the URL
+     *            to send users to if login is required.
+     * @param postLogoutRedirectUri
+     *            the post logout redirect uri. Can be a template.
+     * @throws Exception
+     *             Re-throws the possible exceptions while activating
+     *             OAuth2LoginConfigurer
+     */
+    protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage,
+            String postLogoutRedirectUri) throws Exception {
         http.oauth2Login(cfg -> cfg.loginPage(oauth2LoginPage).successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
                 .permitAll());
         accessControl.setLoginView(servletContextPath + oauth2LoginPage);
+        if (postLogoutRedirectUri != null) {
+            applicationContext
+                    .getBeanProvider(ClientRegistrationRepository.class)
+                    .getIfAvailable();
+            var logoutSuccessHandler = oidcLogoutSuccessHandler(
+                    postLogoutRedirectUri);
+            if (logoutSuccessHandler != null) {
+                http.logout(
+                        cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler));
+            }
+        }
+    }
+
+    /**
+     * Gets a {@code OidcClientInitiatedLogoutSuccessHandler} instance that
+     * redirects to the given URL after logout.
+     * <p>
+     * </p>
+     * If a {@code ClientRegistrationRepository} bean is not registered in the
+     * application context, the method returns {@literal null}.
+     *
+     * @param postLogoutRedirectUri
+     *            the post logout redirect uri
+     * @return a {@code OidcClientInitiatedLogoutSuccessHandler}, or
+     *         {@literal null} if a {@code ClientRegistrationRepository} bean is
+     *         not registered in the application context.
+     */
+    // Using base interface as return type to avoid potential
+    // ClassNotFoundException when Spring Boot introspect configuration class
+    // during startup, if spring-security-oauth2-client is not on classpath
+    protected LogoutSuccessHandler oidcLogoutSuccessHandler(
+            String postLogoutRedirectUri) {
+        var clientRegistrationRepository = applicationContext
+                .getBeanProvider(ClientRegistrationRepository.class)
+                .getIfAvailable();
+        if (clientRegistrationRepository != null) {
+            var logoutHandler = new OidcClientInitiatedLogoutSuccessHandler(
+                    clientRegistrationRepository);
+            logoutHandler.setRedirectStrategy(new UidlRedirectStrategy());
+            logoutHandler.setPostLogoutRedirectUri(postLogoutRedirectUri);
+            return logoutHandler;
+        }
+        LoggerFactory.getLogger(VaadinWebSecurity.class).warn(
+                "Cannot create OidcClientInitiatedLogoutSuccessHandler because ClientRegistrationRepository bean is not available.");
+        return null;
     }
 
     /**
@@ -551,23 +634,9 @@ public abstract class VaadinWebSecurity {
     protected void setStatelessAuthentication(HttpSecurity http,
             SecretKey secretKey, String issuer, long expiresIn)
             throws Exception {
-        VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
-        vaadinStatelessSecurityConfigurer.setSharedObjects(http);
-        http.apply(vaadinStatelessSecurityConfigurer);
-
-        // Workaround
-        // https://github.com/spring-projects/spring-security/issues/12579 until
-        // it is released
-        SessionManagementConfigurer sessionManagementConfigurer = http
-                .getConfigurer(SessionManagementConfigurer.class);
-        Field f = SessionManagementConfigurer.class
-                .getDeclaredField("sessionManagementSecurityContextRepository");
-        f.setAccessible(true);
-        f.set(sessionManagementConfigurer,
-                http.getSharedObject(SecurityContextRepository.class));
-
-        vaadinStatelessSecurityConfigurer.withSecretKey().secretKey(secretKey)
-                .and().issuer(issuer).expiresIn(expiresIn);
+        VaadinStatelessSecurityConfigurer.apply(http,
+                cfg -> cfg.withSecretKey().secretKey(secretKey).and()
+                        .issuer(issuer).expiresIn(expiresIn));
     }
 
     /**
@@ -642,7 +711,7 @@ public abstract class VaadinWebSecurity {
 
     private void configureLogout(HttpSecurity http, String logoutSuccessUrl)
             throws Exception {
-        SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
+        VaadinSimpleUrlLogoutSuccessHandler logoutSuccessHandler = new VaadinSimpleUrlLogoutSuccessHandler();
         logoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
         logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
         http.logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler));

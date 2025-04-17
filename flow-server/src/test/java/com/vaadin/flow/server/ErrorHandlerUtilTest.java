@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -129,12 +130,19 @@ public class ErrorHandlerUtilTest {
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
+        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(routeRegistry.getRegisteredRoutes())
+                .thenReturn(new ArrayList<>());
+        Mockito.when(vaadinService.getRouteRegistry())
+                .thenReturn(routeRegistry);
+
         session = new AlwaysLockedVaadinSession(vaadinService);
         VaadinContext context = new MockVaadinContext();
         Mockito.when(vaadinService.getContext()).thenReturn(context);
         Mockito.when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
         internals.setSession(session);
+        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class));
         Mockito.when(vaadinService.getRouter())
                 .thenReturn(Mockito.mock(Router.class));
 

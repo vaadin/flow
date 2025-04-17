@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -96,12 +97,13 @@ public final class LocaleUtil {
      * @return the optional value of I18nProvider
      */
     public static Optional<I18NProvider> getI18NProvider() {
-        return Optional.ofNullable(
-                VaadinService.getCurrent().getInstantiator().getI18NProvider());
+        return Optional.ofNullable(VaadinService.getCurrent())
+                .map(VaadinService::getInstantiator)
+                .map(Instantiator::getI18NProvider);
     }
 
     /**
-     * Get the locale for the given UI.
+     * Get the locale from the current UI or from the given I18NProvider.
      * <p>
      * -> If UI is not null, then it is used to get the locale, -> if UI is
      * null, then the I18NProvider providedLocales first match will be returned,
@@ -118,5 +120,19 @@ public final class LocaleUtil {
                         .map(I18NProvider::getProvidedLocales)
                         .flatMap(locales -> locales.stream().findFirst()))
                 .orElseGet(Locale::getDefault);
+    }
+
+    /**
+     * Get the locale from the current UI or from the I18NProvider from the
+     * current VaadinService.
+     * <p>
+     * -> If UI is not null, then it is used to get the locale, -> if UI is
+     * null, then the I18NProvider providedLocales first match will be returned,
+     * -> if I18NProvider is null, then default locale is returned.
+     *
+     * @return the locale for the UI
+     */
+    public static Locale getLocale() {
+        return getLocale(LocaleUtil::getI18NProvider);
     }
 }

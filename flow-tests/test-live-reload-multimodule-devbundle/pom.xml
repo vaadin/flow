@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>flow-tests</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>24.8-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-test-live-reload-multimodule-devbundle</artifactId>
+    <name>The main module for a live reload multi module project (dev bundle)</name>
+
+    <packaging>pom</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
+        <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-lumo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <modules>
+        <module>../test-live-reload-multimodule/library/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/ui/pom-devbundle.xml</module>
+        <module>../test-live-reload-multimodule/theme/pom-devbundle.xml</module>
+    </modules>
+
+</project>

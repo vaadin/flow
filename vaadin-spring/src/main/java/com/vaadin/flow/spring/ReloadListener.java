@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -63,8 +63,11 @@ class ReloadListener
 
     private String convertToClassName(String fileName) {
         if (fileName.endsWith(".class")) {
-            return fileName.replace(".class", "").replace(File.separatorChar,
-                    '.');
+            String name = fileName.replace(".class", "").replace('/', '.');
+            if (File.separatorChar != '/') {
+                return name.replace(File.separatorChar, '.');
+            }
+            return name;
         } else {
             return null;
         }
