@@ -135,15 +135,14 @@ public class StagedTransaction extends Transaction {
             return;
         }
 
-        ResultCollector collector = new ResultCollector(openTrees.keySet(),
-                resultHandler);
-
         if (outer instanceof StagedTransaction outerTx) {
+            ResultCollector collector = new ResultCollector(openTrees.keySet(),
+                    resultHandler);
             for (SignalTree tree : openTrees.keySet()) {
                 outerTx.include(tree, createChange(tree, collector), true);
             }
         } else {
-            commitTwoPhase(collector);
+            commitTwoPhase(resultHandler);
 
             for (SignalTree tree : openTrees.keySet()) {
                 CommandsAndHandlers staged = openTrees.get(tree).staged;
@@ -156,7 +155,7 @@ public class StagedTransaction extends Transaction {
         }
     }
 
-    private void commitTwoPhase(ResultCollector collector) {
+    private void commitTwoPhase(Consumer<ResultOrError<Void>> resultHandler) {
         /*
          * Order by id to ensure all transactions lock trees in the same order.
          * Without this, there could be a deadlock if one transaction has
@@ -167,6 +166,8 @@ public class StagedTransaction extends Transaction {
                 .filter(entry -> !entry.getValue().staged.isEmpty())
                 .map(Entry::getKey).sorted(Comparator.comparing(SignalTree::id))
                 .toList();
+
+        ResultCollector collector = new ResultCollector(trees, resultHandler);
 
         try {
             trees.forEach(tree -> tree.getLock().lock());
