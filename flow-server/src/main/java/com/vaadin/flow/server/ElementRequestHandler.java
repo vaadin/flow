@@ -31,6 +31,11 @@ public interface ElementRequestHandler extends Serializable {
      * Request handler callback for handing client-server or server-client data
      * transfer scoped to a specific (owner) element.
      *
+     * Note: when handling requests via this API, you need to take care of
+     * typical stream handling issues, e.g. exceptions yourself. However, you do
+     * not need to close the stream yourself, Flow will handle that for you when
+     * needed.
+     *
      * @param request
      *            VaadinRequest request to handle
      * @param response
