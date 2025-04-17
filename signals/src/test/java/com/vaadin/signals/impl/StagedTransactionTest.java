@@ -483,6 +483,20 @@ public class StagedTransactionTest {
     }
 
     @Test
+    void commit_treeWithoutChanges_resultResolved() {
+        SynchronousSignalTree t1 = new SynchronousSignalTree(false);
+        SynchronousSignalTree t2 = new SynchronousSignalTree(false);
+
+        var operation = Transaction.runInTransaction(() -> {
+            TestUtil.readTransactionRootValue(t1);
+            Transaction.getCurrent().include(t2,
+                    TestUtil.writeRootValueCommand(), null);
+        });
+
+        TestUtil.assertSuccess(operation);
+    }
+
+    @Test
     void treeMixing_multipleSyncAndComputed_allIsFine() {
         SignalTree d1 = new SynchronousSignalTree(false);
         SignalTree d2 = new SynchronousSignalTree(false);
