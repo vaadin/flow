@@ -1,4 +1,4 @@
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import javax.inject.Inject
 import com.vaadin.flow.server.frontend.FrontendTools
