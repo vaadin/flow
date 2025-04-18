@@ -57,11 +57,17 @@ public class UIAccessContextIT extends AbstractIT {
     }
 
     private void loginAdmin(HasElementQuery adminContext) {
+        waitForClientRouter();
         LoginFormElement form = adminContext.$(LoginOverlayElement.class)
                 .first().getLoginForm();
         form.getUsernameField().setValue("emma");
         form.getPasswordField().setValue("emma");
         form.submit();
+        waitUntilNot(driver -> ((WebDriver) adminContext.getContext())
+                .getCurrentUrl().contains("my/login/page"));
+        waitUntilNot(
+                driver -> adminContext.$(LoginOverlayElement.class).exists());
+
     }
 
 }
