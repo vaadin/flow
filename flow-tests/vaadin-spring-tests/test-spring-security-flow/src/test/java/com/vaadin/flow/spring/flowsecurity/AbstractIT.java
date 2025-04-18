@@ -88,8 +88,9 @@ public abstract class AbstractIT extends AbstractSpringTest {
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();
-        waitUntilNot(
-                driver -> driver.getCurrentUrl().contains("my/login/page"));
+        // waitUntilNot(
+        // driver -> driver.getCurrentUrl().contains("my/login/page"));
+        assertPathShown("my/login/page");
         waitUntilNot(driver -> $(LoginOverlayElement.class).exists());
     }
 
