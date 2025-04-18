@@ -16,11 +16,14 @@ import com.vaadin.flow.router.Route;
 public class LoginView extends LoginOverlay {
 
     public LoginView() {
+        // Prevents login listener registration
+        // See https://github.com/vaadin/flow-components/pull/6669
         super(prepareI18n()); // Prevents login listener registration
-        // from AbstractLogin constructor
+        // copied from AbstractLogin no-args constructor
         getElement().addPropertyChangeListener("disabled", "login", ev -> {
         });
         getElement().setProperty("_preventAutoEnable", true);
+
         setForgotPasswordButtonVisible(false);
         setAction("my/login/page");
         setOpened(true);
