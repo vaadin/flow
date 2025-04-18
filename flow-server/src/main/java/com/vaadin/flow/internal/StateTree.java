@@ -176,6 +176,8 @@ public class StateTree implements NodeOwner {
     // initialization is done.
     private boolean isRootAttached = true;
 
+    private boolean preparingForResync;
+
     /**
      * Creates a new state tree with a set of features defined for the root
      * node.
@@ -479,7 +481,26 @@ public class StateTree implements NodeOwner {
      * attached, so that it can build the DOM tree from scratch.
      */
     public void prepareForResync() {
-        rootNode.prepareForResync();
+        preparingForResync = true;
+        try {
+            rootNode.prepareForResync();
+        } finally {
+            preparingForResync = false;
+        }
     }
 
+    /**
+     * Checks whether the state tree is in the process of preparing for
+     * resynchronization.
+     *
+     * Resynchronization involves sending the same changes to the client as when
+     * the component tree was initially attached, enabling the client to rebuild
+     * the DOM tree from scratch.
+     *
+     * @return {@code true} if the tree is preparing for resynchronization,
+     *         {@code false} otherwise
+     */
+    public boolean isPreparingForResync() {
+        return preparingForResync;
+    }
 }
