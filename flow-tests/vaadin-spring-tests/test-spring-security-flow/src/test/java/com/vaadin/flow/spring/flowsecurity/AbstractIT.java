@@ -134,6 +134,11 @@ public abstract class AbstractIT extends AbstractSpringTest {
                 throw new IllegalStateException("URL should start with "
                         + getRootURL() + " but is " + url);
             }
+            // HttpSessionRequestCache uses request parameter "continue",
+            // see HttpSessionRequestCache::setMatchingRequestParameterName
+            if (url.endsWith("continue")) {
+                url = url.substring(0, url.length() - 9);
+            }
             return url.equals(
                     getRootURL() + getUrlMappingBasePath() + "/" + path);
         });
