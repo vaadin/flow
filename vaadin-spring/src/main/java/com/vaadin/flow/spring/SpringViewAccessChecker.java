@@ -61,7 +61,8 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
         // fall back to Spring Security.
         if (request == null || isWebsocketPush) {
             AtomicReference<Function<String, Boolean>> roleCheckerHolder = new AtomicReference<>();
-            Runnable roleCheckerLookup = AuthenticationUtil::getSecurityHolderRoleChecker;
+            Runnable roleCheckerLookup = () -> roleCheckerHolder
+                    .set(AuthenticationUtil.getSecurityHolderRoleChecker());
 
             Authentication authentication = AuthenticationUtil
                     .getSecurityHolderAuthentication();
