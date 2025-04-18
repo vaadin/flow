@@ -86,6 +86,8 @@ public abstract class AbstractIT extends AbstractSpringTest {
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();
+        waitUntilNot(
+                driver -> driver.getCurrentUrl().contains("my/login/page"));
         waitUntilNot(driver -> $(LoginOverlayElement.class).exists());
     }
 
@@ -131,6 +133,11 @@ public abstract class AbstractIT extends AbstractSpringTest {
             if (!url.startsWith(getRootURL())) {
                 throw new IllegalStateException("URL should start with "
                         + getRootURL() + " but is " + url);
+            }
+            // HttpSessionRequestCache uses request parameter "continue",
+            // see HttpSessionRequestCache::setMatchingRequestParameterName
+            if (url.endsWith("continue")) {
+                url = url.substring(0, url.length() - 9);
             }
             return url.equals(
                     getRootURL() + getUrlMappingBasePath() + "/" + path);
