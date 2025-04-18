@@ -24,6 +24,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.router.MenuData;
 
 /**
@@ -54,7 +55,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,
         MenuData menu, List<AvailableViewInfo> children,
         @JsonProperty("params") Map<String, RouteParamType> routeParameters,
-        boolean flowLayout) implements Serializable {
+        boolean flowLayout, JsonNode detail) implements Serializable {
 
     @Override
     public boolean equals(final Object o) {
@@ -72,13 +73,14 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 && Objects.equals(register, that.register)
                 && Objects.equals(menu, that.menu)
                 && Objects.equals(routeParameters, that.routeParameters)
-                && Objects.equals(flowLayout, that.flowLayout);
+                && Objects.equals(flowLayout, that.flowLayout)
+                && Objects.equals(detail, that.detail);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(title, loginRequired, route, lazy, register,
-                menu, routeParameters);
+                menu, routeParameters, detail);
         result = 31 * result + Arrays.hashCode(rolesAllowed);
         return result;
     }
@@ -90,7 +92,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + ", loginRequired=" + loginRequired + ", route='" + route
                 + '\'' + ", lazy=" + lazy + ", register=" + register + ", menu="
                 + menu + ", flowLayout=" + flowLayout + ", routeParameters="
-                + routeParameters + '}';
+                + routeParameters + ", detail=" + detail + '}';
     }
 
 }
