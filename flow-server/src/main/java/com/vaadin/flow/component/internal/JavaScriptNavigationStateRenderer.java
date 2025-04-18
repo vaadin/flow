@@ -106,7 +106,10 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
             return super.shouldPushHistoryState(event);
         }
         if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())
-                || NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+                && isPostponedClientSideNavigation()) {
+            // When navigation is postponed, the legacy router does not update
+            // the history, so it should be done on the server side when
+            // proceeding.
             return true;
         }
         return super.shouldPushHistoryState(event);
@@ -116,14 +119,16 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     protected void pushHistoryState(NavigationEvent event) {
         super.pushHistoryState(event);
 
-        if (continueNavigationAction != null
-                // We're trying to navigate to a client view.
-                && UI.ClientViewPlaceholder.class.isAssignableFrom(
-                        getNavigationState().getNavigationTarget())) {
+        if (isPostponedClientSideNavigation()) {
             event.getUI().navigateToClient(
                     event.getLocation().getPathWithQueryParameters());
         }
+    }
 
+    private boolean isPostponedClientSideNavigation() {
+        return continueNavigationAction != null
+                && UI.ClientViewPlaceholder.class.isAssignableFrom(
+                        getNavigationState().getNavigationTarget());
     }
 
     private static Logger getLogger() {

@@ -17,16 +17,16 @@
 package com.vaadin.flow;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
-@Route("com.vaadin.flow.BackNavFirstView")
-public class BackNavFirstView extends Div {
+@Route("com.vaadin.flow.RouterLinkForwardingToParametersView")
+public class RouterLinkForwardingToParametersView extends Div {
 
-    public BackNavFirstView() {
-        add(new NativeButton("Server side navigation", event -> getUI()
-                .ifPresent(ui -> ui.navigate(BackNavSecondView.class))));
-        add(new RouterLink("Client side navigation", BackNavSecondView.class));
+    public RouterLinkForwardingToParametersView() {
+        RouterLink link = new RouterLink("Forwarding view",
+                ForwardingToParametersView.class);
+        link.setId("forwardViewLink");
+        add(link);
     }
 }

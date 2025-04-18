@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>flow-tests</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>24.8-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-test-vaadin-router-prod</artifactId>
+    <name>Flow tests for routing using vaadin-router in production mode</name>
+
+    <packaging>war</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <surefire.reportNameSuffix>production</surefire.reportNameSuffix>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-html-components-testbench</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <cleanFrontendFiles>false</cleanFrontendFiles>
+                    <reactEnable>false</reactEnable>
+                </configuration>
+            </plugin>
+            <!-- This module is mapped to default web context -->
+            <plugin>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

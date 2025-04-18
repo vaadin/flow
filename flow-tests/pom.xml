@@ -330,6 +330,8 @@
                 <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
+                <module>test-vaadin-router</module>
+                <module>test-vaadin-router/pom-production.xml</module>
                 <module>test-react-router</module>
                 <module>test-react-router/pom-production.xml</module>
                 <module>test-react-adapter</module>

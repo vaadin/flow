@@ -443,6 +443,11 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
+        boolean reactEnabled = ui.getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled();
+        Location currentLocation = event.getUI().getInternals()
+                .getActiveViewLocation();
+        NavigationTrigger eventTrigger = event.getTrigger();
         if (event instanceof ErrorNavigationEvent errorEvent) {
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
@@ -450,18 +455,15 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (NavigationTrigger.REFRESH != event.getTrigger()
+        } else if (NavigationTrigger.REFRESH != eventTrigger
                 && !event.isForwardTo()
-                && (event.getUI().getInternals().getActiveViewLocation() == null
-                        || !event.getLocation().getPathWithQueryParameters()
-                                .equals(event.getUI().getInternals()
-                                        .getActiveViewLocation()
-                                        .getPathWithQueryParameters()))) {
+                && (currentLocation == null || !event.getLocation()
+                        .getPathWithQueryParameters().equals(currentLocation
+                                .getPathWithQueryParameters()))) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
-        } else if (ui.getInternals().getSession().getService()
-                .getDeploymentConfiguration().isReactEnabled()) {
+        } else if (reactEnabled) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }

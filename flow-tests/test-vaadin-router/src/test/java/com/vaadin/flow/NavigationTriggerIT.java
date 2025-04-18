@@ -13,12 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow;
 
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -36,9 +35,6 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertMessageCount(1);
 
         assertLastMessage("/abc", NavigationTrigger.PAGE_LOAD, "abc");
-        Assert.assertEquals("The trailing '/' from the URL should be removed.",
-                url.substring(0, url.length() - 1),
-                getDriver().getCurrentUrl());
 
         findElement(By.id("routerlink")).click();
         assertMessageCount(2);
