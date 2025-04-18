@@ -8,6 +8,9 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
@@ -42,7 +45,7 @@ public class PublicView extends FlexLayout {
         Button backgroundNavigation = new Button(
                 "Navigate to admin view in 1 second", e -> {
                     UI ui = e.getSource().getUI().get();
-                    new Thread(() -> {
+                    Runnable navigateToAdmin = () -> {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e1) {
@@ -50,8 +53,11 @@ public class PublicView extends FlexLayout {
                         ui.access(() -> {
                             ui.navigate(AdminView.class);
                         });
-
-                    }).start();
+                    };
+                    Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
+                            navigateToAdmin,
+                            SecurityContextHolder.getContext());
+                    new Thread(wrappedRunnable).start();
                 });
         backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);
         add(backgroundNavigation);
