@@ -808,6 +808,19 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Populate the routerTargetChain with RouterLayouts, but only if the target
+     * chain is empty. If the chain contains elements the given list is ignored.
+     *
+     * @param layouts
+     *            stored router target chain to set as last navigated chain
+     */
+    public void setRouterTargetChain(List<RouterLayout> layouts) {
+        if (routerTargetChain.isEmpty()) {
+            routerTargetChain.addAll(layouts);
+        }
+    }
+
+    /**
      * Shows a route target in the related UI. This method is intended for
      * framework use only. Use {@link UI#navigate(String)} to change the route
      * target that is shown in a UI.
@@ -1115,8 +1128,18 @@ public class UIInternals implements Serializable {
     public void setLastHandledNavigation(Location location) {
         lastHandledNavigation = location;
         if (location != null) {
-            locationForRefresh = location;
+            setLocationForRefresh(location);
         }
+    }
+
+    /**
+     * Store refresh location for refreshCurrentRoute.
+     *
+     * @param location
+     *            current location.
+     */
+    public void setLocationForRefresh(Location location) {
+        locationForRefresh = location;
     }
 
     /**
@@ -1158,7 +1181,7 @@ public class UIInternals implements Serializable {
      * Clear latest handled navigation location.
      */
     public void clearLastHandledNavigation() {
-        setLastHandledNavigation(null);
+        lastHandledNavigation = null;
     }
 
     /**

@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -87,6 +89,8 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -1743,7 +1747,7 @@ public class UI extends Component
         private final String route;
         private final String query;
         private final String appShellTitle;
-        private final JsonValue historyState;
+        private final JsonNode historyState;
         private final String trigger;
 
         /**
@@ -1766,7 +1770,7 @@ public class UI extends Component
                 @EventData("route") String route,
                 @EventData("query") String query,
                 @EventData("appShellTitle") String appShellTitle,
-                @EventData("historyState") JsonValue historyState,
+                @EventData("historyState") JsonNode historyState,
                 @EventData("trigger") String trigger) {
             super(source, true);
             this.route = route;
@@ -1838,7 +1842,8 @@ public class UI extends Component
     public void connectClient(String flowRoutePath, String flowRouteQuery,
             String appShellTitle, JsonValue historyState, String trigger) {
         browserNavigate(new BrowserNavigateEvent(this, false, flowRoutePath,
-                flowRouteQuery, appShellTitle, historyState, trigger));
+                flowRouteQuery, appShellTitle,
+                JacksonUtils.mapElemental(historyState), trigger));
     }
 
     /**
@@ -1879,9 +1884,11 @@ public class UI extends Component
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
+            JsonObject state = event.historyState == null ? null
+                    : Json.parse(event.historyState.toString());
             handler.onHistoryStateChange(
                     new History.HistoryStateChangeEvent(getPage().getHistory(),
-                            event.historyState, location, navigationTrigger));
+                            state, location, navigationTrigger));
         }
 
         // true if the target is client-view and the push mode is disable
@@ -2040,6 +2047,7 @@ public class UI extends Component
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
         try {
+            getInternals().setLastHandledNavigation(location);
             NavigationEvent navigationEvent = new NavigationEvent(
                     getInternals().getRouter(), location, this, trigger);
 

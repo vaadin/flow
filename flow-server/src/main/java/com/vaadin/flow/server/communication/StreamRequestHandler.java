@@ -24,12 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -107,11 +109,22 @@ public class StreamRequestHandler implements RequestHandler {
 
         if (abstractStreamResource.isPresent()) {
             AbstractStreamResource resource = abstractStreamResource.get();
-            if (resource instanceof StreamResource) {
+            if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
+                Element owner = elementRequest.getOwner();
+                if (owner.getNode().isInert() && !elementRequest
+                        .getElementRequestHandler().allowInert()) {
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return true;
+                } else {
+                    elementRequest.getElementRequestHandler().handleRequest(
+                            request, response, session,
+                            elementRequest.getOwner());
+                }
+            } else if (resource instanceof StreamResource) {
                 resourceHandler.handleRequest(session, request, response,
                         (StreamResource) resource);
-            } else if (resource instanceof StreamReceiver) {
-                StreamReceiver streamReceiver = (StreamReceiver) resource;
+            } else if (resource instanceof StreamReceiver streamReceiver) {
                 String[] parts = parsePath(pathInfo);
 
                 receiverHandler.handleRequest(session, request, response,

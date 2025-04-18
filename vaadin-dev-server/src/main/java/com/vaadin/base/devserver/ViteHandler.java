@@ -47,11 +47,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
  *
  */
 public final class ViteHandler extends AbstractDevServerRunner {
-
-    /**
-     * The local installation path of the server node script.
-     */
-    public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
     /**
      * Files that are loaded from the root path but Vite places them in the
      * VAADIN folder.
@@ -117,7 +112,13 @@ public final class ViteHandler extends AbstractDevServerRunner {
 
     @Override
     protected File getServerBinary() {
-        return new File(getProjectRoot(), VITE_SERVER);
+        try {
+            return getFrontendTools()
+                    .getNpmPackageExecutable("vite", "vite", getProjectRoot())
+                    .toFile();
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new RuntimeException("Vite not found", e);
+        }
     }
 
     @Override

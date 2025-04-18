@@ -313,7 +313,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
 
-            annotatedClasses.stream().filter(c -> !isExperimental(c.getName()))
+            annotatedClasses.stream()
+                    .filter(c -> !isDisabledExperimentalClass(c.getName()))
                     .forEach(clazz -> annotationFinder
                             .apply(clazz, loadedAnnotation).forEach(ann -> {
                                 String value = getAnnotationValueAsString(ann,

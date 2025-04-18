@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -149,9 +150,7 @@ public class NodeTasks implements FallibleCommand {
                 // and no update tasks are executed before it.
                 if (BundleValidationUtil.needsBuild(options,
                         frontendDependencies, Mode.DEVELOPMENT_BUNDLE)) {
-                    commands.add(new TaskCleanFrontendFiles(
-                            options.getNpmFolder(),
-                            options.getFrontendDirectory(), classFinder));
+                    commands.add(new TaskCleanFrontendFiles(options));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     BundleUtils.copyPackageLockFromBundle(options);
@@ -342,8 +341,14 @@ public class NodeTasks implements FallibleCommand {
             sortCommands(commands);
             GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
             for (FallibleCommand command : commands) {
+                long startTime = System.nanoTime();
                 command.setGeneratedFileSupport(generatedFilesSupport);
                 command.execute();
+                Duration durationInNs = Duration
+                        .ofNanos(System.nanoTime() - startTime);
+                getLogger().debug("Task [ {} ] completed in {} ms",
+                        command.getClass().getSimpleName(),
+                        durationInNs.toMillis());
             }
         } finally {
             releaseLock();

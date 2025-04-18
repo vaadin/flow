@@ -83,7 +83,6 @@ import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -521,17 +520,26 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools) throws TimeoutException {
-        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
+        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
-            FrontendTools frontendTools, String toolName, String executable,
-            Map<String, String> environment, String... params)
-            throws TimeoutException {
+            FrontendTools frontendTools, String toolName, String packageName,
+            String binaryName, Map<String, String> environment,
+            String... params) throws TimeoutException {
 
-        File buildExecutable = new File(adapter.npmFolder(),
-                NODE_MODULES + executable);
+        File buildExecutable;
+        try {
+            buildExecutable = frontendTools.getNpmPackageExecutable(packageName,
+                    binaryName, adapter.npmFolder()).toFile();
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new IllegalStateException(String.format("""
+                    Unable to locate %s executable. Expected the "%s" npm \
+                    package to be installed and to provide the "%s" binary. \
+                    Double check that the npm dependencies are installed.""",
+                    toolName, packageName, binaryName));
+        }
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate %s executable by path '%s'. Double"
