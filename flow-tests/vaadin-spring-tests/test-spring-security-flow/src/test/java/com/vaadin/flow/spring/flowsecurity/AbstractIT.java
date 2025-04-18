@@ -8,8 +8,6 @@
  */
 package com.vaadin.flow.spring.flowsecurity;
 
-import java.util.stream.Collectors;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
@@ -88,9 +86,10 @@ public abstract class AbstractIT extends AbstractSpringTest {
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();
-        // waitUntilNot(
-        // driver -> driver.getCurrentUrl().contains("my/login/page"));
-        assertPathShown("my/login/page");
+        waitUntilNot(driver -> {
+            waitForClientRouter();
+            return driver.getCurrentUrl().contains("my/login/page");
+        });
         waitUntilNot(driver -> $(LoginOverlayElement.class).exists());
     }
 
@@ -131,21 +130,12 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     protected void assertPathShown(String path) {
         waitForClientRouter();
-        String caller = StackWalker.getInstance().walk(frames -> frames
-                .filter(frame -> "com.vaadin.flow.spring.flowsecurity.AppViewIT"
-                        .equals(frame.getClassName()))
-                .map(StackWalker.StackFrame::getMethodName)
-                .collect(Collectors.joining(" -> ")));
         waitUntil(driver -> {
             String url = driver.getCurrentUrl();
             if (!url.startsWith(getRootURL())) {
                 throw new IllegalStateException("URL should start with "
                         + getRootURL() + " but is " + url);
             }
-            System.out.println(
-                    "================ + " + caller + " >> Expected path: "
-                            + getRootURL() + getUrlMappingBasePath() + "/"
-                            + path + " Actual path: " + url);
             // HttpSessionRequestCache uses request parameter "continue",
             // see HttpSessionRequestCache::setMatchingRequestParameterName
             if (url.endsWith("continue")) {
