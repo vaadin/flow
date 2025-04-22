@@ -83,19 +83,6 @@ public class BeforeLeaveEvent extends BeforeEvent {
                             .executeJs("this.serverConnected($0)", false);
                 }
 
-                // Change the trigger to programmatic as the url will be
-                // updated/added by router when we continue for a Router_link.
-                // If the server updates the url also we will get 2 history
-                // changes instead of 1.
-                if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                        && !event.getUI().getSession().getService()
-                                .getDeploymentConfiguration()
-                                .isReactEnabled()) {
-                    event = new NavigationEvent(event.getSource(),
-                            event.getLocation(), event.getUI(),
-                            NavigationTrigger.PROGRAMMATIC);
-                }
-
                 handler.handle(event);
                 setReferences(null, null);
             }
