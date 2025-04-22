@@ -77,9 +77,6 @@ abstract class AbstractUpdateImports implements Runnable {
             + " const tpl = document.createElement('template');\n"
             + " tpl.innerHTML = block;\n"
             + " document.head.appendChild(tpl.content);\n" + "}";
-    private static final String IMPORT_INJECT = "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
-    private static final String IMPORT_WC_INJECT = "import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
-
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n";
     private static final String CSS_IMPORT_AND_MAKE_LIT_CSS = CSS_IMPORT
             + "const $css_%1$d = typeof $cssFromFile_%1$d  === 'string' ? unsafeCSS($cssFromFile_%1$d) : $cssFromFile_%1$d;";
@@ -88,11 +85,15 @@ abstract class AbstractUpdateImports implements Runnable {
     private static final String CSS_POST = "`);";
     private static final String CSS_BASIC_TPL = CSS_PRE
             + "<style%s>${$css_%1$d}</style>" + CSS_POST;
-    private static final String INJECT_CSS = CSS_IMPORT
-            + "%ninjectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);%n";
-    private static final Pattern INJECT_CSS_PATTERN = Pattern
-            .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
-    private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
+
+    private static final String INJECT_CSS_IMPORT = """
+        import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';
+        import { injectEmbeddedWebComponentCSS } from 'Frontend/generated/jar-resources/embedded-web-component-css-injector.js';
+    """;
+    private static final String INJECT_CSS = """
+        injectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);
+        injectEmbeddedWebComponentCSS($cssFromFile_%1$d.toString());
+    """;
 
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
@@ -160,8 +161,6 @@ abstract class AbstractUpdateImports implements Runnable {
 
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
-        writeWebComponentImports(
-                filterWebComponentImports(output.get(generatedFlowImports)));
 
         getLogger().debug("Imports and chunks update took {} ms.",
                 TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
@@ -220,44 +219,6 @@ abstract class AbstractUpdateImports implements Runnable {
         } catch (IOException e) {
             throw new IllegalStateException(
                     "Failed to update the generated Flow imports", e);
-        }
-    }
-
-    // Visible for test
-    List<String> filterWebComponentImports(List<String> lines) {
-        if (lines != null) {
-            // Exclude Lumo global imports for exported web-component
-            List<String> copy = new ArrayList<>(lines);
-            copy.add(0, IMPORT_WC_INJECT);
-            copy.removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
-            // Add global CSS imports with a per-webcomponent registration
-            final ListIterator<String> li = copy.listIterator();
-            while (li.hasNext()) {
-                adaptCssInjectForWebComponent(li, li.next());
-            }
-            return copy;
-        }
-        return lines;
-    }
-
-    private void adaptCssInjectForWebComponent(ListIterator<String> iterator,
-            String line) {
-        Matcher matcher = INJECT_CSS_PATTERN.matcher(line);
-        if (matcher.matches()) {
-            iterator.add(String.format(INJECT_WC_CSS, matcher.group(1)));
-        }
-    }
-
-    private void writeWebComponentImports(List<String> lines) {
-        if (lines != null) {
-            try {
-                generatedFilesSupport.writeIfChanged(
-                        generatedFlowWebComponentImports, lines);
-            } catch (IOException e) {
-                throw new IllegalStateException(
-                        "Failed to update the generated Flow imports for exported web component",
-                        e);
-            }
         }
     }
 
@@ -328,7 +289,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 }
                 boolean hasLazyCss = lazyCss.containsKey(chunkInfo);
                 if (hasLazyCss) {
-                    chunkLines.add(IMPORT_INJECT);
+                    addLines(chunkLines, INJECT_CSS_IMPORT);
                     chunkLines.add(THEMABLE_MIXIN_IMPORT);
                     chunkLines.addAll(lazyCss.get(chunkInfo));
                 }
@@ -375,7 +336,7 @@ abstract class AbstractUpdateImports implements Runnable {
         // Convert eager CSS data to JS and deduplicate it
         List<String> mainCssLines = getCssLines(eagerCssData);
         if (!mainCssLines.isEmpty()) {
-            mainLines.add(IMPORT_INJECT);
+            addLines(mainLines, INJECT_CSS_IMPORT);
             mainLines.add(THEMABLE_MIXIN_IMPORT);
             mainLines.addAll(mainCssLines);
         }
@@ -393,7 +354,11 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
         mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
 
+        List<String> webComponentImportLines = new ArrayList<>(mainLines);
+        webComponentImportLines.removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
+
         files.put(generatedFlowImports, mainLines);
+        files.put(generatedFlowWebComponentImports, webComponentImportLines);
         files.put(generatedFlowDefinitions,
                 Collections.singletonList("export {}"));
 
@@ -526,7 +491,7 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     protected void addLines(Collection<String> lines, String content) {
-        lines.addAll(Arrays.asList(content.split("\\R")));
+        lines.addAll(Arrays.stream(content.split("\\R")).map(String::trim).toList());
     }
 
     protected String getThemeIdPrefix() {
@@ -831,7 +796,8 @@ abstract class AbstractUpdateImports implements Runnable {
             addLines(lines,
                     String.format(CSS_BASIC_TPL, i, cssImport, include));
         } else {
-            addLines(lines, String.format(INJECT_CSS, i, cssImport));
+            addLines(lines, String.format(CSS_IMPORT, i, cssImport));
+            addLines(lines, String.format(INJECT_CSS, i));
         }
         return found || !options.isBundleBuild();
     }

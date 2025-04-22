@@ -114,31 +114,6 @@ window.Vaadin = window.Vaadin || {};
 window.Vaadin.theme = window.Vaadin.theme || {};
 window.Vaadin.theme.injectedGlobalCss = [];
 
-const webcomponentGlobalCss = {
-  css: [],
-  importers: []
-};
-
-export const injectGlobalWebcomponentCss = (css) => {
-  webcomponentGlobalCss.css.push(css);
-  webcomponentGlobalCss.importers.forEach(registrar => {
-    registrar(css);
-  });
-};
-
-export const webcomponentGlobalCssInjector = (registrar) => {
-  const registeredCss = [];
-  const wrapper = (css) => {
-    const hash = getHash(css);
-    if (!registeredCss.includes(hash)) {
-      registeredCss.push(hash);
-      registrar(css);
-    }
-  };
-  webcomponentGlobalCss.importers.push(wrapper);
-  webcomponentGlobalCss.css.forEach(wrapper);
-};
-
 /**
  * Calculate a 32 bit FNV-1a hash
  * Found here: https://gist.github.com/vaiorabbit/5657561

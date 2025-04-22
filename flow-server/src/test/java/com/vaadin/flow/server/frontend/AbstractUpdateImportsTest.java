@@ -124,7 +124,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     class UpdateImports extends AbstractUpdateImports {
 
         private Map<File, List<String>> output;
-        private List<String> webComponentImports;
 
         UpdateImports(FrontendDependenciesScanner scanner, Options options) {
             super(options, scanner);
@@ -133,12 +132,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         @Override
         protected void writeOutput(Map<File, List<String>> output) {
             this.output = output;
-        }
-
-        @Override
-        List<String> filterWebComponentImports(List<String> lines) {
-            webComponentImports = super.filterWebComponentImports(lines);
-            return webComponentImports;
         }
 
         public Map<File, List<String>> getOutput() {
@@ -427,13 +420,16 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .asPredicate();
         assertTrue(flowImports.stream().anyMatch(lumoGlobalsMatcher));
 
+        List<String> webComponentImports = new ArrayList<>(
+                updater.getOutput().get(updater.generatedFlowWebComponentImports));
+
         assertTrue(
                 "Import for web-components should not contain lumo global imports",
-                updater.webComponentImports.stream()
+                webComponentImports.stream()
                         .noneMatch(lumoGlobalsMatcher));
 
         // Check that imports other than lumo globals are the same
-        flowImports.removeAll(updater.webComponentImports);
+        flowImports.removeAll(webComponentImports);
         assertTrue(
                 "Flow and web-component imports must be the same, except for lumo globals",
                 flowImports.stream().allMatch(lumoGlobalsMatcher));
@@ -462,17 +458,19 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     return matcher.group(1);
                 }).collect(Collectors.toList());
 
+        List<String> webComponentImports = new ArrayList<>(
+                updater.getOutput().get(updater.generatedFlowWebComponentImports));
         assertTrue("Import for web-components should also inject global CSS",
-                updater.webComponentImports.stream()
+                webComponentImports.stream()
                         .anyMatch(globalCssImporter));
 
         assertTrue(
                 "Should contain function to import global CSS into embedded component",
-                updater.webComponentImports.stream().anyMatch(line -> line
+                webComponentImports.stream().anyMatch(line -> line
                         .contains("import { injectGlobalWebcomponentCss }")));
         globalCss.forEach(css -> assertTrue(
                 "Should register global CSS " + css + " for webcomponent",
-                updater.webComponentImports.stream()
+                webComponentImports.stream()
                         .anyMatch(line -> line.contains(
                                 "injectGlobalWebcomponentCss(" + css + ");"))));
 
