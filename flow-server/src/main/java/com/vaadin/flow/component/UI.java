@@ -750,8 +750,11 @@ public class UI extends Component
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!getInternals().isDirty()) {
-            // Do not push if there is nothing to push
+        if (!getInternals().isDirty()
+                || getInternals().getStateTree().isPreparingForResync()) {
+            // Do not push: there is nothing to push, or UI is preparing for
+            // resync and should not asynchronously dispatch messages to the
+            // client until the process is completed
             return;
         }
 
