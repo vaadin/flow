@@ -298,6 +298,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private TestBenchElement getMainView() {
+        waitForClientRouter();
         return waitUntil(driver -> $("*").id("main-view"));
     }
 
