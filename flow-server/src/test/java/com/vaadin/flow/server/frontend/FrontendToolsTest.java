@@ -474,9 +474,9 @@ public class FrontendToolsTest {
     public void getSuitablePnpm_compatibleVersionInstalled_accepted()
             throws Exception {
         createStubNode(false, true, baseDir);
-        createFakePnpm("7.33.5");
+        createFakePnpm("8.6.11");
         List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertEquals("expected pnpm version 7 accepted", "pnpm@7.33.5",
+        Assert.assertEquals("expected pnpm version 8 accepted", "pnpm@8.6.11",
                 pnpmCommand.get(pnpmCommand.size() - 1));
     }
 
