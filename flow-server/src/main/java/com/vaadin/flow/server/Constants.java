@@ -427,7 +427,7 @@ public final class Constants implements Serializable {
      * @deprecated this is an internal constant, don't use it
      */
     @Deprecated
-    public static final int SUPPORTED_NODE_MAJOR_VERSION = 14;
+    public static final int SUPPORTED_NODE_MAJOR_VERSION = 20;
     /**
      * Internal constant.
      *
@@ -441,7 +441,7 @@ public final class Constants implements Serializable {
      * @deprecated this is an internal constant, don't use it
      */
     @Deprecated
-    public static final int SUPPORTED_NPM_MAJOR_VERSION = 5;
+    public static final int SUPPORTED_NPM_MAJOR_VERSION = 9;
     /**
      * Internal constant.
      *

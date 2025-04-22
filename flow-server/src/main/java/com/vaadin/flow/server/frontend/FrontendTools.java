@@ -55,9 +55,9 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v14.21.3";
+    public static final String DEFAULT_NODE_VERSION = "v22.14.0";
 
-    public static final String DEFAULT_PNPM_VERSION = "7.33.5";
+    public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
