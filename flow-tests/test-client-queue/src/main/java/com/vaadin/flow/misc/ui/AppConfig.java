@@ -14,19 +14,11 @@
  * the License.
  */
 
-package com.vaadin.flow;
+package com.vaadin.flow.misc.ui;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
 
-@Route("com.vaadin.flow.BackNavFirstView")
-public class BackNavFirstView extends Div {
-
-    public BackNavFirstView() {
-        add(new NativeButton("Server side navigation", event -> getUI()
-                .ifPresent(ui -> ui.navigate(BackNavSecondView.class))));
-        add(new RouterLink("Client side navigation", BackNavSecondView.class));
-    }
+@Push
+public class AppConfig implements AppShellConfigurator {
 }
