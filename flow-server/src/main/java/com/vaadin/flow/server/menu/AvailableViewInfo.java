@@ -50,6 +50,8 @@ import com.vaadin.flow.router.MenuData;
  *            view parameters
  * @param flowLayout
  *            if server layout should be used
+ * @param detail
+ *           additional information to be used in the menu
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,
