@@ -9,8 +9,14 @@
 package com.vaadin.flow.spring;
 
 import java.security.Principal;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
+import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextImpl;
+
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
@@ -36,18 +42,53 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
 
     @Override
     protected Principal getPrincipal(VaadinRequest request) {
-        if (request == null) {
+        boolean isWebsocketPush = isWebsocketPush(request);
+        if (request == null
+                || (isWebsocketPush && request.getUserPrincipal() == null)) {
             return AuthenticationUtil.getSecurityHolderAuthentication();
         }
-        return super.getPrincipal(request);
+        return request.getUserPrincipal();
     }
 
     @Override
     protected Function<String, Boolean> getRolesChecker(VaadinRequest request) {
-        if (request == null) {
-            return AuthenticationUtil.getSecurityHolderRoleChecker();
+        boolean isWebsocketPush = isWebsocketPush(request);
+
+        // Role checks on PUSH request works out of the box only happen if
+        // transport is not WEBSOCKET.
+        // For websocket PUSH, HttServletRequest#isUserInRole method in
+        // Atmosphere HTTP request wrapper always returns, so we need to
+        // fall back to Spring Security.
+        if (request == null || isWebsocketPush) {
+            AtomicReference<Function<String, Boolean>> roleCheckerHolder = new AtomicReference<>();
+            Runnable roleCheckerLookup = () -> roleCheckerHolder
+                    .set(AuthenticationUtil.getSecurityHolderRoleChecker());
+
+            Authentication authentication = AuthenticationUtil
+                    .getSecurityHolderAuthentication();
+            // Spring Security context holder might not have been initialized
+            // for thread handling websocket message. If so, create a temporary
+            // security context based on the handshake request principal.
+            if (authentication == null && isWebsocketPush
+                    && request.getUserPrincipal() instanceof Authentication) {
+                roleCheckerLookup = new DelegatingSecurityContextRunnable(
+                        roleCheckerLookup, new SecurityContextImpl(
+                                (Authentication) request.getUserPrincipal()));
+            }
+
+            roleCheckerLookup.run();
+            return roleCheckerHolder.get();
         }
-        return super.getRolesChecker(request);
+
+        return request::isUserInRole;
+    }
+
+    private static boolean isWebsocketPush(VaadinRequest request) {
+        return request != null
+                && HandlerHelper.isRequestType(request,
+                        HandlerHelper.RequestType.PUSH)
+                && "websocket"
+                        .equals(request.getHeader("X-Atmosphere-Transport"));
     }
 
 }

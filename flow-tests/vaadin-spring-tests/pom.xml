@@ -15,7 +15,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <component.version>23.3-SNAPSHOT</component.version>
+        <component.version>23.5-SNAPSHOT</component.version>
     </properties>
 
     <dependencyManagement>
@@ -147,6 +147,9 @@
                 </executions>
                 <configuration>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
+                    <systemPropertyVariables>
+                        <com.vaadin.testbench.Parameters.testsInParallel>2</com.vaadin.testbench.Parameters.testsInParallel>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <!-- jetty plugin for those child modules that need it -->

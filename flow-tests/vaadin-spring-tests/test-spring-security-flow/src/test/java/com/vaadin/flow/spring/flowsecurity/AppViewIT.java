@@ -12,21 +12,23 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.button.testbench.ButtonElement;
-import com.vaadin.flow.component.upload.testbench.UploadElement;
-import com.vaadin.flow.spring.flowsecurity.views.PublicView;
-import com.vaadin.testbench.TestBenchElement;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
+
+import com.vaadin.flow.component.button.testbench.ButtonElement;
+import com.vaadin.flow.component.upload.testbench.UploadElement;
+import com.vaadin.flow.spring.flowsecurity.views.PublicView;
+import com.vaadin.testbench.TestBenchElement;
 
 public class AppViewIT extends AbstractIT {
 
@@ -250,6 +252,7 @@ public class AppViewIT extends AbstractIT {
         IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
         tmpFile.deleteOnExit();
         upload.upload(tmpFile);
+        waitForUploads(upload, 60);
 
         TestBenchElement text = $("p").id("uploadText");
         TestBenchElement img = $("img").id("uploadImage");
@@ -295,6 +298,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private TestBenchElement getMainView() {
+        waitForClientRouter();
         return waitUntil(driver -> $("*").id("main-view"));
     }
 
@@ -326,6 +330,27 @@ public class AppViewIT extends AbstractIT {
             }
             return new MenuItem(href, text, available);
         }).collect(Collectors.toList());
+    }
+
+    // Workaround for https://github.com/vaadin/flow-components/issues/3646
+    // The issue causes the upload test to be flaky
+    private void waitForUploads(UploadElement element, int maxSeconds) {
+        WebDriver.Timeouts timeouts = getDriver().manage().timeouts();
+        timeouts.scriptTimeout(Duration.ofSeconds(maxSeconds));
+
+        //@formatter:off
+        String script = "var callback = arguments[arguments.length - 1];\n" +
+                "var upload = arguments[0];\n" +
+                "let intervalId;\n" +
+                "intervalId = window.setInterval(function() {\n" +
+                "  var inProgress = upload.files.filter(function(file) { return file.uploading;}).length >0;\n" +
+                "  if (!inProgress) {\n" +
+                "    window.clearInterval(intervalId);\n" +
+                "    callback();\n" +
+                "  }\n" +
+                "}, 500);";
+        //@formatter:on
+        getCommandExecutor().getDriver().executeAsyncScript(script, element);
     }
 
     /*
