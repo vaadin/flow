@@ -148,7 +148,7 @@
                 <configuration>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
                     <systemPropertyVariables>
-                        <com.vaadin.testbench.Parameters.testsInParallel>4</com.vaadin.testbench.Parameters.testsInParallel>
+                        <com.vaadin.testbench.Parameters.testsInParallel>2</com.vaadin.testbench.Parameters.testsInParallel>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
