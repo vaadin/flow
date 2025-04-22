@@ -16,15 +16,25 @@ import com.vaadin.flow.router.Route;
 public class LoginView extends LoginOverlay {
 
     public LoginView() {
+        // Prevents login listener registration
+        // See https://github.com/vaadin/flow-components/pull/6669
+        super(prepareI18n());
+        // copied from AbstractLogin no-args constructor
+        getElement().setProperty("_preventAutoEnable", true);
+
+        setForgotPasswordButtonVisible(false);
+        setAction("my/login/page");
+        setOpened(true);
+    }
+
+    private static LoginI18n prepareI18n() {
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setHeader(new LoginI18n.Header());
         i18n.getHeader().setTitle("Spring Security - Flow Test Application");
         i18n.getHeader().setDescription(
                 "Login using john/john (user) or emma/emma (admin)");
         i18n.setAdditionalInformation(null);
-        setI18n(i18n);
-        setForgotPasswordButtonVisible(false);
-        setAction("my/login/page");
-        setOpened(true);
+        return i18n;
     }
+
 }

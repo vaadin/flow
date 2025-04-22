@@ -39,7 +39,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '22.14.0'
       - uses: actions/setup-java@v3
         with:
           java-version: '11'
@@ -151,7 +151,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
         with:
-          node-version: '18.12.1'
+          node-version: '22.14.0'
       - uses: pnpm/action-setup@v2
         with:
           version: '8.6.11'
