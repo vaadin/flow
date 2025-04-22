@@ -445,8 +445,7 @@ public abstract class AbstractNavigationStateRenderer
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
         boolean reactEnabled = ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled();
-        Location currentLocation = event.getUI().getInternals()
-                .getActiveViewLocation();
+        Location currentLocation = ui.getInternals().getActiveViewLocation();
         NavigationTrigger eventTrigger = event.getTrigger();
         if (event instanceof ErrorNavigationEvent errorEvent) {
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
