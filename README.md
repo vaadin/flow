@@ -14,16 +14,14 @@ Instructions on how to set up a working environment for developing the Flow proj
 
 The `main` branch is the latest version (24.2) that will at some point be released in the [Vaadin platform](https://github.com/vaadin/platform). See other branches for other framework versions:
 
-| Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
-|--------|-----------------------------------------------------------------|---------------------------------------------------------|
-| 1.0    | 10 (LTS)                                                        | 1.0                                                     |
-| 2.9    | 14.10.x (LTS)                                                   | 2.9.x                                                   |
-| 2.10   | 14.11.x (next LTS preparations)                                 | 2.10.x                                                  |
-| 9.1    | 22.1.x (LATEST with Java 8+ support, **Commercial support**)    | 9.1.x                                                   |
-| 23.3   | 23.3 (LATEST with Java 11+ support and Servlet 3)               | 23.3                                                    |
-| 24.0   | 24.0.x                                                          | 24.0                                                    |
-| 24.1   | 24.1 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3.0) | 24.1                                                    |
-| main   | 24.2 (Vaadin 24.2 pre-release)                                  | 24.2                                                    |
+| Branch | [Platform Version](https://github.com/vaadin/platform/releases)         | [Flow Version](https://github.com/vaadin/flow/releases) |
+|--------|-------------------------------------------------------------------------|---------------------------------------------------------|
+| 1.0    | 10 (Commercial support)                                                 | 1.0                                                     |
+| 2.12   | 14.13 (LATEST commercial with Java 8+ support and Servlet 3)            | 2.12                                                    |
+| 23.5   | 23.5 (LATEST commercial with Java 11+ support and Servlet 3)            | 23.5                                                    |
+| 24.6   | 24.6 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)           | 24.6                                                    |
+| 24.7   | 24.7 (pre-release, Java 17+, Jakarta EE 10, Spring-boot 3)              | 24.7                                                    |
+| main   | 24.8 (Vaadin 24.8 preparations)                                         | 24.8                                                    |
 
 
 Setting up Eclipse to Develop Flow
