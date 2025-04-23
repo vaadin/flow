@@ -19,7 +19,7 @@ public class AvailableViewInfoTest {
     @Test
     public void testEquality() {
         Assert.assertEquals("Two instance created the same way are not equal",
-                createInfo(false), createInfo(false));
+                createInfo(true), createInfo(true));
     }
 
     @Test
