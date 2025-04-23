@@ -17,16 +17,14 @@
 package com.vaadin.flow;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
 
-@Route("com.vaadin.flow.BackNavFirstView")
-public class BackNavFirstView extends Div {
-
-    public BackNavFirstView() {
-        add(new NativeButton("Server side navigation", event -> getUI()
-                .ifPresent(ui -> ui.navigate(BackNavSecondView.class))));
-        add(new RouterLink("Client side navigation", BackNavSecondView.class));
+@Route("com.vaadin.flow.ForwardingView")
+public class ForwardingView extends Div implements BeforeEnterObserver {
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        event.forwardTo(ForwardTargetView.class);
     }
 }
