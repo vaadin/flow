@@ -40,7 +40,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,31 +72,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIA
  */
 abstract class AbstractUpdateImports implements Runnable {
 
-    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
-            + " const tpl = document.createElement('template');\n"
-            + " tpl.innerHTML = block;\n"
-            + " document.head.appendChild(tpl.content);\n" + "}";
-    private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n";
-    private static final String CSS_IMPORT_AND_MAKE_LIT_CSS = CSS_IMPORT
-            + "const $css_%1$d = typeof $cssFromFile_%1$d  === 'string' ? unsafeCSS($cssFromFile_%1$d) : $cssFromFile_%1$d;";
-    private static final String CSS_PRE = CSS_IMPORT_AND_MAKE_LIT_CSS + "%n"
-            + "addCssBlock(`";
-    private static final String CSS_POST = "`);";
-    private static final String CSS_BASIC_TPL = CSS_PRE
-            + "<style%s>${$css_%1$d}</style>" + CSS_POST;
-
-    private static final String INJECT_CSS_IMPORT = """
-                import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';
-                import { injectEmbeddedWebComponentCSS } from 'Frontend/generated/jar-resources/embedded-web-component-css-injector.js';
-            """;
-    private static final String INJECT_CSS = """
-                injectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);
-                injectEmbeddedWebComponentCSS($cssFromFile_%1$d.toString());
-            """;
-
-    private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
-    private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
-            + "%n" + "registerStyles('%s', $css_%1$d%s);";
     static final String RESET_FOCUS_JS = "() => {\n"
             + " let ae=document.activeElement;\n"
             + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;\n"
