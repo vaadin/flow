@@ -28,7 +28,6 @@ import org.slf4j.helpers.NOPLogger;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.frontend.scanner.CssData;
-import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
@@ -63,9 +62,8 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     @Override
-    protected boolean addCssLines(Collection<String> lines, CssData cssData,
-            int i) {
-        super.addCssLines(lines, cssData, i);
+    protected boolean addCssLines(Collection<String> lines, CssData cssData, String context) {
+        super.addCssLines(lines, cssData, context);
         // CSS files in 'generated/jar-resources' are not generated at this
         // moment, so not let the application interrupt and continue with
         // checking the dev-bundle

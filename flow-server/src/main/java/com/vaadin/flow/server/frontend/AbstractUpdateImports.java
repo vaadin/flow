@@ -260,7 +260,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 }
                 boolean hasLazyCss = lazyCssData.containsKey(chunkInfo);
                 if (hasLazyCss) {
-                    chunkLines.addAll(getCssLines(lazyCssData.get(chunkInfo)));
+                    chunkLines.addAll(getCssLines(lazyCssData.get(chunkInfo), null));
                 }
 
                 if (chunkLines.isEmpty()) {
@@ -300,30 +300,23 @@ abstract class AbstractUpdateImports implements Runnable {
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
 
-        List<String> mainLines = new ArrayList<>();
-
         // Convert eager CSS data to JS and deduplicate it
-        mainLines.addAll(getCssLines(eagerCssData));
+        List<String> mainLines = new ArrayList<>();
+        mainLines.addAll(getCssLines(eagerCssData, null));
         mainLines.addAll(getModuleLines(eagerJavascript));
-
-        // Move all imports to the top
-        List<String> copy = new ArrayList<>(mainLines);
-        copy.removeIf(line -> !line.startsWith("import "));
-        mainLines.removeIf(line -> line.startsWith("import "));
-        mainLines.addAll(0, copy);
-
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
         mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
         mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
         mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
-
-        List<String> webComponentImportLines = new ArrayList<>(mainLines);
-        webComponentImportLines
-                .removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
-
         files.put(generatedFlowImports, mainLines);
-        files.put(generatedFlowWebComponentImports, webComponentImportLines);
+
+        List<String> webComponentLines = new ArrayList<>();
+        webComponentLines.addAll(getCssLines(eagerCssData, "exportedWebComponent"));
+        webComponentLines.addAll(getModuleLines(eagerJavascript));
+        webComponentLines.removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
+        files.put(generatedFlowWebComponentImports, webComponentLines);
+
         files.put(generatedFlowDefinitions,
                 Collections.singletonList("export {}"));
 
@@ -398,17 +391,15 @@ abstract class AbstractUpdateImports implements Runnable {
      *            the CSS import data
      * @return the JS statements needed to import and apply the CSS data
      */
-    protected List<String> getCssLines(List<CssData> css) {
+    protected List<String> getCssLines(List<CssData> css, String context) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
         LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
-        int i = 0;
         for (CssData cssData : allCss) {
-            if (!addCssLines(lines, cssData, i)) {
+            if (!addCssLines(lines, cssData, context)) {
                 cssNotFound.add(cssData.getValue());
             }
-            i++;
         }
 
         if (!cssNotFound.isEmpty()) {
@@ -717,44 +708,46 @@ abstract class AbstractUpdateImports implements Runnable {
      *            imported CSS counter
      * @return true if the imported CSS files does exist, false otherwise
      */
-    protected boolean addCssLines(Collection<String> lines, CssData cssData,
-            int i) {
+    protected boolean addCssLines(Collection<String> lines, CssData cssData, String context) {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
 
-        List<String> importQueryList = new ArrayList<>();
-
+        Map<String, String> query = new HashMap<>();
         if (cssData.getId() != null && cssData.getThemefor() != null) {
             throw new IllegalStateException(
                     "provide either id or themeFor for @CssImport of resource "
                             + cssData.getValue() + ", not both");
         }
-
         if (cssData.getThemefor() != null) {
-            importQueryList.add("themeFor=" + cssData.getThemefor());
+            query.put("themeFor", cssData.getThemefor());
         }
-
         if (cssData.getInclude() != null) {
-            importQueryList.add("include=" + cssData.getInclude());
+            query.put("include", cssData.getInclude());
         }
-
         if (cssData.getId() != null) {
-            importQueryList.add("moduleId=" + cssData.getId());
-        } else if (cssData.getThemefor() != null) {
-            importQueryList.add("moduleId=" + getThemeIdPrefix() + "_" + i);
+            query.put("moduleId", cssData.getId());
+        }
+        if (context != null) {
+            query.put("context", context);
         }
 
-        String importPath = toValidBrowserImport(cssFile).replace(".css", "");
-        String importQuery = !importQueryList.isEmpty()
-                ? "?" + String.join("&", importQueryList)
-                : "";
-        String importStatement = String.format(
-                "import 'virtual:flow-css-import/%s%s';", importPath,
-                importQuery);
-
-        lines.add(importStatement);
+        lines.add(generateCSSImportStatement(toValidBrowserImport(cssFile),
+                query));
 
         return found || !options.isBundleBuild();
+    }
+
+    private String generateCSSImportStatement(String path,
+            Map<String, String> query) {
+        String queryString = query.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining("&"));
+        if (!queryString.isEmpty()) {
+            queryString = "?" + queryString;
+        }
+
+        return String.format("import 'virtual:flow-css-import/%s%s';",
+                path.replace(".css", ""), queryString);
     }
 
     private String notFoundMessage(Set<String> files, String prefix,
