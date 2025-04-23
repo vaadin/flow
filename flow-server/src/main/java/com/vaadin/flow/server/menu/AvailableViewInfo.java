@@ -26,15 +26,15 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.MenuData;
 
 /**
@@ -115,6 +115,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         @Override
         public String deserialize(JsonParser p, DeserializationContext ctxt)
                 throws IOException {
+            if (p.currentToken() == JsonToken.VALUE_NULL) {
+                return null;
+            }
             JsonNode node = p.readValueAsTree();
             return node.toString();
         }
@@ -124,9 +127,11 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         @Override
         public void serialize(String value, JsonGenerator gen,
                 SerializerProvider serializers) throws IOException {
-            ObjectMapper mapper = new ObjectMapper().configure(
-                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            JsonNode node = mapper.readTree(value);
+            if (value == null) {
+                gen.writeNull();
+                return;
+            }
+            JsonNode node = JacksonUtils.readTree(value);
             gen.writeObject(node);
         }
     }
