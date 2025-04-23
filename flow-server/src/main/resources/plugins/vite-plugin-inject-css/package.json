@@ -1,7 +1,7 @@
 {
-  "description": "Vite plugin to inject Flow CSS files",
+  "description": "Vite plugin for importing CSS from Flow @CssImport annotations",
   "repository": "vaadin/flow",
-  "name": "@vaadin/vite-plugin-inject-css",
+  "name": "@vaadin/vite-plugin-flow-css-import",
   "version": "1.0.0",
   "main": "index.ts",
   "private": true,

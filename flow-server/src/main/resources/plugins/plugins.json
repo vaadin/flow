@@ -6,6 +6,6 @@
     "theme-live-reload-plugin",
     "rollup-plugin-postcss-lit-custom",
     "react-function-location-plugin",
-    "vite-plugin-inject-css"
+    "vite-plugin-flow-css-import"
   ]
 }

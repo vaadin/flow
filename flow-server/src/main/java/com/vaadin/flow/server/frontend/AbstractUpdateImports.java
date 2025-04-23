@@ -771,9 +771,12 @@ abstract class AbstractUpdateImports implements Runnable {
         }
 
         String importPath = toValidBrowserImport(cssFile).replace(".css", "");
-        String importQuery = !importQueryList.isEmpty() ? "?" + String.join("&", importQueryList) : "";
+        String importQuery = !importQueryList.isEmpty()
+                ? "?" + String.join("&", importQueryList)
+                : "";
         String importStatement = String.format(
-                "import 'virtual:inject-css/%s%s';", importPath, importQuery);
+                "import 'virtual:flow-css-import/%s%s';", importPath,
+                importQuery);
 
         lines.add(importStatement);
 
