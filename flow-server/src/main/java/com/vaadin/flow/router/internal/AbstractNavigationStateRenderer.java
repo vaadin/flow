@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -128,7 +129,7 @@ public abstract class AbstractNavigationStateRenderer
      */
     @SuppressWarnings("unchecked")
     // Non-private for testing purposes
-    static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
+    <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
             NavigationEvent event, boolean lastElement) {
         UI ui = event.getUI();
         Instantiator instantiator = Instantiator.get(ui);
@@ -149,6 +150,7 @@ public abstract class AbstractNavigationStateRenderer
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
+        ui.getInternals().setLocationForRefresh(event.getLocation());
 
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
@@ -265,6 +267,48 @@ public abstract class AbstractNavigationStateRenderer
                 return true;
             }
             chain.addAll(maybeChain.get());
+
+            // If partialMatch is set to true check if the cache contains a
+            // chain and possibly request extended details to get window name
+            // to select cached chain.
+            if (chain.isEmpty() && isPreservePartialTarget(
+                    navigationState.getNavigationTarget(), routeLayoutTypes)) {
+                UI ui = event.getUI();
+                if (ui.getInternals().getExtendedClientDetails() == null) {
+                    PreservedComponentCache cache = ui.getSession()
+                            .getAttribute(PreservedComponentCache.class);
+                    if (cache != null && !cache.isEmpty()) {
+                        // As there is a cached chain we get the client details
+                        // to get the window name so we can determine if the
+                        // cache contains a chain for us to use.
+                        ui.getPage().retrieveExtendedClientDetails(
+                                details -> handle(event));
+                        return true;
+                    }
+                } else {
+                    Optional<List<HasElement>> partialChain = getWindowPreservedChain(
+                            ui.getSession(),
+                            ui.getInternals().getExtendedClientDetails()
+                                    .getWindowName());
+                    if (partialChain.isPresent()) {
+                        List<HasElement> oldChain = partialChain.get();
+                        disconnectElements(oldChain, ui);
+
+                        List<RouterLayout> routerLayouts = new ArrayList<>();
+
+                        for (HasElement hasElement : oldChain) {
+                            if (hasElement instanceof RouterLayout) {
+                                routerLayouts.add((RouterLayout) hasElement);
+                            } else {
+                                // Remove any non element from their parent to
+                                // not get old or duplicate route content
+                                hasElement.getElement().removeFromParent();
+                            }
+                        }
+                        ui.getInternals().setRouterTargetChain(routerLayouts);
+                    }
+                }
+            }
         } else {
             // Create an empty chain which gets populated later in
             // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
@@ -399,6 +443,10 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
+        boolean reactEnabled = ui.getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled();
+        Location currentLocation = ui.getInternals().getActiveViewLocation();
+        NavigationTrigger eventTrigger = event.getTrigger();
         if (event instanceof ErrorNavigationEvent errorEvent) {
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
@@ -406,21 +454,15 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (NavigationTrigger.REFRESH != event.getTrigger()
+        } else if (NavigationTrigger.REFRESH != eventTrigger
                 && !event.isForwardTo()
-                && (!ui.getInternals().hasLastHandledLocation()
-                        || !event.getLocation().getPathWithQueryParameters()
-                                .equals(ui.getInternals()
-                                        .getLastHandledLocation()
-                                        .getPathWithQueryParameters()))) {
-
+                && (currentLocation == null || !event.getLocation()
+                        .getPathWithQueryParameters().equals(currentLocation
+                                .getPathWithQueryParameters()))) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
-
-            ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (ui.getInternals().getSession().getService()
-                .getDeploymentConfiguration().isReactEnabled()) {
+        } else if (reactEnabled) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
@@ -930,7 +972,7 @@ public abstract class AbstractNavigationStateRenderer
         Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC, null, true);
+                NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true);
     }
 
     /**
@@ -967,29 +1009,33 @@ public abstract class AbstractNavigationStateRenderer
             if (maybePreserved.isPresent()) {
                 // Re-use preserved chain for this route
                 ArrayList<HasElement> chain = maybePreserved.get();
-                final HasElement root = chain.get(chain.size() - 1);
-                final Component component = (Component) chain.get(0);
-                final Optional<UI> maybePrevUI = component.getUI();
-
-                if (maybePrevUI.isPresent() && maybePrevUI.get().equals(ui)) {
-                    return Optional.of(chain);
-                }
-
-                // Remove the top-level component from the tree
-                root.getElement().removeFromTree(false);
-
-                // Transfer all remaining UI child elements (typically dialogs
-                // and notifications) to the new UI
-                maybePrevUI.ifPresent(prevUi -> {
-                    ui.getInternals().moveElementsFrom(prevUi);
-                    prevUi.close();
-                });
+                disconnectElements(chain, ui);
 
                 return Optional.of(chain);
             }
         }
 
         return Optional.of(new ArrayList<>(0));
+    }
+
+    private static void disconnectElements(List<HasElement> chain, UI ui) {
+        final HasElement root = chain.get(chain.size() - 1);
+        final Component component = (Component) chain.get(0);
+        final Optional<UI> maybePrevUI = component.getUI();
+
+        if (maybePrevUI.isPresent() && maybePrevUI.get().equals(ui)) {
+            return;
+        }
+
+        // Remove the top-level component from the tree
+        root.getElement().removeFromTree(false);
+
+        // Transfer all remaining UI child elements (typically dialogs
+        // and notifications) to the new UI
+        maybePrevUI.ifPresent(prevUi -> {
+            ui.getInternals().moveElementsFrom(prevUi);
+            prevUi.close();
+        });
     }
 
     /**
@@ -1080,6 +1126,18 @@ public abstract class AbstractNavigationStateRenderer
                         .isAnnotationPresent(PreserveOnRefresh.class));
     }
 
+    private static boolean isPreservePartialTarget(
+            Class<? extends Component> routeTargetType,
+            List<Class<? extends RouterLayout>> routeLayoutTypes) {
+        return (routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)
+                && routeTargetType.getAnnotation(PreserveOnRefresh.class)
+                        .partialMatch())
+                || routeLayoutTypes.stream().anyMatch(layoutType -> layoutType
+                        .isAnnotationPresent(PreserveOnRefresh.class)
+                        && layoutType.getAnnotation(PreserveOnRefresh.class)
+                                .partialMatch());
+    }
+
     // maps window.name to (location, chain)
     private static class PreservedComponentCache
             extends HashMap<String, Pair<String, ArrayList<HasElement>>> {
@@ -1106,9 +1164,27 @@ public abstract class AbstractNavigationStateRenderer
         if (cache != null && cache.containsKey(windowName) && cache
                 .get(windowName).getFirst().equals(location.getPath())) {
             return Optional.of(cache.get(windowName).getSecond());
-        } else {
-            return Optional.empty();
         }
+        return Optional.empty();
+    }
+
+    /**
+     * Get a preserved chain by window name only ignoring location path.
+     *
+     * @param session
+     *            current session
+     * @param windowName
+     *            window name to get cached view stack for
+     * @return view stack cache if available for window name
+     */
+    static Optional<List<HasElement>> getWindowPreservedChain(
+            VaadinSession session, String windowName) {
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && cache.containsKey(windowName)) {
+            return Optional.of(cache.get(windowName).getSecond());
+        }
+        return Optional.empty();
     }
 
     static void setPreservedChain(VaadinSession session, String windowName,

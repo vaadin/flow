@@ -107,7 +107,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *
      * @param finder
      *            the class finder
+     * @deprecated Use
+     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
+     *             instead.
      */
+    @Deprecated
     public FrontendDependencies(ClassFinder finder) {
         this(finder, true, null);
     }
@@ -123,7 +127,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@link com.vaadin.flow.component.WebComponentExporter} classes
      *            for dependencies. {@code true} is default for
      *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
+     * @deprecated Use
+     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
+     *             instead.
      */
+    @Deprecated
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents) {
         this(finder, generateEmbeddableWebComponents, null);
@@ -142,11 +150,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
      * @param featureFlags
      *            available feature flags and their status
+     * @deprecated Use
+     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
+     *             instead.
      */
+    @Deprecated
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents,
             FeatureFlags featureFlags) {
-        this(finder, generateEmbeddableWebComponents, null, true);
+        this(finder, generateEmbeddableWebComponents, featureFlags, true);
     }
 
     public FrontendDependencies(ClassFinder finder,
@@ -904,7 +916,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // factories. This is the reason of having just a blacklist of some
         // common name-spaces that would not have components.
         // We also exclude Feature-Flag classes
-        return className != null && !isExperimental(className)
+        return className != null && getFinder().shouldInspectClass(className)
+                && !isDisabledExperimentalClass(className)
                 && !NOT_VISITABLE_CLASS_PATTERN.matcher(className).matches();
     }
 

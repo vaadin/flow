@@ -823,8 +823,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return a JSON object with the initial UIDL message
          */
         private ObjectNode getInitialUidl(UI ui) {
-            ObjectNode json = JacksonUtils
-                    .mapElemental(new UidlWriter().createUidl(ui, false));
+            ObjectNode json = new UidlWriter().createUidl(ui, false);
 
             VaadinSession session = ui.getSession();
             if (session.getConfiguration().isXsrfProtectionEnabled()) {
@@ -1500,8 +1499,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return a JSON object with the initial UIDL message
      */
     protected static ObjectNode getInitialUidl(UI ui) {
-        ObjectNode json = JacksonUtils
-                .mapElemental(new UidlWriter().createUidl(ui, false));
+        ObjectNode json = new UidlWriter().createUidl(ui, false);
 
         VaadinSession session = ui.getSession();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
@@ -1630,6 +1628,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Gives a links for referencing the custom theme stylesheet files
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
+     * <p>
+     * </p>
+     * This method does not verify that the style sheet exists, so it may end up
+     * at runtime with broken links. Use
+     * {@link #getStylesheetLinks(VaadinContext, String, File)} if you want only
+     * links for existing files to be returned.
      *
      * @param context
      *            the vaadin context
@@ -1639,7 +1643,32 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     protected static Collection<String> getStylesheetLinks(
             VaadinContext context, String fileName) {
+        return getStylesheetLinks(context, fileName, null);
+    }
+
+    /**
+     * Gives a links for referencing the custom theme stylesheet files
+     * (typically styles.css or document.css), which are served in express build
+     * mode by static file server directly from frontend/themes folder.
+     * <p>
+     * </p>
+     * This method return links only for existing style sheet files.
+     *
+     * @param context
+     *            the vaadin context
+     * @param fileName
+     *            the stylesheet file name to add a reference to
+     * @param frontendDirectory
+     *            the directory where project's frontend files are located.
+     *
+     * @return the collection of links to be added to the page
+     */
+    protected static Collection<String> getStylesheetLinks(
+            VaadinContext context, String fileName, File frontendDirectory) {
         return ThemeUtils.getActiveThemes(context).stream()
+                .filter(theme -> frontendDirectory == null
+                        || ThemeUtils.getThemeFolder(frontendDirectory, theme)
+                                .toPath().resolve(fileName).toFile().exists())
                 .map(theme -> ThemeUtils.getThemeFilePath(theme, fileName))
                 .toList();
     }

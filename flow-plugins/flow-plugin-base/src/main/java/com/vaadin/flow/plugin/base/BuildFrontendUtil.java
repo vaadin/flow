@@ -83,7 +83,6 @@ import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -311,12 +310,16 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
+     * @param frontendDependencies
+     *            Frontend dependencies scanner to use. If not set, one will be
+     *            initialized by {@link Options} class later.
      * @throws ExecutionFailedException
      *             - a ExecutionFailedException.
      * @throws URISyntaxException
      *             - - Could not build an URI from nodeDownloadRoot().
      */
-    public static void runNodeUpdater(PluginAdapterBuild adapter)
+    public static void runNodeUpdater(PluginAdapterBuild adapter,
+            FrontendDependenciesScanner frontendDependencies)
             throws ExecutionFailedException, URISyntaxException {
 
         Set<File> jarFiles = adapter.getJarFiles();
@@ -365,7 +368,8 @@ public class BuildFrontendUtil {
                     .withFrontendExtraFileExtensions(
                             adapter.frontendExtraFileExtensions())
                     .withFrontendIgnoreVersionChecks(
-                            adapter.isFrontendIgnoreVersionChecks());
+                            adapter.isFrontendIgnoreVersionChecks())
+                    .withFrontendDependenciesScanner(frontendDependencies);
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -516,17 +520,26 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools) throws TimeoutException {
-        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
+        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
-            FrontendTools frontendTools, String toolName, String executable,
-            Map<String, String> environment, String... params)
-            throws TimeoutException {
+            FrontendTools frontendTools, String toolName, String packageName,
+            String binaryName, Map<String, String> environment,
+            String... params) throws TimeoutException {
 
-        File buildExecutable = new File(adapter.npmFolder(),
-                NODE_MODULES + executable);
+        File buildExecutable;
+        try {
+            buildExecutable = frontendTools.getNpmPackageExecutable(packageName,
+                    binaryName, adapter.npmFolder()).toFile();
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new IllegalStateException(String.format("""
+                    Unable to locate %s executable. Expected the "%s" npm \
+                    package to be installed and to provide the "%s" binary. \
+                    Double check that the npm dependencies are installed.""",
+                    toolName, packageName, binaryName));
+        }
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate %s executable by path '%s'. Double"
@@ -577,10 +590,12 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            the PluginAdapterBase
+     * @param frontendDependencies
      * @return {@literal true} if license validation is required because of the
      *         presence of commercial components, otherwise {@literal false}.
      */
-    public static boolean validateLicenses(PluginAdapterBase adapter) {
+    public static boolean validateLicenses(PluginAdapterBase adapter,
+            FrontendDependenciesScanner frontendDependencies) {
         File outputFolder = adapter.webpackOutputDirectory();
 
         String statsJsonContent = null;
@@ -609,11 +624,8 @@ public class BuildFrontendUtil {
             statsJsonContent = "{}";
         }
 
-        FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, adapter.getClassFinder(), true, null,
-                        adapter.isReactEnabled());
         List<Product> commercialComponents = findCommercialFrontendComponents(
-                scanner, statsJsonContent);
+                frontendDependencies, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
 
         for (Product component : commercialComponents) {

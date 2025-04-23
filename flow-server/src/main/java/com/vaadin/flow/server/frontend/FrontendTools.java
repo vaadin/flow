@@ -16,10 +16,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,12 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -794,6 +792,34 @@ public class FrontendTools {
                 getNpmExecutable(false));
         npmVersionCommand.add("--version"); // NOSONAR
         return FrontendUtils.getVersion("npm", npmVersionCommand);
+    }
+
+    /**
+     * Gives a path to the executable (bin) JS file of the given package using
+     * the native node resolution mechanism.
+     *
+     * @param packageName
+     *            the name of the package.
+     * @param binName
+     *            the name of the specific executable.
+     * @param cwd
+     *            the current working directory.
+     * @return the path to the executable.
+     * @throws CommandExecutionException
+     *             if the node resolution fails.
+     */
+    public Path getNpmPackageExecutable(String packageName, String binName,
+            File cwd) throws CommandExecutionException {
+        var script = """
+                var jsonPath = require.resolve('%s/package.json');
+                var json = require(jsonPath);
+                console.log(path.resolve(path.dirname(jsonPath), json.bin['%s']));
+                """
+                .formatted(packageName, binName);
+        return Paths.get(FrontendUtils
+                .executeCommand(List.of(getNodeExecutable(), "--eval", script),
+                        (builder) -> builder.directory(cwd))
+                .trim());
     }
 
     /**

@@ -17,13 +17,13 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.AbstractStreamResource;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.AbstractStreamResource;
 
 public class AnchorTest extends ComponentTest {
 

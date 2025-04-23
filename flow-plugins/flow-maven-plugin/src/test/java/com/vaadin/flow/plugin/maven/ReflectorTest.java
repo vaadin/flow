@@ -22,8 +22,10 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -48,6 +50,9 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getClassPath;
 import static com.vaadin.flow.utils.FlowFileUtils.convertToUrl;
 
 public class ReflectorTest {
+
+    private static final String FLAT_MAVEN_REPO_PATH = "/some/flat/maven-repo/";
+    public static final String PROJECT_TARGET_FOLDER = "/my/project/target";
 
     Reflector reflector;
 
@@ -131,9 +136,27 @@ public class ReflectorTest {
     }
 
     @Test
+    public void createMojo_cloneableFields_createInstanceAndCopyFields()
+            throws Exception {
+        CloneableFieldsMojo source = new CloneableFieldsMojo();
+        source.fillFields();
+        Mojo target = reflector.createMojo(source);
+        MatcherAssert.assertThat("cloneable field", target, Matchers
+                .hasProperty("cloneableField", Matchers.notNullValue()));
+        MatcherAssert.assertThat("cloneable field value", target,
+                Matchers.hasProperty("cloneableField",
+                        Matchers.hasToString("TEST-CLONEABLE-FIELD")));
+        MatcherAssert.assertThat("cloneable type", target,
+                Matchers.hasProperty("cloneableType", Matchers.notNullValue()));
+        MatcherAssert.assertThat("cloneable type value", target,
+                Matchers.hasProperty("cloneableType",
+                        Matchers.hasToString("TEST-CLONEABLE-TYPE")));
+    }
+
+    @Test
     public void reflector_fromProject_getsIsolatedClassLoader()
             throws Exception {
-        String outputDirectory = "/my/project/target";
+        String outputDirectory = PROJECT_TARGET_FOLDER;
 
         MavenProject project = new MavenProject();
         project.setGroupId("com.vaadin.test");
@@ -167,24 +190,25 @@ public class ReflectorTest {
                         .of("src", "test", "resources",
                                 "jar-without-frontend-resources.jar")
                         .toUri().toURL());
-        // .addURL(new URL("file:///some/flat/maven-repo/maven-api.jar"));
         pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
 
-        Reflector execReflector = Reflector.of(project, mojoExecution);
+        Reflector execReflector = Reflector.of(project, mojoExecution, null);
 
         URLClassLoader isolatedClassLoader = execReflector
                 .getIsolatedClassLoader();
 
-        Set<URL> urlSet = Set.of(isolatedClassLoader.getURLs());
-        Assert.assertEquals(4, urlSet.size());
-        Assert.assertTrue(
-                urlSet.contains(convertToUrl(new File(outputDirectory))));
-        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
-                "/some/flat/maven-repo/com.vaadin.test-compile-1.0.jar"))));
-        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
-                "/some/flat/maven-repo/com.vaadin.test-system-1.0.jar"))));
-        Assert.assertTrue(urlSet.contains(convertToUrl(new File(
-                "/some/flat/maven-repo/com.vaadin.test-plugin-1.0.jar"))));
+        Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
+                .map(URL::toExternalForm).collect(Collectors.toSet());
+        Assert.assertEquals(5, urlSet.size());
+        Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.vaadin.test-compile-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.vaadin.test-provided-1.0.jar")));
+        Assert.assertTrue(urlSet
+                .contains(toURLExternalForm("com.vaadin.test-system-1.0.jar")));
+        Assert.assertTrue(urlSet
+                .contains(toURLExternalForm("com.vaadin.test-plugin-1.0.jar")));
 
         // from platform class loader
         Assert.assertNotNull(
@@ -196,6 +220,202 @@ public class ReflectorTest {
                 isolatedClassLoader.loadClass("org.json.CookieList"));
     }
 
+    @Test
+    public void reflector_frontendScannerConfigExclusions_getsFilteredIsolatedClassLoader()
+            throws Exception {
+        FrontendScannerConfig scanner = new FrontendScannerConfig();
+        scanner.addExclude(
+                new FrontendScannerConfig.ArtifactMatcher("org.spring*", null));
+        scanner.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.example.addon", null));
+
+        Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
+                "com.vaadin-vaadin-core-1.0.jar",
+                "com.vaadin-flow-server-1.0.jar", "org.test-alpha-1.0.jar",
+                "org.test-beta-1.0.jar");
+        assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
+                expectedArtifacts);
+    }
+
+    @Test
+    public void reflector_frontendScannerConfigInclusions_getsFilteredIsolatedClassLoader()
+            throws Exception {
+        FrontendScannerConfig scanner = new FrontendScannerConfig();
+        scanner.addInclude(
+                new FrontendScannerConfig.ArtifactMatcher("org.test", null));
+
+        Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
+                "com.vaadin-vaadin-core-1.0.jar",
+                "com.vaadin-flow-server-1.0.jar", "org.test-alpha-1.0.jar",
+                "org.test-beta-1.0.jar");
+        assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
+                expectedArtifacts);
+    }
+
+    @Test
+    public void reflector_frontendScannerConfigExclusionHigherPriority_getsFilteredIsolatedClassLoader()
+            throws Exception {
+        FrontendScannerConfig scanner = new FrontendScannerConfig();
+        scanner.addExclude(
+                new FrontendScannerConfig.ArtifactMatcher("org.test", "*"));
+        scanner.addInclude(
+                new FrontendScannerConfig.ArtifactMatcher("org.test", "alpha"));
+
+        Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
+                "com.vaadin-vaadin-core-1.0.jar",
+                "com.vaadin-flow-server-1.0.jar");
+        assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
+                expectedArtifacts);
+
+        scanner = new FrontendScannerConfig();
+        scanner.addExclude(
+                new FrontendScannerConfig.ArtifactMatcher("org.test", "alpha"));
+        scanner.addInclude(
+                new FrontendScannerConfig.ArtifactMatcher("org.test", "*"));
+
+        expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
+                "com.vaadin-vaadin-core-1.0.jar",
+                "com.vaadin-flow-server-1.0.jar", "org.test-beta-1.0.jar");
+        assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
+                expectedArtifacts);
+    }
+
+    @Test
+    public void reflector_frontendScannerConfig_vaadinArtifactAlwaysIncluded()
+            throws Exception {
+        FrontendScannerConfig scanner = new FrontendScannerConfig();
+        scanner.addExclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
+
+        Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
+                "com.vaadin-vaadin-core-1.0.jar",
+                "com.vaadin-flow-server-1.0.jar");
+        assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
+                expectedArtifacts);
+    }
+
+    @Test
+    public void reflector_disabledFrontendScannerConfig_getsFullIsolatedClassLoader()
+            throws Exception {
+        FrontendScannerConfig scanner = new FrontendScannerConfig();
+        scanner.addExclude(
+                new FrontendScannerConfig.ArtifactMatcher("org.spring*", null));
+        scanner.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.example.addon", null));
+        scanner.setEnabled(false);
+
+        Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
+                "com.vaadin-vaadin-core-1.0.jar",
+                "com.vaadin-flow-server-1.0.jar",
+                "org.springframework.boot-spring-boot-1.0.jar",
+                "com.example.addon-alpha-1.0.jar",
+                "com.example.addon-beta-1.0.jar", "org.test-alpha-1.0.jar",
+                "org.test-beta-1.0.jar");
+        assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
+                expectedArtifacts);
+    }
+
+    @Test
+    public void reflector_excludeTargetFolder_targetFolderExcluded()
+            throws Exception {
+        FrontendScannerConfig scanner = new FrontendScannerConfig();
+        scanner.setIncludeOutputDirectory(false);
+
+        Set<String> expectedArtifacts = Set.of("com.vaadin-vaadin-core-1.0.jar",
+                "com.vaadin-flow-server-1.0.jar",
+                "org.springframework.boot-spring-boot-1.0.jar",
+                "com.example.addon-alpha-1.0.jar",
+                "com.example.addon-beta-1.0.jar", "org.test-alpha-1.0.jar",
+                "org.test-beta-1.0.jar");
+        assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
+                expectedArtifacts);
+    }
+
+    private void assertThatIsolatedClassLoaderHasFilteredScanUrls(
+            FrontendScannerConfig scannerConfig, Set<String> expectedScanURLs)
+            throws Exception {
+        String outputDirectory = PROJECT_TARGET_FOLDER;
+
+        MavenProject project = new MavenProject();
+        project.setGroupId("com.vaadin.test");
+        project.setArtifactId("reflector-tests");
+        project.setBuild(new Build());
+        project.getBuild().setOutputDirectory(outputDirectory);
+        project.setArtifacts(Set.of(
+                createArtifact("com.vaadin", "vaadin-core", "1.0", "compile",
+                        true),
+                createArtifact("com.vaadin", "flow-server", "1.0", "compile",
+                        true),
+                createArtifact("org.springframework.boot", "spring-boot", "1.0",
+                        "compile", true),
+                createArtifact("com.example.addon", "alpha", "1.0", "compile",
+                        true),
+                createArtifact("com.example.addon", "beta", "1.0", "compile",
+                        true),
+                createArtifact("org.test", "alpha", "1.0", "compile", true),
+                createArtifact("org.test", "beta", "1.0", "compile", true)
+
+        ));
+
+        MojoExecution mojoExecution = new MojoExecution(new MojoDescriptor());
+        PluginDescriptor pluginDescriptor = new PluginDescriptor();
+        mojoExecution.getMojoDescriptor().setPluginDescriptor(pluginDescriptor);
+        pluginDescriptor.setGroupId("com.vaadin.test");
+        pluginDescriptor.setArtifactId("test-plugin");
+        pluginDescriptor
+                .setArtifacts(List.of(createArtifact("com.example.plugin",
+                        "plugin-dep", "1.0", "compile", true)));
+        ClassWorld classWorld = new ClassWorld("maven.api", null);
+        classWorld.getRealm("maven.api")
+                .addURL(Path
+                        .of("src", "test", "resources",
+                                "jar-without-frontend-resources.jar")
+                        .toUri().toURL());
+        pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
+
+        Reflector execReflector = Reflector.of(project, mojoExecution,
+                scannerConfig);
+
+        Reflector.ReflectorClassLoader isolatedClassLoader = (Reflector.ReflectorClassLoader) execReflector
+                .getIsolatedClassLoader();
+
+        // Ensure the classloader references all dependencies
+        Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
+                .map(URL::toExternalForm).collect(Collectors.toSet());
+        Assert.assertEquals(9, urlSet.size());
+        Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
+        Assert.assertTrue(urlSet
+                .contains(toURLExternalForm("com.vaadin-vaadin-core-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(toURLExternalForm(
+                "org.springframework.boot-spring-boot-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.example.addon-alpha-1.0.jar")));
+        Assert.assertTrue(urlSet
+                .contains(toURLExternalForm("com.example.addon-beta-1.0.jar")));
+        Assert.assertTrue(
+                urlSet.contains(toURLExternalForm("org.test-alpha-1.0.jar")));
+        Assert.assertTrue(
+                urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.example.plugin-plugin-dep-1.0.jar")));
+
+        // Verify scan URLs
+        urlSet = Arrays.stream(isolatedClassLoader.getUrlsToScan())
+                .map(URL::toExternalForm).collect(Collectors.toSet());
+        Assert.assertEquals(expectedScanURLs.size(), urlSet.size());
+        for (String expectedUrl : expectedScanURLs) {
+            Assert.assertTrue("Scan URL missing in Reflector: " + expectedUrl,
+                    urlSet.contains(toURLExternalForm(expectedUrl)));
+        }
+
+    }
+
+    private static String toURLExternalForm(String path) {
+        if (!path.startsWith("/")) {
+            path = FLAT_MAVEN_REPO_PATH + path;
+        }
+        return convertToUrl(new File(path)).toExternalForm();
+    }
+
     private Artifact createArtifact(String groupId, String artifactId,
             String version, String scope, boolean addedToClasspath) {
         DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler();
@@ -203,7 +423,7 @@ public class ReflectorTest {
         DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId,
                 version, scope, "jar", null, artifactHandler);
         artifact.setFile(
-                new File(String.format("/some/flat/maven-repo/%s-%s-%s.jar",
+                new File(String.format(FLAT_MAVEN_REPO_PATH + "%s-%s-%s.jar",
                         groupId, artifactId, version)));
         return artifact;
     }
@@ -290,6 +510,50 @@ public class ReflectorTest {
         public FakeMavenComponent getBuildContext() {
             return buildContext;
         }
+    }
+
+    public static class CloneableFieldsMojo extends MyMojo {
+
+        @Parameter
+        @Reflector.Cloneable
+        private CloneableObject cloneableField;
+
+        @Parameter
+        private CloneableTypeObject cloneableType;
+
+        @Override
+        void fillFields() {
+            cloneableField = new CloneableTypeObject();
+            cloneableField.value = "TEST-CLONEABLE-FIELD";
+            cloneableType = new CloneableTypeObject();
+            cloneableType.value = "TEST-CLONEABLE-TYPE";
+            super.fillFields();
+        }
+
+        public CloneableObject getCloneableField() {
+            return cloneableField;
+        }
+
+        public CloneableTypeObject getCloneableType() {
+            return cloneableType;
+        }
+    }
+
+    private static class CloneableObject {
+        String value;
+
+        @Override
+        public String toString() {
+            return value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    @Reflector.Cloneable
+    private static class CloneableTypeObject extends CloneableObject {
     }
 
 }

@@ -23,7 +23,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +56,9 @@ public class ExternalDependencyWatcher implements Closeable {
                 }
             }
         } else {
+            // Always watch src/main/resources/META-INF from active project
+            hotdeployDependencyFolders.add(projectFolder.getAbsolutePath());
+
             File pomFile = new File(projectFolder, "pom.xml");
             File parentPomFile = MavenUtils
                     .getParentPomOfMultiModuleProject(pomFile);
@@ -78,10 +80,6 @@ public class ExternalDependencyWatcher implements Closeable {
         for (String hotdeployDependencyFolder : hotdeployDependencyFolders) {
             Path moduleFolder = projectFolder.toPath()
                     .resolve(hotdeployDependencyFolder).normalize();
-            if (moduleFolder.equals(projectFolder.toPath())) {
-                // Don't watch the active module
-                continue;
-            }
             Path metaInf = moduleFolder
                     .resolve(Path.of("src", "main", "resources", "META-INF"));
             if (!watchDependencyFolder(metaInf.toFile(),
