@@ -10,6 +10,7 @@ import { createHash } from 'crypto';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
+import injectCSSPlugin from '#buildFolder#/plugins/vite-plugin-inject-css';
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
 import { addFunctionComponentSourceLocationBabel } from '#buildFolder#/plugins/react-function-location-plugin/react-function-location-plugin.js';
 import settings from '#settingsImport#';
@@ -749,6 +750,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       ]
     },
     plugins: [
+      injectCSSPlugin(),
       productionMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),

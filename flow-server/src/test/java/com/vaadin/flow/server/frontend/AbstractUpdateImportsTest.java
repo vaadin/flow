@@ -420,13 +420,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .asPredicate();
         assertTrue(flowImports.stream().anyMatch(lumoGlobalsMatcher));
 
-        List<String> webComponentImports = new ArrayList<>(
-                updater.getOutput().get(updater.generatedFlowWebComponentImports));
+        List<String> webComponentImports = new ArrayList<>(updater.getOutput()
+                .get(updater.generatedFlowWebComponentImports));
 
         assertTrue(
                 "Import for web-components should not contain lumo global imports",
-                webComponentImports.stream()
-                        .noneMatch(lumoGlobalsMatcher));
+                webComponentImports.stream().noneMatch(lumoGlobalsMatcher));
 
         // Check that imports other than lumo globals are the same
         flowImports.removeAll(webComponentImports);
@@ -458,11 +457,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     return matcher.group(1);
                 }).collect(Collectors.toList());
 
-        List<String> webComponentImports = new ArrayList<>(
-                updater.getOutput().get(updater.generatedFlowWebComponentImports));
+        List<String> webComponentImports = new ArrayList<>(updater.getOutput()
+                .get(updater.generatedFlowWebComponentImports));
         assertTrue("Import for web-components should also inject global CSS",
-                webComponentImports.stream()
-                        .anyMatch(globalCssImporter));
+                webComponentImports.stream().anyMatch(globalCssImporter));
 
         assertTrue(
                 "Should contain function to import global CSS into embedded component",
@@ -470,9 +468,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                         .contains("import { injectGlobalWebcomponentCss }")));
         globalCss.forEach(css -> assertTrue(
                 "Should register global CSS " + css + " for webcomponent",
-                webComponentImports.stream()
-                        .anyMatch(line -> line.contains(
-                                "injectGlobalWebcomponentCss(" + css + ");"))));
+                webComponentImports.stream().anyMatch(line -> line.contains(
+                        "injectGlobalWebcomponentCss(" + css + ");"))));
 
     }
 

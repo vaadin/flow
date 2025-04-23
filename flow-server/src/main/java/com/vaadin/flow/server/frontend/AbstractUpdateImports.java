@@ -87,13 +87,13 @@ abstract class AbstractUpdateImports implements Runnable {
             + "<style%s>${$css_%1$d}</style>" + CSS_POST;
 
     private static final String INJECT_CSS_IMPORT = """
-        import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';
-        import { injectEmbeddedWebComponentCSS } from 'Frontend/generated/jar-resources/embedded-web-component-css-injector.js';
-    """;
+                import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';
+                import { injectEmbeddedWebComponentCSS } from 'Frontend/generated/jar-resources/embedded-web-component-css-injector.js';
+            """;
     private static final String INJECT_CSS = """
-        injectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);
-        injectEmbeddedWebComponentCSS($cssFromFile_%1$d.toString());
-    """;
+                injectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);
+                injectEmbeddedWebComponentCSS($cssFromFile_%1$d.toString());
+            """;
 
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
@@ -274,7 +274,7 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add("const loadOnDemand = (key) => {");
             chunkLoader.add("  const pending = [];");
             Set<ChunkInfo> mergedChunkKeys = merge(lazyJavascript.keySet(),
-                lazyCssData.keySet());
+                    lazyCssData.keySet());
             Set<String> processedChunkHashes = new HashSet<>(
                     mergedChunkKeys.size());
 
@@ -286,7 +286,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 }
                 boolean hasLazyCss = lazyCssData.containsKey(chunkInfo);
                 if (hasLazyCss) {
-                    chunkLines.addAll(getCssLines(lazyCssData.get(chunkInfo), chunkInfo));
+                    chunkLines.addAll(getCssLines(lazyCssData.get(chunkInfo)));
                 }
 
                 if (chunkLines.isEmpty()) {
@@ -329,7 +329,7 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> mainLines = new ArrayList<>();
 
         // Convert eager CSS data to JS and deduplicate it
-        mainLines.addAll(getCssLines(eagerCssData, null));
+        mainLines.addAll(getCssLines(eagerCssData));
         mainLines.addAll(getModuleLines(eagerJavascript));
 
         // Move all imports to the top
@@ -345,7 +345,8 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
 
         List<String> webComponentImportLines = new ArrayList<>(mainLines);
-        webComponentImportLines.removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
+        webComponentImportLines
+                .removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
 
         files.put(generatedFlowImports, mainLines);
         files.put(generatedFlowWebComponentImports, webComponentImportLines);
@@ -423,14 +424,14 @@ abstract class AbstractUpdateImports implements Runnable {
      *            the CSS import data
      * @return the JS statements needed to import and apply the CSS data
      */
-    protected List<String> getCssLines(List<CssData> css, ChunkInfo chunkInfo) {
+    protected List<String> getCssLines(List<CssData> css) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
         LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
         int i = 0;
         for (CssData cssData : allCss) {
-            if (!addCssLines(lines, cssData, i, chunkInfo)) {
+            if (!addCssLines(lines, cssData, i)) {
                 cssNotFound.add(cssData.getValue());
             }
             i++;
@@ -481,7 +482,8 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     protected void addLines(Collection<String> lines, String content) {
-        lines.addAll(Arrays.stream(content.split("\\R")).map(String::trim).toList());
+        lines.addAll(
+                Arrays.stream(content.split("\\R")).map(String::trim).toList());
     }
 
     protected String getThemeIdPrefix() {
@@ -742,17 +744,11 @@ abstract class AbstractUpdateImports implements Runnable {
      * @return true if the imported CSS files does exist, false otherwise
      */
     protected boolean addCssLines(Collection<String> lines, CssData cssData,
-            int i, ChunkInfo chunkInfo) {
+            int i) {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
 
-        List<String> cssImportQuery = new ArrayList<>();
-        cssImportQuery.add("path=" + toValidBrowserImport(cssFile));
-
-        if (chunkInfo != null) {
-            cssImportQuery.add("chunkType=" + chunkInfo.getType());
-            cssImportQuery.add("chunkName=" + chunkInfo.getName());
-        }
+        List<String> importQueryList = new ArrayList<>();
 
         if (cssData.getId() != null && cssData.getThemefor() != null) {
             throw new IllegalStateException(
@@ -761,20 +757,25 @@ abstract class AbstractUpdateImports implements Runnable {
         }
 
         if (cssData.getThemefor() != null) {
-            cssImportQuery.add("themeFor=" + cssData.getThemefor());
+            importQueryList.add("themeFor=" + cssData.getThemefor());
         }
 
         if (cssData.getInclude() != null) {
-            cssImportQuery.add("include=" + cssData.getInclude());
+            importQueryList.add("include=" + cssData.getInclude());
         }
 
         if (cssData.getId() != null) {
-            cssImportQuery.add("moduleId=" + cssData.getId());
+            importQueryList.add("moduleId=" + cssData.getId());
         } else if (cssData.getThemefor() != null) {
-            cssImportQuery.add("moduleId=" + getThemeIdPrefix() + "_" + i);
+            importQueryList.add("moduleId=" + getThemeIdPrefix() + "_" + i);
         }
 
-        lines.add(String.format("import 'virtual:inject-flow-css?%s';", String.join("&", cssImportQuery)));
+        String importPath = toValidBrowserImport(cssFile).replace(".css", "");
+        String importQuery = !importQueryList.isEmpty() ? "?" + String.join("&", importQueryList) : "";
+        String importStatement = String.format(
+                "import 'virtual:inject-css/%s%s';", importPath, importQuery);
+
+        lines.add(importStatement);
 
         return found || !options.isBundleBuild();
     }
