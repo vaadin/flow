@@ -153,12 +153,12 @@ gradlePlugin {
 pluginBundle {
     website = 'https://vaadin.com/docs/latest/flow/guide/start/gradle'
     vcsUrl = 'https://github.com/vaadin/flow'
-    description = 'Build Flow applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
-    tags = ['flow']
+    description = 'Build Vaadin Flow applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
+    tags = ['vaadin-flow']
     plugins {
         flowPlugin {
             id = gradlePlugin.plugins.flowPlugin.id
-            displayName = 'Flow Gradle Plugin'
+            displayName = 'Vaadin Flow Gradle Plugin'
         }
     }
     mavenCoordinates {
