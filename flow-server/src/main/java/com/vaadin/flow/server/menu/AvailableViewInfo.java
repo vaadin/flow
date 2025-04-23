@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.menu;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -23,8 +24,17 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.vaadin.flow.router.MenuData;
 
 /**
@@ -51,13 +61,17 @@ import com.vaadin.flow.router.MenuData;
  * @param flowLayout
  *            if server layout should be used
  * @param detail
- *            additional information to be used in the menu
+ *            additional information to be used in the menu, encoded in JSON
+ *            format
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,
         MenuData menu, List<AvailableViewInfo> children,
         @JsonProperty("params") Map<String, RouteParamType> routeParameters,
-        boolean flowLayout, JsonNode detail) implements Serializable {
+        boolean flowLayout,
+        @JsonDeserialize(using = DetailDeserializer.class) @JsonSerialize(using = DetailSerializer.class) String detail)
+        implements
+            Serializable {
 
     @Override
     public boolean equals(final Object o) {
@@ -95,6 +109,26 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + '\'' + ", lazy=" + lazy + ", register=" + register + ", menu="
                 + menu + ", flowLayout=" + flowLayout + ", routeParameters="
                 + routeParameters + ", detail=" + detail + '}';
+    }
+
+    public static class DetailDeserializer extends JsonDeserializer<String> {
+        @Override
+        public String deserialize(JsonParser p, DeserializationContext ctxt)
+                throws IOException {
+            JsonNode node = p.readValueAsTree();
+            return node.toString();
+        }
+    }
+
+    public static class DetailSerializer extends JsonSerializer<String> {
+        @Override
+        public void serialize(String value, JsonGenerator gen,
+                SerializerProvider serializers) throws IOException {
+            ObjectMapper mapper = new ObjectMapper().configure(
+                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            JsonNode node = mapper.readTree(value);
+            gen.writeObject(node);
+        }
     }
 
 }
