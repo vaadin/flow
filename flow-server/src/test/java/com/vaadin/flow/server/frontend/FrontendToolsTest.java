@@ -60,7 +60,7 @@ import net.jcip.annotations.NotThreadSafe;
 @Category(SlowTests.class)
 public class FrontendToolsTest {
 
-    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "18.12.0";
+    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "21.7.3";
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
