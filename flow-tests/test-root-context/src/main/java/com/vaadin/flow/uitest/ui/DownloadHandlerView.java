@@ -17,8 +17,6 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +26,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.DownloadEvent;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StreamRegistration;
@@ -45,7 +43,7 @@ public class DownloadHandlerView extends Div {
 
         DownloadHandler downloadHandler = new DownloadHandler() {
             @Override
-            public void handleDownloadRequest(DownloadEvent event) {
+            public void handleDownloadRequest(DownloadRequest event) {
                 event.getWriter().ifPresent(writer -> writer.print("foo"));
             }
 

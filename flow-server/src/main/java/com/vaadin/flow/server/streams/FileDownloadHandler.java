@@ -19,10 +19,9 @@ package com.vaadin.flow.server.streams;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.vaadin.flow.server.DownloadEvent;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -36,7 +35,7 @@ import com.vaadin.flow.server.VaadinSession;
 public class FileDownloadHandler extends AbstractDownloadHandler {
 
     private final File file;
-    private String name;
+    private final String name;
 
     /**
      * Create a download handler for given file. Url postfix will be used as
@@ -46,7 +45,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
      *            file to download
      */
     public FileDownloadHandler(File file) {
-        this.file = file;
+        this(file, null);
     }
 
     /**
@@ -63,7 +62,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent event) {
+    public void handleDownloadRequest(DownloadRequest event) {
         VaadinSession session = event.getSession();
         VaadinResponse response = event.getResponse();
         session.lock();

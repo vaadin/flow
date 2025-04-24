@@ -22,7 +22,7 @@ import java.io.OutputStream;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.DownloadEvent;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
@@ -50,14 +50,7 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
      *            resource to get
      */
     public ClassDownloadHandler(Class<?> clazz, String resourceName) {
-        this.clazz = clazz;
-        this.resourceName = resourceName;
-
-        if (clazz.getResource(resourceName) == null) {
-            LoggerFactory.getLogger(ClassDownloadHandler.class).warn(
-                    "No resource found for '{}'. The resource will receive a 404 not found response.",
-                    resourceName);
-        }
+        this(clazz, resourceName, null);
     }
 
     /**
@@ -85,10 +78,8 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent event) {
+    public void handleDownloadRequest(DownloadRequest event) {
         if (clazz.getResource(resourceName) == null) {
-            LoggerFactory.getLogger(ClassDownloadHandler.class)
-                    .warn("No resource found for '{}'", resourceName);
             event.getResponse().setStatus(HttpStatusCode.NOT_FOUND.getCode());
             return;
         }
@@ -114,6 +105,9 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     public String getUrlPostfix() {
         if (fileName != null) {
             return fileName;
+        }
+        if (resourceName.contains("/")) {
+            return resourceName.substring(resourceName.lastIndexOf('/') + 1);
         }
         return resourceName;
     }

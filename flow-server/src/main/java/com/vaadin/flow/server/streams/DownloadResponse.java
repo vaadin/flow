@@ -29,11 +29,11 @@ import com.vaadin.flow.server.HttpStatusCode;
  */
 public class DownloadResponse implements Serializable {
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
 
-    private String fileName;
-    private String contentType;
-    private int size;
+    private final String fileName;
+    private final String contentType;
+    private final int size;
 
     private Integer error;
 

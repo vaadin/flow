@@ -20,11 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.vaadin.flow.server.DownloadEvent;
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 
 /**
@@ -38,7 +36,7 @@ import com.vaadin.flow.server.VaadinServletService;
 public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
 
     private final String path;
-    private String name;
+    private final String name;
 
     /**
      * Create download handler for servlet resource. Uses url postfix as file
@@ -48,7 +46,7 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
      *            path of servlet resource
      */
     public ServletResourceDownloadHandler(String path) {
-        this.path = path;
+        this(path, null);
     }
 
     /**
@@ -65,7 +63,7 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent event) {
+    public void handleDownloadRequest(DownloadRequest event) {
         VaadinService service = event.getRequest().getService();
         if (service instanceof VaadinServletService servletService) {
             final int BUFFER_SIZE = 1024;

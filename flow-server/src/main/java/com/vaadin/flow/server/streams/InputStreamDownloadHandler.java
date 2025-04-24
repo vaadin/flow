@@ -19,24 +19,21 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.function.Function;
 
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.DownloadEvent;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletService;
 
 /**
- * Download handler for serving a resource for client download.
+ * Download handler for serving an input stream for client download.
  *
  * @since 24.8
  */
 public class InputStreamDownloadHandler extends AbstractDownloadHandler {
 
-    private final SerializableFunction<DownloadEvent, DownloadResponse> handler;
-    private String name;
+    private final SerializableFunction<DownloadRequest, DownloadResponse> handler;
+    private final String name;
 
     /**
      * Create a input stream download handler for given event -> response
@@ -46,8 +43,8 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
      *            serializable function for handling download
      */
     public InputStreamDownloadHandler(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler) {
-        this.handler = handler;
+            SerializableFunction<DownloadRequest, DownloadResponse> handler) {
+        this(handler, null);
     }
 
     /**
@@ -61,14 +58,14 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
      *            generated before postfix
      */
     public InputStreamDownloadHandler(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler,
+            SerializableFunction<DownloadRequest, DownloadResponse> handler,
             String name) {
         this.handler = handler;
         this.name = name;
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent event) {
+    public void handleDownloadRequest(DownloadRequest event) {
         DownloadResponse download = handler.apply(event);
         VaadinResponse response = event.getResponse();
         if (download.hasError()) {

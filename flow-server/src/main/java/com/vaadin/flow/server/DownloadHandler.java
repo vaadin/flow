@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.util.Optional;
-import java.util.function.Function;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
@@ -44,13 +43,13 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            download event containing the necessary data for writing the
      *            response
      */
-    void handleDownloadRequest(DownloadEvent event);
+    void handleDownloadRequest(DownloadRequest event);
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) {
         String fileName = getUrlPostfix() == null ? "" : getUrlPostfix();
 
-        DownloadEvent event = new DownloadEvent(request, response, session,
+        DownloadRequest event = new DownloadRequest(request, response, session,
                 fileName);
         event.withOwningComponent(owner)
                 .withContentType(Optional
@@ -107,7 +106,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * <p>
      * For instance for the file {@code resources/com/example/ui/MyData.json}
      * and class {@code com.example.ui.MyData} the definition would be
-     * {@code forClassResource(MyData.class, "MyData.json")}
+     * {@code forClassResource(MyData.class, "MyData.json", "Data.json")}
      *
      * @param clazz
      *            class for resource module
@@ -141,6 +140,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      * <p>
      * For instance for the file {@code webapp/WEB-INF/servlet.json} the path
      * would be {@code /WEB-INF/servlet.json}
+     * <p>
+     * Name is appended to the download url as the logical name of the target
+     * file.
      *
      * @param path
      *            the servlet path to the file
@@ -160,7 +162,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return DownloadHandler instance for inputStream
      */
     static DownloadHandler fromInputStream(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler) {
+            SerializableFunction<DownloadRequest, DownloadResponse> handler) {
         return new InputStreamDownloadHandler(handler);
     }
 
@@ -174,7 +176,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return DownloadHandler instance for inputStream
      */
     static DownloadHandler fromInputStream(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler,
+            SerializableFunction<DownloadRequest, DownloadResponse> handler,
             String name) {
         return new InputStreamDownloadHandler(handler, name);
     }

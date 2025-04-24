@@ -32,13 +32,13 @@ import com.vaadin.flow.dom.Element;
  *
  * @since 24.8
  */
-public class DownloadEvent implements Serializable {
+public class DownloadRequest implements Serializable {
 
-    private VaadinRequest request;
-    private VaadinResponse response;
-    private VaadinSession session;
+    private final VaadinRequest request;
+    private final VaadinResponse response;
+    private final VaadinSession session;
 
-    private String fileName;
+    private final String fileName;
     private String contentType;
 
     private Component owningComponent;
@@ -55,7 +55,7 @@ public class DownloadEvent implements Serializable {
      * @param fileName
      *            defined download file name
      */
-    public DownloadEvent(VaadinRequest request, VaadinResponse response,
+    public DownloadRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, String fileName) {
         this.request = request;
         this.response = response;
@@ -71,10 +71,10 @@ public class DownloadEvent implements Serializable {
      *            owning element for the event
      * @return this Event instance
      */
-    public DownloadEvent withOwningComponent(Element owningElement) {
+    DownloadRequest withOwningComponent(Element owningElement) {
         if (owningElement != null) {
             Optional<Component> component = owningElement.getComponent();
-            component.ifPresent(value -> owningComponent = value);
+            component.ifPresent(this::withOwningComponent);
         }
         return this;
     }
@@ -86,7 +86,7 @@ public class DownloadEvent implements Serializable {
      *            owning component for the event
      * @return this Event instance
      */
-    public DownloadEvent withOwningComponent(Component owningComponent) {
+    DownloadRequest withOwningComponent(Component owningComponent) {
         this.owningComponent = owningComponent;
         return this;
     }
@@ -98,7 +98,7 @@ public class DownloadEvent implements Serializable {
      *            content type of the event content
      * @return this Event instance
      */
-    public DownloadEvent withContentType(String contentType) {
+    DownloadRequest withContentType(String contentType) {
         this.contentType = contentType;
         return this;
     }
@@ -117,8 +117,8 @@ public class DownloadEvent implements Serializable {
         try {
             return Optional.of(response.getOutputStream());
         } catch (IOException e) {
-            LoggerFactory.getLogger(DownloadEvent.class)
-                    .error("Error getting writer", e);
+            LoggerFactory.getLogger(DownloadRequest.class)
+                    .error("Error getting output stream", e);
             return Optional.empty();
         }
     }
@@ -138,7 +138,7 @@ public class DownloadEvent implements Serializable {
         try {
             return Optional.of(response.getWriter());
         } catch (IOException e) {
-            LoggerFactory.getLogger(DownloadEvent.class)
+            LoggerFactory.getLogger(DownloadRequest.class)
                     .error("Error getting writer", e);
             return Optional.empty();
         }
@@ -177,7 +177,7 @@ public class DownloadEvent implements Serializable {
      * @return file name
      */
     public String getFileName() {
-        return fileName;
+        return fileName == null ? "" : fileName;
     }
 
     /**
@@ -194,7 +194,7 @@ public class DownloadEvent implements Serializable {
      *
      * @return owning component or null in none defined
      */
-    public Component getComponent() {
+    public Component getOwningComponent() {
         return owningComponent;
     }
 }
