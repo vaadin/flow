@@ -466,7 +466,7 @@ public class JarContentsManagerTest {
         jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar,
                 jarDirectory, outputDirectory);
 
-        // The file unmodified
+        // The file is unmodified
         Assert.assertEquals(timestamp, jsonFile.lastModified());
     }
 
