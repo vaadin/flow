@@ -141,6 +141,7 @@ function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
           write: !devMode,
           minify: viteConfig.build.minify,
           outDir: viteConfig.build.outDir,
+          target,
           sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
           emptyOutDir: false,
           modulePreload: false,
