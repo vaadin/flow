@@ -722,6 +722,7 @@ abstract class AbstractUpdateImports implements Runnable {
             String scope) {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
+        String cssImport = toValidBrowserImport(cssFile);
 
         Map<String, String> query = new HashMap<>();
         if (cssData.getId() != null && cssData.getThemefor() != null) {
@@ -742,8 +743,7 @@ abstract class AbstractUpdateImports implements Runnable {
             query.put("scope", scope);
         }
 
-        lines.add(generateCSSImportStatement(toValidBrowserImport(cssFile),
-                query));
+        lines.add(generateCSSImportStatement(cssImport, query));
 
         return found || !options.isBundleBuild();
     }
