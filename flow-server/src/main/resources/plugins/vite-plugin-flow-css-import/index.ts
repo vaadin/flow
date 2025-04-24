@@ -28,9 +28,9 @@ export default function flowCSSImportPlugin(): Plugin {
 
         return `
           import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';
-          import cssText from '${path}.css?inline';
+          import content from '${path}.css?inline';
 
-          registerStyles('${themeFor}', unsafeCSS(cssText), {
+          registerStyles('${themeFor}', unsafeCSS(content), {
             moduleId: '${moduleId}',
             ${include ? `include: '${include}',` : ''}
           });
@@ -41,22 +41,22 @@ export default function flowCSSImportPlugin(): Plugin {
       //   const include = queryParams.get('include');
 
       //   return `
-      //     import cssText from '${path}.css?inline';
+      //     import content from '${path}.css?inline';
 
       //     const style = document.createElement('style');
-      //     style.textContent = cssText;
+      //     style.textContent = content;
       //     style.setAttribute('include', '${include}');
       //     document.head.appendChild(style);
       //   `;
       // }
 
-      return `
-        import { injectGlobalStyles, injectExportedWebComponentStyles } from 'Frontend/generated/jar-resources/css-injection.js';
-        import cssText from '${path}.css?inline';
+      const scope = queryParams.get('scope') ?? 'global';
 
-        ${queryParams.get('context') === 'exportedWebComponent'
-          ? `injectExportedWebComponentStyles('${id}', cssText);`
-          : `injectGlobalStyles('${id}', cssText);`}
+      return `
+        import { injectCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
+        import content from '${path}.css?inline';
+
+        injectCSS('${id}', content, { scope: '${scope}' });
 
         if (import.meta.hot) {
           import.meta.hot.accept();

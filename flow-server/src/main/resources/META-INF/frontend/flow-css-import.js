@@ -4,7 +4,7 @@ const exportedWebComponentStyleSheetsMap = new Map();
 
 const EXPORTED_WEB_COMPONENT_STYLE_SHEET = Symbol('exported-web-component-style-sheet');
 
-export function injectGlobalStyles(id, content) {
+function injectGlobalCSS(id, content) {
   let style = globalStyleSheetsMap.get(id);
   if (!style) {
     style = document.createElement('style');
@@ -15,7 +15,7 @@ export function injectGlobalStyles(id, content) {
   document.head.appendChild(style);
 }
 
-export function injectExportedWebComponentStyles(id, content) {
+function injectExportedWebComponentsCSS(id, content) {
   let styleSheet = exportedWebComponentStyleSheetsMap.get(id);
   if (!styleSheet) {
     styleSheet = new CSSStyleSheet();
@@ -28,6 +28,16 @@ export function injectExportedWebComponentStyles(id, content) {
   }
 
   styleSheet.replaceSync(content);
+}
+
+export function injectCSS(id, content, { scope }) {
+  if (scope === 'global') {
+    return injectGlobalCSS(id, content);
+  }
+
+  if (scope === 'exportedWebComponents') {
+    return injectExportedWebComponentsCSS(id, content);
+  }
 }
 
 export function exportedWebComponentConnected(component) {
