@@ -50,11 +50,10 @@ public interface DownloadHandler extends ElementRequestHandler {
         String fileName = getUrlPostfix() == null ? "" : getUrlPostfix();
 
         DownloadRequest event = new DownloadRequest(request, response, session,
-                fileName);
-        event.withOwningComponent(owner)
-                .withContentType(Optional
-                        .ofNullable(response.getService().getMimeType(fileName))
-                        .orElse("application/octet-stream"));
+                fileName,
+                Optional.ofNullable(response.getService().getMimeType(fileName))
+                        .orElse("application/octet-stream"),
+                owner);
 
         handleDownloadRequest(event);
     }
