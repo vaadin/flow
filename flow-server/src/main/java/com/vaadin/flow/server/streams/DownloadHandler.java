@@ -257,36 +257,45 @@ public interface DownloadHandler extends ElementRequestHandler {
         };
     }
 
-    // public static void main(String[] args) {
-    //
-    // DownloadHandler.fromCallback(event -> {
-    // System.out.println("Download handler logic ...");
-    // }).whenStart(() -> System.out.println("Started"))
-    // .whenComplete((status, transferred) -> {
-    // if (status == TransferProgressAwareHandler.CompletionStatus.COMPLETED) {
-    // System.out.println("Completed successfully");
-    // } else {
-    // System.out.println("Completed with error");
-    // }
-    // });
-    // TransferProgressAwareHandler handler = DownloadHandler.forFile(new
-    // File("test.txt"))
-    // .onProgress(
-    // (transferredBytes,
-    // totalBytes) -> System.out.println("Progress: "
-    // + transferredBytes + "/" + totalBytes),
-    // 1024);
-    //
-    // handler.unsubscribeFromProgress();
-    //
-    // AbstractDownloadHandler handler2 =
-    // DownloadHandler.forServletResource("some/path");
-    // handler2.addTransferProgressListener(new TransferProgressListener() {
-    // @Override
-    // public void onComplete(TransferRequest request, long transferredBytes) {
-    // System.out.println("Transfer completed with " + transferredBytes
-    // + " bytes");
-    // }
-    // });
-    // }
+    public static void main(String[] args) {
+
+        DownloadHandler.fromCallback(event -> {
+            System.out.println("Download handler logic ...");
+        }).whenStart(() -> System.out.println("Started"))
+                .whenComplete((status, transferred) -> {
+                    if (status == TransferProgressAwareHandler.CompletionStatus.COMPLETED) {
+                        System.out.println("Completed successfully");
+                    } else {
+                        System.out.println("Completed with error");
+                    }
+                });
+        TransferProgressAwareHandler handler = DownloadHandler
+                .forFile(new File("test.txt")).onProgress(
+                        (transferredBytes,
+                                totalBytes) -> System.out.println("Progress: "
+                                        + transferredBytes + "/" + totalBytes),
+                        1024);
+
+        handler.unsubscribeFromProgress();
+
+        AbstractDownloadHandler handler2 = DownloadHandler
+                .forServletResource("some/path");
+        handler2.addTransferProgressListener(new TransferProgressListener() {
+            @Override
+            public void onComplete(TransferRequest request,
+                    long transferredBytes) {
+                System.out.println("Transfer completed with " + transferredBytes
+                        + " bytes");
+            }
+        });
+        handler2.terminate();
+
+        AbstractDownloadHandler handler1 = new AbstractDownloadHandler() {
+            @Override
+            public void handleTransferRequest(DownloadRequest event) {
+                terminate();
+                System.out.println("Download handler logic ...");
+            }
+        };
+    }
 }

@@ -24,6 +24,8 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
 
     private Collection<TransferProgressListener> listeners;
 
+    private boolean terminated = false;
+
     protected final void handleTransferProcessAwareRequest(T transferRequest) {
         Collection<TransferProgressListener> listeners = getListeners();
         listeners.forEach(listener -> listener.onStart(transferRequest));
@@ -148,6 +150,9 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
                 "TransferRequest cannot be null");
         Objects.requireNonNull(listeners,
                 "TransferProgressListener cannot be null");
+        if (terminated) {
+            return 0;
+        }
         long transferred = 0;
         long lastNotified = 0;
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
@@ -170,10 +175,17 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
                     lastNotified = transferred;
                 }
             }
+            if (terminated) {
+                getListeners().forEach(
+                        listener -> listener.onTerminate(transferRequest));
+                break;
+            }
         }
-        long finalTransferred = transferred;
-        getListeners().forEach(listener -> listener.onComplete(transferRequest,
-                finalTransferred));
+        if (!terminated) {
+            long finalTransferred = transferred;
+            getListeners().forEach(listener -> listener
+                    .onComplete(transferRequest, finalTransferred));
+        }
         return transferred;
     }
 
@@ -200,5 +212,10 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
         } finally {
             session.unlock();
         }
+    }
+
+    @Override
+    public void terminate() {
+        terminated = true;
     }
 }
