@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
 
 public class StreamResourceRegistryTest {
@@ -80,6 +81,27 @@ public class StreamResourceRegistryTest {
     }
 
     @Test
+    public void registerElementResourceHandler_registrationResultCanBeFound() {
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
+
+        ElementRequestHandler handler = (request, response, session, owner) -> {
+            // nop
+        };
+        Element owner = Mockito.mock(Element.class);
+        StreamRegistration registration = registry.registerResource(handler,
+                owner);
+        Assert.assertNotNull(registration);
+
+        URI uri = registration.getResourceUri();
+        AbstractStreamResource generatedResource = registration.getResource();
+
+        Optional<AbstractStreamResource> stored = registry.getResource(uri);
+        Assert.assertSame(
+                "Unexpected stored resource is returned for registered URI",
+                generatedResource, stored.get());
+    }
+
+    @Test
     public void unregisterResource_resourceIsRemoved() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
@@ -97,9 +119,35 @@ public class StreamResourceRegistryTest {
         Assert.assertFalse(
                 "Unexpected stored resource is found after unregister()",
                 stored.isPresent());
-        Assert.assertFalse(
+        Assert.assertNull(
                 "Unexpected resource is returned by the registration instance",
-                registration.getResource() != null);
+                registration.getResource());
+    }
+
+    @Test
+    public void unregisterElementResourceHandler_resourceIsRemoved() {
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
+
+        ElementRequestHandler handler = (request, response, session, owner) -> {
+            // nop
+        };
+        Element owner = Mockito.mock(Element.class);
+        StreamRegistration registration = registry.registerResource(handler,
+                owner);
+
+        Assert.assertNotNull(registration);
+
+        URI uri = registration.getResourceUri();
+
+        registration.unregister();
+
+        Optional<AbstractStreamResource> stored = registry.getResource(uri);
+        Assert.assertFalse(
+                "Unexpected stored resource is found after unregister()",
+                stored.isPresent());
+        Assert.assertNull(
+                "Unexpected resource is returned by the registration instance",
+                registration.getResource());
     }
 
     @Test

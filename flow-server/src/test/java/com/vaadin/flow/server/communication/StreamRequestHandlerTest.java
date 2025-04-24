@@ -3,7 +3,6 @@ package com.vaadin.flow.server.communication;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
