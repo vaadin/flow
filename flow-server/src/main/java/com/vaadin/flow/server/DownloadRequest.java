@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -33,76 +34,9 @@ import com.vaadin.flow.dom.Element;
  *
  * @since 24.8
  */
-public class DownloadRequest implements Serializable {
-
-    private final VaadinRequest request;
-    private final VaadinResponse response;
-    private final VaadinSession session;
-
-    private final String fileName;
-    private String contentType;
-
-    private Component owningComponent;
-
-    /**
-     * Create a new download event with required data.
-     *
-     * @param request
-     *            current request
-     * @param response
-     *            current response to write response data to
-     * @param session
-     *            current session
-     * @param fileName
-     *            defined download file name
-     */
-    public DownloadRequest(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, String fileName) {
-        this.request = request;
-        this.response = response;
-        this.session = session;
-        this.fileName = fileName;
-    }
-
-    /**
-     * Set the owning component for the download event from the element instance
-     * if a component is available.
-     *
-     * @param owningElement
-     *            owning element for the event
-     * @return this Event instance
-     */
-    DownloadRequest withOwningComponent(Element owningElement) {
-        if (owningElement != null) {
-            Optional<Component> component = owningElement.getComponent();
-            component.ifPresent(this::withOwningComponent);
-        }
-        return this;
-    }
-
-    /**
-     * Set the owning component for the download event.
-     *
-     * @param owningComponent
-     *            owning component for the event
-     * @return this Event instance
-     */
-    DownloadRequest withOwningComponent(Component owningComponent) {
-        this.owningComponent = owningComponent;
-        return this;
-    }
-
-    /**
-     * Set the DownloadEvent content type.
-     *
-     * @param contentType
-     *            content type of the event content
-     * @return this Event instance
-     */
-    DownloadRequest withContentType(String contentType) {
-        this.contentType = contentType;
-        return this;
-    }
+public record DownloadRequest(VaadinRequest request, VaadinResponse response,
+        VaadinSession session, String fileName, String contentType,
+        Element owningElement) implements Serializable {
 
     /**
      * Returns a <code>OutputStream</code> for writing binary data in the
@@ -196,6 +130,17 @@ public class DownloadRequest implements Serializable {
      * @return owning component or null in none defined
      */
     public Component getOwningComponent() {
-        return owningComponent;
+        return owningElement.getComponent().orElse(null);
+    }
+
+    /**
+     * Get the UI instance for this request.
+     *
+     * @return Current UI
+     */
+    public UI getUI() {
+        Optional<Component> component = owningElement.getComponent();
+        return component.map(value -> value.getUI().orElseGet(UI::getCurrent))
+                .orElseGet(UI::getCurrent);
     }
 }
