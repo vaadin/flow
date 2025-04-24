@@ -1,4 +1,4 @@
-import { exportedWebComponentConnected, exportedWebComponentDisconnected } from 'Frontend/generated/jar-resources/css-injection.js';
+import { exportedWebComponentConnected, exportedWebComponentDisconnected } from 'Frontend/generated/jar-resources/flow-css-import.js';
 
 _ThemeImport_class _TagCamel_ extends HTMLElement {
   constructor() {

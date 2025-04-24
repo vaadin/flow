@@ -743,22 +743,13 @@ abstract class AbstractUpdateImports implements Runnable {
             query.put("scope", scope);
         }
 
-        lines.add(generateCSSImportStatement(cssImport, query));
-
-        return found || !options.isBundleBuild();
-    }
-
-    private String generateCSSImportStatement(String path,
-            Map<String, String> query) {
         String queryString = query.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(Collectors.joining("&"));
-        if (!queryString.isEmpty()) {
-            queryString = "?" + queryString;
-        }
 
-        return "import 'virtual:flow-css-import/%s%s';"
-                .formatted(path.replace(".css", ""), queryString);
+        lines.add("import '%s?flow-css-import&%s';".formatted(cssImport, queryString));
+
+        return found || !options.isBundleBuild();
     }
 
     private String notFoundMessage(Set<String> files, String prefix,

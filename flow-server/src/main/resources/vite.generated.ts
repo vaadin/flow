@@ -750,7 +750,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
       ]
     },
     plugins: [
-      flowCSSImportPlugin(),
       productionMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
@@ -761,6 +760,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       postcssLit({
         include: ['**/*.css', /.*\/.*\.css\?.*/],
         exclude: [
+          /.*?.*flow-css-import.*/,
           `${themeFolder}/**/*.css`,
           new RegExp(`${themeFolder}/.*/.*\\.css\\?.*`),
           `${themeResourceFolder}/**/*.css`,
@@ -768,6 +768,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
+      flowCSSImportPlugin(),
       // The React plugin provides fast refresh and debug source info
       reactPlugin({
         include: '**/*.tsx',
