@@ -137,7 +137,8 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
                     .thenReturn(Collections.singletonMap("/route",
                             new AvailableViewInfo("", null, false, "/route",
-                                    false, false, null, null, null, true)));
+                                    false, false, null, null, null, true,
+                                    null)));
             NavigationState greeting = resolveNavigationState(path);
             Assert.assertEquals(
                     "Layout should be returned for a non server route when matching @Layout exists",
@@ -156,7 +157,8 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
                     .thenReturn(Collections.singletonMap("/route",
                             new AvailableViewInfo("", null, false, "/route",
-                                    false, false, null, null, null, true)));
+                                    false, false, null, null, null, true,
+                                    null)));
             NavigationState greeting = resolveNavigationState(path);
             Assert.assertEquals(
                     "Layout should be returned for a non server route when matching @Layout exists",
@@ -306,7 +308,7 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
 
     private AvailableViewInfo createAvailableViewInfo(String route) {
         return new AvailableViewInfo("", null, false, route, false, false, null,
-                null, null, true);
+                null, null, true, null);
     }
 
     @Test
@@ -321,7 +323,8 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
                     .thenReturn(Collections.singletonMap("/route",
                             new AvailableViewInfo("", null, false, "/route",
-                                    false, false, null, null, null, true)));
+                                    false, false, null, null, null, true,
+                                    null)));
             NavigationState greeting = resolveNavigationState(path);
         }
     }
