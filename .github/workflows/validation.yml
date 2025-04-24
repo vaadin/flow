@@ -8,8 +8,11 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.head_ref || github.ref_name }}
+  group: $HEAD_REF || $REF_NAME
   cancel-in-progress: true
+env:
+  HEAD_REF: ${{ github.head_ref }}
+  REF_NAME: ${{ github.ref_name }}
 jobs:
   build:
     timeout-minutes: 30
@@ -36,7 +39,9 @@ jobs:
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: $HEAD_SHA
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -84,7 +89,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: $HEAD_SHA
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -150,7 +157,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: $HEAD_SHA
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -240,7 +249,9 @@ jobs:
           pattern: tests-output-*
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: $HEAD_SHA
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       - uses: actions/download-artifact@v4
         with:
           name: tests-output
