@@ -41,12 +41,12 @@ public class AvailableViewInfoTest {
     @Test
     public void testEquality() {
         Assert.assertEquals("Two instance created the same way are not equal",
-                createInfo(true), createInfo(true));
+                createInfo(true, true), createInfo(true, true));
     }
 
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        var info = createInfo(true);
+        var info = createInfo(true, true);
 
         var baos = new ByteArrayOutputStream();
         var oos = new ObjectOutputStream(baos);
@@ -63,17 +63,26 @@ public class AvailableViewInfoTest {
 
     @Test
     public void testJsonSerialization() throws JsonProcessingException {
-        var info = createInfo(true);
+        var info = createInfo(true, true);
         var json = mapper.writeValueAsString(info);
         Assert.assertEquals("JSON conversion doesn't give the same object",
                 info, mapper.readValue(json, AvailableViewInfo.class));
     }
 
-    private AvailableViewInfo createInfo(boolean withChild) {
+    @Test
+    public void testJsonSerializationNull() throws JsonProcessingException {
+        var info = createInfo(true, false);
+        var json = mapper.writeValueAsString(info);
+        Assert.assertEquals("JSON conversion doesn't give the same object",
+                info, mapper.readValue(json, AvailableViewInfo.class));
+    }
+
+    private AvailableViewInfo createInfo(boolean withChild,
+            boolean withDetail) {
         return new AvailableViewInfo("Title", new String[] { "role1" }, false,
                 "route", false, true, menuData,
-                withChild ? List.of(createInfo(false)) : List.of(),
+                withChild ? List.of(createInfo(false, withDetail)) : List.of(),
                 Map.of("param", RouteParamType.REQUIRED), false,
-                detailAsString);
+                withDetail ? detailAsString : null);
     }
 }
