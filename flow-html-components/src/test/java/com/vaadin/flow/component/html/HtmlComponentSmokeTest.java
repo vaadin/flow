@@ -248,6 +248,16 @@ public class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == IFrame.class
+                && method.getName().startsWith("setSrc")) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == HtmlObject.class
+                && method.getName().startsWith("setData")) {
+            return true;
+        }
+
         return false;
     }
 

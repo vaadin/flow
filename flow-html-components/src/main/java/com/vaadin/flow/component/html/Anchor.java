@@ -27,6 +27,8 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.ElementRequestHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -107,6 +109,24 @@ public class Anchor extends HtmlContainer
      */
     public Anchor(AbstractStreamResource href, String text) {
         setHref(href);
+        setText(text);
+    }
+
+    /**
+     * Creates an anchor component with the given text content and download
+     * handler resource.
+     *
+     * @see #setHref(AbstractStreamResource)
+     * @see #setText(String)
+     *
+     * @param downloadHandler
+     *            the download handler resource, not null
+     * @param text
+     *            the text content to set
+     */
+    public Anchor(DownloadHandler downloadHandler, String text) {
+        setHref(new StreamResourceRegistry.ElementStreamResource(
+                downloadHandler, this.getElement()));
         setText(text);
     }
 
