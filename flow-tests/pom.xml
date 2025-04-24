@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.7-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -330,6 +330,8 @@
                 <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
+                <module>test-vaadin-router</module>
+                <module>test-vaadin-router/pom-production.xml</module>
                 <module>test-react-router</module>
                 <module>test-react-router/pom-production.xml</module>
                 <module>test-react-adapter</module>

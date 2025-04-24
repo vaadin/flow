@@ -30,6 +30,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -40,7 +41,9 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
@@ -137,10 +140,26 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
-        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
-                npmFolder(), frontendDirectory(), getClassFinder());
+        Options options = new Options(null, getClassFinder(), npmFolder())
+                .withFrontendDirectory(frontendDirectory())
+                .withFrontendGeneratedFolder(generatedTsFolder());
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(options);
+
+        boolean reactEnabled = isReactEnabled()
+                && FrontendUtils.isReactRouterRequired(
+                        BuildFrontendUtil.getFrontendDirectory(this));
+        FeatureFlags featureFlags = new FeatureFlags(
+                createLookup(getClassFinder()));
+        if (javaResourceFolder() != null) {
+            featureFlags.setPropertiesLocation(javaResourceFolder());
+        }
+        FrontendDependenciesScanner frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                .createScanner(!optimizeBundle, getClassFinder(),
+                        generateEmbeddableWebComponents, featureFlags,
+                        reactEnabled);
+
         try {
-            BuildFrontendUtil.runNodeUpdater(this);
+            BuildFrontendUtil.runNodeUpdater(this, frontendDependencies);
         } catch (ExecutionFailedException | URISyntaxException exception) {
             throw new MojoFailureException(
                     "Could not execute build-frontend goal", exception);
@@ -160,7 +179,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             }
         }
         LicenseChecker.setStrictOffline(true);
-        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
+        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this,
+                frontendDependencies);
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired);
 

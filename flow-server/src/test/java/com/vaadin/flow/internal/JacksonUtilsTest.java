@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -39,7 +40,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class JacksonUtilsTest {
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = JacksonUtils.getMapper();
 
     @Test
     public void testEquals() {
@@ -470,6 +471,19 @@ public class JacksonUtilsTest {
         Assert.assertEquals("Foo", person.name);
         Assert.assertEquals(30.5, person.age, 0.0);
         Assert.assertTrue(person.canSwim);
+    }
+
+    @Test
+    public void toFileJson() throws JsonProcessingException {
+        ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
+        Assert.assertEquals("""
+                {
+                  "parentValue": "parent",
+                  "child": {
+                    "childValue": "child"
+                  }
+                }""", JacksonUtils.toFileJson(json).replace("\r\n", "\n"));
+
     }
 
 }

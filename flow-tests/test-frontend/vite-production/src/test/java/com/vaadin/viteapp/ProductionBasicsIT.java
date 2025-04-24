@@ -18,7 +18,7 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         Assert.assertEquals("This place intentionally left empty",
                 header.getText());
         Assert.assertFalse((Boolean) getCommandExecutor()
-                .executeScript("return Vaadin.developmentMode"));
+                .executeScript("return Vaadin.developmentMode || false"));
     }
 
     @Test
@@ -57,4 +57,15 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         Assert.assertEquals(200, size.getWidth());
         Assert.assertEquals(200, size.getHeight());
     }
+
+    @Test
+    public void toplevelAwaitWorks() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+        String value = waitUntil(driver -> (String) executeScript(
+                "return window.topLevelAwaitValue"));
+
+        Assert.assertEquals("This is the value set in other.js", value);
+    }
+
 }

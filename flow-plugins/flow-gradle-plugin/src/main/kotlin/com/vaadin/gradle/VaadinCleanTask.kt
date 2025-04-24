@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import com.vaadin.flow.plugin.base.CleanFrontendUtil
 import com.vaadin.flow.plugin.base.CleanOptions
-import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -40,9 +41,7 @@ import org.gradle.api.tasks.TaskAction
  * the rest of the files will be re-created by Vaadin Servlet, simply by running the application
  * in the development mode.
  */
-public open class VaadinCleanTask : DefaultTask() {
-    private val config: PluginEffectiveConfiguration =
-        PluginEffectiveConfiguration.get(project)
+public abstract class VaadinCleanTask : DefaultTask() {
 
     init {
         group = "Vaadin"
@@ -52,10 +51,15 @@ public open class VaadinCleanTask : DefaultTask() {
         dependsOn("clean")
     }
 
+    @get:Internal
+    internal abstract val adapter: Property<GradlePluginAdapter>
+
+    internal fun configure(config: PluginEffectiveConfiguration) {
+        adapter.set(GradlePluginAdapter(this, config, false))
+    }
+
     @TaskAction
     public fun clean() {
-        CleanFrontendUtil.runCleaning(
-                GradlePluginAdapter(project, config, false),
-                CleanOptions())
+        CleanFrontendUtil.runCleaning(adapter.get(), CleanOptions())
     }
 }
