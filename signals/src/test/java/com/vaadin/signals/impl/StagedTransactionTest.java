@@ -497,6 +497,32 @@ public class StagedTransactionTest {
     }
 
     @Test
+    void commit_readAndWriteInChangeHandler_bypassesTransaction() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        AtomicReference<String> valueInObserver = new AtomicReference<>();
+
+        tree.observeNextChange(Id.ZERO, () -> {
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("observer"), null);
+
+            String value = TestUtil.readTransactionRootValue(tree).asText();
+            valueInObserver.set(value);
+
+            return false;
+        });
+
+        Transaction.runInTransaction(() -> {
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("tx"), null);
+        });
+
+        assertEquals("observer", valueInObserver.get());
+        assertEquals("observer",
+                TestUtil.readConfirmedRootValue(tree).asText());
+    }
+
+    @Test
     void treeMixing_multipleSyncAndComputed_allIsFine() {
         SignalTree d1 = new SynchronousSignalTree(false);
         SignalTree d2 = new SynchronousSignalTree(false);
