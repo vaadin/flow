@@ -260,7 +260,8 @@ abstract class AbstractUpdateImports implements Runnable {
                 }
                 boolean hasLazyCss = lazyCssData.containsKey(chunkInfo);
                 if (hasLazyCss) {
-                    chunkLines.addAll(getCssLines(lazyCssData.get(chunkInfo), null));
+                    chunkLines.addAll(
+                            getCssLines(lazyCssData.get(chunkInfo), null));
                 }
 
                 if (chunkLines.isEmpty()) {
@@ -297,7 +298,7 @@ abstract class AbstractUpdateImports implements Runnable {
                     TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
         } else {
             chunkLoader.add(
-                    "const loadOnDemand = (key) => { return Promise.resolve(0); }");
+                    "const loadOnDemand = (key) => Promise.resolve(0);");
         }
 
         // Convert eager CSS data to JS and deduplicate it
@@ -305,15 +306,20 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.addAll(getCssLines(eagerCssData, null));
         mainLines.addAll(getModuleLines(eagerJavascript));
         mainLines.addAll(chunkLoader);
-        mainLines.add("window.Vaadin = window.Vaadin || {};");
-        mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
+        mainLines.add("window.Vaadin ??= {};");
+        mainLines.add("window.Vaadin.Flow ??= {};");
         mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
-        mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
+        mainLines.add("window.Vaadin.Flow.resetFocus = %s;".formatted(RESET_FOCUS_JS));
         files.put(generatedFlowImports, mainLines);
 
         List<String> webComponentLines = new ArrayList<>();
-        webComponentLines.addAll(getCssLines(eagerCssData, "exportedWebComponent"));
+        webComponentLines
+                .addAll(getCssLines(eagerCssData, "exportedWebComponent"));
         webComponentLines.addAll(getModuleLines(eagerJavascript));
+        webComponentLines.add("window.Vaadin ??= {};");
+        webComponentLines.add("window.Vaadin.Flow ??= {};");
+        webComponentLines.add("window.Vaadin.Flow.loadOnDemand = () => Promise.resolve(0);");
+        webComponentLines.add("window.Vaadin.Flow.resetFocus = %s;".formatted(RESET_FOCUS_JS));
         webComponentLines.removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
         files.put(generatedFlowWebComponentImports, webComponentLines);
 
@@ -708,7 +714,8 @@ abstract class AbstractUpdateImports implements Runnable {
      *            imported CSS counter
      * @return true if the imported CSS files does exist, false otherwise
      */
-    protected boolean addCssLines(Collection<String> lines, CssData cssData, String context) {
+    protected boolean addCssLines(Collection<String> lines, CssData cssData,
+            String context) {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
 
@@ -746,7 +753,7 @@ abstract class AbstractUpdateImports implements Runnable {
             queryString = "?" + queryString;
         }
 
-        return String.format("import 'virtual:flow-css-import/%s%s';",
+        return "import 'virtual:flow-css-import/%s%s';".formatted(
                 path.replace(".css", ""), queryString);
     }
 

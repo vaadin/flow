@@ -1,8 +1,5 @@
 import stripCssComments from 'strip-css-comments';
 
-// Safari 15 - 16.3, polyfilled
-const polyfilledSafari = CSSStyleSheet.toString().includes('document.createElement');
-
 const createLinkReferences = (css, target) => {
   // Unresolved urls are written as '@import url(text);' or '@import "text";' to the css
   // media query can be present on @media tag or on @import directive after url
@@ -45,27 +42,16 @@ const createLinkReferences = (css, target) => {
   return styleCss;
 };
 
-const addAdoptedStyleSafariPolyfill = (sheet, target, first) => {
-  if (first) {
-    target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
-  } else {
-    target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
-  }
-  return () => {
-    target.adoptedStyleSheets = target.adoptedStyleSheets.filter((ss) => ss !== sheet);
-  };
-};
-
 const addAdoptedStyle = (cssText, target, first) => {
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(cssText);
-  if (polyfilledSafari) {
-    return addAdoptedStyleSafariPolyfill(sheet, target, first);
-  }
-  if (first) {
-    target.adoptedStyleSheets.splice(0, 0, sheet);
+  sheet.__themeStyleSheet = true;
+
+  const lastIndex = target.adoptedStyleSheets.findLastIndex((s) => s.__themeStyleSheet);
+  if (lastIndex === -1 || first) {
+    target.adoptedStyleSheets.unshift(sheet);
   } else {
-    target.adoptedStyleSheets.push(sheet);
+    target.adoptedStyleSheets.splice(lastIndex + 1, 0, sheet);
   }
   return () => {
     target.adoptedStyleSheets.splice(target.adoptedStyleSheets.indexOf(sheet), 1);

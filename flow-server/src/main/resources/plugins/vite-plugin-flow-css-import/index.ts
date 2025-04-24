@@ -50,23 +50,18 @@ export default function flowCSSImportPlugin(): Plugin {
       //   `;
       // }
 
-      if (queryParams.get('type') === 'exportedWebComponent') {
-        return `
-          import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';
-          import cssText from '${path}.css?inline';
-
-          registerStyles('', unsafeCSS(cssText), {
-            moduleId: 'exported-web-component-${counter++}'
-          });
-        `;
-      }
-
       return `
-        import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';
+        import { injectGlobalStyles, injectExportedWebComponentStyles } from 'Frontend/generated/jar-resources/css-injection.js';
         import cssText from '${path}.css?inline';
 
-        injectGlobalCss(cssText, 'CSSImport end', document);
-      `
+        ${queryParams.get('context') === 'exportedWebComponent'
+          ? `injectExportedWebComponentStyles('${id}', cssText);`
+          : `injectGlobalStyles('${id}', cssText);`}
+
+        if (import.meta.hot) {
+          import.meta.hot.accept();
+        }
+      `;
     },
   }
 }

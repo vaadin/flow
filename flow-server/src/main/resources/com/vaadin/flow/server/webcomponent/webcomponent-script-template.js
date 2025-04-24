@@ -1,4 +1,4 @@
-import { embeddedWebComponentConnected, embeddedWebComponentDisconnected } from 'Frontend/generated/jar-resources/embedded-web-component-css-injector.js';
+import { exportedWebComponentConnected, exportedWebComponentDisconnected } from 'Frontend/generated/jar-resources/css-injection.js';
 
 _ThemeImport_class _TagCamel_ extends HTMLElement {
   constructor() {
@@ -75,7 +75,7 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
 
     this._connect();
 
-    embeddedWebComponentConnected(this);
+    exportedWebComponentConnected(this);
   }
 
   disconnectedCallback() {
@@ -83,7 +83,7 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
 
     console.debug("disconnected", this);
 
-    embeddedWebComponentDisconnected(this);
+    exportedWebComponentDisconnected(this);
   }
 
   _connect(){
