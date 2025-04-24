@@ -82,6 +82,8 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 throw new RuntimeException(ioe);
             }
+
+            event.getResponse().setContentType(event.getContentType());
         }
     }
 

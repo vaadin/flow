@@ -99,6 +99,8 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             throw new RuntimeException(ioe);
         }
+
+        event.getResponse().setContentType(event.getContentType());
     }
 
     @Override

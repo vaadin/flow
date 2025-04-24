@@ -65,16 +65,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     public void handleDownloadRequest(DownloadRequest event) {
         VaadinSession session = event.getSession();
         VaadinResponse response = event.getResponse();
-        session.lock();
-        try {
-            response.setContentType(event.getContentType());
-        } catch (Exception exception) {
-            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw exception;
 
-        } finally {
-            session.unlock();
-        }
         final int BUFFER_SIZE = 1024;
         try (OutputStream outputStream = event.getOutputStream()
                 .orElseThrow(() -> new IOException("No output stream"));
@@ -89,6 +80,8 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             throw new RuntimeException(ioe);
         }
+        response.setContentType(event.getContentType());
+        response.setContentLength(Math.toIntExact(file.length()));
     }
 
     @Override
