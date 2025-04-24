@@ -21,12 +21,15 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - run: echo "Concurrency Group = ${{ github.head_ref || github.ref_name }}"
+      - run: echo "Concurrency Group = $HEAD_REF || $REF_NAME"
       - uses: actions-cool/check-user-permission@main
         id: checkUser
         with:
           username: ${{github.triggering_actor}}
           require: 'write'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
       - name: Fail on external workflow triggering
         if: ${{ steps.checkUser.outputs.require-result != 'true' && github.actor != 'dependabot[bot]' }}
         run: |
