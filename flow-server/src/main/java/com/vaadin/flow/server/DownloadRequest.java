@@ -120,7 +120,7 @@ public class DownloadRequest implements Serializable {
         } catch (IOException e) {
             LoggerFactory.getLogger(DownloadRequest.class)
                     .error("Error getting output stream", e);
-            throw new UncheckedIOException("Error getting writer", e);
+            throw new UncheckedIOException("Error getting output stream", e);
         }
     }
 
