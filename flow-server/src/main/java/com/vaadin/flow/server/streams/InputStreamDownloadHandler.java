@@ -74,8 +74,7 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
         }
 
         final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream()
-                .orElseThrow(() -> new IOException("No output stream"));
+        try (OutputStream outputStream = event.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
             byte[] buf = new byte[BUFFER_SIZE];
             int n;

@@ -44,7 +44,7 @@ public class DownloadHandlerView extends Div {
         DownloadHandler downloadHandler = new DownloadHandler() {
             @Override
             public void handleDownloadRequest(DownloadRequest event) {
-                event.getWriter().ifPresent(writer -> writer.print("foo"));
+                event.getWriter().print("foo");
             }
 
             @Override

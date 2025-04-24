@@ -67,8 +67,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
         VaadinResponse response = event.getResponse();
 
         final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream()
-                .orElseThrow(() -> new IOException("No output stream"));
+        try (OutputStream outputStream = event.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             byte[] buf = new byte[BUFFER_SIZE];
             int n;

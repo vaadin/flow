@@ -67,8 +67,7 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
         VaadinService service = event.getRequest().getService();
         if (service instanceof VaadinServletService servletService) {
             final int BUFFER_SIZE = 1024;
-            try (OutputStream outputStream = event.getOutputStream()
-                    .orElseThrow(() -> new IOException("No output stream"));
+            try (OutputStream outputStream = event.getOutputStream();
                     InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
                 byte[] buf = new byte[BUFFER_SIZE];

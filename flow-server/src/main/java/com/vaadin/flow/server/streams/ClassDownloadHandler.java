@@ -84,8 +84,7 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
             return;
         }
         final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream()
-                .orElseThrow(() -> new IOException("No output stream"));
+        try (OutputStream outputStream = event.getOutputStream();
                 InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
             byte[] buf = new byte[BUFFER_SIZE];

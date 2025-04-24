@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -113,13 +114,13 @@ public class DownloadRequest implements Serializable {
      * @return a <code>OutputStream</code> for writing binary data or empty
      *         optional if an error happened
      */
-    public Optional<OutputStream> getOutputStream() {
+    public OutputStream getOutputStream() {
         try {
-            return Optional.of(response.getOutputStream());
+            return response.getOutputStream();
         } catch (IOException e) {
             LoggerFactory.getLogger(DownloadRequest.class)
                     .error("Error getting output stream", e);
-            return Optional.empty();
+            throw new UncheckedIOException("Error getting writer", e);
         }
     }
 
@@ -134,13 +135,13 @@ public class DownloadRequest implements Serializable {
      * @return a <code>PrintWriter</code> for writing character text or empty
      *         optional if an error happened
      */
-    public Optional<PrintWriter> getWriter() {
+    public PrintWriter getWriter() {
         try {
-            return Optional.of(response.getWriter());
+            return response.getWriter();
         } catch (IOException e) {
             LoggerFactory.getLogger(DownloadRequest.class)
-                    .error("Error getting writer", e);
-            return Optional.empty();
+                    .error("Error getting print writer");
+            throw new UncheckedIOException("Error getting writer", e);
         }
     }
 
