@@ -96,8 +96,8 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
         try (OutputStream outputStream = downloadRequest.getOutputStream();
                 InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
-            transfer(inputStream, outputStream, downloadRequest,
-                    getListeners());
+            TransferProgressListener.transfer(inputStream, outputStream,
+                    downloadRequest, getListeners(), this::isTerminated);
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             downloadRequest.getResponse()

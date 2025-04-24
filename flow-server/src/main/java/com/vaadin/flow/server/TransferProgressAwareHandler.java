@@ -69,6 +69,8 @@ public interface TransferProgressAwareHandler extends Serializable {
 
     void terminate();
 
+    boolean isTerminated();
+
     /**
      * Enum representing the completion status of a transfer.
      */

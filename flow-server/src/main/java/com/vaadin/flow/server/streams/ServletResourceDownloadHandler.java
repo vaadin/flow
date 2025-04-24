@@ -76,8 +76,8 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
             try (OutputStream outputStream = downloadRequest.getOutputStream();
                     InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
-                transfer(inputStream, outputStream, downloadRequest,
-                        getListeners());
+                TransferProgressListener.transfer(inputStream, outputStream,
+                        downloadRequest, getListeners(), this::isTerminated);
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
                 downloadRequest.getResponse().setStatus(

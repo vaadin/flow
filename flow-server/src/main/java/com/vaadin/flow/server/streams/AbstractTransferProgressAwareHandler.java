@@ -20,10 +20,9 @@ import com.vaadin.flow.shared.Registration;
 public abstract class AbstractTransferProgressAwareHandler<T extends TransferRequest>
         implements TransferProgressAwareHandler {
 
-    private static final int DEFAULT_BUFFER_SIZE = 16384;
-
     private Collection<TransferProgressListener> listeners;
 
+    // TODO: should not be shared within single session
     private boolean terminated = false;
 
     protected final void handleTransferProcessAwareRequest(T transferRequest) {
@@ -125,97 +124,13 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
                 .forEach(listener -> listener.onFailure(transferRequest, ioe));
     }
 
-    /**
-     * Transfers data from the given input stream to the output stream while
-     * notifying the progress to the given listeners.
-     *
-     * @param inputStream
-     *            the input stream to read from
-     * @param outputStream
-     *            the output stream to write to
-     * @param transferRequest
-     *            the transfer request containing metadata about the transfer
-     * @param listeners
-     *            collection of listeners to notify about progress
-     * @return the number of bytes transferred
-     * @throws IOException
-     *             if an I/O error occurs during the transfer
-     */
-    long transfer(InputStream inputStream, OutputStream outputStream,
-            TransferRequest transferRequest,
-            Collection<TransferProgressListener> listeners) throws IOException {
-        Objects.requireNonNull(inputStream, "InputStream cannot be null");
-        Objects.requireNonNull(outputStream, "OutputStream cannot be null");
-        Objects.requireNonNull(transferRequest,
-                "TransferRequest cannot be null");
-        Objects.requireNonNull(listeners,
-                "TransferProgressListener cannot be null");
-        if (terminated) {
-            return 0;
-        }
-        long transferred = 0;
-        long lastNotified = 0;
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        int read;
-        while ((read = read(transferRequest.getSession(), inputStream,
-                buffer)) >= 0) {
-            outputStream.write(buffer, 0, read);
-            if (transferred < Long.MAX_VALUE) {
-                try {
-                    transferred = Math.addExact(transferred, read);
-                } catch (ArithmeticException ignore) {
-                    transferred = Long.MAX_VALUE;
-                }
-                if (transferred - lastNotified >= transferRequest
-                        .getTransferInterval()) {
-                    for (TransferProgressListener listener : listeners) {
-                        listener.onProgress(transferRequest, transferred,
-                                transferRequest.getSize());
-                    }
-                    lastNotified = transferred;
-                }
-            }
-            if (terminated) {
-                getListeners().forEach(
-                        listener -> listener.onTerminate(transferRequest));
-                break;
-            }
-        }
-        if (!terminated) {
-            long finalTransferred = transferred;
-            getListeners().forEach(listener -> listener
-                    .onComplete(transferRequest, finalTransferred));
-        }
-        return transferred;
-    }
-
-    /**
-     * Read buffer amount of bytes from the input stream.
-     *
-     * @param session
-     *            vaadin session in use
-     * @param source
-     *            input stream source
-     * @param buffer
-     *            byte buffer to read into
-     * @return amount of bytes read into buffer
-     * @throws IOException
-     *             If the first byte cannot be read for any reason other than
-     *             the end of the file, if the input stream has been closed, or
-     *             if some other I/O error occurs.
-     */
-    static int read(VaadinSession session, InputStream source, byte[] buffer)
-            throws IOException {
-        session.lock();
-        try {
-            return source.read(buffer, 0, DEFAULT_BUFFER_SIZE);
-        } finally {
-            session.unlock();
-        }
-    }
-
     @Override
     public void terminate() {
         terminated = true;
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return terminated;
     }
 }
