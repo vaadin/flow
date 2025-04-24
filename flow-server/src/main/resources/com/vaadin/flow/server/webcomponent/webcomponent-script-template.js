@@ -78,14 +78,6 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
     exportedWebComponentConnected(this);
   }
 
-  disconnectedCallback() {
-    this.$server && this.$server.disconnected();
-
-    console.debug("disconnected", this);
-
-    exportedWebComponentDisconnected(this);
-  }
-
   _connect(){
       if (!this.$.id) {
         this._registerElement();
@@ -135,6 +127,13 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
     }
 
     return Object.values(clients).find(client => client.exportedWebComponents && client.exportedWebComponents.indexOf('_TagDash_') != -1)
+  }
+  disconnectedCallback() {
+    this.$server && this.$server.disconnected();
+
+    console.debug("disconnected", this);
+
+    exportedWebComponentDisconnected(this);
   }
 
   serverConnected() {
