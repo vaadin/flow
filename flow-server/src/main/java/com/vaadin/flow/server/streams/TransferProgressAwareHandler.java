@@ -91,23 +91,18 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
     }
 
     @Override
-    public T whenComplete(SerializableConsumer<Long> completeHandler) {
-        addTransferProgressListener(new TransferProgressListener() {
-            @Override
-            public void onComplete(TransferContext context,
-                    long transferredBytes) {
-                completeHandler.accept(transferredBytes);
-            }
-        });
-        return (T) this;
-    }
-
-    @Override
-    public T onError(SerializableConsumer<IOException> errorHandler) {
+    public T whenComplete(
+            SerializableConsumer<Boolean> completeOrTerminateHandler) {
         addTransferProgressListener(new TransferProgressListener() {
             @Override
             public void onError(TransferContext context, IOException reason) {
-                errorHandler.accept(reason);
+                completeOrTerminateHandler.accept(false);
+            }
+
+            @Override
+            public void onComplete(TransferContext context,
+                    long transferredBytes) {
+                completeOrTerminateHandler.accept(true);
             }
         });
         return (T) this;
