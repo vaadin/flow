@@ -43,7 +43,7 @@ jobs:
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -91,7 +91,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
+          ref: ${{env.HEAD_SHA}}
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -157,7 +157,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -247,7 +247,7 @@ jobs:
           pattern: tests-output-*
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/download-artifact@v4
         with:
           name: tests-output
