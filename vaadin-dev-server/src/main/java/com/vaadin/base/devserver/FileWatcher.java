@@ -18,7 +18,7 @@ package com.vaadin.base.devserver;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import io.methvin.watcher.DirectoryWatcher;
@@ -34,7 +34,7 @@ public class FileWatcher {
 
     private DirectoryWatcher watcher;
 
-    private Executor executor = Executors.newCachedThreadPool();
+    private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     /**
      * Creates an instance of the file watcher for the given directory.
@@ -66,7 +66,7 @@ public class FileWatcher {
      * Starts the file watching.
      */
     public void start() {
-        watcher.watchAsync(executor).exceptionally((e) -> {
+        watcher.watchAsync(executorService).exceptionally((e) -> {
             getLogger().error("Error starting file watcher", e);
             return null;
         });
