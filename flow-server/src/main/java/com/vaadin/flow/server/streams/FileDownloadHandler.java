@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Download handler for use with a given File that will be read and written as
@@ -80,15 +80,12 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransferRequest(DownloadRequest downloadRequest) {
+    public void handleTransfer(DownloadRequest downloadRequest) {
         VaadinResponse response = downloadRequest.getResponse();
-        long fileLength = file.length();
-        downloadRequest.withSize(fileLength);
-
         try (OutputStream outputStream = downloadRequest.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    downloadRequest, getListeners());
+                    getTransferContext(downloadRequest), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -96,7 +93,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
             throw new UncheckedIOException(ioe);
         }
         response.setContentType(downloadRequest.getContentType());
-        response.setContentLength(Math.toIntExact(fileLength));
+        response.setContentLength(Math.toIntExact(file.length()));
     }
 
     @Override

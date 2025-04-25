@@ -21,6 +21,7 @@ import java.io.IOException;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.TransferProgressAware;
 
 /**
@@ -52,7 +53,8 @@ public abstract class AbstractDownloadHandler
     }
 
     @Override
-    public TransferProgressAware onError(SerializableConsumer<IOException> reason) {
+    public TransferProgressAware onError(
+            SerializableConsumer<IOException> reason) {
         return (AbstractDownloadHandler) super.onError(reason);
     }
 
@@ -60,5 +62,13 @@ public abstract class AbstractDownloadHandler
     public AbstractDownloadHandler whenComplete(
             SerializableConsumer<Long> completeHandler) {
         return (AbstractDownloadHandler) super.whenComplete(completeHandler);
+    }
+
+    @Override
+    protected TransferContext getTransferContext(
+            DownloadRequest transferEvent) {
+        return new TransferContext(transferEvent.getRequest(),
+                transferEvent.getResponse(), transferEvent.getSession(),
+                transferEvent.getFileName(), transferEvent.owningElement());
     }
 }

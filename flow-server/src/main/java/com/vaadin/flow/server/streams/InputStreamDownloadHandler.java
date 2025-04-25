@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
@@ -73,7 +74,7 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransferRequest(DownloadRequest downloadRequest) {
+    public void handleTransfer(DownloadRequest downloadRequest) {
         DownloadResponse download = handler.apply(downloadRequest);
         VaadinResponse response = downloadRequest.getResponse();
         if (download.hasError()) {
@@ -84,7 +85,7 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
         try (OutputStream outputStream = downloadRequest.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    downloadRequest, getListeners());
+                    getTransferContext(downloadRequest), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

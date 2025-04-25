@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 
@@ -85,7 +86,7 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransferRequest(DownloadRequest downloadRequest) {
+    public void handleTransfer(DownloadRequest downloadRequest) {
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
@@ -97,7 +98,7 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
                 InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    downloadRequest, getListeners());
+                    getTransferContext(downloadRequest), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             downloadRequest.getResponse()

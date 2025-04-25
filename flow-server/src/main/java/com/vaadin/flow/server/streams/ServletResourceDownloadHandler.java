@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinService;
@@ -70,14 +71,14 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransferRequest(DownloadRequest downloadRequest) {
+    public void handleTransfer(DownloadRequest downloadRequest) {
         VaadinService service = downloadRequest.getRequest().getService();
         if (service instanceof VaadinServletService servletService) {
             try (OutputStream outputStream = downloadRequest.getOutputStream();
                     InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
                 TransferProgressListener.transfer(inputStream, outputStream,
-                        downloadRequest, getListeners());
+                        getTransferContext(downloadRequest), getListeners());
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
                 downloadRequest.getResponse().setStatus(

@@ -22,8 +22,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 
-import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.server.streams.TransferRequest;
+import com.vaadin.flow.server.streams.TransferContext;
 
 /**
  * Interface for listening to transfer progress events.
@@ -47,24 +46,24 @@ public interface TransferProgressListener extends Serializable {
     /**
      * Called when the data transfer is started.
      *
-     * @param request
-     *            the request of the transfer
+     * @param context
+     *            the context of the transfer
      */
-    default void onStart(TransferRequest request) {
+    default void onStart(TransferContext context) {
         // Default implementation does nothing
     }
 
     /**
      * Called periodically during the transfer to report progress.
      *
-     * @param request
-     *            the request of the transfer
+     * @param context
+     *            the context of the transfer
      * @param transferredBytes
      *            the number of bytes transferred so far
      * @param totalBytes
      *            the total number of bytes to be transferred
      */
-    default void onProgress(TransferRequest request, long transferredBytes,
+    default void onProgress(TransferContext context, long transferredBytes,
             long totalBytes) {
         // Default implementation does nothing
     }
@@ -72,22 +71,22 @@ public interface TransferProgressListener extends Serializable {
     /**
      * Called when the transfer is failed.
      *
-     * @param request
-     *            the request of the transfer
+     * @param context
+     *            the context of the transfer
      * @param reason
      *            the origin I/O exception that terminated the transfer
      */
-    default void onError(TransferRequest request, IOException reason) {
+    default void onError(TransferContext context, IOException reason) {
         // Default implementation does nothing
     }
 
     /**
      * Called when the transfer is started.
      *
-     * @param request
-     *            the request of the transfer
+     * @param context
+     *            the context of the transfer
      */
-    default void onComplete(TransferRequest request, long transferredBytes) {
+    default void onComplete(TransferContext context, long transferredBytes) {
         // Default implementation does nothing
     }
 
@@ -110,7 +109,7 @@ public interface TransferProgressListener extends Serializable {
      *            the input stream to read from
      * @param outputStream
      *            the output stream to write to
-     * @param transferRequest
+     * @param transferContext
      *            the transfer request containing metadata about the transfer
      * @param listeners
      *            collection of listeners to notify about progress
@@ -119,11 +118,11 @@ public interface TransferProgressListener extends Serializable {
      *             if an I/O error occurs during the transfer
      */
     static long transfer(InputStream inputStream, OutputStream outputStream,
-            TransferRequest transferRequest,
+            TransferContext transferContext,
             Collection<TransferProgressListener> listeners) throws IOException {
         Objects.requireNonNull(inputStream, "InputStream cannot be null");
         Objects.requireNonNull(outputStream, "OutputStream cannot be null");
-        Objects.requireNonNull(transferRequest,
+        Objects.requireNonNull(transferContext,
                 "TransferRequest cannot be null");
         Objects.requireNonNull(listeners,
                 "TransferProgressListener cannot be null");
@@ -131,7 +130,7 @@ public interface TransferProgressListener extends Serializable {
         long lastNotified = 0;
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         int read;
-        while ((read = read(transferRequest.getSession(), inputStream,
+        while ((read = read(transferContext.getSession(), inputStream,
                 buffer)) >= 0) {
             outputStream.write(buffer, 0, read);
             if (transferred < Long.MAX_VALUE) {
@@ -140,18 +139,18 @@ public interface TransferProgressListener extends Serializable {
                 } catch (ArithmeticException ignore) {
                     transferred = Long.MAX_VALUE;
                 }
-                if (transferred - lastNotified >= transferRequest
+                if (transferred - lastNotified >= transferContext
                         .getTransferInterval()) {
                     for (TransferProgressListener listener : listeners) {
-                        listener.onProgress(transferRequest, transferred,
-                                transferRequest.getSize());
+                        listener.onProgress(transferContext, transferred,
+                                transferContext.getSize());
                     }
                     lastNotified = transferred;
                 }
             }
         }
         long finalTransferred = transferred;
-        listeners.forEach(listener -> listener.onComplete(transferRequest,
+        listeners.forEach(listener -> listener.onComplete(transferContext,
                 finalTransferred));
         return transferred;
     }

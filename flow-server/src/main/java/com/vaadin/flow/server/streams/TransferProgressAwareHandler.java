@@ -28,26 +28,36 @@ import com.vaadin.flow.server.TransferProgressAware;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.shared.Registration;
 
-public abstract class TransferProgressAwareHandler<T extends TransferRequest>
+/**
+ * Abstract class for common methods used in pre-made transfer progress
+ * handlers.
+ *
+ * @param <T>
+ *            type of transfer event, e.g. {@link DownloadRequest}
+ */
+public abstract class TransferProgressAwareHandler<T>
         implements TransferProgressAware {
 
     private Collection<TransferProgressListener> listeners;
 
-    protected final void handleTransferProcessAwareRequest(T transferRequest) {
+    protected final void handleTransferProcessAwareRequest(T transferEvent) {
         Collection<TransferProgressListener> listeners = getListeners();
-        listeners.forEach(listener -> listener.onStart(transferRequest));
-        handleTransferRequest(transferRequest);
+        TransferContext transferContext = getTransferContext(transferEvent);
+        listeners.forEach(listener -> listener.onStart(transferContext));
+        handleTransfer(transferEvent);
     }
 
     /**
      * Method that is called when the client wants to download from the url
      * stored for this specific handler registration.
      *
-     * @param transferRequest
-     *            transferRequest containing the necessary data for writing the
+     * @param transferEvent
+     *            transferEvent containing the necessary data for writing the
      *            response
      */
-    protected abstract void handleTransferRequest(T transferRequest);
+    protected abstract void handleTransfer(T transferEvent);
+
+    protected abstract TransferContext getTransferContext(T transferEvent);
 
     public Registration addTransferProgressListener(
             TransferProgressListener listener) {
@@ -63,7 +73,7 @@ public abstract class TransferProgressAwareHandler<T extends TransferRequest>
             SerializableRunnable startHandler) {
         addTransferProgressListener(new TransferProgressListener() {
             @Override
-            public void onStart(TransferRequest context) {
+            public void onStart(TransferContext context) {
                 startHandler.run();
             }
         });
@@ -76,7 +86,7 @@ public abstract class TransferProgressAwareHandler<T extends TransferRequest>
             long progressIntervalInBytes) {
         addTransferProgressListener(new TransferProgressListener() {
             @Override
-            public void onProgress(TransferRequest request,
+            public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
                 progressHandler.accept(transferredBytes, totalBytes);
             }
@@ -94,7 +104,7 @@ public abstract class TransferProgressAwareHandler<T extends TransferRequest>
             SerializableConsumer<Long> completeHandler) {
         addTransferProgressListener(new TransferProgressListener() {
             @Override
-            public void onComplete(TransferRequest request,
+            public void onComplete(TransferContext context,
                     long transferredBytes) {
                 completeHandler.accept(transferredBytes);
             }
@@ -103,10 +113,11 @@ public abstract class TransferProgressAwareHandler<T extends TransferRequest>
     }
 
     @Override
-    public TransferProgressAware onError(SerializableConsumer<IOException> errorHandler) {
+    public TransferProgressAware onError(
+            SerializableConsumer<IOException> errorHandler) {
         addTransferProgressListener(new TransferProgressListener() {
             @Override
-            public void onError(TransferRequest request, IOException reason) {
+            public void onError(TransferContext context, IOException reason) {
                 errorHandler.accept(reason);
             }
         });
@@ -126,8 +137,9 @@ public abstract class TransferProgressAwareHandler<T extends TransferRequest>
                 : new ArrayList<>(listeners);
     }
 
-    void notifyError(T transferRequest, IOException ioe) {
+    void notifyError(T transferEvent, IOException ioe) {
+        TransferContext transferContext = getTransferContext(transferEvent);
         getListeners()
-                .forEach(listener -> listener.onError(transferRequest, ioe));
+                .forEach(listener -> listener.onError(transferContext, ioe));
     }
 }

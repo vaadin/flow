@@ -22,6 +22,7 @@ import java.util.Optional;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.ElementRequestHandler;
 import com.vaadin.flow.server.TransferProgressAware;
 import com.vaadin.flow.server.TransferProgressListener;
@@ -52,11 +53,10 @@ public interface DownloadHandler extends ElementRequestHandler {
         String fileName = getUrlPostfix() == null ? "" : getUrlPostfix();
 
         DownloadRequest downloadRequest = new DownloadRequest(request, response,
-                session, fileName);
-        downloadRequest.withOwningComponent(owner)
-                .withContentType(Optional
-                        .ofNullable(response.getService().getMimeType(fileName))
-                        .orElse("application/octet-stream"));
+                session, fileName,
+                Optional.ofNullable(response.getService().getMimeType(fileName))
+                        .orElse("application/octet-stream"),
+                owner);
 
         handleDownloadRequest(downloadRequest);
     }
@@ -251,7 +251,7 @@ public interface DownloadHandler extends ElementRequestHandler {
             SerializableConsumer<DownloadRequest> handler) {
         return new AbstractDownloadHandler() {
             @Override
-            public void handleTransferRequest(DownloadRequest event) {
+            public void handleTransfer(DownloadRequest event) {
                 handler.accept(event);
             }
         };
@@ -263,8 +263,9 @@ public interface DownloadHandler extends ElementRequestHandler {
             System.out.println("Download handler logic ...");
         }).whenStart(() -> System.out.println("Started"))
                 .whenComplete((transferred) -> {
-                    System.out.println("Completed successfully, bytes transferred: "
-                            + transferred);
+                    System.out.println(
+                            "Completed successfully, bytes transferred: "
+                                    + transferred);
                 });
         TransferProgressAware handler = DownloadHandler
                 .forFile(new File("test.txt")).onProgress(
@@ -279,7 +280,7 @@ public interface DownloadHandler extends ElementRequestHandler {
                 .forServletResource("some/path");
         handler2.addTransferProgressListener(new TransferProgressListener() {
             @Override
-            public void onComplete(TransferRequest request,
+            public void onComplete(TransferContext context,
                     long transferredBytes) {
                 System.out.println("Transfer completed with " + transferredBytes
                         + " bytes");
@@ -288,7 +289,7 @@ public interface DownloadHandler extends ElementRequestHandler {
 
         AbstractDownloadHandler handler1 = new AbstractDownloadHandler() {
             @Override
-            public void handleTransferRequest(DownloadRequest event) {
+            public void handleTransfer(DownloadRequest event) {
                 System.out.println("Download handler logic ...");
             }
         };
