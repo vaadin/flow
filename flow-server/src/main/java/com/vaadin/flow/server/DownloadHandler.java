@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.streams;
+package com.vaadin.flow.server;
 
 import java.io.File;
 import java.util.Optional;
@@ -22,13 +22,13 @@ import java.util.Optional;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.DownloadRequest;
-import com.vaadin.flow.server.ElementRequestHandler;
-import com.vaadin.flow.server.TransferProgressAware;
-import com.vaadin.flow.server.TransferProgressListener;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.ClassDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.FileDownloadHandler;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
+import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
+import com.vaadin.flow.server.streams.TransferContext;
 
 /**
  * Interface for handling download of data from the server to the client.
@@ -281,7 +281,7 @@ public interface DownloadHandler extends ElementRequestHandler {
         handler2.addTransferProgressListener(new TransferProgressListener() {
             @Override
             public void onComplete(TransferContext context,
-                    long transferredBytes) {
+                                   long transferredBytes) {
                 System.out.println("Transfer completed with " + transferredBytes
                         + " bytes");
             }

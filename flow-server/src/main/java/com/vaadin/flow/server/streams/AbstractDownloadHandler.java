@@ -21,6 +21,7 @@ import java.io.IOException;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.TransferProgressAware;
 

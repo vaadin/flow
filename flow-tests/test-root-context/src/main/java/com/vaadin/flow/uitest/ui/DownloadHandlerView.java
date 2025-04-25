@@ -30,7 +30,7 @@ import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
