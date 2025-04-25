@@ -34,7 +34,8 @@ public class FileWatcher {
 
     private DirectoryWatcher watcher;
 
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private static ExecutorService executorService = Executors
+            .newCachedThreadPool();
 
     /**
      * Creates an instance of the file watcher for the given directory.
