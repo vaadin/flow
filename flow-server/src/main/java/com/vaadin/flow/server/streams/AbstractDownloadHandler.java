@@ -17,12 +17,11 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.TransferProgressAware;
 
 /**
  * Abstract class for common methods used in pre-made download handlers.
@@ -30,7 +29,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @since 24.8
  */
 public abstract class AbstractDownloadHandler
-        extends AbstractTransferProgressAwareHandler<DownloadRequest>
+        extends TransferProgressAwareHandler<DownloadRequest>
         implements DownloadHandler {
 
     @Override
@@ -53,8 +52,13 @@ public abstract class AbstractDownloadHandler
     }
 
     @Override
+    public TransferProgressAware onError(SerializableConsumer<IOException> reason) {
+        return (AbstractDownloadHandler) super.onError(reason);
+    }
+
+    @Override
     public AbstractDownloadHandler whenComplete(
-            SerializableBiConsumer<CompletionStatus, Long> completeHandler) {
+            SerializableConsumer<Long> completeHandler) {
         return (AbstractDownloadHandler) super.whenComplete(completeHandler);
     }
 }

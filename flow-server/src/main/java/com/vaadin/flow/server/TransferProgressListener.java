@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.streams.TransferRequest;
 
@@ -56,24 +55,14 @@ public interface TransferProgressListener extends Serializable {
     }
 
     /**
-     * Called when the transfer is terminated by user.
-     *
-     * @param request
-     *            the request of the transfer
-     */
-    default void onTerminate(TransferRequest request) {
-        // Default implementation does nothing
-    }
-
-    /**
      * Called when the transfer is failed.
      *
      * @param request
      *            the request of the transfer
      * @param reason
-     *            the reason for termination
+     *            the origin I/O exception that terminated the transfer
      */
-    default void onFailure(TransferRequest request, Throwable reason) {
+    default void onError(TransferRequest request, IOException reason) {
         // Default implementation does nothing
     }
 
@@ -116,17 +105,13 @@ public interface TransferProgressListener extends Serializable {
      */
     static long transfer(InputStream inputStream, OutputStream outputStream,
             TransferRequest transferRequest,
-            Collection<TransferProgressListener> listeners,
-            SerializableSupplier<Boolean> terminated) throws IOException {
+            Collection<TransferProgressListener> listeners) throws IOException {
         Objects.requireNonNull(inputStream, "InputStream cannot be null");
         Objects.requireNonNull(outputStream, "OutputStream cannot be null");
         Objects.requireNonNull(transferRequest,
                 "TransferRequest cannot be null");
         Objects.requireNonNull(listeners,
                 "TransferProgressListener cannot be null");
-        if (terminated.get()) {
-            return 0;
-        }
         long transferred = 0;
         long lastNotified = 0;
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
@@ -149,17 +134,10 @@ public interface TransferProgressListener extends Serializable {
                     lastNotified = transferred;
                 }
             }
-            if (terminated.get()) {
-                listeners.forEach(
-                        listener -> listener.onTerminate(transferRequest));
-                break;
-            }
         }
-        if (!terminated.get()) {
-            long finalTransferred = transferred;
-            listeners.forEach(listener -> listener.onComplete(transferRequest,
-                    finalTransferred));
-        }
+        long finalTransferred = transferred;
+        listeners.forEach(listener -> listener.onComplete(transferRequest,
+                finalTransferred));
         return transferred;
     }
 

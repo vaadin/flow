@@ -23,7 +23,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ElementRequestHandler;
-import com.vaadin.flow.server.TransferProgressAwareHandler;
+import com.vaadin.flow.server.TransferProgressAware;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -262,21 +262,18 @@ public interface DownloadHandler extends ElementRequestHandler {
         DownloadHandler.fromCallback(event -> {
             System.out.println("Download handler logic ...");
         }).whenStart(() -> System.out.println("Started"))
-                .whenComplete((status, transferred) -> {
-                    if (status == TransferProgressAwareHandler.CompletionStatus.COMPLETED) {
-                        System.out.println("Completed successfully");
-                    } else {
-                        System.out.println("Completed with error");
-                    }
+                .whenComplete((transferred) -> {
+                    System.out.println("Completed successfully, bytes transferred: "
+                            + transferred);
                 });
-        TransferProgressAwareHandler handler = DownloadHandler
+        TransferProgressAware handler = DownloadHandler
                 .forFile(new File("test.txt")).onProgress(
                         (transferredBytes,
                                 totalBytes) -> System.out.println("Progress: "
                                         + transferredBytes + "/" + totalBytes),
                         1024);
 
-        handler.unsubscribeFromProgress();
+        handler.unsubscribe();
 
         AbstractDownloadHandler handler2 = DownloadHandler
                 .forServletResource("some/path");
@@ -288,12 +285,10 @@ public interface DownloadHandler extends ElementRequestHandler {
                         + " bytes");
             }
         });
-        handler2.terminate();
 
         AbstractDownloadHandler handler1 = new AbstractDownloadHandler() {
             @Override
             public void handleTransferRequest(DownloadRequest event) {
-                terminate();
                 System.out.println("Download handler logic ...");
             }
         };

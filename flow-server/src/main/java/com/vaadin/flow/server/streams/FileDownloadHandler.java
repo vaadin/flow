@@ -88,7 +88,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
         try (OutputStream outputStream = downloadRequest.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    downloadRequest, getListeners(), this::isTerminated);
+                    downloadRequest, getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

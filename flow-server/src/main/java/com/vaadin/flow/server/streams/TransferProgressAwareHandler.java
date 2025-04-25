@@ -1,8 +1,6 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,20 +8,15 @@ import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.server.TransferProgressAwareHandler;
+import com.vaadin.flow.server.TransferProgressAware;
 import com.vaadin.flow.server.TransferProgressListener;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
-public abstract class AbstractTransferProgressAwareHandler<T extends TransferRequest>
-        implements TransferProgressAwareHandler {
+public abstract class TransferProgressAwareHandler<T extends TransferRequest>
+        implements TransferProgressAware {
 
     private Collection<TransferProgressListener> listeners;
-
-    // TODO: should not be shared within single session
-    private boolean terminated = false;
 
     protected final void handleTransferProcessAwareRequest(T transferRequest) {
         Collection<TransferProgressListener> listeners = getListeners();
@@ -51,7 +44,7 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
     }
 
     @Override
-    public AbstractTransferProgressAwareHandler whenStart(
+    public TransferProgressAwareHandler whenStart(
             SerializableRunnable startHandler) {
         addTransferProgressListener(new TransferProgressListener() {
             @Override
@@ -63,7 +56,7 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
     }
 
     @Override
-    public AbstractTransferProgressAwareHandler onProgress(
+    public TransferProgressAwareHandler onProgress(
             SerializableBiConsumer<Long, Long> progressHandler,
             long progressIntervalInBytes) {
         addTransferProgressListener(new TransferProgressListener() {
@@ -82,32 +75,31 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
     }
 
     @Override
-    public AbstractTransferProgressAwareHandler whenComplete(
-            SerializableBiConsumer<CompletionStatus, Long> completeHandler) {
+    public TransferProgressAwareHandler whenComplete(
+            SerializableConsumer<Long> completeHandler) {
         addTransferProgressListener(new TransferProgressListener() {
             @Override
             public void onComplete(TransferRequest request,
                     long transferredBytes) {
-                completeHandler.accept(CompletionStatus.COMPLETED,
-                        transferredBytes);
-            }
-
-            @Override
-            public void onTerminate(TransferRequest request) {
-                // TODO: Implement termination logic
-                completeHandler.accept(CompletionStatus.TERMINATED, null);
-            }
-
-            @Override
-            public void onFailure(TransferRequest request, Throwable reason) {
-                completeHandler.accept(CompletionStatus.FAILED, null);
+                completeHandler.accept(transferredBytes);
             }
         });
         return this;
     }
 
     @Override
-    public void unsubscribeFromProgress() {
+    public TransferProgressAware onError(SerializableConsumer<IOException> errorHandler) {
+        addTransferProgressListener(new TransferProgressListener() {
+            @Override
+            public void onError(TransferRequest request, IOException reason) {
+                errorHandler.accept(reason);
+            }
+        });
+        return this;
+    }
+
+    @Override
+    public void unsubscribe() {
         if (listeners != null) {
             listeners.clear();
             listeners = null;
@@ -121,16 +113,6 @@ public abstract class AbstractTransferProgressAwareHandler<T extends TransferReq
 
     void notifyError(T transferRequest, IOException ioe) {
         getListeners()
-                .forEach(listener -> listener.onFailure(transferRequest, ioe));
-    }
-
-    @Override
-    public void terminate() {
-        terminated = true;
-    }
-
-    @Override
-    public boolean isTerminated() {
-        return terminated;
+                .forEach(listener -> listener.onError(transferRequest, ioe));
     }
 }
