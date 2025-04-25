@@ -18,6 +18,8 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -36,6 +38,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.streams.UploadHandler;
 
 import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
 import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
@@ -98,7 +101,7 @@ public class StreamRequestHandler implements RequestHandler {
         try {
             abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
                     .flatMap(session.getResourceRegistry()::getResource);
-            if (!abstractStreamResource.isPresent()) {
+            if (abstractStreamResource.isEmpty()) {
                 response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                         "Resource is not found for path=" + pathInfo);
                 return true;
@@ -107,33 +110,60 @@ public class StreamRequestHandler implements RequestHandler {
             session.unlock();
         }
 
-        if (abstractStreamResource.isPresent()) {
-            AbstractStreamResource resource = abstractStreamResource.get();
-            if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
-                Element owner = elementRequest.getOwner();
-                if (owner.getNode().isInert() && !elementRequest
-                        .getElementRequestHandler().allowInert()) {
-                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
-                            "Resource not available");
-                    return true;
-                } else {
-                    elementRequest.getElementRequestHandler().handleRequest(
-                            request, response, session,
-                            elementRequest.getOwner());
-                }
-            } else if (resource instanceof StreamResource) {
-                resourceHandler.handleRequest(session, request, response,
-                        (StreamResource) resource);
-            } else if (resource instanceof StreamReceiver streamReceiver) {
-                String[] parts = parsePath(pathInfo);
-
-                receiverHandler.handleRequest(session, request, response,
-                        streamReceiver, parts[0], parts[1]);
+        AbstractStreamResource resource = abstractStreamResource.get();
+        if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
+            Element owner = elementRequest.getOwner();
+            if (owner.getNode().isInert() && !elementRequest
+                    .getElementRequestHandler().allowInert()) {
+                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                        "Resource not available");
+                return true;
             } else {
-                getLogger().warn("Received unknown stream resource.");
+                if (elementRequest
+                        .getElementRequestHandler() instanceof UploadHandler) {
+                    PathData parts = parsePath(pathInfo);
+                    // Validate upload security key. Else respond with
+                    // FORBIDDEN.
+                    session.lock();
+                    try {
+                        String secKey = elementRequest.getId();
+                        if (secKey == null || !MessageDigest.isEqual(
+                                secKey.getBytes(StandardCharsets.UTF_8),
+                                parts.securityKey
+                                        .getBytes(StandardCharsets.UTF_8))) {
+                            LoggerFactory.getLogger(UploadHandler.class).warn(
+                                    "Received incoming stream with faulty security key.");
+                            response.sendError(
+                                    HttpStatusCode.FORBIDDEN.getCode(),
+                                    "Resource not available");
+                            return true;
+                        }
+
+                        // Set current UI to upload url ui.
+                        UI ui = session.getUIById(Integer.parseInt(parts.UIid));
+                        UI.setCurrent(ui);
+                    } finally {
+                        session.unlock();
+                    }
+                }
+                elementRequest.getElementRequestHandler().handleRequest(request,
+                        response, session, elementRequest.getOwner());
             }
+        } else if (resource instanceof StreamResource) {
+            resourceHandler.handleRequest(session, request, response,
+                    (StreamResource) resource);
+        } else if (resource instanceof StreamReceiver streamReceiver) {
+            PathData parts = parsePath(pathInfo);
+
+            receiverHandler.handleRequest(session, request, response,
+                    streamReceiver, parts.UIid, parts.securityKey);
+        } else {
+            getLogger().warn("Received unknown stream resource.");
         }
         return true;
+    }
+
+    private record PathData(String UIid, String securityKey, String fileName) {
     }
 
     /**
@@ -143,14 +173,18 @@ public class StreamRequestHandler implements RequestHandler {
      *
      * @see #generateURI
      */
-    private String[] parsePath(String pathInfo) {
+    private PathData parsePath(String pathInfo) {
         // strip away part until the data we are interested starts
         int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
                 + DYN_RES_PREFIX.length();
 
         String uppUri = pathInfo.substring(startOfData);
         // [0] UIid, [1] security key, [2] name
-        return uppUri.split("/", 3);
+        String[] split = uppUri.split("/", 3);
+        if (split.length == 3) {
+            return new PathData(split[0], split[1], split[2]);
+        }
+        return new PathData(split[0], split[1], "");
     }
 
     /**
