@@ -28,7 +28,7 @@ export default function flowCSSImportPlugin(): Plugin[] {
           return;
         }
 
-        const cssContent = JSON.parse(code.replace('export default ', ''));
+        const css = JSON.parse(code.replace('export default ', ''));
         const queryParams = new URLSearchParams(id.split('?')[1]);
 
         // @deprecated
@@ -40,11 +40,11 @@ export default function flowCSSImportPlugin(): Plugin[] {
           return `
             import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';
 
-            registerStyles('${themeFor}', unsafeCSS(${JSON.stringify(cssContent)}), {
+            registerStyles('${themeFor}', unsafeCSS(${JSON.stringify(css)}), {
               moduleId: '${moduleId}',
               ${include ? `include: '${include}'` : ''}
             });
-          `.trim();
+          `;
         }
 
         // @deprecated
@@ -53,37 +53,46 @@ export default function flowCSSImportPlugin(): Plugin[] {
 
           return `
             const style = document.createElement('style');
-            style.textContent = ${JSON.stringify(cssContent)};
+            style.textContent = ${JSON.stringify(css)};
             style.setAttribute('include', '${include}');
             document.head.appendChild(style);
-          `.trim();
+          `;
         }
 
-        let shadowCSS, globalCSS;
+        let globalCSS = css;
+        let exportedWebComponentCSS;
+        let exportedWebComponentSelector;
 
-        switch (queryParams.get('scope')) {
-          case 'global':
-            shadowCSS = null;
-            globalCSS = cssContent;
-            break;
-          case 'shadow':
-            shadowCSS = cssContent;
-            globalCSS = extractGlobalCSSRules(cssContent);
-            break;
+        if (queryParams.has('exportedWebComponent')) {
+          const exportedWebComponent = queryParams.get('exportedWebComponent');
+
+          globalCSS = extractGlobalCSSRules(css);
+          exportedWebComponentCSS = css;
+          exportedWebComponentSelector = exportedWebComponent;
         }
 
         return `
-          import { injectCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
+          import { injectGlobalCSS, injectExportedWebComponentCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
 
-          ${globalCSS ?
-            `injectCSS('${id}', ${JSON.stringify(globalCSS)}, { scope: 'global' });` : ''}
-          ${shadowCSS ?
-            `injectCSS('${id}', ${JSON.stringify(shadowCSS)}, { scope: 'shadow' });` : ''}
+          const removers = [
+            ${globalCSS ? `
+              injectGlobalCSS('${id}', ${JSON.stringify(globalCSS)}),
+            ` : ''}
+
+            ${exportedWebComponentCSS ? `
+              injectExportedWebComponentCSS('${id}', ${JSON.stringify(exportedWebComponentCSS)}, {
+                selector: '${exportedWebComponentSelector}'
+              }),
+            `: ''}
+          ];
 
           if (import.meta.hot) {
             import.meta.hot.accept();
+            import.meta.hot.prune(() => {
+              removers.forEach((remove) => remove());
+            });
           }
-        `.trim();
+        `;
       }
     },
   ]

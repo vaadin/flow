@@ -1,54 +1,80 @@
-const globalStyleSheetsMap = new Map();
+const STYLESHEET_SELECTOR = Symbol('stylesheet-selector');
+
+const globalStyleSheets = new Map();
 const exportedWebComponents = new Set();
-const exportedWebComponentStyleSheetsMap = new Map();
+const exportedWebComponentStyleSheets = new Map();
 
-const EXPORTED_WEB_COMPONENT_STYLE_SHEET = Symbol('exported-web-component-style-sheet');
+/**
+ * Helper function to add a style sheet to the shadow root of an element.
+ */
+function addAdoptedStyleSheet(element, styleSheet) {
+  const { shadowRoot } = element;
+  if (!shadowRoot.adoptedStyleSheets.includes(styleSheet)) {
+    shadowRoot.adoptedStyleSheets.push(styleSheet);
+  }
+}
 
-function injectGlobalCSS(id, content) {
-  let style = globalStyleSheetsMap.get(id);
+/**
+ * Helper function to remove a style sheet from the shadow root of an element.
+ */
+function removeAdoptedStyleSheet(element, styleSheet) {
+  const { shadowRoot } = element;
+  shadowRoot.adoptedStyleSheets = shadowRoot.adoptedStyleSheets.filter((ss) => ss !== styleSheet);
+}
+
+export function injectGlobalCSS(id, content) {
+  let style = globalStyleSheets.get(id);
   if (!style) {
     style = document.createElement('style');
-    globalStyleSheetsMap.set(id, style);
+    globalStyleSheets.set(id, style);
+    document.head.appendChild(style);
   }
 
   style.textContent = content;
-  document.head.appendChild(style);
+
+  return () => {
+    globalStyleSheets.delete(id);
+    document.head.removeChild(style);
+  }
 }
 
-function injectExportedWebComponentsCSS(id, content) {
-  let styleSheet = exportedWebComponentStyleSheetsMap.get(id);
+export function injectExportedWebComponentCSS(id, content, { selector }) {
+  let styleSheet = exportedWebComponentStyleSheets.get(id);
   if (!styleSheet) {
     styleSheet = new CSSStyleSheet();
-    styleSheet[EXPORTED_WEB_COMPONENT_STYLE_SHEET] = true;
-
-    exportedWebComponentStyleSheetsMap.set(id, styleSheet);
-    exportedWebComponents.forEach((component) => {
-      component.shadowRoot.adoptedStyleSheets.push(styleSheet);
-    });
+    exportedWebComponentStyleSheets.set(id, styleSheet);
   }
 
+  styleSheet[STYLESHEET_SELECTOR] = selector;
   styleSheet.replaceSync(content);
-}
 
-export function injectCSS(id, content, { scope }) {
-  if (scope === 'global') {
-    return injectGlobalCSS(id, content);
-  }
+  exportedWebComponents.forEach((component) => {
+    if (component.matches(selector)) {
+      addAdoptedStyleSheet(component, styleSheet);
+    } else {
+      removeAdoptedStyleSheet(component, styleSheet);
+    }
+  });
 
-  if (scope === 'exportedWebComponents') {
-    return injectExportedWebComponentsCSS(id, content);
+  return () => {
+    exportedWebComponentStyleSheets.delete(id);
+    exportedWebComponents.forEach((component) => removeAdoptedStyleSheet(component, styleSheet));
   }
 }
 
 export function exportedWebComponentConnected(component) {
   exportedWebComponents.add(component);
 
-  component.shadowRoot.adoptedStyleSheets.push(...exportedWebComponentStyleSheetsMap.values());
+  exportedWebComponentStyleSheets.forEach((styleSheet) => {
+    if (component.matches(styleSheet[STYLESHEET_SELECTOR])) {
+      addAdoptedStyleSheet(component, styleSheet);
+    }
+  })
 }
 
 export function exportedWebComponentDisconnected(component) {
   exportedWebComponents.delete(component);
-
-  component.shadowRoot.adoptedStyleSheets = component.shadowRoot.adoptedStyleSheets
-    .filter((styleSheet) => !styleSheet[EXPORTED_WEB_COMPONENT_STYLE_SHEET]);
+  exportedWebComponentStyleSheets.forEach((styleSheet) => {
+    removeAdoptedStyleSheet(component, styleSheet);
+  });
 }

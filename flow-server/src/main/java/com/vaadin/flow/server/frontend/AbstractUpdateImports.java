@@ -311,8 +311,7 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
 
         List<String> webComponentLines = new ArrayList<>();
-        webComponentLines
-                .addAll(getCssLines(eagerCssData, "shadow"));
+        webComponentLines.addAll(getCssLines(eagerCssData, "*"));
         webComponentLines.addAll(getModuleLines(eagerJavascript));
         webComponentLines.add("window.Vaadin = window.Vaadin || {};");
         webComponentLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
@@ -402,13 +401,14 @@ abstract class AbstractUpdateImports implements Runnable {
         return getCssLines(css, null);
     }
 
-    protected List<String> getCssLines(List<CssData> css, String scope) {
+    protected List<String> getCssLines(List<CssData> css,
+            String exportedWebComponent) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
         LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
         for (CssData cssData : allCss) {
-            if (!addCssLines(lines, cssData, scope)) {
+            if (!addCssLines(lines, cssData, exportedWebComponent)) {
                 cssNotFound.add(cssData.getValue());
             }
         }
@@ -719,7 +719,7 @@ abstract class AbstractUpdateImports implements Runnable {
      * @return true if the imported CSS files does exist, false otherwise
      */
     protected boolean addCssLines(Collection<String> lines, CssData cssData,
-            String scope) {
+            String exportedWebComponent) {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
@@ -739,15 +739,16 @@ abstract class AbstractUpdateImports implements Runnable {
         if (cssData.getId() != null) {
             query.put("moduleId", cssData.getId());
         }
-        if (scope != null) {
-            query.put("scope", scope);
+        if (exportedWebComponent != null) {
+            query.put("exportedWebComponent", exportedWebComponent);
         }
 
         String queryString = query.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(Collectors.joining("&"));
 
-        lines.add("import '%s?flow-css-import&%s';".formatted(cssImport, queryString));
+        lines.add("import '%s?flow-css-import&%s';".formatted(cssImport,
+                queryString));
 
         return found || !options.isBundleBuild();
     }
