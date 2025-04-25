@@ -49,6 +49,6 @@ public abstract class AbstractDownloadHandler extends
             DownloadRequest transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
-                transferEvent.getFileName(), transferEvent.owningElement());
+                transferEvent.getFileName(), transferEvent.owningElement(), -1);
     }
 }

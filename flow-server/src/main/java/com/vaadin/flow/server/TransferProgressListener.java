@@ -62,13 +62,8 @@ public interface TransferProgressListener extends Serializable {
      *            the context of the transfer
      * @param transferredBytes
      *            the number of bytes transferred so far
-     * @param totalBytes
-     *            the total number of bytes to be transferred or <code>-1</code>
-     *            if the total number is unknown in advance, e.g. when reading
-     *            from input stream.
      */
-    default void onProgress(TransferContext context, long transferredBytes,
-            long totalBytes) {
+    default void onProgress(TransferContext context, long transferredBytes) {
         // Default implementation does nothing
     }
 
@@ -123,8 +118,7 @@ public interface TransferProgressListener extends Serializable {
      */
     static long transfer(InputStream inputStream, OutputStream outputStream,
             TransferContext transferContext,
-            Collection<TransferProgressListener> listeners, long totalBytes)
-            throws IOException {
+            Collection<TransferProgressListener> listeners) throws IOException {
         Objects.requireNonNull(inputStream, "InputStream cannot be null");
         Objects.requireNonNull(outputStream, "OutputStream cannot be null");
         Objects.requireNonNull(transferContext,
@@ -152,8 +146,7 @@ public interface TransferProgressListener extends Serializable {
                             .progressReportInterval();
                     if (progressReportInterval > -1 && transferred
                             - lastNotifiedLong >= progressReportInterval) {
-                        listener.onProgress(transferContext, transferred,
-                                totalBytes);
+                        listener.onProgress(transferContext, transferred);
                         lastNotified.put(listener, transferred);
                     }
                 }

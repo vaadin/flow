@@ -82,12 +82,10 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     @Override
     public void handleTransfer(DownloadRequest downloadRequest) {
         VaadinResponse response = downloadRequest.getResponse();
-        long length = file.length();
         try (OutputStream outputStream = downloadRequest.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    getTransferContext(downloadRequest), getListeners(),
-                    length);
+                    getTransferContext(downloadRequest), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -95,7 +93,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
             throw new UncheckedIOException(ioe);
         }
         response.setContentType(downloadRequest.getContentType());
-        response.setContentLength(Math.toIntExact(length));
+        response.setContentLength(Math.toIntExact(file.length()));
     }
 
     @Override
@@ -104,5 +102,14 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
             return name;
         }
         return file.getName();
+    }
+
+    @Override
+    protected TransferContext getTransferContext(
+            DownloadRequest transferEvent) {
+        return new TransferContext(transferEvent.getRequest(),
+                transferEvent.getResponse(), transferEvent.session(),
+                transferEvent.fileName(), transferEvent.owningElement(),
+                file.length());
     }
 }

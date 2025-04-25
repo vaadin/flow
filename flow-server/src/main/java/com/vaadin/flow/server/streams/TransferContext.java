@@ -40,9 +40,14 @@ import com.vaadin.flow.server.VaadinSession;
  *            name of the file being transferred
  * @param owningElement
  *            the element that initiated the transfer
+ * @param totalBytes
+ *            the total number of bytes to be transferred or <code>-1</code> if
+ *            total number is unknown in advance, e.g. when reading from an
+ *            input stream
  */
 public record TransferContext(VaadinRequest request, VaadinResponse response,
-        VaadinSession session, String fileName, Element owningElement) {
+        VaadinSession session, String fileName, Element owningElement,
+        long totalBytes) {
 
     /**
      * Get owner {@link Component} for this event.

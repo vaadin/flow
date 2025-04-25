@@ -78,8 +78,8 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         addTransferProgressListener(new TransferProgressListener() {
             @Override
             public void onProgress(TransferContext context,
-                    long transferredBytes, long totalBytes) {
-                progressHandler.accept(transferredBytes, totalBytes);
+                    long transferredBytes) {
+                progressHandler.accept(transferredBytes, transferredBytes);
             }
 
             @Override
