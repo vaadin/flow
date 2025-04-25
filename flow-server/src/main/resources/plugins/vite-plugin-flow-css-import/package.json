@@ -17,5 +17,8 @@
   "peerDependencies": {
     "vite": "6.x",
     "postcss": "8.x"
+  },
+  "devDependencies": {
+    "@types/node": "22.x"
   }
 }

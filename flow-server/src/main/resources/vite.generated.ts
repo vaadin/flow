@@ -757,10 +757,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
+      flowCSSImportPlugin(),
       postcssLit({
         include: ['**/*.css', /.*\/.*\.css\?.*/],
         exclude: [
-          /.*?.*flow-css-import.*/,
           `${themeFolder}/**/*.css`,
           new RegExp(`${themeFolder}/.*/.*\\.css\\?.*`),
           `${themeResourceFolder}/**/*.css`,
@@ -768,7 +768,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
-      flowCSSImportPlugin(),
       // The React plugin provides fast refresh and debug source info
       reactPlugin({
         include: '**/*.tsx',

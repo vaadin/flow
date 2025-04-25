@@ -725,30 +725,31 @@ abstract class AbstractUpdateImports implements Runnable {
         String cssImport = toValidBrowserImport(cssFile);
 
         Map<String, String> query = new HashMap<>();
+        query.put("path", cssImport);
+
         if (cssData.getId() != null && cssData.getThemefor() != null) {
             throw new IllegalStateException(
                     "provide either id or themeFor for @CssImport of resource "
                             + cssData.getValue() + ", not both");
         }
         if (cssData.getThemefor() != null) {
-            query.put("themeFor", cssData.getThemefor());
+            query.put("theme-for", cssData.getThemefor());
         }
         if (cssData.getInclude() != null) {
             query.put("include", cssData.getInclude());
         }
         if (cssData.getId() != null) {
-            query.put("moduleId", cssData.getId());
+            query.put("module-id", cssData.getId());
         }
         if (exportedWebComponent != null) {
-            query.put("exportedWebComponent", exportedWebComponent);
+            query.put("exported-web-component", "exported-component-0");
         }
 
         String queryString = query.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(Collectors.joining("&"));
 
-        lines.add("import '%s?flow-css-import&%s';".formatted(cssImport,
-                queryString));
+        lines.add("import 'virtual:flow-css-import?%s';".formatted(queryString));
 
         return found || !options.isBundleBuild();
     }

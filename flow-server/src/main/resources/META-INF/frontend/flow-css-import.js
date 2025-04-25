@@ -64,7 +64,6 @@ export function injectExportedWebComponentCSS(id, content, { selector }) {
 
 export function exportedWebComponentConnected(component) {
   exportedWebComponents.add(component);
-
   exportedWebComponentStyleSheets.forEach((styleSheet) => {
     if (component.matches(styleSheet[STYLESHEET_SELECTOR])) {
       addAdoptedStyleSheet(component, styleSheet);
