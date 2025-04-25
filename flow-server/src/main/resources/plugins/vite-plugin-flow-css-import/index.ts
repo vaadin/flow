@@ -1,9 +1,10 @@
 import { Plugin } from 'vite';
+import { extractGlobalCSSRules } from './extract-global-css-rules';
 
 let counter = 0;
 
 function isFlowCSSImportRequest(id: string): boolean {
-  return /\?.*(flow-css-import)/.test(id);
+  return /\?.*flow-css-import/.test(id);
 }
 
 export default function flowCSSImportPlugin(): Plugin[] {
@@ -30,6 +31,7 @@ export default function flowCSSImportPlugin(): Plugin[] {
         const cssContent = JSON.parse(code.replace('export default ', ''));
         const queryParams = new URLSearchParams(id.split('?')[1]);
 
+        // @deprecated
         if (queryParams.has('themeFor') || queryParams.has('moduleId')) {
           const themeFor = queryParams.get('themeFor') ?? '';
           const moduleId = queryParams.get('moduleId') ?? `flow_css_mod_${counter++}`;
@@ -40,11 +42,12 @@ export default function flowCSSImportPlugin(): Plugin[] {
 
             registerStyles('${themeFor}', unsafeCSS(${JSON.stringify(cssContent)}), {
               moduleId: '${moduleId}',
-              ${include ? `include: '${include}',` : ''}
+              ${include ? `include: '${include}'` : ''}
             });
           `.trim();
         }
 
+        // @deprecated
         if (queryParams.has('include')) {
           const include = queryParams.get('include');
 
@@ -56,14 +59,26 @@ export default function flowCSSImportPlugin(): Plugin[] {
           `.trim();
         }
 
-        const scope = queryParams.get('scope') ?? 'global';
+        let shadowCSS, globalCSS;
+
+        switch (queryParams.get('scope')) {
+          case 'global':
+            shadowCSS = null;
+            globalCSS = cssContent;
+            break;
+          case 'shadow':
+            shadowCSS = cssContent;
+            globalCSS = extractGlobalCSSRules(cssContent);
+            break;
+        }
 
         return `
           import { injectCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
 
-          injectCSS('${id}', ${JSON.stringify(cssContent)}, {
-            scope: '${scope}'
-          });
+          ${globalCSS ?
+            `injectCSS('${id}', ${JSON.stringify(globalCSS)}, { scope: 'global' });` : ''}
+          ${shadowCSS ?
+            `injectCSS('${id}', ${JSON.stringify(shadowCSS)}, { scope: 'shadow' });` : ''}
 
           if (import.meta.hot) {
             import.meta.hot.accept();

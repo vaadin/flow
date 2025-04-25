@@ -312,7 +312,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
         List<String> webComponentLines = new ArrayList<>();
         webComponentLines
-                .addAll(getCssLines(eagerCssData, "exportedWebComponents"));
+                .addAll(getCssLines(eagerCssData, "shadow"));
         webComponentLines.addAll(getModuleLines(eagerJavascript));
         webComponentLines.add("window.Vaadin = window.Vaadin || {};");
         webComponentLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");

@@ -11,9 +11,11 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "files": [
-    "index.ts"
+    "index.ts",
+    "extract-global-css-rules.ts"
   ],
   "peerDependencies": {
-    "vite": "6.x"
+    "vite": "6.x",
+    "postcss": "8.x"
   }
 }
