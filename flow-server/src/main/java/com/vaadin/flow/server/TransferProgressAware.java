@@ -27,7 +27,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  *
  * @since 24.8
  */
-public interface TransferProgressAware extends Serializable {
+public interface TransferProgressAware<T extends TransferProgressAware<T>>
+        extends Serializable {
 
     /**
      * Adds a listener to be notified when the transfer starts.
@@ -36,7 +37,7 @@ public interface TransferProgressAware extends Serializable {
      *            the handler to be called when the transfer starts
      * @return this instance for method chaining
      */
-    TransferProgressAware whenStart(SerializableRunnable startHandler);
+    T whenStart(SerializableRunnable startHandler);
 
     /**
      * Adds a listener to be notified of transfer progress.
@@ -47,8 +48,7 @@ public interface TransferProgressAware extends Serializable {
      *            the interval in bytes for reporting progress
      * @return this instance for method chaining
      */
-    TransferProgressAware onProgress(
-            SerializableBiConsumer<Long, Long> progressHandler,
+    T onProgress(SerializableBiConsumer<Long, Long> progressHandler,
             long progressIntervalInBytes);
 
     /**
@@ -59,8 +59,7 @@ public interface TransferProgressAware extends Serializable {
      *            the handler to be called with the current and total bytes
      * @return this instance for method chaining
      */
-    default TransferProgressAware onProgress(
-            SerializableBiConsumer<Long, Long> progressHandler) {
+    default T onProgress(SerializableBiConsumer<Long, Long> progressHandler) {
         return onProgress(progressHandler,
                 TransferProgressListener.DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES);
     }
@@ -72,7 +71,7 @@ public interface TransferProgressAware extends Serializable {
      *            the origin I/O exception that terminated the transfer
      * @return this instance for method chaining
      */
-    TransferProgressAware onError(SerializableConsumer<IOException> reason);
+    T onError(SerializableConsumer<IOException> reason);
 
     /**
      * Adds a listener to be notified when the transfer is completed.
@@ -81,8 +80,7 @@ public interface TransferProgressAware extends Serializable {
      *            the handler to be called when the transfer is completed
      * @return this instance for method chaining
      */
-    TransferProgressAware whenComplete(
-            SerializableConsumer<Long> completeHandler);
+    T whenComplete(SerializableConsumer<Long> completeHandler);
 
     /**
      * Unsubscribes from progress updates.

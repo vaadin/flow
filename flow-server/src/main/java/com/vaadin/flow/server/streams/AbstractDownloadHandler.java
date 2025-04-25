@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -24,45 +25,23 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.TransferProgressAware;
+import com.vaadin.flow.server.TransferProgressListener;
 
 /**
  * Abstract class for common methods used in pre-made download handlers.
  *
  * @since 24.8
  */
-public abstract class AbstractDownloadHandler
-        extends TransferProgressAwareHandler<DownloadRequest>
+public abstract class AbstractDownloadHandler extends
+        TransferProgressAwareHandler<DownloadRequest, AbstractDownloadHandler>
         implements DownloadHandler {
 
     @Override
-    public void handleDownloadRequest(DownloadRequest event) {
-        handleTransferProcessAwareRequest(event);
-    }
-
-    @Override
-    public AbstractDownloadHandler whenStart(
-            SerializableRunnable startHandler) {
-        return (AbstractDownloadHandler) super.whenStart(startHandler);
-    }
-
-    @Override
-    public AbstractDownloadHandler onProgress(
-            SerializableBiConsumer<Long, Long> progressHandler,
-            long progressIntervalInBytes) {
-        return (AbstractDownloadHandler) super.onProgress(progressHandler,
-                progressIntervalInBytes);
-    }
-
-    @Override
-    public TransferProgressAware onError(
-            SerializableConsumer<IOException> reason) {
-        return (AbstractDownloadHandler) super.onError(reason);
-    }
-
-    @Override
-    public AbstractDownloadHandler whenComplete(
-            SerializableConsumer<Long> completeHandler) {
-        return (AbstractDownloadHandler) super.whenComplete(completeHandler);
+    public void handleDownloadRequest(DownloadRequest request) {
+        Collection<TransferProgressListener> listeners = getListeners();
+        TransferContext transferContext = getTransferContext(request);
+        listeners.forEach(listener -> listener.onStart(transferContext));
+        handleTransfer(request);
     }
 
     @Override
