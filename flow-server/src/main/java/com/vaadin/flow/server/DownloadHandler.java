@@ -281,7 +281,7 @@ public interface DownloadHandler extends ElementRequestHandler {
         handler2.addTransferProgressListener(new TransferProgressListener() {
             @Override
             public void onComplete(TransferContext context,
-                                   long transferredBytes) {
+                    long transferredBytes) {
                 System.out.println("Transfer completed with " + transferredBytes
                         + " bytes");
             }

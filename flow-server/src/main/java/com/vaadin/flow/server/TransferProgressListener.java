@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.server.streams.TransferContext;
@@ -61,7 +63,9 @@ public interface TransferProgressListener extends Serializable {
      * @param transferredBytes
      *            the number of bytes transferred so far
      * @param totalBytes
-     *            the total number of bytes to be transferred
+     *            the total number of bytes to be transferred or <code>-1</code>
+     *            if the total number is unknown in advance, e.g. when reading
+     *            from input stream.
      */
     default void onProgress(TransferContext context, long transferredBytes,
             long totalBytes) {
@@ -91,11 +95,11 @@ public interface TransferProgressListener extends Serializable {
     }
 
     /**
-     * Returns the interval in milliseconds for reporting progress.
+     * Returns the interval in bytes for reporting progress.
      * <p>
      * <code>-1</code> to not report progress.
      *
-     * @return the interval in milliseconds
+     * @return the interval in bytes
      */
     default long progressReportInterval() {
         return DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES;
@@ -119,7 +123,8 @@ public interface TransferProgressListener extends Serializable {
      */
     static long transfer(InputStream inputStream, OutputStream outputStream,
             TransferContext transferContext,
-            Collection<TransferProgressListener> listeners) throws IOException {
+            Collection<TransferProgressListener> listeners, long totalBytes)
+            throws IOException {
         Objects.requireNonNull(inputStream, "InputStream cannot be null");
         Objects.requireNonNull(outputStream, "OutputStream cannot be null");
         Objects.requireNonNull(transferContext,
@@ -127,10 +132,11 @@ public interface TransferProgressListener extends Serializable {
         Objects.requireNonNull(listeners,
                 "TransferProgressListener cannot be null");
         long transferred = 0;
-        long lastNotified = 0;
+        Map<TransferProgressListener, Long> lastNotified = new HashMap<>(
+                listeners.size());
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         int read;
-        while ((read = read(transferContext.getSession(), inputStream,
+        while ((read = read(transferContext.session(), inputStream,
                 buffer)) >= 0) {
             outputStream.write(buffer, 0, read);
             if (transferred < Long.MAX_VALUE) {
@@ -139,13 +145,17 @@ public interface TransferProgressListener extends Serializable {
                 } catch (ArithmeticException ignore) {
                     transferred = Long.MAX_VALUE;
                 }
-                if (transferred - lastNotified >= transferContext
-                        .getTransferInterval()) {
-                    for (TransferProgressListener listener : listeners) {
+                for (TransferProgressListener listener : listeners) {
+                    Long lastNotifiedLong = lastNotified.getOrDefault(listener,
+                            0L);
+                    long progressReportInterval = listener
+                            .progressReportInterval();
+                    if (progressReportInterval > -1 && transferred
+                            - lastNotifiedLong >= progressReportInterval) {
                         listener.onProgress(transferContext, transferred,
-                                transferContext.getSize());
+                                totalBytes);
+                        lastNotified.put(listener, transferred);
                     }
-                    lastNotified = transferred;
                 }
             }
         }
