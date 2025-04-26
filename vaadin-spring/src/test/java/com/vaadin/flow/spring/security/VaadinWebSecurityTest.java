@@ -16,9 +16,11 @@
 
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -40,6 +42,8 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.test.context.ContextConfiguration;
@@ -117,6 +121,28 @@ public class VaadinWebSecurityTest {
         Assert.assertFalse(
                 "Expecting navigation access control to be disable by VaadinWebSecurity subclass",
                 testConfig.getNavigationAccessControl().isEnabled());
+    }
+
+    @Test
+    public void filterChain_withCustomizer_customizerApplied()
+            throws Exception {
+        HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
+                new AuthenticationManagerBuilder(postProcessor),
+                Map.of(ApplicationContext.class, appCtx));
+        Filter customFilter = mock(Filter.class);
+        VaadinWebSecurityCustomizer customizer = http -> {
+            http.addFilterBefore(customFilter, AuthenticationFilter.class);
+        };
+        VaadinWebSecurity testConfig = new VaadinWebSecurity() {
+        };
+        mockVaadinWebSecurityInjection(testConfig);
+        ReflectionTestUtils.setField(testConfig, "webSecurityCustomizers",
+                Collections.singletonList(customizer));
+
+        SecurityFilterChain filterChain = testConfig.filterChain(httpSecurity);
+        Assert.assertTrue(
+                "Expecting customizer filter to be added to the filter chain",
+                filterChain.getFilters().contains(customFilter));
     }
 
     @Test

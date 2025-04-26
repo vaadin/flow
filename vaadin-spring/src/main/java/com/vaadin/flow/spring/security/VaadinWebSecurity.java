@@ -24,6 +24,7 @@ import javax.crypto.SecretKey;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -125,6 +126,9 @@ public abstract class VaadinWebSecurity {
 
     private NavigationAccessControl accessControl;
 
+    @Autowired(required = false)
+    private List<VaadinWebSecurityCustomizer> webSecurityCustomizers;
+
     @PostConstruct
     void afterPropertiesSet() {
         accessControl = accessControlProvider.getIfAvailable();
@@ -145,6 +149,10 @@ public abstract class VaadinWebSecurity {
      */
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        if (webSecurityCustomizers != null) {
+            webSecurityCustomizers
+                    .forEach(customizer -> customizer.customize(http));
+        }
         configure(http);
         http.logout(cfg -> {
             cfg.invalidateHttpSession(true);
