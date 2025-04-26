@@ -38,7 +38,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
  * public class MyCustomizer implements VaadinWebSecurityCustomizer {
  *
  *     &#64;Override
- *     public void customize(HttpSecurity http) {
+ *     public void customize(VaadinWebSecurity conf, HttpSecurity http) {
  *         http.addFilter(MyCustomFilter.class);
  *     }
  * }
@@ -49,13 +49,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 public interface VaadinWebSecurityCustomizer extends Serializable {
 
     /**
-     * Customizes the provided {@link HttpSecurity} instance with specific
-     * security configurations for integrating Vaadin applications with Spring
-     * Security. This method enables implementations to adjust or enhance the
-     * default security setup as needed.
+     * Customizes the provided {@link VaadinWebSecurity} and
+     * {@link HttpSecurity} instances with specific security configurations for
+     * integrating Vaadin applications with Spring Security. This method enables
+     * implementations to adjust or enhance the default security setup as
+     * needed.
      *
+     * @param conf
+     *            the {@link VaadinWebSecurity} instance to be customized
      * @param http
      *            the {@link HttpSecurity} instance to be customized
      */
-    void customize(HttpSecurity http);
+    void customize(VaadinWebSecurity conf, HttpSecurity http) throws Exception;
 }

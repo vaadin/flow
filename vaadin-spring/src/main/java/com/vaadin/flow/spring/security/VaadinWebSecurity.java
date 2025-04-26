@@ -127,7 +127,7 @@ public abstract class VaadinWebSecurity {
     private NavigationAccessControl accessControl;
 
     @Autowired(required = false)
-    private List<VaadinWebSecurityCustomizer> webSecurityCustomizers;
+    private List<VaadinWebSecurityCustomizer> securityCustomizers;
 
     @PostConstruct
     void afterPropertiesSet() {
@@ -149,9 +149,10 @@ public abstract class VaadinWebSecurity {
      */
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        if (webSecurityCustomizers != null) {
-            webSecurityCustomizers
-                    .forEach(customizer -> customizer.customize(http));
+        if (securityCustomizers != null) {
+            for (VaadinWebSecurityCustomizer customizer : securityCustomizers) {
+                customizer.customize(this, http);
+            }
         }
         configure(http);
         http.logout(cfg -> {
@@ -392,7 +393,7 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath)
+    public void setLoginView(HttpSecurity http, String hillaLoginViewPath)
             throws Exception {
         setLoginView(http, hillaLoginViewPath, getDefaultLogoutUrl());
     }
@@ -418,7 +419,7 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
+    public void setLoginView(HttpSecurity http, String hillaLoginViewPath,
             String logoutSuccessUrl) throws Exception {
         String completeHillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
         http.formLogin(formLogin -> {
@@ -445,7 +446,7 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http,
+    public void setLoginView(HttpSecurity http,
             Class<? extends Component> flowLoginView) throws Exception {
         setLoginView(http, flowLoginView, getDefaultLogoutUrl());
     }
@@ -463,7 +464,7 @@ public abstract class VaadinWebSecurity {
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http,
+    public void setLoginView(HttpSecurity http,
             Class<? extends Component> flowLoginView, String logoutSuccessUrl)
             throws Exception {
         Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView,
@@ -523,7 +524,7 @@ public abstract class VaadinWebSecurity {
      *             Re-throws the possible exceptions while activating
      *             OAuth2LoginConfigurer
      */
-    protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
+    public void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
             throws Exception {
         setOAuth2LoginPage(http, oauth2LoginPage, "{baseUrl}");
     }
@@ -553,7 +554,7 @@ public abstract class VaadinWebSecurity {
      *             Re-throws the possible exceptions while activating
      *             OAuth2LoginConfigurer
      */
-    protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage,
+    public void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage,
             String postLogoutRedirectUri) throws Exception {
         http.oauth2Login(cfg -> cfg.loginPage(oauth2LoginPage).successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))

@@ -130,13 +130,13 @@ public class VaadinWebSecurityTest {
                 new AuthenticationManagerBuilder(postProcessor),
                 Map.of(ApplicationContext.class, appCtx));
         Filter customFilter = mock(Filter.class);
-        VaadinWebSecurityCustomizer customizer = http -> {
+        VaadinWebSecurityCustomizer customizer = (conf, http) -> {
             http.addFilterBefore(customFilter, AuthenticationFilter.class);
         };
         VaadinWebSecurity testConfig = new VaadinWebSecurity() {
         };
         mockVaadinWebSecurityInjection(testConfig);
-        ReflectionTestUtils.setField(testConfig, "webSecurityCustomizers",
+        ReflectionTestUtils.setField(testConfig, "securityCustomizers",
                 Collections.singletonList(customizer));
 
         SecurityFilterChain filterChain = testConfig.filterChain(httpSecurity);
