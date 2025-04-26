@@ -1,4 +1,4 @@
-const STYLESHEET_SELECTOR = Symbol('stylesheet-selector');
+const EXPORTED_WEB_COMPONENT_SELECTOR = Symbol('exported-web-component-selector');
 
 const globalStyleSheets = new Map();
 const exportedWebComponents = new Set();
@@ -31,11 +31,10 @@ export function injectGlobalCSS(id, content) {
   }
 
   style.textContent = content;
+}
 
-  return () => {
-    globalStyleSheets.delete(id);
-    document.head.removeChild(style);
-  }
+export function getExportedWebComponentStyleSheets() {
+  return exportedWebComponentStyleSheets.values();
 }
 
 export function injectExportedWebComponentCSS(id, content, { selector }) {
@@ -45,9 +44,17 @@ export function injectExportedWebComponentCSS(id, content, { selector }) {
     exportedWebComponentStyleSheets.set(id, styleSheet);
   }
 
-  styleSheet[STYLESHEET_SELECTOR] = selector;
+  styleSheet[EXPORTED_WEB_COMPONENT_SELECTOR] = selector;
+
+  // replaceSync will automatically update the stylesheet in
+  // all shadow roots that have adopted it without needing to
+  // notify each shadow root individually.
   styleSheet.replaceSync(content);
 
+  // Add the stylesheet to the shadow root of existing exported
+  // web component instances that match the selector. Note,
+  // if the selector is *, the stylesheet will be added to
+  // all shadow roots.
   exportedWebComponents.forEach((component) => {
     if (component.matches(selector)) {
       addAdoptedStyleSheet(component, styleSheet);
@@ -55,24 +62,24 @@ export function injectExportedWebComponentCSS(id, content, { selector }) {
       removeAdoptedStyleSheet(component, styleSheet);
     }
   });
-
-  return () => {
-    exportedWebComponentStyleSheets.delete(id);
-    exportedWebComponents.forEach((component) => removeAdoptedStyleSheet(component, styleSheet));
-  }
 }
 
 export function exportedWebComponentConnected(component) {
   exportedWebComponents.add(component);
+
+  // Add the stylesheet to the shadow root of the component
+  // if it matches the selector.
   exportedWebComponentStyleSheets.forEach((styleSheet) => {
-    if (component.matches(styleSheet[STYLESHEET_SELECTOR])) {
+    if (component.matches(styleSheet[EXPORTED_WEB_COMPONENT_SELECTOR])) {
       addAdoptedStyleSheet(component, styleSheet);
     }
-  })
+  });
 }
 
 export function exportedWebComponentDisconnected(component) {
   exportedWebComponents.delete(component);
+
+  // Remove all previously added stylesheets from the shadow root.
   exportedWebComponentStyleSheets.forEach((styleSheet) => {
     removeAdoptedStyleSheet(component, styleSheet);
   });

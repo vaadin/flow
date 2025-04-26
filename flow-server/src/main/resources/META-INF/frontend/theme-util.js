@@ -42,9 +42,15 @@ const createLinkReferences = (css, target) => {
   return styleCss;
 };
 
-const addAdoptedStyle = (cssText, target, first) => {
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(cssText);
+export const addAdoptedStyle = (cssText, target, first) => {
+  let sheet;
+  if (cssText instanceof CSSStyleSheet) {
+    sheet = cssText;
+  } else {
+    sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+  }
+
   sheet.__themeStyleSheet = true;
 
   const lastIndex = target.adoptedStyleSheets.findLastIndex((s) => s.__themeStyleSheet);

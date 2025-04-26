@@ -749,6 +749,9 @@ abstract class AbstractUpdateImports implements Runnable {
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(Collectors.joining("&"));
 
+        // Prevent Vite from treating `virtual:flow-css-import?path=path/to/file.css` as css import
+        queryString += "&_";
+
         lines.add("import 'virtual:flow-css-import?%s';".formatted(queryString));
 
         return found || !options.isBundleBuild();

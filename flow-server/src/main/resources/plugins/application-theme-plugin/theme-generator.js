@@ -51,6 +51,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
+  const autoInjectGlobalCssImports = themeProperties.autoInjectGlobalCssImports ?? false;
   const globalFilename = 'theme-' + themeName + '.global.generated.js';
   const componentsFilename = 'theme-' + themeName + '.components.generated.js';
   const themeFilename = 'theme-' + themeName + '.generated.js';
@@ -76,7 +77,8 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     themeFileContent += `import { applyTheme as applyBaseTheme } from './theme-${themeProperties.parent}.generated.js';\n`;
   }
 
-  themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { injectGlobalCss, addAdoptedStyle } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { getExportedWebComponentStyleSheets } from 'Frontend/generated/jar-resources/flow-css-import.js';\n`;
   themeFileContent += `import './${componentsFilename}';\n`;
 
   themeFileContent += `let needsReloadOnChanges = false;\n`;
@@ -222,6 +224,11 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     const removers = [];
     if (target !== document) {
       ${shadowOnlyCss.join('')}
+      ${autoInjectGlobalCssImports ? `
+        getExportedWebComponentStyleSheets().forEach((styleSheet) => {
+          removers.push(addAdoptedStyle(styleSheet, target));
+        });
+        ` : ''}
     }
     ${parentTheme}
     ${globalCssCode.join('')}
