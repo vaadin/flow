@@ -302,8 +302,8 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> mainLines = new ArrayList<>();
 
         // Convert eager CSS data to JS and deduplicate it
-        mainLines.addAll(getCssLines(eagerCssData));
         mainLines.addAll(getModuleLines(eagerJavascript));
+        mainLines.addAll(getCssLines(eagerCssData));
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
         mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
@@ -311,8 +311,8 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
 
         List<String> webComponentLines = new ArrayList<>();
-        webComponentLines.addAll(getCssLines(eagerCssData, "*"));
         webComponentLines.addAll(getModuleLines(eagerJavascript));
+        webComponentLines.addAll(getCssLines(eagerCssData, "*"));
         webComponentLines.add("window.Vaadin = window.Vaadin || {};");
         webComponentLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
         webComponentLines.add(

@@ -1,6 +1,6 @@
 const EXPORTED_WEB_COMPONENT_SELECTOR = Symbol('exported-web-component-selector');
 
-const globalStyleSheets = new Map();
+// const globalStyleSheets = new Map();
 const exportedWebComponents = new Set();
 const exportedWebComponentStyleSheets = new Map();
 
@@ -22,16 +22,16 @@ function removeAdoptedStyleSheet(element, styleSheet) {
   shadowRoot.adoptedStyleSheets = shadowRoot.adoptedStyleSheets.filter((ss) => ss !== styleSheet);
 }
 
-export function injectGlobalCSS(id, content) {
-  let style = globalStyleSheets.get(id);
-  if (!style) {
-    style = document.createElement('style');
-    globalStyleSheets.set(id, style);
-    document.head.appendChild(style);
-  }
+// export function injectGlobalCSS(id, content) {
+//   let style = globalStyleSheets.get(id);
+//   if (!style) {
+//     style = document.createElement('style');
+//     globalStyleSheets.set(id, style);
+//     document.head.appendChild(style);
+//   }
 
-  style.textContent = content;
-}
+//   style.textContent = content;
+// }
 
 export function getExportedWebComponentStyleSheets() {
   return exportedWebComponentStyleSheets.values();

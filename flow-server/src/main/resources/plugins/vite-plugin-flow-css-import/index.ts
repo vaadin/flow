@@ -7,24 +7,30 @@ let counter = 0;
 export default function flowCSSImportPlugin(): Plugin[] {
   return [
     {
-      name: 'vaadin:flow-css-import:extract-global-css',
-      transform(code, id) {
-        if (!/\?.*extract-global-css/.test(id)) {
-          return;
-        }
-
-        return { code: extractGlobalCSSRules(code) }
-      },
-    },
-    {
-      name: 'vaadin:flow-css-import:inject-css-import',
-      resolveId(id) {
+      name: 'vaadin:flow-css-import:resolve',
+      enforce: 'pre',
+      async resolveId(id, importer, options) {
         if (!id.includes('virtual:flow-css-import')) {
           return;
         }
 
-        return `\0${id}`;
-      },
+        const queryParams = new URLSearchParams(id.split('?')[1]);
+        if (['theme-for', 'module-id', 'include', 'exported-web-component'].some((param) => queryParams.has(param))) {
+          // Proceed to the `load` hook to generate the Flow's CSS import code.
+          return `\0${id}`;
+        }
+
+        // Otherwise, return the path of the CSS file itself to let Vite handle it.
+        const resolution = await this.resolve(queryParams.get('path')!, importer, options);
+        if (resolution) {
+          return resolution.id;
+        }
+
+        return;
+      }
+    },
+    {
+      name: 'vaadin:flow-css-import',
       load(id) {
         if (!id.includes('virtual:flow-css-import')) {
           return;
@@ -68,31 +74,34 @@ export default function flowCSSImportPlugin(): Plugin[] {
         const exportedWebComponent = queryParams.get('exported-web-component');
         if (exportedWebComponent) {
           return `
-            import shadowCSSContent from '${cssPath}?inline';
-            import globalCSSContent from '${cssPath}?inline&extract-global-css';
-            import { injectGlobalCSS, injectExportedWebComponentCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
+            import '${cssPath}?global-css-only';
+            import cssContent from '${cssPath}?inline';
+            import { injectExportedWebComponentCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
 
-            injectExportedWebComponentCSS('${cssId}', shadowCSSContent.toString(), {
+            injectExportedWebComponentCSS('${cssId}', cssContent.toString(), {
               selector: '${exportedWebComponent}'
             });
 
-            if (globalCSSContent) {
-              injectGlobalCSS('${cssId}', globalCSSContent.toString());
-            }
+            // if (globalCSSContent) {
+            //   injectGlobalCSS('${cssId}', globalCSSContent.toString());
+            // }
 
             import.meta.hot?.accept();
           `
         }
 
-        return `
-          import cssContent from '${cssPath}?inline';
-          import { injectGlobalCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
-
-          injectGlobalCSS('${cssId}', cssContent.toString());
-
-          import.meta.hot?.accept();
-        `
+        return;
       }
+    },
+    {
+      name: 'vaadin:flow-css-import:global-css-only',
+      transform(code, id) {
+        if (!/\?.*global-css-only/.test(id)) {
+          return;
+        }
+
+        return { code: extractGlobalCSSRules(code) }
+      },
     },
   ]
 }
