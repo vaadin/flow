@@ -742,7 +742,7 @@ abstract class AbstractUpdateImports implements Runnable {
             query.put("module-id", cssData.getId());
         }
         if (exportedWebComponent != null) {
-            query.put("exported-web-component", "exported-component-0");
+            query.put("exported-web-component", exportedWebComponent);
         }
 
         String queryString = query.entrySet().stream()
