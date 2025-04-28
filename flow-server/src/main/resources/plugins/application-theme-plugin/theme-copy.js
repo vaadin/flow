@@ -13,7 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
-const mkdirp = require('mkdirp');
+const { mkdirp } = require('mkdirp');
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 

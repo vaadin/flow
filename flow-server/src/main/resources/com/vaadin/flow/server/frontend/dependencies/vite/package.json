@@ -13,7 +13,7 @@
     "@rollup/plugin-replace": "3.1.0",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.6.4",
-    "mkdirp": "1.0.4",
+    "mkdirp": "3.0.1",
     "workbox-build": "6.5.4",
     "@rollup/pluginutils": "4.1.0",
     "transform-ast": "2.4.4"

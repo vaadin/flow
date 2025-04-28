@@ -11,6 +11,7 @@ const { InjectManifest } = require('workbox-webpack-plugin');
 const { DefinePlugin } = require('webpack');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 
 const path = require('path');
 
@@ -52,7 +53,12 @@ const buildDirectory = '[to-be-generated-by-flow]';
 // Flow plugins
 const BuildStatusPlugin = require(buildDirectory + '/plugins/build-status-plugin');
 const ThemeLiveReloadPlugin = require(buildDirectory + '/plugins/theme-live-reload-plugin');
-const { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes } = require(buildDirectory +
+const {
+  ApplicationThemePlugin,
+  processThemeResources,
+  extractThemeName,
+  findParentThemes
+} = require(buildDirectory +
   '/plugins/application-theme-plugin');
 const themeLoader = buildDirectory + '/plugins/theme-loader';
 
@@ -78,7 +84,7 @@ const statsSetViaCLI = process.argv.find((v) => v.indexOf('--stats') >= 0);
 const devMode = process.argv.find((v) => v.indexOf('webpack-dev-server') >= 0);
 if (!devMode) {
   // make sure that build folder exists before outputting anything
-  const mkdirp = require('mkdirp');
+  const { mkdirp } = require('mkdirp');
   mkdirp(buildFolder);
   mkdirp(confFolder);
 }
@@ -93,12 +99,12 @@ if (watchDogPort) {
   const runWatchDog = () => {
     const client = new require('net').Socket();
     client.setEncoding('utf8');
-    client.on('error', function (err) {
+    client.on('error', function(err) {
       console.log('Watchdog connection error. Terminating webpack process...', err);
       client.destroy();
       process.exit(0);
     });
-    client.on('close', function () {
+    client.on('close', function() {
       client.destroy();
       runWatchDog();
     });
@@ -150,7 +156,7 @@ const swManifestTransform = (manifestEntries) => {
   return { manifest, warnings };
 };
 
-const createServiceWorkerPlugin = function () {
+const createServiceWorkerPlugin = function() {
   return new InjectManifest({
     swSrc: clientServiceWorkerEntryPoint,
     swDest: serviceWorkerPath,
@@ -216,7 +222,11 @@ module.exports = {
 
   output: {
     filename: `${VAADIN}/${build}/vaadin-[name]-[contenthash].cache.js`,
-    path: outputFolder
+    path: outputFolder,
+    publicPath: ''
+  },
+  optimization: {
+    minimizer: [new TerserPlugin({ extractComments: false })],
   },
 
   resolve: {
@@ -235,13 +245,13 @@ module.exports = {
     client: false, // disable wds client as we handle reloads and errors better
     // webpack-dev-server serves ./, webpack-generated, and java webapp
     static: [outputFolder, path.resolve(__dirname, 'src', 'main', 'webapp')],
-    setupMiddlewares: function (middlewares, devServer) {
-      devServer.app.get(`/assetsByChunkName`, function (req, res) {
+    setupMiddlewares: function(middlewares, devServer) {
+      devServer.app.get(`/assetsByChunkName`, function(req, res) {
         res.json(stats.assetsByChunkName);
       });
-      devServer.app.get(`/stop`, function (req, res) {
+      devServer.app.get(`/stop`, function(req, res) {
         // eslint-disable-next-line no-console
-        console.log("Stopped 'webpack-dev-server'");
+        console.log('Stopped \'webpack-dev-server\'');
         process.exit(0);
       });
       return middlewares;
@@ -263,22 +273,22 @@ module.exports = {
         use: [
           {
             loader: 'lit-css-loader',
-            options: {
-              import: 'lit'
-            }
           },
           {
-            loader: 'extract-loader'
+            loader: 'extract-loader-5'
           },
           {
             loader: 'css-loader',
             options: {
-              url: (url, resourcePath) => {
-                // Only translate files from node_modules
-                const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
-                const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
-                return resolve || themeResource;
+              url: {
+                filter: (url, resourcePath) => {
+                  // Only translate files from node_modules
+                  const resolve = resourcePath.match(/(\\|\/)node_modules\1/);
+                  const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
+                  return resolve || themeResource;
+                }
               },
+              esModule: false,
               // use theme-loader to also handle any imports in css files
               importLoaders: 1
             }
@@ -294,25 +304,31 @@ module.exports = {
         ]
       },
       {
-        // File-loader only copies files used as imports in .js files or handled by css-loader
         test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|otf|ttf)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: 'VAADIN/static/',
-              name(resourcePath, resourceQuery) {
-                if (resourcePath.match(/(\\|\/)node_modules\1/)) {
-                  return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
-                }
-                if (resourcePath.match(/(\\|\/)generated\1jar-resources\1/)) {
-                  return /(\\|\/)generated\1jar-resources\1(?!.*jar-resources)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
-                }
-                return '[path][name].[ext]';
+        type: 'asset/resource',
+        generator: {
+          filename: (pathData) => {
+            const filepath = pathData.filename;
+            const prefix = 'VAADIN/static/';
+
+            if (filepath.includes('node_modules')) {
+              const match = /([\\/])node_modules\1(?!.*node_modules)(\S+)/.exec(filepath);
+              if (match && match[2]) {
+                return `${prefix}${match[2].replace(/\\/g, '/')}`;
               }
             }
+            if (filepath.includes('generated') && filepath.includes('jar-resources')) {
+              // file path can be relative, so detect the path separator from
+              // the well-known generated/jar-resources segment
+              const match = /(?:^|[\\/])generated([\\/])jar-resources\1(?!.*jar-resources)(\S+)/.exec(filepath);
+              if (match && match[2]) {
+                return `${prefix}${match[2].replace(/\\/g, '/')}`;
+              }
+            }
+
+            return `${prefix}[path][name][ext]`;
           }
-        ]
+        }
       }
     ].filter(Boolean)
   },
@@ -325,15 +341,15 @@ module.exports = {
 
     ...(devMode && themeName
       ? [
-          new ExtraWatchWebpackPlugin({
-            files: [],
-            dirs: themeWatchFolders
-          }),
-          new ThemeLiveReloadPlugin(processThemeResourcesCallback)
-        ]
+        new ExtraWatchWebpackPlugin({
+          files: [],
+          dirs: themeWatchFolders
+        }),
+        new ThemeLiveReloadPlugin(processThemeResourcesCallback)
+      ]
       : []),
 
-    function (compiler) {
+    function(compiler) {
       // V14 bootstrapping needs the bundle names
       compiler.hooks.afterEmit.tapAsync('FlowStatsHelper', (compilation, done) => {
         const st = compilation.getStats().toJson();
@@ -370,13 +386,13 @@ module.exports = {
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping &&
-      new HtmlWebpackPlugin({
-        template: clientSideIndexHTML,
-        filename: indexHtmlPath,
-        inject: 'head',
-        scriptLoading: 'defer',
-        chunks: ['bundle']
-      }),
+    new HtmlWebpackPlugin({
+      template: clientSideIndexHTML,
+      filename: indexHtmlPath,
+      inject: 'head',
+      scriptLoading: 'defer',
+      chunks: ['bundle']
+    }),
 
     // Service worker for offline
     offlineEnabled && createServiceWorkerPlugin(),
@@ -385,11 +401,11 @@ module.exports = {
     !devMode && new CompressionPlugin(),
 
     enableTypeScript &&
-      new ForkTsCheckerWebpackPlugin({
-        typescript: {
-          configFile: tsconfigJsonFile
-        }
-      }),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        configFile: tsconfigJsonFile
+      }
+    }),
 
     new BuildStatusPlugin()
   ].filter(Boolean)
