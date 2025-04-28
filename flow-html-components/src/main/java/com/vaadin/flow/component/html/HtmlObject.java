@@ -146,8 +146,7 @@ public class HtmlObject extends HtmlContainer implements
      *            a type attribute value
      */
     public HtmlObject(DownloadHandler data, String type) {
-        setData(new StreamResourceRegistry.ElementStreamResource(data,
-                this.getElement()));
+        setData(data);
         setType(type);
     }
 

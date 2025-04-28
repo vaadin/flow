@@ -137,6 +137,16 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     }
 
     /**
+     * Creates a new iframe with download handler resource.
+     *
+     * @param downloadHandler
+     *            the download handler resource, not null
+     */
+    public IFrame(DownloadHandler downloadHandler) {
+        setSrc(downloadHandler);
+    }
+
+    /**
      * Sets the source of the iframe. If the contents at the src of the IFrame
      * has changed and you want to refresh it in the user's browser, the src
      * does not to be reset. In this case use the #reload() method.

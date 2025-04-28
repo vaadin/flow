@@ -102,8 +102,7 @@ public class Image extends HtmlContainer
      * @see #setAlt(String)
      */
     public Image(DownloadHandler downloadHandler, String alt) {
-        setSrc(new StreamResourceRegistry.ElementStreamResource(downloadHandler,
-                this.getElement()));
+        setSrc(downloadHandler);
         setAlt(alt);
     }
 
@@ -134,6 +133,18 @@ public class Image extends HtmlContainer
      */
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);
+    }
+
+    /**
+     * Sets the image URL with the URL of the given {@link StreamResource}.
+     *
+     * @param downloadHandler
+     *            the download handler resource, not null
+     */
+    public void setSrc(DownloadHandler downloadHandler) {
+        getElement().setAttribute("src",
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler, this.getElement()));
     }
 
     /**

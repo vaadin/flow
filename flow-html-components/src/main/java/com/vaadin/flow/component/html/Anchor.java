@@ -116,7 +116,7 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given text content and download
      * handler resource.
      *
-     * @see #setHref(AbstractStreamResource)
+     * @see #setHref(DownloadHandler)
      * @see #setText(String)
      *
      * @param downloadHandler
@@ -125,8 +125,7 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      */
     public Anchor(DownloadHandler downloadHandler, String text) {
-        setHref(new StreamResourceRegistry.ElementStreamResource(
-                downloadHandler, this.getElement()));
+        setHref(downloadHandler);
         setText(text);
     }
 
@@ -190,6 +189,20 @@ public class Anchor extends HtmlContainer
      */
     public void setHref(AbstractStreamResource href) {
         this.href = href;
+        setRouterIgnore(true);
+        assignHrefAttribute();
+    }
+
+    /**
+     * Sets the URL that this anchor links to with the URL of the given
+     * {@link DownloadHandler}.
+     *
+     * @param downloadHandler
+     *            the download handler resource, not null
+     */
+    public void setHref(DownloadHandler downloadHandler) {
+        this.href = new StreamResourceRegistry.ElementStreamResource(
+                downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
     }
