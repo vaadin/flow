@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -69,8 +70,9 @@ public class VaadinWebSecurityTest {
                 new AuthenticationManagerBuilder(postProcessor),
                 Map.of(ApplicationContext.class, appCtx));
         TestConfig testConfig = new VaadinWebSecurityTest.TestConfig();
-        testConfig.filterChain(httpSecurity);
+        mockVaadinWebSecurityInjection(testConfig);
 
+        testConfig.filterChain(httpSecurity);
         Assert.assertTrue("VaadinWebSecurity HTTP configuration invoked",
                 testConfig.httpConfigured);
 
@@ -170,6 +172,9 @@ public class VaadinWebSecurityTest {
         ReflectionTestUtils.setField(testConfig, "applicationContext", appCtx);
         httpSecurity.setSharedObject(ClientRegistrationRepository.class,
                 repository);
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        Mockito.when(servletContext.getContextPath()).thenReturn("");
+        httpSecurity.setSharedObject(ServletContext.class, servletContext);
 
         testConfig.filterChain(httpSecurity);
 
