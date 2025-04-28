@@ -56,14 +56,9 @@ const addAdoptedStyleSafariPolyfill = (sheet, target, first) => {
   };
 };
 
-export const addAdoptedStyle = (cssText, target, first) => {
-  let sheet;
-  if (cssText instanceof CSSStyleSheet) {
-    sheet = cssText;
-  } else {
-    sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
-  }
+const addAdoptedStyle = (cssText, target, first) => {
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(cssText);
   if (polyfilledSafari) {
     return addAdoptedStyleSafariPolyfill(sheet, target, first);
   }
