@@ -68,14 +68,22 @@ export default function flowCSSImportPlugin(): Plugin[] {
         }
 
         const exportedWebComponent = queryParams.get('exported-web-component');
+
+        // DEPRECATED: Remove in Vaadin 26
+        if (exportedWebComponent && queryParams.has('theme')) {
+          return `
+            import cssContent from '${cssPath}?inline';
+            import { deprecated_injectExportedWebComponentThemeCSS } from 'Frontend/generated/jar-resources/theme-util.js';
+
+            deprecated_injectExportedWebComponentThemeCSS(cssContent.toString());
+          `;
+        }
+
         if (exportedWebComponent) {
           return `
             import '${cssPath}?global-css-only';
             import cssContent from '${cssPath}?inline';
-            import { deprecated_injectExportedWebComponentThemeCSS } from 'Frontend/generated/jar-resources/theme-util.js';
             import { injectExportedWebComponentCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
-
-            deprecated_injectExportedWebComponentThemeCSS(cssContent.toString());
 
             injectExportedWebComponentCSS('${cssId}', cssContent.toString(), {
               selector: '${exportedWebComponent}'

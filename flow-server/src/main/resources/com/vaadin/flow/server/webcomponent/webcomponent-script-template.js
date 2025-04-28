@@ -75,9 +75,7 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
 
     this._connect();
 
-    if (!_HasTheme_) {
-      exportedWebComponentConnected(this);
-    }
+    exportedWebComponentConnected(this);
   }
 
   _connect(){
@@ -135,9 +133,7 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
 
     console.debug("disconnected", this);
 
-    if (!_HasTheme_) {
-      exportedWebComponentDisconnected(this);
-    }
+    exportedWebComponentDisconnected(this);
   }
 
   serverConnected() {

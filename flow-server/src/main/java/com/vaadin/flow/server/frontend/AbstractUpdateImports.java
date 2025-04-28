@@ -55,6 +55,7 @@ import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -723,9 +724,14 @@ abstract class AbstractUpdateImports implements Runnable {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
+        ThemeDefinition theme = scanner.getThemeDefinition();
 
         Map<String, String> query = new HashMap<>();
         query.put("path", cssImport);
+
+        if (theme != null) {
+            query.put("theme", theme.getName());
+        }
 
         if (cssData.getId() != null && cssData.getThemefor() != null) {
             throw new IllegalStateException(

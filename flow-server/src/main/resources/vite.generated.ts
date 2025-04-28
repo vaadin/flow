@@ -59,7 +59,6 @@ const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
-const webComponentsFolder = path.resolve(frontendFolder, settings.generatedFolder, 'flow/web-components');
 
 const projectIndexHtml = path.resolve(frontendFolder, 'index.html');
 
