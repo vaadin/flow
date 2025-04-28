@@ -137,10 +137,12 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     }
 
     /**
-     * Creates a new iframe with download handler callback that provides a resource from server.
+     * Creates a new iframe with download handler callback that provides a
+     * resource from server.
      *
      * @param downloadHandler
-     *            the download handler callback that provides a resource from server, not null
+     *            the download handler callback that provides a resource from
+     *            server, not null
      */
     public IFrame(DownloadHandler downloadHandler) {
         setSrc(downloadHandler);

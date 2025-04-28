@@ -134,7 +134,9 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given {@link DownloadHandler} callback for providing an object data and type value.
+     * Creates a new <code>&lt;object&gt;</code> component with given
+     * {@link DownloadHandler} callback for providing an object data and type
+     * value.
      *
      * @see #setData(AbstractStreamResource)
      * @see #setType(String)
@@ -241,7 +243,8 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Sets the URL for {@link DownloadHandler} callback as "data" attribute value .
+     * Sets the URL for {@link DownloadHandler} callback as "data" attribute
+     * value .
      *
      * @param data
      *            a "data" attribute value,, not {@code null}
