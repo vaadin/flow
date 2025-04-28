@@ -4,7 +4,9 @@ import { extractGlobalCSSRules } from './extract-global-css-rules.js';
 
 let counter = 0;
 
-export default function flowCSSImportPlugin(): Plugin[] {
+const hasApplicationTheme = true;
+
+export default function flowCSSImportPlugin({ hasTheme }: { hasTheme: boolean }): Plugin[] {
   return [
     {
       name: 'vaadin:flow-css-import',
@@ -70,13 +72,13 @@ export default function flowCSSImportPlugin(): Plugin[] {
         const exportedWebComponent = queryParams.get('exported-web-component');
 
         // DEPRECATED: Remove in Vaadin 26
-        if (exportedWebComponent && queryParams.has('theme')) {
+        if (exportedWebComponent && hasTheme) {
           return `
             import cssContent from '${cssPath}?inline';
             import { deprecated_injectExportedWebComponentThemeCSS } from 'Frontend/generated/jar-resources/theme-util.js';
 
             deprecated_injectExportedWebComponentThemeCSS(cssContent.toString());
-          `;
+          `
         }
 
         if (exportedWebComponent) {

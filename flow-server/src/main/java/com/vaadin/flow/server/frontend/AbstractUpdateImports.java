@@ -724,14 +724,9 @@ abstract class AbstractUpdateImports implements Runnable {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
-        ThemeDefinition theme = scanner.getThemeDefinition();
 
         Map<String, String> query = new HashMap<>();
         query.put("path", cssImport);
-
-        if (theme != null) {
-            query.put("theme", theme.getName());
-        }
 
         if (cssData.getId() != null && cssData.getThemefor() != null) {
             throw new IllegalStateException(
