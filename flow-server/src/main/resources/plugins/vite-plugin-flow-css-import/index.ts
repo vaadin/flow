@@ -4,8 +4,6 @@ import { extractGlobalCSSRules } from './extract-global-css-rules.js';
 
 let counter = 0;
 
-const hasApplicationTheme = true;
-
 export default function flowCSSImportPlugin({ hasTheme }: { hasTheme: boolean }): Plugin[] {
   return [
     {
@@ -75,9 +73,9 @@ export default function flowCSSImportPlugin({ hasTheme }: { hasTheme: boolean })
         if (exportedWebComponent && hasTheme) {
           return `
             import cssContent from '${cssPath}?inline';
-            import { deprecated_injectExportedWebComponentThemeCSS } from 'Frontend/generated/jar-resources/theme-util.js';
+            import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';
 
-            deprecated_injectExportedWebComponentThemeCSS(cssContent.toString());
+            injectGlobalWebcomponentCss(cssContent.toString());
           `
         }
 

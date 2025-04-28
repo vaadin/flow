@@ -45,7 +45,6 @@ const createLinkReferences = (css, target) => {
   return styleCss;
 };
 
-// TODO: Remove in Vaadin 25
 const addAdoptedStyleSafariPolyfill = (sheet, target, first) => {
   if (first) {
     target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
@@ -115,21 +114,19 @@ window.Vaadin = window.Vaadin || {};
 window.Vaadin.theme = window.Vaadin.theme || {};
 window.Vaadin.theme.injectedGlobalCss = [];
 
-const exportedWebComponentThemeCSS = {
+const webcomponentGlobalCss = {
   css: [],
   importers: []
 };
 
-// DEPRECATED: Remove in Vaadin 26
-export const deprecated_injectExportedWebComponentThemeCSS = (css) => {
-  exportedWebComponentThemeCSS.css.push(css);
-  exportedWebComponentThemeCSS.importers.forEach(registrar => {
+export const injectGlobalWebcomponentCss = (css) => {
+  webcomponentGlobalCss.css.push(css);
+  webcomponentGlobalCss.importers.forEach(registrar => {
     registrar(css);
   });
 };
 
-// DEPRECATED: Remove in Vaadin 26
-export const deprecated_exportedWebComponentThemeCSSInjector = (registrar) => {
+export const webcomponentGlobalCssInjector = (registrar) => {
   const registeredCss = [];
   const wrapper = (css) => {
     const hash = getHash(css);
@@ -138,8 +135,8 @@ export const deprecated_exportedWebComponentThemeCSSInjector = (registrar) => {
       registrar(css);
     }
   };
-  exportedWebComponentThemeCSS.importers.push(wrapper);
-  exportedWebComponentThemeCSS.css.forEach(wrapper);
+  webcomponentGlobalCss.importers.push(wrapper);
+  webcomponentGlobalCss.css.forEach(wrapper);
 };
 
 /**
