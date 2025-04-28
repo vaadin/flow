@@ -7,8 +7,7 @@ let counter = 0;
 export default function flowCSSImportPlugin(): Plugin[] {
   return [
     {
-      name: 'vaadin:flow-css-import:resolve',
-      enforce: 'pre',
+      name: 'vaadin:flow-css-import',
       async resolveId(id, importer, options) {
         if (!id.includes('virtual:flow-css-import')) {
           return;
@@ -22,15 +21,12 @@ export default function flowCSSImportPlugin(): Plugin[] {
 
         // Otherwise, return the path of the CSS file itself to let Vite handle it.
         const resolution = await this.resolve(queryParams.get('path')!, importer, options);
-        if (resolution) {
-          return resolution.id;
+        if (!resolution) {
+          return;
         }
 
-        return;
-      }
-    },
-    {
-      name: 'vaadin:flow-css-import',
+        return resolution.id;
+      },
       load(id) {
         if (!id.includes('virtual:flow-css-import')) {
           return;
@@ -76,15 +72,14 @@ export default function flowCSSImportPlugin(): Plugin[] {
           return `
             import '${cssPath}?global-css-only';
             import cssContent from '${cssPath}?inline';
+            import { deprecated_injectWebComponentThemeCSS } from 'Frontend/generated/jar-resources/theme-util.js';
             import { injectExportedWebComponentCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
+
+            deprecated_injectWebComponentThemeCSS(cssContent.toString());
 
             injectExportedWebComponentCSS('${cssId}', cssContent.toString(), {
               selector: '${exportedWebComponent}'
             });
-
-            // if (globalCSSContent) {
-            //   injectGlobalCSS('${cssId}', globalCSSContent.toString());
-            // }
 
             import.meta.hot?.accept();
           `

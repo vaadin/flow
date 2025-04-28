@@ -59,6 +59,7 @@ const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
+const webComponentsFolder = path.resolve(frontendFolder, settings.generatedFolder, 'flow/web-components');
 
 const projectIndexHtml = path.resolve(frontendFolder, 'index.html');
 
@@ -708,15 +709,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ...(hasExportedWebComponents ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') } : {})
         },
         output: {
-          // Workaround to enable dynamic imports with top-level await for
-          // commonjs modules, such as "atmosphere.js" in Hilla. Extracting
-          // Rollup's commonjs helpers into separate manual chunk avoids
-          // circular dependencies in this case. Caused
-          //   - https://github.com/vitejs/vite/issues/10995
-          //   - https://github.com/rollup/rollup/issues/5884
-          //   - https://github.com/vitejs/vite/issues/19695
-          //   - https://github.com/vitejs/vite/issues/12209
-          manualChunks: (id: string) => id.startsWith('\0commonjsHelpers.js') ? 'commonjsHelpers' : null
+          manualChunks: (id: string) => {
+            // Workaround to enable dynamic imports with top-level await for
+            // commonjs modules, such as "atmosphere.js" in Hilla. Extracting
+            // Rollup's commonjs helpers into separate manual chunk avoids
+            // circular dependencies in this case. Caused
+            //   - https://github.com/vitejs/vite/issues/10995
+            //   - https://github.com/rollup/rollup/issues/5884
+            //   - https://github.com/vitejs/vite/issues/19695
+            //   - https://github.com/vitejs/vite/issues/12209
+            if (id.startsWith('\0commonjsHelpers.js')) {
+              return 'commonjsHelpers';
+            }
+
+            return;
+          }
         },
         onwarn: (warning: rollup.RollupLog, defaultHandler: rollup.LoggingFunction) => {
           const ignoreEvalWarning = [

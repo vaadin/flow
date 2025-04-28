@@ -77,8 +77,8 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     themeFileContent += `import { applyTheme as applyBaseTheme } from './theme-${themeProperties.parent}.generated.js';\n`;
   }
 
-  themeFileContent += `import { injectGlobalCss, addAdoptedStyle } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
-  themeFileContent += `import { getExportedWebComponentStyleSheets } from 'Frontend/generated/jar-resources/flow-css-import.js';\n`;
+  themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { deprecated_webComponentThemeCSSInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
   themeFileContent += `import './${componentsFilename}';\n`;
 
   themeFileContent += `let needsReloadOnChanges = false;\n`;
@@ -225,8 +225,8 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     if (target !== document) {
       ${shadowOnlyCss.join('')}
       ${autoInjectGlobalCssImports ? `
-        getExportedWebComponentStyleSheets().forEach((styleSheet) => {
-          removers.push(addAdoptedStyle(styleSheet, target));
+        deprecated_webComponentThemeCSSInjector((css) => {
+          removers.push(injectGlobalCss(css, '', target));
         });
         ` : ''}
     }

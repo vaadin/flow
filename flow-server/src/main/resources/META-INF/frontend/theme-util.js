@@ -119,6 +119,31 @@ window.Vaadin = window.Vaadin || {};
 window.Vaadin.theme = window.Vaadin.theme || {};
 window.Vaadin.theme.injectedGlobalCss = [];
 
+const deprecated_webComponentThemeCSS = {
+  css: [],
+  importers: []
+};
+
+export const deprecated_injectWebComponentThemeCSS = (css) => {
+  deprecated_webComponentThemeCSS.css.push(css);
+  deprecated_webComponentThemeCSS.importers.forEach(registrar => {
+    registrar(css);
+  });
+};
+
+export const deprecated_webComponentThemeCSSInjector = (registrar) => {
+  const registeredCss = [];
+  const wrapper = (css) => {
+    const hash = getHash(css);
+    if (!registeredCss.includes(hash)) {
+      registeredCss.push(hash);
+      registrar(css);
+    }
+  };
+  deprecated_webComponentThemeCSS.importers.push(wrapper);
+  deprecated_webComponentThemeCSS.css.forEach(wrapper);
+};
+
 /**
  * Calculate a 32 bit FNV-1a hash
  * Found here: https://gist.github.com/vaiorabbit/5657561

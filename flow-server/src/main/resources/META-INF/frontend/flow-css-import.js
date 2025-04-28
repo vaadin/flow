@@ -1,6 +1,5 @@
 const EXPORTED_WEB_COMPONENT_SELECTOR = Symbol('exported-web-component-selector');
 
-// const globalStyleSheets = new Map();
 const exportedWebComponents = new Set();
 const exportedWebComponentStyleSheets = new Map();
 
@@ -20,21 +19,6 @@ function addAdoptedStyleSheet(element, styleSheet) {
 function removeAdoptedStyleSheet(element, styleSheet) {
   const { shadowRoot } = element;
   shadowRoot.adoptedStyleSheets = shadowRoot.adoptedStyleSheets.filter((ss) => ss !== styleSheet);
-}
-
-// export function injectGlobalCSS(id, content) {
-//   let style = globalStyleSheets.get(id);
-//   if (!style) {
-//     style = document.createElement('style');
-//     globalStyleSheets.set(id, style);
-//     document.head.appendChild(style);
-//   }
-
-//   style.textContent = content;
-// }
-
-export function getExportedWebComponentStyleSheets() {
-  return exportedWebComponentStyleSheets.values();
 }
 
 export function injectExportedWebComponentCSS(id, content, { selector }) {
