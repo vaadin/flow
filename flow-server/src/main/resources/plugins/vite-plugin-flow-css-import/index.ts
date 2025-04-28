@@ -4,7 +4,7 @@ import { extractGlobalCSSRules } from './extract-global-css-rules.js';
 
 let counter = 0;
 
-export default function flowCSSImportPlugin({ hasTheme }: { hasTheme: boolean }): Plugin[] {
+export default function flowCSSImportPlugin({ hasApplicationTheme }: { hasApplicationTheme: boolean }): Plugin[] {
   return [
     {
       name: 'vaadin:flow-css-import',
@@ -70,7 +70,7 @@ export default function flowCSSImportPlugin({ hasTheme }: { hasTheme: boolean })
         const exportedWebComponent = queryParams.get('exported-web-component');
 
         // DEPRECATED: Remove in Vaadin 26
-        if (exportedWebComponent && hasTheme) {
+        if (exportedWebComponent && hasApplicationTheme) {
           return `
             import cssContent from '${cssPath}?inline';
             import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';

@@ -757,7 +757,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
-      flowCSSImportPlugin({ hasTheme: !!settings.themeName }),
+      flowCSSImportPlugin({ hasApplicationTheme: !!settings.themeName }),
       postcssLit({
         include: ['**/*.css', /.*\/.*\.css\?.*/],
         exclude: [
