@@ -137,10 +137,10 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     }
 
     /**
-     * Creates a new iframe with download handler resource.
+     * Creates a new iframe with download handler callback that provides a resource from server.
      *
      * @param downloadHandler
-     *            the download handler resource, not null
+     *            the download handler callback that provides a resource from server, not null
      */
     public IFrame(DownloadHandler downloadHandler) {
         setSrc(downloadHandler);
@@ -173,7 +173,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
 
     /**
      * Sets the source of the iframe with a source URL with the URL of the given
-     * {@link StreamResource}.
+     * {@link DownloadHandler} callback.
      *
      * @see #setSrc(String)
      *

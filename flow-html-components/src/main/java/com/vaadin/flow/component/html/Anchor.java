@@ -113,14 +113,13 @@ public class Anchor extends HtmlContainer
     }
 
     /**
-     * Creates an anchor component with the given text content and download
-     * handler resource.
+     * Creates an anchor component with the given text content and a callback that handles data download from the server to the client when clicking an anchor.
      *
      * @see #setHref(DownloadHandler)
      * @see #setText(String)
      *
      * @param downloadHandler
-     *            the download handler resource, not null
+     *            the callback that handles data download, not null
      * @param text
      *            the text content to set
      */
@@ -194,11 +193,10 @@ public class Anchor extends HtmlContainer
     }
 
     /**
-     * Sets the URL that this anchor links to with the URL of the given
-     * {@link DownloadHandler}.
+     * Sets the URL that this anchor links to and that is bound to a given {@link DownloadHandler} callback on the server for handling data download from the server to the client when clicking an anchor.
      *
      * @param downloadHandler
-     *            the download handler resource, not null
+     *            the callback that handles data download, not null
      */
     public void setHref(DownloadHandler downloadHandler) {
         this.href = new StreamResourceRegistry.ElementStreamResource(

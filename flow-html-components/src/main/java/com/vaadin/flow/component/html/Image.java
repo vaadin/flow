@@ -88,13 +88,13 @@ public class Image extends HtmlContainer
     }
 
     /**
-     * Creates an image with the given stream resource and an alternative text.
+     * Creates an image with the given download handler callback for providing an image data and an alternative text.
      * <p>
      * The alternative text given to constructor is always set even if it is the
      * default empty string which is not retained with {@link #setAlt(String)}.
      *
      * @param downloadHandler
-     *            the download handler resource, not null
+     *            the download handler callback that provides an image data, not null
      * @param alt
      *            the alternate text
      *
@@ -136,7 +136,7 @@ public class Image extends HtmlContainer
     }
 
     /**
-     * Sets the image URL with the URL of the given {@link StreamResource}.
+     * Sets the image URL with the URL of the given {@link DownloadHandler} callback.
      *
      * @param downloadHandler
      *            the download handler resource, not null
