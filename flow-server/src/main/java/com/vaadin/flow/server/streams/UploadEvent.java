@@ -24,6 +24,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 
+import jakarta.servlet.http.Part;
+import org.apache.commons.fileupload2.core.FileItemInput;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -54,6 +56,9 @@ public class UploadEvent {
 
     private final Element owningElement;
 
+    private final FileItemInput item;
+    private final Part part;
+
     /**
      * Create a new download event with required data.
      *
@@ -68,7 +73,8 @@ public class UploadEvent {
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, String fileName, long fileSize,
-            String contentType, Element owningElement) {
+            String contentType, Element owningElement, FileItemInput item,
+            Part part) {
         this.request = request;
         this.response = response;
         this.session = session;
@@ -76,6 +82,8 @@ public class UploadEvent {
         this.fileSize = fileSize;
         this.owningElement = owningElement;
         this.contentType = contentType;
+        this.item = item;
+        this.part = part;
 
     }
 
@@ -87,6 +95,12 @@ public class UploadEvent {
      */
     public InputStream getInputStream() {
         try {
+            if (item != null) {
+                return item.getInputStream();
+            }
+            if (part != null) {
+                return part.getInputStream();
+            }
             return request.getInputStream();
         } catch (IOException e) {
             LoggerFactory.getLogger(UploadEvent.class)

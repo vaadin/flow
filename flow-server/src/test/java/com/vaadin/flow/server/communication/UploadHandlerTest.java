@@ -2,6 +2,10 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.servlet.ReadListener;
@@ -9,7 +13,9 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Part;
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +42,7 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
@@ -47,6 +54,8 @@ public class UploadHandlerTest {
     private VaadinResponse response;
     private StreamResourceRegistry streamResourceRegistry;
     private UI ui;
+    private StateNode stateNode;
+    private Element element;
 
     @Before
     public void setUp() throws ServletException, ServiceException {
@@ -64,6 +73,10 @@ public class UploadHandlerTest {
         Mockito.when(servletContext.getMimeType(Mockito.anyString()))
                 .thenReturn(null);
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
+        stateNode = Mockito.mock(StateNode.class);
+        when(stateNode.isAttached()).thenReturn(true);
+        element = Mockito.mock(Element.class);
+        Mockito.when(element.getNode()).thenReturn(stateNode);
         response = Mockito.mock(VaadinResponse.class);
         ui = new MockUI();
         UI.setCurrent(ui);
@@ -79,11 +92,6 @@ public class UploadHandlerTest {
         UploadHandler handler = (event) -> {
             event.getResponse().setContentType("text/html; charset=utf-8");
         };
-
-        StateNode stateNode = Mockito.mock(StateNode.class);
-        when(stateNode.isAttached()).thenReturn(true);
-        Element element = Mockito.mock(Element.class);
-        Mockito.when(element.getNode()).thenReturn(stateNode);
 
         handler.handleRequest(request, response, session, element);
 
@@ -102,7 +110,7 @@ public class UploadHandlerTest {
         byte[] output = new byte[testBytes.length];
         AtomicInteger amount = new AtomicInteger();
 
-        UploadHandler downloadHandler = (event) -> {
+        UploadHandler uploadHandler = (event) -> {
             try (InputStream inputStream = event.getInputStream()) {
                 amount.set(inputStream.read(output));
             } catch (IOException ioe) {
@@ -114,24 +122,10 @@ public class UploadHandlerTest {
         };
 
         StreamRegistration streamRegistration = streamResourceRegistry
-                .registerResource(downloadHandler);
+                .registerResource(uploadHandler);
         AbstractStreamResource res = streamRegistration.getResource();
 
-        StateNode stateNode = Mockito.mock(StateNode.class);
-        Mockito.when(stateNode.isAttached()).thenReturn(true);
-        Element element = Mockito.mock(Element.class);
-        Mockito.when(element.getNode()).thenReturn(stateNode);
-
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
-                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
-        Mockito.when(request.getContentLengthLong())
-                .thenReturn(Long.valueOf(testBytes.length));
-        Mockito.when(request.getInputStream())
-                .thenReturn(createInputStream(testString));
+        mockRequest(res, testString);
 
         handler.handleRequest(session, request, response);
 
@@ -141,7 +135,141 @@ public class UploadHandlerTest {
         Assert.assertEquals("", testBytes.length, amount.get());
     }
 
+    @Test
+    public void mulitpartData_forInputIterator_dataIsGottenCorrectly()
+            throws IOException {
+        String contentType = "multipart/form-data; boundary=-----bound";
+        String content = """
+                -------bound
+                Content-Disposition: form-data; name="file"; filename="sound.txt"
+                Content-Type: text/plain
+
+                Sound
+                -------bound
+                Content-Disposition: form-data; name="file"; filename="bytes.txt"
+                Content-Type: text/plain
+
+                Bytes
+                -------bound--
+                """
+                .replaceAll("\n", "\r\n");
+
+        List<String> outList = new ArrayList<>(2);
+        List<String> fileNames = new ArrayList<>(2);
+
+        UploadHandler uploadHandler = (event) -> {
+            fileNames.add(event.getFileName());
+            try (InputStream inputStream = event.getInputStream()) {
+                outList.add(
+                        IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            } catch (IOException ioe) {
+                // Set status before output is closed (see #8740)
+                response.setStatus(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                throw new RuntimeException(ioe);
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, content);
+        Mockito.when(request.getContentType()).thenReturn(contentType);
+
+        handler.handleRequest(session, request, response);
+
+        Assert.assertEquals(2, outList.size());
+        Assert.assertEquals(2, fileNames.size());
+
+        Assert.assertEquals("Sound", outList.get(0));
+        Assert.assertEquals("sound.txt", fileNames.get(0));
+
+        Assert.assertEquals("Bytes", outList.get(1));
+        Assert.assertEquals("bytes.txt", fileNames.get(1));
+    }
+
+    @Test
+    public void mulitpartData_asParts_dataIsGottenCorrectly()
+            throws IOException, ServletException {
+        String contentType = "multipart/form-data; boundary=-----bound";
+
+        String testContent = "testBytes";
+
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), contentType, "one.txt",
+                3));
+        parts.add(createPart(createInputStream("two"), contentType, "two.txt",
+                3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        List<String> outList = new ArrayList<>(2);
+        List<String> fileNames = new ArrayList<>(2);
+
+        UploadHandler uploadHandler = (event) -> {
+            fileNames.add(event.getFileName());
+            try (InputStream inputStream = event.getInputStream()) {
+                outList.add(
+                        IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            } catch (IOException ioe) {
+                // Set status before output is closed (see #8740)
+                response.setStatus(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                throw new RuntimeException(ioe);
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, testContent);
+        Mockito.when(request.getContentType()).thenReturn(contentType);
+
+        handler.handleRequest(session, request, response);
+
+        Assert.assertEquals(2, outList.size());
+        Assert.assertEquals(2, fileNames.size());
+
+        Assert.assertEquals("one", outList.get(0));
+        Assert.assertEquals("one.txt", fileNames.get(0));
+
+        Assert.assertEquals("two", outList.get(1));
+        Assert.assertEquals("two.txt", fileNames.get(1));
+    }
+
+    private Part createPart(InputStream inputStream, String contentType,
+            String name, long size) throws IOException {
+        Part part = mock(Part.class);
+        when(part.getInputStream()).thenReturn(inputStream);
+        when(part.getContentType()).thenReturn(contentType);
+        when(part.getSubmittedFileName()).thenReturn(name);
+        when(part.getSize()).thenReturn(size);
+        return part;
+    }
+
+    private void mockRequest(AbstractStreamResource res, String content)
+            throws IOException {
+
+        ServletOutputStream outputStream = Mockito
+                .mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(request.getPathInfo())
+                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
+                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+        Mockito.when(request.getContentLengthLong())
+                .thenReturn(Long.valueOf(content.length()));
+        Mockito.when(request.getContentLength()).thenReturn(content.length());
+        Mockito.when(request.getHeader("Content-length"))
+                .thenReturn(String.valueOf(content.length()));
+        Mockito.when(request.getInputStream())
+                .thenReturn(createInputStream(content));
+        Mockito.when(request.getMethod()).thenReturn("POST");
+    }
+
     private ServletInputStream createInputStream(final String content) {
+        StringReader stringReader = new StringReader(content);
         return new ServletInputStream() {
             boolean finished = false;
 
@@ -152,31 +280,30 @@ public class UploadHandlerTest {
 
             @Override
             public boolean isReady() {
-                return true;
+                try {
+                    return stringReader.ready();
+                } catch (IOException e) {
+                    return true;
+                }
             }
 
             @Override
             public void setReadListener(ReadListener readListener) {
-
             }
 
-            int counter = 0;
-            byte[] msg = content.getBytes();
+            @Override
+            public void reset() throws IOException {
+                stringReader.reset();
+                finished = false;
+            }
 
             @Override
             public int read() throws IOException {
-                if (counter > msg.length + 1) {
-                    throw new AssertionError(
-                            "-1 was ignored by StreamReceiverHandler.");
-                }
-
-                if (counter >= msg.length) {
-                    counter++;
+                int read = stringReader.read();
+                if (read == -1) {
                     finished = true;
-                    return -1;
                 }
-
-                return msg[counter++];
+                return read;
             }
         };
     }
