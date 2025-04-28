@@ -63,8 +63,8 @@ public class GenerateMainImports extends AbstractUpdateImports {
 
     @Override
     protected boolean addCssLines(Collection<String> lines, CssData cssData,
-            String scope) {
-        super.addCssLines(lines, cssData, scope);
+            String exportedWebComponent) {
+        super.addCssLines(lines, cssData, exportedWebComponent);
         // CSS files in 'generated/jar-resources' are not generated at this
         // moment, so not let the application interrupt and continue with
         // checking the dev-bundle
