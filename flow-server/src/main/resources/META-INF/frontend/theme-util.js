@@ -115,18 +115,20 @@ window.Vaadin = window.Vaadin || {};
 window.Vaadin.theme = window.Vaadin.theme || {};
 window.Vaadin.theme.injectedGlobalCss = [];
 
-const deprecated_webComponentThemeCSS = {
+const exportedWebComponentThemeCSS = {
   css: [],
   importers: []
 };
 
+// DEPRECATED: Remove in Vaadin 26
 export const deprecated_injectExportedWebComponentThemeCSS = (css) => {
-  deprecated_webComponentThemeCSS.css.push(css);
-  deprecated_webComponentThemeCSS.importers.forEach(registrar => {
+  exportedWebComponentThemeCSS.css.push(css);
+  exportedWebComponentThemeCSS.importers.forEach(registrar => {
     registrar(css);
   });
 };
 
+// DEPRECATED: Remove in Vaadin 26
 export const deprecated_exportedWebComponentThemeCSSInjector = (registrar) => {
   const registeredCss = [];
   const wrapper = (css) => {
@@ -136,8 +138,8 @@ export const deprecated_exportedWebComponentThemeCSSInjector = (registrar) => {
       registrar(css);
     }
   };
-  deprecated_webComponentThemeCSS.importers.push(wrapper);
-  deprecated_webComponentThemeCSS.css.forEach(wrapper);
+  exportedWebComponentThemeCSS.importers.push(wrapper);
+  exportedWebComponentThemeCSS.css.forEach(wrapper);
 };
 
 /**
