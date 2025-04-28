@@ -78,7 +78,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   }
 
   themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
-  themeFileContent += `import { deprecated_webComponentThemeCSSInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { deprecated_exportedWebComponentThemeCSSInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
   themeFileContent += `import './${componentsFilename}';\n`;
 
   themeFileContent += `let needsReloadOnChanges = false;\n`;
@@ -225,7 +225,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     if (target !== document) {
       ${shadowOnlyCss.join('')}
       ${autoInjectGlobalCssImports ? `
-        deprecated_webComponentThemeCSSInjector((css) => {
+        deprecated_exportedWebComponentThemeCSSInjector((css) => {
           removers.push(injectGlobalCss(css, '', target));
         });
         ` : ''}

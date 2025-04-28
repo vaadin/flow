@@ -36,7 +36,7 @@ export default function flowCSSImportPlugin(): Plugin[] {
         const cssPath = queryParams.get('path');
         const cssId = this.environment.mode === 'dev' ? id : counter++;
 
-        // TODO: Remove in Vaadin 25
+        // TODO: Remove in Vaadin 26
         if (queryParams.has('theme-for') || queryParams.has('module-id')) {
           const themeFor = queryParams.get('theme-for') ?? '';
           const moduleId = queryParams.get('module-id') ?? `flow_css_mod_${counter++}`;
@@ -53,7 +53,7 @@ export default function flowCSSImportPlugin(): Plugin[] {
           `;
         }
 
-        // TODO: Remove in Vaadin 25
+        // TODO: Remove in Vaadin 26
         if (queryParams.has('include')) {
           const include = queryParams.get('include');
 
@@ -72,10 +72,10 @@ export default function flowCSSImportPlugin(): Plugin[] {
           return `
             import '${cssPath}?global-css-only';
             import cssContent from '${cssPath}?inline';
-            import { deprecated_injectWebComponentThemeCSS } from 'Frontend/generated/jar-resources/theme-util.js';
+            import { deprecated_injectExportedWebComponentThemeCSS } from 'Frontend/generated/jar-resources/theme-util.js';
             import { injectExportedWebComponentCSS } from 'Frontend/generated/jar-resources/flow-css-import.js';
 
-            deprecated_injectWebComponentThemeCSS(cssContent.toString());
+            deprecated_injectExportedWebComponentThemeCSS(cssContent.toString());
 
             injectExportedWebComponentCSS('${cssId}', cssContent.toString(), {
               selector: '${exportedWebComponent}'

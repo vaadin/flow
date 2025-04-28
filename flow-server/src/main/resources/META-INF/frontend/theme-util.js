@@ -45,6 +45,7 @@ const createLinkReferences = (css, target) => {
   return styleCss;
 };
 
+// TODO: Remove in Vaadin 25
 const addAdoptedStyleSafariPolyfill = (sheet, target, first) => {
   if (first) {
     target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
@@ -119,14 +120,14 @@ const deprecated_webComponentThemeCSS = {
   importers: []
 };
 
-export const deprecated_injectWebComponentThemeCSS = (css) => {
+export const deprecated_injectExportedWebComponentThemeCSS = (css) => {
   deprecated_webComponentThemeCSS.css.push(css);
   deprecated_webComponentThemeCSS.importers.forEach(registrar => {
     registrar(css);
   });
 };
 
-export const deprecated_webComponentThemeCSSInjector = (registrar) => {
+export const deprecated_exportedWebComponentThemeCSSInjector = (registrar) => {
   const registeredCss = [];
   const wrapper = (css) => {
     const hash = getHash(css);
