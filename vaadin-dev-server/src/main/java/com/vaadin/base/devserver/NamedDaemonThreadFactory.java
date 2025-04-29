@@ -28,12 +28,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * mechanism for instantiating threads that are configured with specific
  * attributes such as name prefix, thread priority, and daemon status.
  */
-class InternalThreadFactory implements ThreadFactory {
+public class NamedDaemonThreadFactory implements ThreadFactory {
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
     private final String namePrefix;
 
-    InternalThreadFactory(String namePrefix) {
+    public NamedDaemonThreadFactory(String namePrefix) {
         this.namePrefix = namePrefix;
     }
 

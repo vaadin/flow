@@ -100,7 +100,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             throws VaadinInitializerException {
         shutdownExecutorService();
         executorService = Executors.newFixedThreadPool(4,
-                new InternalThreadFactory("vaadin-dev-server"));
+                new NamedDaemonThreadFactory("vaadin-dev-server"));
         setDevModeHandler(DevModeInitializer.initDevModeHandler(classes,
                 context, executorService));
         CompletableFuture.runAsync(() -> {

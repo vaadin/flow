@@ -36,7 +36,7 @@ public class FileWatcher {
 
     private static final ExecutorService executorService = Executors
             .newCachedThreadPool(
-                    new InternalThreadFactory("vaadin-file-watcher"));
+                    new NamedDaemonThreadFactory("vaadin-file-watcher"));
 
     /**
      * Creates an instance of the file watcher for the given directory.
