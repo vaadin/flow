@@ -13,6 +13,7 @@ concurrency:
 env:
   HEAD_REF: ${{ github.head_ref }}
   REF_NAME: ${{ github.ref_name }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 jobs:
   build:
     timeout-minutes: 30
@@ -42,9 +43,7 @@ jobs:
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
-        env:
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -92,9 +91,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
-        env:
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -160,9 +157,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
-        env:
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -252,9 +247,7 @@ jobs:
           pattern: tests-output-*
       - uses: actions/checkout@v4
         with:
-          ref: $HEAD_SHA
-        env:
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/download-artifact@v4
         with:
           name: tests-output
