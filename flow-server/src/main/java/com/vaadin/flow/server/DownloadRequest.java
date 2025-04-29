@@ -45,8 +45,9 @@ public record DownloadRequest(VaadinRequest request, VaadinResponse response,
      * Either this method or getWriter() may be called to write the response,
      * not both.
      *
-     * @return a <code>OutputStream</code> for writing binary data or empty
-     *         optional if an error happened
+     * @return a <code>OutputStream</code> for writing binary data
+     * @throws UncheckedIOException
+     *             if an I/O error occurred while getting the output stream
      */
     public OutputStream getOutputStream() {
         try {
@@ -66,8 +67,9 @@ public record DownloadRequest(VaadinRequest request, VaadinResponse response,
      * Either this method or getOutputStream() may be called to write the
      * response, not both.
      *
-     * @return a <code>PrintWriter</code> for writing character text or empty
-     *         optional if an error happened
+     * @return a <code>PrintWriter</code> for writing character text
+     * @throws UncheckedIOException
+     *             if an I/O error occurred while getting the writer
      */
     public PrintWriter getWriter() {
         try {

@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.server;
 
 import java.io.IOException;
@@ -54,6 +55,9 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
     /**
      * Adds a listener to be notified of transfer progress with a default
      * interval.
+     * <p>
+     * The first long parameter is the current number of bytes transferred, and
+     * the second is the total number of bytes.
      *
      * @param progressHandler
      *            the handler to be called with the current and total bytes

@@ -31,6 +31,7 @@ import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -63,8 +64,28 @@ public class DownloadHandlerView extends Div {
 
         File jsonFile = new File(getClass().getClassLoader()
                 .getResource("download.json").getFile());
+
+        Div forFileWhenStart = new Div("File download whenStart status...");
+        forFileWhenStart.setId("for-file-when-start");
+        Div forFileOnProgress = new Div("File download onProgress status...");
+        forFileOnProgress.setId("for-file-on-progress");
+        Div forFileOnComplete = new Div("File download whenComplete status...");
+        forFileOnComplete.setId("for-file-when-complete");
+        DownloadHandler forFileDownloadHandler = DownloadHandler
+                .forFile(jsonFile).whenStart(() -> {
+                    forFileWhenStart
+                            .setText("File download whenStart status: started");
+                }).onProgress((transfered, total) -> {
+                    forFileOnProgress
+                            .setText("File download onProgress status: "
+                                    + transfered + "/" + total);
+                }, 10).whenComplete(success -> {
+                    forFileWhenStart.setText(
+                            "File download whenComplete status: completed");
+                });
+
         streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(DownloadHandler.forFile(jsonFile));
+                .registerResource(forFileDownloadHandler);
         registrations.add(streamRegistration);
 
         Anchor fileDownload = new Anchor("", "File DownloadHandler shorthand");
@@ -119,6 +140,9 @@ public class DownloadHandlerView extends Div {
 
         add(handlerDownload, fileDownload, classDownload, servletDownload,
                 inputStreamDownload, inputStreamErrorDownload);
+
+        add(new Div());
+        add(forFileWhenStart, forFileOnProgress, forFileOnComplete);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {

@@ -256,42 +256,4 @@ public interface DownloadHandler extends ElementRequestHandler {
             }
         };
     }
-
-    public static void main(String[] args) {
-
-        DownloadHandler.fromCallback(event -> {
-            System.out.println("Download handler logic ...");
-        }).whenStart(() -> System.out.println("Started"))
-                .whenComplete((transferred) -> {
-                    System.out.println(
-                            "Completed successfully, bytes transferred: "
-                                    + transferred);
-                });
-        TransferProgressAware handler = DownloadHandler
-                .forFile(new File("test.txt")).onProgress(
-                        (transferredBytes,
-                                totalBytes) -> System.out.println("Progress: "
-                                        + transferredBytes + "/" + totalBytes),
-                        1024);
-
-        handler.unsubscribe();
-
-        AbstractDownloadHandler handler2 = DownloadHandler
-                .forServletResource("some/path");
-        handler2.addTransferProgressListener(new TransferProgressListener() {
-            @Override
-            public void onComplete(TransferContext context,
-                    long transferredBytes) {
-                System.out.println("Transfer completed with " + transferredBytes
-                        + " bytes");
-            }
-        });
-
-        AbstractDownloadHandler handler1 = new AbstractDownloadHandler() {
-            @Override
-            public void handleTransfer(DownloadRequest event) {
-                System.out.println("Download handler logic ...");
-            }
-        };
-    }
 }

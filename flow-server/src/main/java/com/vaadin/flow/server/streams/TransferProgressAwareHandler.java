@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
@@ -58,7 +59,9 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         if (listeners == null) {
             listeners = new ArrayList<>();
         }
-        return Registration.addAndRemove(listeners, listener);
+        TransferProgressListener wrapper = new TransferProgressListenerWrapper(
+                listener);
+        return Registration.addAndRemove(listeners, wrapper);
     }
 
     @Override
@@ -79,7 +82,7 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
             @Override
             public void onProgress(TransferContext context,
                     long transferredBytes) {
-                progressHandler.accept(transferredBytes, transferredBytes);
+                progressHandler.accept(transferredBytes, context.totalBytes());
             }
 
             @Override
@@ -125,5 +128,48 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         TransferContext transferContext = getTransferContext(transferEvent);
         getListeners()
                 .forEach(listener -> listener.onError(transferContext, ioe));
+    }
+
+    /**
+     * A wrapper for {@link TransferProgressListener} that ensures that UI
+     * updates in transfer progress listeners are pushed to client
+     * asynchronously.
+     */
+    private final class TransferProgressListenerWrapper
+            implements TransferProgressListener {
+        private TransferProgressListener delegate;
+
+        public TransferProgressListenerWrapper(
+                TransferProgressListener delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void onStart(TransferContext context) {
+            context.getUI().access(() -> {
+                delegate.onStart(context);
+            });
+        }
+
+        @Override
+        public void onProgress(TransferContext context, long transferredBytes) {
+            context.getUI().access(() -> {
+                delegate.onProgress(context, transferredBytes);
+            });
+        }
+
+        @Override
+        public void onError(TransferContext context, IOException reason) {
+            context.getUI().access(() -> {
+                delegate.onError(context, reason);
+            });
+        }
+
+        @Override
+        public void onComplete(TransferContext context, long transferredBytes) {
+            context.getUI().access(() -> {
+                delegate.onComplete(context, transferredBytes);
+            });
+        }
     }
 }

@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.server;
 
 import java.io.IOException;
@@ -43,6 +44,12 @@ public interface TransferProgressListener extends Serializable {
      */
     long DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES = 65536;
 
+    /**
+     * Default buffer size for reading data from the input stream.
+     * <p>
+     * Follows the default buffer size of the Java
+     * {@link InputStream#transferTo(OutputStream)}.
+     */
     int DEFAULT_BUFFER_SIZE = 16384;
 
     /**
@@ -146,7 +153,8 @@ public interface TransferProgressListener extends Serializable {
                             .progressReportInterval();
                     if (progressReportInterval > -1 && transferred
                             - lastNotifiedLong >= progressReportInterval) {
-                        listener.onProgress(transferContext, transferred);
+                        long finalTransferred = transferred;
+                        listener.onProgress(transferContext, finalTransferred);
                         lastNotified.put(listener, transferred);
                     }
                 }
