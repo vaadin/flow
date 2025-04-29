@@ -396,7 +396,7 @@ public class VaadinServiceTest {
             String route, boolean flowLayout) {
         Map<String, AvailableViewInfo> clientViews = new HashMap<>();
         clientViews.put(route, new AvailableViewInfo(route, null, false, route,
-                false, false, null, null, null, flowLayout));
+                false, false, null, null, null, flowLayout, null));
         return clientViews;
     }
 

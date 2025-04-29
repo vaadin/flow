@@ -152,7 +152,7 @@ public class TaskUpdateViteTest {
         Assert.assertTrue(
                 "vitePluginFileSystemRouter({isDevMode: devMode}) should be used.",
                 template.contains(
-                        ", vitePluginFileSystemRouter({isDevMode: devMode})"));
+                        "vitePluginFileSystemRouter({isDevMode: devMode}),"));
     }
 
     @Test
@@ -172,7 +172,7 @@ public class TaskUpdateViteTest {
                 template.contains("import vitePluginFileSystemRouter from '"
                         + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"));
         Assert.assertFalse("vitePluginFileSystemRouter() should be used.",
-                template.contains(", vitePluginFileSystemRouter()"));
+                template.contains("vitePluginFileSystemRouter(),"));
 
     }
 

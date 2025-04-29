@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.IOException;
 import java.net.URI;
 
 import org.junit.After;
@@ -75,5 +76,30 @@ public class HtmlObjectTest extends ComponentTest {
 
         Assert.assertEquals(uri.toASCIIString(),
                 object.getElement().getAttribute("data"));
+    }
+
+    @Test
+    public void setDownloadHandlerData_dataAsAResource() {
+        UI ui = new UI();
+        UI.setCurrent(ui);
+        HtmlObject object = new HtmlObject();
+        object.setData(event -> event.getWriter().write("foo"));
+
+        Assert.assertTrue("Data should be set as dynamic resource.",
+                object.getElement().getAttribute("data")
+                        .startsWith("VAADIN/dynamic/resource/-1/"));
+    }
+
+    @Test
+    public void setDownloadHandlerData_dataAsAResourceinCTOR() {
+        UI ui = new UI();
+        UI.setCurrent(ui);
+
+        HtmlObject object = new HtmlObject(
+                event -> event.getWriter().write("foo"), "foo");
+
+        Assert.assertTrue("Data should be set as dynamic resource.",
+                object.getElement().getAttribute("data")
+                        .startsWith("VAADIN/dynamic/resource/-1/"));
     }
 }
