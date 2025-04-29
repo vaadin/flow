@@ -804,7 +804,7 @@ public class NavigationStateRendererTest {
                     .thenReturn(Collections.singletonMap("/client-route",
                             new AvailableViewInfo("", null, false,
                                     "/client-route", false, false, null, null,
-                                    null, false)));
+                                    null, false, null)));
 
             // This should not call attach or beforeEnter on root route
             renderer.handle(
@@ -1104,7 +1104,7 @@ public class NavigationStateRendererTest {
                     .thenReturn(Collections.singletonMap("/client-route",
                             new AvailableViewInfo("Client", null, false,
                                     "/client-route", false, false, null, null,
-                                    null, clientRouteHasFlowLayout)));
+                                    null, clientRouteHasFlowLayout, null)));
 
             NavigationEvent event = new NavigationEvent(
                     new Router(new TestRouteRegistry()),
