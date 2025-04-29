@@ -6,8 +6,6 @@
  * See <https://vaadin.com/commercial-license-and-service-terms> for the full
  * license.
  */
-const loaderUtils = require('loader-utils');
-const fs = require('fs');
 const path = require('path');
 const { rewriteCssUrls } = require('./theme-loader-utils');
 
@@ -20,7 +18,7 @@ const { rewriteCssUrls } = require('./theme-loader-utils');
  * @param map source map for file
  */
 module.exports = function (source, map) {
-  const options = loaderUtils.getOptions(this);
+  const options = this.getOptions();
   const handledResourceFolder = path.dirname(this._module.resource);
   const logger = this.getLogger('theme-loader');
 

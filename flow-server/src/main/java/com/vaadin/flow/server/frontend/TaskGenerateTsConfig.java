@@ -8,8 +8,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +22,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder.
@@ -55,6 +55,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     //@formatter:on
 
     private final File projectRootDir;
+    private final File frontendDirectory;
     private final FeatureFlags featureFlags;
 
     /**
@@ -62,11 +63,15 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
      *
      * @param projectRootDir
      *            project folder where the file will be generated.
+     * @param projectRootDir
+     *            project folder where the frontend sources are stored.
      * @param featureFlags
      *            available feature flags and their status
      */
-    TaskGenerateTsConfig(File projectRootDir, FeatureFlags featureFlags) {
+    TaskGenerateTsConfig(File projectRootDir, File frontendDirectory,
+            FeatureFlags featureFlags) {
         this.projectRootDir = projectRootDir;
+        this.frontendDirectory = frontendDirectory;
         this.featureFlags = featureFlags;
     }
 
@@ -92,6 +97,10 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
                 config = config.replaceFirst("\"target\".*",
                         "\"target\": \"es2019\",");
             }
+            config = config.replaceAll("%FRONTEND%",
+                    projectRootDir.toPath()
+                            .relativize(frontendDirectory.toPath()).toString()
+                            .replaceAll("\\\\", "/"));
             return config;
         }
     }

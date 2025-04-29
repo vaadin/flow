@@ -276,7 +276,8 @@ public class NodeTasks implements FallibleCommand {
 
     private void addGenerateTsConfigTask(Options builder) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                builder.npmFolder, builder.getFeatureFlags());
+                builder.npmFolder, builder.frontendDirectory,
+                builder.getFeatureFlags());
         commands.add(taskGenerateTsConfig);
 
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
