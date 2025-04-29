@@ -208,8 +208,9 @@ public class MutableTreeRevision extends TreeRevision {
 
             LinkedHashMap<String, Id> map = new LinkedHashMap<>(
                     node.mapChildren());
-            if (mapUpdater.apply(map) instanceof Reject error) {
-                return error;
+            Reject maybeError = mapUpdater.apply(map);
+            if (maybeError != null) {
+                return maybeError;
             }
 
             updatedNodes.put(resolvedParentId, new Data(node.parent(),
@@ -224,8 +225,9 @@ public class MutableTreeRevision extends TreeRevision {
             Data node = data(resolvedParentId);
 
             ArrayList<Id> list = new ArrayList<>(node.listChildren());
-            if (listUpdater.apply(list) instanceof Reject error) {
-                return error;
+            Reject maybeError = listUpdater.apply(list);
+            if (maybeError != null) {
+                return maybeError;
             }
 
             updatedNodes.put(resolvedParentId, new Data(node.parent(),
@@ -254,9 +256,10 @@ public class MutableTreeRevision extends TreeRevision {
 
             detachedNodes.remove(resolvedChildId);
 
-            if (attacher.apply(resolvedParentId,
-                    resolvedChildId) instanceof Reject error) {
-                return error;
+            Reject maybeError = attacher.apply(resolvedParentId,
+                    resolvedChildId);
+            if (maybeError != null) {
+                return maybeError;
             }
 
             Data child = data(resolvedChildId);
@@ -639,12 +642,14 @@ public class MutableTreeRevision extends TreeRevision {
 
         var builder = new ResultBuilder(adoptAs);
 
-        if (builder.detach(childId) instanceof Reject error) {
-            return error;
+        Reject maybeError = builder.detach(childId);
+        if (maybeError != null) {
+            return maybeError;
         }
 
-        if (builder.attachAs(nodeId, key, childId) instanceof Reject error) {
-            return error;
+        maybeError = builder.attachAs(nodeId, key, childId);
+        if (maybeError != null) {
+            return maybeError;
         }
 
         return builder.build();
@@ -657,12 +662,14 @@ public class MutableTreeRevision extends TreeRevision {
 
         var builder = new ResultBuilder(adoptAt);
 
-        if (builder.detach(childId) instanceof Reject error) {
-            return error;
+        Reject maybeError = builder.detach(childId);
+        if (maybeError != null) {
+            return maybeError;
         }
 
-        if (builder.attachAt(nodeId, pos, childId) instanceof Reject error) {
-            return error;
+        maybeError = builder.attachAt(nodeId, pos, childId);
+        if (maybeError != null) {
+            return maybeError;
         }
 
         return builder.build();
@@ -746,14 +753,14 @@ public class MutableTreeRevision extends TreeRevision {
         } else {
             var builder = new ResultBuilder(put);
 
-            if (builder.createNode(commandId, value,
-                    null) instanceof Reject error) {
-                return error;
+            Reject maybeError = builder.createNode(commandId, value, null);
+            if (maybeError != null) {
+                return maybeError;
             }
 
-            if (builder.attachAs(nodeId, key,
-                    commandId) instanceof Reject error) {
-                return error;
+            maybeError = builder.attachAs(nodeId, key, commandId);
+            if (maybeError != null) {
+                return maybeError;
             }
 
             return builder.build();
@@ -775,14 +782,15 @@ public class MutableTreeRevision extends TreeRevision {
 
             builder.updatedNodes.put(commandId, new Alias(childId));
         } else {
-            if (builder.createNode(commandId, putIfAbsent.value(),
-                    putIfAbsent.scopeOwner()) instanceof Reject error) {
-                return error;
+            Reject maybeError = builder.createNode(commandId,
+                    putIfAbsent.value(), putIfAbsent.scopeOwner());
+            if (maybeError != null) {
+                return maybeError;
             }
 
-            if (builder.attachAs(nodeId, key,
-                    commandId) instanceof Reject error) {
-                return error;
+            maybeError = builder.attachAs(nodeId, key, commandId);
+            if (maybeError != null) {
+                return maybeError;
             }
         }
 
@@ -794,14 +802,16 @@ public class MutableTreeRevision extends TreeRevision {
 
         var builder = new ResultBuilder(insert);
 
-        if (builder.createNode(commandId, insert.value(),
-                insert.scopeOwner()) instanceof Reject error) {
-            return error;
+        Reject maybeError = builder.createNode(commandId, insert.value(),
+                insert.scopeOwner());
+        if (maybeError != null) {
+            return maybeError;
         }
 
-        if (builder.attachAt(insert.targetNodeId(), insert.position(),
-                commandId) instanceof Reject error) {
-            return error;
+        maybeError = builder.attachAt(insert.targetNodeId(), insert.position(),
+                commandId);
+        if (maybeError != null) {
+            return maybeError;
         }
 
         return builder.build();
@@ -831,8 +841,9 @@ public class MutableTreeRevision extends TreeRevision {
 
         var builder = new ResultBuilder(remove);
 
-        if (builder.detach(nodeId) instanceof Reject error) {
-            return error;
+        Reject maybeError = builder.detach(nodeId);
+        if (maybeError != null) {
+            return maybeError;
         }
 
         return builder.build();
