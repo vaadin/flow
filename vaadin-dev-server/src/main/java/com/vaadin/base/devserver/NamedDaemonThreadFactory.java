@@ -16,6 +16,7 @@
 
 package com.vaadin.base.devserver;
 
+import java.util.Objects;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,8 +34,17 @@ public class NamedDaemonThreadFactory implements ThreadFactory {
 
     private final String namePrefix;
 
+    /**
+     * Constructs a new {@code NamedDaemonThreadFactory} with the specified name
+     * prefix for the threads created by this factory.
+     *
+     * @param namePrefix
+     *            the prefix to be used for naming threads created by this
+     *            factory, not {@literal null}.
+     */
     public NamedDaemonThreadFactory(String namePrefix) {
-        this.namePrefix = namePrefix;
+        this.namePrefix = Objects.requireNonNull(namePrefix,
+                "namePrefix must not be null");
     }
 
     @Override
