@@ -112,6 +112,8 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 "com.fasterxml.jackson.databind.ser.std.ToStringSerializer",
                 DefaultErrorHandler.class.getName(), MenuData.class.getName(),
                 AvailableViewInfo.class.getName(),
+                AvailableViewInfo.DetailDeserializer.class.getName(),
+                AvailableViewInfo.DetailSerializer.class.getName(),
                 RouteParamType.class.getName() };
     }
 

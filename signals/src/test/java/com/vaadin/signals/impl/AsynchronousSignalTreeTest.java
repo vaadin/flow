@@ -20,7 +20,7 @@ import com.vaadin.signals.impl.SignalTree.Type;
 
 public class AsynchronousSignalTreeTest {
 
-    static class AsyncTestTree extends AsynchronousSignalTree {
+    public static class AsyncTestTree extends AsynchronousSignalTree {
         List<List<SignalCommand>> submitted = new ArrayList<>();
 
         @Override

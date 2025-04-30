@@ -36,6 +36,12 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>open</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
             <version>8.5.0.4</version>
         </dependency>
 

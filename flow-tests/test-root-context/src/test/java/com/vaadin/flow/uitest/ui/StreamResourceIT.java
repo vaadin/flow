@@ -33,6 +33,13 @@ import org.openqa.selenium.WebElement;
 public class StreamResourceIT extends AbstractStreamResourceIT {
 
     @Test
+    public void getElementStreamResource() throws IOException {
+        open();
+
+        assertDownloadedContent("esrAnchor", "esr-filename.txt");
+    }
+
+    @Test
     public void getDynamicVaadinResource() throws IOException {
         open();
 
