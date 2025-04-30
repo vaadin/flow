@@ -17,6 +17,9 @@
 package com.vaadin.flow.server;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collection;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
@@ -66,9 +69,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *
      * @param file
      *            file to server for download
-     * @return DownloadHandler instance for file
+     * @return DownloadHandler implementation for download a file
      */
-    static AbstractDownloadHandler forFile(File file) {
+    static FileDownloadHandler forFile(File file) {
         return new FileDownloadHandler(file);
     }
 
@@ -79,9 +82,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            file to server for download
      * @param name
      *            download name to use
-     * @return DownloadHandler instance for file
+     * @return DownloadHandler implementation for download a file
      */
-    static AbstractDownloadHandler forFile(File file, String name) {
+    static FileDownloadHandler forFile(File file, String name) {
         return new FileDownloadHandler(file, name);
     }
 
@@ -95,9 +98,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            download name to use
      * @param listener
      *            listener for transfer progress events
-     * @return DownloadHandler instance for file
+     * @return DownloadHandler implementation for download a file
      */
-    static AbstractDownloadHandler forFile(File file, String name,
+    static FileDownloadHandler forFile(File file, String name,
             TransferProgressListener listener) {
         return new FileDownloadHandler(file, name, listener);
     }
@@ -113,9 +116,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            class for resource module
      * @param resourceName
      *            name of class resource
-     * @return DownloadHandler instance for class resource
+     * @return DownloadHandler implementation for download a class resource
      */
-    static AbstractDownloadHandler forClassResource(Class<?> clazz,
+    static ClassDownloadHandler forClassResource(Class<?> clazz,
             String resourceName) {
         return new ClassDownloadHandler(clazz, resourceName);
     }
@@ -133,9 +136,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            name of class resource
      * @param fileName
      *            download resourceName to use
-     * @return DownloadHandler instance for class resource
+     * @return DownloadHandler implementation for download a class resource
      */
-    static AbstractDownloadHandler forClassResource(Class<?> clazz,
+    static ClassDownloadHandler forClassResource(Class<?> clazz,
             String resourceName, String fileName) {
         return new ClassDownloadHandler(clazz, resourceName, fileName);
     }
@@ -156,9 +159,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            download resourceName to use
      * @param listener
      *            listener for transfer progress events
-     * @return DownloadHandler instance for class resource
+     * @return DownloadHandler implementation for download a class resource
      */
-    static AbstractDownloadHandler forClassResource(Class<?> clazz,
+    static ClassDownloadHandler forClassResource(Class<?> clazz,
             String resourceName, String fileName,
             TransferProgressListener listener) {
         return new ClassDownloadHandler(clazz, resourceName, fileName,
@@ -173,9 +176,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *
      * @param path
      *            the servlet path to the file
-     * @return DownloadHandler instance for servlet resource
+     * @return DownloadHandler implementation for download a servlet resource
      */
-    static AbstractDownloadHandler forServletResource(String path) {
+    static ServletResourceDownloadHandler forServletResource(String path) {
         return new ServletResourceDownloadHandler(path);
     }
 
@@ -192,15 +195,32 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            the servlet path to the file
      * @param name
      *            resource name
-     * @return DownloadHandler instance for servlet resource
+     * @return DownloadHandler implementation for download a servlet resource
      */
-    static AbstractDownloadHandler forServletResource(String path,
+    static ServletResourceDownloadHandler forServletResource(String path,
             String name) {
         return new ServletResourceDownloadHandler(path, name);
     }
 
-    static AbstractDownloadHandler forServletResource(String path, String name,
-            TransferProgressListener listener) {
+    /**
+     * Generate a download handler for a servlet resource.
+     * <p>
+     * For instance for the file {@code webapp/WEB-INF/servlet.json} the path
+     * would be {@code /WEB-INF/servlet.json}
+     * <p>
+     * Name is appended to the download url as the logical name of the target
+     * file.
+     *
+     * @param path
+     *            the servlet path to the file
+     * @param name
+     *            resource name
+     * @param listener
+     *            listener for transfer progress events
+     * @return DownloadHandler implementation for download a servlet resource
+     */
+    static ServletResourceDownloadHandler forServletResource(String path,
+            String name, TransferProgressListener listener) {
         return new ServletResourceDownloadHandler(path, name, listener);
     }
 
@@ -209,9 +229,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      *
      * @param handler
      *            handler function that will be called on download
-     * @return DownloadHandler instance for inputStream
+     * @return DownloadHandler implementation for download from an input stream
      */
-    static AbstractDownloadHandler fromInputStream(
+    static InputStreamDownloadHandler fromInputStream(
             SerializableFunction<DownloadRequest, DownloadResponse> handler) {
         return new InputStreamDownloadHandler(handler);
     }
@@ -223,15 +243,26 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            handler function that will be called on download
      * @param name
      *            resource name
-     * @return DownloadHandler instance for inputStream
+     * @return DownloadHandler implementation for download from an input stream
      */
-    static AbstractDownloadHandler fromInputStream(
+    static InputStreamDownloadHandler fromInputStream(
             SerializableFunction<DownloadRequest, DownloadResponse> handler,
             String name) {
         return new InputStreamDownloadHandler(handler, name);
     }
 
-    static AbstractDownloadHandler fromInputStream(
+    /**
+     * Generate a function for downloading from a generated inputStream.
+     *
+     * @param handler
+     *            handler function that will be called on download
+     * @param name
+     *            resource name
+     * @param listener
+     *            listener for transfer progress events
+     * @return DownloadHandler implementation for download from an input stream
+     */
+    static InputStreamDownloadHandler fromInputStream(
             SerializableFunction<DownloadRequest, DownloadResponse> handler,
             String name, TransferProgressListener listener) {
         return new InputStreamDownloadHandler(handler, name, listener);
@@ -241,11 +272,18 @@ public interface DownloadHandler extends ElementRequestHandler {
      * Generate a download handler using a callback function.
      * <p>
      * This helper is useful when you want to chaing the handling lambda and
-     * progress listeners.
+     * download progress listeners.
+     * <p>
+     * Note that the {@link TransferProgressListener} is not automatically
+     * invoked for the returned {@link DownloadHandler}. You need to call
+     * {@link TransferProgressListener#transfer(InputStream, OutputStream, TransferContext, Collection)}
+     * in your implementation of <code>handler</code> for <code>onStart</code>,
+     * <code>onProgress</code> and <code>onComplete</code> to be invoked
+     * automatically, whereas <code>onError</code> should be called directly.
      *
      * @param handler
      *            handler function that will be called on download
-     * @return DownloadHandler instance for inputStream
+     * @return DownloadHandler implementation for a given callback
      */
     static AbstractDownloadHandler fromCallback(
             SerializableConsumer<DownloadRequest> handler) {
