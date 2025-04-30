@@ -110,7 +110,7 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
     }
 
     @Override
-    public void unsubscribe() {
+    public void unsubscribeFromTransferProgress() {
         if (listeners != null) {
             listeners.clear();
             listeners = null;

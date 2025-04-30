@@ -18,7 +18,6 @@ package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -91,7 +90,7 @@ public class AbstractDownloadHandlerTest {
     @Test
     public void addTransferProgressListener_listenerAdded_listenersUnsubscribed() {
         handler.addTransferProgressListener(listener);
-        handler.unsubscribe();
+        handler.unsubscribeFromTransferProgress();
         handler.getListeners().forEach(l -> l.onStart(mockContext));
         Mockito.verify(listener, Mockito.times(0)).onStart(mockContext);
     }

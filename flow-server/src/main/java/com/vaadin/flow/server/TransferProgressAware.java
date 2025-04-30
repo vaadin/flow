@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -82,5 +81,5 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
     /**
      * Unsubscribes from progress updates.
      */
-    void unsubscribe();
+    void unsubscribeFromTransferProgress();
 }
