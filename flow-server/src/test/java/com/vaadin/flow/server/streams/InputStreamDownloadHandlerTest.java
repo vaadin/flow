@@ -37,9 +37,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
 public class InputStreamDownloadHandlerTest {
-
-    private static final String PATH_TO_FILE = "downloads/generated_text_file.txt";
-
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
@@ -52,7 +49,7 @@ public class InputStreamDownloadHandlerTest {
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
         downloadRequest = new DownloadRequest(request, response, session,
-                "download", "text/plain", null);
+                "download", "application/octet-stream", null);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
     }
@@ -65,7 +62,7 @@ public class InputStreamDownloadHandlerTest {
         DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            return new DownloadResponse(inputStream, "download", "text/plain",
+            return new DownloadResponse(inputStream, "download", "application/octet-stream",
                     data.length);
         }, "download", new TransferProgressListener() {
             @Override
@@ -108,7 +105,7 @@ public class InputStreamDownloadHandlerTest {
         Assert.assertArrayEquals(new long[] { 65536, 131072 },
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
-        Mockito.verify(response).setContentType("text/plain");
+        Mockito.verify(response).setContentType("application/octet-stream");
     }
 
     @Test
@@ -127,7 +124,7 @@ public class InputStreamDownloadHandlerTest {
             // Simulate a download of 165000 bytes
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            return new DownloadResponse(inputStream, "download", "text/plain",
+            return new DownloadResponse(inputStream, "download", "application/octet-stream",
                     data.length);
         }, "download", new TransferProgressListener() {
             @Override

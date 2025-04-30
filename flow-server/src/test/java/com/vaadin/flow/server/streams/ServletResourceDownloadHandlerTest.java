@@ -44,7 +44,7 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 public class ServletResourceDownloadHandlerTest {
-    private static final String PATH_TO_FILE = "downloads/generated_text_file.txt";
+    private static final String PATH_TO_FILE = "downloads/generated_binary_file.bin";
 
     private VaadinRequest request;
     private VaadinResponse response;
@@ -70,7 +70,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(servletContext.getResourceAsStream(Mockito.anyString()))
                 .thenReturn(stream);
         downloadRequest = new DownloadRequest(request, response, session,
-                "download", "text/plain", null);
+                "download", "application/octet-stream", null);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
     }
@@ -123,7 +123,7 @@ public class ServletResourceDownloadHandlerTest {
         Assert.assertArrayEquals(new long[] { 65536, 131072 },
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
-        Mockito.verify(response).setContentType("text/plain");
+        Mockito.verify(response).setContentType("application/octet-stream");
     }
 
     @Test
