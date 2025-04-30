@@ -14,7 +14,7 @@ const urlMatcher = /(url\()(\'|\")?(\.\/|\.\.\/)(\S*)(\2\))/g;
  * @param map source map for file
  */
 module.exports = function (source, map) {
-  const options = loaderUtils.getOptions(this);
+  const options = this.getOptions();
   const handledResourceFolder = path.dirname(this._module.resource);
   const logger = this.getLogger("theme-loader");
 

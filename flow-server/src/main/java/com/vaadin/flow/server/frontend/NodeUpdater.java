@@ -317,32 +317,30 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("webpack", "4.47.0");
-        defaults.put("webpack-cli", "3.3.11");
-        defaults.put("webpack-dev-server", "3.11.0");
-        defaults.put("webpack-babel-multi-target-plugin", "2.5.0");
+        defaults.put("webpack", "5.99.6");
+        defaults.put("webpack-cli", "6.0.1");
+        defaults.put("webpack-dev-server", "5.2.1");
         // Defining loader until a resolution exists to issue
         // https://github.com/DanielSchaffer/webpack-babel-multi-target-plugin/issues/94
-        defaults.put("babel-loader", "8.2.2");
+        defaults.put("babel-loader", "10.0.0");
+        defaults.put("@babel/preset-env", "7.27.1");
         // Defining html-webpack-plugin due to same issue as babel-loader
-        defaults.put("html-webpack-plugin", "4.5.2");
-        defaults.put("copy-webpack-plugin", "5.1.2");
-        defaults.put("compression-webpack-plugin", "4.0.1");
+        defaults.put("html-webpack-plugin", "5.6.3");
+        defaults.put("copy-webpack-plugin", "13.0.0");
+        defaults.put("compression-webpack-plugin", "11.1.0");
         defaults.put("extra-watch-webpack-plugin", "1.0.3");
-        defaults.put("webpack-merge", "4.2.2");
-        defaults.put("raw-loader", "3.1.0");
-        defaults.put("css-loader", "5.2.7");
+        defaults.put("webpack-merge", "6.0.1");
+        defaults.put("css-loader", "7.1.2");
 
-        defaults.put("typescript", "4.0.3");
-        defaults.put("ts-loader", "8.0.12");
-        defaults.put("file-loader", "6.1.0");
-        defaults.put("extract-loader", "5.1.0");
-        defaults.put("lit-css-loader", "0.0.4");
-        defaults.put("loader-utils", "2.0.4");
+        defaults.put("typescript", "4.9.5");
+        defaults.put("ts-loader", "9.5.2");
+        defaults.put("lit-css-loader", "3.0.1");
+        defaults.put("loader-utils", "3.3.1");
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.5.0");
+        defaults.put("mkdirp", "3.0.1");
 
         defaults.put("@types/node", "18.14.0");
         return defaults;

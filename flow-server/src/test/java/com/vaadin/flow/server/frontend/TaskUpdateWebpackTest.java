@@ -20,6 +20,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -159,6 +160,19 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     }
 
+    @Test
+    public void should_updateMergeImportOnOldGeneratedWebpackConfig()
+            throws Exception {
+        Assert.assertFalse("No webpack config file should be present.",
+                webpackConfig.exists());
+        FileUtils.writeLines(webpackConfig, Arrays.asList(
+                "const merge = require('webpack-merge');",
+                "const flowDefaults = require('./webpack.generated.js');",
+                "module.exports = merge(flowDefaults, {", "});"));
+        webpackUpdater.execute();
+        assertWebpackConfigContent();
+    }
+
     private void assertWebpackGeneratedConfigContent(String entryPoint,
             String outputFolder) throws IOException {
 
@@ -180,7 +194,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .collect(Collectors.toList());
 
         Assert.assertTrue("No webpack-merge imported.", webpackContents
-                .contains("const merge = require('webpack-merge');"));
+                .contains("const { merge } = require('webpack-merge');"));
         Assert.assertTrue("No flowDefaults imported.", webpackContents.contains(
                 "const flowDefaults = require('./webpack.generated.js');"));
 

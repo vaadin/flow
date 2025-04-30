@@ -31,6 +31,11 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PwaTestIT extends ChromeBrowserTest {
 
+    @Override
+    protected String getTestPath() {
+        return "";
+    }
+
     @Test
     public void testPwaResources() throws IOException, JSONException {
         open();

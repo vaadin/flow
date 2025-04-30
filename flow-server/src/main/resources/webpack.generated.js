@@ -7,8 +7,8 @@
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 
 // Flow plugins
 const StatsPlugin = require('@vaadin/stats-plugin');
@@ -59,7 +59,7 @@ const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
 const flowFrontendFolder = '[to-be-generated-by-flow]';
 
 // make sure that build folder exists before outputting anything
-const mkdirp = require('mkdirp');
+const { mkdirp } = require('mkdirp');
 
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 
@@ -159,64 +159,94 @@ module.exports = {
   },
 
   devServer: {
+    hot: false, // disable HMR
     // webpack-dev-server serves ./ ,  webpack-generated,  and java webapp
-    contentBase: [mavenOutputFolderForFlowBundledFiles, 'src/main/webapp'],
-    after: function(app, server) {
-      app.get(`/stats.json`, function(req, res) {
+    static: [mavenOutputFolderForFlowBundledFiles, path.resolve(__dirname, 'src', 'main', 'webapp')],
+    devMiddleware: {
+      publicPath: '/VAADIN'
+    },
+    setupMiddlewares: function(middlewares, devServer) {
+      devServer.app.get(`/stats.json`, function(req, res) {
         res.json(stats);
       });
-      app.get(`/stats.hash`, function(req, res) {
+      devServer.app.get(`/stats.hash`, function(req, res) {
         res.json(stats.hash.toString());
       });
-      app.get(`/assetsByChunkName`, function(req, res) {
+      devServer.app.get(`/assetsByChunkName`, function(req, res) {
         res.json(stats.assetsByChunkName);
       });
-      app.get(`/stop`, function(req, res) {
+      devServer.app.get(`/stop`, function(req, res) {
         // eslint-disable-next-line no-console
         console.log("Stopped 'webpack-dev-server'");
         process.exit(0);
       });
+      return middlewares;
     }
   },
 
+  optimization: {
+    minimizer: [new TerserPlugin({ extractComments: false })],
+  },
   module: {
     rules: [
-      ...(transpile ? [
-        {
-        test: /\.tsx?$/,
-        use: [ BabelMultiTargetPlugin.loader(), 'ts-loader' ],
+      ...(transpile ? [{
+        test: /\.[jt]sx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              plugins: [
+                // workaround for Safari 10 scope issue (https://bugs.webkit.org/show_bug.cgi?id=159270)
+                "@babel/plugin-transform-block-scoping",
+              ],
+              presets: [
+                [
+                  '@babel/preset-env',
+                  {
+                    useBuiltIns: false,
+                    targets: {
+                      browsers: 'last 1 Chrome major versions'
+                    },
+                    modules: false,
+                  }
+                ]
+              ],
+            }
+          },
+        ]
       }
-      ] : [{
+      ] : []),
+      {
         test: /\.tsx?$/,
         use: ['ts-loader']
-      }]),
-      ...(transpile ? [{ // Files that Babel has to transpile
-        test: /\.js$/,
-        use: [BabelMultiTargetPlugin.loader()]
-      }] : []),
+      },
       {
         test: /\.css$/i,
         use: [
           {
             loader: 'css-loader',
             options: {
-              url: (url, resourcePath) => {
-                // css urls may contain query string or fragment identifiers
-                // that should removed before resolving real path
-                // e.g
-                //  ../webfonts/fa-solid-900.svg#fontawesome
-                //  ../webfonts/fa-brands-400.eot?#iefix
-                if(url.includes('?'))
+              url: {
+                filter: (url, resourcePath) => {
+                  // css urls may contain query string or fragment identifiers
+                  // that should removed before resolving real path
+                  // e.g
+                  //  ../webfonts/fa-solid-900.svg#fontawesome
+                  //  ../webfonts/fa-brands-400.eot?#iefix
+                  if (url.includes('?'))
                     url = url.substring(0, url.indexOf('?'));
-                if(url.includes('#'))
+                  if (url.includes('#'))
                     url = url.substring(0, url.indexOf('#'));
 
-                // Only translate files from node_modules
-                const resolve = resourcePath.match(/(\\|\/)node_modules\1/)
-                  && fs.existsSync(path.resolve(path.dirname(resourcePath), url));
-                const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
-                return resolve || themeResource;
+                  // Only translate files from node_modules
+                  const resolve = resourcePath.match(/(\\|\/)node_modules\1/)
+                      && fs.existsSync(path.resolve(path.dirname(resourcePath), url));
+                  const themeResource = resourcePath.match(themePartRegex) && url.match(/^themes\/[\s\S]*?\//);
+                  return resolve || themeResource;
+                }
               },
+              esModule: false,
               // use theme-loader to also handle any imports in css files
               importLoaders: 1
             },
@@ -234,21 +264,28 @@ module.exports = {
       {
         // File-loader only copies files used as imports in .js files or handled by css-loader
         test: /\.(png|gif|jpg|jpeg|svg|eot|woff|woff2|otf|ttf)$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            outputPath: 'static/',
-            name(resourcePath, resourceQuery) {
-              if (resourcePath.match(/(\\|\/)node_modules\1/)) {
-                return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
+        type: 'asset/resource',
+        generator: {
+          filename(pathData) {
+            const resourcePath = pathData.filename;
+            const prefix = 'static/';
+
+            if (resourcePath.includes('node_modules')) {
+              const match = /([\\/])node_modules\1(?!.*node_modules)(\S+)/.exec(resourcePath);
+              if (match && match[2]) {
+                return prefix + match[2].replace(/\\/g, '/');
               }
-              if (resourcePath.match(/(\\|\/)frontend\1/)) {
-                return /(\\|\/)frontend\1(?!.*frontend)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, "/");
-              }
-              return '[path][name].[ext]';
             }
+
+            if (resourcePath.match(/(^|[\\/])frontend[\\/]/)) {
+              const match = /(?:^|[\\/])frontend([\\/])(?!.*frontend)(\S+)/.exec(resourcePath);
+              if (match && match[2]) {
+                  return prefix + match[2].replace(/\\/g, "/");
+              }
+            }
+            return prefix +'[path][name][ext]';
           }
-        }],
+        },
       },
     ]
   },
@@ -259,36 +296,6 @@ module.exports = {
   plugins: [
     // Generate compressed bundles when not devMode
     ...(devMode ? [] : [new CompressionPlugin()]),
-
-    // Transpile with babel, and produce different bundles per browser
-    ...(transpile ? [new BabelMultiTargetPlugin({
-      babel: {
-        plugins: [
-          // workaround for Safari 10 scope issue (https://bugs.webkit.org/show_bug.cgi?id=159270)
-          "@babel/plugin-transform-block-scoping",
-        ],
-
-        presetOptions: {
-          useBuiltIns: false // polyfills are provided from webcomponents-loader.js
-        }
-      },
-      targets: {
-        'es6': { // Evergreen browsers
-          browsers: [
-            // It guarantees that babel outputs pure es6 in bundle and in stats.json
-            // In the case of browsers no supporting certain feature it will be
-            // covered by the webcomponents-loader.js
-            'last 1 Chrome major versions'
-          ],
-        },
-        'es5': { // IE11
-          browsers: [
-            'ie 11'
-          ],
-          tagAssetsWithKey: true, // append a suffix to the file name
-        }
-      }
-    })] : []),
 
     new ApplicationThemePlugin(themeOptions),
 
@@ -318,10 +325,14 @@ module.exports = {
 
     // Copy webcomponents polyfills. They are not bundled because they
     // have its own loader based on browser quirks.
-    new CopyWebpackPlugin([{
-      from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
-      to: `${build}/webcomponentsjs/`,
-      ignore: ['*.md', '*.json']
-    }]),
+    new CopyWebpackPlugin({
+      patterns: [{
+        from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
+        to: `${build}/webcomponentsjs/`,
+        globOptions: {
+          ignore: ['*.md', '*.json']
+        }
+      }]
+    }),
   ]
 };
