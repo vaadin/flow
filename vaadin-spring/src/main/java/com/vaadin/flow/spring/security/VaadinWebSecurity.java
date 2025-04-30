@@ -89,9 +89,6 @@ public abstract class VaadinWebSecurity {
     @Autowired
     private NavigationAccessControl accessControl;
 
-    @Autowired(required = false)
-    private Customizer<VaadinWebSecurityConfigurer> customizer;
-
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
     private final VaadinWebSecurityConfigurer configurer = new VaadinWebSecurityConfigurer();
@@ -114,9 +111,6 @@ public abstract class VaadinWebSecurity {
             vwsc.navigationAccessControl(getNavigationAccessControl());
             vwsc.enableNavigationAccessControl(enableNavigationAccessControl());
             addLogoutHandlers(vwsc::addToLogoutHandlers);
-            if (customizer != null) {
-                customizer.customize(vwsc);
-            }
         });
         configure(http);
         return http.build();
