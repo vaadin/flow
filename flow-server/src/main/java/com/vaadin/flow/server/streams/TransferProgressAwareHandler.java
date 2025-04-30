@@ -34,7 +34,8 @@ import com.vaadin.flow.shared.Registration;
  * handlers.
  *
  * @param <T>
- *            type of transfer event, e.g. {@link DownloadRequest}
+ *            type of transfer event, e.g.
+ *            {@link com.vaadin.flow.server.DownloadHandler}
  */
 public abstract class TransferProgressAwareHandler<R, T extends TransferProgressAware<T>>
         implements TransferProgressAware<T> {

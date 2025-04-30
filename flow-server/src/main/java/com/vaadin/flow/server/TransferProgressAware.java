@@ -72,7 +72,7 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
      * successfully or with an error. Gives a <code>Boolean</code> indicating
      * whether the transfer was completed successfully (true) or not (false).
      *
-     * @param completeHandler
+     * @param completeOrTerminateHandler
      *            the handler to be called when the transfer is completed
      * @return this instance for method chaining
      */
