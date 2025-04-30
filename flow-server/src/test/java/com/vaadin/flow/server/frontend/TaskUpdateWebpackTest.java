@@ -32,7 +32,6 @@ import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
@@ -97,6 +96,26 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater.execute();
 
         Assert.assertTrue("webpack.config.js was not created.",
+                webpackConfig.exists());
+        Assert.assertTrue("webpack.generated.js was not created.",
+                webpackGenerated.exists());
+        assertWebpackConfigContent();
+        assertWebpackGeneratedConfigContent(
+                "target/frontend/generated-flow-imports.js", "target/webapp",
+                "target/classes");
+    }
+
+    @Test
+    public void should_updateWebpackConfig() throws Exception {
+        Files.write(webpackConfig.toPath(), List.of(
+                "const { merge } = require('webpack-merge');",
+                "const flowDefaults = require('./webpack.generated.js');",
+                "module.exports = merge(flowDefaults,", ");"));
+        Assert.assertFalse("No generated config file should be present.",
+                webpackGenerated.exists());
+        webpackUpdater.execute();
+
+        Assert.assertTrue("webpack.config.js was deleted.",
                 webpackConfig.exists());
         Assert.assertTrue("webpack.generated.js was not created.",
                 webpackGenerated.exists());
@@ -351,7 +370,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .collect(Collectors.toList());
 
         Assert.assertTrue("No webpack-merge imported.", webpackContents
-                .contains("const merge = require('webpack-merge');"));
+                .contains("const { merge } = require('webpack-merge');"));
         Assert.assertTrue("No flowDefaults imported.", webpackContents.contains(
                 "const flowDefaults = require('./webpack.generated.js');"));
 

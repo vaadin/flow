@@ -18,11 +18,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-import com.vaadin.flow.server.ExecutionFailedException;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.ExecutionFailedException;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
@@ -141,6 +141,7 @@ public class TaskNotifyWebpackConfExistenceWhileUsingVite
 
     private String removeDefaults(String content) {
         return content.replace("constmerge=require('webpack-merge');", "")
+                .replace("const{merge}=require('webpack-merge');", "")
                 .replace("constflowDefaults=require('./webpack.generated.js');",
                         "")
                 .replace("module.exports=merge(flowDefaults,);", "");

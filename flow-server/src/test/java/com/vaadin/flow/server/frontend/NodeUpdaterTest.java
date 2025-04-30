@@ -164,11 +164,11 @@ public class NodeUpdaterTest {
         expectedDependencies.add("extra-watch-webpack-plugin");
         expectedDependencies.add("webpack-merge");
         expectedDependencies.add("css-loader");
-        expectedDependencies.add("extract-loader");
+        expectedDependencies.add("extract-loader-5");
         expectedDependencies.add("lit-css-loader");
-        expectedDependencies.add("file-loader");
         expectedDependencies.add("loader-utils");
         expectedDependencies.add("workbox-webpack-plugin");
+        expectedDependencies.add("mkdirp");
         expectedDependencies.add("chokidar");
         expectedDependencies.add("strip-css-comments");
 
