@@ -28,7 +28,7 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * A context that is given to all data transfer progress listeners. Holds the
  * references that may be needed for UI updates in listeners, e.g. showing a
- * data transder progress or a notification.
+ * data transfer progress or a notification.
  *
  * @param request
  *            current Vaadin request instance
