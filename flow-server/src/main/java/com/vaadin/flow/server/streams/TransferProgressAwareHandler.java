@@ -169,5 +169,10 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
                 delegate.onComplete(context, transferredBytes);
             });
         }
+
+        @Override
+        public long progressReportInterval() {
+            return delegate.progressReportInterval();
+        }
     }
 }
