@@ -36,7 +36,7 @@ import com.vaadin.flow.dom.Element;
  */
 public record DownloadRequest(VaadinRequest request, VaadinResponse response,
         VaadinSession session, String fileName, String contentType,
-        Element owningElement) implements Serializable {
+        Element owningElement) {
 
     /**
      * Returns a <code>OutputStream</code> for writing binary data in the
