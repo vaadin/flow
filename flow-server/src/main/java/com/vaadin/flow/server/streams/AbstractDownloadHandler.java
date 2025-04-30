@@ -40,11 +40,7 @@ public abstract class AbstractDownloadHandler extends
     public void handleDownloadRequest(DownloadRequest request) {
         Collection<TransferProgressListener> listeners = getListeners();
         TransferContext transferContext = getTransferContext(request);
-        listeners.forEach(listener -> {
-            request.getUI().access(() -> {
-                listener.onStart(transferContext);
-            });
-        });
+        listeners.forEach(listener -> listener.onStart(transferContext));
         handleTransfer(request);
     }
 
