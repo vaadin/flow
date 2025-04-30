@@ -71,7 +71,7 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransfer(DownloadRequest downloadRequest) {
+    public void handleDownloadRequest(DownloadRequest downloadRequest) {
         VaadinService service = downloadRequest.getRequest().getService();
         if (service instanceof VaadinServletService servletService) {
             try (OutputStream outputStream = downloadRequest.getOutputStream();

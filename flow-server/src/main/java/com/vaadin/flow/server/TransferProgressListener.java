@@ -32,6 +32,11 @@ import com.vaadin.flow.server.streams.TransferContext;
  * <p>
  * Implementations of this interface can be used to monitor the progress of file
  * transfers, such as downloads or uploads.
+ * <p>
+ * It uses {@link com.vaadin.flow.component.UI#access} to send UI changes from
+ * progress listeners when the download or upload request is being handled.
+ * Thus, it needs {@link com.vaadin.flow.component.page.Push} to be enabled in
+ * the application.
  *
  * @since 24.8
  */
@@ -132,6 +137,7 @@ public interface TransferProgressListener extends Serializable {
                 "TransferRequest cannot be null");
         Objects.requireNonNull(listeners,
                 "TransferProgressListener cannot be null");
+        listeners.forEach(listener -> listener.onStart(transferContext));
         long transferred = 0;
         Map<TransferProgressListener, Long> lastNotified = new HashMap<>(
                 listeners.size());

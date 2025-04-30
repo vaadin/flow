@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.servlet.ServletContext;
 import org.junit.Assert;
@@ -32,6 +33,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.TransferProgressListener;
@@ -51,6 +56,7 @@ public class ServletResourceDownloadHandlerTest {
     private VaadinSession session;
     private DownloadRequest downloadRequest;
     private OutputStream outputStream;
+    private Element owner;
 
     @Before
     public void setUp() throws IOException, URISyntaxException {
@@ -69,8 +75,23 @@ public class ServletResourceDownloadHandlerTest {
                 .getResourceAsStream(PATH_TO_FILE);
         Mockito.when(servletContext.getResourceAsStream(Mockito.anyString()))
                 .thenReturn(stream);
+
+        UI ui = Mockito.mock(UI.class);
+        // run the command immediately
+        Mockito.doAnswer(invocation -> {
+            Command command = invocation.getArgument(0);
+            command.execute();
+            return null;
+        }).when(ui).access(Mockito.any(Command.class));
+
+        owner = Mockito.mock(Element.class);
+        Component componentOwner = Mockito.mock(Component.class);
+        Mockito.when(owner.getComponent())
+                .thenReturn(Optional.of(componentOwner));
+        Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+
         downloadRequest = new DownloadRequest(request, response, session,
-                "download", "application/octet-stream", null);
+                "download", "application/octet-stream", owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
     }
@@ -133,6 +154,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(downloadRequest.getRequest()).thenReturn(request);
         Mockito.when(downloadRequest.getSession()).thenReturn(session);
         Mockito.when(downloadRequest.getResponse()).thenReturn(response);
+        Mockito.when(downloadRequest.owningElement()).thenReturn(owner);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),

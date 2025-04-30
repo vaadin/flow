@@ -42,15 +42,13 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
     private Collection<TransferProgressListener> listeners;
 
     /**
-     * Method that is called when the client wants to download from the url
-     * stored for this specific handler registration.
+     * This method is used to get the transfer context from the transfer events
+     * (e.g. {@link com.vaadin.flow.server.DownloadRequest}).
      *
      * @param transferEvent
-     *            transferEvent containing the necessary data for writing the
-     *            response
+     *            the transfer event
+     * @return the transfer context
      */
-    protected abstract void handleTransfer(R transferEvent);
-
     protected abstract TransferContext getTransferContext(R transferEvent);
 
     public Registration addTransferProgressListener(

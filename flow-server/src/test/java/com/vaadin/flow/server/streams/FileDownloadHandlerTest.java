@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,6 +33,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.TransferProgressListener;
@@ -49,14 +53,30 @@ public class FileDownloadHandlerTest {
     private VaadinSession session;
     private DownloadRequest downloadRequest;
     private OutputStream outputStream;
+    private Element owner;
 
     @Before
     public void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
+
+        UI ui = Mockito.mock(UI.class);
+        // run the command immediately
+        Mockito.doAnswer(invocation -> {
+            Command command = invocation.getArgument(0);
+            command.execute();
+            return null;
+        }).when(ui).access(Mockito.any(Command.class));
+
+        owner = Mockito.mock(Element.class);
+        Component componentOwner = Mockito.mock(Component.class);
+        Mockito.when(owner.getComponent())
+                .thenReturn(Optional.of(componentOwner));
+        Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+
         downloadRequest = new DownloadRequest(request, response, session,
-                "download", "application/octet-stream", null);
+                "download", "application/octet-stream", owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
     }
@@ -154,7 +174,7 @@ public class FileDownloadHandlerTest {
             Assert.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        Assert.assertEquals(List.of("onError"), invocations);
         Mockito.verify(response).setStatus(500);
     }
 }

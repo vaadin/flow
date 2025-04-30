@@ -251,7 +251,7 @@ public interface DownloadHandler extends ElementRequestHandler {
             SerializableConsumer<DownloadRequest> handler) {
         return new AbstractDownloadHandler() {
             @Override
-            public void handleTransfer(DownloadRequest event) {
+            public void handleDownloadRequest(DownloadRequest event) {
                 handler.accept(event);
             }
         };

@@ -80,7 +80,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransfer(DownloadRequest downloadRequest) {
+    public void handleDownloadRequest(DownloadRequest downloadRequest) {
         VaadinResponse response = downloadRequest.getResponse();
         try (OutputStream outputStream = downloadRequest.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {

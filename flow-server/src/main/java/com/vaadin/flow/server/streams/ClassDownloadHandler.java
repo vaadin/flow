@@ -86,7 +86,7 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransfer(DownloadRequest downloadRequest) {
+    public void handleDownloadRequest(DownloadRequest downloadRequest) {
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);

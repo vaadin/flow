@@ -37,14 +37,6 @@ public abstract class AbstractDownloadHandler extends
         implements DownloadHandler {
 
     @Override
-    public void handleDownloadRequest(DownloadRequest request) {
-        Collection<TransferProgressListener> listeners = getListeners();
-        TransferContext transferContext = getTransferContext(request);
-        listeners.forEach(listener -> listener.onStart(transferContext));
-        handleTransfer(request);
-    }
-
-    @Override
     protected TransferContext getTransferContext(
             DownloadRequest transferEvent) {
         return new TransferContext(transferEvent.getRequest(),

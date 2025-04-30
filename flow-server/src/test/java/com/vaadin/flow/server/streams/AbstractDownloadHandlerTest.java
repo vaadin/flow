@@ -19,74 +19,81 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.shared.Registration;
 
-public class TransferProgressAwareHandlerTest {
+public class AbstractDownloadHandlerTest {
     private static final long TOTAL_BYTES = 100L;
     private static final long TRANSFERRED_BYTES = 42L;
     private static final IOException EXCEPTION = new IOException("Test error");
 
-    private TransferProgressAwareHandler handler;
+    private AbstractDownloadHandler handler;
     private TransferContext mockContext;
     private TransferProgressListener listener;
 
     @Before
     public void setUp() {
+        handler = new AbstractDownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadRequest event) {
+            }
+        };
         mockContext = Mockito.mock(TransferContext.class);
-        handler = new TestTransferProgressAwareHandler(mockContext);
         Mockito.when(mockContext.totalBytes()).thenReturn(TOTAL_BYTES);
         listener = Mockito.mock(TransferProgressListener.class);
+
+        UI ui = Mockito.mock(UI.class);
+        // run the command immediately
+        Mockito.doAnswer(invocation -> {
+            Command command = invocation.getArgument(0);
+            command.execute();
+            return null;
+        }).when(ui).access(Mockito.any(Command.class));
+
+        Element owner = Mockito.mock(Element.class);
+        Component componentOwner = Mockito.mock(Component.class);
+        Mockito.when(owner.getComponent())
+                .thenReturn(Optional.of(componentOwner));
+        Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+        Mockito.when(mockContext.owningElement()).thenReturn(owner);
+        Mockito.when(mockContext.getUI()).thenReturn(ui);
     }
 
     @Test
     public void addTransferProgressListener_listenerAdded_listenerInvoked_listenerRemoved_listenerNotInvoked() {
         Registration registration = handler
                 .addTransferProgressListener(listener);
-        Collection<TransferProgressListener> listeners = handler.getListeners();
-        Assert.assertTrue(listeners.contains(listener));
-
-        handler.handleTransfer(null);
+        handler.getListeners().forEach(l -> l.onStart(mockContext));
         Mockito.verify(listener).onStart(mockContext);
-        Mockito.verify(listener).onProgress(mockContext, TRANSFERRED_BYTES);
-        Mockito.verify(listener).onError(mockContext, EXCEPTION);
-        Mockito.verify(listener).onComplete(mockContext, TOTAL_BYTES);
 
         Mockito.reset(listener);
         registration.remove();
-
-        Assert.assertFalse(handler.getListeners().contains(listener));
-        handler.handleTransfer(null);
+        handler.getListeners().forEach(l -> l.onStart(mockContext));
         Mockito.verify(listener, Mockito.times(0)).onStart(mockContext);
-        Mockito.verify(listener, Mockito.times(0)).onProgress(mockContext,
-                TRANSFERRED_BYTES);
-        Mockito.verify(listener, Mockito.times(0)).onError(mockContext,
-                EXCEPTION);
-        Mockito.verify(listener, Mockito.times(0)).onComplete(mockContext,
-                TOTAL_BYTES);
     }
 
     @Test
     public void addTransferProgressListener_listenerAdded_listenersUnsubscribed() {
         handler.addTransferProgressListener(listener);
-
         handler.unsubscribe();
-        Assert.assertFalse(handler.getListeners().contains(listener));
+        handler.getListeners().forEach(l -> l.onStart(mockContext));
+        Mockito.verify(listener, Mockito.times(0)).onStart(mockContext);
     }
 
     @Test
@@ -94,8 +101,8 @@ public class TransferProgressAwareHandlerTest {
         SerializableRunnable startHandler = Mockito
                 .mock(SerializableRunnable.class);
         handler.whenStart(startHandler);
-        // Passed event is not taken into account in the test mock
-        handler.handleTransfer(null);
+        handler.getListeners()
+                .forEach(listener -> listener.onStart(mockContext));
         Mockito.verify(startHandler).run();
     }
 
@@ -104,8 +111,8 @@ public class TransferProgressAwareHandlerTest {
         SerializableBiConsumer<Long, Long> onProgressHandler = Mockito
                 .mock(SerializableBiConsumer.class);
         handler.onProgress(onProgressHandler);
-        handler.handleTransfer(null);
-
+        handler.getListeners().forEach(listener -> listener
+                .onProgress(mockContext, TRANSFERRED_BYTES));
         Mockito.verify(onProgressHandler).accept(TRANSFERRED_BYTES,
                 TOTAL_BYTES);
     }
@@ -115,7 +122,8 @@ public class TransferProgressAwareHandlerTest {
         List<String> executionOrder = new ArrayList<>();
         handler.whenStart(() -> executionOrder.add("first"));
         handler.whenStart(() -> executionOrder.add("second"));
-        handler.handleTransfer(null);
+        handler.getListeners()
+                .forEach(listener -> listener.onStart(mockContext));
         List<String> expectedOrder = List.of("first", "second");
         Assert.assertEquals(expectedOrder, executionOrder);
     }
@@ -125,35 +133,11 @@ public class TransferProgressAwareHandlerTest {
         SerializableConsumer<Boolean> completeHandler = Mockito
                 .mock(SerializableConsumer.class);
         handler.whenComplete(completeHandler);
-        handler.handleTransfer(null);
-
+        handler.getListeners().forEach(listener -> {
+            listener.onComplete(mockContext, TRANSFERRED_BYTES);
+            listener.onError(mockContext, EXCEPTION);
+        });
         Mockito.verify(completeHandler).accept(true);
         Mockito.verify(completeHandler).accept(false);
-    }
-
-    private static class TestTransferProgressAwareHandler extends
-            TransferProgressAwareHandler<DownloadRequest, TestTransferProgressAwareHandler> {
-
-        private final TransferContext mockContext;
-
-        public TestTransferProgressAwareHandler(TransferContext mockContext) {
-            this.mockContext = mockContext;
-        }
-
-        @Override
-        protected void handleTransfer(DownloadRequest transferEvent) {
-            getListeners().forEach(listener -> {
-                listener.onStart(mockContext);
-                listener.onProgress(mockContext, TRANSFERRED_BYTES);
-                listener.onError(mockContext, EXCEPTION);
-                listener.onComplete(mockContext, TOTAL_BYTES);
-            });
-        }
-
-        @Override
-        protected TransferContext getTransferContext(
-                DownloadRequest transferEvent) {
-            return mockContext;
-        }
     }
 }

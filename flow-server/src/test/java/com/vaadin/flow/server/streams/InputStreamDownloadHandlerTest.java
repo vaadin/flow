@@ -23,12 +23,17 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.TransferProgressListener;
@@ -42,14 +47,30 @@ public class InputStreamDownloadHandlerTest {
     private VaadinSession session;
     private DownloadRequest downloadRequest;
     private OutputStream outputStream;
+    private Element owner;
 
     @Before
     public void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
+
+        UI ui = Mockito.mock(UI.class);
+        // run the command immediately
+        Mockito.doAnswer(invocation -> {
+            Command command = invocation.getArgument(0);
+            command.execute();
+            return null;
+        }).when(ui).access(Mockito.any(Command.class));
+
+        owner = Mockito.mock(Element.class);
+        Component componentOwner = Mockito.mock(Component.class);
+        Mockito.when(owner.getComponent())
+                .thenReturn(Optional.of(componentOwner));
+        Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+
         downloadRequest = new DownloadRequest(request, response, session,
-                "download", "application/octet-stream", null);
+                "download", "application/octet-stream", owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
     }
@@ -62,8 +83,8 @@ public class InputStreamDownloadHandlerTest {
         DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            return new DownloadResponse(inputStream, "download", "application/octet-stream",
-                    data.length);
+            return new DownloadResponse(inputStream, "download",
+                    "application/octet-stream", data.length);
         }, "download", new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
@@ -114,6 +135,7 @@ public class InputStreamDownloadHandlerTest {
         DownloadRequest request = Mockito.mock(DownloadRequest.class);
         Mockito.when(request.getSession()).thenReturn(session);
         Mockito.when(request.getResponse()).thenReturn(response);
+        Mockito.when(request.owningElement()).thenReturn(owner);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
@@ -124,8 +146,8 @@ public class InputStreamDownloadHandlerTest {
             // Simulate a download of 165000 bytes
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            return new DownloadResponse(inputStream, "download", "application/octet-stream",
-                    data.length);
+            return new DownloadResponse(inputStream, "download",
+                    "application/octet-stream", data.length);
         }, "download", new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {

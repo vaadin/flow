@@ -74,7 +74,7 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleTransfer(DownloadRequest downloadRequest) {
+    public void handleDownloadRequest(DownloadRequest downloadRequest) {
         DownloadResponse download = handler.apply(downloadRequest);
         VaadinResponse response = downloadRequest.getResponse();
         if (download.hasError()) {
