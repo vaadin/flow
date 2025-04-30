@@ -35,6 +35,7 @@ import org.springframework.security.config.annotation.SecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
@@ -114,10 +115,30 @@ public final class VaadinWebSecurityConfigurer extends
 
     private boolean enableNavigationAccessControl = true;
 
-    private UnaryOperator<String> urlMapping = url -> getRequestUtil()
+    private UnaryOperator<String> urlMapper = url -> getRequestUtil()
             .applyUrlMapping(url);
 
-    private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestCustomizer = AuthorizeHttpRequestsConfigurer.AuthorizedUrl::authenticated;
+    private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestCustomizer = AuthorizedUrl::authenticated;
+
+    // This package-protected method is only needed for backwards compatibility
+    // if the VaadinWebSecurity#getAuthenticationContext() protected method has
+    // been overridden to return a custom AuthenticationContext instance.
+    VaadinWebSecurityConfigurer authenticationContext(
+            AuthenticationContext authenticationContext) {
+        getBuilder().setSharedObject(AuthenticationContext.class,
+                authenticationContext);
+        return this;
+    }
+
+    // This package-protected method is only needed for backwards compatibility
+    // if the VaadinWebSecurity#getNavigationAccessControl() protected method
+    // has been overridden to return a custom NavigationAccessControl instance.
+    VaadinWebSecurityConfigurer navigationAccessControl(
+            NavigationAccessControl navigationAccessControl) {
+        getBuilder().setSharedObject(NavigationAccessControl.class,
+                navigationAccessControl);
+        return this;
+    }
 
     /**
      * Configures the login view for use in Flow applications.
@@ -162,7 +183,7 @@ public final class VaadinWebSecurityConfigurer extends
     public VaadinWebSecurityConfigurer loginView(
             Class<? extends Component> loginView, String logoutSuccessUrl) {
         this.loginView = loginView;
-        this.formLoginPage = urlMapping.apply(getLoginViewPath(loginView));
+        this.formLoginPage = urlMapper.apply(getLoginViewPath(loginView));
         this.logoutSuccessUrl = logoutSuccessUrl;
         return this;
     }
@@ -198,7 +219,7 @@ public final class VaadinWebSecurityConfigurer extends
      */
     public VaadinWebSecurityConfigurer loginView(String loginView,
             String logoutSuccessUrl) {
-        this.formLoginPage = urlMapping.apply(loginView);
+        this.formLoginPage = urlMapper.apply(loginView);
         this.logoutSuccessUrl = logoutSuccessUrl;
         return this;
     }
@@ -250,23 +271,6 @@ public final class VaadinWebSecurityConfigurer extends
     }
 
     /**
-     * Configures the {@link RequestUtil} instance for this
-     * {@code VaadinWebSecurityConfigurer}.
-     * <p>
-     * This method allows setting a custom {@code RequestUtil} to be shared
-     * within the security configuration process.
-     *
-     * @param requestUtil
-     *            the {@code RequestUtil} instance to be configured
-     * @return the current {@code VaadinWebSecurityConfigurer} instance for
-     *         method chaining
-     */
-    public VaadinWebSecurityConfigurer requestUtil(RequestUtil requestUtil) {
-        getBuilder().setSharedObject(RequestUtil.class, requestUtil);
-        return this;
-    }
-
-    /**
      * Configures a customizer for handling any request authorization.
      *
      * @param anyRequestCustomizer
@@ -277,85 +281,6 @@ public final class VaadinWebSecurityConfigurer extends
     public VaadinWebSecurityConfigurer anyRequest(
             Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestCustomizer) {
         this.anyRequestCustomizer = anyRequestCustomizer;
-        return this;
-    }
-
-    /**
-     * Configures the {@code AuthenticationContext} instance for this
-     * {@code VaadinWebSecurityConfigurer}.
-     * <p>
-     * This method allows setting a custom {@code AuthenticationContext} to be
-     * shared within the security configuration process.
-     *
-     * @param authenticationContext
-     *            the {@code AuthenticationContext} instance to be configured
-     * @return the current {@code VaadinWebSecurityConfigurer} instance for
-     *         method chaining
-     */
-    public VaadinWebSecurityConfigurer authenticationContext(
-            AuthenticationContext authenticationContext) {
-        getBuilder().setSharedObject(AuthenticationContext.class,
-                authenticationContext);
-        return this;
-    }
-
-    /**
-     * Configures the {@code NavigationAccessControl} instance for this
-     * {@code VaadinWebSecurityConfigurer}.
-     * <p>
-     * This method allows setting a custom {@code NavigationAccessControl} to be
-     * shared within the security configuration process.
-     *
-     * @param navigationAccessControl
-     *            the {@code NavigationAccessControl} instance to be configured
-     * @return the current {@code VaadinWebSecurityConfigurer} instance for
-     *         method chaining
-     */
-    public VaadinWebSecurityConfigurer navigationAccessControl(
-            NavigationAccessControl navigationAccessControl) {
-        getBuilder().setSharedObject(NavigationAccessControl.class,
-                navigationAccessControl);
-        return this;
-    }
-
-    /**
-     * Configures the {@code VaadinRolePrefixHolder} instance for this
-     * {@code VaadinWebSecurityConfigurer}.
-     * <p>
-     * This method allows setting a custom {@code VaadinRolePrefixHolder} to be
-     * shared within the security configuration process, enabling consistent
-     * role prefix management across the application.
-     *
-     * @param vaadinRolePrefixHolder
-     *            the {@code VaadinRolePrefixHolder} instance to be configured
-     * @return the current {@code VaadinWebSecurityConfigurer} instance for
-     *         method chaining
-     */
-    public VaadinWebSecurityConfigurer vaadinRolePrefixHolder(
-            VaadinRolePrefixHolder vaadinRolePrefixHolder) {
-        getBuilder().setSharedObject(VaadinRolePrefixHolder.class,
-                vaadinRolePrefixHolder);
-        return this;
-    }
-
-    /**
-     * Configures the {@code VaadinDefaultRequestCache} instance for this
-     * {@code VaadinWebSecurityConfigurer}.
-     * <p>
-     * This method allows setting a custom {@code VaadinDefaultRequestCache} to
-     * be shared within the security configuration process, enabling custom
-     * request caching behavior tailored to Vaadin applications.
-     *
-     * @param vaadinDefaultRequestCache
-     *            the {@code VaadinDefaultRequestCache} instance to be
-     *            configured
-     * @return the current {@code VaadinWebSecurityConfigurer} instance for
-     *         method chaining
-     */
-    public VaadinWebSecurityConfigurer vaadinDefaultRequestCache(
-            VaadinDefaultRequestCache vaadinDefaultRequestCache) {
-        getBuilder().setSharedObject(VaadinDefaultRequestCache.class,
-                vaadinDefaultRequestCache);
         return this;
     }
 
@@ -384,18 +309,25 @@ public final class VaadinWebSecurityConfigurer extends
      * This method allows setting a {@code UnaryOperator<String>} that defines
      * URL mappings used during the security configuration process.
      *
-     * @param urlMapping
-     *            the {@code UnaryOperator<String>} to be configured,
-     *            representing a mapping function for URLs
+     * @param urlMapper
+     *            the URL mapper to be used by this configurer
      * @return the current {@code VaadinWebSecurityConfigurer} instance for
      *         method chaining
      */
-    public VaadinWebSecurityConfigurer urlMapping(
-            UnaryOperator<String> urlMapping) {
-        this.urlMapping = urlMapping;
+    public VaadinWebSecurityConfigurer urlMapper(
+            UnaryOperator<String> urlMapper) {
+        this.urlMapper = urlMapper;
         return this;
     }
 
+    /**
+     * Adds a {@link LogoutHandler} to the list of logout handlers.
+     *
+     * @param logoutHandler
+     *            the logout handler to be added
+     * @return the current instance of {@code VaadinWebSecurityConfigurer} for
+     *         method chaining
+     */
     public VaadinWebSecurityConfigurer addToLogoutHandlers(
             LogoutHandler logoutHandler) {
         logoutHandlers.add(logoutHandler);
@@ -538,7 +470,7 @@ public final class VaadinWebSecurityConfigurer extends
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler createAuthenticationSuccessHandler() {
         var handler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
-        handler.setDefaultTargetUrl(urlMapping.apply(""));
+        handler.setDefaultTargetUrl(urlMapper.apply(""));
         getSharedObject(RequestCache.class).ifPresent(handler::setRequestCache);
         getBuilder().setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
@@ -557,12 +489,12 @@ public final class VaadinWebSecurityConfigurer extends
 
     private void customizeLogout(LogoutConfigurer<HttpSecurity> configurer) {
         if (logoutSuccessUrl != null) {
-            getSharedObject(LogoutSuccessHandler.class)
-                    .or(this::createSimpleUrlLogoutSuccessHandler)
+            getSharedObject(LogoutSuccessHandler.class).or(
+                    () -> createSimpleUrlLogoutSuccessHandler(logoutSuccessUrl))
                     .ifPresent(configurer::logoutSuccessHandler);
         } else if (postLogoutRedirectUri != null) {
-            getSharedObject(LogoutSuccessHandler.class)
-                    .or(this::createOidcClientInitiatedLogoutSuccessHandler)
+            getSharedObject(LogoutSuccessHandler.class).or(
+                    () -> createOidcLogoutSuccessHandler(postLogoutRedirectUri))
                     .ifPresent(configurer::logoutSuccessHandler);
         }
         logoutHandlers.forEach(configurer::addLogoutHandler);
@@ -581,14 +513,16 @@ public final class VaadinWebSecurityConfigurer extends
         configurer.withObjectPostProcessor(postProcessor);
     }
 
-    private Optional<LogoutSuccessHandler> createSimpleUrlLogoutSuccessHandler() {
+    Optional<LogoutSuccessHandler> createSimpleUrlLogoutSuccessHandler(
+            String logoutSuccessUrl) {
         var handler = new VaadinSimpleUrlLogoutSuccessHandler();
         handler.setRedirectStrategy(new UidlRedirectStrategy());
         handler.setDefaultTargetUrl(logoutSuccessUrl);
         return Optional.of(handler);
     }
 
-    private Optional<LogoutSuccessHandler> createOidcClientInitiatedLogoutSuccessHandler() {
+    Optional<LogoutSuccessHandler> createOidcLogoutSuccessHandler(
+            String postLogoutRedirectUri) {
         var crr = getSharedObjectOrBean(ClientRegistrationRepository.class);
         if (crr != null) {
             var handler = new OidcClientInitiatedLogoutSuccessHandler(crr);

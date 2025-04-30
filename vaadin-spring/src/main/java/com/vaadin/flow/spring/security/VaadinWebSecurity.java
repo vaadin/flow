@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.Customizer;
@@ -34,8 +33,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -84,33 +81,16 @@ import jakarta.annotation.PostConstruct;
 public abstract class VaadinWebSecurity {
 
     @Autowired
-    private VaadinDefaultRequestCache vaadinDefaultRequestCache;
-
-    @Autowired
     private RequestUtil requestUtil;
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired(required = false)
-    private VaadinRolePrefixHolder vaadinRolePrefixHolder;
 
     @Value("#{servletContext.contextPath}")
     private String servletContextPath;
 
     @Autowired
-    private ObjectProvider<NavigationAccessControl> accessControlProvider;
-
     private NavigationAccessControl accessControl;
 
     @Autowired(required = false)
     private Customizer<VaadinWebSecurityConfigurer> customizer;
-
-    @PostConstruct
-    void afterPropertiesSet() {
-        accessControl = accessControlProvider.getIfAvailable();
-        authenticationContext.setRolePrefixHolder(vaadinRolePrefixHolder);
-    }
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
@@ -129,13 +109,10 @@ public abstract class VaadinWebSecurity {
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.with(configurer, vwsc -> {
-            vwsc.requestUtil(requestUtil);
-            vwsc.authenticationContext(authenticationContext);
-            vwsc.navigationAccessControl(accessControl);
-            vwsc.vaadinRolePrefixHolder(vaadinRolePrefixHolder);
-            vwsc.vaadinDefaultRequestCache(vaadinDefaultRequestCache);
+            vwsc.urlMapper(this::applyUrlMapping);
+            vwsc.authenticationContext(getAuthenticationContext());
+            vwsc.navigationAccessControl(getNavigationAccessControl());
             vwsc.enableNavigationAccessControl(enableNavigationAccessControl());
-            vwsc.urlMapping(this::applyUrlMapping);
             addLogoutHandlers(vwsc::addToLogoutHandlers);
             if (customizer != null) {
                 customizer.customize(vwsc);
@@ -436,6 +413,9 @@ public abstract class VaadinWebSecurity {
     protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage,
             String postLogoutRedirectUri) throws Exception {
         configurer.oauth2LoginPage(oauth2LoginPage, postLogoutRedirectUri);
+        // This is needed for backwards compatibility if the protected method
+        // oidcLogoutSuccessHandler has been overridden by subclasses, to ensure
+        // that the custom LogoutSuccessHandler is used by the configurer.
         if (postLogoutRedirectUri != null) {
             var logoutSuccessHandler = oidcLogoutSuccessHandler(
                     postLogoutRedirectUri);
@@ -465,19 +445,8 @@ public abstract class VaadinWebSecurity {
     // during startup, if spring-security-oauth2-client is not on classpath
     protected LogoutSuccessHandler oidcLogoutSuccessHandler(
             String postLogoutRedirectUri) {
-        var clientRegistrationRepository = applicationContext
-                .getBeanProvider(ClientRegistrationRepository.class)
-                .getIfAvailable();
-        if (clientRegistrationRepository != null) {
-            var logoutHandler = new OidcClientInitiatedLogoutSuccessHandler(
-                    clientRegistrationRepository);
-            logoutHandler.setRedirectStrategy(new UidlRedirectStrategy());
-            logoutHandler.setPostLogoutRedirectUri(postLogoutRedirectUri);
-            return logoutHandler;
-        }
-        LoggerFactory.getLogger(VaadinWebSecurity.class).warn(
-                "Cannot create OidcClientInitiatedLogoutSuccessHandler because ClientRegistrationRepository bean is not available.");
-        return null;
+        return configurer.createOidcLogoutSuccessHandler(postLogoutRedirectUri)
+                .orElse(null);
     }
 
     /**
