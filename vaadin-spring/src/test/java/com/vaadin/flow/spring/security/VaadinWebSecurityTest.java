@@ -16,9 +16,9 @@
 
 package com.vaadin.flow.spring.security;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,9 +50,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ObjectPostProcessorConfiguration.class)
