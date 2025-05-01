@@ -23,12 +23,10 @@ import java.util.stream.Stream;
 import javax.crypto.SecretKey;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
@@ -46,9 +44,8 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurer.MarkerLogoutSuccessHandler;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
-
-import jakarta.annotation.PostConstruct;
 
 /**
  * Provides basic Vaadin component-based security configuration for the project.
@@ -93,6 +90,8 @@ public abstract class VaadinWebSecurity {
 
     private final VaadinWebSecurityConfigurer configurer = new VaadinWebSecurityConfigurer();
 
+    private boolean defaultsConfigured = false;
+
     /**
      * Registers default {@link SecurityFilterChain} bean.
      * <p>
@@ -112,7 +111,15 @@ public abstract class VaadinWebSecurity {
             vwsc.enableNavigationAccessControl(enableNavigationAccessControl());
             addLogoutHandlers(vwsc::addToLogoutHandlers);
         });
+        // Set a "marker" handler to detect later if a custom one is set. This
+        // is necessary since the VaadinWebSecurityConfigurer will later set
+        // its own handler, which will override the custom one if set. This
+        // marker will allow the configurer to detect the custom handler and
+        // avoid overriding it.
+        http.logout(logout -> logout
+                .logoutSuccessHandler(new MarkerLogoutSuccessHandler()));
         configure(http);
+        configurer.shouldConfigureDefaults = defaultsConfigured;
         return http.build();
     }
 
@@ -138,7 +145,11 @@ public abstract class VaadinWebSecurity {
      *             if an error occurs
      */
     protected void configure(HttpSecurity http) throws Exception {
-        // delegated to {@link VaadinWebSecurityConfigurer#init}
+        // Logic in this method before https://github.com/vaadin/flow/pull/21373
+        // is now delegated to {@link VaadinWebSecurityConfigurer#init}, so it
+        // is necessary to track if this method has been called or not since
+        // subclasses might not call super.configure(http) at all.
+        defaultsConfigured = true;
     }
 
     /**
