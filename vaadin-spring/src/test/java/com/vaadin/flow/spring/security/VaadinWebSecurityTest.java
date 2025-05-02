@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.spring.security;
 
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -70,9 +69,8 @@ public class VaadinWebSecurityTest {
                 new AuthenticationManagerBuilder(postProcessor),
                 Map.of(ApplicationContext.class, appCtx));
         TestConfig testConfig = new VaadinWebSecurityTest.TestConfig();
-        mockVaadinWebSecurityInjection(testConfig, httpSecurity);
-
         testConfig.filterChain(httpSecurity);
+
         Assert.assertTrue("VaadinWebSecurity HTTP configuration invoked",
                 testConfig.httpConfigured);
 
@@ -93,7 +91,7 @@ public class VaadinWebSecurityTest {
                 Map.of(ApplicationContext.class, appCtx));
         VaadinWebSecurity testConfig = new VaadinWebSecurity() {
         };
-        mockVaadinWebSecurityInjection(testConfig, httpSecurity);
+        mockVaadinWebSecurityInjection(testConfig);
 
         testConfig.filterChain(httpSecurity);
         Assert.assertTrue(
@@ -113,7 +111,7 @@ public class VaadinWebSecurityTest {
                 return false;
             }
         };
-        mockVaadinWebSecurityInjection(testConfig, httpSecurity);
+        mockVaadinWebSecurityInjection(testConfig);
 
         testConfig.filterChain(httpSecurity);
         Assert.assertFalse(
@@ -156,7 +154,7 @@ public class VaadinWebSecurityTest {
             }
         };
         TestNavigationAccessControl accessControl = mockVaadinWebSecurityInjection(
-                testConfig, httpSecurity);
+                testConfig);
         ClientRegistrationRepository repository = mock(
                 ClientRegistrationRepository.class);
         ObjectProvider<ClientRegistrationRepository> provider = new ObjectProvider<ClientRegistrationRepository>() {
@@ -169,11 +167,9 @@ public class VaadinWebSecurityTest {
         ApplicationContext appCtx = Mockito.mock(ApplicationContext.class);
         Mockito.when(appCtx.getBeanProvider(ClientRegistrationRepository.class))
                 .thenReturn(provider);
+        ReflectionTestUtils.setField(testConfig, "applicationContext", appCtx);
         httpSecurity.setSharedObject(ClientRegistrationRepository.class,
                 repository);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getContextPath()).thenReturn("");
-        httpSecurity.setSharedObject(ServletContext.class, servletContext);
 
         testConfig.filterChain(httpSecurity);
 
@@ -192,10 +188,8 @@ public class VaadinWebSecurityTest {
     }
 
     private static TestNavigationAccessControl mockVaadinWebSecurityInjection(
-            VaadinWebSecurity testConfig, HttpSecurity httpSecurity) {
+            VaadinWebSecurity testConfig) {
         TestNavigationAccessControl accessControl = new TestNavigationAccessControl();
-        httpSecurity.setSharedObject(NavigationAccessControl.class,
-                accessControl);
         ReflectionTestUtils.setField(testConfig, "accessControl",
                 accessControl);
         RequestUtil requestUtil = mock(RequestUtil.class);
@@ -207,11 +201,8 @@ public class VaadinWebSecurityTest {
             }
             return path;
         });
-        httpSecurity.setSharedObject(RequestUtil.class, requestUtil);
         ReflectionTestUtils.setField(testConfig, "requestUtil", requestUtil);
         ReflectionTestUtils.setField(testConfig, "servletContextPath", "");
-        httpSecurity.setSharedObject(AuthenticationContext.class,
-                testConfig.getAuthenticationContext());
         return accessControl;
     }
 

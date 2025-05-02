@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.spring.security;
 
-import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultHttpSecurityPermitMatcher;
-import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSecurityIgnoreMatcher;
+import jakarta.servlet.ServletContext;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +38,6 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -68,9 +65,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultHttpSecurityPermitMatcher;
+import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSecurityIgnoreMatcher;
 
 /**
  * A {@link SecurityConfigurer} specifically designed for Vaadin applications.
@@ -88,7 +84,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  *     &#64;Bean
  *     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
- *         return http.with(new VaadinWebSecurityConfigurer(), configurer -&gt; {
+ *         return http.with(new VaadinSecurityConfigurer(), configurer -&gt; {
  *             configurer.loginView(MyLoginView.class);
  *         }).build();
  *     }
@@ -96,11 +92,11 @@ import jakarta.servlet.http.HttpServletResponse;
  * </code>
  * </pre>
  */
-public final class VaadinWebSecurityConfigurer extends
-        AbstractHttpConfigurer<VaadinWebSecurityConfigurer, HttpSecurity> {
+public final class VaadinSecurityConfigurer
+        extends AbstractHttpConfigurer<VaadinSecurityConfigurer, HttpSecurity> {
 
     private static final Logger LOGGER = LoggerFactory
-            .getLogger(VaadinWebSecurityConfigurer.class);
+            .getLogger(VaadinSecurityConfigurer.class);
 
     private final List<LogoutHandler> logoutHandlers = new ArrayList<>();
 
@@ -114,34 +110,11 @@ public final class VaadinWebSecurityConfigurer extends
 
     private String postLogoutRedirectUri;
 
-    private String oidcBackChannelLogoutUri;
+    private Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule = AuthorizedUrl::authenticated;
 
     private boolean enableNavigationAccessControl = true;
 
-    private UnaryOperator<String> urlMapper = url -> getRequestUtil()
-            .applyUrlMapping(url);
-
-    private Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule = AuthorizedUrl::authenticated;
-
-    boolean shouldConfigureDefaults = true;
-
-    // This package-protected method is only needed for backwards compatibility
-    // if the VaadinWebSecurity#getAuthenticationContext() protected method has
-    // been overridden to return a custom AuthenticationContext instance.
-    VaadinWebSecurityConfigurer authenticationContext(
-            AuthenticationContext authenticationContext) {
-        setSharedObject(AuthenticationContext.class, authenticationContext);
-        return this;
-    }
-
-    // This package-protected method is only needed for backwards compatibility
-    // if the VaadinWebSecurity#getNavigationAccessControl() protected method
-    // has been overridden to return a custom NavigationAccessControl instance.
-    VaadinWebSecurityConfigurer navigationAccessControl(
-            NavigationAccessControl navigationAccessControl) {
-        setSharedObject(NavigationAccessControl.class, navigationAccessControl);
-        return this;
-    }
+    private boolean alreadyInitializedOnce = false;
 
     /**
      * Configures the login view for use in a Flow application.
@@ -156,7 +129,7 @@ public final class VaadinWebSecurityConfigurer extends
      * @throws IllegalArgumentException
      *             if the provided class is not annotated with {@code @Route}
      */
-    public VaadinWebSecurityConfigurer loginView(
+    public VaadinSecurityConfigurer loginView(
             Class<? extends Component> loginView) {
         return loginView(loginView, getDefaultLogoutSuccessUrl());
     }
@@ -177,10 +150,11 @@ public final class VaadinWebSecurityConfigurer extends
      * @throws IllegalArgumentException
      *             if the provided class is not annotated with {@code @Route}
      */
-    public VaadinWebSecurityConfigurer loginView(
+    public VaadinSecurityConfigurer loginView(
             Class<? extends Component> loginView, String logoutSuccessUrl) {
         this.loginView = loginView;
-        this.formLoginPage = urlMapper.apply(getLoginViewPath(loginView));
+        var loginViewPath = getLoginViewPath(loginView);
+        this.formLoginPage = getRequestUtil().applyUrlMapping(loginViewPath);
         this.logoutSuccessUrl = logoutSuccessUrl;
         return this;
     }
@@ -192,7 +166,7 @@ public final class VaadinWebSecurityConfigurer extends
      *            the path to the login view
      * @return the current configurer instance for method chaining
      */
-    public VaadinWebSecurityConfigurer loginView(String loginView) {
+    public VaadinSecurityConfigurer loginView(String loginView) {
         return loginView(loginView, getDefaultLogoutSuccessUrl());
     }
 
@@ -206,9 +180,9 @@ public final class VaadinWebSecurityConfigurer extends
      *            the URL to redirect to upon a successful logout
      * @return the current configurer instance for method chaining
      */
-    public VaadinWebSecurityConfigurer loginView(String loginView,
+    public VaadinSecurityConfigurer loginView(String loginView,
             String logoutSuccessUrl) {
-        this.formLoginPage = urlMapper.apply(loginView);
+        this.formLoginPage = getRequestUtil().applyUrlMapping(loginView);
         this.logoutSuccessUrl = logoutSuccessUrl;
         return this;
     }
@@ -220,7 +194,7 @@ public final class VaadinWebSecurityConfigurer extends
      *            the login page for OAuth2 authentication
      * @return the current configurer instance for method chaining
      */
-    public VaadinWebSecurityConfigurer oauth2LoginPage(String oauth2LoginPage) {
+    public VaadinSecurityConfigurer oauth2LoginPage(String oauth2LoginPage) {
         return oauth2LoginPage(oauth2LoginPage, "{baseUrl}");
     }
 
@@ -234,7 +208,7 @@ public final class VaadinWebSecurityConfigurer extends
      *            the URI to redirect to after the user logs out
      * @return the current configurer instance for method chaining
      */
-    public VaadinWebSecurityConfigurer oauth2LoginPage(String oauth2LoginPage,
+    public VaadinSecurityConfigurer oauth2LoginPage(String oauth2LoginPage,
             String postLogoutRedirectUri) {
         this.oauth2LoginPage = oauth2LoginPage;
         this.postLogoutRedirectUri = postLogoutRedirectUri;
@@ -242,18 +216,32 @@ public final class VaadinWebSecurityConfigurer extends
     }
 
     /**
-     * Configures the OpenID Connect Back-Channel Logout URI.
+     * Configures the handler for a successful logout.
      * <p>
-     * This URI is used to handle Back-Channel Logout requests in an OpenID
-     * Connect compliant setup.
+     * This overrides the default handler configured automatically with either
+     * {@link #loginView(Class)} or {@link #oauth2LoginPage(String)} (and their
+     * overloads).
      *
-     * @param oidcBackChannelLogoutUri
-     *            the URI to be used for OIDC back-channel logout
+     * @param logoutSuccessHandler
+     *            the logout success handler
      * @return the current configurer instance for method chaining
      */
-    public VaadinWebSecurityConfigurer oidcBackChannelLogoutUri(
-            String oidcBackChannelLogoutUri) {
-        this.oidcBackChannelLogoutUri = oidcBackChannelLogoutUri;
+    public VaadinSecurityConfigurer logoutSuccessHandler(
+            LogoutSuccessHandler logoutSuccessHandler) {
+        setSharedObject(LogoutSuccessHandler.class, logoutSuccessHandler);
+        return this;
+    }
+
+    /**
+     * Adds a {@link LogoutHandler} to the list of logout handlers.
+     *
+     * @param logoutHandler
+     *            the logout handler to be added
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer addLogoutHandler(
+            LogoutHandler logoutHandler) {
+        logoutHandlers.add(logoutHandler);
         return this;
     }
 
@@ -268,7 +256,7 @@ public final class VaadinWebSecurityConfigurer extends
      *            the access rule for any request not matching other rules
      * @return the current configurer instance for method chaining
      */
-    public VaadinWebSecurityConfigurer anyRequest(
+    public VaadinSecurityConfigurer anyRequest(
             Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule) {
         this.anyRequestAuthorizeRule = anyRequestAuthorizeRule;
         return this;
@@ -284,39 +272,9 @@ public final class VaadinWebSecurityConfigurer extends
      *            {@link NavigationAccessControl} should be enabled or disabled
      * @return the current configurer instance for method chaining
      */
-    public VaadinWebSecurityConfigurer enableNavigationAccessControl(
+    public VaadinSecurityConfigurer enableNavigationAccessControl(
             boolean enableNavigationAccessControl) {
         this.enableNavigationAccessControl = enableNavigationAccessControl;
-        return this;
-    }
-
-    /**
-     * Configures a custom URL mapping function to prepend a configured servlet
-     * path to the given path.
-     * <p>
-     * Path will always be considered as relative to the servlet path, even if
-     * it starts with a slash character.
-     *
-     * @param urlMapper
-     *            the URL mapper to be used by this configurer
-     * @return the current configurer instance for method chaining
-     */
-    public VaadinWebSecurityConfigurer urlMapper(
-            UnaryOperator<String> urlMapper) {
-        this.urlMapper = urlMapper;
-        return this;
-    }
-
-    /**
-     * Adds a {@link LogoutHandler} to the list of logout handlers.
-     *
-     * @param logoutHandler
-     *            the logout handler to be added
-     * @return the current configurer instance for method chaining
-     */
-    public VaadinWebSecurityConfigurer addToLogoutHandlers(
-            LogoutHandler logoutHandler) {
-        logoutHandlers.add(logoutHandler);
         return this;
     }
 
@@ -358,26 +316,18 @@ public final class VaadinWebSecurityConfigurer extends
                 configurer.successHandler(getAuthenticationSuccessHandler());
             });
         }
-        if (oidcBackChannelLogoutUri != null) {
-            http.oidcLogout(configurer -> configurer
-                    .backChannel(bc -> bc.logoutUri(oidcBackChannelLogoutUri)));
-        }
+        http.csrf(this::customizeCsrf);
         http.logout(this::customizeLogout);
-        // This conditional is necessary to transition from the former logic of
-        // VaadinWebSecurity::configure in a compatible way, since subclasses
-        // might override the method without calling the super method where the
-        // default configurers were applied (and now delegated to this method).
-        if (shouldConfigureDefaults) {
-            http.csrf(this::customizeCsrf);
-            http.requestCache(this::customizeRequestCache);
-            http.exceptionHandling(this::customizeExceptionHandling);
-            http.authorizeHttpRequests(registry -> {
-                registry.requestMatchers(vaadinPermitAllMatcher()).permitAll();
-                if (anyRequestAuthorizeRule != null) {
-                    anyRequestAuthorizeRule.accept(registry.anyRequest());
-                }
-            });
+        http.requestCache(this::customizeRequestCache);
+        http.exceptionHandling(this::customizeExceptionHandling);
+        if (!alreadyInitializedOnce) {
+            http.authorizeHttpRequests(this::customizeAuthorizeHttpRequests);
         }
+        // The init method might be called multiple times if the configurer is
+        // added during initialization of another configurer. This flag allows
+        // tracking whether initialization has already happened once to avoid
+        // redundant configuration (e.g., adding request matchers twice).
+        alreadyInitializedOnce = true;
     }
 
     @Override
@@ -398,28 +348,33 @@ public final class VaadinWebSecurityConfigurer extends
                 getNavigationAccessControl().setLoginView(oauth2LoginPage);
             }
         }
+        // Configuring the authorized requests here allows other configurers to
+        // customize the authorized requests during their own initialization.
+        // Also, it ensures that the anyRequest authorize-rule is configured as
+        // late as possible, since it must be the last authorize-rule to be set.
+        http.authorizeHttpRequests(registry -> {
+            if (anyRequestAuthorizeRule != null) {
+                anyRequestAuthorizeRule.accept(registry.anyRequest());
+            }
+        });
     }
 
     private String getLoginViewPath(Class<? extends Component> loginView) {
-        if (AnnotationReader.getAnnotationFor(loginView, Route.class)
-                .isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Unable find a @Route annotation on the login view "
-                            + loginView.getName());
+        var route = AnnotationReader.getAnnotationFor(loginView, Route.class);
+        if (route.isEmpty()) {
+            throw new IllegalArgumentException("Unable find a @Route annotation"
+                    + " on the login view " + loginView.getName());
         }
-        var applicationContext = getApplicationContext();
-        if (!(applicationContext instanceof WebApplicationContext)) {
-            throw new RuntimeException(
-                    "VaadinWebSecurity cannot be used without WebApplicationContext.");
+        if (getApplicationContext() instanceof WebApplicationContext wac) {
+            var vaadinCtx = new VaadinServletContext(wac.getServletContext());
+            var loginPath = RouteUtil.getRoutePath(vaadinCtx, loginView);
+            if (!loginPath.startsWith("/")) {
+                loginPath = "/" + loginPath;
+            }
+            return loginPath;
         }
-        var vaadinContext = new VaadinServletContext(
-                ((WebApplicationContext) applicationContext)
-                        .getServletContext());
-        var loginPath = RouteUtil.getRoutePath(vaadinContext, loginView);
-        if (!loginPath.startsWith("/")) {
-            loginPath = "/" + loginPath;
-        }
-        return loginPath;
+        throw new IllegalStateException("VaadinWebSecurityConfigurer cannot be "
+                + "used without WebApplicationContext.");
     }
 
     private String getServletContextPath() {
@@ -462,7 +417,7 @@ public final class VaadinWebSecurityConfigurer extends
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler createAuthenticationSuccessHandler() {
         var handler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
-        handler.setDefaultTargetUrl(urlMapper.apply(""));
+        handler.setDefaultTargetUrl(getRequestUtil().applyUrlMapping(""));
         getSharedObject(RequestCache.class).ifPresent(handler::setRequestCache);
         getBuilder().setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
@@ -471,8 +426,10 @@ public final class VaadinWebSecurityConfigurer extends
     }
 
     private void customizeCsrf(CsrfConfigurer<HttpSecurity> configurer) {
-        configurer.ignoringRequestMatchers(
-                getRequestUtil()::isFrameworkInternalRequest);
+        if (!alreadyInitializedOnce) {
+            configurer.ignoringRequestMatchers(
+                    getRequestUtil()::isFrameworkInternalRequest);
+        }
         if (formLoginPage != null) {
             configurer.ignoringRequestMatchers(
                     new AntPathRequestMatcher(formLoginPage));
@@ -480,10 +437,7 @@ public final class VaadinWebSecurityConfigurer extends
     }
 
     private void customizeLogout(LogoutConfigurer<HttpSecurity> configurer) {
-        var existingHandler = configurer.getLogoutSuccessHandler();
-        if (!(existingHandler instanceof MarkerLogoutSuccessHandler)) {
-            setSharedObject(LogoutSuccessHandler.class, existingHandler);
-        }
+        configurer.invalidateHttpSession(true);
         getSharedObject(LogoutSuccessHandler.class).or(() -> {
             if (logoutSuccessUrl != null) {
                 return createSimpleUrlLogoutSuccessHandler(logoutSuccessUrl);
@@ -493,19 +447,23 @@ public final class VaadinWebSecurityConfigurer extends
             return Optional.empty();
         }).ifPresent(configurer::logoutSuccessHandler);
         logoutHandlers.forEach(configurer::addLogoutHandler);
-        configurer.invalidateHttpSession(true);
-        // Allows setting logout handlers on the AuthenticationContext at the
-        // right time, i.e., during the logout configuration lifecycle phase.
-        var postProcessor = new ObjectPostProcessor<LogoutFilter>() {
-            @Override
-            public <O extends LogoutFilter> O postProcess(O filter) {
-                getAuthenticationContext().setLogoutHandlers(
-                        configurer.getLogoutSuccessHandler(),
-                        configurer.getLogoutHandlers());
-                return filter;
-            }
-        };
-        configurer.withObjectPostProcessor(postProcessor);
+        logoutHandlers.clear();
+        if (!alreadyInitializedOnce) {
+            // Allows setting logout handlers on the AuthenticationContext at
+            // the
+            // right time, i.e., during the logout configuration lifecycle
+            // phase.
+            var postProcessor = new ObjectPostProcessor<LogoutFilter>() {
+                @Override
+                public <O extends LogoutFilter> O postProcess(O filter) {
+                    getAuthenticationContext().setLogoutHandlers(
+                            configurer.getLogoutSuccessHandler(),
+                            configurer.getLogoutHandlers());
+                    return filter;
+                }
+            };
+            configurer.withObjectPostProcessor(postProcessor);
+        }
     }
 
     Optional<LogoutSuccessHandler> createSimpleUrlLogoutSuccessHandler(
@@ -557,15 +515,20 @@ public final class VaadinWebSecurityConfigurer extends
     }
 
     private AccessDeniedHandler createAccessDeniedHandler() {
-        LinkedHashMap<Class<? extends AccessDeniedException>, AccessDeniedHandler> exceptionHandlers = new LinkedHashMap<>();
+        var exceptionHandlers = new LinkedHashMap<Class<? extends AccessDeniedException>, AccessDeniedHandler>();
         exceptionHandlers.put(CsrfException.class, (req, res, exc) -> res
                 .setStatus(HttpStatus.UNAUTHORIZED.value()));
-        LinkedHashMap<RequestMatcher, AccessDeniedHandler> matcherHandlers = new LinkedHashMap<>();
-        matcherHandlers.put(getRequestUtil()::isEndpointRequest,
+        var requestHandlers = new LinkedHashMap<RequestMatcher, AccessDeniedHandler>();
+        requestHandlers.put(getRequestUtil()::isEndpointRequest,
                 new DelegatingAccessDeniedHandler(exceptionHandlers,
                         new AccessDeniedHandlerImpl()));
-        return new RequestMatcherDelegatingAccessDeniedHandler(matcherHandlers,
+        return new RequestMatcherDelegatingAccessDeniedHandler(requestHandlers,
                 new AccessDeniedHandlerImpl());
+    }
+
+    private void customizeAuthorizeHttpRequests(
+            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
+        registry.requestMatchers(vaadinPermitAllMatcher()).permitAll();
     }
 
     private ApplicationContext getApplicationContext() {
@@ -589,14 +552,5 @@ public final class VaadinWebSecurityConfigurer extends
             }
             return bean;
         });
-    }
-
-    static class MarkerLogoutSuccessHandler implements LogoutSuccessHandler {
-
-        @Override
-        public void onLogoutSuccess(HttpServletRequest request,
-                HttpServletResponse response, Authentication authentication) {
-            // no-op
-        }
     }
 }

@@ -15,36 +15,64 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import javax.crypto.SecretKey;
+
+import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.crypto.SecretKey;
-
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
+import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.csrf.CsrfException;
+import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurer.MarkerLogoutSuccessHandler;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -78,19 +106,32 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
 public abstract class VaadinWebSecurity {
 
     @Autowired
+    private VaadinDefaultRequestCache vaadinDefaultRequestCache;
+
+    @Autowired
     private RequestUtil requestUtil;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired(required = false)
+    private VaadinRolePrefixHolder vaadinRolePrefixHolder;
 
     @Value("#{servletContext.contextPath}")
     private String servletContextPath;
 
     @Autowired
+    private ObjectProvider<NavigationAccessControl> accessControlProvider;
+
     private NavigationAccessControl accessControl;
 
+    @PostConstruct
+    void afterPropertiesSet() {
+        accessControl = accessControlProvider.getIfAvailable();
+        authenticationContext.setRolePrefixHolder(vaadinRolePrefixHolder);
+    }
+
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
-
-    private final VaadinWebSecurityConfigurer configurer = new VaadinWebSecurityConfigurer();
-
-    private boolean defaultsConfigured = false;
 
     /**
      * Registers default {@link SecurityFilterChain} bean.
@@ -104,23 +145,19 @@ public abstract class VaadinWebSecurity {
      */
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.with(configurer, vwsc -> {
-            vwsc.urlMapper(this::applyUrlMapping);
-            vwsc.authenticationContext(getAuthenticationContext());
-            vwsc.navigationAccessControl(getNavigationAccessControl());
-            vwsc.enableNavigationAccessControl(enableNavigationAccessControl());
-            addLogoutHandlers(vwsc::addToLogoutHandlers);
-        });
-        // Set a "marker" handler to detect later if a custom one is set. This
-        // is necessary since the VaadinWebSecurityConfigurer will later set
-        // its own handler, which will override the custom one if set. This
-        // marker will allow the configurer to detect the custom handler and
-        // avoid overriding it.
-        http.logout(logout -> logout
-                .logoutSuccessHandler(new MarkerLogoutSuccessHandler()));
         configure(http);
-        configurer.shouldConfigureDefaults = defaultsConfigured;
-        return http.build();
+        http.logout(cfg -> {
+            cfg.invalidateHttpSession(true);
+            addLogoutHandlers(cfg::addLogoutHandler);
+        });
+
+        DefaultSecurityFilterChain securityFilterChain = http.build();
+        Optional.ofNullable(vaadinRolePrefixHolder)
+                .ifPresent(vaadinRolePrefixHolder -> vaadinRolePrefixHolder
+                        .resetRolePrefix(securityFilterChain));
+        AuthenticationContext.applySecurityConfiguration(http,
+                authenticationContext);
+        return securityFilterChain;
     }
 
     /**
@@ -145,11 +182,55 @@ public abstract class VaadinWebSecurity {
      *             if an error occurs
      */
     protected void configure(HttpSecurity http) throws Exception {
-        // Logic in this method before https://github.com/vaadin/flow/pull/21373
-        // is now delegated to {@link VaadinWebSecurityConfigurer#init}, so it
-        // is necessary to track if this method has been called or not since
-        // subclasses might not call super.configure(http) at all.
-        defaultsConfigured = true;
+        // Respond with 401 Unauthorized HTTP status code for unauthorized
+        // requests for protected Hilla endpoints, so that the response could
+        // be handled on the client side using e.g. `InvalidSessionMiddleware`.
+        http.exceptionHandling(
+                cfg -> cfg.accessDeniedHandler(createAccessDeniedHandler())
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(
+                                        HttpStatus.UNAUTHORIZED),
+                                requestUtil::isEndpointRequest));
+
+        // Vaadin has its own CSRF protection.
+        // Spring CSRF is not compatible with Vaadin internal requests
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(
+                requestUtil::isFrameworkInternalRequest));
+
+        // Ensure automated requests to e.g. closing push channels, service
+        // workers,
+        // endpoints are not counted as valid targets to redirect user to on
+        // login
+        http.requestCache(cfg -> cfg.requestCache(vaadinDefaultRequestCache));
+
+        http.authorizeHttpRequests(urlRegistry -> {
+            // Vaadin internal requests must always be allowed to allow public
+            // Flow pages and/or login page implemented using Flow.
+            urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
+                    .permitAll();
+            // Public endpoints are OK to access
+            urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
+                    .permitAll();
+            // Checks for known Hilla views
+            urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
+                    .permitAll();
+            // Public routes are OK to access
+            urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
+                    .permitAll();
+            urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
+                    requestUtil.getUrlMapping())).permitAll();
+            // matcher for Vaadin static (public) resources
+            urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
+                    requestUtil.getUrlMapping())).permitAll();
+            // matcher for custom PWA icons and favicon
+            urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
+                    .permitAll();
+
+            // all other requests require authentication
+            urlRegistry.anyRequest().authenticated();
+        });
+
+        accessControl.setEnabled(enableNavigationAccessControl());
     }
 
     /**
@@ -331,7 +412,19 @@ public abstract class VaadinWebSecurity {
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
             String logoutSuccessUrl) throws Exception {
-        configurer.loginView(hillaLoginViewPath, logoutSuccessUrl);
+        String completeHillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
+        http.formLogin(formLogin -> {
+            formLogin.loginPage(completeHillaLoginViewPath).permitAll();
+            formLogin.successHandler(
+                    getVaadinSavedRequestAwareAuthenticationSuccessHandler(
+                            http));
+        });
+        configureLogout(http, logoutSuccessUrl);
+        http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
+                new LoginUrlAuthenticationEntryPoint(
+                        completeHillaLoginViewPath),
+                AnyRequestMatcher.INSTANCE));
+        accessControl.setLoginView(hillaLoginViewPath);
     }
 
     /**
@@ -365,7 +458,44 @@ public abstract class VaadinWebSecurity {
     protected void setLoginView(HttpSecurity http,
             Class<? extends Component> flowLoginView, String logoutSuccessUrl)
             throws Exception {
-        configurer.loginView(flowLoginView, logoutSuccessUrl);
+        Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView,
+                Route.class);
+
+        if (!route.isPresent()) {
+            throw new IllegalArgumentException(
+                    "Unable find a @Route annotation on the login view "
+                            + flowLoginView.getName());
+        }
+
+        if (!(applicationContext instanceof WebApplicationContext)) {
+            throw new RuntimeException(
+                    "VaadinWebSecurity cannot be used without WebApplicationContext.");
+        }
+
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(
+                ((WebApplicationContext) applicationContext)
+                        .getServletContext());
+        String loginPath = RouteUtil.getRoutePath(vaadinServletContext,
+                flowLoginView);
+        if (!loginPath.startsWith("/")) {
+            loginPath = "/" + loginPath;
+        }
+        String completeLoginPath = applyUrlMapping(loginPath);
+
+        // Actually set it up
+        http.formLogin(formLogin -> {
+            formLogin.loginPage(completeLoginPath).permitAll();
+            formLogin.successHandler(
+                    getVaadinSavedRequestAwareAuthenticationSuccessHandler(
+                            http));
+        });
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(
+                new AntPathRequestMatcher(completeLoginPath)));
+        configureLogout(http, logoutSuccessUrl);
+        http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
+                new LoginUrlAuthenticationEntryPoint(completeLoginPath),
+                AnyRequestMatcher.INSTANCE));
+        accessControl.setLoginView(flowLoginView);
     }
 
     /**
@@ -417,16 +547,19 @@ public abstract class VaadinWebSecurity {
      */
     protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage,
             String postLogoutRedirectUri) throws Exception {
-        configurer.oauth2LoginPage(oauth2LoginPage, postLogoutRedirectUri);
-        // This is needed for backwards compatibility if the protected method
-        // oidcLogoutSuccessHandler has been overridden by subclasses, to ensure
-        // that the custom LogoutSuccessHandler is used by the configurer.
+        http.oauth2Login(cfg -> cfg.loginPage(oauth2LoginPage).successHandler(
+                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
+                .permitAll());
+        accessControl.setLoginView(servletContextPath + oauth2LoginPage);
         if (postLogoutRedirectUri != null) {
+            applicationContext
+                    .getBeanProvider(ClientRegistrationRepository.class)
+                    .getIfAvailable();
             var logoutSuccessHandler = oidcLogoutSuccessHandler(
                     postLogoutRedirectUri);
             if (logoutSuccessHandler != null) {
-                http.setSharedObject(LogoutSuccessHandler.class,
-                        logoutSuccessHandler);
+                http.logout(
+                        cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler));
             }
         }
     }
@@ -450,8 +583,19 @@ public abstract class VaadinWebSecurity {
     // during startup, if spring-security-oauth2-client is not on classpath
     protected LogoutSuccessHandler oidcLogoutSuccessHandler(
             String postLogoutRedirectUri) {
-        return configurer.createOidcLogoutSuccessHandler(postLogoutRedirectUri)
-                .orElse(null);
+        var clientRegistrationRepository = applicationContext
+                .getBeanProvider(ClientRegistrationRepository.class)
+                .getIfAvailable();
+        if (clientRegistrationRepository != null) {
+            var logoutHandler = new OidcClientInitiatedLogoutSuccessHandler(
+                    clientRegistrationRepository);
+            logoutHandler.setRedirectStrategy(new UidlRedirectStrategy());
+            logoutHandler.setPostLogoutRedirectUri(postLogoutRedirectUri);
+            return logoutHandler;
+        }
+        LoggerFactory.getLogger(VaadinWebSecurity.class).warn(
+                "Cannot create OidcClientInitiatedLogoutSuccessHandler because ClientRegistrationRepository bean is not available.");
+        return null;
     }
 
     /**
@@ -565,9 +709,61 @@ public abstract class VaadinWebSecurity {
 
     }
 
+    private void configureLogout(HttpSecurity http, String logoutSuccessUrl)
+            throws Exception {
+        VaadinSimpleUrlLogoutSuccessHandler logoutSuccessHandler = new VaadinSimpleUrlLogoutSuccessHandler();
+        logoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
+        logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
+        http.logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler));
+    }
+
     private String getDefaultLogoutUrl() {
         return servletContextPath.startsWith("/") ? servletContextPath
                 : "/" + servletContextPath;
+    }
+
+    private VaadinSavedRequestAwareAuthenticationSuccessHandler getVaadinSavedRequestAwareAuthenticationSuccessHandler(
+            HttpSecurity http) {
+        VaadinSavedRequestAwareAuthenticationSuccessHandler vaadinSavedRequestAwareAuthenticationSuccessHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setDefaultTargetUrl(applyUrlMapping(""));
+        RequestCache requestCache = http.getSharedObject(RequestCache.class);
+        if (requestCache != null) {
+            vaadinSavedRequestAwareAuthenticationSuccessHandler
+                    .setRequestCache(requestCache);
+        }
+        http.setSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
+                vaadinSavedRequestAwareAuthenticationSuccessHandler);
+        return vaadinSavedRequestAwareAuthenticationSuccessHandler;
+    }
+
+    private AccessDeniedHandler createAccessDeniedHandler() {
+        final AccessDeniedHandler defaultHandler = new AccessDeniedHandlerImpl();
+
+        final AccessDeniedHandler http401UnauthorizedHandler = new Http401UnauthorizedAccessDeniedHandler();
+
+        final LinkedHashMap<Class<? extends AccessDeniedException>, AccessDeniedHandler> exceptionHandlers = new LinkedHashMap<>();
+        exceptionHandlers.put(CsrfException.class, http401UnauthorizedHandler);
+
+        final LinkedHashMap<RequestMatcher, AccessDeniedHandler> matcherHandlers = new LinkedHashMap<>();
+        matcherHandlers.put(requestUtil::isEndpointRequest,
+                new DelegatingAccessDeniedHandler(exceptionHandlers,
+                        new AccessDeniedHandlerImpl()));
+
+        return new RequestMatcherDelegatingAccessDeniedHandler(matcherHandlers,
+                defaultHandler);
+    }
+
+    private static class Http401UnauthorizedAccessDeniedHandler
+            implements AccessDeniedHandler {
+        @Override
+        public void handle(HttpServletRequest request,
+                HttpServletResponse response,
+                AccessDeniedException accessDeniedException)
+                throws IOException, ServletException {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        }
     }
 
     private static class DeprecateViewAccessCheckerDelegator
@@ -600,4 +796,5 @@ public abstract class VaadinWebSecurity {
             accessControl.beforeEnter(beforeEnterEvent);
         }
     }
+
 }
