@@ -60,6 +60,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -290,17 +291,20 @@ public final class VaadinSecurityConfigurer
      * @return a {@link RequestMatcher} that matches requests to be allowed
      *         without authentication
      */
-    public RequestMatcher vaadinPermitAllMatcher() {
-        return RequestMatchers.anyOf(
+    public RequestMatcher defaultPermitMatcher() {
+        var urlMapping = getRequestUtil().getUrlMapping();
+        var baseMatcher = RequestMatchers.anyOf(
                 getRequestUtil()::isFrameworkInternalRequest,
-                getRequestUtil()::isAnonymousEndpoint,
-                getRequestUtil()::isAllowedHillaView,
                 getRequestUtil()::isAnonymousRoute,
                 getRequestUtil()::isCustomWebIcon,
-                getDefaultHttpSecurityPermitMatcher(
-                        getRequestUtil().getUrlMapping()),
-                getDefaultWebSecurityIgnoreMatcher(
-                        getRequestUtil().getUrlMapping()));
+                getDefaultWebSecurityIgnoreMatcher(urlMapping),
+                getDefaultHttpSecurityPermitMatcher(urlMapping));
+        if (EndpointRequestUtil.isHillaAvailable()) {
+            return RequestMatchers.anyOf(baseMatcher,
+                    getRequestUtil()::isAllowedHillaView,
+                    getRequestUtil()::isAnonymousEndpoint);
+        }
+        return baseMatcher;
     }
 
     @Override
@@ -528,7 +532,7 @@ public final class VaadinSecurityConfigurer
 
     private void customizeAuthorizeHttpRequests(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-        registry.requestMatchers(vaadinPermitAllMatcher()).permitAll();
+        registry.requestMatchers(defaultPermitMatcher()).permitAll();
     }
 
     private ApplicationContext getApplicationContext() {
