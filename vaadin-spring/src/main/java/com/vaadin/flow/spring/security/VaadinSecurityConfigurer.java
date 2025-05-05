@@ -81,6 +81,7 @@ import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSec
  * <pre>
  * <code>
  * &#64;Configuration
+ * &#64;EnableWebSecurity
  * public class MyWebSecurity {
  *
  *     &#64;Bean
@@ -162,6 +163,13 @@ public final class VaadinSecurityConfigurer
 
     /**
      * Configures the login view for use in a Hilla application.
+     * <p>
+     * This is used when your application uses a Hilla-based login view that is
+     * available at the given path.
+     * <p>
+     * If the path points to a Flow view, the corresponding Java class must be
+     * annotated with {@link com.vaadin.flow.server.auth.AnonymousAllowed} to
+     * ensure that the view is always accessible.
      *
      * @param loginView
      *            the path to the login view
@@ -174,6 +182,13 @@ public final class VaadinSecurityConfigurer
     /**
      * Configures the login view for use in a Hilla application and the logout
      * success URL.
+     * <p>
+     * This is used when your application uses a Hilla-based login view that is
+     * available at the given path.
+     * <p>
+     * If the path points to a Flow view, the corresponding Java class must be
+     * annotated with {@link com.vaadin.flow.server.auth.AnonymousAllowed} to
+     * ensure that the view is always accessible.
      *
      * @param loginView
      *            the path to the login view
@@ -190,6 +205,13 @@ public final class VaadinSecurityConfigurer
 
     /**
      * Configures the login page for OAuth2 authentication.
+     * <p>
+     * If using Spring's OAuth2 client, this should be set to Spring's internal
+     * redirect endpoint {@code /oauth2/authorization/{registrationId}} where
+     * {@code registrationId} is the ID of the OAuth2 client registration.
+     * <p>
+     * This method also configures a logout success handler that redirects to
+     * the application base URL after logout.
      *
      * @param oauth2LoginPage
      *            the login page for OAuth2 authentication
@@ -202,6 +224,13 @@ public final class VaadinSecurityConfigurer
     /**
      * Configures the login page for OAuth2 authentication and the post-logout
      * redirect URI.
+     * <p>
+     * If using Spring's OAuth2 client, this should be set to Spring's internal
+     * redirect endpoint {@code /oauth2/authorization/{registrationId}} where
+     * {@code registrationId} is the ID of the OAuth2 client registration.
+     * <p>
+     * The {@code {baseUrl}} placeholder is also supported, which is the same as
+     * {@code {baseScheme}://{baseHost}{basePort}{basePath}}.
      *
      * @param oauth2LoginPage
      *            the login page for OAuth2 authentication
@@ -254,7 +283,8 @@ public final class VaadinSecurityConfigurer
      * passing {@link AuthorizedUrl#authenticated()} to this method.
      *
      * @param anyRequestAuthorizeRule
-     *            the access rule for any request not matching other rules
+     *            the access rule for any request not matching other rules, or
+     *            {@code null} to disable automatic configuration
      * @return the current configurer instance for method chaining
      */
     public VaadinSecurityConfigurer anyRequest(
@@ -454,9 +484,7 @@ public final class VaadinSecurityConfigurer
         logoutHandlers.clear();
         if (!alreadyInitializedOnce) {
             // Allows setting logout handlers on the AuthenticationContext at
-            // the
-            // right time, i.e., during the logout configuration lifecycle
-            // phase.
+            // the right time, i.e., during the logout configuration phase.
             var postProcessor = new ObjectPostProcessor<LogoutFilter>() {
                 @Override
                 public <O extends LogoutFilter> O postProcess(O filter) {
