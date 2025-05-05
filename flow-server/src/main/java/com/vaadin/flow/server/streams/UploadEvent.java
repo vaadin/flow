@@ -16,11 +16,8 @@
 
 package com.vaadin.flow.server.streams;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 
@@ -36,8 +33,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Class containing data on requested client upload to server.
@@ -132,19 +127,15 @@ public class UploadEvent {
         response.setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         if (success) {
-            try (OutputStream out = response.getOutputStream()) {
-                final PrintWriter outWriter = new PrintWriter(
-                        new BufferedWriter(new OutputStreamWriter(out, UTF_8)));
+            try (PrintWriter writer = response.getWriter()) {
                 try {
-                    outWriter.print("<html><body>upload handled</body></html>");
+                    writer.print("<html><body>upload handled</body></html>");
                 } finally {
-                    outWriter.flush();
+                    writer.flush();
                 }
             } catch (IOException e) {
                 LoggerFactory.getLogger(UploadEvent.class)
                         .error("Error writing upload response", e);
-                throw new UncheckedIOException("Error writing upload response",
-                        e);
             }
         } else {
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

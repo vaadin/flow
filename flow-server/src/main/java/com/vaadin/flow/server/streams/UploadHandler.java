@@ -61,18 +61,31 @@ public interface UploadHandler extends ElementRequestHandler {
      * Method that is called when the client wants to upload data to the url
      * stored for this specific handler registration.
      * <p>
-     * After upload the method {@link UploadEvent#sendUploadResponse(boolean)}
-     * can be called to write the upload response. For multipart requests this
-     * should be done after all items have been handled.
-     * <p>
-     * To check for multipart request see
-     * {@link UploadEvent#isMultipartRequest}.
+     * After upload of all files is done the method {@link UploadEvent#sendUploadResponse(boolean)}
+     * can be called to write an upload response. The method {@link #responseHandled(boolean, VaadinResponse)}
+     * will be called when all upload items have been handled.
      *
      * @param event
      *            upload event containing the necessary data for getting the
      *            request
      */
     void handleUploadRequest(UploadEvent event);
+
+    /**
+     * Method called when all files have called handleUploadRequest.
+     *
+     * @param success
+     *            is there was no exception thrown for upload
+     * @param response
+     *            the response object for the upload request
+     */
+    default void responseHandled(boolean success, VaadinResponse response) {
+        if (success) {
+            response.setStatus(HttpStatusCode.OK.getCode());
+        } else {
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        }
+    }
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) {
@@ -93,16 +106,14 @@ public interface UploadHandler extends ElementRequestHandler {
                         ioe);
             }
             if (!parts.isEmpty()) {
-                Iterator<Part> iter = parts.iterator();
-                while (iter.hasNext()) {
-                    Part part = iter.next();
-
+                for (Part part : parts) {
                     UploadEvent event = new UploadEvent(request, response,
                             session, part.getSubmittedFileName(),
                             part.getSize(), part.getContentType(), owner, null,
                             part);
                     handleUploadRequest(event);
                 }
+                responseHandled(true, response);
             } else {
                 long contentLength = request.getContentLengthLong();
                 // Parse the request
@@ -127,6 +138,7 @@ public interface UploadHandler extends ElementRequestHandler {
                                 item.getContentType(), owner, item, null);
                         handleUploadRequest(event);
                     }
+                    responseHandled(true, response);
                 } catch (FileUploadException e) {
                     String limitInfoStr = "{} limit exceeded. To increase the limit "
                             + "extend StreamRequestHandler, override {} method for "
@@ -144,11 +156,11 @@ public interface UploadHandler extends ElementRequestHandler {
                     }
                     LoggerFactory.getLogger(UploadHandler.class)
                             .warn("File upload failed.", e);
+                    responseHandled(false, response);
                 } catch (IOException ioe) {
                     LoggerFactory.getLogger(UploadHandler.class)
                             .warn("IO Exception during file upload", ioe);
-                    response.setStatus(
-                            HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                    responseHandled(false, response);
                 }
             }
         } else {
@@ -161,6 +173,7 @@ public interface UploadHandler extends ElementRequestHandler {
                     owner, null, null);
 
             handleUploadRequest(event);
+            responseHandled(true, response);
         }
     }
 
