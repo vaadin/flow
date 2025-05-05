@@ -179,7 +179,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      *
      * @param path
      *            the servlet path to the file
-     * @return DownloadHandler implementation for download a servlet resource
+     * @return DownloadHandler implementation for downloading a servlet resource
      */
     static ServletResourceDownloadHandler forServletResource(String path) {
         return new ServletResourceDownloadHandler(path);
@@ -198,7 +198,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            the servlet path to the file
      * @param name
      *            resource name
-     * @return DownloadHandler implementation for download a servlet resource
+     * @return DownloadHandler implementation for downloading a servlet resource
      */
     static ServletResourceDownloadHandler forServletResource(String path,
             String name) {
@@ -220,7 +220,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            resource name
      * @param listener
      *            listener for transfer progress events
-     * @return DownloadHandler implementation for download a servlet resource
+     * @return DownloadHandler implementation for downloading a servlet resource
      */
     static ServletResourceDownloadHandler forServletResource(String path,
             String name, TransferProgressListener listener) {
@@ -278,7 +278,7 @@ public interface DownloadHandler extends ElementRequestHandler {
     /**
      * Generate a download handler using a callback function.
      * <p>
-     * This helper is useful when you want to chaing the handling lambda and
+     * This helper is useful when you want to chain the handling lambda and
      * download progress listeners.
      * <p>
      * Note that the {@link TransferProgressListener} is not automatically
