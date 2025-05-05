@@ -324,14 +324,21 @@ public final class VaadinSecurityConfigurer
     public RequestMatcher defaultPermitMatcher() {
         var urlMapping = getRequestUtil().getUrlMapping();
         var baseMatcher = RequestMatchers.anyOf(
+                // Vaadin internal requests must always be permitted to allow
+                // public Flow assets and/or the Flow login view
                 getRequestUtil()::isFrameworkInternalRequest,
+                // Public routes are permitted
                 getRequestUtil()::isAnonymousRoute,
+                // Custom web icons (and favicons) are permitted
                 getRequestUtil()::isCustomWebIcon,
-                getDefaultWebSecurityIgnoreMatcher(urlMapping),
-                getDefaultHttpSecurityPermitMatcher(urlMapping));
+                // Matchers for Vaadin static resources
+                getDefaultHttpSecurityPermitMatcher(urlMapping),
+                getDefaultWebSecurityIgnoreMatcher(urlMapping));
         if (EndpointRequestUtil.isHillaAvailable()) {
             return RequestMatchers.anyOf(baseMatcher,
+                    // Matchers for known Hilla views
                     getRequestUtil()::isAllowedHillaView,
+                    // Matcher for public Hilla endpoints
                     getRequestUtil()::isAnonymousEndpoint);
         }
         return baseMatcher;
@@ -386,11 +393,11 @@ public final class VaadinSecurityConfigurer
         // customize the authorized requests during their own initialization.
         // Also, it ensures that the anyRequest authorize-rule is configured as
         // late as possible, since it must be the last authorize-rule to be set.
-        http.authorizeHttpRequests(registry -> {
-            if (anyRequestAuthorizeRule != null) {
+        if (anyRequestAuthorizeRule != null) {
+            http.authorizeHttpRequests(registry -> {
                 anyRequestAuthorizeRule.accept(registry.anyRequest());
-            }
-        });
+            });
+        }
     }
 
     private String getLoginViewPath(Class<? extends Component> loginView) {
