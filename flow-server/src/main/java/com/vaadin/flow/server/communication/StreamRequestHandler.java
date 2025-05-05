@@ -43,9 +43,9 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.streams.UploadHandler;
 
-import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
-import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
-import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
 
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances
@@ -267,7 +267,7 @@ public class StreamRequestHandler implements RequestHandler {
      * @return maximum request size for upload
      */
     protected long getRequestSizeMax() {
-        return DEFAULT_SIZE_MAX;
+        return DEFAULT_REQUEST_SIZE_MAX;
     }
 
     /**
