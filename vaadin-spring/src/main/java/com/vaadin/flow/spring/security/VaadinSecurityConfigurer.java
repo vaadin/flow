@@ -501,8 +501,10 @@ public final class VaadinSecurityConfigurer
             }
             return Optional.empty();
         }).ifPresent(configurer::logoutSuccessHandler);
-        logoutHandlers.forEach(configurer::addLogoutHandler);
-        logoutHandlers.clear();
+        var existingHandlers = configurer.getLogoutHandlers();
+        logoutHandlers.stream()
+                .filter(handler -> !existingHandlers.contains(handler))
+                .forEach(configurer::addLogoutHandler);
         if (!alreadyInitializedOnce) {
             // Allows setting logout handlers on the AuthenticationContext at
             // the right time, i.e., during the logout configuration phase.
