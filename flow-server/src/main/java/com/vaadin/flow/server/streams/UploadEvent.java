@@ -29,6 +29,7 @@ import org.apache.commons.fileupload2.core.FileItemInput;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
@@ -39,7 +40,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Class containing data on requested client download.
+ * Class containing data on requested client upload to server.
  *
  * @since 24.8
  */
@@ -70,6 +71,18 @@ public class UploadEvent {
      *            current session
      * @param fileName
      *            defined download file name
+     * @param contentType
+     *            content type string for upload
+     * @param fileSize
+     *            size of the upload
+     * @param owningElement
+     *            element owning this upload
+     * @param item
+     *            multipart stream file item, {@code null} for xhr or parts
+     *            multipart stream
+     * @param part
+     *            multipart part item, {@code null} for xhr or multipart file
+     *            stream
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, String fileName, long fileSize,
@@ -200,5 +213,14 @@ public class UploadEvent {
      */
     public Component getOwningComponent() {
         return owningElement.getComponent().orElse(null);
+    }
+
+    /**
+     * Return the UI for this upload event.
+     *
+     * @return UI for upload event
+     */
+    public UI getUI() {
+        return UI.getCurrent();
     }
 }

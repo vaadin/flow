@@ -27,13 +27,16 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -112,42 +115,9 @@ public class StreamRequestHandler implements RequestHandler {
 
         AbstractStreamResource resource = abstractStreamResource.get();
         if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
-            Element owner = elementRequest.getOwner();
-            if (owner.getNode().isInert() && !elementRequest
-                    .getElementRequestHandler().allowInert()) {
-                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
-                        "Resource not available");
+            if (callElementResourceHandler(session, request, response,
+                    elementRequest, pathInfo)) {
                 return true;
-            } else {
-                if (elementRequest
-                        .getElementRequestHandler() instanceof UploadHandler) {
-                    PathData parts = parsePath(pathInfo);
-                    // Validate upload security key. Else respond with
-                    // FORBIDDEN.
-                    session.lock();
-                    try {
-                        String secKey = elementRequest.getId();
-                        if (secKey == null || !MessageDigest.isEqual(
-                                secKey.getBytes(StandardCharsets.UTF_8),
-                                parts.securityKey
-                                        .getBytes(StandardCharsets.UTF_8))) {
-                            LoggerFactory.getLogger(UploadHandler.class).warn(
-                                    "Received incoming stream with faulty security key.");
-                            response.sendError(
-                                    HttpStatusCode.FORBIDDEN.getCode(),
-                                    "Resource not available");
-                            return true;
-                        }
-
-                        // Set current UI to upload url ui.
-                        UI ui = session.getUIById(Integer.parseInt(parts.UIid));
-                        UI.setCurrent(ui);
-                    } finally {
-                        session.unlock();
-                    }
-                }
-                elementRequest.getElementRequestHandler().handleRequest(request,
-                        response, session, elementRequest.getOwner());
             }
         } else if (resource instanceof StreamResource) {
             resourceHandler.handleRequest(session, request, response,
@@ -161,6 +131,70 @@ public class StreamRequestHandler implements RequestHandler {
             getLogger().warn("Received unknown stream resource.");
         }
         return true;
+    }
+
+    private boolean callElementResourceHandler(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            StreamResourceRegistry.ElementStreamResource elementRequest,
+            String pathInfo) throws IOException {
+        Element owner = elementRequest.getOwner();
+        if (owner.getNode().isInert()
+                && !elementRequest.getElementRequestHandler().allowInert()) {
+            response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                    "Resource not available");
+            return true;
+        }
+
+        if (elementRequest
+                .getElementRequestHandler() instanceof UploadHandler) {
+            // Validate upload security key. Else respond with
+            // FORBIDDEN.
+            PathData parts = parsePath(pathInfo);
+            StateNode node = owner.getNode();
+            session.lock();
+            try {
+                String secKey = elementRequest.getId();
+                if (secKey == null || !MessageDigest.isEqual(
+                        secKey.getBytes(StandardCharsets.UTF_8),
+                        parts.securityKey.getBytes(StandardCharsets.UTF_8))) {
+                    LoggerFactory.getLogger(UploadHandler.class).warn(
+                            "Received incoming stream with faulty security key.");
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return true;
+                }
+
+                // Set current UI to upload url ui.
+                UI ui = session.getUIById(Integer.parseInt(parts.UIid));
+                UI.setCurrent(ui);
+
+                if (node == null) {
+                    session.getErrorHandler()
+                            .error(new ErrorEvent(new UploadException(
+                                    "File upload ignored because the node for the upload owner component was not found")));
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return true;
+                }
+                if (!node.isAttached()) {
+                    session.getErrorHandler()
+                            .error(new ErrorEvent(new UploadException(
+                                    "Warning: file upload ignored for "
+                                            + node.getId()
+                                            + " because the component was disabled")));
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return true;
+                }
+            } finally {
+                session.unlock();
+            }
+        }
+
+        elementRequest.getElementRequestHandler().handleRequest(request,
+                response, session, elementRequest.getOwner());
+
+        return false;
     }
 
     private record PathData(String UIid, String securityKey, String fileName) {

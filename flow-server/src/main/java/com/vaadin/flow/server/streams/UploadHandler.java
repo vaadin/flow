@@ -39,13 +39,18 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ElementRequestHandler;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
+
 /**
- * Interface for handling download of data from the server to the client.
+ * Interface for handling upoad of data from the client to the server.
  *
  * @since 24.8
  */
@@ -68,33 +73,14 @@ public interface UploadHandler extends ElementRequestHandler {
                 && JakartaServletFileUpload
                         .isMultipartContent((HttpServletRequest) request);
 
-        StateNode node = owner.getNode();
-
-        session.lock();
-        try {
-            if (node == null) {
-                session.getErrorHandler()
-                        .error(new ErrorEvent(new UploadException(
-                                "File upload ignored because the node for the stream variable was not found")));
-                return;
-            }
-            if (!node.isAttached()) {
-                session.getErrorHandler().error(new ErrorEvent(
-                        new UploadException("Warning: file upload ignored for "
-                                + node.getId()
-                                + " because the component was disabled")));
-                return;
-            }
-        } finally {
-            session.unlock();
-        }
-
-        String fileName = getUrlPostfix() == null ? "" : getUrlPostfix();
+        String fileName;
         if (isMultipartUpload) {
             Collection<Part> parts = Collections.EMPTY_LIST;
             try {
                 parts = ((HttpServletRequest) request).getParts();
-            } catch (IOException | ServletException ioe) {
+            } catch (IOException ioe) {
+                throw new UncheckedIOException(ioe);
+            } catch (ServletException ioe) {
                 // NOOOP
             }
             if (!parts.isEmpty()) {
@@ -150,8 +136,11 @@ public interface UploadHandler extends ElementRequestHandler {
                     }
                     LoggerFactory.getLogger(UploadHandler.class)
                             .warn("File upload failed.", e);
-                } catch (IOException uioe) {
-                    throw new UncheckedIOException("e", uioe);
+                } catch (IOException ioe) {
+                    LoggerFactory.getLogger(UploadHandler.class)
+                            .warn("IO Exception during file upload", ioe);
+                    response.setStatus(
+                            HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 }
             }
         } else {
@@ -167,15 +156,39 @@ public interface UploadHandler extends ElementRequestHandler {
         }
     }
 
+    /**
+     * The maximum allowed size of a complete request, as opposed to
+     * {@link #getFileSizeMax()}. Only targets stream multipart uploads.
+     * <p>
+     * The default value of -1 indicates, that there is no limit.
+     *
+     * @return The maximum allowed size, in bytes
+     */
     default long getRequestSizeMax() {
-        return -1;
+        return DEFAULT_REQUEST_SIZE_MAX;
     }
 
+    /**
+     * The maximum allowed size of a single uploaded file, as opposed to
+     * {@link #getRequestSizeMax()}. Only targets stream multipart uploads.
+     * <p>
+     * The default value of -1 indicates, that there is no limit.
+     *
+     * @return Maximum size of a single uploaded file, in bytes
+     */
     default long getFileSizeMax() {
-        return -1;
+        return DEFAULT_FILE_SIZE_MAX;
     }
 
+    /**
+     * The maximum number of files allowed per request. Only targets stream
+     * multipart uploads.
+     * <p>
+     * Default is 10000.
+     *
+     * @return the maxiumum numner of files allowed, -1 means no limit
+     */
     default long getFileCountMax() {
-        return 10000;
+        return DEFAULT_FILE_COUNT_MAX;
     }
 }
