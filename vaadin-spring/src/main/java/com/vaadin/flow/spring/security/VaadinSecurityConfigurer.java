@@ -119,6 +119,20 @@ public final class VaadinSecurityConfigurer
     private boolean alreadyInitializedOnce = false;
 
     /**
+     * Creates a new instance the {@code VaadinSecurityConfigurer} that can be
+     * used to configure security settings for Vaadin applications.
+     *
+     * @return a new instance of {@code VaadinSecurityConfigurer}
+     */
+    public static VaadinSecurityConfigurer vaadin() {
+        return new VaadinSecurityConfigurer();
+    }
+
+    private VaadinSecurityConfigurer() {
+        // Instance creation is handled by the static factory method.
+    }
+
+    /**
      * Configures the login view for use in a Flow application.
      * <p>
      * This method ensures that the provided login view class is annotated with

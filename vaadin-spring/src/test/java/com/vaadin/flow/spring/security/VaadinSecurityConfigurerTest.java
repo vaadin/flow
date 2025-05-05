@@ -92,7 +92,7 @@ class VaadinSecurityConfigurerTest {
                 .authenticationProvider(new TestingAuthenticationProvider());
         http = new HttpSecurity(postProcessor, authManagerBuilder,
                 Map.of(ApplicationContext.class, applicationContext));
-        configurer = new VaadinSecurityConfigurer();
+        configurer = VaadinSecurityConfigurer.vaadin();
     }
 
     @AfterEach
