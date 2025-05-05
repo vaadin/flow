@@ -25,6 +25,7 @@ import java.util.Objects;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.TransferProgressAware;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.shared.Registration;
@@ -44,7 +45,7 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
 
     /**
      * This method is used to get the transfer context from the transfer events
-     * (e.g. {@link com.vaadin.flow.server.DownloadRequest}).
+     * (e.g. {@link DownloadEvent}).
      *
      * @param transferEvent
      *            the transfer event

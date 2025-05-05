@@ -49,19 +49,19 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            download event containing the necessary data for writing the
      *            response
      */
-    void handleDownloadRequest(DownloadRequest event);
+    void handleDownloadRequest(DownloadEvent event);
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) {
         String fileName = getUrlPostfix() == null ? "" : getUrlPostfix();
 
-        DownloadRequest downloadRequest = new DownloadRequest(request, response,
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, fileName,
                 Optional.ofNullable(response.getService().getMimeType(fileName))
                         .orElse("application/octet-stream"),
                 owner);
 
-        handleDownloadRequest(downloadRequest);
+        handleDownloadRequest(downloadEvent);
     }
 
     /**
@@ -237,7 +237,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return DownloadHandler implementation for download from an input stream
      */
     static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler) {
+            SerializableFunction<DownloadEvent, DownloadResponse> handler) {
         return new InputStreamDownloadHandler(handler);
     }
 
@@ -251,7 +251,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return DownloadHandler implementation for download from an input stream
      */
     static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler,
+            SerializableFunction<DownloadEvent, DownloadResponse> handler,
             String name) {
         return new InputStreamDownloadHandler(handler, name);
     }
@@ -268,7 +268,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return DownloadHandler implementation for download from an input stream
      */
     static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler,
+            SerializableFunction<DownloadEvent, DownloadResponse> handler,
             String name, TransferProgressListener listener) {
         InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(handler, name);
         downloadHandler.addTransferProgressListener(listener);
@@ -293,10 +293,10 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return DownloadHandler implementation for a given callback
      */
     static AbstractDownloadHandler fromCallback(
-            SerializableConsumer<DownloadRequest> handler) {
+            SerializableConsumer<DownloadEvent> handler) {
         return new AbstractDownloadHandler() {
             @Override
-            public void handleDownloadRequest(DownloadRequest event) {
+            public void handleDownloadRequest(DownloadEvent event) {
                 handler.accept(event);
             }
         };

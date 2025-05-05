@@ -17,12 +17,10 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,13 +36,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -54,7 +50,7 @@ public class ServletResourceDownloadHandlerTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
-    private DownloadRequest downloadRequest;
+    private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
 
@@ -90,7 +86,7 @@ public class ServletResourceDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadRequest = new DownloadRequest(request, response, session,
+        downloadEvent = new DownloadEvent(request, response, session,
                 "download", "application/octet-stream", owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
@@ -135,7 +131,7 @@ public class ServletResourceDownloadHandlerTest {
                     }
                 });
 
-        handler.handleDownloadRequest(downloadRequest);
+        handler.handleDownloadRequest(downloadEvent);
 
         // Two invocations with interval of 65536 bytes for total size 165000
         Assert.assertEquals(
@@ -150,16 +146,16 @@ public class ServletResourceDownloadHandlerTest {
     @Test
     public void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
-        DownloadRequest downloadRequest = Mockito.mock(DownloadRequest.class);
-        Mockito.when(downloadRequest.getRequest()).thenReturn(request);
-        Mockito.when(downloadRequest.getSession()).thenReturn(session);
-        Mockito.when(downloadRequest.getResponse()).thenReturn(response);
-        Mockito.when(downloadRequest.owningElement()).thenReturn(owner);
+        DownloadEvent downloadEvent = Mockito.mock(DownloadEvent.class);
+        Mockito.when(downloadEvent.getRequest()).thenReturn(request);
+        Mockito.when(downloadEvent.getSession()).thenReturn(session);
+        Mockito.when(downloadEvent.getResponse()).thenReturn(response);
+        Mockito.when(downloadEvent.owningElement()).thenReturn(owner);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
                         Mockito.anyInt());
-        Mockito.when(downloadRequest.getOutputStream())
+        Mockito.when(downloadEvent.getOutputStream())
                 .thenReturn(outputStreamMock);
         List<String> invocations = new ArrayList<>();
         DownloadHandler handler = DownloadHandler.forServletResource(
@@ -191,7 +187,7 @@ public class ServletResourceDownloadHandlerTest {
                 });
 
         try {
-            handler.handleDownloadRequest(downloadRequest);
+            handler.handleDownloadRequest(downloadEvent);
             Assert.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }

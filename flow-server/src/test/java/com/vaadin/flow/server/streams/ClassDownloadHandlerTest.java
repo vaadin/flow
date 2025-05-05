@@ -17,12 +17,9 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +34,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -49,7 +46,7 @@ public class ClassDownloadHandlerTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
-    private DownloadRequest downloadRequest;
+    private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
 
@@ -73,7 +70,7 @@ public class ClassDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadRequest = new DownloadRequest(request, response, session,
+        downloadEvent = new DownloadEvent(request, response, session,
                 "download", "application/octet-stream", owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
@@ -119,7 +116,7 @@ public class ClassDownloadHandlerTest {
                     }
                 });
 
-        handler.handleDownloadRequest(downloadRequest);
+        handler.handleDownloadRequest(downloadEvent);
 
         // Two invocations with interval of 65536 bytes for total size 165000
         Assert.assertEquals(
@@ -134,15 +131,15 @@ public class ClassDownloadHandlerTest {
     @Test
     public void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
-        DownloadRequest request = Mockito.mock(DownloadRequest.class);
-        Mockito.when(request.getSession()).thenReturn(session);
-        Mockito.when(request.getResponse()).thenReturn(response);
-        Mockito.when(request.owningElement()).thenReturn(owner);
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.owningElement()).thenReturn(owner);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
                         Mockito.anyInt());
-        Mockito.when(request.getOutputStream()).thenReturn(outputStreamMock);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
         List<String> invocations = new ArrayList<>();
         DownloadHandler handler = DownloadHandler.forClassResource(
                 this.getClass(), PATH_TO_FILE, "download",
@@ -174,7 +171,7 @@ public class ClassDownloadHandlerTest {
                 });
 
         try {
-            handler.handleDownloadRequest(request);
+            handler.handleDownloadRequest(event);
             Assert.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }

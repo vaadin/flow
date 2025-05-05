@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 
@@ -34,9 +33,9 @@ import com.vaadin.flow.dom.Element;
  *
  * @since 24.8
  */
-public record DownloadRequest(VaadinRequest request, VaadinResponse response,
-        VaadinSession session, String fileName, String contentType,
-        Element owningElement) {
+public record DownloadEvent(VaadinRequest request, VaadinResponse response,
+                            VaadinSession session, String fileName, String contentType,
+                            Element owningElement) {
 
     /**
      * Returns a <code>OutputStream</code> for writing binary data in the
@@ -53,7 +52,7 @@ public record DownloadRequest(VaadinRequest request, VaadinResponse response,
         try {
             return response.getOutputStream();
         } catch (IOException e) {
-            LoggerFactory.getLogger(DownloadRequest.class)
+            LoggerFactory.getLogger(DownloadEvent.class)
                     .error("Error getting output stream", e);
             throw new UncheckedIOException("Error getting output stream", e);
         }
@@ -75,7 +74,7 @@ public record DownloadRequest(VaadinRequest request, VaadinResponse response,
         try {
             return response.getWriter();
         } catch (IOException e) {
-            LoggerFactory.getLogger(DownloadRequest.class)
+            LoggerFactory.getLogger(DownloadEvent.class)
                     .error("Error getting print writer");
             throw new UncheckedIOException("Error getting writer", e);
         }

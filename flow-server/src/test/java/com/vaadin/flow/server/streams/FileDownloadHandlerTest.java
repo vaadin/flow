@@ -29,7 +29,6 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -37,11 +36,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 public class FileDownloadHandlerTest {
@@ -51,7 +49,7 @@ public class FileDownloadHandlerTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
-    private DownloadRequest downloadRequest;
+    private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
 
@@ -75,7 +73,7 @@ public class FileDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadRequest = new DownloadRequest(request, response, session,
+        downloadEvent = new DownloadEvent(request, response, session,
                 "download", "application/octet-stream", owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
@@ -122,7 +120,7 @@ public class FileDownloadHandlerTest {
                     }
                 });
 
-        handler.handleDownloadRequest(downloadRequest);
+        handler.handleDownloadRequest(downloadEvent);
 
         // Two invocations with interval of 65536 bytes for total size 165000
         Assert.assertEquals(
@@ -170,7 +168,7 @@ public class FileDownloadHandlerTest {
                 });
 
         try {
-            handler.handleDownloadRequest(downloadRequest);
+            handler.handleDownloadRequest(downloadEvent);
             Assert.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }

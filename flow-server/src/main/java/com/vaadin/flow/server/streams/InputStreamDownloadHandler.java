@@ -22,7 +22,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
@@ -34,7 +34,7 @@ import com.vaadin.flow.server.VaadinResponse;
  */
 public class InputStreamDownloadHandler extends AbstractDownloadHandler {
 
-    private final SerializableFunction<DownloadRequest, DownloadResponse> handler;
+    private final SerializableFunction<DownloadEvent, DownloadResponse> handler;
     private final String name;
 
     /**
@@ -45,7 +45,7 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
      *            serializable function for handling download
      */
     public InputStreamDownloadHandler(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler) {
+            SerializableFunction<DownloadEvent, DownloadResponse> handler) {
         this(handler, null);
     }
 
@@ -60,29 +60,29 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
      *            generated before postfix
      */
     public InputStreamDownloadHandler(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler,
+            SerializableFunction<DownloadEvent, DownloadResponse> handler,
             String name) {
         this.handler = handler;
         this.name = name;
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest downloadRequest) {
-        DownloadResponse download = handler.apply(downloadRequest);
-        VaadinResponse response = downloadRequest.getResponse();
+    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+        DownloadResponse download = handler.apply(downloadEvent);
+        VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {
             response.setStatus(download.getError());
             return;
         }
 
-        try (OutputStream outputStream = downloadRequest.getOutputStream();
-                InputStream inputStream = download.getInputStream()) {
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
+             InputStream inputStream = download.getInputStream()) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    getTransferContext(downloadRequest), getListeners());
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            notifyError(downloadRequest, ioe);
+            notifyError(downloadEvent, ioe);
             throw new UncheckedIOException(ioe);
         }
 

@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
@@ -63,19 +63,19 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest downloadRequest) {
-        VaadinResponse response = downloadRequest.getResponse();
-        try (OutputStream outputStream = downloadRequest.getOutputStream();
-                FileInputStream inputStream = new FileInputStream(file)) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+        VaadinResponse response = downloadEvent.getResponse();
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
+             FileInputStream inputStream = new FileInputStream(file)) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    getTransferContext(downloadRequest), getListeners());
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            notifyError(downloadRequest, ioe);
+            notifyError(downloadEvent, ioe);
             throw new UncheckedIOException(ioe);
         }
-        response.setContentType(downloadRequest.getContentType());
+        response.setContentType(downloadEvent.getContentType());
         response.setContentLength(Math.toIntExact(file.length()));
     }
 
@@ -89,7 +89,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
 
     @Override
     protected TransferContext getTransferContext(
-            DownloadRequest transferEvent) {
+            DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.session(),
                 transferEvent.fileName(), transferEvent.owningElement(),

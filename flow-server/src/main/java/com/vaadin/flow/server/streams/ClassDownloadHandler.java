@@ -23,7 +23,7 @@ import java.io.UncheckedIOException;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 
@@ -80,29 +80,29 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest downloadRequest) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent) {
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
-            downloadRequest.getResponse()
+            downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.NOT_FOUND.getCode());
             return;
         }
-        try (OutputStream outputStream = downloadRequest.getOutputStream();
-                InputStream inputStream = clazz
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
+             InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
             TransferProgressListener.transfer(inputStream, outputStream,
-                    getTransferContext(downloadRequest), getListeners());
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
-            downloadRequest.getResponse()
+            downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            notifyError(downloadRequest, ioe);
+            notifyError(downloadEvent, ioe);
             throw new UncheckedIOException(ioe);
         }
 
-        downloadRequest.getResponse()
-                .setContentType(downloadRequest.getContentType());
+        downloadEvent.getResponse()
+                .setContentType(downloadEvent.getContentType());
     }
 
     @Override

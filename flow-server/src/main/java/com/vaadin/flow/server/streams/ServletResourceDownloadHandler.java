@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinService;
@@ -65,24 +65,24 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest downloadRequest) {
-        VaadinService service = downloadRequest.getRequest().getService();
+    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+        VaadinService service = downloadEvent.getRequest().getService();
         if (service instanceof VaadinServletService servletService) {
-            try (OutputStream outputStream = downloadRequest.getOutputStream();
-                    InputStream inputStream = servletService.getServlet()
+            try (OutputStream outputStream = downloadEvent.getOutputStream();
+                 InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
                 TransferProgressListener.transfer(inputStream, outputStream,
-                        getTransferContext(downloadRequest), getListeners());
+                        getTransferContext(downloadEvent), getListeners());
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
-                downloadRequest.getResponse().setStatus(
+                downloadEvent.getResponse().setStatus(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-                notifyError(downloadRequest, ioe);
+                notifyError(downloadEvent, ioe);
                 throw new UncheckedIOException(ioe);
             }
 
-            downloadRequest.getResponse()
-                    .setContentType(downloadRequest.getContentType());
+            downloadEvent.getResponse()
+                    .setContentType(downloadEvent.getContentType());
         }
     }
 

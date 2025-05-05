@@ -33,7 +33,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.shared.Registration;
 
@@ -50,7 +50,7 @@ public class AbstractDownloadHandlerTest {
     public void setUp() {
         handler = new AbstractDownloadHandler() {
             @Override
-            public void handleDownloadRequest(DownloadRequest event) {
+            public void handleDownloadRequest(DownloadEvent event) {
             }
         };
         mockContext = Mockito.mock(TransferContext.class);
