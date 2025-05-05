@@ -62,23 +62,6 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
         this.name = name;
     }
 
-    /**
-     * Create a download handler for given file and desired download name also
-     * adding a given progress listener.
-     *
-     * @param file
-     *            file to download
-     * @param name
-     *            url postfix name to use instead of file name
-     * @param listener
-     *            listener for transfer progress events
-     */
-    public FileDownloadHandler(File file, String name,
-            TransferProgressListener listener) {
-        this(file, name);
-        addTransferProgressListener(listener);
-    }
-
     @Override
     public void handleDownloadRequest(DownloadRequest downloadRequest) {
         VaadinResponse response = downloadRequest.getResponse();

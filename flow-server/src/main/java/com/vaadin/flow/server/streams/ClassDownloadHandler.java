@@ -79,12 +79,6 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
         }
     }
 
-    public ClassDownloadHandler(Class<?> clazz, String resourceName,
-            String fileName, TransferProgressListener listener) {
-        this(clazz, resourceName, fileName);
-        addTransferProgressListener(listener);
-    }
-
     @Override
     public void handleDownloadRequest(DownloadRequest downloadRequest) {
         if (clazz.getResource(resourceName) == null) {

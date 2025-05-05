@@ -64,12 +64,6 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
         this.name = name;
     }
 
-    public ServletResourceDownloadHandler(String path, String name,
-            TransferProgressListener listener) {
-        this(path, name);
-        addTransferProgressListener(listener);
-    }
-
     @Override
     public void handleDownloadRequest(DownloadRequest downloadRequest) {
         VaadinService service = downloadRequest.getRequest().getService();

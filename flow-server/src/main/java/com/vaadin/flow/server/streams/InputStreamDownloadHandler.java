@@ -66,13 +66,6 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
         this.name = name;
     }
 
-    public InputStreamDownloadHandler(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler,
-            String name, TransferProgressListener listener) {
-        this(handler, name);
-        addTransferProgressListener(listener);
-    }
-
     @Override
     public void handleDownloadRequest(DownloadRequest downloadRequest) {
         DownloadResponse download = handler.apply(downloadRequest);
