@@ -505,7 +505,7 @@ public final class VaadinSecurityConfigurer
         }
     }
 
-    Optional<LogoutSuccessHandler> createSimpleUrlLogoutSuccessHandler(
+    private Optional<LogoutSuccessHandler> createSimpleUrlLogoutSuccessHandler(
             String logoutSuccessUrl) {
         var handler = new VaadinSimpleUrlLogoutSuccessHandler();
         handler.setRedirectStrategy(new UidlRedirectStrategy());
@@ -513,7 +513,7 @@ public final class VaadinSecurityConfigurer
         return Optional.of(handler);
     }
 
-    Optional<LogoutSuccessHandler> createOidcLogoutSuccessHandler(
+    private Optional<LogoutSuccessHandler> createOidcLogoutSuccessHandler(
             String postLogoutRedirectUri) {
         var crr = getSharedObjectOrBean(ClientRegistrationRepository.class);
         if (crr != null) {
@@ -539,13 +539,16 @@ public final class VaadinSecurityConfigurer
 
     private void customizeExceptionHandling(
             ExceptionHandlingConfigurer<HttpSecurity> configurer) {
-        // Respond with 401 Unauthorized HTTP status code for unauthorized
-        // requests for protected Hilla endpoints, so that the response could
-        // be handled on the client side using e.g. `InvalidSessionMiddleware`.
-        configurer.accessDeniedHandler(createAccessDeniedHandler())
-                .defaultAuthenticationEntryPointFor(
-                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                        getRequestUtil()::isEndpointRequest);
+        if (EndpointRequestUtil.isHillaAvailable()) {
+            // Respond with 401 Unauthorized HTTP status code for unauthorized
+            // requests for protected Hilla endpoints, so that the response
+            // could be handled on the client side using, for example, Hilla's
+            // `InvalidSessionMiddleware`.
+            configurer.accessDeniedHandler(createAccessDeniedHandler())
+                    .defaultAuthenticationEntryPointFor(
+                            new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                            getRequestUtil()::isEndpointRequest);
+        }
         if (formLoginPage != null) {
             configurer.defaultAuthenticationEntryPointFor(
                     new LoginUrlAuthenticationEntryPoint(formLoginPage),
