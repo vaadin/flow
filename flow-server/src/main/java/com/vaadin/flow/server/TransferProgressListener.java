@@ -59,6 +59,13 @@ public interface TransferProgressListener extends Serializable {
 
     /**
      * Called when the data transfer is started.
+     * <p>
+     * The call of this method is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of this method. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
      *
      * @param context
      *            the context of the transfer
@@ -69,6 +76,13 @@ public interface TransferProgressListener extends Serializable {
 
     /**
      * Called periodically during the transfer to report progress.
+     * <p>
+     * The call of this method is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of this method. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
      *
      * @param context
      *            the context of the transfer
@@ -81,6 +95,13 @@ public interface TransferProgressListener extends Serializable {
 
     /**
      * Called when the transfer is failed.
+     * <p>
+     * The call of this method is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of this method. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
      *
      * @param context
      *            the context of the transfer
@@ -93,6 +114,13 @@ public interface TransferProgressListener extends Serializable {
 
     /**
      * Called when the transfer is started.
+     * <p>
+     * The call of this method is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of this method. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
      *
      * @param context
      *            the context of the transfer

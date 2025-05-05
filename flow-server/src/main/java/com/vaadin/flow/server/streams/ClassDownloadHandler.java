@@ -89,7 +89,7 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
             return;
         }
         try (OutputStream outputStream = downloadEvent.getOutputStream();
-             InputStream inputStream = clazz
+                InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());

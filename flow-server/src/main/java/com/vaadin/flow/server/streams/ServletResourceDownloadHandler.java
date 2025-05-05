@@ -69,7 +69,7 @@ public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
         VaadinService service = downloadEvent.getRequest().getService();
         if (service instanceof VaadinServletService servletService) {
             try (OutputStream outputStream = downloadEvent.getOutputStream();
-                 InputStream inputStream = servletService.getServlet()
+                    InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
                 TransferProgressListener.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());

@@ -34,8 +34,8 @@ import com.vaadin.flow.dom.Element;
  * @since 24.8
  */
 public record DownloadEvent(VaadinRequest request, VaadinResponse response,
-                            VaadinSession session, String fileName, String contentType,
-                            Element owningElement) {
+        VaadinSession session, String fileName, String contentType,
+        Element owningElement) {
 
     /**
      * Returns a <code>OutputStream</code> for writing binary data in the

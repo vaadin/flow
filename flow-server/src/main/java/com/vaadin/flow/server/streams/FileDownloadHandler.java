@@ -66,7 +66,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     public void handleDownloadRequest(DownloadEvent downloadEvent) {
         VaadinResponse response = downloadEvent.getResponse();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
-             FileInputStream inputStream = new FileInputStream(file)) {
+                FileInputStream inputStream = new FileInputStream(file)) {
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
@@ -88,8 +88,7 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    protected TransferContext getTransferContext(
-            DownloadEvent transferEvent) {
+    protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.session(),
                 transferEvent.fileName(), transferEvent.owningElement(),

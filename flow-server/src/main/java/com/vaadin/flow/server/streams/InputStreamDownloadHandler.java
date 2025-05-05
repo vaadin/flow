@@ -76,7 +76,7 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
-             InputStream inputStream = download.getInputStream()) {
+                InputStream inputStream = download.getInputStream()) {
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {

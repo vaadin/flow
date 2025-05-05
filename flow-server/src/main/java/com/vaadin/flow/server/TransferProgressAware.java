@@ -32,6 +32,14 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
 
     /**
      * Adds a listener to be notified when the transfer starts.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
      *
      * @param startHandler
      *            the handler to be called when the transfer starts
@@ -41,6 +49,14 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
 
     /**
      * Adds a listener to be notified of transfer progress.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
      *
      * @param progressHandler
      *            the handler to be called with the current and total bytes
@@ -57,6 +73,14 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
      * <p>
      * The first long parameter is the current number of bytes transferred, and
      * the second is the total number of bytes.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
      *
      * @param progressHandler
      *            the handler to be called with the current and total bytes
@@ -71,6 +95,14 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
      * Adds a listener to be notified when the transfer is completed
      * successfully or with an error. Gives a <code>Boolean</code> indicating
      * whether the transfer was completed successfully (true) or not (false).
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
      *
      * @param completeOrTerminateHandler
      *            the handler to be called when the transfer is completed

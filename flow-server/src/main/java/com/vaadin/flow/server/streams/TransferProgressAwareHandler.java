@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -29,6 +30,8 @@ import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.TransferProgressAware;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonValue;
 
 /**
  * Abstract class for common methods used in pre-made transfer progress
@@ -53,6 +56,28 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
      */
     protected abstract TransferContext getTransferContext(R transferEvent);
 
+    /**
+     * Adds a listener to be notified of data transfer progress events, such as:
+     * <ul>
+     * <li>{@link TransferProgressListener#onStart(TransferContext)}</li>
+     * <li>{@link TransferProgressListener#onProgress(TransferContext, long)}</li>
+     * <li>{@link TransferProgressListener#onError(TransferContext, IOException)}</li>
+     * <li>{@link TransferProgressListener#onComplete(TransferContext, long)}</li>
+     * </ul>
+     * <p>
+     * The calls of the given listener's methods are wrapped by the
+     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
+     * here when the download or upload request is being handled. Thus, no need
+     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
+     * of the given listener. This needs
+     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
+     *
+     * @param listener
+     *            progress listener to be added to this handler
+     * @return a {@link Registration} object that can be used to remove the
+     *         added listener
+     */
     public Registration addTransferProgressListener(
             TransferProgressListener listener) {
         Objects.requireNonNull(listener, "Listener cannot be null");

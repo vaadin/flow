@@ -29,8 +29,7 @@ public abstract class AbstractDownloadHandler extends
         implements DownloadHandler {
 
     @Override
-    protected TransferContext getTransferContext(
-            DownloadEvent transferEvent) {
+    protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
                 transferEvent.getFileName(), transferEvent.owningElement(), -1);

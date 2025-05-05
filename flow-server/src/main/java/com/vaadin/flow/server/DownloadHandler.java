@@ -166,7 +166,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     static ClassDownloadHandler forClassResource(Class<?> clazz,
             String resourceName, String fileName,
             TransferProgressListener listener) {
-        ClassDownloadHandler handler = new ClassDownloadHandler(clazz, resourceName, fileName);
+        ClassDownloadHandler handler = new ClassDownloadHandler(clazz,
+                resourceName, fileName);
         handler.addTransferProgressListener(listener);
         return handler;
     }
@@ -224,7 +225,8 @@ public interface DownloadHandler extends ElementRequestHandler {
      */
     static ServletResourceDownloadHandler forServletResource(String path,
             String name, TransferProgressListener listener) {
-        ServletResourceDownloadHandler handler = new ServletResourceDownloadHandler(path, name);
+        ServletResourceDownloadHandler handler = new ServletResourceDownloadHandler(
+                path, name);
         handler.addTransferProgressListener(listener);
         return handler;
     }
@@ -270,7 +272,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     static InputStreamDownloadHandler fromInputStream(
             SerializableFunction<DownloadEvent, DownloadResponse> handler,
             String name, TransferProgressListener listener) {
-        InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(handler, name);
+        InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(
+                handler, name);
         downloadHandler.addTransferProgressListener(listener);
         return downloadHandler;
     }
