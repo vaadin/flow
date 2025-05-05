@@ -70,7 +70,7 @@
                             <!-- this avoids an issue in chrome not loading
                                 the components randomly when webpack dev server is not in debug mode -->
                             <name>vaadin.devmode.webpack.options</name>
-                            <value>--debug</value>
+                            <value>--mode=development</value>
                         </systemProperty>
                         <systemProperty>
                             <!-- make sure we do not leave webpack-dev-server

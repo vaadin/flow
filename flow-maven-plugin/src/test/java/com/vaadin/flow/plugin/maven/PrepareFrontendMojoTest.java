@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -24,10 +22,13 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
@@ -212,8 +213,8 @@ public class PrepareFrontendMojoTest {
                 "@webcomponents/webcomponentsjs", "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
-                "webpack", "webpack-cli", "webpack-dev-server",
-                "webpack-babel-multi-target-plugin", "copy-webpack-plugin");
+                "webpack", "webpack-cli", "webpack-dev-server", "mkdirp",
+                "copy-webpack-plugin");
     }
 
     private List<File> gatherFiles(File root) {

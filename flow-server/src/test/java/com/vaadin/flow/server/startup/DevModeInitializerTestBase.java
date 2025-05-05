@@ -74,7 +74,8 @@ public class DevModeInitializerTestBase {
         Boolean enablePnpm = Boolean.TRUE;
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 0, baseDir);
+        createStubWebpackServer(DevModeHandlerTest.COMPILE_OK_OUTPUT, 0,
+                baseDir);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
@@ -148,14 +149,12 @@ public class DevModeInitializerTestBase {
 
         vaadinPackages.put("devDependencies", Json.createObject());
         defaults = vaadinPackages.getObject("devDependencies");
-        defaults.put("webpack", "4.30.0");
-        defaults.put("webpack-cli", "3.3.0");
-        defaults.put("webpack-dev-server", "3.3.0");
-        defaults.put("webpack-babel-multi-target-plugin", "2.3.1");
-        defaults.put("copy-webpack-plugin", "5.0.3");
-        defaults.put("compression-webpack-plugin", "3.0.0");
-        defaults.put("webpack-merge", "4.2.1");
-        defaults.put("raw-loader", "3.0.0");
+        defaults.put("webpack", "5.99.0");
+        defaults.put("webpack-cli", "6.0.0");
+        defaults.put("webpack-dev-server", "5.2.0");
+        defaults.put("copy-webpack-plugin", "13.0.0");
+        defaults.put("compression-webpack-plugin", "11.1.0");
+        defaults.put("webpack-merge", "6.0.0");
 
         vaadinPackages.put("hash", "");
 

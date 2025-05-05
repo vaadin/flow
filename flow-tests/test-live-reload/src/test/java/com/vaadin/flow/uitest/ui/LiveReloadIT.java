@@ -8,17 +8,42 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
-import com.vaadin.testbench.TestBenchElement;
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.testbench.TestBenchElement;
+
 @NotThreadSafe
 public class LiveReloadIT extends AbstractLiveReloadIT {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Before
+    public void backupFrontendResources() throws IOException {
+        // Save original frontend resources. They will be restored after test
+        // execution to avoid failures or false positives on later runs
+        FileUtils.copyDirectory(new File("./frontend"),
+                temporaryFolder.getRoot());
+    }
+
+    @After
+    public void restoreFrontendResources() throws IOException {
+        FileUtils.copyDirectory(temporaryFolder.getRoot(),
+                new File("./frontend"));
+    }
 
     @Test
     public void overlayShouldRender() {
