@@ -157,7 +157,7 @@ public class StreamRequestHandler implements RequestHandler {
                 if (secKey == null || !MessageDigest.isEqual(
                         secKey.getBytes(StandardCharsets.UTF_8),
                         parts.securityKey.getBytes(StandardCharsets.UTF_8))) {
-                    LoggerFactory.getLogger(UploadHandler.class).warn(
+                    LoggerFactory.getLogger(StreamRequestHandler.class).warn(
                             "Received incoming stream with faulty security key.");
                     response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                             "Resource not available");

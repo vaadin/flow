@@ -97,7 +97,6 @@ public class UploadEvent {
         this.contentType = contentType;
         this.item = item;
         this.part = part;
-
     }
 
     /**
@@ -222,5 +221,14 @@ public class UploadEvent {
      */
     public UI getUI() {
         return UI.getCurrent();
+    }
+
+    /**
+     * Check if this file is part of a multipart upload request.
+     *
+     * @return {@code true} if multipart request
+     */
+    public boolean isMultipartRequest() {
+        return part != null || item != null;
     }
 }

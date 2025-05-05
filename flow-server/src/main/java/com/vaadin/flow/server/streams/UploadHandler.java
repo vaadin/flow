@@ -50,7 +50,7 @@ import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
 import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
 
 /**
- * Interface for handling upoad of data from the client to the server.
+ * Interface for handling upload of data from the client to the server.
  *
  * @since 24.8
  */
@@ -60,6 +60,13 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * Method that is called when the client wants to upload data to the url
      * stored for this specific handler registration.
+     * <p>
+     * After upload the method {@link UploadEvent#sendUploadResponse(boolean)}
+     * can be called to write the upload response. For multipart requests this
+     * should be done after all items have been handled.
+     * <p>
+     * To check for multipart request see
+     * {@link UploadEvent#isMultipartRequest}.
      *
      * @param event
      *            upload event containing the necessary data for getting the
@@ -81,7 +88,9 @@ public interface UploadHandler extends ElementRequestHandler {
             } catch (IOException ioe) {
                 throw new UncheckedIOException(ioe);
             } catch (ServletException ioe) {
-                // NOOOP
+                LoggerFactory.getLogger(UploadHandler.class).trace(
+                        "Pretending the request did not contain any parts because of exception",
+                        ioe);
             }
             if (!parts.isEmpty()) {
                 Iterator<Part> iter = parts.iterator();
@@ -110,7 +119,6 @@ public interface UploadHandler extends ElementRequestHandler {
                         upload.setHeaderCharset(StandardCharsets.UTF_8);
                     }
                     iter = upload.getItemIterator((HttpServletRequest) request);
-
                     while (iter.hasNext()) {
                         FileItemInput item = iter.next();
 
