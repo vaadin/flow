@@ -4,9 +4,9 @@ import jakarta.servlet.ServletContext;
 
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -18,7 +18,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.component.UI;
@@ -28,31 +27,24 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
+import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
-import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = false, jsr250Enabled = true, securedEnabled = true)
 @Configuration
-@Profile("default")
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
-public class SecurityConfig {
+@Profile("legacy-vaadin-web-security")
+public class LegacySecurityConfig extends VaadinWebSecurity {
 
-    private final UserInfoService userInfoService;
+    @Autowired
+    private UserInfoService userInfoService;
 
-    private final ServletContext servletContext;
+    @Autowired
+    private ServletContext servletContext;
 
-    private final VaadinConfigurationProperties vaadinConfigurationProperties;
-
-    public SecurityConfig(UserInfoService userInfoService,
-            ServletContext servletContext,
-            VaadinConfigurationProperties vaadinConfigurationProperties) {
-        this.userInfoService = userInfoService;
-        this.servletContext = servletContext;
-        this.vaadinConfigurationProperties = vaadinConfigurationProperties;
-    }
+    @Autowired
+    private VaadinConfigurationProperties vaadinConfigurationProperties;
 
     public String getLogoutSuccessUrl() {
         String logoutSuccessUrl;
@@ -69,29 +61,27 @@ public class SecurityConfig {
         return logoutSuccessUrl;
     }
 
-    @Bean
-    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
                 .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(new AntPathRequestMatcher("/public/**"))
                 .permitAll());
-        http.with(vaadin(), cfg -> {
-            String logoutSuccessUrl = getLogoutSuccessUrl();
-            if (logoutSuccessUrl.equals("/")) {
-                cfg.loginView(LoginView.class);
-            } else {
-                cfg.loginView(LoginView.class, logoutSuccessUrl);
-            }
-            cfg.addLogoutHandler((request, response, authentication) -> {
-                UI ui = UI.getCurrent();
-                ui.accessSynchronously(() -> ui.getPage().setLocation(
-                        UrlUtil.getServletPathRelative(getLogoutSuccessUrl(),
-                                request)));
-            });
-        });
-        return http.build();
+        super.configure(http);
+        if (getLogoutSuccessUrl().equals("/")) {
+            // Test the default url with empty context path
+            setLoginView(http, LoginView.class);
+        } else {
+            setLoginView(http, LoginView.class, getLogoutSuccessUrl());
+        }
+        http.logout(cfg -> cfg
+                .addLogoutHandler((request, response, authentication) -> {
+                    UI ui = UI.getCurrent();
+                    ui.accessSynchronously(() -> ui.getPage()
+                            .setLocation(UrlUtil.getServletPathRelative(
+                                    getLogoutSuccessUrl(), request)));
+                }));
     }
 
     @Bean
