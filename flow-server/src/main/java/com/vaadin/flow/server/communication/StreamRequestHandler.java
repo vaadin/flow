@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -35,7 +36,6 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
 import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
@@ -98,7 +98,7 @@ public class StreamRequestHandler implements RequestHandler {
         try {
             abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
                     .flatMap(session.getResourceRegistry()::getResource);
-            if (!abstractStreamResource.isPresent()) {
+            if (abstractStreamResource.isEmpty()) {
                 response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                         "Resource is not found for path=" + pathInfo);
                 return true;
@@ -107,31 +107,31 @@ public class StreamRequestHandler implements RequestHandler {
             session.unlock();
         }
 
-        if (abstractStreamResource.isPresent()) {
-            AbstractStreamResource resource = abstractStreamResource.get();
-            if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
-                Element owner = elementRequest.getOwner();
-                if (owner.getNode().isInert() && !elementRequest
-                        .getElementRequestHandler().allowInert()) {
-                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
-                            "Resource not available");
-                    return true;
-                } else {
-                    elementRequest.getElementRequestHandler().handleRequest(
-                            request, response, session,
-                            elementRequest.getOwner());
-                }
-            } else if (resource instanceof StreamResource) {
-                resourceHandler.handleRequest(session, request, response,
-                        (StreamResource) resource);
-            } else if (resource instanceof StreamReceiver streamReceiver) {
-                String[] parts = parsePath(pathInfo);
+        AbstractStreamResource resource = abstractStreamResource.get();
+        if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
+            Element owner = elementRequest.getOwner();
+            StateNode node = owner.getNode();
 
-                receiverHandler.handleRequest(session, request, response,
-                        streamReceiver, parts[0], parts[1]);
+            if ((node.isInert()
+                    && !elementRequest.getElementRequestHandler().allowInert())
+                    || !node.isAttached() || !node.isEnabled()) {
+                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                        "Resource not available");
+                return true;
             } else {
-                getLogger().warn("Received unknown stream resource.");
+                elementRequest.getElementRequestHandler().handleRequest(request,
+                        response, session, elementRequest.getOwner());
             }
+        } else if (resource instanceof StreamResource) {
+            resourceHandler.handleRequest(session, request, response,
+                    (StreamResource) resource);
+        } else if (resource instanceof StreamReceiver streamReceiver) {
+            String[] parts = parsePath(pathInfo);
+
+            receiverHandler.handleRequest(session, request, response,
+                    streamReceiver, parts[0], parts[1]);
+        } else {
+            getLogger().warn("Received unknown stream resource.");
         }
         return true;
     }
@@ -164,12 +164,8 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
-        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
-
-        builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
-        builder.append(id).append(PATH_SEPARATOR);
-        builder.append(UrlUtil.encodeURIComponent(name));
-        return builder.toString();
+        return DYN_RES_PREFIX + UI.getCurrent().getUIId() + PATH_SEPARATOR + id
+                + PATH_SEPARATOR + UrlUtil.encodeURIComponent(name);
     }
 
     private static Optional<URI> getPathUri(String path) {
