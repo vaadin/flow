@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.servlet.ReadListener;
@@ -36,6 +37,7 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -48,6 +50,20 @@ import static org.mockito.Mockito.when;
 @NotThreadSafe
 public class UploadHandlerTest {
 
+    public static final String MULTIPART_STREAM_CONTENT = """
+            -------bound
+            Content-Disposition: form-data; name="file"; filename="sound.txt"
+            Content-Type: text/plain
+
+            Sound
+            -------bound
+            Content-Disposition: form-data; name="file"; filename="bytes.txt"
+            Content-Type: text/plain
+
+            Bytes
+            -------bound--
+            """.replaceAll("\n", "\r\n");
+    public static final String MULTIPART_CONTENT_TYPE = "multipart/form-data; boundary=-----bound";
     private StreamRequestHandler handler = new StreamRequestHandler();
     private MockVaadinSession session;
     private VaadinServletRequest request;
@@ -88,7 +104,7 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_happyPath_setContentTypeNoExplicitSetStatus() {
+    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled() {
         UploadHandler handler = (event) -> {
             event.getResponse().setContentType("text/html; charset=utf-8");
         };
@@ -97,7 +113,18 @@ public class UploadHandlerTest {
 
         Mockito.verify(response).setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
+        Mockito.verify(response, Mockito.times(1)).setStatus(200);
+    }
+
+    @Test
+    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled() {
+        UploadHandler handler = (event) -> {
+            throw new RuntimeException("Exception in xrh upload");
+        };
+
+        handler.handleRequest(request, response, session, element);
+
+        Mockito.verify(response, Mockito.times(1)).setStatus(500);
     }
 
     @Test
@@ -138,22 +165,6 @@ public class UploadHandlerTest {
     @Test
     public void mulitpartData_forInputIterator_dataIsGottenCorrectly()
             throws IOException {
-        String contentType = "multipart/form-data; boundary=-----bound";
-        String content = """
-                -------bound
-                Content-Disposition: form-data; name="file"; filename="sound.txt"
-                Content-Type: text/plain
-
-                Sound
-                -------bound
-                Content-Disposition: form-data; name="file"; filename="bytes.txt"
-                Content-Type: text/plain
-
-                Bytes
-                -------bound--
-                """
-                .replaceAll("\n", "\r\n");
-
         List<String> outList = new ArrayList<>(2);
         List<String> fileNames = new ArrayList<>(2);
 
@@ -174,8 +185,9 @@ public class UploadHandlerTest {
                 .registerResource(uploadHandler);
         AbstractStreamResource res = streamRegistration.getResource();
 
-        mockRequest(res, content);
-        Mockito.when(request.getContentType()).thenReturn(contentType);
+        mockRequest(res, MULTIPART_STREAM_CONTENT);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -192,15 +204,13 @@ public class UploadHandlerTest {
     @Test
     public void mulitpartData_asParts_dataIsGottenCorrectly()
             throws IOException, ServletException {
-        String contentType = "multipart/form-data; boundary=-----bound";
-
         String testContent = "testBytes";
 
         List<Part> parts = new ArrayList<>();
-        parts.add(createPart(createInputStream("one"), contentType, "one.txt",
-                3));
-        parts.add(createPart(createInputStream("two"), contentType, "two.txt",
-                3));
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "one.txt", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "two.txt", 3));
 
         Mockito.when(request.getParts()).thenReturn(parts);
 
@@ -225,7 +235,8 @@ public class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, testContent);
-        Mockito.when(request.getContentType()).thenReturn(contentType);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -237,6 +248,159 @@ public class UploadHandlerTest {
 
         Assert.assertEquals("two", outList.get(1));
         Assert.assertEquals("two.txt", fileNames.get(1));
+    }
+
+    @Test
+    public void responseHandled_calledAfterAllPartsHaveBeenHandled()
+            throws IOException, ServletException {
+
+        String testContent = "testBytes";
+
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "one.txt", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "two.txt", 3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        AtomicBoolean handled = new AtomicBoolean(false);
+
+        UploadHandler uploadHandler = new UploadHandler() {
+            @Override
+            public void handleUploadRequest(UploadEvent event) {
+                Assert.assertFalse(
+                        "Handled should not be called before a upload request",
+                        handled.get());
+            }
+
+            @Override
+            public void responseHandled(boolean success,
+                    VaadinResponse response) {
+                handled.set(true);
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, testContent);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(session, request, response);
+
+        Assert.assertTrue("Handled was not called at the end", handled.get());
+    }
+
+    @Test
+    public void responseHandled_calledAfterWholeStreamHasBeenHandled()
+            throws IOException, ServletException {
+
+        AtomicBoolean handled = new AtomicBoolean(false);
+
+        UploadHandler uploadHandler = new UploadHandler() {
+            @Override
+            public void handleUploadRequest(UploadEvent event) {
+                Assert.assertFalse(
+                        "Handled should not be called before a upload request",
+                        handled.get());
+            }
+
+            @Override
+            public void responseHandled(boolean success,
+                    VaadinResponse response) {
+                handled.set(true);
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, MULTIPART_STREAM_CONTENT);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(session, request, response);
+
+        Assert.assertTrue("Handled was not called at the end", handled.get());
+    }
+
+    @Test
+    public void multipartRequest_responseHandled_calledWhenExceptionIsThrown()
+            throws IOException, ServletException {
+
+        String testContent = "testBytes";
+
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "one.txt", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "two.txt", 3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        AtomicBoolean handled = new AtomicBoolean(false);
+
+        UploadHandler uploadHandler = new UploadHandler() {
+            @Override
+            public void handleUploadRequest(UploadEvent event) {
+                throw new RuntimeException("Exception in multipart upload");
+            }
+
+            @Override
+            public void responseHandled(boolean success,
+                    VaadinResponse response) {
+                handled.set(true);
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, testContent);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(session, request, response);
+
+        Assert.assertTrue("Handled was not called at the end", handled.get());
+    }
+
+    @Test
+    public void multipartStreamRequest_responseHandled_calledWhenExceptionIsThrown()
+            throws IOException, ServletException {
+
+        AtomicBoolean handled = new AtomicBoolean(false);
+
+        UploadHandler uploadHandler = new UploadHandler() {
+            @Override
+            public void handleUploadRequest(UploadEvent event) {
+                throw new RuntimeException(
+                        "Exception in multipart stream upload");
+            }
+
+            @Override
+            public void responseHandled(boolean success,
+                    VaadinResponse response) {
+                handled.set(true);
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, MULTIPART_STREAM_CONTENT);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(session, request, response);
+
+        Assert.assertTrue("Handled was not called at the end", handled.get());
     }
 
     private Part createPart(InputStream inputStream, String contentType,

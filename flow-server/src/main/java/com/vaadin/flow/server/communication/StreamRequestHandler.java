@@ -115,10 +115,8 @@ public class StreamRequestHandler implements RequestHandler {
 
         AbstractStreamResource resource = abstractStreamResource.get();
         if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
-            if (callElementResourceHandler(session, request, response,
-                    elementRequest, pathInfo)) {
-                return true;
-            }
+            callElementResourceHandler(session, request, response,
+                    elementRequest, pathInfo);
         } else if (resource instanceof StreamResource) {
             resourceHandler.handleRequest(session, request, response,
                     (StreamResource) resource);
@@ -133,7 +131,7 @@ public class StreamRequestHandler implements RequestHandler {
         return true;
     }
 
-    private boolean callElementResourceHandler(VaadinSession session,
+    private void callElementResourceHandler(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
             StreamResourceRegistry.ElementStreamResource elementRequest,
             String pathInfo) throws IOException {
@@ -142,7 +140,7 @@ public class StreamRequestHandler implements RequestHandler {
                 && !elementRequest.getElementRequestHandler().allowInert()) {
             response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                     "Resource not available");
-            return true;
+            return;
         }
 
         if (elementRequest
@@ -161,7 +159,7 @@ public class StreamRequestHandler implements RequestHandler {
                             "Received incoming stream with faulty security key.");
                     response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                             "Resource not available");
-                    return true;
+                    return;
                 }
 
                 // Set current UI to upload url ui.
@@ -174,7 +172,7 @@ public class StreamRequestHandler implements RequestHandler {
                                     "File upload ignored because the node for the upload owner component was not found")));
                     response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                             "Resource not available");
-                    return true;
+                    return;
                 }
                 if (!node.isAttached()) {
                     session.getErrorHandler()
@@ -184,7 +182,7 @@ public class StreamRequestHandler implements RequestHandler {
                                             + " because the component was disabled")));
                     response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                             "Resource not available");
-                    return true;
+                    return;
                 }
             } finally {
                 session.unlock();
@@ -193,8 +191,6 @@ public class StreamRequestHandler implements RequestHandler {
 
         elementRequest.getElementRequestHandler().handleRequest(request,
                 response, session, elementRequest.getOwner());
-
-        return false;
     }
 
     private record PathData(String UIid, String securityKey, String fileName) {

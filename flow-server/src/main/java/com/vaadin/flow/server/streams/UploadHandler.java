@@ -61,9 +61,11 @@ public interface UploadHandler extends ElementRequestHandler {
      * Method that is called when the client wants to upload data to the url
      * stored for this specific handler registration.
      * <p>
-     * After upload of all files is done the method {@link UploadEvent#sendUploadResponse(boolean)}
-     * can be called to write an upload response. The method {@link #responseHandled(boolean, VaadinResponse)}
-     * will be called when all upload items have been handled.
+     * After upload of all files is done the method
+     * {@link UploadEvent#sendUploadResponse(boolean)} can be called to write an
+     * upload response. The method
+     * {@link #responseHandled(boolean, VaadinResponse)} will be called when all
+     * upload items have been handled.
      *
      * @param event
      *            upload event containing the necessary data for getting the
@@ -72,7 +74,15 @@ public interface UploadHandler extends ElementRequestHandler {
     void handleUploadRequest(UploadEvent event);
 
     /**
-     * Method called when all files have called handleUploadRequest.
+     * Method called by framework when
+     * {@link UploadHandler#handleUploadRequest(UploadEvent)} methods have been
+     * called for all files.
+     * <p>
+     * This method sets the http response return codes according to internal
+     * exception handling in the framework.
+     * <p>
+     * If you want custom exception handling and to set the return code,
+     * implement this method and overwrite the default functionality.
      *
      * @param success
      *            is there was no exception thrown for upload
@@ -92,88 +102,99 @@ public interface UploadHandler extends ElementRequestHandler {
         boolean isMultipartUpload = request instanceof HttpServletRequest
                 && JakartaServletFileUpload
                         .isMultipartContent((HttpServletRequest) request);
-
-        String fileName;
-        if (isMultipartUpload) {
-            Collection<Part> parts = Collections.EMPTY_LIST;
-            try {
-                parts = ((HttpServletRequest) request).getParts();
-            } catch (IOException ioe) {
-                throw new UncheckedIOException(ioe);
-            } catch (ServletException ioe) {
-                LoggerFactory.getLogger(UploadHandler.class).trace(
-                        "Pretending the request did not contain any parts because of exception",
-                        ioe);
-            }
-            if (!parts.isEmpty()) {
-                for (Part part : parts) {
-                    UploadEvent event = new UploadEvent(request, response,
-                            session, part.getSubmittedFileName(),
-                            part.getSize(), part.getContentType(), owner, null,
-                            part);
-                    handleUploadRequest(event);
-                }
-                responseHandled(true, response);
-            } else {
-                long contentLength = request.getContentLengthLong();
-                // Parse the request
-                FileItemInputIterator iter;
+        try {
+            String fileName;
+            if (isMultipartUpload) {
+                Collection<Part> parts = Collections.EMPTY_LIST;
                 try {
-                    JakartaServletFileUpload upload = new JakartaServletFileUpload();
-                    upload.setSizeMax(getRequestSizeMax());
-                    upload.setFileSizeMax(getFileSizeMax());
-                    upload.setFileCountMax(getFileCountMax());
-                    if (request.getCharacterEncoding() == null) {
-                        // Request body's file upload headers are expected to be
-                        // encoded in
-                        // UTF-8 if not explicitly set otherwise in the request.
-                        upload.setHeaderCharset(StandardCharsets.UTF_8);
-                    }
-                    iter = upload.getItemIterator((HttpServletRequest) request);
-                    while (iter.hasNext()) {
-                        FileItemInput item = iter.next();
-
+                    parts = ((HttpServletRequest) request).getParts();
+                } catch (IOException ioe) {
+                    throw new UncheckedIOException(ioe);
+                } catch (ServletException ioe) {
+                    LoggerFactory.getLogger(UploadHandler.class).trace(
+                            "Pretending the request did not contain any parts because of exception",
+                            ioe);
+                }
+                if (!parts.isEmpty()) {
+                    for (Part part : parts) {
                         UploadEvent event = new UploadEvent(request, response,
-                                session, item.getName(), contentLength,
-                                item.getContentType(), owner, item, null);
+                                session, part.getSubmittedFileName(),
+                                part.getSize(), part.getContentType(), owner,
+                                null, part);
                         handleUploadRequest(event);
                     }
                     responseHandled(true, response);
-                } catch (FileUploadException e) {
-                    String limitInfoStr = "{} limit exceeded. To increase the limit "
-                            + "extend StreamRequestHandler, override {} method for "
-                            + "UploadHandler and provide a higher limit.";
-                    if (e instanceof FileUploadByteCountLimitException) {
-                        LoggerFactory.getLogger(UploadHandler.class).warn(
-                                limitInfoStr, "Request size",
-                                "getRequestSizeMax");
-                    } else if (e instanceof FileUploadSizeException) {
-                        LoggerFactory.getLogger(UploadHandler.class).warn(
-                                limitInfoStr, "File size", "getFileSizeMax");
-                    } else if (e instanceof FileUploadFileCountLimitException) {
-                        LoggerFactory.getLogger(UploadHandler.class).warn(
-                                limitInfoStr, "File count", "getFileCountMax");
+                } else {
+                    long contentLength = request.getContentLengthLong();
+                    // Parse the request
+                    FileItemInputIterator iter;
+                    try {
+                        JakartaServletFileUpload upload = new JakartaServletFileUpload();
+                        upload.setSizeMax(getRequestSizeMax());
+                        upload.setFileSizeMax(getFileSizeMax());
+                        upload.setFileCountMax(getFileCountMax());
+                        if (request.getCharacterEncoding() == null) {
+                            // Request body's file upload headers are expected
+                            // to be
+                            // encoded in
+                            // UTF-8 if not explicitly set otherwise in the
+                            // request.
+                            upload.setHeaderCharset(StandardCharsets.UTF_8);
+                        }
+                        iter = upload
+                                .getItemIterator((HttpServletRequest) request);
+                        while (iter.hasNext()) {
+                            FileItemInput item = iter.next();
+
+                            UploadEvent event = new UploadEvent(request,
+                                    response, session, item.getName(),
+                                    contentLength, item.getContentType(), owner,
+                                    item, null);
+                            handleUploadRequest(event);
+                        }
+                        responseHandled(true, response);
+                    } catch (FileUploadException e) {
+                        String limitInfoStr = "{} limit exceeded. To increase the limit "
+                                + "extend StreamRequestHandler, override {} method for "
+                                + "UploadHandler and provide a higher limit.";
+                        if (e instanceof FileUploadByteCountLimitException) {
+                            LoggerFactory.getLogger(UploadHandler.class).warn(
+                                    limitInfoStr, "Request size",
+                                    "getRequestSizeMax");
+                        } else if (e instanceof FileUploadSizeException) {
+                            LoggerFactory.getLogger(UploadHandler.class).warn(
+                                    limitInfoStr, "File size",
+                                    "getFileSizeMax");
+                        } else if (e instanceof FileUploadFileCountLimitException) {
+                            LoggerFactory.getLogger(UploadHandler.class).warn(
+                                    limitInfoStr, "File count",
+                                    "getFileCountMax");
+                        }
+                        LoggerFactory.getLogger(UploadHandler.class)
+                                .warn("File upload failed.", e);
+                        responseHandled(false, response);
+                    } catch (IOException ioe) {
+                        LoggerFactory.getLogger(UploadHandler.class)
+                                .warn("IO Exception during file upload", ioe);
+                        responseHandled(false, response);
                     }
-                    LoggerFactory.getLogger(UploadHandler.class)
-                            .warn("File upload failed.", e);
-                    responseHandled(false, response);
-                } catch (IOException ioe) {
-                    LoggerFactory.getLogger(UploadHandler.class)
-                            .warn("IO Exception during file upload", ioe);
-                    responseHandled(false, response);
                 }
+            } else {
+                // These are unknown in filexhr ATM
+                fileName = "unknown";
+                String contentType = "unknown";
+
+                UploadEvent event = new UploadEvent(request, response, session,
+                        fileName, request.getContentLengthLong(), contentType,
+                        owner, null, null);
+
+                handleUploadRequest(event);
+                responseHandled(true, response);
             }
-        } else {
-            // These are unknown in filexhr ATM
-            fileName = "unknown";
-            String contentType = "unknown";
-
-            UploadEvent event = new UploadEvent(request, response, session,
-                    fileName, request.getContentLengthLong(), contentType,
-                    owner, null, null);
-
-            handleUploadRequest(event);
-            responseHandled(true, response);
+        } catch (Exception e) {
+            LoggerFactory.getLogger(UploadHandler.class)
+                    .error("Exception during upload", e);
+            responseHandled(false, response);
         }
     }
 
