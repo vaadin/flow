@@ -61,7 +61,7 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
      * Adds a listener to be notified of data transfer progress events, such as:
      * <ul>
      * <li>{@link TransferProgressListener#onStart(TransferContext)}</li>
-     * <li>{@link TransferProgressListener#onProgress(TransferContext, long)}</li>
+     * <li>{@link TransferProgressListener#onProgress(TransferContext, long, long)}</li>
      * <li>{@link TransferProgressListener#onError(TransferContext, IOException)}</li>
      * <li>{@link TransferProgressListener#onComplete(TransferContext, long)}</li>
      * </ul>
