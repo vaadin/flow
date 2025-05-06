@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.dom.Element;
@@ -44,7 +45,7 @@ import elemental.json.JsonValue;
 public abstract class TransferProgressAwareHandler<R, T extends TransferProgressAware<T>>
         implements TransferProgressAware<T> {
 
-    private Collection<TransferProgressListener> listeners;
+    private List<TransferProgressListener> listeners;
 
     /**
      * This method is used to get the transfer context from the transfer events
@@ -82,7 +83,8 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
             TransferProgressListener listener) {
         Objects.requireNonNull(listener, "Listener cannot be null");
         if (listeners == null) {
-            listeners = new ArrayList<>();
+            // four listeners added with shortcuts is a good default size
+            listeners = new ArrayList<>(4);
         }
         TransferProgressListener wrapper = new TransferProgressListenerWrapper(
                 listener);
@@ -144,9 +146,20 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         }
     }
 
-    Collection<TransferProgressListener> getListeners() {
+    /**
+     * Get the listeners that are registered to this handler.
+     * <p>
+     * For the custom data transfer implementation, one may need to notify
+     * listeners manualy. This method can be used like
+     * <code>getListeners().forEach(listener -> listener.onProgress(getTransferContext(event)))</code>.
+     * <p>
+     * The listeners are kept in order of registration.
+     *
+     * @return a list of listeners that are registered to this handler
+     */
+    protected List<TransferProgressListener> getListeners() {
         return listeners == null ? Collections.emptyList()
-                : new ArrayList<>(listeners);
+                : Collections.unmodifiableList(listeners);
     }
 
     void notifyError(R transferEvent, IOException ioe) {
