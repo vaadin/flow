@@ -545,12 +545,18 @@ public final class VaadinSecurityConfigurer
 
     private void customizeRequestCache(
             RequestCacheConfigurer<HttpSecurity> configurer) {
-        // If there is an existing RequestCache shared object, use that instead
-        // of creating a new one. Prevents the configurer from overriding any
-        // custom RequestCache that might already been set.
-        var requestCache = getSharedObject(RequestCache.class)
-                .orElseGet(this::getVaadinDefaultRequestCache);
-        configurer.requestCache(requestCache);
+        var vaadinDefaultRequestCache = getVaadinDefaultRequestCache();
+        if (vaadinDefaultRequestCache == null) {
+            throw new IllegalStateException("No VaadinDefaultRequestCache bean "
+                    + "or shared object found. Please make sure that either a "
+                    + "bean or shared object of type VaadinDefaultRequestCache "
+                    + "is available.");
+        }
+        // If there is an existing RequestCache shared object, use that as the
+        // delegate cache for requests not saved by VaadinDefaultRequestCache.
+        getSharedObject(RequestCache.class)
+                .ifPresent(vaadinDefaultRequestCache::setDelegateRequestCache);
+        configurer.requestCache(vaadinDefaultRequestCache);
     }
 
     private void customizeExceptionHandling(
