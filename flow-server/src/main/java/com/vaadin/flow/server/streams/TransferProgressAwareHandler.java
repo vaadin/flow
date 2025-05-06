@@ -151,7 +151,7 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
      * <p>
      * For the custom data transfer implementation, one may need to notify
      * listeners manualy. This method can be used like
-     * <code>getListeners().forEach(listener -> listener.onProgress(getTransferContext(event)))</code>.
+     * <code>getListeners().forEach(listener -> listener.onStart(getTransferContext(event)))</code>.
      * <p>
      * The listeners are kept in order of registration.
      *
