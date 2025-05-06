@@ -16,10 +16,16 @@
 
 package com.vaadin.flow.server.streams;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +40,11 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadEvent;
+import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.TransferProgressListener;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 public class AbstractDownloadHandlerTest {
@@ -46,16 +56,18 @@ public class AbstractDownloadHandlerTest {
     private TransferContext mockContext;
     private TransferProgressListener listener;
 
+    private VaadinRequest request;
+    private VaadinResponse response;
+    private VaadinSession session;
+    private DownloadEvent downloadEvent;
+    private ByteArrayOutputStream outputStream;
+    private Element owner;
+
     @Before
-    public void setUp() {
-        handler = new AbstractDownloadHandler() {
-            @Override
-            public void handleDownloadRequest(DownloadEvent event) {
-            }
-        };
-        mockContext = Mockito.mock(TransferContext.class);
-        Mockito.when(mockContext.totalBytes()).thenReturn(TOTAL_BYTES);
-        listener = Mockito.mock(TransferProgressListener.class);
+    public void setUp() throws IOException {
+        request = Mockito.mock(VaadinRequest.class);
+        response = Mockito.mock(VaadinResponse.class);
+        session = Mockito.mock(VaadinSession.class);
 
         UI ui = Mockito.mock(UI.class);
         // run the command immediately
@@ -65,13 +77,29 @@ public class AbstractDownloadHandlerTest {
             return null;
         }).when(ui).access(Mockito.any(Command.class));
 
-        Element owner = Mockito.mock(Element.class);
+        owner = Mockito.mock(Element.class);
         Component componentOwner = Mockito.mock(Component.class);
         Mockito.when(owner.getComponent())
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+
+        downloadEvent = new DownloadEvent(request, response, session,
+                "download", "application/octet-stream", owner);
+
+        handler = new AbstractDownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+            }
+        };
+        mockContext = Mockito.mock(TransferContext.class);
+        Mockito.when(mockContext.totalBytes()).thenReturn(TOTAL_BYTES);
+        listener = Mockito.mock(TransferProgressListener.class);
+
         Mockito.when(mockContext.owningElement()).thenReturn(owner);
         Mockito.when(mockContext.getUI()).thenReturn(ui);
+
+        outputStream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
     }
 
     @Test
@@ -138,5 +166,44 @@ public class AbstractDownloadHandlerTest {
         });
         Mockito.verify(completeHandler).accept(true);
         Mockito.verify(completeHandler).accept(false);
+    }
+
+    @Test
+    public void customHandlerWithShorthandCompleteListener_noErrorInTransfer_success_errorInTransfer_failure()
+            throws IOException {
+        AtomicBoolean successAtomic = new AtomicBoolean(false);
+        AbstractDownloadHandler customHandler = new AbstractDownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                        "Hello".getBytes(StandardCharsets.UTF_8));
+                TransferContext context = getTransferContext(event);
+                try {
+                    TransferProgressListener.transfer(inputStream,
+                            event.getOutputStream(), context, getListeners());
+                } catch (IOException e) {
+                    getListeners()
+                            .forEach(listener -> listener.onError(context, e));
+                }
+            }
+        }.whenComplete(success -> {
+            successAtomic.set(success);
+        });
+
+        customHandler.handleDownloadRequest(downloadEvent);
+
+        Assert.assertTrue(successAtomic.get());
+        Assert.assertEquals("Hello",
+                outputStream.toString(StandardCharsets.UTF_8));
+
+        OutputStream outputStreamError = Mockito.mock(OutputStream.class);
+        Mockito.doThrow(new IOException("Test error")).when(outputStreamError)
+                .write(Mockito.any(byte[].class), Mockito.anyInt(),
+                        Mockito.anyInt());
+        Mockito.when(downloadEvent.getOutputStream())
+                .thenReturn(outputStreamError);
+
+        customHandler.handleDownloadRequest(downloadEvent);
+        Assert.assertFalse(successAtomic.get());
     }
 }

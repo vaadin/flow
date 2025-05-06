@@ -277,31 +277,4 @@ public interface DownloadHandler extends ElementRequestHandler {
         downloadHandler.addTransferProgressListener(listener);
         return downloadHandler;
     }
-
-    /**
-     * Generate a download handler using a callback function.
-     * <p>
-     * This helper is useful when you want to chain the handling lambda and
-     * download progress listeners.
-     * <p>
-     * Note that the {@link TransferProgressListener} is not automatically
-     * invoked for the returned {@link DownloadHandler}. You need to call
-     * {@link TransferProgressListener#transfer(InputStream, OutputStream, TransferContext, Collection)}
-     * in your implementation of <code>handler</code> for <code>onStart</code>,
-     * <code>onProgress</code> and <code>onComplete</code> to be invoked
-     * automatically, whereas <code>onError</code> should be called directly.
-     *
-     * @param handler
-     *            handler function that will be called on download
-     * @return DownloadHandler implementation for a given callback
-     */
-    static AbstractDownloadHandler fromCallback(
-            SerializableConsumer<DownloadEvent> handler) {
-        return new AbstractDownloadHandler() {
-            @Override
-            public void handleDownloadRequest(DownloadEvent event) {
-                handler.accept(event);
-            }
-        };
-    }
 }
