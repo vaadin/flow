@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
 
@@ -40,14 +41,15 @@ import com.vaadin.flow.server.VaadinSession;
  *            name of the file being transferred
  * @param owningElement
  *            the element that initiated the transfer
+ * @param transferredBytes
+ *           number of bytes transferred so far
  * @param totalBytes
- *            the total number of bytes to be transferred or <code>-1</code> if
- *            total number is unknown in advance, e.g. when reading from an
- *            input stream
+ *           total number of bytes to be transferred
+ * @param reason
+ *           reason for transfer failure, <code>null</code> if transfer was successful
  */
 public record TransferContext(VaadinRequest request, VaadinResponse response,
-        VaadinSession session, String fileName, Element owningElement,
-        long totalBytes) {
+        VaadinSession session, String fileName, Element owningElement, long transferredBytes, long totalBytes, IOException reason) {
 
     /**
      * Get owner {@link Component} for this event.

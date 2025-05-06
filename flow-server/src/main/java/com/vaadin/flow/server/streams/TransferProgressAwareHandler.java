@@ -18,11 +18,12 @@ package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -30,8 +31,6 @@ import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.TransferProgressAware;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonValue;
 
 /**
  * Abstract class for common methods used in pre-made transfer progress
@@ -44,7 +43,7 @@ import elemental.json.JsonValue;
 public abstract class TransferProgressAwareHandler<R, T extends TransferProgressAware<T>>
         implements TransferProgressAware<T> {
 
-    private Collection<TransferProgressListener> listeners;
+    private Map<TransferProgressEventType, List<SerializableConsumer<TransferContext>>> listeners;
 
     /**
      * This method is used to get the transfer context from the transfer events
@@ -60,7 +59,7 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
      * Adds a listener to be notified of data transfer progress events, such as:
      * <ul>
      * <li>{@link TransferProgressListener#onStart(TransferContext)}</li>
-     * <li>{@link TransferProgressListener#onProgress(TransferContext, long)}</li>
+     * <li>{@link TransferProgressListener#onProgress(TransferContext, long, long)}</li>
      * <li>{@link TransferProgressListener#onError(TransferContext, IOException)}</li>
      * <li>{@link TransferProgressListener#onComplete(TransferContext, long)}</li>
      * </ul>
@@ -82,57 +81,70 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
             TransferProgressListener listener) {
         Objects.requireNonNull(listener, "Listener cannot be null");
         if (listeners == null) {
-            listeners = new ArrayList<>();
+            listeners = new HashMap<>(4);
         }
         TransferProgressListener wrapper = new TransferProgressListenerWrapper(
                 listener);
-        return Registration.addAndRemove(listeners, wrapper);
+        SerializableConsumer<TransferContext> onStartListener = wrapper::onStart;
+        listeners.computeIfAbsent(TransferProgressEventType.START,
+                event -> new ArrayList<>()).add(onStartListener);
+
+        SerializableConsumer<TransferContext> onProgressListener = wrapper::onProgress;
+        listeners.computeIfAbsent(TransferProgressEventType.PROGRESS,
+                event -> new ArrayList<>()).add(onProgressListener);
+
+        SerializableConsumer<TransferContext> onErrorListener = wrapper::onError;
+        listeners.computeIfAbsent(TransferProgressEventType.ERROR,
+                event -> new ArrayList<>()).add(onErrorListener);
+
+        SerializableConsumer<TransferContext> onCompleteListener = wrapper::onComplete;
+        listeners.computeIfAbsent(TransferProgressEventType.COMPLETE,
+                event -> new ArrayList<>()).add(onCompleteListener);
+
+        return Registration.combine(
+                () -> listeners.getOrDefault(
+                        TransferProgressEventType.START, Collections.emptyList())
+                        .remove(onStartListener),
+                () -> listeners.getOrDefault(
+                        TransferProgressEventType.PROGRESS,
+                        Collections.emptyList()).remove(onProgressListener),
+                () -> listeners.getOrDefault(
+                        TransferProgressEventType.ERROR,
+                        Collections.emptyList()).remove(onErrorListener),
+                () -> listeners.getOrDefault(
+                        TransferProgressEventType.COMPLETE,
+                        Collections.emptyList()).remove(onCompleteListener));
     }
 
     @Override
     public T whenStart(SerializableRunnable startHandler) {
-        addTransferProgressListener(new TransferProgressListener() {
-            @Override
-            public void onStart(TransferContext context) {
-                startHandler.run();
-            }
-        });
+        listeners.computeIfAbsent(TransferProgressEventType.START,
+                event -> new ArrayList<>()).add(context -> context.getUI().access(() -> startHandler.run())
+        );
         return (T) this;
     }
 
     @Override
     public T onProgress(SerializableBiConsumer<Long, Long> progressHandler,
             long progressIntervalInBytes) {
-        addTransferProgressListener(new TransferProgressListener() {
-            @Override
-            public void onProgress(TransferContext context,
-                    long transferredBytes) {
-                progressHandler.accept(transferredBytes, context.totalBytes());
-            }
-
-            @Override
-            public long progressReportInterval() {
-                return progressIntervalInBytes;
-            }
-        });
+        listeners.computeIfAbsent(TransferProgressEventType.PROGRESS,
+                event -> new ArrayList<>()).add(context -> context.getUI().access(() -> progressHandler.accept(context.transferredBytes(), context.totalBytes()))
+        );
         return (T) this;
     }
 
     @Override
     public T whenComplete(
             SerializableConsumer<Boolean> completeOrTerminateHandler) {
-        addTransferProgressListener(new TransferProgressListener() {
-            @Override
-            public void onError(TransferContext context, IOException reason) {
-                completeOrTerminateHandler.accept(false);
-            }
-
-            @Override
-            public void onComplete(TransferContext context,
-                    long transferredBytes) {
-                completeOrTerminateHandler.accept(true);
-            }
-        });
+        listeners.computeIfAbsent(TransferProgressEventType.COMPLETE,
+                event -> new ArrayList<>()).add(context -> context.getUI().access(() -> {
+                    if (context.reason() != null) {
+                        completeOrTerminateHandler.accept(false);
+                    } else {
+                        completeOrTerminateHandler.accept(true);
+                    }
+                })
+        );
         return (T) this;
     }
 
@@ -144,15 +156,19 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         }
     }
 
-    Collection<TransferProgressListener> getListeners() {
-        return listeners == null ? Collections.emptyList()
-                : new ArrayList<>(listeners);
+    protected List<SerializableConsumer<TransferContext>> getListeners(TransferProgressEventType eventType) {
+        return TransferProgressListener.getListeners(getListeners(), eventType);
+    }
+
+    Map<TransferProgressEventType, List<SerializableConsumer<TransferContext>>> getListeners() {
+        return listeners == null ? Collections.emptyMap()
+                : Collections.unmodifiableMap(listeners);
     }
 
     void notifyError(R transferEvent, IOException ioe) {
         TransferContext transferContext = getTransferContext(transferEvent);
-        getListeners()
-                .forEach(listener -> listener.onError(transferContext, ioe));
+        getListeners(TransferProgressEventType.ERROR)
+                .forEach(listener -> listener.accept(transferContext));
     }
 
     /**
@@ -177,9 +193,9 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         }
 
         @Override
-        public void onProgress(TransferContext context, long transferredBytes) {
+        public void onProgress(TransferContext context, long transferredBytes, long totalBytes) {
             context.getUI().access(() -> {
-                delegate.onProgress(context, transferredBytes);
+                delegate.onProgress(context, transferredBytes, totalBytes);
             });
         }
 

@@ -21,11 +21,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.streams.TransferContext;
+import com.vaadin.flow.server.streams.TransferProgressEventType;
 
 /**
  * Interface for listening to transfer progress events.
@@ -86,10 +90,8 @@ public interface TransferProgressListener extends Serializable {
      *
      * @param context
      *            the context of the transfer
-     * @param transferredBytes
-     *            the number of bytes transferred so far
      */
-    default void onProgress(TransferContext context, long transferredBytes) {
+    default void onProgress(TransferContext context) {
         // Default implementation does nothing
     }
 
@@ -105,10 +107,8 @@ public interface TransferProgressListener extends Serializable {
      *
      * @param context
      *            the context of the transfer
-     * @param reason
-     *            the origin I/O exception that terminated the transfer
      */
-    default void onError(TransferContext context, IOException reason) {
+    default void onError(TransferContext context) {
         // Default implementation does nothing
     }
 
@@ -125,7 +125,7 @@ public interface TransferProgressListener extends Serializable {
      * @param context
      *            the context of the transfer
      */
-    default void onComplete(TransferContext context, long transferredBytes) {
+    default void onComplete(TransferContext context) {
         // Default implementation does nothing
     }
 
@@ -157,15 +157,15 @@ public interface TransferProgressListener extends Serializable {
      *             if an I/O error occurs during the transfer
      */
     static long transfer(InputStream inputStream, OutputStream outputStream,
-            TransferContext transferContext,
-            Collection<TransferProgressListener> listeners) throws IOException {
+                         TransferContext transferContext, Map<TransferProgressEventType, List<SerializableConsumer<TransferContext>>> listeners) throws IOException {
         Objects.requireNonNull(inputStream, "InputStream cannot be null");
         Objects.requireNonNull(outputStream, "OutputStream cannot be null");
         Objects.requireNonNull(transferContext,
                 "TransferRequest cannot be null");
         Objects.requireNonNull(listeners,
                 "TransferProgressListener cannot be null");
-        listeners.forEach(listener -> listener.onStart(transferContext));
+        getListeners(listeners, TransferProgressEventType.START).forEach(
+                listener -> listener.accept(transferContext));
         long transferred = 0;
         Map<TransferProgressListener, Long> lastNotified = new HashMap<>(
                 listeners.size());
@@ -180,15 +180,18 @@ public interface TransferProgressListener extends Serializable {
                 } catch (ArithmeticException ignore) {
                     transferred = Long.MAX_VALUE;
                 }
-                for (TransferProgressListener listener : listeners) {
+                List<SerializableConsumer<TransferContext>> progressListeners = getListeners(listeners, TransferProgressEventType.PROGRESS);
+                for (SerializableConsumer<TransferContext> listener : progressListeners) {
                     Long lastNotifiedLong = lastNotified.getOrDefault(listener,
                             0L);
+
+                    // listener needs to carry this parameter
                     long progressReportInterval = listener
                             .progressReportInterval();
                     if (progressReportInterval > -1 && transferred
                             - lastNotifiedLong >= progressReportInterval) {
                         long finalTransferred = transferred;
-                        listener.onProgress(transferContext, finalTransferred);
+                        listener.accept(transferContext);
                         lastNotified.put(listener, transferred);
                     }
                 }
@@ -223,5 +226,12 @@ public interface TransferProgressListener extends Serializable {
         } finally {
             session.unlock();
         }
+    }
+
+    static List<SerializableConsumer<TransferContext>> getListeners(
+            Map<TransferProgressEventType, List<SerializableConsumer<TransferContext>>> listeners,
+            TransferProgressEventType eventType) {
+        return listeners == null ? Collections.emptyList()
+                : Collections.unmodifiableList(listeners.getOrDefault(eventType, Collections.emptyList()));
     }
 }
