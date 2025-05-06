@@ -112,16 +112,15 @@ public class StreamRequestHandler implements RequestHandler {
             Element owner = elementRequest.getOwner();
             StateNode node = owner.getNode();
 
-            if ((node.isInert() && !elementRequest
-                    .getElementRequestHandler().allowInert())
+            if ((node.isInert()
+                    && !elementRequest.getElementRequestHandler().allowInert())
                     || !node.isAttached() || !node.isEnabled()) {
                 response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                         "Resource not available");
                 return true;
             } else {
-                elementRequest.getElementRequestHandler().handleRequest(
-                        request, response, session,
-                        elementRequest.getOwner());
+                elementRequest.getElementRequestHandler().handleRequest(request,
+                        response, session, elementRequest.getOwner());
             }
         } else if (resource instanceof StreamResource) {
             resourceHandler.handleRequest(session, request, response,
@@ -165,9 +164,8 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
-        return DYN_RES_PREFIX + UI.getCurrent().getUIId() + PATH_SEPARATOR +
-                id + PATH_SEPARATOR +
-                UrlUtil.encodeURIComponent(name);
+        return DYN_RES_PREFIX + UI.getCurrent().getUIId() + PATH_SEPARATOR + id
+                + PATH_SEPARATOR + UrlUtil.encodeURIComponent(name);
     }
 
     private static Optional<URI> getPathUri(String path) {
