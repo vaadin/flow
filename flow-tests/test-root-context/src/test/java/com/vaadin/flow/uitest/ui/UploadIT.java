@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.net.URL;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -37,6 +38,8 @@ public class UploadIT extends ChromeBrowserTest {
 
     @Test
     public void uploadToServer_uploadSucceeds() {
+        Assume.assumeTrue("Ignoring upload for remote agent test",
+                getLocalExecution().isPresent());
         open();
 
         Assert.assertEquals("--empty--",
