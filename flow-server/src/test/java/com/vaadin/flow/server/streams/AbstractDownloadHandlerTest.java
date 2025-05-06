@@ -111,7 +111,7 @@ public class AbstractDownloadHandlerTest {
                 .mock(SerializableBiConsumer.class);
         handler.onProgress(onProgressHandler);
         handler.getListeners().forEach(listener -> listener
-                .onProgress(mockContext, TRANSFERRED_BYTES));
+                .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
         Mockito.verify(onProgressHandler).accept(TRANSFERRED_BYTES,
                 TOTAL_BYTES);
     }

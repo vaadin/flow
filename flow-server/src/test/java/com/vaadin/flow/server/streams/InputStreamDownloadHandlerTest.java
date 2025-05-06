@@ -95,9 +95,9 @@ public class InputStreamDownloadHandlerTest {
 
             @Override
             public void onProgress(TransferContext context,
-                    long transferredBytes) {
+                    long transferredBytes, long totalBytes) {
                 transferredBytesRecords.add(transferredBytes);
-                Assert.assertEquals(-1, context.totalBytes());
+                Assert.assertEquals(-1, totalBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onProgress");
             }
@@ -156,7 +156,7 @@ public class InputStreamDownloadHandlerTest {
 
             @Override
             public void onProgress(TransferContext context,
-                    long transferredBytes) {
+                    long transferredBytes, long totalBytes) {
                 invocations.add("onProgress");
             }
 

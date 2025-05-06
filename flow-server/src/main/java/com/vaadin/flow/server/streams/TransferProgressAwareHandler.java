@@ -108,8 +108,8 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         addTransferProgressListener(new TransferProgressListener() {
             @Override
             public void onProgress(TransferContext context,
-                    long transferredBytes) {
-                progressHandler.accept(transferredBytes, context.totalBytes());
+                    long transferredBytes, long totalBytes) {
+                progressHandler.accept(transferredBytes, totalBytes);
             }
 
             @Override
@@ -190,9 +190,10 @@ public abstract class TransferProgressAwareHandler<R, T extends TransferProgress
         }
 
         @Override
-        public void onProgress(TransferContext context, long transferredBytes) {
+        public void onProgress(TransferContext context, long transferredBytes,
+                long totalBytes) {
             context.getUI().access(() -> {
-                delegate.onProgress(context, transferredBytes);
+                delegate.onProgress(context, transferredBytes, totalBytes);
             });
         }
 
