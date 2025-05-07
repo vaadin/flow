@@ -81,13 +81,9 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
     public Registration addTransferProgressListener(
             TransferProgressListener listener) {
         Objects.requireNonNull(listener, "Listener cannot be null");
-        if (listeners == null) {
-            // four listeners added with shortcuts is a good default size
-            listeners = new ArrayList<>(4);
-        }
         TransferProgressListener wrapper = new TransferProgressListenerWrapper(
                 listener);
-        return Registration.addAndRemove(listeners, wrapper);
+        return addTransferProgressListenerInternal(wrapper);
     }
 
     /**
@@ -109,10 +105,13 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      */
     public <R extends TransferProgressAwareHandler<T>> R whenStart(
             SerializableRunnable startHandler) {
-        addTransferProgressListener(new TransferProgressListener() {
+        Objects.requireNonNull(startHandler, "Start handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                startHandler.run();
+                context.getUI().access(() -> {
+                    startHandler.run();
+                });
             }
         });
         return (R) this;
@@ -140,11 +139,15 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
     public <R extends TransferProgressAwareHandler<T>> R onProgress(
             SerializableBiConsumer<Long, Long> progressHandler,
             long progressIntervalInBytes) {
-        addTransferProgressListener(new TransferProgressListener() {
+        Objects.requireNonNull(progressHandler,
+                "Progress handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
-                progressHandler.accept(transferredBytes, totalBytes);
+                context.getUI().access(() -> {
+                    progressHandler.accept(transferredBytes, totalBytes);
+                });
             }
 
             @Override
@@ -203,16 +206,22 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      */
     public <R extends TransferProgressAwareHandler<T>> R whenComplete(
             SerializableConsumer<Boolean> completeOrTerminateHandler) {
-        addTransferProgressListener(new TransferProgressListener() {
+        Objects.requireNonNull(completeOrTerminateHandler,
+                "Complete or terminate handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onError(TransferContext context, IOException reason) {
-                completeOrTerminateHandler.accept(false);
+                context.getUI().access(() -> {
+                    completeOrTerminateHandler.accept(false);
+                });
             }
 
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                completeOrTerminateHandler.accept(true);
+                context.getUI().access(() -> {
+                    completeOrTerminateHandler.accept(true);
+                });
             }
         });
         return (R) this;
@@ -238,6 +247,15 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
         TransferContext transferContext = getTransferContext(transferEvent);
         getListeners()
                 .forEach(listener -> listener.onError(transferContext, ioe));
+    }
+
+    private Registration addTransferProgressListenerInternal(
+            TransferProgressListener listener) {
+        if (listeners == null) {
+            // four listeners added with shortcuts is a good default size
+            listeners = new ArrayList<>(4);
+        }
+        return Registration.addAndRemove(listeners, listener);
     }
 
     /**
