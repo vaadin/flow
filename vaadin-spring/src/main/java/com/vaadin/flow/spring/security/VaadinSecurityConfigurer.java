@@ -555,6 +555,7 @@ public final class VaadinSecurityConfigurer
         // If there is an existing RequestCache shared object, use that as the
         // delegate cache for requests not saved by VaadinDefaultRequestCache.
         getSharedObject(RequestCache.class)
+                .filter(cache -> !(cache instanceof VaadinDefaultRequestCache))
                 .ifPresent(vaadinDefaultRequestCache::setDelegateRequestCache);
         configurer.requestCache(vaadinDefaultRequestCache);
     }
