@@ -208,7 +208,7 @@ public class SpringSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+    SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
         return new VaadinAwareSecurityContextHolderStrategy();
     }
 }
