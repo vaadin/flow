@@ -38,8 +38,6 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -456,7 +454,6 @@ public final class VaadinSecurityConfigurer
 
     @Override
     public void init(HttpSecurity http) throws Exception {
-        ensureConsistentSecurityContextHolderStrategy();
         if (formLoginPage != null) {
             http.formLogin(configurer -> {
                 configurer.loginPage(formLoginPage).permitAll();
@@ -722,18 +719,5 @@ public final class VaadinSecurityConfigurer
             }
             return bean;
         });
-    }
-
-    /**
-     * Ensures that the {@link SecurityContextHolderStrategy} bean (if any) is
-     * set as the {@link SecurityContextHolderStrategy} for the application.
-     */
-    private void ensureConsistentSecurityContextHolderStrategy() {
-        var securityContextHolderStrategy = getSecurityContextHolderStrategy();
-        if (SecurityContextHolder
-                .getContextHolderStrategy() != securityContextHolderStrategy) {
-            SecurityContextHolder
-                    .setContextHolderStrategy(securityContextHolderStrategy);
-        }
     }
 }
