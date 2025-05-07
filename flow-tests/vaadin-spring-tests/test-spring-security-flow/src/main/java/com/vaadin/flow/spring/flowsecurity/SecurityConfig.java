@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,7 +34,7 @@ import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
@@ -158,9 +156,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    @DependsOn("VaadinSecurityContextHolderStrategy")
-    public SwitchUserFilter switchUserFilter() {
+    public SwitchUserFilter switchUserFilter(
+            VaadinAwareSecurityContextHolderStrategy strategy) {
         SwitchUserFilter filter = new SwitchUserFilter();
+        filter.setSecurityContextHolderStrategy(strategy);
         filter.setUserDetailsService(userDetailsService());
         filter.setSwitchUserMatcher(antMatcher(HttpMethod.GET, "/impersonate"));
         filter.setSwitchFailureUrl("/switchUser");

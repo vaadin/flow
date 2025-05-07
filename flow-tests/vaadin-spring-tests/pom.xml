@@ -151,7 +151,7 @@
                 <executions>
                     <execution>
                         <id>remove-bundles</id>
-                        <phase>clean</phase>
+                        <phase>initialize</phase>
                         <goals>
                             <goal>clean</goal>
                         </goals>
