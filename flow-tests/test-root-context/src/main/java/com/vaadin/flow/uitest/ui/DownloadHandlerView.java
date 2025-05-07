@@ -26,7 +26,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.DownloadRequest;
+import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StreamRegistration;
@@ -43,7 +43,7 @@ public class DownloadHandlerView extends Div {
 
         DownloadHandler downloadHandler = new DownloadHandler() {
             @Override
-            public void handleDownloadRequest(DownloadRequest event) {
+            public void handleDownloadRequest(DownloadEvent event) {
                 event.getWriter().print("foo");
             }
 
