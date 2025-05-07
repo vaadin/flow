@@ -408,6 +408,23 @@ public final class Constants implements Serializable {
      */
     public static final String ATTRIBUTE_HEIGHT_FULL = "data-height-full";
 
+    /**
+     * maximum allowed size of a complete request for multipart stream upload
+     * requests.
+     */
+    public static final long DEFAULT_REQUEST_SIZE_MAX = -1;
+
+    /**
+     * maximum allowed size of a single uploaded file for multipart stream
+     * upload requests.
+     */
+    public static final long DEFAULT_FILE_SIZE_MAX = -1;
+
+    /**
+     * maximum number of files allowed per multipart stream upload requests.
+     */
+    public static final long DEFAULT_FILE_COUNT_MAX = 10000;
+
     private Constants() {
         // prevent instantiation constants class only
     }
