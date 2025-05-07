@@ -136,8 +136,11 @@ public class StreamRequestHandler implements RequestHandler {
             StreamResourceRegistry.ElementStreamResource elementRequest,
             String pathInfo) throws IOException {
         Element owner = elementRequest.getOwner();
-        if (owner.getNode().isInert()
-                && !elementRequest.getElementRequestHandler().allowInert()) {
+        StateNode node = owner.getNode();
+
+        if ((node.isInert()
+                && !elementRequest.getElementRequestHandler().allowInert())
+                || !node.isAttached() || !node.isEnabled()) {
             response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                     "Resource not available");
             return;
@@ -148,7 +151,6 @@ public class StreamRequestHandler implements RequestHandler {
             // Validate upload security key. Else respond with
             // FORBIDDEN.
             PathData parts = parsePath(pathInfo);
-            StateNode node = owner.getNode();
             session.lock();
             try {
                 String secKey = elementRequest.getId();
@@ -228,12 +230,8 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
-        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
-
-        builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
-        builder.append(id).append(PATH_SEPARATOR);
-        builder.append(UrlUtil.encodeURIComponent(name));
-        return builder.toString();
+        return DYN_RES_PREFIX + UI.getCurrent().getUIId() + PATH_SEPARATOR + id
+                + PATH_SEPARATOR + UrlUtil.encodeURIComponent(name);
     }
 
     private static Optional<URI> getPathUri(String path) {
