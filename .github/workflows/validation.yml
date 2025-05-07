@@ -11,6 +11,8 @@ concurrency:
   group: ${{ github.head_ref }} || ${{ github.ref_name }}
   cancel-in-progress: true
 env:
+  HEAD_REF: ${{ github.head_ref }}
+  REF_NAME: ${{ github.ref_name }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 jobs:
   build:
