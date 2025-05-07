@@ -45,7 +45,6 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @EnableWebSecurity
 @Configuration
 @Profile("default")
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
 
     private final UserInfoService userInfoService;

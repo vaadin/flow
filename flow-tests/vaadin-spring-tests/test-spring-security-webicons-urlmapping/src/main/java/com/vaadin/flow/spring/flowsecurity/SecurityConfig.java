@@ -15,7 +15,6 @@ import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 @EnableWebSecurity
 @Configuration
 @Profile("default")
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
 
     @Bean

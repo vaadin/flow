@@ -37,7 +37,6 @@ import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 @EnableMethodSecurity(prePostEnabled = false, jsr250Enabled = true, securedEnabled = true)
 @Configuration
 @Profile("default")
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
 
     private final UserInfoService userInfoService;
