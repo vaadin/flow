@@ -86,7 +86,7 @@ import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSec
  *
  *     &#64;Bean
  *     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
- *         return http.with(new VaadinSecurityConfigurer(), configurer -&gt; {
+ *         return http.with(VaadinSecurityConfigurer.vaadin(), configurer -&gt; {
  *             configurer.loginView(MyLoginView.class);
  *         }).build();
  *     }
