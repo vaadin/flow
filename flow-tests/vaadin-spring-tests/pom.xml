@@ -147,6 +147,27 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>remove-bundles</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.basedir}/src/main/bundles</directory>
+                                    <includes>*</includes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
@@ -323,6 +344,7 @@
 
                 <module>test-mvc-without-endpoints</module>
 
+                <!-- VaadinSecurityConfigurer -->
                 <module>test-spring-security-flow</module>
                 <module>test-spring-security-flow-websocket</module>
                 <module>test-spring-security-webicons</module>
@@ -333,6 +355,18 @@
                 <module>test-spring-security-flow-methodsecurity</module>
                 <module>test-spring-security-flow-standalone-routepathaccesschecker</module>
                 <module>test-spring-security-flow-routepathaccesschecker</module>
+
+                <!-- VaadinWebSecurity -->
+                <module>test-spring-security-flow/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-flow-websocket/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-webicons/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-webicons-urlmapping/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-flow-contextpath/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-flow-urlmapping/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-flow-reverseproxy/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-flow-methodsecurity/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-flow-standalone-routepathaccesschecker/pom-vaadinwebsecurity.xml</module>
+                <module>test-spring-security-flow-routepathaccesschecker/pom-vaadinwebsecurity.xml</module>
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>

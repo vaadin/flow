@@ -7,11 +7,12 @@
         <artifactId>vaadin-spring-tests</artifactId>
         <version>24.8-SNAPSHOT</version>
     </parent>
-    <artifactId>test-spring-security-flow</artifactId>
-    <name>Integration tests for Vaadin Spring Security and Flow</name>
+    <artifactId>test-spring-security-flow-vaadinwebsecurity</artifactId>
+    <name>Integration tests for Vaadin Spring Security and Flow (VaadinWebSecurity)</name>
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <surefire.reportNameSuffix>vaadinwebsecurity</surefire.reportNameSuffix>
     </properties>
 
     <dependencies>
@@ -203,6 +204,9 @@
                     <jvmArguments>
                         -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=18888
                     </jvmArguments>
+                    <profiles>
+                        <profile>legacy-vaadin-web-security</profile>
+                    </profiles>
                 </configuration>
                 <executions>
                     <!-- start and stop application when running
@@ -232,11 +236,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>META-INF/VAADIN/config/flow-build-info.json</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
 
             <!-- unpack helpers so they are included in the generated test-jar -->
