@@ -112,6 +112,16 @@ public final class VaadinSecurityConfigurer
 
     private String postLogoutRedirectUri;
 
+    private boolean enableCsrfConfiguration = true;
+
+    private boolean enableLogoutConfiguration = true;
+
+    private boolean enableRequestCacheConfiguration = true;
+
+    private boolean enableExceptionHandlingConfiguration = true;
+
+    private boolean enableAuthorizedRequestsConfiguration = true;
+
     private Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule = AuthorizedUrl::authenticated;
 
     private boolean enableNavigationAccessControl = true;
@@ -290,6 +300,90 @@ public final class VaadinSecurityConfigurer
     }
 
     /**
+     * Enables or disables automatic CSRF configuration (enabled by default).
+     * <p>
+     * This configurer will automatically configure Spring's CSRF filter to
+     * allow Vaadin internal framework requests to be properly processed.
+     *
+     * @param enableCsrfConfiguration
+     *            whether CSRF configuration should be enabled
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer enableCsrfConfiguration(
+            boolean enableCsrfConfiguration) {
+        this.enableCsrfConfiguration = enableCsrfConfiguration;
+        return this;
+    }
+
+    /**
+     * Enables or disables automatic logout configuration (enabled by default).
+     * <p>
+     * This configurer will automatically configure logout behavior to work
+     * properly with Flow and Hilla.
+     *
+     * @param enableLogoutConfiguration
+     *            whether logout configuration should be enabled
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer enableLogoutConfiguration(
+            boolean enableLogoutConfiguration) {
+        this.enableLogoutConfiguration = enableLogoutConfiguration;
+        return this;
+    }
+
+    /**
+     * Enables or disables automatic configuration of the request cache (enabled
+     * by default).
+     * <p>
+     * This configurer will automatically configure the request cache to work
+     * properly with Vaadin's internal framework requests.
+     *
+     * @param enableRequestCacheConfiguration
+     *            whether configuration of the request cache should be enabled
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer enableRequestCacheConfiguration(
+            boolean enableRequestCacheConfiguration) {
+        this.enableRequestCacheConfiguration = enableRequestCacheConfiguration;
+        return this;
+    }
+
+    /**
+     * Enables or disables automatic configuration of exception handling
+     * (enabled by default).
+     * <p>
+     * This configurer will automatically configure exception handling during
+     * traversal of the security filter chain.
+     *
+     * @param enableExceptionHandlingConfiguration
+     *            whether configuration of exception handling should be enabled
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer enableExceptionHandlingConfiguration(
+            boolean enableExceptionHandlingConfiguration) {
+        this.enableExceptionHandlingConfiguration = enableExceptionHandlingConfiguration;
+        return this;
+    }
+
+    /**
+     * Enables or disables automatic configuration of authorized requests
+     * (enabled by default).
+     * <p>
+     * This configurer will automatically configure authorized requests to
+     * permit requests to anonymous Flow and Hilla views, and static assets.
+     *
+     * @param enableAuthorizedRequestsConfiguration
+     *            whether configuration of authorized requests should be enabled
+     * @return the current configurer instance for method chaining
+     * @see #defaultPermitMatcher()
+     */
+    public VaadinSecurityConfigurer enableAuthorizedRequestsConfiguration(
+            boolean enableAuthorizedRequestsConfiguration) {
+        this.enableAuthorizedRequestsConfiguration = enableAuthorizedRequestsConfiguration;
+        return this;
+    }
+
+    /**
      * Configures the access rule for any request not matching other configured
      * rules.
      * <p>
@@ -371,11 +465,19 @@ public final class VaadinSecurityConfigurer
                 configurer.successHandler(getAuthenticationSuccessHandler());
             });
         }
-        http.csrf(this::customizeCsrf);
-        http.logout(this::customizeLogout);
-        http.requestCache(this::customizeRequestCache);
-        http.exceptionHandling(this::customizeExceptionHandling);
-        if (!alreadyInitializedOnce) {
+        if (enableCsrfConfiguration) {
+            http.csrf(this::customizeCsrf);
+        }
+        if (enableLogoutConfiguration) {
+            http.logout(this::customizeLogout);
+        }
+        if (enableRequestCacheConfiguration) {
+            http.requestCache(this::customizeRequestCache);
+        }
+        if (enableExceptionHandlingConfiguration) {
+            http.exceptionHandling(this::customizeExceptionHandling);
+        }
+        if (enableAuthorizedRequestsConfiguration && !alreadyInitializedOnce) {
             http.authorizeHttpRequests(this::customizeAuthorizeHttpRequests);
         }
         // The init method might be called multiple times if the configurer is
