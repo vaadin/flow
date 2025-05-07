@@ -33,7 +33,8 @@ import com.vaadin.flow.server.VaadinResponse;
  *
  * @since 24.8
  */
-public class FileDownloadHandler extends AbstractDownloadHandler {
+public class FileDownloadHandler
+        extends AbstractDownloadHandler<FileDownloadHandler> {
 
     private final File file;
     private final String name;

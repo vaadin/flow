@@ -41,8 +41,12 @@ import elemental.json.JsonValue;
  * @param <T>
  *            type of transfer event, e.g.
  *            {@link com.vaadin.flow.server.DownloadHandler}
+ * @param <R>
+ *            type of the subclass implementing this abstract class, needed for
+ *            revealing a proper type when you chain the methods
  */
-public abstract class TransferProgressAwareHandler<T> implements Serializable {
+public abstract class TransferProgressAwareHandler<T, R extends TransferProgressAwareHandler>
+        implements Serializable {
 
     private List<TransferProgressListener> listeners;
 
@@ -103,8 +107,7 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * @param <R>
      *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R whenStart(
-            SerializableRunnable startHandler) {
+    public R whenStart(SerializableRunnable startHandler) {
         Objects.requireNonNull(startHandler, "Start handler cannot be null");
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
@@ -136,8 +139,7 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * @param <R>
      *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R onProgress(
-            SerializableBiConsumer<Long, Long> progressHandler,
+    public R onProgress(SerializableBiConsumer<Long, Long> progressHandler,
             long progressIntervalInBytes) {
         Objects.requireNonNull(progressHandler,
                 "Progress handler cannot be null");
@@ -179,8 +181,7 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * @param <R>
      *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R onProgress(
-            SerializableBiConsumer<Long, Long> progressHandler) {
+    public R onProgress(SerializableBiConsumer<Long, Long> progressHandler) {
         return onProgress(progressHandler,
                 TransferProgressListener.DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES);
     }
@@ -204,7 +205,7 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * @param <R>
      *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R whenComplete(
+    public R whenComplete(
             SerializableConsumer<Boolean> completeOrTerminateHandler) {
         Objects.requireNonNull(completeOrTerminateHandler,
                 "Complete or terminate handler cannot be null");

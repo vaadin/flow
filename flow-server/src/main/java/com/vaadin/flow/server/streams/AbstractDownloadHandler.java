@@ -22,10 +22,13 @@ import com.vaadin.flow.server.DownloadEvent;
 /**
  * Abstract class for common methods used in pre-made download handlers.
  *
+ * @param <R>
+ *            the type of the subclass implementing this abstract class
  * @since 24.8
  */
-public abstract class AbstractDownloadHandler extends
-        TransferProgressAwareHandler<DownloadEvent> implements DownloadHandler {
+public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
+        extends TransferProgressAwareHandler<DownloadEvent, R>
+        implements DownloadHandler {
 
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
