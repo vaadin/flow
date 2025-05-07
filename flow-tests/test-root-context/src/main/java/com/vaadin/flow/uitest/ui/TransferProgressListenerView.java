@@ -39,17 +39,21 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.TransferProgressListenerView")
 public class TransferProgressListenerView extends Div {
 
+    static final String WHEN_START_ID = "for-servlet-resource-when-start";
+    static final String ON_PROGRESS_ID = "for-servlet-resource-on-progress";
+    static final String ON_ERROR_ID = "for-servlet-resource-on-error";
+    static final String ON_COMPLETE_ID = "for-servlet-resource-when-complete";
+
     public TransferProgressListenerView() {
         Div forServletResourceWhenStart = new Div(
                 "File download whenStart status...");
-        forServletResourceWhenStart.setId("for-servlet-resource-when-start");
+        forServletResourceWhenStart.setId(WHEN_START_ID);
         Div forServletResourceOnProgress = new Div(
                 "File download onProgress status...");
-        forServletResourceOnProgress.setId("for-servlet-resource-on-progress");
+        forServletResourceOnProgress.setId(ON_PROGRESS_ID);
         Div forServletResourceOnComplete = new Div(
                 "File download whenComplete status...");
-        forServletResourceOnComplete
-                .setId("for-servlet-resource-when-complete");
+        forServletResourceOnComplete.setId(ON_COMPLETE_ID);
         DownloadHandler forFileDownloadHandler = DownloadHandler
                 .forServletResource("/images/gift.png").whenStart(() -> {
                     forServletResourceWhenStart
@@ -74,7 +78,7 @@ public class TransferProgressListenerView extends Div {
 
         Div forServletResourceOnError = new Div(
                 "File download onError status...");
-        forServletResourceOnError.setId("for-servlet-resource-on-error");
+        forServletResourceOnError.setId(ON_ERROR_ID);
         DownloadHandler errorDownloadHandler = DownloadHandler
                 .fromInputStream(req -> {
                     InputStream inputStream = new InputStream() {

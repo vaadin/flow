@@ -111,7 +111,11 @@ public interface TransferProgressAware<T extends TransferProgressAware<T>>
     T whenComplete(SerializableConsumer<Boolean> completeOrTerminateHandler);
 
     /**
-     * Unsubscribes from progress updates.
+     * Unsubscribes from data transfer progress updates.
+     * <p>
+     * This method removes all registered listeners from this transfer progress
+     * aware instance and no more transfer progress events will be fired for
+     * them until they get re-registered again.
      */
     void unsubscribeFromTransferProgress();
 }

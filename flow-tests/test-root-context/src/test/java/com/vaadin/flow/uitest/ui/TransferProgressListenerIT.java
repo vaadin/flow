@@ -38,13 +38,13 @@ public class TransferProgressListenerIT extends AbstractStreamResourceIT {
     public void downloadServletResource_listenersAdded_listenersInvoked()
             throws IOException {
         open();
-        waitForStatus("for-servlet-resource-when-start",
+        waitForStatus(TransferProgressListenerView.WHEN_START_ID,
                 "File download whenStart status: started");
-        waitForStatus("for-servlet-resource-on-progress",
+        waitForStatus(TransferProgressListenerView.ON_PROGRESS_ID,
                 "File download onProgress status: 294/-1");
-        waitForStatus("for-servlet-resource-when-complete",
+        waitForStatus(TransferProgressListenerView.ON_COMPLETE_ID,
                 "File download whenComplete status: completed");
-        waitForStatus("for-servlet-resource-on-error",
+        waitForStatus(TransferProgressListenerView.ON_ERROR_ID,
                 "File download onError status: error");
     }
 
