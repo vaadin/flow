@@ -25,8 +25,7 @@ import com.vaadin.flow.server.DownloadEvent;
  * @since 24.8
  */
 public abstract class AbstractDownloadHandler extends
-        TransferProgressAwareHandler<DownloadEvent, AbstractDownloadHandler>
-        implements DownloadHandler {
+        TransferProgressAwareHandler<DownloadEvent> implements DownloadHandler {
 
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {

@@ -19,7 +19,6 @@ package com.vaadin.flow.server.streams;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.DownloadEvent;
-import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -111,14 +109,6 @@ public class AbstractDownloadHandlerTest {
 
         Mockito.reset(listener);
         registration.remove();
-        handler.getListeners().forEach(l -> l.onStart(mockContext));
-        Mockito.verify(listener, Mockito.times(0)).onStart(mockContext);
-    }
-
-    @Test
-    public void addTransferProgressListener_listenerAdded_listenersUnsubscribed() {
-        handler.addTransferProgressListener(listener);
-        handler.unsubscribeFromTransferProgress();
         handler.getListeners().forEach(l -> l.onStart(mockContext));
         Mockito.verify(listener, Mockito.times(0)).onStart(mockContext);
     }
