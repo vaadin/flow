@@ -354,8 +354,8 @@ public final class VaadinSecurityConfigurer
      * Enables or disables automatic configuration of exception handling
      * (enabled by default).
      * <p>
-     * This configurer will automatically configure exception handling during
-     * traversal of the security filter chain.
+     * This configurer will automatically configure exception handling to work
+     * properly with Flow and Hilla.
      *
      * @param enableExceptionHandlingConfiguration
      *            whether configuration of exception handling should be enabled
