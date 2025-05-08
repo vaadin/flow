@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { build } from 'vite';
 import { getManifest } from 'workbox-build';
 import brotli from 'rollup-plugin-brotli';
@@ -40,6 +41,7 @@ function injectManifestToSWPlugin({ outDir }) {
 export default function serviceWorkerPlugin({ srcPath }) {
   let buildConfig;
   let buildOutput;
+  let swSourcePath = resolve(srcPath);
 
   return {
     name: 'vaadin:build-sw',
@@ -53,19 +55,22 @@ export default function serviceWorkerPlugin({ srcPath }) {
         define: {
           ...viteConfig.define,
           'process.env.NODE_ENV': JSON.stringify(viteConfig.mode),
+          'globalThis.document': undefined,
         },
         build: {
           write: viteConfig.mode !== 'development',
           minify: viteConfig.build.minify,
           outDir: viteConfig.build.outDir,
+          target: viteConfig.build.target,
           sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
           emptyOutDir: false,
           modulePreload: false,
           rollupOptions: {
             input: {
-              sw: srcPath
+              sw: swSourcePath,
             },
             output: {
+              format: 'iife',
               exports: 'none',
               entryFileNames: 'sw.js',
               inlineDynamicImports: true,
@@ -80,7 +85,7 @@ export default function serviceWorkerPlugin({ srcPath }) {
       }
     },
     async load(id) {
-      if (id.endsWith('sw.js')) {
+      if (id === swSourcePath) {
         return buildOutput.output[0].code;
       }
     },
