@@ -36,6 +36,8 @@ public class SignalUtils {
      *
      * @param command
      *            the command to check, not <code>null</code>
+     * @param signal
+     *            the signal to check the command against, not<code>null</code>
      * @return <code>true</code> if the command is valid, <code>false</code>
      *         otherwise
      */
