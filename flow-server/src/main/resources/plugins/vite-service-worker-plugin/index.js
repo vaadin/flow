@@ -84,6 +84,11 @@ export default function serviceWorkerPlugin({ srcPath }) {
         buildOutput = await build(buildConfig);
       }
     },
+    resolveId(id, options) {
+      if (id === '/sw.js') {
+        return swSourcePath;
+      }
+    },
     async load(id) {
       if (id === swSourcePath) {
         return buildOutput.output[0].code;
