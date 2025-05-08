@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,6 +31,7 @@ import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
 import com.vaadin.testbench.TestBenchElement;
 
+@NotThreadSafe
 public class AppViewIT extends AbstractIT {
 
     private static final String LOGIN_PATH = "my/login/page";

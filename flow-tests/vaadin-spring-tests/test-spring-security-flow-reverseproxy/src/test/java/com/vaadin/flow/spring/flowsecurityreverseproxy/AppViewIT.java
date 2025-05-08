@@ -8,6 +8,9 @@
  */
 package com.vaadin.flow.spring.flowsecurityreverseproxy;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class AppViewIT extends com.vaadin.flow.spring.flowsecurity.AppViewIT {
 
 }

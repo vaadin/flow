@@ -8,13 +8,14 @@
  */
 package com.vaadin.flow.spring.flowsecurity;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.notification.testbench.NotificationElement;
-import com.vaadin.testbench.TestBenchElement;
 
+@NotThreadSafe
 public class AppViewIT extends AbstractIT {
 
     private static final String LOGIN_PATH = "my/login/page";
