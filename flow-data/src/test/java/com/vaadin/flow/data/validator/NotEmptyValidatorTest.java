@@ -18,6 +18,7 @@ package com.vaadin.flow.data.validator;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -31,7 +32,8 @@ public class NotEmptyValidatorTest {
     @Test
     public void nullValueIsDisallowed() {
         NotEmptyValidator<String> validator = new NotEmptyValidator<>("foo");
-        ValidationResult result = validator.apply(null, new ValueContext());
+        ValidationResult result = validator.apply(null,
+                new ValueContext(new Binder()));
         Assert.assertTrue(result.isError());
         Assert.assertEquals("foo", result.getErrorMessage());
     }
@@ -39,7 +41,8 @@ public class NotEmptyValidatorTest {
     @Test
     public void emptyValueIsDisallowed() {
         NotEmptyValidator<String> validator = new NotEmptyValidator<>("foo");
-        ValidationResult result = validator.apply("", new ValueContext());
+        ValidationResult result = validator.apply("",
+                new ValueContext(new Binder()));
         Assert.assertTrue(result.isError());
         Assert.assertEquals("foo", result.getErrorMessage());
     }
@@ -48,7 +51,8 @@ public class NotEmptyValidatorTest {
     public void nonNullValueIsAllowed() {
         NotEmptyValidator<Object> validator = new NotEmptyValidator<>("foo");
         Object value = new Object();
-        ValidationResult result = validator.apply(value, new ValueContext());
+        ValidationResult result = validator.apply(value,
+                new ValueContext(new Binder()));
         Assert.assertFalse(result.isError());
         Assert.assertFalse(result.isError());
     }

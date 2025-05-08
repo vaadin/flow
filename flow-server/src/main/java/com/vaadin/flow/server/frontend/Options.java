@@ -217,27 +217,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets the webpack related properties.
-     *
-     * @param webappResourcesDirectory
-     *            the directory to set for webpack to output its build results,
-     *            meant for serving from context root.
-     * @param resourceOutputDirectory
-     *            the directory to output generated non-served resources, such
-     *            as the "config/stats.json" stats file, and the
-     *            "config/flow-build-info.json" token file.
-     * @return this builder
-     * @deprecated to be removed, use
-     *             {@link #withBuildResultFolders(File, File)} instead.
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public Options withWebpack(File webappResourcesDirectory,
-            File resourceOutputDirectory) {
-        return withBuildResultFolders(webappResourcesDirectory,
-                resourceOutputDirectory);
-    }
-
-    /**
      * Sets whether to enable packages and frontend file updates. Default is
      * <code>true</code>.
      *
@@ -785,14 +764,6 @@ public class Options implements Serializable {
 
     public boolean isEnableConfigUpdate() {
         return enableConfigUpdate;
-    }
-
-    /**
-     * @deprecated use {@link #isEnableConfigUpdate()}
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public boolean isEnableWebpackConfigUpdate() {
-        return isEnableConfigUpdate();
     }
 
     public boolean isRunNpmInstall() {

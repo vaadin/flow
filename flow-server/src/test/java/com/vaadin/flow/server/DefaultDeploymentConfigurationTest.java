@@ -251,20 +251,6 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotdeployParameter_expressBuildFeatureFlagIsON_resetsFrontendHotdeployToFalse() {
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                new Properties());
-        Assert.assertFalse("Expected dev server to be disabled by default",
-                config.frontendHotdeploy());
-
-        Properties init = new Properties();
-        init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
-        config = createDeploymentConfig(init);
-        Assert.assertTrue("Expected dev server to be enabled when set true",
-                config.frontendHotdeploy());
-    }
-
-    @Test
     public void checkLockStrategy_defaultsToAssert() {
         Properties init = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
@@ -294,9 +280,6 @@ public class DefaultDeploymentConfigurationTest {
 
         Assert.assertTrue("ProductionMode should be enabled",
                 config.isProductionMode());
-        Assert.assertFalse(
-                "Frontend hotdeploy should return false in production mode",
-                config.frontendHotdeploy());
     }
 
     @Test
@@ -324,9 +307,6 @@ public class DefaultDeploymentConfigurationTest {
                     projectRoot.getAbsolutePath());
             DefaultDeploymentConfiguration config = createDeploymentConfig(
                     init);
-            boolean hotdeploy = config.frontendHotdeploy();
-            Assert.assertTrue("Should use the legacy frontend folder",
-                    hotdeploy);
         }
     }
 

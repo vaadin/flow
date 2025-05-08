@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
@@ -646,7 +647,8 @@ public class NavigationStateRendererTest {
                 new Location(path,
                         new QueryParameters(Collections.singletonMap("b",
                                 Collections.emptyList()))),
-                ui, NavigationTrigger.ROUTER_LINK, Json.createObject(), false);
+                ui, NavigationTrigger.ROUTER_LINK,
+                new ObjectMapper().createObjectNode(), false);
         renderer.handle(event);
 
         Assert.assertFalse(ui.isClosing());

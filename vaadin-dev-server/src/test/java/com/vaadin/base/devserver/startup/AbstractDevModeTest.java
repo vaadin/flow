@@ -125,7 +125,6 @@ public abstract class AbstractDevModeTest {
                 .mockStatic(FrontendUtils.class)) {
             util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
                     .thenReturn(false);
-            Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
         }
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
 

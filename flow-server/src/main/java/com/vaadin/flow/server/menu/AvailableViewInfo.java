@@ -73,16 +73,6 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         implements
             Serializable {
 
-    @Deprecated(forRemoval = true)
-    public AvailableViewInfo(String title, String[] rolesAllowed,
-            boolean loginRequired, String route, boolean lazy, boolean register,
-            MenuData menu, List<AvailableViewInfo> children,
-            @JsonProperty("params") Map<String, RouteParamType> routeParameters,
-            boolean flowLayout) {
-        this(title, rolesAllowed, loginRequired, route, lazy, register, menu,
-                children, routeParameters, flowLayout, null);
-    }
-
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

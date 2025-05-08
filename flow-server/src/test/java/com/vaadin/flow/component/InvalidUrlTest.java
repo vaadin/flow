@@ -110,7 +110,7 @@ public class InvalidUrlTest {
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        ui.doInit(request, 0);
+        ui.doInit(request, 0, "foo");
         ui.getRouter().initializeUI(ui, UITest.requestToLocation(request));
 
         session.unlock();

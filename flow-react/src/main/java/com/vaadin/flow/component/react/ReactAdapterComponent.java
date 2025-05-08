@@ -154,24 +154,6 @@ public abstract class ReactAdapterComponent extends Component {
      * @return converted object instance
      * @param <T>
      *            type of result instance
-     * @deprecated use {@link #readFromJson(JsonNode, Class)} instead
-     */
-    @Deprecated
-    protected static <T> T readFromJson(JsonValue jsonValue,
-            Class<T> typeClass) {
-        return JsonUtils.readValue(jsonValue, typeClass);
-    }
-
-    /**
-     * Converts JsonValue into Java object of given type.
-     *
-     * @param jsonValue
-     *            JSON value to convert, not {@code null}
-     * @param typeClass
-     *            type class of converted object instance
-     * @return converted object instance
-     * @param <T>
-     *            type of result instance
      */
     protected static <T> T readFromJson(JsonNode jsonValue,
             Class<T> typeClass) {
@@ -188,41 +170,10 @@ public abstract class ReactAdapterComponent extends Component {
      * @return converted object instance
      * @param <T>
      *            type of result instance
-     * @deprecated use {@link #readFromJson(JsonNode, TypeReference)} instead
-     */
-    @Deprecated
-    protected static <T> T readFromJson(JsonValue jsonValue,
-            TypeReference<T> typeReference) {
-        return JsonUtils.readValue(jsonValue, typeReference);
-    }
-
-    /**
-     * Converts JsonValue into Java object of given type.
-     *
-     * @param jsonValue
-     *            JSON value to convert, not {@code null}
-     * @param typeReference
-     *            type reference of converted object instance
-     * @return converted object instance
-     * @param <T>
-     *            type of result instance
      */
     protected static <T> T readFromJson(JsonNode jsonValue,
             TypeReference<T> typeReference) {
         return JacksonUtils.readValue(jsonValue, typeReference);
-    }
-
-    /**
-     * Converts Java object into JsonValue.
-     *
-     * @param object
-     *            Java object to convert
-     * @return converted JSON value
-     * @deprecated use {@link #writeToJson(Object)}
-     */
-    @Deprecated
-    protected static JsonValue writeAsJson(Object object) {
-        return JsonUtils.writeValue(object);
     }
 
     /**

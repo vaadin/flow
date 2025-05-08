@@ -64,17 +64,6 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotdeploy_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
-        ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
-        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
-                new Properties());
-        Assert.assertTrue(config.frontendHotdeploy());
-        // there is no any property
-        Assert.assertTrue(config.getInitParameters().isEmpty());
-    }
-
-    @Test
     public void reuseDevServer_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.reuseDevServer()).thenReturn(false);
@@ -97,20 +86,6 @@ public class PropertyDeploymentConfigurationTest {
         Assert.assertTrue(config.reuseDevServer());
         // there is no any property
         Assert.assertTrue(config.getInitParameters().isEmpty());
-    }
-
-    @Test
-    public void frontendHotdeploy_valueIsProvidedViaPropertiesAndParent_valueIsAlwaysTrueIfExpressBuildIsOFF() {
-        ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(false);
-
-        Properties properties = new Properties();
-        properties.put(InitParameters.FRONTEND_HOTDEPLOY,
-                Boolean.TRUE.toString());
-        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
-                properties);
-        Assert.assertTrue(config.frontendHotdeploy());
-        Assert.assertEquals(properties, config.getInitParameters());
     }
 
     @Test
@@ -221,34 +196,6 @@ public class PropertyDeploymentConfigurationTest {
         Assert.assertTrue(config.isProductionMode());
         Assert.assertTrue(config.getInitParameters()
                 .containsKey(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE));
-    }
-
-    @Test
-    public void frontendHotdeploy_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
-        ApplicationConfiguration appConfig = mockAppConfig();
-
-        // The property value is provided via API
-        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
-
-        // The property whose value is overridden above via API is different
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.enumeration(Collections
-                        .singleton(InitParameters.FRONTEND_HOTDEPLOY)));
-
-        Mockito.when(appConfig
-                .getStringProperty(InitParameters.FRONTEND_HOTDEPLOY, null))
-                .thenReturn(Boolean.FALSE.toString());
-
-        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
-                new Properties());
-        // Several things are checked: the value from parent is used via API and
-        // deployment configuration doesn't read the property directly even
-        // though its "getInitParameters" method returns the property. Also
-        // "getApplicationProperty" method checks the parent properties which
-        // should not be taken into account here
-        Assert.assertTrue(config.frontendHotdeploy());
-        Assert.assertTrue(config.getInitParameters()
-                .containsKey(InitParameters.FRONTEND_HOTDEPLOY));
     }
 
     @Test
@@ -379,71 +326,6 @@ public class PropertyDeploymentConfigurationTest {
                     + ", so every API method should call parent config and may not use just default implementation of "
                     + AbstractConfiguration.class, AbstractConfiguration.class,
                     method.getDeclaringClass());
-        }
-    }
-
-    @Test
-    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
-            throws IOException {
-        File projectRoot = tempFolder.getRoot();
-        File legacyFrontend = tempFolder
-                .newFolder(FrontendUtils.LEGACY_FRONTEND_DIR);
-
-        File legacyFrontendViews = new File(legacyFrontend,
-                FrontendUtils.HILLA_VIEWS_PATH);
-        if (!legacyFrontendViews.mkdir()) {
-            Assert.fail("Failed to generate legacy frontend views folder");
-        }
-
-        File viewFile = new File(legacyFrontendViews, "MyView.tsx");
-        org.apache.commons.io.FileUtils.writeStringToFile(viewFile,
-                "export default function MyView(){}", "UTF-8");
-
-        ApplicationConfiguration appConfig = new ApplicationConfiguration() {
-
-            @Override
-            public File getProjectFolder() {
-                return projectRoot;
-            }
-
-            @Override
-            public Enumeration<String> getPropertyNames() {
-                return Collections.emptyEnumeration();
-            }
-
-            @Override
-            public VaadinContext getContext() {
-                return null;
-            }
-
-            @Override
-            public boolean isDevModeSessionSerializationEnabled() {
-                return false;
-            }
-
-            @Override
-            public boolean isProductionMode() {
-                return false;
-            }
-
-            @Override
-            public String getStringProperty(String name, String defaultValue) {
-                return defaultValue;
-            }
-
-            @Override
-            public boolean getBooleanProperty(String name,
-                    boolean defaultValue) {
-                return defaultValue;
-            }
-        };
-
-        try (MockedStatic<EndpointRequestUtil> util = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
-            util.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
-            boolean hotdeploy = appConfig.frontendHotdeploy();
-            Assert.assertTrue("Should use the legacy frontend folder",
-                    hotdeploy);
         }
     }
 
