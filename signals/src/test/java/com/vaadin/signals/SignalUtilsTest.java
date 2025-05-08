@@ -25,7 +25,8 @@ public class SignalUtilsTest {
     @Test
     void isValid_callsSignalsIsValid() {
         Signal<?> signal = Mockito.mock(Signal.class);
-        SignalCommand command = new SignalCommand.SetCommand(Id.random(), Id.ZERO, new TextNode("test"));
+        SignalCommand command = new SignalCommand.SetCommand(Id.random(),
+                Id.ZERO, new TextNode("test"));
         Mockito.when(signal.isValid(any())).thenReturn(true);
         assertTrue(SignalUtils.isValid(command, signal));
         Mockito.verify(signal, Mockito.times(1)).isValid(command);
