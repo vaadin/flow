@@ -289,7 +289,7 @@ public class RequestUtil {
      * @return the path with prepended url mapping.
      * @see VaadinConfigurationProperties#getUrlMapping()
      */
-    String applyUrlMapping(String path) {
+    public String applyUrlMapping(String path) {
         return applyUrlMapping(configurationProperties.getUrlMapping(), path);
     }
 
