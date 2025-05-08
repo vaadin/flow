@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -41,7 +40,6 @@ import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 
@@ -204,11 +202,5 @@ public class SpringSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     AuthenticationContext authenticationContext() {
         return new AuthenticationContext();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
-        return new VaadinAwareSecurityContextHolderStrategy();
     }
 }
