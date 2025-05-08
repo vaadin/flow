@@ -594,7 +594,6 @@ public final class VaadinSecurityConfigurer
     }
 
     private void customizeLogout(LogoutConfigurer<HttpSecurity> configurer) {
-        configurer.invalidateHttpSession(true);
         getSharedObject(LogoutSuccessHandler.class).or(() -> {
             if (logoutSuccessUrl != null) {
                 return createSimpleUrlLogoutSuccessHandler(logoutSuccessUrl);
