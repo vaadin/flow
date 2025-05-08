@@ -551,7 +551,8 @@ public final class VaadinSecurityConfigurer
         // customize the authorized requests during their own initialization.
         // Also, it ensures that the anyRequest authorize-rule is configured as
         // late as possible, since it must be the last authorize-rule to be set.
-        if (anyRequestAuthorizeRule != null) {
+        if (enableAuthorizedRequestsConfiguration
+                && anyRequestAuthorizeRule != null) {
             http.authorizeHttpRequests(registry -> {
                 anyRequestAuthorizeRule.accept(registry.anyRequest());
             });

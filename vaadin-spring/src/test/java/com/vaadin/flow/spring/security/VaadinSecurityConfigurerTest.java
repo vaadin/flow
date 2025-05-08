@@ -25,7 +25,12 @@ import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -207,6 +212,26 @@ class VaadinSecurityConfigurerTest {
 
         var nac = http.getSharedObject(NavigationAccessControl.class);
         assertThat(nac.isEnabled()).isEqualTo(enableNavigationAccessControl);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void disableDefaultConfigurers_configurersAreNotApplied() throws Exception {
+        http.with(configurer, c -> {
+            c.enableCsrfConfiguration(false);
+            c.enableLogoutConfiguration(false);
+            c.enableRequestCacheConfiguration(false);
+            c.enableExceptionHandlingConfiguration(false);
+            c.enableAuthorizedRequestsConfiguration(false);
+        }).build();
+
+        assertThat(http.getConfigurer(CsrfConfigurer.class)).isNull();
+        assertThat(http.getConfigurer(LogoutConfigurer.class)).isNull();
+        assertThat(http.getConfigurer(RequestCacheConfigurer.class)).isNull();
+        assertThat(http.getConfigurer(ExceptionHandlingConfigurer.class))
+                .isNull();
+        assertThat(http.getConfigurer(AuthorizeHttpRequestsConfigurer.class))
+                .isNull();
     }
 
     @Route
