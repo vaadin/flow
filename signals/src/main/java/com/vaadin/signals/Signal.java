@@ -220,7 +220,7 @@ public abstract class Signal<T> {
     protected abstract Object usageChangeValue(Data data);
 
     /**
-     * Checks whether the given command is considered valid the validator
+     * Checks whether the given command is considered valid by the validator
      * instance of this signal. In case of composite commands such as
      * transactions, this method will recursively check the validity of all
      * commands in the transaction.

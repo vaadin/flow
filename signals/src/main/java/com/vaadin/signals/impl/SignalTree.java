@@ -342,8 +342,9 @@ public abstract class SignalTree {
 
     /**
      * Subscribes to the published result of processed commands. The subscriber
-     * callback is executed after commands are accepted or rejected. Contrary to
-     * the observers that are attached to a specific node by calling
+     * callback is executed after commands are processed and results are
+     * published (either accepted or rejected). Contrary to the observers that
+     * are attached to a specific node by calling
      * {@link this#observeNextChange}, the <code>subscriber</code> remains
      * active indefinitely until it is removed by executing the returned
      * callback or the tree is destroyed.

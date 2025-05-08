@@ -3,7 +3,7 @@ package com.vaadin.signals;
 import com.vaadin.signals.impl.SignalTree;
 
 /**
- * Utility class for working with signals.
+ * Utility class for accessing/using signals internal API.
  * <p>
  * <strong>Note</strong>: This is internal API for Vaadin platform's internal
  * usages. It is not intended for public use and may change or be removed in
