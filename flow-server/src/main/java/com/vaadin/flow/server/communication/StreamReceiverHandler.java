@@ -17,6 +17,9 @@ package com.vaadin.flow.server.communication;
 
 import javax.naming.SizeLimitExceededException;
 
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
@@ -77,16 +80,10 @@ public class StreamReceiverHandler implements Serializable {
 
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
 
-    static final long DEFAULT_SIZE_MAX = -1;
-
-    static final long DEFAULT_FILE_SIZE_MAX = -1;
-
-    static final long DEFAULT_FILE_COUNT_MAX = 10000;
-
     /* Minimum interval which will be used for streaming progress events. */
     public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
 
-    private long requestSizeMax = DEFAULT_SIZE_MAX;
+    private long requestSizeMax = DEFAULT_REQUEST_SIZE_MAX;
 
     private long fileSizeMax = DEFAULT_FILE_SIZE_MAX;
 

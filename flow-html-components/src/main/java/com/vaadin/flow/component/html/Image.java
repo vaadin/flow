@@ -24,7 +24,9 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
@@ -86,6 +88,27 @@ public class Image extends HtmlContainer
     }
 
     /**
+     * Creates an image with the given download handler callback for providing
+     * an image data and an alternative text.
+     * <p>
+     * The alternative text given to constructor is always set even if it is the
+     * default empty string which is not retained with {@link #setAlt(String)}.
+     *
+     * @param downloadHandler
+     *            the download handler callback that provides an image data, not
+     *            null
+     * @param alt
+     *            the alternate text
+     *
+     * @see #setSrc(AbstractStreamResource)
+     * @see #setAlt(String)
+     */
+    public Image(DownloadHandler downloadHandler, String alt) {
+        setSrc(downloadHandler);
+        setAlt(alt);
+    }
+
+    /**
      * Gets the image URL.
      *
      * @return the image URL
@@ -112,6 +135,19 @@ public class Image extends HtmlContainer
      */
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);
+    }
+
+    /**
+     * Sets the image URL with the URL of the given {@link DownloadHandler}
+     * callback.
+     *
+     * @param downloadHandler
+     *            the download handler resource, not null
+     */
+    public void setSrc(DownloadHandler downloadHandler) {
+        getElement().setAttribute("src",
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler, this.getElement()));
     }
 
     /**

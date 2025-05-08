@@ -11,7 +11,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
-        <version>2.2.1</version>
+        <version>2.2.2</version>
     </parent>
 
     <modules>
@@ -91,7 +91,7 @@
         <hibernate.validator.version>8.0.2.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.18.3</jackson.version>
+        <jackson.version>2.19.0</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
@@ -109,7 +109,7 @@
         <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>9.4.0.alpha1</testbench.version>
-        <jetty.version>12.0.19</jetty.version>
+        <jetty.version>12.0.20</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
         <maven.version>3.9.9</maven.version>

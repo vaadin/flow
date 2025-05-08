@@ -26,7 +26,9 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 /**
  * Component representing a <code>&lt;object&gt;</code> element.
@@ -132,6 +134,47 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
+     * Creates a new <code>&lt;object&gt;</code> component with given
+     * {@link DownloadHandler} callback for providing an object data and type
+     * value.
+     *
+     * @see #setData(AbstractStreamResource)
+     * @see #setType(String)
+     *
+     * @param data
+     *            the callback for providing resource data, not null
+     * @param type
+     *            a type attribute value
+     */
+    public HtmlObject(DownloadHandler data, String type) {
+        setData(data);
+        setType(type);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with given data
+     * resource, type value and "param" components.
+     *
+     * @see #setData(String)
+     * @see #setType(String)
+     * @see #add(Component...)
+     *
+     *
+     * @param data
+     *            a data attribute value
+     * @param type
+     *            a type attribute value
+     * @param params
+     *            parameter components
+     */
+    public HtmlObject(DownloadHandler data, String type, Param... params) {
+        setData(new StreamResourceRegistry.ElementStreamResource(data,
+                this.getElement()));
+        setType(type);
+        add(params);
+    }
+
+    /**
      * Creates a new <code>&lt;object&gt;</code> component with given data and
      * "param" components.
      *
@@ -197,6 +240,19 @@ public class HtmlObject extends HtmlContainer implements
      */
     public void setData(AbstractStreamResource data) {
         getElement().setAttribute("data", data);
+    }
+
+    /**
+     * Sets the URL for {@link DownloadHandler} callback as "data" attribute
+     * value .
+     *
+     * @param data
+     *            a "data" attribute value,, not {@code null}
+     */
+    public void setData(DownloadHandler data) {
+        getElement().setAttribute("data",
+                new StreamResourceRegistry.ElementStreamResource(data,
+                        this.getElement()));
     }
 
     /**

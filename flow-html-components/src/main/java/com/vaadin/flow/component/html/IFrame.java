@@ -21,7 +21,9 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -135,6 +137,18 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     }
 
     /**
+     * Creates a new iframe with download handler callback that provides a
+     * resource from server.
+     *
+     * @param downloadHandler
+     *            the download handler callback that provides a resource from
+     *            server, not null
+     */
+    public IFrame(DownloadHandler downloadHandler) {
+        setSrc(downloadHandler);
+    }
+
+    /**
      * Sets the source of the iframe. If the contents at the src of the IFrame
      * has changed and you want to refresh it in the user's browser, the src
      * does not to be reset. In this case use the #reload() method.
@@ -157,6 +171,21 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);
+    }
+
+    /**
+     * Sets the source of the iframe with a source URL with the URL of the given
+     * {@link DownloadHandler} callback.
+     *
+     * @see #setSrc(String)
+     *
+     * @param downloadHandler
+     *            the download handler resource, not null
+     */
+    public void setSrc(DownloadHandler downloadHandler) {
+        getElement().setAttribute("src",
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler, this.getElement()));
     }
 
     /**

@@ -27,6 +27,8 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.ElementRequestHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -111,6 +113,24 @@ public class Anchor extends HtmlContainer
     }
 
     /**
+     * Creates an anchor component with the given text content and a callback
+     * that handles data download from the server to the client when clicking an
+     * anchor.
+     *
+     * @see #setHref(DownloadHandler)
+     * @see #setText(String)
+     *
+     * @param downloadHandler
+     *            the callback that handles data download, not null
+     * @param text
+     *            the text content to set
+     */
+    public Anchor(DownloadHandler downloadHandler, String text) {
+        setHref(downloadHandler);
+        setText(text);
+    }
+
+    /**
      * Creates an anchor component with the given href and components as
      * children of this component.
      *
@@ -170,6 +190,21 @@ public class Anchor extends HtmlContainer
      */
     public void setHref(AbstractStreamResource href) {
         this.href = href;
+        setRouterIgnore(true);
+        assignHrefAttribute();
+    }
+
+    /**
+     * Sets the URL that this anchor links to and that is bound to a given
+     * {@link DownloadHandler} callback on the server for handling data download
+     * from the server to the client when clicking an anchor.
+     *
+     * @param downloadHandler
+     *            the callback that handles data download, not null
+     */
+    public void setHref(DownloadHandler downloadHandler) {
+        this.href = new StreamResourceRegistry.ElementStreamResource(
+                downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
     }
