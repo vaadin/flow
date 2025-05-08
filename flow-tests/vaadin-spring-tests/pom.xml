@@ -365,9 +365,6 @@
                 <module>test-spring-security-flow-urlmapping/pom-vaadinwebsecurity.xml</module>
                 <module>test-spring-security-flow-reverseproxy/pom-vaadinwebsecurity.xml</module>
                 <module>test-spring-security-flow-methodsecurity/pom-vaadinwebsecurity.xml</module>
-                <module>test-spring-security-flow-standalone-routepathaccesschecker/pom-vaadinwebsecurity.xml</module>
-                <module>test-spring-security-flow-routepathaccesschecker/pom-vaadinwebsecurity.xml</module>
-
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
                 <module>test-spring-filter-packages</module>
