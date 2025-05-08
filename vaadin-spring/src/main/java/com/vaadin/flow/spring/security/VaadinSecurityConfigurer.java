@@ -36,8 +36,10 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -93,6 +95,46 @@ import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSec
  * }
  * </code>
  * </pre>
+ *
+ * <h2>Configurers</h2>
+ * <p>
+ * This configurer applies other configurers to set up the security filter chain
+ * properly for Vaadin applications. The following configurers may be applied:
+ * <ul>
+ * <li>{@link FormLoginConfigurer} if a login view is set with
+ * {@link #loginView(Class)} (or overloads)</li>
+ * <li>{@link OAuth2LoginConfigurer} if a login page for OAuth2 authentication
+ * is set with {@link #oauth2LoginPage(String)} (or overloads)</li>
+ * <li>{@link CsrfConfigurer} to allow internal framework requests (can be
+ * disabled with {@link #enableCsrfConfiguration(boolean)})</li>
+ * <li>{@link LogoutConfigurer} to configure logout handlers for Vaadin
+ * applications (can be disabled with
+ * {@link #enableLogoutConfiguration(boolean)})</li>
+ * <li>{@link RequestCacheConfigurer} to set a request cache designed for Vaadin
+ * applications (can be disabled with
+ * {@link #enableRequestCacheConfiguration(boolean)})</li>
+ * <li>{@link ExceptionHandlingConfigurer} to configure proper exception
+ * handling for Vaadin applications (can be disabled with
+ * {@link #enableExceptionHandlingConfiguration(boolean)})</li>
+ * <li>{@link AuthorizeHttpRequestsConfigurer} to permit internal framework
+ * requests and other public endpoints (can be disabled with
+ * {@link #enableAuthorizedRequestsConfiguration(boolean)})</li>
+ * </ul>
+ * </p>
+ *
+ * <h2>Shared Objects</h2>
+ * <p>
+ * The following beans are shared by this configurer (if not already shared):
+ * <ul>
+ * <li>{@link RequestUtil}</li>
+ * <li>{@link AuthenticationContext}</li>
+ * <li>{@link NavigationAccessControl}</li>
+ * <li>{@link VaadinRolePrefixHolder}</li>
+ * <li>{@link VaadinDefaultRequestCache}</li>
+ * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler}</li>
+ * <li>{@link ClientRegistrationRepository}</li>
+ * </ul>
+ * </p>
  */
 public final class VaadinSecurityConfigurer
         extends AbstractHttpConfigurer<VaadinSecurityConfigurer, HttpSecurity> {
