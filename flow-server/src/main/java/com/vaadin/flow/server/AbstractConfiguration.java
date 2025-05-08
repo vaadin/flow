@@ -42,22 +42,6 @@ public interface AbstractConfiguration extends Serializable {
      */
     boolean isProductionMode();
 
-    /**
-     * Get if the dev server should be enabled. false by default as a
-     * development bundle is used.
-     *
-     * @return true if dev server should be used
-     * @deprecated Use {@link #getMode()} instead
-     */
-    @Deprecated
-    default boolean frontendHotdeploy() {
-        if (isProductionMode()) {
-            return false;
-        }
-        return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
-                FrontendUtils.isHillaUsed(getFrontendFolder()));
-    }
-
     default File getFrontendFolder() {
         String frontendFolderPath = getStringProperty(
                 FrontendUtils.PARAM_FRONTEND_DIR,
@@ -83,8 +67,6 @@ public interface AbstractConfiguration extends Serializable {
             return BundleUtils.isPreCompiledProductionBundle()
                     ? Mode.PRODUCTION_PRECOMPILED_BUNDLE
                     : Mode.PRODUCTION_CUSTOM;
-        } else if (frontendHotdeploy()) {
-            return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
         } else {
             return Mode.DEVELOPMENT_BUNDLE;
         }
