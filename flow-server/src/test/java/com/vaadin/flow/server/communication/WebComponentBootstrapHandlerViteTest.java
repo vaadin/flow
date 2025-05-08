@@ -72,8 +72,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
     private DeploymentConfiguration deploymentConfiguration;
 
-    private VaadinService vaadinService;
-
     @Before
     public void init() throws IOException {
         projectRootFolder = temporaryFolder.newFolder();
@@ -208,7 +206,6 @@ public class WebComponentBootstrapHandlerViteTest {
         session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
-        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -247,7 +244,6 @@ public class WebComponentBootstrapHandlerViteTest {
         session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
-        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -316,7 +312,6 @@ public class WebComponentBootstrapHandlerViteTest {
         session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
-        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -355,7 +350,6 @@ public class WebComponentBootstrapHandlerViteTest {
                 .getDeploymentConfiguration();
         config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                 VAADIN_SERVLET_RESOURCES + "config/stats_no_export.json");
-        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -383,7 +377,6 @@ public class WebComponentBootstrapHandlerViteTest {
         session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
-        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);

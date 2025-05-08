@@ -746,21 +746,6 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
-     * @deprecated use {@link #updateBuildFile(PluginAdapterBuild, boolean)}
-     */
-    @Deprecated
-    public static void updateBuildFile(PluginAdapterBuild adapter) {
-        updateBuildFile(adapter, false);
-    }
-
-    /**
-     * Updates the build info after the bundle has been built by build-frontend.
-     * <p>
-     * Removes the abstract folder paths as they should not be used for prebuilt
-     * bundles and ensures production mode is set to true.
-     *
-     * @param adapter
-     *            - the PluginAdapterBase.
      * @param licenseRequired
      *            {@literal true} if a license was required for the production
      *            build.

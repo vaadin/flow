@@ -186,7 +186,7 @@ public class VaadinSessionTest {
 
         ui.getInternals().setSession(session);
 
-        ui.doInit(vaadinRequest, session.getNextUIid());
+        ui.doInit(vaadinRequest, session.getNextUIid(), "foo");
 
         session.addUI(ui);
 
@@ -428,7 +428,7 @@ public class VaadinSessionTest {
 
         anotherUI.getInternals().setSession(session);
 
-        anotherUI.doInit(vaadinRequest, session.getNextUIid());
+        anotherUI.doInit(vaadinRequest, session.getNextUIid(), "foo");
 
         session.addUI(anotherUI);
 

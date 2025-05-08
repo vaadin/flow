@@ -19,7 +19,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import java.io.IOException;
 
 import org.springframework.core.log.LogMessage;
@@ -35,7 +34,6 @@ import org.springframework.util.StringUtils;
 
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 /**
  * A version of {@link SavedRequestAwareAuthenticationSuccessHandler} that

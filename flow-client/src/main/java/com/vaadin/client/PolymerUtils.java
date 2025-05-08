@@ -386,68 +386,6 @@ public final class PolymerUtils {
     }-*/;
 
     /**
-     * Checks whether the {@code htmlNode} can turn into polymer 2 element
-     * later.
-     * <p>
-     * Lazy loaded dependencies can load Polymer later than the element itself
-     * gets processed by the Flow. This method helps to determine such elements.
-     *
-     * @param htmlNode
-     *            HTML element to check
-     * @return {@code true} if the {@code htmlNode} can become a polymer 2
-     *         element
-     *
-     * @deprecated This is not in use anywhere and can be removed
-     */
-    @Deprecated
-    public static native boolean mayBePolymerElement(Element htmlNode)
-    /*-{
-        return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
-    }-*/;
-
-    /**
-     * Get first element by css query in the shadow root provided.
-     *
-     * @param shadowRoot
-     *            shadow root element
-     * @param cssQuery
-     *            css query
-     * @return first element matching the query or {@code null} for no matches
-     *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM">https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM</a>
-     *
-     * @deprecated This is not in use anywhere and can be removed
-     */
-    @Deprecated
-    public static native Node searchForElementInShadowRoot(
-            ShadowRoot shadowRoot, String cssQuery)
-    /*-{
-        return shadowRoot.querySelector(cssQuery);
-    }-*/;
-
-    /**
-     * Get the element by id from the shadow root provided.
-     *
-     * @param shadowRoot
-     *            shadow root element
-     * @param id
-     *            element id
-     * @return the element with id provided or {@code null} for no matches
-     *
-     * @see <a href=
-     *      "http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html">http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html</a>
-     *
-     * @deprecated This is not in use anywhere and can be removed
-     */
-    @Deprecated
-    public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
-            String id)
-    /*-{
-        return shadowRoot.getElementById(id);
-    }-*/;
-
-    /**
      * Find the DOM element inside shadow root of the {@code shadowRootParent}.
      *
      * @param shadowRootParent
