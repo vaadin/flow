@@ -1,9 +1,9 @@
 {
-  "description": "service worker plugin for Vite",
+  "description": "Internal Vite plugin for building Flow service worker",
   "repository": "vaadin/flow",
-  "name": "@vaadin/vite-service-worker-plugin",
+  "name": "@vaadin/vite-plugin-service-worker",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.ts",
   "private": true,
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
@@ -11,11 +11,14 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "files": [
-    "index.js"
+    "index.ts"
   ],
   "peerDependencies": {
     "vite": "6.x",
     "workbox-build": "7.x",
     "rollup-plugin-brotli": "3.x"
+  },
+  "devDependencies": {
+    "@types/node": "22.x"
   }
 }

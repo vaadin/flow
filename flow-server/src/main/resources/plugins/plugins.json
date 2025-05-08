@@ -6,6 +6,6 @@
     "theme-live-reload-plugin",
     "rollup-plugin-postcss-lit-custom",
     "react-function-location-plugin",
-    "vite-service-worker-plugin"
+    "vite-plugin-service-worker"
   ]
 }

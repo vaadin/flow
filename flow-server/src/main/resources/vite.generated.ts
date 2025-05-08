@@ -27,7 +27,7 @@ import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
-import serviceWorkerPlugin from '#buildFolder#/plugins/vite-service-worker-plugin';
+import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
 
 import { createRequire } from 'module';
 

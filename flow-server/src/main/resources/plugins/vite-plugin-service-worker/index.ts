@@ -1,12 +1,14 @@
+/// <reference types="node" />
 import { resolve } from 'node:path';
-import { build } from 'vite';
-import { getManifest } from 'workbox-build';
+import type { RollupOutput } from 'rollup';
+import { build, InlineConfig, Plugin } from 'vite';
+import { getManifest, ManifestTransform } from 'workbox-build';
 import brotli from 'rollup-plugin-brotli';
 
 const APP_SHELL_URL = '.';
 
-function injectManifestToSWPlugin({ outDir }) {
-  const rewriteManifestIndexHtmlUrl = (manifest) => {
+function injectManifestToSWPlugin({ outDir }: { outDir: string }): Plugin {
+  const rewriteManifestIndexHtmlUrl: ManifestTransform = (manifest) => {
     const indexEntry = manifest.find((entry) => entry.url === 'index.html');
     if (indexEntry) {
       indexEntry.url = APP_SHELL_URL;
@@ -29,6 +31,8 @@ function injectManifestToSWPlugin({ outDir }) {
 
         return code.replace('self.__WB_MANIFEST', JSON.stringify(manifestEntries));
       }
+
+      return;
     }
   };
 }
@@ -38,9 +42,9 @@ function injectManifestToSWPlugin({ outDir }) {
  *
  * @private
  */
-export default function serviceWorkerPlugin({ srcPath }) {
-  let buildConfig;
-  let buildOutput;
+export default function serviceWorkerPlugin({ srcPath }: { srcPath: string }): Plugin {
+  let buildConfig: InlineConfig;
+  let buildOutput: RollupOutput;
   let swSourcePath = resolve(srcPath);
 
   return {
@@ -81,24 +85,28 @@ export default function serviceWorkerPlugin({ srcPath }) {
     },
     async buildStart() {
       if (buildConfig.mode === 'development') {
-        buildOutput = await build(buildConfig);
+        buildOutput = await build(buildConfig) as RollupOutput;
       }
     },
-    resolveId(id, options) {
+    resolveId(id) {
       if (id === '/sw.js') {
         return swSourcePath;
       }
+
+      return;
     },
     async load(id) {
       if (id === swSourcePath) {
         return buildOutput.output[0].code;
       }
+
+      return;
     },
     async closeBundle() {
       if (buildConfig.mode !== 'development') {
         await build({
           ...buildConfig,
-          plugins: [injectManifestToSWPlugin({ outDir: buildConfig.build.outDir }), brotli()]
+          plugins: [injectManifestToSWPlugin({ outDir: buildConfig.build!.outDir! }), brotli()]
         });
       }
     },
