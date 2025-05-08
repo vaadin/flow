@@ -41,8 +41,12 @@ import elemental.json.JsonValue;
  * @param <T>
  *            type of transfer event, e.g.
  *            {@link com.vaadin.flow.server.DownloadHandler}
+ * @param <R>
+ *            type of the subclass implementing this abstract class, needed for
+ *            revealing a proper type when you chain the methods
  */
-public abstract class TransferProgressAwareHandler<T> implements Serializable {
+public abstract class TransferProgressAwareHandler<T, R extends TransferProgressAwareHandler>
+        implements Serializable {
 
     private List<TransferProgressListener> listeners;
 
@@ -66,10 +70,10 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * </ul>
      * <p>
      * The calls of the given listener's methods are wrapped by the
-     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
-     * here when the download or upload request is being handled. Thus, no need
-     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
-     * of the given listener. This needs
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. Thus,
+     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
+     * the implementation of the given listener. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
@@ -90,21 +94,18 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * Adds a listener to be notified when the transfer starts.
      * <p>
      * The call of the given callback is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
-     * here when the download or upload request is being handled. Thus, no need
-     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
-     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. Thus,
+     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
+     * the implementation of the given handler. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
      * @param startHandler
      *            the handler to be called when the transfer starts
      * @return this instance for method chaining
-     * @param <R>
-     *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R whenStart(
-            SerializableRunnable startHandler) {
+    public R whenStart(SerializableRunnable startHandler) {
         Objects.requireNonNull(startHandler, "Start handler cannot be null");
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
@@ -121,10 +122,10 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * Adds a listener to be notified of transfer progress.
      * <p>
      * The call of the given callback is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
-     * here when the download or upload request is being handled. Thus, no need
-     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
-     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. Thus,
+     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
+     * the implementation of the given handler. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
@@ -133,11 +134,8 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * @param progressIntervalInBytes
      *            the interval in bytes for reporting progress
      * @return this instance for method chaining
-     * @param <R>
-     *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R onProgress(
-            SerializableBiConsumer<Long, Long> progressHandler,
+    public R onProgress(SerializableBiConsumer<Long, Long> progressHandler,
             long progressIntervalInBytes) {
         Objects.requireNonNull(progressHandler,
                 "Progress handler cannot be null");
@@ -166,21 +164,18 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * the second is the total number of bytes.
      * <p>
      * The call of the given callback is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
-     * here when the download or upload request is being handled. Thus, no need
-     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
-     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. Thus,
+     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
+     * the implementation of the given handler. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
      * @param progressHandler
      *            the handler to be called with the current and total bytes
      * @return this instance for method chaining
-     * @param <R>
-     *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R onProgress(
-            SerializableBiConsumer<Long, Long> progressHandler) {
+    public R onProgress(SerializableBiConsumer<Long, Long> progressHandler) {
         return onProgress(progressHandler,
                 TransferProgressListener.DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES);
     }
@@ -191,20 +186,18 @@ public abstract class TransferProgressAwareHandler<T> implements Serializable {
      * whether the transfer was completed successfully (true) or not (false).
      * <p>
      * The call of the given callback is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access} to send UI changes defined
-     * here when the download or upload request is being handled. Thus, no need
-     * to call {@link com.vaadin.flow.component.UI#access} in the implementation
-     * of the given handler. This needs
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. Thus,
+     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
+     * the implementation of the given handler. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
      * @param completeOrTerminateHandler
      *            the handler to be called when the transfer is completed
      * @return this instance for method chaining
-     * @param <R>
-     *            the type of this transfer progress aware handler
      */
-    public <R extends TransferProgressAwareHandler<T>> R whenComplete(
+    public R whenComplete(
             SerializableConsumer<Boolean> completeOrTerminateHandler) {
         Objects.requireNonNull(completeOrTerminateHandler,
                 "Complete or terminate handler cannot be null");

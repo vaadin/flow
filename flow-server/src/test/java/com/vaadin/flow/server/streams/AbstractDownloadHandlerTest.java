@@ -50,7 +50,7 @@ public class AbstractDownloadHandlerTest {
     private static final long TRANSFERRED_BYTES = 42L;
     private static final IOException EXCEPTION = new IOException("Test error");
 
-    private AbstractDownloadHandler handler;
+    private AbstractDownloadHandler<?> handler;
     private TransferContext mockContext;
     private TransferProgressListener listener;
 
@@ -84,7 +84,7 @@ public class AbstractDownloadHandlerTest {
         downloadEvent = new DownloadEvent(request, response, session,
                 "download", "application/octet-stream", owner);
 
-        handler = new AbstractDownloadHandler() {
+        handler = new AbstractDownloadHandler<>() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
             }
@@ -162,7 +162,7 @@ public class AbstractDownloadHandlerTest {
     public void customHandlerWithShorthandCompleteListener_noErrorInTransfer_success_errorInTransfer_failure()
             throws IOException {
         AtomicBoolean successAtomic = new AtomicBoolean(false);
-        AbstractDownloadHandler customHandler = new AbstractDownloadHandler() {
+        AbstractDownloadHandler customHandler = new AbstractDownloadHandler<>() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(

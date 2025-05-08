@@ -32,7 +32,8 @@ import com.vaadin.flow.server.VaadinResponse;
  *
  * @since 24.8
  */
-public class InputStreamDownloadHandler extends AbstractDownloadHandler {
+public class InputStreamDownloadHandler
+        extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
     private final SerializableFunction<DownloadEvent, DownloadResponse> handler;
     private final String name;

@@ -35,7 +35,8 @@ import com.vaadin.flow.server.VaadinServletService;
  *
  * @since 24.8
  */
-public class ServletResourceDownloadHandler extends AbstractDownloadHandler {
+public class ServletResourceDownloadHandler
+        extends AbstractDownloadHandler<ServletResourceDownloadHandler> {
 
     private final String path;
     private final String name;

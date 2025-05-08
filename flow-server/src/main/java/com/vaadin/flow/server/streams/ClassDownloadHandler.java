@@ -36,7 +36,8 @@ import com.vaadin.flow.server.TransferProgressListener;
  *
  * @since 24.8
  */
-public class ClassDownloadHandler extends AbstractDownloadHandler {
+public class ClassDownloadHandler
+        extends AbstractDownloadHandler<ClassDownloadHandler> {
 
     private final Class<?> clazz;
     private final String resourceName;
