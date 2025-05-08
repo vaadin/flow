@@ -219,7 +219,21 @@ public abstract class Signal<T> {
      */
     protected abstract Object usageChangeValue(Data data);
 
-    private boolean isValid(SignalCommand command) {
+    /**
+     * Checks whether the given command is considered valid the validator
+     * instance of this signal. In case of composite commands such as
+     * transactions, this method will recursively check the validity of all
+     * commands in the transaction.
+     * <p>
+     * <strong>Note</strong>: This does not evaluate conditions such as value
+     * condition or position condition.
+     *
+     * @param command
+     *            the command to check, not <code>null</code>
+     * @return <code>true</code> if the command is valid, <code>false</code>
+     *         otherwise
+     */
+    boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
             return true;
         } else if (command instanceof SignalCommand.TransactionCommand tx) {

@@ -1,10 +1,8 @@
 package com.vaadin.signals.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -89,6 +87,8 @@ public abstract class SignalTree {
     private final ReentrantLock lock = new ReentrantLock();
 
     private final Type type;
+
+    private final Set<BiConsumer<SignalCommand, CommandResult>> subscribers = new HashSet<>();
 
     /**
      * Creates a new signal tree with the given type.
@@ -333,5 +333,39 @@ public abstract class SignalTree {
      */
     public Type type() {
         return type;
+    }
+
+    /**
+     * Subscribes to the published result of processed commands. The subscriber
+     * callback is executed after commands are accepted or rejected. Contrary to
+     * the observers that are attached to a specific node by calling
+     * {@link this#observeNextChange}, the <code>subscriber</code> remains
+     * active indefinitely until it is removed by executing the returned
+     * callback or the tree is destroyed.
+     *
+     * @param subscriber
+     *            the callback to run when a command is confirmed, not
+     *            <code>null</code>
+     * @return a callback that can be used to remove the subscriber before it's
+     *         triggered, not <code>null</code>
+     */
+    public Runnable subscribeToPublished(
+            BiConsumer<SignalCommand, CommandResult> subscriber) {
+        assert subscriber != null;
+        subscribers.add(subscriber);
+        return () -> subscribers.remove(subscriber);
+    }
+
+    /**
+     * Notifies all subscribers about the result of a processed command.
+     *
+     * @param command
+     *            the command that was processed, not <code>null</code>
+     * @param result
+     *            the result of the command, not <code>null</code>
+     */
+    protected void notifySubscribers(SignalCommand command,
+            CommandResult result) {
+        subscribers.forEach(subscriber -> subscriber.accept(command, result));
     }
 }

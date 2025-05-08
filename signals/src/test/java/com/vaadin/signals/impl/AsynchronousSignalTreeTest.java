@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -116,5 +117,83 @@ public class AsynchronousSignalTreeTest {
                 TestUtil.readSubmittedRootValue(tree));
         assertEquals(new TextNode("Submitted"),
                 TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void subscribeToPublished_noChanges_doesNotReceive() {
+        AsyncTestTree tree = new AsyncTestTree();
+        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToPublished((event, result) -> resultContainer
+                .set(Map.entry(event, result)));
+
+        assertNull(resultContainer.get());
+    }
+
+    @Test
+    void subscribeToPublished_changesSubmittedButNotConfirmed_doesNotReceive() {
+        AsyncTestTree tree = new AsyncTestTree();
+        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToPublished((event, result) -> resultContainer
+                .set(Map.entry(event, result)));
+
+        SignalCommand command = TestUtil.writeRootValueCommand("submitted");
+        tree.commitSingleCommand(command);
+
+        assertNull(resultContainer.get());
+        assertEquals(new TextNode("submitted"),
+                TestUtil.readSubmittedRootValue(tree));
+    }
+
+    @Test
+    void subscribeToPublished_changesConfirmed_receives() {
+        AsyncTestTree tree = new AsyncTestTree();
+        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToPublished((event, result) -> resultContainer
+                .set(Map.entry(event, result)));
+
+        SignalCommand command = TestUtil.writeRootValueCommand("submitted");
+        tree.commitSingleCommand(command);
+
+        assertNull(resultContainer.get());
+
+        // Directly confirm another command:
+        tree.confirm(List.of(TestUtil.writeRootValueCommand("confirmed")));
+
+        assertEquals(new TextNode("confirmed"),
+                ((SignalCommand.SetCommand) resultContainer.get().getKey())
+                        .value());
+
+        tree.confirmSubmitted();
+        assertEquals(new TextNode("submitted"),
+                ((SignalCommand.SetCommand) resultContainer.get().getKey())
+                        .value());
+
+        resultContainer.set(null);
+
+        // No new things to confirm, no events to publish:
+        tree.confirmSubmitted();
+        assertNull(resultContainer.get());
+    }
+
+    @Test
+    void subscribeToPublished_failingCommandConfirmed_receives() {
+        AsyncTestTree tree = new AsyncTestTree();
+        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToPublished((event, result) -> resultContainer
+                .set(Map.entry(event, result)));
+
+        SignalCommand command = TestUtil.failingCommand();
+        tree.commitSingleCommand(command);
+
+        assertNull(resultContainer.get());
+        assertEquals(List.of(List.of(command)), tree.submitted);
+
+        tree.confirmSubmitted();
+
+        assertInstanceOf(Reject.class, resultContainer.get().getValue());
     }
 }

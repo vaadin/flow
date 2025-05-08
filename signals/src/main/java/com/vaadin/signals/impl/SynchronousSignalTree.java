@@ -72,12 +72,19 @@ public class SynchronousSignalTree extends SignalTree {
 
                 notifyObservers(oldSnapshot, snapshot);
                 changes.notifyResultHandlers(results);
+                changes.getCommands()
+                        .forEach(command -> notifySubscribers(command,
+                                results.get(command.commandId())));
             }
 
             @Override
             public void markAsAborted() {
-                changes.notifyResultHandlers(CommandResult.rejectAll(results,
-                        "Transaction aborted"));
+                var rejected = CommandResult.rejectAll(results,
+                        "Transaction aborted");
+                changes.notifyResultHandlers(rejected);
+                changes.getCommands()
+                        .forEach(command -> notifySubscribers(command,
+                                rejected.get(command.commandId())));
             }
         };
     }
