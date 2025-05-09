@@ -35,9 +35,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.DownloadEvent;
-import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServlet;
@@ -101,7 +98,7 @@ public class ServletResourceDownloadHandlerTest {
                 PATH_TO_FILE, "download", new TransferProgressListener() {
                     @Override
                     public void onStart(TransferContext context) {
-                        Assert.assertEquals(-1, context.totalBytes());
+                        Assert.assertEquals(-1, context.contentLength());
                         Assert.assertEquals("download", context.fileName());
                         invocations.add("onStart");
                     }
@@ -118,7 +115,7 @@ public class ServletResourceDownloadHandlerTest {
                     @Override
                     public void onComplete(TransferContext context,
                             long transferredBytes) {
-                        Assert.assertEquals(-1, context.totalBytes());
+                        Assert.assertEquals(-1, context.contentLength());
                         Assert.assertEquals(165000, transferredBytes);
                         Assert.assertEquals("download", context.fileName());
                         invocations.add("onComplete");

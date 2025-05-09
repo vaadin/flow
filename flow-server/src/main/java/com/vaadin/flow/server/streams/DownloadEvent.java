@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,6 +27,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Class containing data on requested client download.
@@ -132,6 +135,15 @@ public record DownloadEvent(VaadinRequest request, VaadinResponse response,
      */
     public Component getOwningComponent() {
         return owningElement.getComponent().orElse(null);
+    }
+
+    /**
+     * Get the owning element for the download related to this event.
+     *
+     * @return owning element
+     */
+    public Element getOwningElement() {
+        return owningElement;
     }
 
     /**

@@ -23,9 +23,7 @@ import java.io.UncheckedIOException;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.TransferProgressListener;
 
 /**
  * Download handler for serving a class resource.

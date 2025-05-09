@@ -24,7 +24,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.ElementRequestHandler;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinRequest;

@@ -21,7 +21,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 

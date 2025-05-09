@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.server.TransferProgressListener;
 
 /**
  * Abstract class for file upload handler.

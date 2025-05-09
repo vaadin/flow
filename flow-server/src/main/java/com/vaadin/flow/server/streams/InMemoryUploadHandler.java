@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.server.TransferProgressListener;
 
 /**
  * Upload handler for storing the upload in-memory. Data is returned as a
