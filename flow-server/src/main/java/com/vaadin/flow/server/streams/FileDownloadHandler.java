@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
-import com.vaadin.flow.server.DownloadEvent;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
 
 /**

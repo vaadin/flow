@@ -38,8 +38,6 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.DownloadEvent;
-import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -90,7 +88,7 @@ public class AbstractDownloadHandlerTest {
             }
         };
         mockContext = Mockito.mock(TransferContext.class);
-        Mockito.when(mockContext.totalBytes()).thenReturn(TOTAL_BYTES);
+        Mockito.when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
         listener = Mockito.mock(TransferProgressListener.class);
 
         Mockito.when(mockContext.owningElement()).thenReturn(owner);

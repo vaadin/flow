@@ -25,6 +25,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
