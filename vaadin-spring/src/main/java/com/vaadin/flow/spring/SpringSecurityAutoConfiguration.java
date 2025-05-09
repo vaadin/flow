@@ -34,6 +34,7 @@ import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
 import com.vaadin.flow.spring.security.RequestUtil;
@@ -197,4 +198,9 @@ public class SpringSecurityAutoConfiguration {
                 .map(GrantedAuthorityDefaults::getRolePrefix).orElse(null));
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    AuthenticationContext authenticationContext() {
+        return new AuthenticationContext();
+    }
 }
