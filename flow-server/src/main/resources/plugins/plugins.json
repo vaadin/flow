@@ -5,6 +5,7 @@
     "theme-loader",
     "theme-live-reload-plugin",
     "rollup-plugin-postcss-lit-custom",
-    "react-function-location-plugin"
+    "react-function-location-plugin",
+    "vite-plugin-service-worker"
   ]
 }
