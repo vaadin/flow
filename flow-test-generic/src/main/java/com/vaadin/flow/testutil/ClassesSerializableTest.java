@@ -219,8 +219,11 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.TransferContext",
+                "com\\.vaadin\\.flow\\.server\\.DownloadEvent",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.StreamRequestHandler\\$PathData",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadEvent",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.UploadMetadata",
 
                 "com\\.vaadin\\.flow\\.server\\.DevModeHandler(\\$.*)?",
                 // Frontend tasks classes which are not stored anywhere but used

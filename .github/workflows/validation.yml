@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: $HEAD_REF || $REF_NAME
+  group: ${{ github.head_ref }} || ${{ github.ref_name }}
   cancel-in-progress: true
 env:
   HEAD_REF: ${{ github.head_ref }}

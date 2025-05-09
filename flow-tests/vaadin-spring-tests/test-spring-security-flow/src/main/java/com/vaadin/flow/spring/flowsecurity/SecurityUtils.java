@@ -16,8 +16,6 @@ public class SecurityUtils {
     @Autowired
     private UserInfoService userInfoService;
     @Autowired
-    private SecurityConfig securityConfig;
-    @Autowired
     private AuthenticationContext authenticationContext;
 
     public UserInfo getAuthenticatedUserInfo() {

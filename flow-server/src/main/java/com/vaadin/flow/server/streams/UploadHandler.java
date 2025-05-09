@@ -16,12 +16,12 @@
 
 package com.vaadin.flow.server.streams;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,11 +36,10 @@ import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.server.ElementRequestHandler;
-import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.UploadException;
+import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -228,9 +227,106 @@ public interface UploadHandler extends ElementRequestHandler {
      * <p>
      * Default is 10000.
      *
-     * @return the maxiumum numner of files allowed, -1 means no limit
+     * @return the maximum number of files allowed, -1 means no limit
      */
     default long getFileCountMax() {
         return DEFAULT_FILE_COUNT_MAX;
+    }
+
+    /**
+     * Generate a upload handler for storing upload stream into a file.
+     *
+     * @param successHandler
+     *            consumer to be called when upload successfully completes
+     * @param fileFactory
+     *            factory for generating file to write to
+     * @return file upload handler
+     */
+    static FileUploadHandler toFile(
+            SerializableBiConsumer<UploadMetadata, File> successHandler,
+            FileFactory fileFactory) {
+        return new FileUploadHandler(successHandler, fileFactory);
+    }
+
+    /**
+     * Generate a upload handler for storing upload stream into a file.
+     *
+     * @param successHandler
+     *            consumer to be called when upload successfully completes
+     * @param fileFactory
+     *            factory for generating file to write to
+     * @param listener
+     *            listener for transfer progress events
+     * @return file upload handler instance with progress listener
+     */
+    static FileUploadHandler toFile(
+            SerializableBiConsumer<UploadMetadata, File> successHandler,
+            FileFactory fileFactory, TransferProgressListener listener) {
+        FileUploadHandler fileUploadHandler = new FileUploadHandler(
+                successHandler, fileFactory);
+        fileUploadHandler.addTransferProgressListener(listener);
+        return fileUploadHandler;
+    }
+
+    /**
+     * Generate upload handler for storing upload stream into a temporary file.
+     *
+     * @param successHandler
+     *            consumer to be called when upload successfully completes
+     * @return temporary file upload handler instance
+     */
+    static TemporaryFileUploadHandler toTempFile(
+            SerializableBiConsumer<UploadMetadata, File> successHandler) {
+        return new TemporaryFileUploadHandler(successHandler);
+    }
+
+    /**
+     * Generate upload handler for storing upload stream into a temporary file.
+     *
+     * @param successHandler
+     *            consumer to be called when upload successfully completes
+     * @param listener
+     *            listener for transfer progress events
+     * @return temporary file upload handler instance with progress listener
+     */
+    static TemporaryFileUploadHandler toTempFile(
+            SerializableBiConsumer<UploadMetadata, File> successHandler,
+            TransferProgressListener listener) {
+        TemporaryFileUploadHandler temporaryFileUploadHandler = new TemporaryFileUploadHandler(
+                successHandler);
+        temporaryFileUploadHandler.addTransferProgressListener(listener);
+        return temporaryFileUploadHandler;
+    }
+
+    /**
+     * Generate upload handler for storing download into in-memory
+     * {@code byte[]}.
+     *
+     * @param successHandler
+     *            consumer to be called when upload successfully completes
+     * @return in-memory upoload handler
+     */
+    static InMemoryUploadHandler inMemory(
+            SerializableBiConsumer<UploadMetadata, byte[]> successHandler) {
+        return new InMemoryUploadHandler(successHandler);
+    }
+
+    /**
+     * Generate upload handler for storing download into in-memory
+     * {@code byte[]}.
+     *
+     * @param successHandler
+     *            consumer to be called when upload successfully completes
+     * @param listener
+     *            listener for transfer progress events
+     * @return in-memory upoload handler with progress listener
+     */
+    static InMemoryUploadHandler inMemory(
+            SerializableBiConsumer<UploadMetadata, byte[]> successHandler,
+            TransferProgressListener listener) {
+        InMemoryUploadHandler inMemoryUploadHandler = new InMemoryUploadHandler(
+                successHandler);
+        inMemoryUploadHandler.addTransferProgressListener(listener);
+        return inMemoryUploadHandler;
     }
 }
