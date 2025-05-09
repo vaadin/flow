@@ -62,8 +62,7 @@ public class InMemoryUploadHandler
     protected TransferContext getTransferContext(UploadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
-                transferEvent.getFileName(),
-                transferEvent.getOwningComponent().getElement(),
+                transferEvent.getFileName(), transferEvent.getOwningElement(),
                 transferEvent.getFileSize());
     }
 }

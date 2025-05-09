@@ -78,8 +78,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
     protected TransferContext getTransferContext(UploadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
-                transferEvent.getFileName(),
-                transferEvent.getOwningComponent().getElement(),
+                transferEvent.getFileName(), transferEvent.getOwningElement(),
                 transferEvent.getFileSize());
     }
 }

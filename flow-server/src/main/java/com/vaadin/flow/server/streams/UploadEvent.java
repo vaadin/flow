@@ -206,6 +206,15 @@ public class UploadEvent {
     }
 
     /**
+     * Get the owning element for the upload related to this event.
+     *
+     * @return owning element
+     */
+    public Element getOwningElement() {
+        return owningElement;
+    }
+
+    /**
      * Return the UI for this upload event.
      *
      * @return UI for upload event
