@@ -120,7 +120,6 @@ import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSec
  * requests and other public endpoints (can be disabled with
  * {@link #enableAuthorizedRequestsConfiguration(boolean)})</li>
  * </ul>
- * </p>
  *
  * <h2>Shared Objects</h2>
  * <p>
@@ -134,7 +133,6 @@ import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSec
  * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler}</li>
  * <li>{@link ClientRegistrationRepository}</li>
  * </ul>
- * </p>
  */
 public final class VaadinSecurityConfigurer
         extends AbstractHttpConfigurer<VaadinSecurityConfigurer, HttpSecurity> {
