@@ -20,5 +20,5 @@ package com.vaadin.flow.server.streams;
  * Metadata for successful upload.
  */
 public record UploadMetadata(String fileName, String contentType,
-        long fileSize) {
+        long contentLength) {
 }

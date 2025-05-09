@@ -67,6 +67,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
                         getTransferContext(event), getListeners());
             }
         } catch (IOException e) {
+            notifyError(event, e);
             throw new UncheckedIOException(e);
         }
         successHandler.accept(new UploadMetadata(event.getFileName(),

@@ -51,6 +51,7 @@ public class InMemoryUploadHandler
                 data = outputStream.toByteArray();
             }
         } catch (IOException e) {
+            notifyError(event, e);
             throw new UncheckedIOException(e);
         }
         successHandler.accept(new UploadMetadata(event.getFileName(),
