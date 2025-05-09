@@ -222,25 +222,6 @@ public class UI extends Component
      *            the initialization request
      * @param uiId
      *            the id of the new ui
-     *
-     * @see #getUIId()
-     * @deprecated Use {@link #doInit(VaadinRequest, int, String)} instead
-     */
-    @Deprecated
-    public void doInit(VaadinRequest request, int uiId) {
-        doInit(request, uiId,
-                getSession().getService().getMainDivId(getSession(), request));
-    }
-
-    /**
-     * Internal initialization method, should not be overridden. This method is
-     * not declared as final because that would break compatibility with e.g.
-     * CDI.
-     *
-     * @param request
-     *            the initialization request
-     * @param uiId
-     *            the id of the new ui
      * @param appId
      *            the application id
      *
@@ -1826,33 +1807,6 @@ public class UI extends Component
      * Connect a client with the server side UI. This method is invoked each
      * time client router navigates to a server route.
      *
-     * @param flowRoutePath
-     *            flow route path that should be attached to the client element
-     * @param flowRouteQuery
-     *            flow route query string
-     * @param appShellTitle
-     *            client side title of the application shell
-     * @param historyState
-     *            client side history state value
-     * @param trigger
-     *            navigation trigger
-     *
-     * @deprecated(forRemoval=true) method is not enabled for client side
-     *                              anymore and connectClient is triggered by
-     *                              DOM event, to be removed in next major 25
-     */
-    @Deprecated
-    public void connectClient(String flowRoutePath, String flowRouteQuery,
-            String appShellTitle, JsonValue historyState, String trigger) {
-        browserNavigate(new BrowserNavigateEvent(this, false, flowRoutePath,
-                flowRouteQuery, appShellTitle,
-                JacksonUtils.mapElemental(historyState), trigger));
-    }
-
-    /**
-     * Connect a client with the server side UI. This method is invoked each
-     * time client router navigates to a server route.
-     *
      * @param event
      *            the event from the browser
      */
@@ -1930,28 +1884,6 @@ public class UI extends Component
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }
-    }
-
-    /**
-     * Check that the view can be leave. This method is invoked when the client
-     * router tries to navigate to a client route while the current route is a
-     * server route.
-     * <p>
-     * This is only called when client route navigates from a server to a client
-     * view.
-     *
-     * @param route
-     *            the route that is navigating to.
-     * @param query
-     *            route query string
-     * @deprecated(forRemoval=true) method is not enabled for client side
-     *                              anymore and leave navigation is triggered by
-     *                              DOM event, to be removed in next major 25
-     */
-    @Deprecated
-    public void leaveNavigation(String route, String query) {
-        leaveNavigation(
-                new BrowserLeaveNavigationEvent(this, false, route, query));
     }
 
     /**

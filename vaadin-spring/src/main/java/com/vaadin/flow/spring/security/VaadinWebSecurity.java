@@ -19,9 +19,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import javax.crypto.SecretKey;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -66,13 +64,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -654,34 +650,6 @@ public abstract class VaadinWebSecurity {
     }
 
     /**
-     * Vaadin views access checker bean.
-     * <p>
-     * This getter can be used in implementing class to override logic of
-     * <code>VaadinWebSecurity.setLoginView</code> methods and call
-     * {@link ViewAccessChecker} methods explicitly.
-     * <p>
-     * Note that this bean is a field-autowired, thus this getter returns
-     * <code>null</code> when called from the constructor of implementing class.
-     *
-     * @return {@link ViewAccessChecker} bean used by this VaadinWebSecurity
-     *         configuration.
-     * @deprecated ViewAccessChecker is not used anymore by VaadinWebSecurity,
-     *             and has been replaced by {@link NavigationAccessControl}.
-     *             Calling this method will get a stub implementation that
-     *             delegates to the {@link NavigationAccessControl} instance.
-     */
-    @Deprecated(forRemoval = true, since = "24.3")
-    protected ViewAccessChecker getViewAccessChecker() {
-        LoggerFactory.getLogger(getClass()).warn(
-                "ViewAccessChecker is not used anymore by VaadinWebSecurity "
-                        + "and has been replaced by NavigationAccessControl. "
-                        + "'VaadinWebSecurity.getViewAccessChecker()' returns a stub instance that "
-                        + "delegates calls to NavigationAccessControl. "
-                        + "Usages of 'getViewAccessChecker()' should be replaced by calls to 'getNavigationAccessControl()'.");
-        return new DeprecateViewAccessCheckerDelegator(accessControl);
-    }
-
-    /**
      * Vaadin navigation access control bean.
      * <p>
      * This getter can be used in implementing class to override logic of
@@ -765,36 +733,4 @@ public abstract class VaadinWebSecurity {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
-
-    private static class DeprecateViewAccessCheckerDelegator
-            extends ViewAccessChecker {
-
-        private final NavigationAccessControl accessControl;
-
-        public DeprecateViewAccessCheckerDelegator(
-                NavigationAccessControl acc) {
-            this.accessControl = acc;
-        }
-
-        @Override
-        public void enable() {
-            accessControl.setEnabled(true);
-        }
-
-        @Override
-        public void setLoginView(Class<? extends Component> loginView) {
-            accessControl.setLoginView(loginView);
-        }
-
-        @Override
-        public void setLoginView(String loginUrl) {
-            accessControl.setLoginView(loginUrl);
-        }
-
-        @Override
-        public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-            accessControl.beforeEnter(beforeEnterEvent);
-        }
-    }
-
 }

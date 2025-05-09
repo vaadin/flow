@@ -29,13 +29,9 @@ import org.springframework.core.io.Resource;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.SessionDestroyListener;
 import com.vaadin.flow.server.UIInitListener;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * Spring application context aware Vaadin servlet service implementation.
@@ -96,13 +92,6 @@ public class SpringVaadinServletService extends VaadinServletService {
         Map<String, UIInitListener> uiInitListeners = context
                 .getBeansOfType(UIInitListener.class);
         uiInitListeners.values().forEach(this::addUIInitListener);
-    }
-
-    // This method should be removed when the deprecated class
-    // SpringVaadinSession is removed
-    @Override
-    protected VaadinSession createVaadinSession(VaadinRequest request) {
-        return new SpringVaadinSession(this);
     }
 
     @Override
