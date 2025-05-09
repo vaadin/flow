@@ -324,7 +324,6 @@
                 <module>test-no-theme</module>
                 <!-- move theme tests to the end, because theme switch live reload-->
                 <!-- test impacts startup test-->
-                <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
                 <module>test-frontend</module>
                 <module>test-custom-frontend-directory</module>
