@@ -442,7 +442,7 @@ public final class PolymerUtils {
      */
     @Deprecated
     public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
-                                                         String id)
+            String id)
     /*-{
         return shadowRoot.getElementById(id);
     }-*/;
