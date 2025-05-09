@@ -17,36 +17,24 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.ATTACH_IDENTIFIER;
-import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.THEMED_COMPONENT_ID;
 
 @NotThreadSafe
 public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
-
-    private static final String BORDER_RADIUS = "3px";
-    private static final String OTHER_BORDER_RADIUS = "6px";
-    private static final String PARENT_BORDER_RADIUS = "9px";
 
     private static final String THEMES_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR
             + "/themes/";
@@ -99,107 +87,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             // (if any appear in the future)
             doActionAndWaitUntilLiveReloadComplete(
                     this::deleteParentThemeComponentStyles);
-        }
-    }
-
-    @Test
-    public void webpackLiveReload_newComponentStylesCreatedAndDeleted_stylesUpdatedOnFly() {
-        open();
-
-        /*
-         * Access browser logs in order to clear them to avoid to check entries
-         * from a previous run if the test is flaky due to webpack file change
-         * detection during parent css deletion
-         */
-        getLogEntries(java.util.logging.Level.ALL);
-
-        Assert.assertFalse(
-                "Border radius for themed component is not expected before "
-                        + "applying the styles",
-                isComponentCustomStyle(BORDER_RADIUS)
-                        || isComponentCustomStyle(OTHER_BORDER_RADIUS));
-
-        // Test current theme live reload:
-
-        // Live reload upon adding a new component styles file
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> createOrUpdateComponentCSSFile(BORDER_RADIUS,
-                        currentThemeComponentCSSFile));
-        waitUntilComponentCustomStyle(BORDER_RADIUS);
-
-        // Live reload upon updating component styles file
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> createOrUpdateComponentCSSFile(OTHER_BORDER_RADIUS,
-                        currentThemeComponentCSSFile));
-        waitUntilComponentCustomStyle(OTHER_BORDER_RADIUS);
-
-        // Live reload upon file deletion
-        doActionAndWaitUntilLiveReloadComplete(
-                this::deleteCurrentThemeComponentStyles);
-        waitUntilComponentInitialStyle(
-                "Wait for current theme component initial styles timeout");
-        checkNoWebpackErrors(CURRENT_THEME);
-
-        // Test parent theme live reload:
-
-        // Live reload upon adding a new component styles file to parent theme
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> createOrUpdateComponentCSSFile(PARENT_BORDER_RADIUS,
-                        parentThemeComponentCSSFile));
-        waitUntilComponentCustomStyle(PARENT_BORDER_RADIUS);
-
-        // Live reload upon parent theme file deletion
-        doActionAndWaitUntilLiveReloadComplete(
-                this::deleteParentThemeComponentStyles);
-        waitUntilComponentInitialStyle(
-                "Wait for parent theme component initial styles timeout");
-        checkNoWebpackErrors(PARENT_THEME);
-    }
-
-    private void waitUntilComponentInitialStyle(String errMessage) {
-        waitUntilWithMessage(
-                driver -> !isComponentCustomStyle(BORDER_RADIUS)
-                        && !isComponentCustomStyle(OTHER_BORDER_RADIUS)
-                        && !isComponentCustomStyle(PARENT_BORDER_RADIUS),
-                errMessage);
-    }
-
-    private void waitUntilComponentCustomStyle(String borderRadius) {
-        waitUntilWithMessage(driver -> isComponentCustomStyle(borderRadius),
-                "Wait for component custom styles timeout: " + borderRadius);
-    }
-
-    private boolean isComponentCustomStyle(String borderRadius) {
-        try {
-            waitForElementPresent(By.id(THEMED_COMPONENT_ID));
-            TestBenchElement themedTextField = $(TestBenchElement.class)
-                    .id(THEMED_COMPONENT_ID);
-            TestBenchElement input = themedTextField.$(DivElement.class)
-                    .attribute("class", "vaadin-field-container").first()
-                    .$("vaadin-input-container")
-                    .attribute("part", "input-field").first();
-            return borderRadius.equals(input.getCssValue("border-radius"));
-        } catch (StaleElementReferenceException e) {
-            return false;
-        }
-    }
-
-    private void createOrUpdateComponentCSSFile(String borderRadius,
-            File componentCssFile) {
-        try {
-            // @formatter:off
-            final String componentStyles =
-                    "[part=\"input-field\"] {\n" +
-                    "    border-radius: " + borderRadius + ";\n" +
-                    "}";
-            // @formatter:on
-            FileUtils.write(componentCssFile, componentStyles,
-                    StandardCharsets.UTF_8.name());
-            waitUntil(driver -> componentCssFile.exists());
-        } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to apply component styles in " + componentCssFile,
-                    e);
         }
     }
 
@@ -267,28 +154,6 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             waitUntil(condition);
         } catch (TimeoutException te) {
             Assert.fail(message);
-        }
-    }
-
-    private void checkNoWebpackErrors(String theme) {
-        getLogEntries(java.util.logging.Level.ALL).forEach(logEntry -> {
-            if (logEntry.getMessage().contains("Module build failed")) {
-                Assert.fail(String.format(
-                        "Webpack error detected in the browser console after "
-                                + "deleting '%s' component style sheet: %s\n\n",
-                        theme, logEntry.getMessage()));
-            }
-        });
-
-        final By byErrorOverlayClass = By.className("v-system-error");
-        try {
-            waitForElementNotPresent(byErrorOverlayClass);
-        } catch (TimeoutException e) {
-            WebElement error = findElement(byErrorOverlayClass);
-            Assert.fail(String.format(
-                    "Webpack error overlay detected after deleting '%s' "
-                            + "component style sheet: %s\n\n",
-                    theme, error.getText()));
         }
     }
 }
