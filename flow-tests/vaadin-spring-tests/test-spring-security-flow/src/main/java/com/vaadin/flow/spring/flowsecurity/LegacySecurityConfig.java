@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,7 +22,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -34,33 +33,25 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
+import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
-import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @EnableWebSecurity
 @Configuration
-@Profile("default")
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
-public class SecurityConfig {
+@Profile("legacy-vaadin-web-security")
+public class LegacySecurityConfig extends VaadinWebSecurity {
 
-    private final UserInfoService userInfoService;
+    @Autowired
+    private UserInfoService userInfoService;
 
-    private final ServletContext servletContext;
+    @Autowired
+    private ServletContext servletContext;
 
-    private final VaadinConfigurationProperties vaadinConfigurationProperties;
-
-    public SecurityConfig(UserInfoService userInfoService,
-            ServletContext servletContext,
-            VaadinConfigurationProperties vaadinConfigurationProperties) {
-        this.userInfoService = userInfoService;
-        this.servletContext = servletContext;
-        this.vaadinConfigurationProperties = vaadinConfigurationProperties;
-    }
+    @Autowired
+    private VaadinConfigurationProperties vaadinConfigurationProperties;
 
     public String getRootUrl() {
         return getRootUrl(true);
@@ -85,37 +76,39 @@ public class SecurityConfig {
         return getRootUrl();
     }
 
-    @Bean
-    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
-                .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(
-                        RequestUtil.antMatchers("/public/**", "/error"))
-                .permitAll());
+                    .hasAnyRole(ROLE_ADMIN)
+                .requestMatchers(antMatchers("/public/**", "/error"))
+                    .permitAll());
 
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/switchUser"))
-                .hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/impersonate/exit"))
-                .hasRole("PREVIOUS_ADMINISTRATOR"));
-        http.logout(cfg -> cfg.logoutRequestMatcher(new AntPathRequestMatcher(
-                getRootUrl(false) + "doLogout", "GET")));
-        http.with(vaadin(), cfg -> {
-            cfg.loginView(LoginView.class)
-                    .logoutSuccessHandler(this::onLogoutOnNonVaadinUrl)
-                    .addLogoutHandler((request, response, authentication) -> {
-                        if (!request.getRequestURI().endsWith("doLogout")) {
-                            UI ui = UI.getCurrent();
-                            ui.accessSynchronously(() -> ui.getPage()
-                                    .setLocation(UrlUtil.getServletPathRelative(
-                                            getLogoutSuccessUrl(), request)));
-                        }
-                    });
-        });
-        return http.build();
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/switchUser")).hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/impersonate/exit")).hasRole("PREVIOUS_ADMINISTRATOR"));
+
+        // @formatter:on
+        super.configure(http);
+        if (getLogoutSuccessUrl().equals("/")) {
+            // Test the default url with empty context path
+            setLoginView(http, LoginView.class);
+        } else {
+            setLoginView(http, LoginView.class, getLogoutSuccessUrl());
+        }
+
+        http.logout(cfg -> cfg
+                .logoutRequestMatcher(new AntPathRequestMatcher(
+                        getRootUrl(false) + "doLogout", "GET"))
+                .addLogoutHandler((request, response, authentication) -> {
+                    if (!request.getRequestURI().endsWith("doLogout")) {
+                        UI ui = UI.getCurrent();
+                        ui.accessSynchronously(() -> ui.getPage()
+                                .setLocation(UrlUtil.getServletPathRelative(
+                                        getLogoutSuccessUrl(), request)));
+                    }
+                }).logoutSuccessHandler(this::onLogoutOnNonVaadinUrl)
+                .permitAll());
     }
 
     public void onLogoutOnNonVaadinUrl(HttpServletRequest request,
