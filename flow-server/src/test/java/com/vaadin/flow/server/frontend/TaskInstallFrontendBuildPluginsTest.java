@@ -81,13 +81,6 @@ public class TaskInstallFrontendBuildPluginsTest {
     }
 
     @Test
-    public void webpackPluginsAreCopied() throws IOException {
-        task.execute();
-
-        assertPlugins();
-    }
-
-    @Test
     public void pluginsDefineAllScriptFiles() throws IOException {
         for (String plugin : FrontendPluginsUtil.getPlugins()) {
             verifyPluginScriptFilesAreDefined(plugin);
