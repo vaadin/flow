@@ -356,13 +356,16 @@ public abstract class SignalTree {
      */
     public Runnable subscribeToPublished(
             BiConsumer<SignalCommand, CommandResult> subscriber) {
-        assert subscriber != null;
-        subscribers.add(subscriber);
-        return () -> subscribers.remove(subscriber);
+        return getWithLock(() -> {
+            assert subscriber != null;
+            subscribers.add(subscriber);
+            return () -> subscribers.remove(subscriber);
+        });
     }
 
     /**
-     * Notifies all subscribers about the result of a processed command.
+     * Notifies all subscribers about the result of a processed command. This
+     * method must be called from a code block that holds the tree lock.
      *
      * @param command
      *            the command that was processed, not <code>null</code>
@@ -371,6 +374,7 @@ public abstract class SignalTree {
      */
     protected void notifySubscribers(SignalCommand command,
             CommandResult result) {
+        assert hasLock();
         subscribers.forEach(subscriber -> subscriber.accept(command, result));
     }
 }
