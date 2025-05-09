@@ -372,7 +372,7 @@ public abstract class SignalTree {
      * @param result
      *            the result of the command, not <code>null</code>
      */
-    protected void notifySubscribers(SignalCommand command,
+    protected void notifyPublishedCommandSubscribers(SignalCommand command,
             CommandResult result) {
         assert hasLock();
         subscribers.forEach(subscriber -> subscriber.accept(command, result));
