@@ -219,17 +219,21 @@ public class UploadHandlerTest {
 
         mockRequest(res, testString);
 
-        handler.handleRequest(session, request, response);
+        try {
+            handler.handleRequest(session, request, response);
 
-        Assert.assertEquals("Only one uploaded file expected.", 1,
-                outputFiles.size());
-        System.out.println(outputFiles.get(0).getPath());
+            Assert.assertEquals("Only one uploaded file expected.", 1,
+                    outputFiles.size());
+            System.out.println(outputFiles.get(0).getPath());
 
-        Assert.assertArrayEquals("Output differed from expected", testBytes,
-                Files.readAllBytes(outputFiles.get(0).toPath()));
-
-        // Cleanup temp file after test
-        outputFiles.get(0).delete();
+            Assert.assertArrayEquals("Output differed from expected", testBytes,
+                    Files.readAllBytes(outputFiles.get(0).toPath()));
+        } finally {
+            // Cleanup temp file after test
+            for (File file : outputFiles) {
+                file.delete();
+            }
+        }
     }
 
     @Test
@@ -252,17 +256,21 @@ public class UploadHandlerTest {
 
         mockRequest(res, testString);
 
-        handler.handleRequest(session, request, response);
+        try {
+            handler.handleRequest(session, request, response);
 
-        Assert.assertEquals("Only one uploaded file expected.", 1,
-                outputFiles.size());
-        System.out.println(outputFiles.get(0).getPath());
+            Assert.assertEquals("Only one uploaded file expected.", 1,
+                    outputFiles.size());
+            System.out.println(outputFiles.get(0).getPath());
 
-        Assert.assertArrayEquals("Output differed from expected", testBytes,
-                Files.readAllBytes(outputFiles.get(0).toPath()));
-
-        // Cleanup temp file after test
-        outputFiles.get(0).delete();
+            Assert.assertArrayEquals("Output differed from expected", testBytes,
+                    Files.readAllBytes(outputFiles.get(0).toPath()));
+        } finally {
+            // Cleanup temp file after test
+            for (File file : outputFiles) {
+                file.delete();
+            }
+        }
     }
 
     @Test
