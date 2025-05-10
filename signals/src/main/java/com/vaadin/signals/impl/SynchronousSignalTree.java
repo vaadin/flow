@@ -74,8 +74,7 @@ public class SynchronousSignalTree extends SignalTree {
                 changes.notifyResultHandlers(results);
 
                 for (SignalCommand command : changes.getCommands()) {
-                    notifyPublishedCommandSubscribers(command,
-                            results.get(command.commandId()));
+                    notifyPublishedCommandSubscribers(command);
                 }
             }
 
@@ -86,8 +85,7 @@ public class SynchronousSignalTree extends SignalTree {
                 changes.notifyResultHandlers(rejected);
 
                 for (SignalCommand command : changes.getCommands()) {
-                    notifyPublishedCommandSubscribers(command,
-                            rejected.get(command.commandId()));
+                    notifyPublishedCommandSubscribers(command);
                 }
             }
         };

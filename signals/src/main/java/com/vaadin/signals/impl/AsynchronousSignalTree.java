@@ -79,8 +79,7 @@ public abstract class AsynchronousSignalTree extends SignalTree {
             unconfirmedCommands.notifyResultHandlers(results, commands);
 
             for (SignalCommand command : commands) {
-                notifyPublishedCommandSubscribers(command,
-                        results.get(command.commandId()));
+                notifyPublishedCommandSubscribers(command);
             }
         });
     }

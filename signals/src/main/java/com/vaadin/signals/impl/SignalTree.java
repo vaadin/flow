@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -93,7 +92,7 @@ public abstract class SignalTree {
 
     private final Type type;
 
-    private final Set<BiConsumer<SignalCommand, CommandResult>> subscribers = new HashSet<>();
+    private final Set<Consumer<SignalCommand>> subscribers = new HashSet<>();
 
     /**
      * Creates a new signal tree with the given type.
@@ -354,8 +353,7 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the subscriber before it's
      *         triggered, not <code>null</code>
      */
-    public Runnable subscribeToPublished(
-            BiConsumer<SignalCommand, CommandResult> subscriber) {
+    public Runnable subscribeToPublished(Consumer<SignalCommand> subscriber) {
         return getWithLock(() -> {
             assert subscriber != null;
             subscribers.add(subscriber);
@@ -369,12 +367,9 @@ public abstract class SignalTree {
      *
      * @param command
      *            the command that was processed, not <code>null</code>
-     * @param result
-     *            the result of the command, not <code>null</code>
      */
-    protected void notifyPublishedCommandSubscribers(SignalCommand command,
-            CommandResult result) {
+    protected void notifyPublishedCommandSubscribers(SignalCommand command) {
         assert hasLock();
-        subscribers.forEach(subscriber -> subscriber.accept(command, result));
+        subscribers.forEach(subscriber -> subscriber.accept(command));
     }
 }
