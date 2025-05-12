@@ -34,6 +34,7 @@ import java.io.Serializable;
  *
  * @deprecated use {@link com.vaadin.flow.server.streams.UploadHandler} instead
  */
+@Deprecated(since = "24.8", forRemoval = true)
 public interface StreamVariable extends Serializable {
 
     /**

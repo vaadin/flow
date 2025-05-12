@@ -46,6 +46,7 @@ import com.vaadin.flow.function.ContentTypeResolver;
  * @deprecated use {@link com.vaadin.flow.server.streams.DownloadHandler}
  *             instead
  */
+@Deprecated(since = "24.8", forRemoval = true)
 public class StreamResource extends AbstractStreamResource {
 
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
