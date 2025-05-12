@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.vaadin.flow.server.streams.TransferContext;
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Interface for listening to transfer progress events.
@@ -198,7 +199,7 @@ public interface TransferProgressListener extends Serializable {
                             - lastNotifiedLong >= progressReportInterval) {
                         long finalTransferred = transferred;
                         listener.onProgress(transferContext, finalTransferred,
-                                transferContext.totalBytes());
+                                transferContext.contentLength());
                         lastNotified.put(listener, transferred);
                     }
                 }

@@ -68,7 +68,7 @@ public class UploadEvent {
      *            defined download file name
      * @param contentType
      *            content type string for upload
-     * @param fileSize
+     * @param contentLength
      *            size of the upload
      * @param owningElement
      *            element owning this upload
@@ -80,14 +80,14 @@ public class UploadEvent {
      *            stream
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, String fileName, long fileSize,
+            VaadinSession session, String fileName, long contentLength,
             String contentType, Element owningElement, FileItemInput item,
             Part part) {
         this.request = request;
         this.response = response;
         this.session = session;
         this.fileName = fileName;
-        this.fileSize = fileSize;
+        this.fileSize = contentLength;
         this.owningElement = owningElement;
         this.contentType = contentType;
         this.item = item;
