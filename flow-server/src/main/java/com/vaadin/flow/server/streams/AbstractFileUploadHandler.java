@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.server.TransferProgressListener;
 
 /**
  * Abstract class for file upload handler.
@@ -78,8 +77,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
     protected TransferContext getTransferContext(UploadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
-                transferEvent.getFileName(),
-                transferEvent.getOwningComponent().getElement(),
+                transferEvent.getFileName(), transferEvent.getOwningElement(),
                 transferEvent.getFileSize());
     }
 }

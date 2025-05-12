@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.server.TransferProgressListener;
 
 /**
  * Upload handler for storing the upload in-memory. Data is returned as a
@@ -62,8 +61,7 @@ public class InMemoryUploadHandler
     protected TransferContext getTransferContext(UploadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
-                transferEvent.getFileName(),
-                transferEvent.getOwningComponent().getElement(),
+                transferEvent.getFileName(), transferEvent.getOwningElement(),
                 transferEvent.getFileSize());
     }
 }
