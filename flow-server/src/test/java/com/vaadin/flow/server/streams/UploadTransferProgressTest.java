@@ -60,7 +60,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResourceRegistry;
-import com.vaadin.flow.server.TransferProgressListener;
+import com.vaadin.flow.server.streams.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -262,7 +262,8 @@ public class UploadTransferProgressTest {
         return new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                Assert.assertEquals(DUMMY_CONTENT_LENGTH, context.totalBytes());
+                Assert.assertEquals(DUMMY_CONTENT_LENGTH,
+                        context.contentLength());
                 Assert.assertEquals(DUMMY_FILE_NAME, context.fileName());
                 invocations.add("onStart");
             }
@@ -279,7 +280,8 @@ public class UploadTransferProgressTest {
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                Assert.assertEquals(DUMMY_CONTENT_LENGTH, context.totalBytes());
+                Assert.assertEquals(DUMMY_CONTENT_LENGTH,
+                        context.contentLength());
                 Assert.assertEquals(DUMMY_CONTENT_LENGTH, transferredBytes);
                 Assert.assertEquals(DUMMY_FILE_NAME, context.fileName());
                 invocations.add("onComplete");
