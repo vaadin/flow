@@ -26,6 +26,7 @@ import java.util.Objects;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
 /**

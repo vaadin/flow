@@ -42,6 +42,9 @@ import com.vaadin.flow.function.ContentTypeResolver;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ *
+ * @deprecated use {@link com.vaadin.flow.server.streams.DownloadHandler}
+ *             instead
  */
 public class StreamResource extends AbstractStreamResource {
 

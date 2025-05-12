@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.StateNode;
  * @author Vaadin Ltd
  * @since 1.0
  *
+ * @deprecated use {@link com.vaadin.flow.server.streams.UploadHandler} instead
  */
 public class StreamReceiver extends AbstractStreamResource {
 

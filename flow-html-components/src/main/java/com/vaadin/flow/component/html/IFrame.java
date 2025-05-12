@@ -168,6 +168,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param src
      *            the resource value, not null
+     * @deprecated use {@link #setSrc(DownloadHandler)} instead
      */
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);

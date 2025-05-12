@@ -81,6 +81,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(AbstractStreamResource)
      * @see #setAlt(String)
+     * @deprecated use {@link #Image(DownloadHandler, String)} instead
      */
     public Image(AbstractStreamResource src, String alt) {
         setSrc(src);
@@ -100,7 +101,7 @@ public class Image extends HtmlContainer
      * @param alt
      *            the alternate text
      *
-     * @see #setSrc(AbstractStreamResource)
+     * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
      */
     public Image(DownloadHandler downloadHandler, String alt) {
@@ -132,6 +133,7 @@ public class Image extends HtmlContainer
      *
      * @param src
      *            the resource value, not null
+     * @deprecated use {@link #setSrc(DownloadHandler)} instead
      */
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);
