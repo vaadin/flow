@@ -106,7 +106,7 @@ public class HtmlObject extends HtmlContainer implements
      *            a type attribute value
      * @deprecated use {@link #HtmlObject(DownloadHandler,String)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, String type) {
         setData(data);
         setType(type);
@@ -130,7 +130,7 @@ public class HtmlObject extends HtmlContainer implements
      * @deprecated use {@link #HtmlObject(DownloadHandler,String, Param...)}
      *             instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, String type,
             Param... params) {
         setData(data);
@@ -189,7 +189,8 @@ public class HtmlObject extends HtmlContainer implements
      *
      *
      * @param data
-     *            a data attribute value
+     *            a handler that defines the data to be set to this object
+     *            component
      * @param params
      *            parameter components
      */
@@ -209,7 +210,8 @@ public class HtmlObject extends HtmlContainer implements
      *
      *
      * @param data
-     *            a data attribute value
+     *            a handler that defines the data to be set to this object
+     *            component
      */
     public HtmlObject(DownloadHandler data) {
         setData(new StreamResourceRegistry.ElementStreamResource(data,
@@ -244,7 +246,7 @@ public class HtmlObject extends HtmlContainer implements
      *            the resource value, not {@code null}
      * @deprecated use {@link #HtmlObject(DownloadHandler)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data) {
         setData(data);
     }
@@ -262,7 +264,7 @@ public class HtmlObject extends HtmlContainer implements
      *            parameter components
      * @deprecated use {@link #HtmlObject(DownloadHandler,Param...)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, Param... params) {
         setData(data);
         add(params);
@@ -285,7 +287,7 @@ public class HtmlObject extends HtmlContainer implements
      *            a "data" attribute value,, not {@code null}
      * @deprecated use {@link #setData(DownloadHandler)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setData(AbstractStreamResource data) {
         getElement().setAttribute("data", data);
     }

@@ -108,7 +108,7 @@ public class Anchor extends HtmlContainer
      *
      * @deprecated use {@link #Anchor(DownloadHandler, String)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public Anchor(AbstractStreamResource href, String text) {
         setHref(href);
         setText(text);
@@ -191,7 +191,7 @@ public class Anchor extends HtmlContainer
      *            the resource value, not null
      * @deprecated use {@link #setHref(DownloadHandler)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setHref(AbstractStreamResource href) {
         this.href = href;
         setRouterIgnore(true);

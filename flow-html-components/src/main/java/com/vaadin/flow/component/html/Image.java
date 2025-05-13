@@ -136,7 +136,7 @@ public class Image extends HtmlContainer
      *            the resource value, not null
      * @deprecated use {@link #setSrc(DownloadHandler)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);
     }

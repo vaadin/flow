@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
