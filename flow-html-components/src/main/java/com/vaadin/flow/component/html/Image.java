@@ -83,7 +83,7 @@ public class Image extends HtmlContainer
      * @see #setAlt(String)
      * @deprecated use {@link #Image(DownloadHandler, String)} instead
      */
-    @Deprecated(since = "24.8")
+    @Deprecated(since = "24.8", forRemoval = true)
     public Image(AbstractStreamResource src, String alt) {
         setSrc(src);
         setAlt(alt);
