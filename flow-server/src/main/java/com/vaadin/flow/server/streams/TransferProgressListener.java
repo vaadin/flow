@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -34,10 +33,11 @@ import com.vaadin.flow.server.VaadinSession;
  * Implementations of this interface can be used to monitor the progress of file
  * transfers, such as downloads or uploads.
  * <p>
- * It uses {@link com.vaadin.flow.component.UI#access(Command)} to send UI
- * changes from progress listeners when the download or upload request is being
- * handled. Thus, it needs {@link com.vaadin.flow.component.page.Push} to be
- * enabled in the application.
+ * It uses
+ * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+ * to send UI changes from progress listeners when the download or upload
+ * request is being handled. Thus, it needs
+ * {@link com.vaadin.flow.component.page.Push} to be enabled in the application.
  *
  * @since 24.8
  */
@@ -62,10 +62,11 @@ public interface TransferProgressListener extends Serializable {
      * Called when the data transfer is started.
      * <p>
      * The call of this method is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of this method. This needs
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * to send UI changes defined here when the download or upload request is
+     * being handled. Thus, no need to call
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * in the implementation of this method. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
@@ -80,10 +81,11 @@ public interface TransferProgressListener extends Serializable {
      * Called periodically during the transfer to report progress.
      * <p>
      * The call of this method is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of this method. This needs
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * to send UI changes defined here when the download or upload request is
+     * being handled. Thus, no need to call
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * in the implementation of this method. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
@@ -105,10 +107,11 @@ public interface TransferProgressListener extends Serializable {
      * Called when the transfer is failed.
      * <p>
      * The call of this method is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of this method. This needs
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * to send UI changes defined here when the download or upload request is
+     * being handled. Thus, no need to call
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * in the implementation of this method. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
@@ -125,10 +128,11 @@ public interface TransferProgressListener extends Serializable {
      * Called when the transfer is started.
      * <p>
      * The call of this method is wrapped by the
-     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of this method. This needs
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * to send UI changes defined here when the download or upload request is
+     * being handled. Thus, no need to call
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * in the implementation of this method. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
