@@ -49,7 +49,7 @@ import com.vaadin.flow.component.html.OrderedList.NumberingType;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 public class HtmlComponentSmokeTest {
 

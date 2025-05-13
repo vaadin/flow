@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.server.streams;
 
-import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.DownloadEvent;
-
 /**
  * Abstract class for common methods used in pre-made download handlers.
  *

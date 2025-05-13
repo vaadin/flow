@@ -14,24 +14,16 @@
  * the License.
  */
 
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.streams;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collection;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
-import com.vaadin.flow.server.streams.ClassDownloadHandler;
-import com.vaadin.flow.server.streams.DownloadResponse;
-import com.vaadin.flow.server.streams.FileDownloadHandler;
-import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
-import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
-import com.vaadin.flow.server.streams.TransferContext;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Interface for handling download of data from the server to the client.

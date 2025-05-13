@@ -19,28 +19,22 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.server.DownloadEvent;
-import com.vaadin.flow.server.TransferProgressListener;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonValue;
 
 /**
  * Abstract class for common methods used in pre-made transfer progress
  * handlers.
  *
  * @param <T>
- *            type of transfer event, e.g.
- *            {@link com.vaadin.flow.server.DownloadHandler}
+ *            type of transfer event, e.g. {@link DownloadHandler}
  * @param <R>
  *            type of the subclass implementing this abstract class, needed for
  *            revealing a proper type when you chain the methods
