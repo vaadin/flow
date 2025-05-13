@@ -38,6 +38,7 @@
                 <module>vite-pwa</module>
                 <module>vite-pwa-custom-offline-path</module>
                 <module>vite-pwa-custom-offline-path/pom-production.xml</module>
+                <module>vite-pwa-custom-sw</module>
                 <module>vite-pwa-disabled-offline</module>
                 <module>vite-pwa-disabled-offline/pom-production.xml</module>
                 <module>vite-pwa-production</module>

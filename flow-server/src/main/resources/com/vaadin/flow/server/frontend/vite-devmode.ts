@@ -28,4 +28,19 @@ if (import.meta.hot) {
       preventViteReload(payload);
     }
   });
+
+  hot.on('sw-js-update', async () => {
+    if (isLiveReloadDisabled()) {
+      return;
+    }
+
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.getRegistration()
+    if (registration) {
+      await registration.update();
+    }
+  });
 }
