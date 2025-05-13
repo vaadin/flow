@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server;
 
-import jakarta.servlet.ServletException;
-
 import java.util.Collections;
 import java.util.List;
+
+import jakarta.servlet.ServletException;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -67,11 +67,22 @@ public class MockVaadinServletService extends VaadinServletService {
         this(new MockDeploymentConfiguration());
     }
 
+    public MockVaadinServletService(boolean init) {
+        this(new MockDeploymentConfiguration(), init);
+    }
+
     public MockVaadinServletService(
             DeploymentConfiguration deploymentConfiguration) {
+        this(deploymentConfiguration, true);
+    }
+
+    public MockVaadinServletService(
+            DeploymentConfiguration deploymentConfiguration, boolean init) {
         super(new MockVaadinServlet(deploymentConfiguration),
                 deploymentConfiguration);
-        init();
+        if (init) {
+            init();
+        }
     }
 
     public void setRouter(Router router) {

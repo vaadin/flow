@@ -41,6 +41,9 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -184,6 +187,10 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
+    private Executor executor;
+
+    private boolean defaultExecutorInUse;
+
     private VaadinContext vaadinContext;
 
     private Iterable<VaadinRequestInterceptor> vaadinRequestInterceptors;
@@ -267,6 +274,9 @@ public abstract class VaadinService implements Serializable {
             instantiator.getServiceInitListeners()
                     .forEach(listener -> listener.serviceInit(event));
 
+            this.executor = event.getExecutor()
+                    .orElseGet(this::createDefaultExecutor);
+
             event.getAddedRequestHandlers().forEach(handlers::add);
 
             Collections.reverse(handlers);
@@ -292,6 +302,18 @@ public abstract class VaadinService implements Serializable {
                             event.getAddedIndexHtmlRequestListeners())
                     .collect(Collectors.toList());
         });
+
+        if (this.executor == null) {
+            throw new ServiceException(
+                    "Unable to create the default Executor for "
+                            + getClass().getName()
+                            + ". This is most likely a bug in a custom VaadinService implementation "
+                            + "that overrides the createDefaultExecutor() method "
+                            + "but returns a null Executor instance. "
+                            + "As a workaround, you can register a "
+                            + VaadinServiceInitListener.class.getSimpleName()
+                            + " providing a custom Executor instance.");
+        }
 
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
@@ -501,6 +523,66 @@ public abstract class VaadinService implements Serializable {
      */
     public Instantiator getInstantiator() {
         return instantiator;
+    }
+
+    /**
+     * Creates a default executor instance to use with this service.
+     * <p>
+     * A custom {@link VaadinService} implementation can override this method to
+     * provide its own ad-hoc executor tailored to specific environments like
+     * CDI or Spring.
+     * <p>
+     * This default implementation creates a single-threaded daemon executor
+     * suitable for short-lived tasks only. For long-running or
+     * resource-intensive operations, the application should provide a more
+     * appropriate executor implementation through a
+     * {@link VaadinServiceInitListener}.
+     * <p>
+     * Implementors should never return {@literal null}; if an executor instance
+     * cannot be provided, the method should call
+     * {@code super.createDefaultExecutor()}.
+     *
+     * @return a default executor instance to use, never {@literal null}.
+     */
+    protected Executor createDefaultExecutor() {
+        this.defaultExecutorInUse = true;
+        return Executors.newSingleThreadExecutor(runnable -> {
+            getLogger().warn(
+                    "The application is using Vaadin's default single-threaded executor, "
+                            + "which can lead to poor performance in production environments. "
+                            + "Consider providing a custom executor with an appropriate thread pool by "
+                            + "registering a {}. ",
+                    VaadinServiceInitListener.class.getSimpleName());
+            Thread thread = new Thread(runnable, "VaadinExecutor-thread");
+            // Thread marked as daemon to prevent task execution to block
+            // JVM shutdown
+            thread.setDaemon(true);
+            thread.setPriority(Thread.NORM_PRIORITY);
+            return thread;
+        });
+    }
+
+    /**
+     * Gets the executor instance used for managing concurrent tasks.
+     * <p>
+     * The default executor is intended for short-lived tasks only. For
+     * long-running or resource-intensive operations, it is recommended to
+     * provide a custom executor.
+     * <p>
+     * {@link VaadinService} implementations for specific environments like CDI
+     * or Spring might provide their own ad-hoc Executors tailored to those
+     * environments.
+     * <p>
+     * A custom executor can be configured by registering a
+     * {@link VaadinServiceInitListener} and providing the executor instance to
+     * the {@link ServiceInitEvent}.
+     *
+     * @return the Executor instance, never {@literal null}.
+     * @see VaadinServiceInitListener
+     * @see ServiceInitEvent#setExecutor(Executor)
+     */
+    public Executor getExecutor() {
+        return executor;
     }
 
     /**
@@ -2216,6 +2298,10 @@ public abstract class VaadinService implements Serializable {
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
+        if (defaultExecutorInUse && executor instanceof ExecutorService cast) {
+            cast.shutdownNow();
+            this.executor = null;
+        }
         RuntimeException exception = null;
         for (ServiceDestroyListener listener : serviceDestroyListeners) {
             try {

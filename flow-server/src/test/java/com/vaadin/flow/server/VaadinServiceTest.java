@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpSessionBindingEvent;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,13 +24,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpSessionBindingEvent;
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -148,6 +153,12 @@ public class VaadinServiceTest {
                 throws ServiceException {
             return super.createRequestHandlers();
         }
+    }
+
+    @Before
+    @After
+    public void clearCurrentInstances() {
+        CurrentInstance.clearAll();
     }
 
     @Test
@@ -799,6 +810,123 @@ public class VaadinServiceTest {
         Mockito.verify(vaadinSession).setAttribute(
                 VaadinService.PRESERVE_UNBOUND_SESSION_ATTRIBUTE, null);
         Mockito.verify(vaadinSession, Mockito.times(2)).unlock();
+    }
+
+    @Test
+    public void getExecutor_getsDefaultVaadinExecutor()
+            throws InterruptedException {
+        VaadinService service = createService();
+        Executor executor = service.getExecutor();
+        AtomicReference<String> threadName = new AtomicReference<>();
+        Assert.assertNotNull(executor);
+        CountDownLatch latch = new CountDownLatch(1);
+        executor.execute(() -> {
+            threadName.set(Thread.currentThread().getName());
+            latch.countDown();
+        });
+        latch.await();
+        Assert.assertNotNull("Task has not been not executed",
+                threadName.get());
+        Assert.assertTrue("Task was not executed by Vaadin default executor",
+                threadName.get().startsWith("VaadinExecutor-"));
+    }
+
+    @Test
+    public void serviceDestroy_defaultExecutor_executorStopped() {
+        VaadinService service = createService();
+        Executor executor = service.getExecutor();
+        Assert.assertTrue(
+                "Expected the default executor to be an ExecutorService instance",
+                executor instanceof ExecutorService);
+        Assert.assertFalse("Expected executor service to be started",
+                ((ExecutorService) executor).isShutdown());
+        service.destroy();
+        Assert.assertTrue("Expected executor service to be stopped",
+                ((ExecutorService) executor).isShutdown());
+    }
+
+    @Test
+    public void getExecutor_customExecutorProvided_getsCustomExecutor()
+            throws InterruptedException {
+        AtomicBoolean taskSubmitted = new AtomicBoolean(false);
+        Executor executor = command -> {
+            taskSubmitted.set(true);
+            command.run();
+        };
+        VaadinServiceInitListener initListener = event -> {
+            event.setExecutor(executor);
+        };
+        CountDownLatch latch = new CountDownLatch(1);
+        MockInstantiator instantiator = new MockInstantiator(initListener);
+        MockVaadinServletService service = new MockVaadinServletService(false);
+        service.init(instantiator);
+        Assert.assertSame(
+                "Expected VaadinService to return the custom executor",
+                executor, service.getExecutor());
+        service.getExecutor().execute(latch::countDown);
+        latch.await();
+        Assert.assertTrue(
+                "Task should have been submitted to the custom executor",
+                taskSubmitted.get());
+    }
+
+    @Test
+    public void serviceDestroy_customExecutorProvided_executorNotStopped() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        VaadinServiceInitListener initListener = event -> {
+            event.setExecutor(executor);
+        };
+        MockInstantiator instantiator = new MockInstantiator(initListener);
+        MockVaadinServletService service = new MockVaadinServletService(false);
+        service.init(instantiator);
+
+        Assert.assertSame(
+                "Expected VaadinService to return the custom executor",
+                executor, service.getExecutor());
+
+        service.destroy();
+        Assert.assertFalse("Expected custom executor not to be stopped",
+                executor.isShutdown());
+
+    }
+
+    @Test
+    public void getExecutor_nullExecutorProvided_resetsToDefaultVaadinExecutor() {
+        Executor executor = command -> {
+        };
+        VaadinServiceInitListener setExecutorInitListener = event -> {
+            event.setExecutor(executor);
+        };
+        VaadinServiceInitListener resetExecutorInitListener = event -> {
+            event.setExecutor(null);
+        };
+        MockInstantiator instantiator = new MockInstantiator(
+                setExecutorInitListener, resetExecutorInitListener);
+        MockVaadinServletService service = new MockVaadinServletService(false);
+        service.init(instantiator);
+        Assert.assertNotSame("Custom executor should not be used", executor,
+                service.getExecutor());
+    }
+
+    @Test
+    public void init_nullExecutor_throws() {
+        RuntimeException error = assertThrows(RuntimeException.class, () -> {
+            // init method is called by the mock service constructor
+            new MockVaadinServletService() {
+                @Override
+                protected Executor createDefaultExecutor() {
+                    return null;
+                }
+            };
+        });
+        if (error.getCause() instanceof ServiceException serviceException) {
+            Assert.assertTrue(
+                    "Expected VaadinService initialization to fail with null executor",
+                    serviceException.getMessage()
+                            .contains("Unable to create the default Executor"));
+        } else {
+            Assert.fail("Expected ServiceException to be thrown");
+        }
     }
 
     private WrappedSession mockSession(VaadinRequest request,
