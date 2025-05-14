@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
@@ -36,8 +38,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
-
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
@@ -143,13 +143,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
      */
     private void updateLocalHash() {
         try {
-            final JsonObject vaadin = packageUpdater.getPackageJson()
-                    .getObject(VAADIN_DEP_KEY);
+            final JsonNode vaadin = packageUpdater.getPackageJson()
+                    .get(VAADIN_DEP_KEY);
             if (vaadin == null) {
                 packageUpdater.log().warn("No vaadin object in package.json");
                 return;
             }
-            final String hash = vaadin.getString(HASH_KEY);
+            final String hash = vaadin.get(HASH_KEY).textValue();
 
             final Map<String, String> updates = new HashMap<>();
             updates.put(HASH_KEY, hash);
@@ -182,20 +182,20 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     boolean isVaadinHashOrProjectFolderUpdated() {
         try {
-            JsonObject nodeModulesVaadinJson = packageUpdater
+            JsonNode nodeModulesVaadinJson = packageUpdater
                     .getVaadinJsonContents();
-            if (nodeModulesVaadinJson.hasKey(HASH_KEY)) {
-                final JsonObject packageJson = packageUpdater.getPackageJson();
-                if (!nodeModulesVaadinJson.getString(HASH_KEY)
-                        .equals(packageJson.getObject(VAADIN_DEP_KEY)
-                                .getString(HASH_KEY))) {
+            if (nodeModulesVaadinJson.has(HASH_KEY)) {
+                final JsonNode packageJson = packageUpdater.getPackageJson();
+                if (!nodeModulesVaadinJson.get(HASH_KEY).textValue()
+                        .equals(packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY)
+                                .textValue())) {
                     return true;
                 }
 
-                if (nodeModulesVaadinJson.hasKey(PROJECT_FOLDER)
+                if (nodeModulesVaadinJson.has(PROJECT_FOLDER)
                         && !options.getNpmFolder().getAbsolutePath()
                                 .equals(nodeModulesVaadinJson
-                                        .getString(PROJECT_FOLDER))) {
+                                        .get(PROJECT_FOLDER).textValue())) {
                     return true;
                 }
 
@@ -227,6 +227,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
         settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
 
@@ -371,7 +373,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             File packageFolder = packageJsonFile.getParentFile();
 
             try {
-                JsonObject packageJson = TaskGeneratePackageJson
+                JsonNode packageJson = TaskGeneratePackageJson
                         .getJsonFileContent(packageJsonFile);
                 if (!containsPostinstallScript(packageJson)) {
                     logger.debug(
@@ -448,9 +450,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     }
 
-    private boolean containsPostinstallScript(JsonObject packageJson) {
-        return packageJson != null && packageJson.hasKey("scripts")
-                && packageJson.getObject("scripts").hasKey("postinstall");
+    private boolean containsPostinstallScript(JsonNode packageJson) {
+        return packageJson != null && packageJson.has("scripts")
+                && packageJson.get("scripts").has("postinstall");
     }
 
     private Process runNpmCommand(List<String> command, File workingDirectory)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -61,6 +63,13 @@ public class RouterLinkTest extends HasCurrentService {
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
+        VaadinService service = VaadinService.getCurrent();
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(config.getFrontendFolder())
+                .thenReturn(new File("/frontend"));
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+
         registry = new TestRouteRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -74,7 +83,7 @@ public class RouterLinkTest extends HasCurrentService {
         router = new Router(registry);
 
         ui = new RoutingTestBase.RouterTestUI(router);
-        VaadinService service = VaadinService.getCurrent();
+
         Mockito.when(service.getRouter()).thenReturn(router);
     }
 

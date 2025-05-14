@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,14 +128,21 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Return all values of a repeated annotation parameter. For instance
+     * Return all explicitly defined values of a repeated annotation parameter
+     * in the occurrence order, ignoring attribute default values. For instance
      * `getValues("value")` will return 'Bar' and 'Baz' when we have the
      * following code:
      *
      * <pre>
      * <code>
+     * &#64;interface MyAnnotation {
+     *    String value() default "Foo";
+     *    String other();
+     * }
+     *
      * &#64;MyAnnotation(value = "Bar", other = "aa")
      * &#64;MyAnnotation(value = "Baz", other = "bb")
+     * &#64;MyAnnotation(other = "cc")
      * class Foo {
      * }
      * </code>
@@ -143,23 +151,32 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *
      * @param parameter
      *            the annotation parameter used for getting values
-     * @return a set of all values found
+     * @return an ordered set of all values found
      */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getValues(String parameter) {
         return (Set<T>) data.stream().filter(h -> h.containsKey(parameter))
-                .map(h -> h.get(parameter)).collect(Collectors.toSet());
+                .map(h -> h.get(parameter))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
      * Return all parameter values of a repeated annotation when they share the
-     * same value for a key parameter. For example `getValuesForKey("value",
-     * "foo", "other")` will return 'aa' and 'bb' if we have the following code:
+     * same value for a key parameter in the occurrence order. Key parameter
+     * must be explicitly defined, otherwise the annotation is ignored. For
+     * example `getValuesForKey("value", "foo", "other")` will return 'aa' and
+     * 'bb' when we have the following code:
      *
      * <pre>
      * <code>
+     * &#64;interface MyAnnotation {
+     *    String value() default "foo";
+     *    String other();
+     * }
+     *
      * &#64;MyAnnotation(value = "foo", other = "aa")
      * &#64;MyAnnotation(value = "foo", other = "bb")
+     * &#64;MyAnnotation(other = "cc")
      * class Bar {
      * }
      * </code>
@@ -171,14 +188,15 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *            the shared value
      * @param property
      *            the parameter name of the value to return
-     * @return a set of all values found
+     * @return an ordered set of all values found
      */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getValuesForKey(String key, String value,
             String property) {
         return (Set<T>) data.stream()
                 .filter(h -> h.containsKey(key) && h.get(key).equals(value))
-                .map(h -> h.get(property)).collect(Collectors.toSet());
+                .map(h -> h.get(property))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**

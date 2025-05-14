@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,10 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -83,18 +87,21 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * Sandbox types.
      */
     public enum SandboxType {
-        RESTRICT_ALL(""), ALLOW_FORMS("allow-forms"), ALLOW_MODALS(
-                "allow-modals"), ALLOW_ORIENTATION_LOCK(
-                        "allow-orientation-lock"), ALLOW_POINTER_LOCK(
-                                "allow-pointer-lock"), ALLOW_POPUPS(
-                                        "allow-popups"), ALLOW_POPUPS_TO_ESCAPE_SANDBOX(
-                                                "allow-popups-to-escape-sandbox"), ALLOW_PRESENTATION(
-                                                        "allow-presentation"), ALLOW_SAME_ORIGIN(
-                                                                "allow-same-origin"), ALLOW_SCRIPTS(
-                                                                        "allow-scripts"), ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
-                                                                                "allow-storage-access-by-user-activation"), ALLOW_TOP_NAVIGATION(
-                                                                                        "allow-top-navigation"), ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
-                                                                                                "allow-top-navigation-by-user-activation");
+        RESTRICT_ALL(""),
+        ALLOW_FORMS("allow-forms"),
+        ALLOW_MODALS("allow-modals"),
+        ALLOW_ORIENTATION_LOCK("allow-orientation-lock"),
+        ALLOW_POINTER_LOCK("allow-pointer-lock"),
+        ALLOW_POPUPS("allow-popups"),
+        ALLOW_POPUPS_TO_ESCAPE_SANDBOX("allow-popups-to-escape-sandbox"),
+        ALLOW_PRESENTATION("allow-presentation"),
+        ALLOW_SAME_ORIGIN("allow-same-origin"),
+        ALLOW_SCRIPTS("allow-scripts"),
+        ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
+                "allow-storage-access-by-user-activation"),
+        ALLOW_TOP_NAVIGATION("allow-top-navigation"),
+        ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
+                "allow-top-navigation-by-user-activation");
 
         private final String value;
 
@@ -130,6 +137,18 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     }
 
     /**
+     * Creates a new iframe with download handler callback that provides a
+     * resource from server.
+     *
+     * @param downloadHandler
+     *            the download handler callback that provides a resource from
+     *            server, not null
+     */
+    public IFrame(DownloadHandler downloadHandler) {
+        setSrc(downloadHandler);
+    }
+
+    /**
      * Sets the source of the iframe. If the contents at the src of the IFrame
      * has changed and you want to refresh it in the user's browser, the src
      * does not to be reset. In this case use the #reload() method.
@@ -139,6 +158,36 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     public void setSrc(String src) {
         set(srcDescriptor, src);
+    }
+
+    /**
+     * Sets the source of the iframe with a source URL with the URL of the given
+     * {@link StreamResource}.
+     *
+     * @see #setSrc(String)
+     *
+     * @param src
+     *            the resource value, not null
+     * @deprecated use {@link #setSrc(DownloadHandler)} instead
+     */
+    @Deprecated(since = "24.8", forRemoval = true)
+    public void setSrc(AbstractStreamResource src) {
+        getElement().setAttribute("src", src);
+    }
+
+    /**
+     * Sets the source of the iframe with a source URL with the URL of the given
+     * {@link DownloadHandler} callback.
+     *
+     * @see #setSrc(String)
+     *
+     * @param downloadHandler
+     *            the download handler resource, not null
+     */
+    public void setSrc(DownloadHandler downloadHandler) {
+        getElement().setAttribute("src",
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler, this.getElement()));
     }
 
     /**

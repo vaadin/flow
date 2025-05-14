@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,7 +64,7 @@ public class TaskGenerateBootstrapTest {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
         frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, false);
+                .createScanner(false, finder, false, null, true);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         options = new MockOptions(finder, null)
@@ -151,7 +151,7 @@ public class TaskGenerateBootstrapTest {
     private FrontendDependencies getThemedDependency()
             throws MalformedURLException {
         ClassFinder finder = getClassFinder();
-        return new FrontendDependencies(finder) {
+        return new FrontendDependencies(finder, true, null, true) {
 
             @Override
             public Map<ChunkInfo, List<String>> getModules() {

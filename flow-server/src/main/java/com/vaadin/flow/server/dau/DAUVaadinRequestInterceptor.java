@@ -25,7 +25,6 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
 
     private final String applicationName;
     private final UserIdentitySupplier userIdentitySupplier;
-    private final DAUCustomizer dauCustomizer;
 
     public DAUVaadinRequestInterceptor(
             DeploymentConfiguration deploymentConfiguration,
@@ -34,7 +33,6 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
         this.userIdentitySupplier = dauCustomizer != null
                 ? dauCustomizer.getUserIdentitySupplier()
                 : null;
-        this.dauCustomizer = dauCustomizer;
     }
 
     @Override

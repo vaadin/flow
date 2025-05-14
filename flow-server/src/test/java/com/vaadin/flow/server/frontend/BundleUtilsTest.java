@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -19,12 +22,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
@@ -99,18 +99,18 @@ public class BundleUtilsTest {
     }
 
     private void mockStatsJson(String... imports) {
-        JsonObject statsJson = Json.createObject();
-        JsonArray importsArray = Json.createArray();
-        for (int i = 0; i < imports.length; i++) {
-            importsArray.set(i, imports[i]);
+        ObjectNode statsJson = JacksonUtils.createObjectNode();
+        ArrayNode importsArray = JacksonUtils.createArrayNode();
+        for (String anImport : imports) {
+            importsArray.add(anImport);
         }
 
-        statsJson.put("bundleImports", importsArray);
+        statsJson.set("bundleImports", importsArray);
 
         mockStatsJsonLoading(statsJson);
     }
 
-    private void mockStatsJsonLoading(JsonObject statsJson) {
+    private void mockStatsJsonLoading(JsonNode statsJson) {
         MockedStatic<BundleUtils> mock = Mockito.mockStatic(BundleUtils.class);
         mock.when(() -> BundleUtils.loadStatsJson()).thenReturn(statsJson);
         mock.when(() -> BundleUtils.loadBundleImports()).thenCallRealMethod();

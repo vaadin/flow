@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,10 @@ package com.vaadin.flow.server.startup;
 
 import jakarta.servlet.annotation.HandlesTypes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -110,12 +113,34 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                 .filter(clazz -> !RouterLayout.class.isAssignableFrom(clazz))
                 .collect(Collectors.toList());
         if (!faultyLayouts.isEmpty()) {
-            String message = "Found @Layout on classes not extending RouterLayout.%nCheck the following classes: %s";
+            String message = "Found @Layout on classes { %s } not implementing RouterLayout.";
             String faultyLayoutsString = faultyLayouts.stream()
                     .map(clazz -> clazz.getName())
                     .collect(Collectors.joining(","));
             throw new InvalidRouteLayoutConfigurationException(
                     String.format(message, faultyLayoutsString));
+        }
+        Map<String, List<Class<?>>> layoutsMap = new HashMap<>();
+        for (Class<?> routeClass : routesSet) {
+            if (routeClass.isAnnotationPresent(Layout.class)) {
+                String layoutValue = routeClass.getAnnotation(Layout.class)
+                        .value();
+                layoutsMap.computeIfAbsent(layoutValue, k -> new ArrayList<>())
+                        .add(routeClass);
+            }
+        }
+        Set<List<Class<?>>> collect = layoutsMap.values().stream()
+                .filter(entry -> entry.size() > 1).collect(Collectors.toSet());
+        if (!collect.isEmpty()) {
+            StringBuilder messageBuilder = new StringBuilder(
+                    "Found duplicate @Layout values in classes:");
+            for (List<Class<?>> classes : collect) {
+                messageBuilder.append("\n").append(" - ")
+                        .append(classes.stream().map(clazz -> clazz.getName())
+                                .collect(Collectors.joining(" - ")));
+            }
+            throw new InvalidRouteLayoutConfigurationException(
+                    messageBuilder.toString());
         }
     }
 

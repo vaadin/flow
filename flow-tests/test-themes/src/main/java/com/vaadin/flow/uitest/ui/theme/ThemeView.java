@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ public class ThemeView extends Div {
     public static final String KEYBOARD_ID = "keyboard";
     public static final String LEMON_ID = "lemon";
     public static final String SUN_ID = "sun";
+    public static final String LUMO_BORDER_TOP_DIV = "lumo-border-top-div";
 
     public ThemeView() {
         UI.getCurrent().getPage()
@@ -93,5 +94,10 @@ public class ThemeView extends Div {
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));
+
+        Div lumoBorderDiv = new Div("This element has Lumo border style");
+        lumoBorderDiv.addClassName("border-t");
+        lumoBorderDiv.setId(LUMO_BORDER_TOP_DIV);
+        add(lumoBorderDiv);
     }
 }

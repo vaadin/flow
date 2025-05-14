@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,14 +15,16 @@
  */
 package com.vaadin.flow.i18n;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.shared.JsonConstants;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +108,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         response.setStatus(HttpStatusCode.OK.getCode());
         response.setHeader(RETRIEVED_LOCALE_HEADER_NAME,
                 translationPropertyFile.getLocale().toLanguageTag());
+        response.setHeader("Content-Type", JsonConstants.JSON_CONTENT_TYPE);
         writeFileToResponse(response, translationPropertyFile);
     }
 
@@ -128,10 +131,10 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     private void writeFileToResponse(VaadinResponse response,
             ResourceBundle translationPropertyFile) throws IOException {
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         translationPropertyFile.keySet().forEach(
                 key -> json.put(key, translationPropertyFile.getString(key)));
-        response.getWriter().write(json.toJson());
+        response.getWriter().write(json.toString());
     }
 
     private Locale getLocale(VaadinRequest request) {

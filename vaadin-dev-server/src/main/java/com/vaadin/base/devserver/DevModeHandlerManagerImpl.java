@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,13 +19,14 @@ import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -66,7 +68,11 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
-    final private Set<Closeable> watchers = new HashSet<>();
+    private final Set<Command> shutdownCommands = new HashSet<>();
+    private ExecutorService executorService;
+
+    private String applicationUrl;
+    private boolean fullyStarted = false;
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -92,8 +98,11 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     @Override
     public void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
             throws VaadinInitializerException {
-        setDevModeHandler(
-                DevModeInitializer.initDevModeHandler(classes, context));
+        shutdownExecutorService();
+        executorService = Executors.newFixedThreadPool(4,
+                new NamedDaemonThreadFactory("vaadin-dev-server"));
+        setDevModeHandler(DevModeInitializer.initDevModeHandler(classes,
+                context, executorService));
         CompletableFuture.runAsync(() -> {
             DevModeHandler devModeHandler = getDevModeHandler();
             if (devModeHandler instanceof AbstractDevServerRunner) {
@@ -104,12 +113,19 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
-
             startWatchingThemeFolder(context, config);
             watchExternalDependencies(context, config);
-        });
+            setFullyStarted(true);
+        }, executorService);
         setDevModeStarted(context);
         this.browserLauncher = new BrowserLauncher(context);
+    }
+
+    private void shutdownExecutorService() {
+        if (executorService != null) {
+            executorService.shutdownNow();
+            executorService = null;
+        }
     }
 
     private void watchExternalDependencies(VaadinContext context,
@@ -117,7 +133,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         File frontendFolder = FrontendUtils.getProjectFrontendDir(config);
         File jarFrontendResourcesFolder = FrontendUtils
                 .getJarResourcesFolder(frontendFolder);
-        watchers.add(new ExternalDependencyWatcher(context,
+        registerWatcherShutdownCommand(new ExternalDependencyWatcher(context,
                 jarFrontendResourcesFolder));
 
     }
@@ -142,7 +158,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             for (String themeName : activeThemes) {
                 File themeFolder = ThemeUtils.getThemeFolder(
                         FrontendUtils.getProjectFrontendDir(config), themeName);
-                watchers.add(new ThemeLiveUpdater(themeFolder, context));
+                registerWatcherShutdownCommand(
+                        new ThemeLiveUpdater(themeFolder, context));
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
@@ -154,15 +171,17 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             devModeHandler.stop();
             devModeHandler = null;
         }
-        for (Closeable watcher : watchers) {
+        shutdownExecutorService();
+        for (Command shutdownCommand : shutdownCommands) {
             try {
-                watcher.close();
-            } catch (IOException e) {
-                getLogger().error("Failed to stop watcher "
-                        + watcher.getClass().getName(), e);
+                shutdownCommand.execute();
+            } catch (Exception e) {
+                getLogger().error("Failed to execute shut down command {}",
+                        shutdownCommand.getClass().getName(), e);
             }
         }
-        watchers.clear();
+        shutdownCommands.clear();
+
     }
 
     @Override
@@ -170,9 +189,42 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         browserLauncher.launchBrowserInDevelopmentMode(url);
     }
 
+    @Override
+    public void setApplicationUrl(String applicationUrl) {
+        this.applicationUrl = applicationUrl;
+        reportApplicationUrl();
+    }
+
+    private void setFullyStarted(boolean fullyStarted) {
+        this.fullyStarted = fullyStarted;
+        reportApplicationUrl();
+    }
+
+    private void reportApplicationUrl() {
+        if (fullyStarted && applicationUrl != null) {
+            getLogger().info("Application running at {}", applicationUrl);
+        }
+    }
+
     private void setDevModeStarted(VaadinContext context) {
         context.setAttribute(DevModeHandlerAlreadyStartedAttribute.class,
                 new DevModeHandlerAlreadyStartedAttribute());
+    }
+
+    private void registerWatcherShutdownCommand(Closeable watcher) {
+        registerShutdownCommand(() -> {
+            try {
+                watcher.close();
+            } catch (Exception e) {
+                getLogger().error("Failed to stop watcher {}",
+                        watcher.getClass().getName(), e);
+            }
+        });
+    }
+
+    @Override
+    public void registerShutdownCommand(Command command) {
+        shutdownCommands.add(command);
     }
 
     /**
@@ -192,4 +244,5 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private static Logger getLogger() {
         return LoggerFactory.getLogger(DevModeHandlerManagerImpl.class);
     }
+
 }

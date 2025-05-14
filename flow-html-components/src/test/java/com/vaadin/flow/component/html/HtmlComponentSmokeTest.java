@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,7 @@ import com.vaadin.flow.component.html.OrderedList.NumberingType;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 public class HtmlComponentSmokeTest {
 
@@ -245,6 +246,29 @@ public class HtmlComponentSmokeTest {
 
         if (method.getDeclaringClass() == FieldSet.class
                 && method.getName().startsWith("setContent")) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == IFrame.class
+                && method.getName().startsWith("setSrc")) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == HtmlObject.class
+                && method.getName().startsWith("setData")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().startsWith("setHref")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Image.class
+                && method.getName().startsWith("setSrc")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
             return true;
         }
 

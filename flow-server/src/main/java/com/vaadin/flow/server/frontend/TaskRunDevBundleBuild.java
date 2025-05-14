@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -98,8 +96,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         getLogger().info(
                 "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
 
-        runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
-                "build");
+        runFrontendBuildTool("Vite", "vite", "vite", "build");
 
         copyPackageLockToBundleFolder();
 
@@ -110,8 +107,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return LoggerFactory.getLogger(TaskRunDevBundleBuild.class);
     }
 
-    private void runFrontendBuildTool(String toolName, String executable,
-            Map<String, String> environment, String... params)
+    private void runFrontendBuildTool(String toolName, String packageName,
+            String binaryName, String... params)
             throws ExecutionFailedException {
         Logger logger = getLogger();
 
@@ -123,10 +120,21 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
         settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
+        settings.setIgnoreVersionChecks(
+                options.isFrontendIgnoreVersionChecks());
         FrontendTools frontendTools = new FrontendTools(settings);
 
-        File buildExecutable = new File(options.getNpmFolder(),
-                "node_modules/" + executable);
+        File buildExecutable;
+        try {
+            buildExecutable = frontendTools.getNpmPackageExecutable(packageName,
+                    binaryName, options.getNpmFolder()).toFile();
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new IllegalStateException(String.format("""
+                    Unable to locate %s executable. Expected the "%s" npm \
+                    package to be installed and to provide the "%s" binary. \
+                    Double check that the npm dependencies are installed.""",
+                    toolName, packageName, binaryName));
+        }
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate %s executable by path '%s'. Double"

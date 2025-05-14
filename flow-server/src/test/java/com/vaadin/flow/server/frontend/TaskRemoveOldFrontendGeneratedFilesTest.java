@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -151,7 +151,16 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
 
     @Test
     public void execute_knownFiles_notDeleted() throws Exception {
-        Set<File> knownFiles = Set.of(new File(generatedFolder, "routes.tsx"),
+        Set<File> knownFiles = Set.of(generatedFolder.toPath()
+                .resolve(Path.of("flow", "generated-flow-imports.js")).toFile(),
+                generatedFolder.toPath()
+                        .resolve(Path.of("flow", "generated-flow-imports.d.ts"))
+                        .toFile(),
+                generatedFolder.toPath()
+                        .resolve(Path.of("flow",
+                                "generated-flow-webcomponent-imports.js"))
+                        .toFile(),
+                new File(generatedFolder, "routes.tsx"),
                 new File(generatedFolder, "routes.ts"), generatedFolder.toPath()
                         .resolve(Path.of("flow", "Flow.tsx")).toFile(),
                 new File(generatedFolder, "file-routes.ts"));

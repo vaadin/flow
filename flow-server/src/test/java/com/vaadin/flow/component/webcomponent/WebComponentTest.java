@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,9 @@ package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,6 +30,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
@@ -60,14 +64,14 @@ public class WebComponentTest {
 
     @Test
     public void fireEvent_doesNotThrowOnNullObjectData() {
-        webComponent.fireEvent("name", null);
+        webComponent.fireEvent("name", (JsonNode) null);
     }
 
     @Test
     public void fireEvent_throwsWhenOptionsIsNull() {
         exception.expect(NullPointerException.class);
         exception.expectMessage("options");
-        webComponent.fireEvent("name", null, null);
+        webComponent.fireEvent("name", (JsonNode) null, null);
     }
 
     @Test
@@ -107,7 +111,7 @@ public class WebComponentTest {
 
         WebComponentBinding<Component> binding = new WebComponentBinding<>(
                 mock(Component.class));
-        binding.bindProperty(intConfiguration, false, null);
+        binding.bindProperty(intConfiguration, false);
 
         WebComponent<Component> webComponent = new WebComponent<>(binding,
                 new Element("tag"));
@@ -131,17 +135,21 @@ public class WebComponentTest {
                 Component.class, "string", String.class, "");
         PropertyConfigurationImpl<Component, Boolean> booleanConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "boolean", Boolean.class, false);
+        PropertyConfigurationImpl<Component, BaseJsonNode> jsonNodeConfiguration = new PropertyConfigurationImpl<>(
+                Component.class, "jsonNode", BaseJsonNode.class,
+                JacksonUtils.nullNode());
         PropertyConfigurationImpl<Component, JsonValue> jsonConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "json", JsonValue.class, Json.createNull());
 
         // binding
         WebComponentBinding<Component> binding = new WebComponentBinding<>(
                 mock(Component.class));
-        binding.bindProperty(intConfiguration, false, null);
-        binding.bindProperty(doubleConfiguration, false, null);
-        binding.bindProperty(stringConfiguration, false, null);
-        binding.bindProperty(booleanConfiguration, false, null);
-        binding.bindProperty(jsonConfiguration, false, null);
+        binding.bindProperty(intConfiguration, false);
+        binding.bindProperty(doubleConfiguration, false);
+        binding.bindProperty(stringConfiguration, false);
+        binding.bindProperty(booleanConfiguration, false);
+        binding.bindProperty(jsonNodeConfiguration, false);
+        binding.bindProperty(jsonConfiguration, false);
 
         // test
         WebComponent<Component> webComponent = new WebComponent<>(binding,
@@ -163,9 +171,11 @@ public class WebComponentTest {
         verify(element, Mockito.times(4)).executeJs(
                 ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 ArgumentMatchers.any());
+        webComponent.setProperty(jsonNodeConfiguration,
+                (ValueNode) JacksonUtils.createNode(true));
         // JsonValue has a different number of arguments
         webComponent.setProperty(jsonConfiguration, Json.create(true));
-        verify(element, Mockito.times(5)).executeJs(
+        verify(element, Mockito.times(6)).executeJs(
                 ArgumentMatchers.anyString(),
                 ArgumentMatchers.any(Serializable[].class));
     }

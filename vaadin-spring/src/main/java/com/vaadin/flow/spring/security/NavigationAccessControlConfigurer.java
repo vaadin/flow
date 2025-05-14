@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,7 +55,8 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * {@link NavigationAccessControlConfigurer} bean.
  *
  * <pre>
- * {@code @Bean
+ * {@code
+ * @Bean
  * NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
  *     return new NavigationAccessControlConfigurer()
  *             .withRoutePathAccessChecker().withLoginView(LoginView.class);
@@ -70,7 +71,8 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * prevent cyclic dependencies errors.
  *
  * <pre>
- * {@code @Bean
+ * {@code
+ * @Bean
  * class SecurityConfig extends VaadinWebSecurity {
  *     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
  *         return new NavigationAccessControlConfigurer()

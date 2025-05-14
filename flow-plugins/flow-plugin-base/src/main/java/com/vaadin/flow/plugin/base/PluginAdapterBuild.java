@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,8 +16,7 @@
 package com.vaadin.flow.plugin.base;
 
 import java.io.File;
-
-import com.vaadin.flow.server.InitParameters;
+import java.util.function.Consumer;
 
 /**
  * Gives access to plugin-specific implementations and configurations.
@@ -95,4 +94,28 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      * @return {@code true} if the bundle should be compressed
      */
     boolean compressBundle();
+
+    /**
+     * Checks if the artifact defined by given coordinates is a dependency of
+     * the project, present at runtime.
+     * <p>
+     * </p>
+     * If the dependency is missing or in invalid scope, the method produces a
+     * message containing the necessary instructions to fix the project and
+     * notifies the caller by invoking the provided message consumer, if
+     * present.
+     *
+     * @param groupId
+     *            dependency groupId, not {@literal null}.
+     * @param artifactId
+     *            dependency artifactId, not {@literal null}.
+     * @param missingDependencyMessageConsumer
+     *            a consumer for missing dependency message produced by the
+     *            adapter.
+     * @return {@literal true} if the given coordinates identify a project
+     *         dependency present at runtime, otherwise {@literal false}.
+     */
+    boolean checkRuntimeDependency(String groupId, String artifactId,
+            Consumer<String> missingDependencyMessageConsumer);
+
 }

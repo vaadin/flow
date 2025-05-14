@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,15 +21,14 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -105,17 +104,16 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             }
         }
 
-        readBuildInfo(initParameters, vaadinConfig.getVaadinContext());
+        readBuildInfo(initParameters);
         return initParameters;
     }
 
-    private void readBuildInfo(Properties initParameters,
-            VaadinContext context) {
+    private void readBuildInfo(Properties initParameters) {
         String json = getTokenFileContent(initParameters::getProperty);
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
-            JsonObject buildInfo = JsonUtil.parse(json);
+            JsonNode buildInfo = JacksonUtils.readTree(json);
             Map<String, String> properties = getConfigParametersUsingTokenData(
                     buildInfo);
             // only insert properties that haven't been defined

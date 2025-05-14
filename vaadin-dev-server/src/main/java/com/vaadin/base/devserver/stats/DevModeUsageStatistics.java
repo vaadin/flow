@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Version;
 import com.vaadin.pro.licensechecker.MachineId;
-
-import elemental.json.JsonObject;
 
 /**
  * Singleton for collecting development time usage metrics
@@ -142,7 +140,7 @@ public class DevModeUsageStatistics {
      * @param data
      *            the data from the browser
      */
-    public static void handleBrowserData(JsonObject data) {
+    public static void handleBrowserData(JsonNode data) {
         getLogger().debug("Received client usage statistics from the browser");
 
         if (!isStatisticsEnabled()) {
@@ -151,7 +149,7 @@ public class DevModeUsageStatistics {
 
         get().storage.update((global, project) -> {
             try {
-                String json = data.get("browserData").toJson();
+                String json = data.get("browserData").toString();
                 JsonNode clientData = JsonHelpers.getJsonMapper()
                         .readTree(json);
                 if (clientData != null && clientData.isObject()) {

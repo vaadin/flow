@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -94,6 +95,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     private ShortcutEventListener eventListener;
 
     private List<Registration> registrations = new ArrayList<>();
+
+    private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
     // beforeClientResponse callback
     // needs to be an anonymous class to prevent deserialization issues
@@ -518,6 +521,39 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
+     * Configure whether this listener will be called even in cases when the
+     * component is disabled. Defaults to
+     * {@link DisabledUpdateMode#ONLY_WHEN_ENABLED}.
+     *
+     * @param disabledUpdateMode
+     *            {@link DisabledUpdateMode#ONLY_WHEN_ENABLED} to only fire
+     *            events when the component is enabled,
+     *            {@link DisabledUpdateMode#ALWAYS} to fire events also when the
+     *            component is disabled.
+     *
+     * @return this registration, for chaining
+     */
+    public ShortcutRegistration setDisabledUpdateMode(
+            DisabledUpdateMode disabledUpdateMode) {
+        if (disabledUpdateMode == null) {
+            throw new IllegalArgumentException(
+                    "RPC communication control mode for disabled element must not be null");
+        }
+        mode = disabledUpdateMode;
+        return this;
+    }
+
+    /**
+     * Returns whether this listener will be called even in cases when the
+     * component is disabled.
+     *
+     * @return current disabledUpdateMode for this listener
+     */
+    public DisabledUpdateMode getDisabledUpdateMode() {
+        return mode;
+    }
+
+    /**
      * Used for testing purposes.
      *
      * @return Is there a need to write shortcut changes to the client
@@ -637,8 +673,9 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private void fireShortcutEvent(Component component) {
-        if (ancestorsOrSelfAreVisible(lifecycleOwner)
-                && lifecycleOwner.getElement().isEnabled()) {
+        if (ancestorsOrSelfAreVisible(lifecycleOwner) && (lifecycleOwner
+                .getElement().isEnabled()
+                || DisabledUpdateMode.ALWAYS.equals(getDisabledUpdateMode()))) {
             invokeShortcutEventListener(component);
         }
     }

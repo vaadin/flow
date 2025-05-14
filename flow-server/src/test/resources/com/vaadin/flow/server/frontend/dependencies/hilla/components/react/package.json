@@ -1,13 +1,6 @@
 {
-  "name": "hilla-components-dependencies",
-  "version": "1.0.0",
+  "private": true,
   "description": "A list of Hilla React components that are added by Flow automatically to package.json",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "Apache-2.0",
   "dependencies": {
     "@vaadin/hilla-react-auth": "24.4.0-alpha2",
     "@vaadin/hilla-react-crud": "24.4.0-alpha2",

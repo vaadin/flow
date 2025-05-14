@@ -12,11 +12,12 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Utility methods to handle application theme CSS content.
@@ -86,7 +87,7 @@ public class CssBundler {
      * @throws IOException
      *             if filesystem resources can not be read.
      * @deprecated this method does not resolve theme assets, use
-     *             {@link #inlineImports(File, File, JsonObject)} instead.
+     *             {@link #inlineImports(File, File, JsonNode)} instead.
      */
     @Deprecated
     public static String inlineImports(File themeFolder, File cssFile)
@@ -120,7 +121,7 @@ public class CssBundler {
      *             if filesystem resources can not be read.
      */
     public static String inlineImports(File themeFolder, File cssFile,
-            JsonObject themeJson) throws IOException {
+            JsonNode themeJson) throws IOException {
         return inlineImports(themeFolder, cssFile,
                 getThemeAssetsAliases(themeJson));
     }
@@ -221,35 +222,42 @@ public class CssBundler {
         boolean potentialAsset = false;
         if (!assetAliases.isEmpty()) {
             Path themeFolderPath = themeFolder.toPath().normalize();
-            Path normalized = themeFolderPath.resolve(potentialFile.toPath())
-                    .normalize();
-            if (normalized.startsWith(themeFolderPath)) {
-                // path is relative to theme folder, check if it matches an
-                // asset
-                String relativePath = themeFolderPath.relativize(normalized)
-                        .toString().replaceAll("\\\\", "/");
-                potentialAsset = assetAliases.stream()
-                        .anyMatch(relativePath::startsWith);
-                if (potentialAsset) {
-                    getLogger().debug(
-                            "Considering '{}' a potential asset of theme '{}'",
-                            relativePath, themeFolder.getName());
+            try {
+                Path normalized = themeFolderPath
+                        .resolve(potentialFile.toPath()).normalize();
+                if (normalized.startsWith(themeFolderPath)) {
+                    // path is relative to theme folder, check if it matches an
+                    // asset
+                    String relativePath = themeFolderPath.relativize(normalized)
+                            .toString().replaceAll("\\\\", "/");
+                    potentialAsset = assetAliases.stream()
+                            .anyMatch(relativePath::startsWith);
+                    if (potentialAsset) {
+                        getLogger().debug(
+                                "Considering '{}' a potential asset of theme '{}'",
+                                relativePath, themeFolder.getName());
+                    }
                 }
+            } catch (IllegalArgumentException e) {
+                getLogger().debug(
+                        "Unresolvable path '{}'. Not considered as a asset of theme '{}'",
+                        potentialFile, themeFolder.getName());
+                return false;
             }
         }
         return potentialAsset;
     }
 
-    private static Set<String> getThemeAssetsAliases(JsonObject themeJson) {
-        JsonObject assets = themeJson != null && themeJson.hasKey("assets")
-                ? themeJson.getObject("assets")
+    private static Set<String> getThemeAssetsAliases(JsonNode themeJson) {
+        JsonNode assets = themeJson != null && themeJson.has("assets")
+                ? themeJson.get("assets")
                 : null;
         Set<String> aliases = new HashSet<>();
         if (assets != null) {
-            for (String nmpPackage : assets.keys()) {
-                JsonObject packageAliases = assets.getObject(nmpPackage);
-                for (String path : packageAliases.keys()) {
-                    aliases.add(packageAliases.getString(path) + "/");
+            for (String nmpPackage : JacksonUtils.getKeys(assets)) {
+                JsonNode packageAliases = assets.get(nmpPackage);
+                for (String path : JacksonUtils.getKeys(packageAliases)) {
+                    aliases.add(packageAliases.get(path).textValue() + "/");
                 }
             }
         }

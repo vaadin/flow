@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,13 +20,13 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.TargetElement;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Data holder class for collected {@link Inline} annotations to be added to the
@@ -36,9 +36,9 @@ import elemental.json.JsonObject;
  */
 public class InlineTargets {
 
-    private final Map<Inline.Position, List<JsonObject>> inlineHead = new EnumMap<>(
+    private final Map<Inline.Position, List<ObjectNode>> inlineHead = new EnumMap<>(
             Inline.Position.class);
-    private final Map<Inline.Position, List<JsonObject>> inlineBody = new EnumMap<>(
+    private final Map<Inline.Position, List<ObjectNode>> inlineBody = new EnumMap<>(
             Inline.Position.class);
 
     /**
@@ -58,7 +58,7 @@ public class InlineTargets {
             type = inline.wrapping();
         }
 
-        JsonObject dependency = Json.createObject();
+        ObjectNode dependency = JacksonUtils.createObjectNode();
         dependency.put(Dependency.KEY_TYPE, type.toString());
         dependency.put("LoadMode", LoadMode.INLINE.toString());
 
@@ -93,7 +93,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    public List<JsonObject> getInlineHead(Inline.Position position) {
+    public List<ObjectNode> getInlineHead(Inline.Position position) {
         return inlineHead.computeIfAbsent(position, key -> new ArrayList<>());
     }
 
@@ -104,7 +104,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    public List<JsonObject> getInlineBody(Inline.Position position) {
+    public List<ObjectNode> getInlineBody(Inline.Position position) {
         return inlineBody.computeIfAbsent(position, key -> new ArrayList<>());
     }
 }

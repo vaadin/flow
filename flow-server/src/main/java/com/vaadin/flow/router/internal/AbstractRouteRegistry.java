@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
@@ -35,6 +36,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.NotFoundException;
@@ -55,8 +57,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.server.menu.MenuRegistry;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
 import static java.util.stream.Collectors.toList;
@@ -323,7 +324,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                                 : menu.title(),
                         (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
                                 : menu.order(),
-                        excludeFromMenu, menu.icon()))
+                        excludeFromMenu,
+                        (menu.icon().isBlank() ? null : menu.icon()), target))
                 .orElse(null);
 
         RouteData route = new RouteData(parentLayouts, template, parameters,
@@ -401,6 +403,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
+        RouteUtil.checkForClientRouteCollisions(VaadinService.getCurrent(),
+                HasUrlParameterFormat.getTemplate(path, navigationTarget));
         configureWithFullTemplate(path, navigationTarget,
                 (configuration, fullTemplate) -> configuration
                         .setRoute(fullTemplate, navigationTarget, parentChain));
@@ -608,6 +612,23 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         synchronized (layouts) {
             layouts.put(layout.getAnnotation(Layout.class).value(), layout);
         }
+    }
+
+    void updateLayout(Class<? extends RouterLayout> layout) {
+        if (layout == null) {
+            return;
+        }
+        synchronized (layouts) {
+            layouts.entrySet()
+                    .removeIf(entry -> layout.equals(entry.getValue()));
+            if (layout.isAnnotationPresent(Layout.class)) {
+                layouts.put(layout.getAnnotation(Layout.class).value(), layout);
+            }
+        }
+    }
+
+    Collection<Class<?>> getLayouts() {
+        return Set.copyOf(layouts.values());
     }
 
     @Override

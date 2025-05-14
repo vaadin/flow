@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -96,6 +96,18 @@ public interface VaadinHotswapper {
             Set<Class<?>> classes, boolean redefined) {
         // no-op by default
         return false;
+    }
+
+    /**
+     * Called by Vaadin hotswap entry point after all hotswap related operations
+     * have been completed.
+     *
+     * @param event
+     *            an event containing information about the hotswap operation.
+     */
+    default void onHotswapComplete(HotswapCompleteEvent event) {
+        // no-op by default
+        return;
     }
 
 }

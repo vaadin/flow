@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,6 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
-import jakarta.websocket.CloseReason.CloseCodes;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -26,8 +24,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
+import jakarta.websocket.CloseReason.CloseCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +41,8 @@ public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
     private final Runnable onClose;
-    private final CompletableFuture<WebSocket> clientWebsocket;
     private final List<CharSequence> parts = new ArrayList<>();
+    private CompletableFuture<WebSocket> clientWebsocket = new CompletableFuture<>();
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ViteWebsocketConnection.class);
@@ -70,15 +71,20 @@ public class ViteWebsocketConnection implements Listener {
         this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + path);
-        clientWebsocket = HttpClient.newHttpClient().newWebSocketBuilder()
+        HttpClient.newHttpClient().newWebSocketBuilder()
                 .subprotocols(subProtocol).buildAsync(uri, this)
                 .whenComplete(((webSocket, failure) -> {
                     if (failure == null) {
                         getLogger().debug(
                                 "Connection to {} using the {} protocol established",
                                 uri, webSocket.getSubprotocol());
+                        if (clientWebsocket.complete(webSocket)) {
+                            getLogger().trace(
+                                    "Websocket future completed in client build completion");
+                        }
                     } else {
                         getLogger().debug("Failed to connect to {}", uri);
+                        clientWebsocket.completeExceptionally(failure);
                         onConnectionFailure.accept(failure);
                     }
                 }));
@@ -88,6 +94,9 @@ public class ViteWebsocketConnection implements Listener {
     public void onOpen(WebSocket webSocket) {
         getLogger().debug("Connected using the {} protocol",
                 webSocket.getSubprotocol());
+        if (clientWebsocket.complete(webSocket)) {
+            getLogger().trace("Websocket future completed in onOpen");
+        }
         Listener.super.onOpen(webSocket);
     }
 
@@ -143,10 +152,29 @@ public class ViteWebsocketConnection implements Listener {
      *             if there is a problem with the connection
      */
     public void close() throws InterruptedException, ExecutionException {
+        if (clientWebsocket == null) {
+            getLogger().debug("Connection already closed");
+            return;
+        }
         getLogger().debug("Closing the connection");
-        CompletableFuture<WebSocket> closeRequest = clientWebsocket.get()
-                .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
-        closeRequest.get();
+        if (clientWebsocket.isDone()) {
+            WebSocket client = clientWebsocket.get();
+            if (!client.isOutputClosed()) {
+                CompletableFuture<WebSocket> closeRequest = client
+                        .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
+                try {
+                    closeRequest.get(500, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    getLogger().debug("Timed out waiting for close request");
+                }
+            }
+        } else {
+            // Websocket client connection has not been established
+            clientWebsocket.cancel(true);
+        }
+        // release HttpClient reference, so its internal executor can be
+        // properly stopped
+        clientWebsocket = null;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,14 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -44,6 +43,7 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PREMIUM_FEATURES;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
@@ -51,6 +51,7 @@ import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
@@ -78,108 +79,127 @@ public class AbstractConfigurationFactory implements Serializable {
      * @return the config parameters
      */
     protected Map<String, String> getConfigParametersUsingTokenData(
-            JsonObject buildInfo) {
+            JsonNode buildInfo) {
         Map<String, String> params = new HashMap<>();
-        if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-            params.put(SERVLET_PARAMETER_PRODUCTION_MODE, String.valueOf(
-                    buildInfo.getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
+        if (buildInfo.has(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            params.put(SERVLET_PARAMETER_PRODUCTION_MODE,
+                    String.valueOf(
+                            buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE)
+                                    .booleanValue()));
         }
-        if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
-                || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+        if (buildInfo.has(EXTERNAL_STATS_FILE_TOKEN)
+                || buildInfo.has(EXTERNAL_STATS_URL_TOKEN)) {
             params.put(EXTERNAL_STATS_FILE, Boolean.toString(true));
-            if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+            if (buildInfo.has(EXTERNAL_STATS_URL_TOKEN)) {
                 params.put(EXTERNAL_STATS_URL,
-                        buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
+                        buildInfo.get(EXTERNAL_STATS_URL_TOKEN).textValue());
             }
             // NO OTHER CONFIGURATION:
             return params;
         }
-        if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
-            params.put(SERVLET_PARAMETER_INITIAL_UIDL, String.valueOf(
-                    buildInfo.getBoolean(SERVLET_PARAMETER_INITIAL_UIDL)));
+        if (buildInfo.has(SERVLET_PARAMETER_INITIAL_UIDL)) {
+            params.put(SERVLET_PARAMETER_INITIAL_UIDL, String.valueOf(buildInfo
+                    .get(SERVLET_PARAMETER_INITIAL_UIDL).booleanValue()));
             // Need to be sure that we remove the system property,
             // because it has priority in the configuration getter
             System.clearProperty(
                     VAADIN_PREFIX + SERVLET_PARAMETER_INITIAL_UIDL);
         }
 
-        if (buildInfo.hasKey(NPM_TOKEN)) {
-            params.put(PROJECT_BASEDIR, buildInfo.getString(NPM_TOKEN));
-            verifyFolderExists(params, buildInfo.getString(NPM_TOKEN));
+        if (buildInfo.has(NPM_TOKEN)) {
+            params.put(PROJECT_BASEDIR, buildInfo.get(NPM_TOKEN).textValue());
+            verifyFolderExists(params, buildInfo.get(NPM_TOKEN).textValue());
         }
 
-        if (buildInfo.hasKey(NODE_VERSION)) {
-            params.put(NODE_VERSION, buildInfo.getString(NODE_VERSION));
+        if (buildInfo.has(NODE_VERSION)) {
+            params.put(NODE_VERSION, buildInfo.get(NODE_VERSION).textValue());
         }
-        if (buildInfo.hasKey(NODE_DOWNLOAD_ROOT)) {
+        if (buildInfo.has(NODE_DOWNLOAD_ROOT)) {
             params.put(NODE_DOWNLOAD_ROOT,
-                    buildInfo.getString(NODE_DOWNLOAD_ROOT));
+                    buildInfo.get(NODE_DOWNLOAD_ROOT).textValue());
         }
 
-        if (buildInfo.hasKey(FRONTEND_TOKEN)) {
+        if (buildInfo.has(FRONTEND_TOKEN)) {
             params.put(FrontendUtils.PARAM_FRONTEND_DIR,
-                    buildInfo.getString(FRONTEND_TOKEN));
+                    buildInfo.get(FRONTEND_TOKEN).textValue());
             // Only verify frontend folder if it's not a subfolder of the
             // npm folder.
-            if (!buildInfo.hasKey(NPM_TOKEN)
-                    || !buildInfo.getString(FRONTEND_TOKEN)
-                            .startsWith(buildInfo.getString(NPM_TOKEN))) {
-                verifyFolderExists(params, buildInfo.getString(FRONTEND_TOKEN));
+            if (!buildInfo.has(NPM_TOKEN)
+                    || !buildInfo.get(FRONTEND_TOKEN).textValue()
+                            .startsWith(buildInfo.get(NPM_TOKEN).textValue())) {
+                verifyFolderExists(params,
+                        buildInfo.get(FRONTEND_TOKEN).textValue());
             }
         }
 
         // These should be internal only so if there is a System
         // property override then the user probably knows what
         // they are doing.
-        if (buildInfo.hasKey(FRONTEND_HOTDEPLOY)) {
-            params.put(FRONTEND_HOTDEPLOY,
-                    String.valueOf(buildInfo.getBoolean(FRONTEND_HOTDEPLOY)));
-        } else if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-            params.put(FRONTEND_HOTDEPLOY, String.valueOf(
-                    buildInfo.getBoolean(SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+        if (buildInfo.has(FRONTEND_HOTDEPLOY)) {
+            params.put(FRONTEND_HOTDEPLOY, String
+                    .valueOf(buildInfo.get(FRONTEND_HOTDEPLOY).booleanValue()));
+        } else if (buildInfo.has(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            params.put(FRONTEND_HOTDEPLOY, String.valueOf(buildInfo
+                    .get(SERVLET_PARAMETER_ENABLE_DEV_SERVER).booleanValue()));
         }
-        if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
-            params.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, String.valueOf(
-                    buildInfo.getBoolean(SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+        if (buildInfo.has(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            params.put(SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                    String.valueOf(
+                            buildInfo.get(SERVLET_PARAMETER_REUSE_DEV_SERVER)
+                                    .booleanValue()));
         }
-        if (buildInfo.hasKey(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
-            params.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    buildInfo.getString(CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
+        if (buildInfo.has(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
+            params.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN, buildInfo
+                    .get(CONNECT_JAVA_SOURCE_FOLDER_TOKEN).textValue());
         }
-        if (buildInfo.hasKey(Constants.JAVA_RESOURCE_FOLDER_TOKEN)) {
-            params.put(Constants.JAVA_RESOURCE_FOLDER_TOKEN,
-                    buildInfo.getString(Constants.JAVA_RESOURCE_FOLDER_TOKEN));
+        if (buildInfo.has(Constants.JAVA_RESOURCE_FOLDER_TOKEN)) {
+            params.put(Constants.JAVA_RESOURCE_FOLDER_TOKEN, buildInfo
+                    .get(Constants.JAVA_RESOURCE_FOLDER_TOKEN).textValue());
         }
-        if (buildInfo.hasKey(CONNECT_OPEN_API_FILE_TOKEN)) {
+        if (buildInfo.has(CONNECT_OPEN_API_FILE_TOKEN)) {
             params.put(CONNECT_OPEN_API_FILE_TOKEN,
-                    buildInfo.getString(CONNECT_OPEN_API_FILE_TOKEN));
+                    buildInfo.get(CONNECT_OPEN_API_FILE_TOKEN).textValue());
         }
-        if (buildInfo.hasKey(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
-            params.put(CONNECT_APPLICATION_PROPERTIES_TOKEN,
-                    buildInfo.getString(CONNECT_APPLICATION_PROPERTIES_TOKEN));
+        if (buildInfo.has(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
+            params.put(CONNECT_APPLICATION_PROPERTIES_TOKEN, buildInfo
+                    .get(CONNECT_APPLICATION_PROPERTIES_TOKEN).textValue());
         }
-        if (buildInfo.hasKey(PROJECT_FRONTEND_GENERATED_DIR_TOKEN)) {
-            params.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                    buildInfo.getString(PROJECT_FRONTEND_GENERATED_DIR_TOKEN));
+        if (buildInfo.has(PROJECT_FRONTEND_GENERATED_DIR_TOKEN)) {
+            params.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN, buildInfo
+                    .get(PROJECT_FRONTEND_GENERATED_DIR_TOKEN).textValue());
         }
-        if (buildInfo.hasKey(BUILD_FOLDER)) {
-            params.put(BUILD_FOLDER, buildInfo.getString(BUILD_FOLDER));
+        if (buildInfo.has(BUILD_FOLDER)) {
+            params.put(BUILD_FOLDER, buildInfo.get(BUILD_FOLDER).textValue());
         }
-        if (buildInfo.hasKey(DISABLE_PREPARE_FRONTEND_CACHE)) {
+        if (buildInfo.has(DISABLE_PREPARE_FRONTEND_CACHE)) {
             UsageStatistics.markAsUsed("flow/always-execute-prepare-frontend",
                     null);
         }
-        if (buildInfo.hasKey(REACT_ENABLE)) {
+        if (buildInfo.has(REACT_ENABLE)) {
             params.put(REACT_ENABLE,
-                    String.valueOf(buildInfo.getBoolean(REACT_ENABLE)));
+                    String.valueOf(buildInfo.get(REACT_ENABLE).booleanValue()));
         }
-        if (buildInfo.hasKey(APPLICATION_IDENTIFIER)) {
+        if (buildInfo.has(APPLICATION_IDENTIFIER)) {
             params.put(APPLICATION_IDENTIFIER,
-                    buildInfo.getString(APPLICATION_IDENTIFIER));
+                    buildInfo.get(APPLICATION_IDENTIFIER).textValue());
         }
-        if (buildInfo.hasKey(DAU_TOKEN)) {
+        if (buildInfo.has(DAU_TOKEN)) {
             params.put(DAU_TOKEN,
-                    String.valueOf(buildInfo.getBoolean(DAU_TOKEN)));
+                    String.valueOf(buildInfo.get(DAU_TOKEN).booleanValue()));
+        }
+        if (buildInfo.has(PREMIUM_FEATURES)) {
+            params.put(PREMIUM_FEATURES, String
+                    .valueOf(buildInfo.get(PREMIUM_FEATURES).booleanValue()));
+        }
+
+        if (buildInfo.has(InitParameters.FRONTEND_EXTRA_EXTENSIONS)) {
+            params.put(InitParameters.FRONTEND_EXTRA_EXTENSIONS, buildInfo
+                    .get(InitParameters.FRONTEND_EXTRA_EXTENSIONS).textValue());
+        }
+
+        if (buildInfo.has(NPM_EXCLUDE_WEB_COMPONENTS)) {
+            params.put(NPM_EXCLUDE_WEB_COMPONENTS, String.valueOf(
+                    buildInfo.get(NPM_EXCLUDE_WEB_COMPONENTS).booleanValue()));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);
@@ -189,7 +209,7 @@ public class AbstractConfigurationFactory implements Serializable {
     /**
      * Sets to the dev mode properties to the configuration parameters.
      *
-     * @see #getConfigParametersUsingTokenData(JsonObject)
+     * @see #getConfigParametersUsingTokenData(JsonNode)
      *
      * @param params
      *            the configuration parameters to set dev mode properties to
@@ -197,29 +217,30 @@ public class AbstractConfigurationFactory implements Serializable {
      *            the token file data
      */
     protected void setDevModePropertiesUsingTokenData(
-            Map<String, String> params, JsonObject buildInfo) {
+            Map<String, String> params, JsonNode buildInfo) {
         // read dev mode properties from the token and set init parameter only
         // if it's not yet set
         if (params.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM) == null
                 && buildInfo
-                        .hasKey(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
+                        .has(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
             params.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                    String.valueOf(buildInfo.getBoolean(
-                            InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)));
+                    String.valueOf(buildInfo
+                            .get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
+                            .booleanValue()));
         }
         if (params.get(InitParameters.SERVLET_PARAMETER_ENABLE_BUN) == null
-                && buildInfo
-                        .hasKey(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)) {
+                && buildInfo.has(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)) {
             params.put(InitParameters.SERVLET_PARAMETER_ENABLE_BUN,
-                    String.valueOf(buildInfo.getBoolean(
-                            InitParameters.SERVLET_PARAMETER_ENABLE_BUN)));
+                    String.valueOf(buildInfo
+                            .get(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)
+                            .booleanValue()));
         }
         if (params.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE) == null
-                && buildInfo
-                        .hasKey(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
+                && buildInfo.has(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
             params.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
-                    String.valueOf(buildInfo.getBoolean(
-                            InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)));
+                    String.valueOf(buildInfo
+                            .get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
+                            .booleanValue()));
         }
     }
 

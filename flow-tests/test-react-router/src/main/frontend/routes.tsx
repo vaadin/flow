@@ -1,6 +1,6 @@
 import ReactView from "Frontend/ReactView";
 import { serverSideRoutes } from "Frontend/generated/flow/Flow";
-import { createBrowserRouter, RouteObject } from "react-router-dom";
+import { createBrowserRouter, RouteObject } from "react-router";
 
 function build() {
     const routes = [

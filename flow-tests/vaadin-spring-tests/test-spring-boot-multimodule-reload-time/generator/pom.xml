@@ -6,7 +6,7 @@
     <parent>
         <artifactId>test-spring-boot-multimodule-reload-time</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>test-spring-boot-multimodule-reload-time-generator</artifactId>
     <name>The code generator Maven plugin for a Spring boot multimodule reload
@@ -59,7 +59,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.14.0</version>
+                    <version>3.15.1</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true
                         </skipErrorNoDescriptorsFound>

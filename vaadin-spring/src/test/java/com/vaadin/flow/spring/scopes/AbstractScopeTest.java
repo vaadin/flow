@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.spring.scopes;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.junit.After;
@@ -30,12 +32,15 @@ import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
@@ -46,12 +51,18 @@ public abstract class AbstractScopeTest {
 
     private VaadinSession session;
 
-    public static class TestSession extends SpringVaadinSession {
+    public static class TestSession extends VaadinSession {
 
-        public TestSession() {
-            super(Mockito.mock(VaadinService.class));
+        private final ReentrantLock lock = new ReentrantLock();
+
+        public TestSession(VaadinService service) {
+            super(service);
         }
 
+        @Override
+        public ReentrantLock getLockInstance() {
+            return this.lock;
+        }
     }
 
     @After
@@ -131,8 +142,12 @@ public abstract class AbstractScopeTest {
 
     @SuppressWarnings("unchecked")
     protected VaadinSession mockSession() {
-        SpringVaadinSession session = Mockito.mock(TestSession.class,
-                Mockito.withSettings().useConstructor());
+        MockService service = Mockito.spy(MockService.class);
+        Mockito.when(service.getRouteRegistry())
+                .thenReturn(Mockito.mock(RouteRegistry.class));
+
+        VaadinSession session = Mockito.mock(TestSession.class,
+                Mockito.withSettings().useConstructor(service));
         doCallRealMethod().when(session).setAttribute(Mockito.any(Class.class),
                 Mockito.any());
         doCallRealMethod().when(session).getAttribute(Mockito.any(Class.class));
@@ -165,6 +180,8 @@ public abstract class AbstractScopeTest {
         when(session.getConfiguration()).thenReturn(config);
 
         VaadinSession.setCurrent(session);
+        ReentrantLock lock = new ReentrantLock();
+        when(session.getLockInstance()).thenReturn(lock);
         when(session.hasLock()).thenReturn(true);
 
         // keep a reference to the session so that it cannot be GCed.
@@ -174,4 +191,12 @@ public abstract class AbstractScopeTest {
     }
 
     protected abstract Scope getScope();
+
+    public static abstract class MockService extends VaadinService {
+
+        @Override
+        public RouteRegistry getRouteRegistry() {
+            return null;
+        }
+    }
 }

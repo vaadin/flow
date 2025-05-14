@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import elemental.json.Json;
 
 /**
  * Excludes dependencies listed in an "exclusions" array of
@@ -43,6 +43,8 @@ public class ExclusionFilter implements Serializable {
 
     private final boolean reactEnabled;
 
+    private final boolean excludeWebComponentNpmPackages;
+
     /**
      * Create a new exclusion filter.
      *
@@ -52,8 +54,24 @@ public class ExclusionFilter implements Serializable {
      *            whether React is enabled
      */
     public ExclusionFilter(ClassFinder finder, boolean reactEnabled) {
+        this(finder, reactEnabled, false);
+    }
+
+    /**
+     * Create a new exclusion filter.
+     *
+     * @param finder
+     *            the class finder to use
+     * @param reactEnabled
+     *            whether React is enabled
+     * @param excludeWebComponentNpmPackages
+     *            whether to exclude web component npm packages
+     */
+    public ExclusionFilter(ClassFinder finder, boolean reactEnabled,
+            boolean excludeWebComponentNpmPackages) {
         this.finder = finder;
         this.reactEnabled = reactEnabled;
+        this.excludeWebComponentNpmPackages = excludeWebComponentNpmPackages;
     }
 
     /**
@@ -93,9 +111,9 @@ public class ExclusionFilter implements Serializable {
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(
+                    JacksonUtils.readTree(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    reactEnabled);
+                    reactEnabled, excludeWebComponentNpmPackages);
             return convert.getExclusions();
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -42,7 +44,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -50,9 +52,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -277,7 +276,7 @@ public class TaskRunNpmInstallTest {
     }
 
     public void writeLocalHash(String hash) throws IOException {
-        final JsonObject localHash = Json.createObject();
+        final ObjectNode localHash = JacksonUtils.createObjectNode();
         localHash.put(HASH_KEY, hash);
 
         final File localHashFile = new File(options.getNodeModulesFolder(),
@@ -317,7 +316,7 @@ public class TaskRunNpmInstallTest {
         getNodeUpdater().modified = true;
 
         // manually fake TaskUpdatePackages.
-        JsonObject packageJson = getNodeUpdater().getPackageJson();
+        ObjectNode packageJson = getNodeUpdater().getPackageJson();
         updatePackageHash(packageJson);
         getNodeUpdater().writePackageFile(packageJson);
 
@@ -330,19 +329,19 @@ public class TaskRunNpmInstallTest {
 
         String fileContent = FileUtils.readFileToString(localHashFile,
                 UTF_8.name());
-        JsonObject localHash = Json.parse(fileContent);
+        JsonNode localHash = JacksonUtils.readTree(fileContent);
         Assert.assertNotEquals("We should have a non empty hash key", "",
-                localHash.getString(HASH_KEY));
+                localHash.get(HASH_KEY).textValue());
 
         // Update package json and hash as if someone had pushed to code repo.
         packageJson = getNodeUpdater().getPackageJson();
-        packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES)
+        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY).get(DEPENDENCIES))
                 .put("a-avataaar", "^1.2.5");
-        String hash = packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
+        String hash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).textValue();
         updatePackageHash(packageJson);
 
         Assert.assertNotEquals("Hash should have been updated", hash,
-                packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
+                packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).textValue());
 
         getNodeUpdater().writePackageFile(packageJson);
         logger = Mockito.mock(Logger.class);
@@ -380,11 +379,12 @@ public class TaskRunNpmInstallTest {
                 StandardCharsets.UTF_8);
 
         File packageJsonFile = ensurePackageJson();
-        JsonObject packageJson = getNodeUpdater().getPackageJson();
-        packageJson.getObject(DEV_DEPENDENCIES).put("esbuild",
+        JsonNode packageJson = getNodeUpdater().getPackageJson();
+        ((ObjectNode) packageJson.get(DEV_DEPENDENCIES)).put("esbuild",
                 "./fake-esbuild");
-        packageJson.getObject(DEV_DEPENDENCIES).put("foo", "./fake-foo");
-        FileUtils.write(packageJsonFile, packageJson.toJson(),
+        ((ObjectNode) packageJson.get(DEV_DEPENDENCIES)).put("foo",
+                "./fake-foo");
+        FileUtils.write(packageJsonFile, packageJson.toString(),
                 StandardCharsets.UTF_8);
 
     }
@@ -399,13 +399,15 @@ public class TaskRunNpmInstallTest {
                 new File(options.getNodeModulesFolder().getParentFile(),
                         "fake-esbuild"),
                 "package.json");
-        JsonObject esbuildPackageJsonContents = Json.parse(IOUtils.toString(
-                getClass().getResourceAsStream(
-                        "fake-package-with-postinstall.json"),
-                StandardCharsets.UTF_8));
-        esbuildPackageJsonContents.getObject("scripts").remove("postinstall");
-        FileUtils.write(esbuildPackageJson, esbuildPackageJsonContents.toJson(),
-                StandardCharsets.UTF_8);
+        JsonNode esbuildPackageJsonContents = JacksonUtils
+                .readTree(IOUtils.toString(
+                        getClass().getResourceAsStream(
+                                "fake-package-with-postinstall.json"),
+                        StandardCharsets.UTF_8));
+        ((ObjectNode) esbuildPackageJsonContents.get("scripts"))
+                .remove("postinstall");
+        FileUtils.write(esbuildPackageJson,
+                esbuildPackageJsonContents.toString(), StandardCharsets.UTF_8);
 
         logger = new MockLogger();
         Assert.assertTrue(logger.isDebugEnabled());
@@ -476,17 +478,19 @@ public class TaskRunNpmInstallTest {
         setupEsbuildAndFooInstallation();
 
         String packageJsonHash = getNodeUpdater().getPackageJson()
-                .getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
-        JsonObject vaadinJson = Json.createObject();
+                .get(VAADIN_DEP_KEY).get(HASH_KEY).textValue();
+        ObjectNode vaadinJson = JacksonUtils.createObjectNode();
         vaadinJson.put(HASH_KEY, packageJsonHash);
         vaadinJson.put(PROJECT_FOLDER, npmFolder.getAbsolutePath());
         File vaadinJsonFile = getNodeUpdater().getVaadinJsonFile();
 
-        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toJson(), UTF_8);
+        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toString(),
+                UTF_8);
 
         Assert.assertFalse(task.isVaadinHashOrProjectFolderUpdated());
         vaadinJson.put(PROJECT_FOLDER, npmFolder.getAbsolutePath() + "foo");
-        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toJson(), UTF_8);
+        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toString(),
+                UTF_8);
         Assert.assertTrue(task.isVaadinHashOrProjectFolderUpdated());
     }
 
@@ -501,22 +505,22 @@ public class TaskRunNpmInstallTest {
      * @param packageJson
      *            package.json json object
      */
-    public void updatePackageHash(JsonObject packageJson) {
-        final JsonObject vaadinDep = packageJson.getObject(VAADIN_DEP_KEY)
-                .getObject(DEPENDENCIES);
-        JsonObject dependencies = Json.createObject();
-        for (String key : vaadinDep.keys()) {
-            dependencies.put(key, vaadinDep.getString(key));
+    public void updatePackageHash(ObjectNode packageJson) {
+        final ObjectNode vaadinDep = (ObjectNode) packageJson
+                .get(VAADIN_DEP_KEY).get(DEPENDENCIES);
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        for (String key : JacksonUtils.getKeys(vaadinDep)) {
+            dependencies.put(key, vaadinDep.get(key).textValue());
         }
-        JsonObject vaadinDevDep = packageJson.getObject(VAADIN_DEP_KEY)
-                .getObject(DEV_DEPENDENCIES);
-        JsonObject devDependencies = Json.createObject();
-        for (String key : vaadinDevDep.keys()) {
-            devDependencies.put(key, vaadinDevDep.getString(key));
+        ObjectNode vaadinDevDep = (ObjectNode) packageJson.get(VAADIN_DEP_KEY)
+                .get(DEV_DEPENDENCIES);
+        ObjectNode devDependencies = JacksonUtils.createObjectNode();
+        for (String key : JacksonUtils.getKeys(vaadinDevDep)) {
+            devDependencies.put(key, vaadinDevDep.get(key).textValue());
         }
-        packageJson.put(DEPENDENCIES, dependencies);
-        packageJson.put(DEV_DEPENDENCIES, devDependencies);
-        packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY,
+        packageJson.set(DEPENDENCIES, dependencies);
+        packageJson.set(DEV_DEPENDENCIES, devDependencies);
+        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY,
                 TaskUpdatePackages.generatePackageJsonHash(packageJson));
         packageJson.remove(DEPENDENCIES);
         packageJson.remove(DEV_DEPENDENCIES);
@@ -575,7 +579,7 @@ public class TaskRunNpmInstallTest {
     private File ensurePackageJson() throws IOException {
         File file = new File(npmFolder, PACKAGE_JSON);
         if (!file.exists()) {
-            JsonObject packageJson = getNodeUpdater().getPackageJson();
+            JsonNode packageJson = getNodeUpdater().getPackageJson();
             getNodeUpdater().writePackageFile(packageJson);
         }
         return file;

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.Assert;
@@ -23,6 +22,7 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -47,9 +47,7 @@ public class GenerateNpmBOMMojoTest {
     public void setUp() throws Exception {
         this.mojo = Mockito.spy(new GenerateNpmBOMMojo());
 
-        MavenProject project = Mockito.mock(MavenProject.class);
         File projectBase = temporaryFolder.getRoot();
-        Mockito.when(project.getBasedir()).thenReturn(projectBase);
         File frontendDirectory = new File(projectBase, DEFAULT_FRONTEND_DIR);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
@@ -84,7 +82,6 @@ public class GenerateNpmBOMMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "packageManifest",
                 manifestFilePath);
         ReflectionUtils.setVariableValueInObject(mojo, "specVersion", "1.4");
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
@@ -96,11 +93,12 @@ public class GenerateNpmBOMMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "productionMode", false);
-        Mockito.when(mojo.getJarFiles()).thenReturn(
-                Set.of(jarResourcesSource.getParentFile().getParentFile()));
+        Mockito.doReturn(
+                Set.of(jarResourcesSource.getParentFile().getParentFile()))
+                .when(mojo).getJarFiles();
 
         FileUtils.fileWrite(manifestFilePath, "UTF-8",
-                TestUtils.getInitialPackageJson().toJson());
+                TestUtils.getInitialPackageJson().toString());
         lookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
@@ -109,6 +107,10 @@ public class GenerateNpmBOMMojoTest {
                     .lookup(ClassFinder.class);
             return lookup;
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
+
+        setProject(mojo, projectBase);
+        // Prevent unwanted resources to be present on classpath
+        mojo.project.setArtifacts(Set.of());
     }
 
     @Test

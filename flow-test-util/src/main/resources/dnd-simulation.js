@@ -10,7 +10,9 @@ function createEvent(typeOfEvent, effectAllowed, dropEffect) {
       return this.data[key];
     },
     effectAllowed: effectAllowed,
-    dropEffect: dropEffect
+    dropEffect: dropEffect,
+    setDragImage: function (img) {
+    }
   };
   return event;
 }

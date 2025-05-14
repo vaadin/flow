@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2024 Vaadin Ltd
+ *    Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
-import com.vaadin.flow.server.frontend.FrontendTools
-import com.vaadin.flow.server.frontend.FrontendToolsSettings
-import com.vaadin.flow.server.frontend.FrontendUtils
+import java.io.File
+import com.vaadin.experimental.FeatureFlags
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
-import java.io.File
-import java.net.URI
-import com.vaadin.experimental.FeatureFlags
-import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Provider
 
 /**
  * Declaratively defines the inputs of the [VaadinPrepareFrontendTask]:
@@ -36,144 +32,166 @@ import org.gradle.api.provider.Provider
  * caching the results of vaadinPrepareFrontend task to not run it again if
  * inputs are the same.
  */
-internal class PrepareFrontendInputProperties(private val config: PluginEffectiveConfiguration) {
-    private val tools: Provider<FrontendTools> = initialiseFrontendToolsSettings()
+internal class PrepareFrontendInputProperties(
+    adapter: GradlePluginAdapter,
+    private val toolsService: FrontendToolService
+) {
+
+    private val config = adapter.config
 
     @Input
-    public fun getProductionMode(): Provider<Boolean> = config.productionMode
+    fun getProductionMode(): Provider<Boolean> = config.productionMode
 
     @Input
     @Optional
-    public fun getWebpackOutputDirectory(): Provider<String> = config.webpackOutputDirectory
-        .filterExists()
-        .absolutePath
+    fun getWebpackOutputDirectory(): Provider<String> =
+        config.webpackOutputDirectory
+            .filterExists()
+            .absolutePath
 
     @Input
-    public fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
+    fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
 
     @Input
-    public fun getFrontendDirectory(): Provider<String> = config.frontendDirectory.absolutePath
+    fun getFrontendDirectory(): Provider<String> = config.frontendDirectory.absolutePath
 
     @Input
-    public fun getGenerateBundle(): Provider<Boolean> = config.generateBundle
+    fun getGenerateBundle(): Provider<Boolean> = config.generateBundle
 
     @Input
-    public fun getRunNpmInstall(): Provider<Boolean> = config.runNpmInstall
+    fun getRunNpmInstall(): Provider<Boolean> = config.runNpmInstall
 
     @Input
-    public fun getGenerateEmbeddableWebComponent(): Provider<Boolean> = config.generateEmbeddableWebComponents
+    fun getGenerateEmbeddableWebComponent(): Provider<Boolean> =
+        config.generateEmbeddableWebComponents
 
     @InputDirectory
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getFrontendResourcesDirectory(): Provider<File> = config.frontendResourcesDirectory.filterExists()
+    fun getFrontendResourcesDirectory(): Provider<File> =
+        config.frontendResourcesDirectory.filterExists()
 
     @Input
-    public fun getOptimizeBundle(): Provider<Boolean> = config.optimizeBundle
+    fun getOptimizeBundle(): Provider<Boolean> = config.optimizeBundle
 
     @Input
-    public fun getPnpmEnable(): Provider<Boolean> = config.pnpmEnable
+    fun getPnpmEnable(): Provider<Boolean> = config.pnpmEnable
 
     @Input
-    public fun getUseGlobalPnpm(): Provider<Boolean> = config.useGlobalPnpm
+    fun getUseGlobalPnpm(): Provider<Boolean> = config.useGlobalPnpm
 
     @Input
-    public fun getRequireHomeNodeExec(): Provider<Boolean> = config.requireHomeNodeExec
+    fun getRequireHomeNodeExec(): Provider<Boolean> =
+        config.requireHomeNodeExec
 
     @Input
-    public fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
+    fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.NONE)
-    public fun getApplicationProperties(): Provider<File> = config.applicationProperties.filterExists()
+    fun getApplicationProperties(): Provider<File> =
+        config.applicationProperties.filterExists()
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getOpenApiJsonFile(): Provider<File> = config.openApiJsonFile.filterExists()
+    fun getOpenApiJsonFile(): Provider<File> =
+        config.openApiJsonFile.filterExists()
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getFeatureFlagsFile(): Provider<File> = config.javaResourceFolder
+    fun getFeatureFlagsFile(): Provider<File> = config.javaResourceFolder
         .map { it.resolve(FeatureFlags.PROPERTIES_FILENAME) }
         .filterExists()
 
     @Input
-    public fun getJavaSourceFolder(): Provider<String> = config.javaSourceFolder.absolutePath
+    fun getJavaSourceFolder(): Provider<String> =
+        config.javaSourceFolder.absolutePath
 
     @Input
-    public fun getJavaResourceFolder(): Provider<String> = config.javaResourceFolder.absolutePath
+    fun getJavaResourceFolder(): Provider<String> =
+        config.javaResourceFolder.absolutePath
 
     @Input
-    public fun getGeneratedTsFolder(): Provider<String> = config.generatedTsFolder.absolutePath
+    fun getGeneratedTsFolder(): Provider<String> =
+        config.generatedTsFolder.absolutePath
 
     @Input
-    public fun getNodeVersion(): Provider<String> = config.nodeVersion
+    fun getNodeVersion(): Provider<String> = config.nodeVersion
 
     @Input
-    public fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
+    fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
 
     @Input
-    public fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
+    fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
 
     @Input
-    public fun getProjectBuildDir(): Provider<String> = config.projectBuildDir
+    fun getProjectBuildDir(): Provider<String> = config.projectBuildDir
 
     @Input
-    public fun getPostInstallPackages(): ListProperty<String> = config.postinstallPackages
+    fun getPostInstallPackages(): ListProperty<String> =
+        config.postinstallPackages
 
     @Input
-    public fun getFrontendHotdeploy(): Provider<Boolean> = config.frontendHotdeploy
+    fun getFrontendHotdeploy(): Provider<Boolean> = config.frontendHotdeploy
 
     @Input
-    public fun getCiBuild(): Provider<Boolean> = config.ciBuild
+    fun getCiBuild(): Provider<Boolean> = config.ciBuild
 
     @Input
-    public fun getSkipDevBundleBuild(): Provider<Boolean> = config.skipDevBundleBuild
+    fun getSkipDevBundleBuild(): Provider<Boolean> =
+        config.skipDevBundleBuild
 
     @Input
-    public fun getForceProductionBuild(): Provider<Boolean> = config.forceProductionBuild
+    fun getForceProductionBuild(): Provider<Boolean> =
+        config.forceProductionBuild
 
     @Input
-    public fun getReactEnable(): Provider<Boolean> = config.reactEnable
+    fun getReactEnable(): Provider<Boolean> = config.reactEnable
 
     @Input
-    public fun getApplicationIdentifier(): Provider<String> = config.applicationIdentifier
+    fun getFrontendExtraFileExtensions(): ListProperty<String> =
+        config.frontendExtraFileExtensions
+
+    @Input
+    fun getApplicationIdentifier(): Provider<String> =
+        config.applicationIdentifier
+
+    @Input
+    fun getNpmExcludeWebComponents(): Provider<Boolean> =
+        config.npmExcludeWebComponents
+
+    @Input
+    fun getFrontendIgnoreVersionChecks(): Provider<Boolean> =
+        config.frontendIgnoreVersionChecks
 
     @Input
     @Optional
-    public fun getNodeExecutablePath(): Provider<String> = tools
-        .mapOrNull { it.nodeBinary }
-        .filterExists()
+    fun getNodeExecutablePath(): Provider<String> =
+        toolsService.toolsProperty { it.nodeBinary }
+            .filterExists()
 
     @Input
     @Optional
-    public fun getNpmExecutablePath(): Provider<String> = tools.map { tools ->
-        val npmExecutable = tools.npmExecutable ?: listOf()
-        npmExecutable.joinToString(" ")
-    }
-
-    @Input
-    @Optional
-    public fun getPnpmExecutablePath(): Provider<String> = config.pnpmEnable.map { pnpmEnable: Boolean ->
-        if (!pnpmEnable) {
-            return@map ""
+    fun getNpmExecutablePath(): Provider<String> =
+        toolsService.toolsProperty { tools ->
+            val npmExecutable = tools.npmExecutable ?: listOf()
+            npmExecutable.joinToString(" ")
         }
-        val pnpmExecutable = tools.get().pnpmExecutable ?: listOf()
-        pnpmExecutable.joinToString(" ")
-    }
 
-    private fun initialiseFrontendToolsSettings(): Provider<FrontendTools> = config.npmFolder.map { npmFolder: File ->
-        val settings = FrontendToolsSettings(npmFolder.absolutePath) {
-            FrontendUtils.getVaadinHomeDirectory()
-                .absolutePath
-        }
-        settings.nodeDownloadRoot = URI(config.nodeDownloadRoot.get())
-        settings.isForceAlternativeNode = config.requireHomeNodeExec.get()
-        settings.isUseGlobalPnpm = config.useGlobalPnpm.get()
-        settings.isAutoUpdate = config.nodeAutoUpdate.get()
-        FrontendTools(settings)
-    }
+
+    @Input
+    @Optional
+    fun getPnpmExecutablePath(): Provider<String> =
+        config.pnpmEnable.filterBy {
+            it
+        }.flatMap {
+            toolsService.toolsProperty { tools ->
+                val pnpmExecutable = tools.pnpmExecutable ?: listOf()
+                pnpmExecutable.joinToString(" ")
+            }
+        }.orElse("")
+
 }

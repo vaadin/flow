@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -193,7 +193,7 @@ public class NativeDetails extends HtmlComponent
      *
      * @return whether details are expanded or collapsed
      */
-    @Synchronize(property = "open", value = "toggle")
+    @Synchronize(property = "open", value = "toggle", allowInert = true)
     public boolean isOpen() {
         return getElement().getProperty("open", false);
     }

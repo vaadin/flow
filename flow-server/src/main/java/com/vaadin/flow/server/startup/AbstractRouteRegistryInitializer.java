@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,11 @@ import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,6 +37,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
@@ -96,6 +100,34 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
         }
 
+        RouteAlias[] aliases = route.getAnnotationsByType(RouteAlias.class);
+        if (aliases.length > 0) {
+            String routePath = RouteUtil.getRoutePath(context, route);
+            Map<String, Long> stats = Arrays.stream(aliases)
+                    .map(ann -> RouteUtil.getRouteAliasPath(route, ann))
+                    .collect(Collectors.groupingBy(Function.identity(),
+                            Collectors.counting()));
+            if (stats.containsKey(routePath)) {
+                throw new InvalidRouteConfigurationException(String.format(
+                        "'%s' declares '@%s' and '@%s' with the same path '%s'. "
+                                + "Make sure paths are different by checking annotation values "
+                                + "and prefixes defined by layouts",
+                        route.getCanonicalName(), Route.class.getSimpleName(),
+                        RouteAlias.class.getSimpleName(), routePath));
+            }
+            String repeatedAliases = stats.entrySet().stream()
+                    .filter(e -> e.getValue() > 1).map(Map.Entry::getKey)
+                    .collect(Collectors.joining(", "));
+            if (!repeatedAliases.isEmpty()) {
+                throw new InvalidRouteConfigurationException(String.format(
+                        "'%s' declares multiple '@%s' with same paths: %s."
+                                + "Make sure paths are different by checking annotation values "
+                                + "and prefixes defined by layouts.",
+                        route.getCanonicalName(),
+                        RouteAlias.class.getSimpleName(), repeatedAliases));
+            }
+        }
+
         if (route.isAnnotationPresent(PageTitle.class)
                 && HasDynamicTitle.class.isAssignableFrom(route)) {
             throw new DuplicateNavigationTitleException(String.format(
@@ -110,8 +142,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
             validateRouteAnnotation(context, route, annotation);
 
-            for (RouteAlias alias : route
-                    .getAnnotationsByType(RouteAlias.class)) {
+            for (RouteAlias alias : aliases) {
                 validateRouteAliasAnnotation(context, route, alias, annotation);
             }
         });

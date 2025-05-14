@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +52,11 @@ public class TaskCopyLocalFrontendFiles
      */
     TaskCopyLocalFrontendFiles(Options options) {
         this.options = options;
+    }
+
+    private static boolean shouldApplyWriteableFlag() {
+        return !Boolean.parseBoolean(System.getProperty(
+                "vaadin.frontend.disableWritableFlagCheckOnCopy", "false"));
     }
 
     @Override
@@ -96,16 +100,22 @@ public class TaskCopyLocalFrontendFiles
             return Collections.emptySet();
         }
         try {
+            long start = System.nanoTime();
             Set<String> handledFiles = new HashSet<>(TaskCopyFrontendFiles
                     .getFilesInDirectory(source, relativePathExclusions));
             FileUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
-            try (Stream<Path> fileStream = Files
-                    .walk(Paths.get(target.getPath()))) {
-                // used with try-with-resources as defined in walk API note
-                fileStream.filter(file -> !Files.isWritable(file)).forEach(
-                        filePath -> filePath.toFile().setWritable(true));
+            if (shouldApplyWriteableFlag()) {
+                try (Stream<Path> fileStream = Files
+                        .walk(Paths.get(target.getPath()))) {
+                    // used with try-with-resources as defined in walk API note
+                    fileStream.filter(file -> !Files.isWritable(file)).forEach(
+                            filePath -> filePath.toFile().setWritable(true));
+                }
             }
+            long ms = (System.nanoTime() - start) / 1000000;
+            log().info("Copied {} local frontend files. Took {} ms.",
+                    handledFiles.size(), ms);
             return handledFiles;
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(

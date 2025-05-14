@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,9 @@ package com.vaadin.flow.server.communication;
 
 import javax.naming.SizeLimitExceededException;
 
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
@@ -37,6 +40,8 @@ import org.apache.commons.fileupload2.core.FileUploadByteCountLimitException;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.core.FileUploadFileCountLimitException;
 import org.apache.commons.fileupload2.core.FileUploadSizeException;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
 import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,16 +80,10 @@ public class StreamReceiverHandler implements Serializable {
 
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
 
-    static final long DEFAULT_SIZE_MAX = -1;
-
-    static final long DEFAULT_FILE_SIZE_MAX = -1;
-
-    static final long DEFAULT_FILE_COUNT_MAX = 10000;
-
     /* Minimum interval which will be used for streaming progress events. */
     public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
 
-    private long requestSizeMax = DEFAULT_SIZE_MAX;
+    private long requestSizeMax = DEFAULT_REQUEST_SIZE_MAX;
 
     private long fileSizeMax = DEFAULT_FILE_SIZE_MAX;
 
@@ -630,11 +629,23 @@ public class StreamReceiverHandler implements Serializable {
 
     protected FileItemInputIterator getItemIterator(VaadinRequest request)
             throws FileUploadException, IOException {
+        JakartaServletFileUpload upload = createServletFileUpload(request);
+        return upload.getItemIterator((HttpServletRequest) request);
+    }
+
+    // protected for testing purposes only
+    protected JakartaServletFileUpload createServletFileUpload(
+            VaadinRequest request) {
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
         upload.setSizeMax(requestSizeMax);
         upload.setFileSizeMax(fileSizeMax);
         upload.setFileCountMax(fileCountMax);
-        return upload.getItemIterator((HttpServletRequest) request);
+        if (request.getCharacterEncoding() == null) {
+            // Request body's file upload headers are expected to be encoded in
+            // UTF-8 if not explicitly set otherwise in the request.
+            upload.setHeaderCharset(StandardCharsets.UTF_8);
+        }
+        return upload;
     }
 
     public void setRequestSizeMax(long requestSizeMax) {

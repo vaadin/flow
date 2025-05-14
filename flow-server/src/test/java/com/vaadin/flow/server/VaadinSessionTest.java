@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +30,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -187,6 +190,69 @@ public class VaadinSessionTest {
 
         session.addUI(ui);
 
+    }
+
+    /**
+     * Test for issue #6349
+     */
+    @Test
+    public void testCurrentInstancePollution() throws InterruptedException {
+
+        // Create a sync object
+        final AtomicInteger state = new AtomicInteger();
+
+        // For sleeping while we wait
+        final Runnable napper = () -> {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                return;
+            }
+        };
+
+        // We need to unlock session before running this test
+        session.unlock();
+        try {
+
+            // Create a thread that holds the session lock until we tell it to
+            // unlock; this will cause VaadinSession.access() to enqueue tasks
+            // instead of running them immediately.
+            Thread thread = new Thread(() -> {
+                session.accessSynchronously(() -> {
+                    state.incrementAndGet();
+                    while (state.get() == 1)
+                        napper.run();
+                });
+            });
+
+            // Start thread and wait for it to grab the lock
+            thread.start();
+            while (state.get() == 0)
+                napper.run();
+
+            // Enqueue two session commands
+            session.access(() -> {
+                UI.setCurrent(ui); // command #1 sets current UI
+                state.incrementAndGet();
+            });
+            final AtomicReference<UI> uiRef = new AtomicReference<>();
+            session.access(() -> {
+                uiRef.set(UI.getCurrent()); // command #2 reads current UI
+                state.incrementAndGet();
+            });
+
+            // Release the session lock, which will run the queue
+            state.incrementAndGet();
+
+            // Wait for enqueued tasks to complete
+            while (state.get() < 4)
+                napper.run();
+
+            // Command #2 should not have seen command #1's UI
+            Assert.assertNull(uiRef.get());
+        } finally {
+            session.lock();
+        }
     }
 
     /**
@@ -483,6 +549,15 @@ public class VaadinSessionTest {
     public void valueUnbound_sessionIsNotInitialized_noAnyInteractions() {
         VaadinSession session = Mockito.spy(TestVaadinSession.class);
 
+        try {
+            Field serviceField = VaadinSession.class
+                    .getDeclaredField("service");
+            serviceField.setAccessible(true);
+            serviceField.set(session, null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
         HttpSessionBindingEvent event = Mockito
                 .mock(HttpSessionBindingEvent.class);
         session.valueUnbound(null);
@@ -496,7 +571,7 @@ public class VaadinSessionTest {
     public static class TestVaadinSession extends VaadinSession {
 
         public TestVaadinSession() {
-            super(null);
+            super(new MockVaadinServletService());
         }
     }
 

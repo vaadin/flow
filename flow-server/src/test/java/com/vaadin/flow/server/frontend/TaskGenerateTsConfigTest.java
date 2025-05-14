@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,9 @@ import com.vaadin.flow.server.ExecutionFailedException;
 
 @NotThreadSafe
 public class TaskGenerateTsConfigTest {
+    private static final CharSequence DEFAULT_ES_TARGET = "es2022";
+    private static final CharSequence NEWER_ES_TARGET = "es2023";
+
     static private String LATEST_VERSION = "9.1";
 
     @Rule
@@ -97,7 +100,7 @@ public class TaskGenerateTsConfigTest {
         String content = IOUtils.toString(
                 taskGenerateTsConfig.getGeneratedFile().toURI(),
                 StandardCharsets.UTF_8);
-        content = content.replace("es2020", "es2019");
+        content = content.replace(DEFAULT_ES_TARGET, "es2019");
         try (FileWriter fw = new FileWriter(
                 taskGenerateTsConfig.getGeneratedFile(),
                 StandardCharsets.UTF_8)) {
@@ -118,28 +121,56 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void viteShouldNotDowngradeFromEs2021() throws Exception {
-        // Write a file with es2021
+    public void viteShouldUpgradeFromEs2020() throws Exception {
+        // Write a file with es2019
         taskGenerateTsConfig.execute();
         String content = IOUtils.toString(
                 taskGenerateTsConfig.getGeneratedFile().toURI(),
                 StandardCharsets.UTF_8);
-        content = content.replace("es2020", "es2021");
+        content = content.replace(DEFAULT_ES_TARGET, "es2020");
         try (FileWriter fw = new FileWriter(
                 taskGenerateTsConfig.getGeneratedFile(),
                 StandardCharsets.UTF_8)) {
             fw.write(content);
         }
-        Assert.assertTrue("The config file should use es2021", IOUtils
+        Assert.assertTrue("The config file should use es2020", IOUtils
                 .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                .contains("\"target\": \"es2021\""));
+                .contains("\"target\": \"es2020\""));
+        taskGenerateTsConfig.execute();
+        Assert.assertFalse(
+                "Vite should have upgraded the config file to not use es2020",
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"es2020\""));
+
+    }
+
+    @Test
+    public void viteShouldNotDowngradeFromNewerEsVersion() throws Exception {
+        // Write a file with es2020
+        taskGenerateTsConfig.execute();
+        String content = IOUtils.toString(
+                taskGenerateTsConfig.getGeneratedFile().toURI(),
+                StandardCharsets.UTF_8);
+        content = content.replace(DEFAULT_ES_TARGET, NEWER_ES_TARGET);
+        try (FileWriter fw = new FileWriter(
+                taskGenerateTsConfig.getGeneratedFile(),
+                StandardCharsets.UTF_8)) {
+            fw.write(content);
+        }
+        Assert.assertTrue("The config file should use " + NEWER_ES_TARGET,
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"" + NEWER_ES_TARGET + "\""));
         taskGenerateTsConfig.execute();
         Assert.assertTrue("Vite should not have changed the config file",
                 IOUtils.toString(
                         taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                        .contains("\"target\": \"es2021\""));
+                        .contains("\"target\": \"" + NEWER_ES_TARGET + "\""));
 
     }
 

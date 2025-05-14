@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,8 @@ import java.lang.annotation.Target;
 /**
  * Defines a viewport tag that will be added to the HTML of the host page of a
  * UI class. If no viewport tag has been defined, a default of
- * <code>width=device-width, initial-scale=1.0</code> is used.
+ * <code>width=device-width, initial-scale=1.0, viewport-fit=cover</code> is
+ * used.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -42,20 +43,20 @@ public @interface Viewport {
      * <p>
      * Recommended for a Responsive Web Design.
      */
-    String DEFAULT = "width=device-width, initial-scale=1.0";
+    String DEFAULT = "width=device-width, initial-scale=1.0, viewport-fit=cover";
 
     /**
      * Sets the viewport to the height of the device rather than the rendered
      * space.
      */
-    String DEVICE_HEIGHT = "height=device-height, initial-scale=1.0";
+    String DEVICE_HEIGHT = "height=device-height, initial-scale=1.0, viewport-fit=cover";
 
     /**
      * Sets the viewport at the width and height of the device. The device-width
      * and device-height properties are translated to 100vw and 100vh
      * respectively.
      */
-    String DEVICE_DIMENSIONS = "width=device-width, height=device-height, initial-scale=1.0";
+    String DEVICE_DIMENSIONS = "width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover";
 
     /**
      * Gets the viewport tag content.

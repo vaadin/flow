@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,6 +34,8 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -187,6 +189,10 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *            the Flow view to use as login view
      */
     public final void setLoginView(Class<? extends Component> loginView) {
+        if (loginView == this.loginView) {
+            // Probably hot reload
+            return;
+        }
         throwIfLoginViewSet();
         this.loginView = loginView;
     }
@@ -210,6 +216,11 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *            the frontend view to use as login view
      */
     public void setLoginView(String loginUrl) {
+        if (Objects.equals(loginUrl, this.loginUrl)) {
+            // Probably hot reload
+            return;
+        }
+
         throwIfLoginViewSet();
         this.loginUrl = loginUrl;
     }
@@ -246,7 +257,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
             if (context.getPrincipal() == null) {
                 storeRedirectURL(event, request);
                 if (loginView != null) {
-                    event.forwardTo(loginView);
+                    event.forwardTo(loginView, true);
                 } else {
                     if (loginUrl != null) {
                         event.forwardToUrl(loginUrl);
@@ -360,7 +371,13 @@ public class NavigationAccessControl implements BeforeEnterListener {
      */
     protected String getRequestURL(VaadinRequest vaadinRequest) {
         if (vaadinRequest instanceof VaadinServletRequest httpRequest) {
-            return httpRequest.getRequestURL().toString();
+            String url = httpRequest.getRequestURL().toString();
+            if (HandlerHelper.isRequestType(vaadinRequest,
+                    HandlerHelper.RequestType.PUSH)
+                    && url.endsWith(Constants.PUSH_MAPPING)) {
+                url = url.substring(0, url.indexOf(Constants.PUSH_MAPPING));
+            }
+            return url;
         }
         return "";
     }
@@ -437,7 +454,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
         Objects.requireNonNull(vaadinService);
         return new NavigationContext(vaadinService.getRouter(),
                 navigationTarget, new Location(path), RouteParameters.empty(),
-                vaadinRequest.getUserPrincipal(),
-                getRolesChecker(vaadinRequest), false);
+                getPrincipal(vaadinRequest), getRolesChecker(vaadinRequest),
+                false);
     }
 }

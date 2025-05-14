@@ -4,7 +4,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-pwa</artifactId>
     <name>Flow tests for PWA annotation</name>
@@ -29,13 +29,6 @@
             <groupId>org.brotli</groupId>
             <artifactId>dec</artifactId>
             <version>0.1.2</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- To be removed after chrome used by CI gets upgraded to 124 or later -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v123</artifactId>
-            <version>4.21.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

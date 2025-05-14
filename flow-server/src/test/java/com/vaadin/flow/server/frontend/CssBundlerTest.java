@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
 
 public class CssBundlerTest {
 
@@ -308,18 +308,18 @@ public class CssBundlerTest {
         return file;
     }
 
-    private JsonObject getThemeJson() throws IOException {
+    private JsonNode getThemeJson() throws IOException {
         File file = getThemeFile("theme.json");
         if (file.exists()) {
-            return Json.parse(Files.readString(file.toPath()));
+            return JacksonUtils.readTree(Files.readString(file.toPath()));
         }
         return null;
     }
 
     private void createThemeJson(String json) throws IOException {
-        JsonObject jsonObject = Json.parse(json);
+        JsonNode jsonObject = JacksonUtils.readTree(json);
         File file = getThemeFile("theme.json");
-        FileUtils.writeStringToFile(file, jsonObject.toJson(),
+        FileUtils.writeStringToFile(file, jsonObject.toString(),
                 StandardCharsets.UTF_8);
     }
 }

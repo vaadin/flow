@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,27 +23,31 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializablePredicate;
-import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
-import org.mockito.Mockito;
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.tests.data.bean.Item;
+
+import static com.vaadin.flow.tests.server.ClassesSerializableUtils.serializeAndDeserialize;
+import static org.junit.Assert.assertNotNull;
 
 public class AbstractListDataViewTest {
 
@@ -136,6 +140,16 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void setFilter_filterIsSetAndDropped_allItemsRefreshed() {
+        dataView.setFilter(item -> item.equals("first"));
+        Assert.assertEquals(1, ((ListDataViewImpl) dataView).getRefreshCount());
+        dataView.removeFilters();
+        Assert.assertEquals(2, ((ListDataViewImpl) dataView).getRefreshCount());
+        dataView.addFilter(ignored -> true);
+        Assert.assertEquals(3, ((ListDataViewImpl) dataView).getRefreshCount());
+    }
+
+    @Test
     public void setFilter_resetFilterWithDataView_dataProviderFilterNotAffected() {
         dataProvider.setFilter(item -> item.equals("first"));
         dataView.setFilter(null);
@@ -153,6 +167,22 @@ public class AbstractListDataViewTest {
         Assert.assertEquals("Unexpected data set order after comparator setup",
                 "first,last,middle",
                 dataView.getItems().collect(Collectors.joining(",")));
+    }
+
+    @Test
+    public void setSortComparator_sortIsSet_sortedItemsRefreshed() {
+        dataView.setSortComparator(String::compareTo);
+        Assert.assertEquals(1, ((ListDataViewImpl) dataView).getRefreshCount());
+        dataView.removeSorting();
+        Assert.assertEquals(2, ((ListDataViewImpl) dataView).getRefreshCount());
+        dataView.addSortComparator(String::compareTo);
+        Assert.assertEquals(3, ((ListDataViewImpl) dataView).getRefreshCount());
+        dataView.setSortOrder(ValueProvider.identity(),
+                SortDirection.ASCENDING);
+        Assert.assertEquals(4, ((ListDataViewImpl) dataView).getRefreshCount());
+        dataView.addSortOrder(ValueProvider.identity(),
+                SortDirection.DESCENDING);
+        Assert.assertEquals(5, ((ListDataViewImpl) dataView).getRefreshCount());
     }
 
     @Test
@@ -1272,7 +1302,21 @@ public class AbstractListDataViewTest {
         new ListDataViewImpl(() -> dataProvider, component, null);
     }
 
+    @Test
+    public void addFilter_serialize_dataViewSerializable() throws Throwable {
+        DataViewUtils.setComponentFilter(component, term -> true);
+        ListDataProvider<String> dp = DataProvider.ofCollection(Set.of("A"));
+        ListDataViewImpl listDataView = new ListDataViewImpl(() -> dp,
+                component, (filter, sort) -> {
+                });
+        listDataView.addFilter(term -> true);
+        ListDataViewImpl out = serializeAndDeserialize(listDataView);
+        assertNotNull(out);
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
+
+        private final AtomicInteger refreshCount = new AtomicInteger(0);
 
         public ListDataViewImpl(
                 SerializableSupplier<? extends DataProvider<String, ?>> dataProviderSupplier,
@@ -1288,6 +1332,16 @@ public class AbstractListDataViewTest {
                 SerializableBiConsumer<SerializablePredicate<String>, SerializableComparator<String>> filterOrSortingChangedCallback) {
             super(dataProviderSupplier, component,
                     filterOrSortingChangedCallback);
+        }
+
+        @Override
+        public void refreshAll() {
+            super.refreshAll();
+            refreshCount.incrementAndGet();
+        }
+
+        public int getRefreshCount() {
+            return refreshCount.get();
         }
     }
 

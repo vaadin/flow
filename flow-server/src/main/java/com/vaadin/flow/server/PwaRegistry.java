@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.server;
 
-import javax.imageio.ImageIO;
 import jakarta.servlet.ServletContext;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,21 +27,21 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -85,6 +83,7 @@ public class PwaRegistry implements Serializable {
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
+    private URL baseImageUrl;
     private BufferedImage baseImage;
 
     /**
@@ -113,7 +112,21 @@ public class PwaRegistry implements Serializable {
         initializeResources(servletContext);
     }
 
+    // Lazy load base image to prevent using AWT api unless icon
+    // generation is required at runtime.
+    // baseImageUrl is computed during registry initialization and used on to
+    // load the image.
     BufferedImage getBaseImage() {
+        if (baseImage == null && baseImageUrl != null) {
+            try {
+                baseImage = getBaseImage(baseImageUrl);
+            } catch (IOException ex) {
+                getLogger().error("Image is not found or can't be loaded: {}",
+                        baseImageUrl);
+            } finally {
+                baseImageUrl = null;
+            }
+        }
         return baseImage;
     }
 
@@ -124,24 +137,19 @@ public class PwaRegistry implements Serializable {
         }
         long start = System.currentTimeMillis();
 
+        // Load base logo from servlet context if available
+        // fall back to local image if unavailable
         URL logo = getResourceUrl(servletContext,
                 pwaConfiguration.relIconPath());
+        baseImageUrl = logo != null ? logo
+                : BootstrapHandler.class.getResource("default-logo.png");
 
         URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
                 ? getResourceUrl(servletContext,
                         pwaConfiguration.relOfflinePath())
                 : null;
 
-        // Load base logo from servlet context if available
-        // fall back to local image if unavailable
-        baseImage = getBaseImage(logo);
-
-        if (baseImage == null) {
-            getLogger().error("Image is not found or can't be loaded: " + logo);
-        } else {
-            // initialize icons
-            icons = initializeIcons();
-        }
+        icons = initializeIcons(servletContext);
 
         // Load offline page as string, from servlet context if
         // available, fall back to default page
@@ -175,12 +183,41 @@ public class PwaRegistry implements Serializable {
         return resourceUrl;
     }
 
-    private List<PwaIcon> initializeIcons() {
+    private List<PwaIcon> initializeIcons(ServletContext servletContext) {
+        Optional<ResourceProvider> optionalResourceProvider = Optional
+                .ofNullable(new VaadinServletContext(servletContext)
+                        .getAttribute(Lookup.class))
+                .map(lookup -> lookup.lookup(ResourceProvider.class));
         for (PwaIcon icon : getIconTemplates(pwaConfiguration.getIconPath())) {
             icon.setRegistry(this);
-            icons.add(icon);
+            // Try to find a pre-generated image
+            String iconPath = Constants.VAADIN_WEBAPP_RESOURCES
+                    + Constants.VAADIN_PWA_ICONS
+                    + icon.getRelHref().substring(1);
+            optionalResourceProvider.ifPresent(
+                    provider -> tryLoadGeneratedIcon(provider, icon, iconPath));
+            if (icon.isAvailable()) {
+                icons.add(icon);
+            }
         }
         return icons;
+    }
+
+    private static void tryLoadGeneratedIcon(ResourceProvider resourceProvider,
+            PwaIcon icon, String iconPath) {
+        URL iconResource = resourceProvider.getApplicationResource(iconPath);
+        if (iconResource != null) {
+            try (InputStream data = iconResource.openStream()) {
+                icon.setImage(data);
+                getLogger().trace("Loading generated PWA image from {}",
+                        iconPath);
+            } catch (IOException ex) {
+                // Ignore, icon will be generated at runtime
+                getLogger().debug(
+                        "Cannot load generated PWA image from {}. Icon will be regenerated at runtime.",
+                        iconPath, ex);
+            }
+        }
     }
 
     /**
@@ -366,7 +403,9 @@ public class PwaRegistry implements Serializable {
         URLConnection logoResource = logo != null ? logo.openConnection()
                 : BootstrapHandler.class.getResource("default-logo.png")
                         .openConnection();
-        return ImageIO.read(logoResource.getInputStream());
+        try (InputStream inputStream = logoResource.getInputStream()) {
+            return ImageIO.read(inputStream);
+        }
     }
 
     /**
@@ -443,7 +482,14 @@ public class PwaRegistry implements Serializable {
         return pwaConfiguration;
     }
 
-    static List<PwaIcon> getIconTemplates(String baseName) {
+    /**
+     * Gets all PWA icon variants for the give base icon.
+     *
+     * @param baseName
+     *            path of the base icon.
+     * @return list of PWA icons variants.
+     */
+    public static List<PwaIcon> getIconTemplates(String baseName) {
         List<PwaIcon> icons = new ArrayList<>();
         // Basic manifest icons for android support
         icons.add(

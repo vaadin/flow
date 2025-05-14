@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,11 +17,11 @@
 package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.ServletContext;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -42,6 +43,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponent
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -101,6 +103,14 @@ public class WebComponentProviderTest {
                         .getArguments()[0])
                 .when(context)
                 .setAttribute(any(WebComponentConfigurationRegistry.class));
+
+        final Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Mockito.doAnswer(i -> i.getArgument(1, Supplier.class).get())
+                .when(context).getAttribute(
+                        ArgumentMatchers.argThat(aClass -> "FeatureFlagsWrapper"
+                                .equals(aClass.getSimpleName())),
+                        any());
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
@@ -178,7 +188,7 @@ public class WebComponentProviderTest {
     public void webComponentGenerator_responseGetsResult() throws IOException {
         registry = setupConfigurations(MyComponentExporter.class);
 
-        ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
+        ByteArrayOutputStream out = Mockito.spy(new ByteArrayOutputStream());
 
         DefaultDeploymentConfiguration configuration = Mockito
                 .mock(DefaultDeploymentConfiguration.class);
@@ -190,6 +200,10 @@ public class WebComponentProviderTest {
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
+
+        Assert.assertTrue("Response should have Feature Flags updater function",
+                out.toString().contains(
+                        "window.Vaadin.featureFlagsUpdaters.push((activator) => {"));
 
         Mockito.verify(response).getOutputStream();
         Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),

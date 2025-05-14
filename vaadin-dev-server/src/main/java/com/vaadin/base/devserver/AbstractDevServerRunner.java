@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -48,6 +48,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.NetworkUtil;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -55,6 +56,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -115,6 +117,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private ApplicationConfiguration applicationConfiguration;
 
+    private FrontendTools frontendTools;
+
     private String failedOutput = null;
 
     private transient Runnable waitForRestart;
@@ -140,6 +144,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         applicationConfiguration = lookup
                 .lookup(ApplicationConfiguration.class);
         reuseDevServer = applicationConfiguration.reuseDevServer();
+        frontendTools = new FrontendTools(applicationConfiguration, npmFolder);
         devServerPortFile = getDevServerPortFile(npmFolder);
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
@@ -151,6 +156,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
         devServerStartFuture = waitFor.whenCompleteAsync(action);
 
+    }
+
+    protected FrontendTools getFrontendTools() {
+        return frontendTools;
     }
 
     private void runOnFutureComplete() {
@@ -354,10 +363,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getProjectRoot());
-        FrontendTools tools = new FrontendTools(config, getProjectRoot());
-        tools.validateNodeAndNpmVersion();
+        frontendTools.validateNodeAndNpmVersion();
 
-        List<String> command = getServerStartupCommand(tools);
+        List<String> command = getServerStartupCommand(frontendTools);
 
         FrontendUtils.console(FrontendUtils.GREEN, START);
         if (getLogger().isDebugEnabled()) {
@@ -368,7 +376,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         processBuilder.command(command);
 
         Map<String, String> environment = processBuilder.environment();
-        updateServerStartupEnvironment(tools, environment);
+        updateServerStartupEnvironment(frontendTools, environment);
 
         try {
             Process process = processBuilder.redirectErrorStream(true).start();
@@ -614,12 +622,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        return handleRequestInternal(request, response, devServerStartFuture,
-                isDevServerFailedToStart);
+        return handleRequestInternal(session, request, response,
+                devServerStartFuture, isDevServerFailedToStart);
     }
 
-    static boolean handleRequestInternal(VaadinRequest request,
-            VaadinResponse response, CompletableFuture<?> devServerStartFuture,
+    static boolean handleRequestInternal(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            CompletableFuture<?> devServerStartFuture,
             AtomicBoolean isDevServerFailedToStart) throws IOException {
         if (devServerStartFuture.isDone()) {
             // The server has started, check for any exceptions in the startup
@@ -637,6 +646,15 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 response.setHeader("Cache-Control", "no-cache");
                 return true;
             }
+            try {
+                session.getLockInstance().lock();
+                VaadinService service = session.getService();
+                RouteUtil.checkForClientRouteCollisions(service, service
+                        .getRouter().getRegistry().getRegisteredRoutes());
+            } finally {
+                session.getLockInstance().unlock();
+            }
+
             return false;
         } else {
             if (request.getHeader("X-DevModePoll") == null) {

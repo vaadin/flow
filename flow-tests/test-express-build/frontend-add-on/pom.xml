@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-express-build</artifactId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>frontend-add-on</artifactId>
     <packaging>jar</packaging>
@@ -75,6 +75,12 @@
                             <Vaadin-Package-Version>1</Vaadin-Package-Version>
                         </manifestEntries>
                     </archive>
+                    <!-- Generated file that shouldn't be included in add-ons -->
+                    <excludes>
+                        <exclude>
+                            META-INF/VAADIN/config/flow-build-info.json
+                        </exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
@@ -112,19 +118,6 @@
                 <configuration>
                     <quiet>true</quiet>
                     <doclint>none</doclint>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
-                <configuration>
-                    <!-- Generated file that shouldn't be included in add-ons -->
-                    <excludes>
-                        <exclude>
-                            META-INF/VAADIN/config/flow-build-info.json
-                        </exclude>
-                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

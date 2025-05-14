@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,12 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -26,6 +30,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -36,7 +41,9 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
@@ -129,13 +136,30 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     private boolean cleanFrontendFiles;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    protected void executeInternal()
+            throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
-        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
-                npmFolder(), frontendDirectory(), getClassFinder());
+        Options options = new Options(null, getClassFinder(), npmFolder())
+                .withFrontendDirectory(frontendDirectory())
+                .withFrontendGeneratedFolder(generatedTsFolder());
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(options);
+
+        boolean reactEnabled = isReactEnabled()
+                && FrontendUtils.isReactRouterRequired(
+                        BuildFrontendUtil.getFrontendDirectory(this));
+        FeatureFlags featureFlags = new FeatureFlags(
+                createLookup(getClassFinder()));
+        if (javaResourceFolder() != null) {
+            featureFlags.setPropertiesLocation(javaResourceFolder());
+        }
+        FrontendDependenciesScanner frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                .createScanner(!optimizeBundle, getClassFinder(),
+                        generateEmbeddableWebComponents, featureFlags,
+                        reactEnabled);
+
         try {
-            BuildFrontendUtil.runNodeUpdater(this);
+            BuildFrontendUtil.runNodeUpdater(this, frontendDependencies);
         } catch (ExecutionFailedException | URISyntaxException exception) {
             throw new MojoFailureException(
                     "Could not execute build-frontend goal", exception);
@@ -155,7 +179,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             }
         }
         LicenseChecker.setStrictOffline(true);
-        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
+        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this,
+                frontendDependencies);
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired);
 
@@ -176,7 +201,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * @return {@code true} to remove created files, {@code false} to keep files
      */
     protected boolean cleanFrontendFiles() {
-        if (isHillaUsed(project, frontendDirectory())) {
+        if (isHillaUsed(frontendDirectory())) {
             /*
              * Override this to not clean generated frontend files after the
              * build. For Hilla, the generated files can still be useful for
@@ -233,4 +258,50 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         return true;
     }
 
+    @Override
+    public boolean checkRuntimeDependency(String groupId, String artifactId,
+            Consumer<String> missingDependencyMessage) {
+        Objects.requireNonNull(groupId, "groupId cannot be null");
+        Objects.requireNonNull(artifactId, "artifactId cannot be null");
+        if (missingDependencyMessage == null) {
+            missingDependencyMessage = text -> {
+            };
+        }
+
+        List<Artifact> deps = project.getArtifacts().stream()
+                .filter(artifact -> groupId.equals(artifact.getGroupId())
+                        && artifactId.equals(artifact.getArtifactId()))
+                .toList();
+        if (deps.isEmpty()) {
+            missingDependencyMessage.accept(String.format(
+                    """
+                            The dependency %1$s:%2$s has not been found in the project configuration.
+                            Please add the following dependency to your POM file:
+
+                            <dependency>
+                                <groupId>%1$s</groupId>
+                                <artifactId>%2$s</artifactId>
+                                <scope>runtime</scope>
+                            </dependency>
+                            """,
+                    groupId, artifactId));
+            return false;
+        } else if (deps.stream().noneMatch(artifact -> !artifact.isOptional()
+                && artifact.getArtifactHandler().isAddedToClasspath()
+                && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
+                        || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+                        || Artifact.SCOPE_RUNTIME
+                                .equals(artifact.getScope())))) {
+            missingDependencyMessage.accept(String.format(
+                    """
+                            The dependency %1$s:%2$s has been found in the project configuration,
+                            but with a scope that does not guarantee its presence at runtime.
+                            Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
+                            To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
+                            """,
+                    groupId, artifactId));
+            return false;
+        }
+        return true;
+    }
 }

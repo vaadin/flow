@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.FragmentedMessageHolder;
 
 /**
@@ -116,5 +116,15 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the received message
      */
     void onMessage(AtmosphereResource resource, String msg);
+
+    /**
+     * Send a client side HMR event.
+     *
+     * @param event
+     *            the event name
+     * @param eventData
+     *            the event data
+     */
+    void sendHmrEvent(String event, JsonNode eventData);
 
 }

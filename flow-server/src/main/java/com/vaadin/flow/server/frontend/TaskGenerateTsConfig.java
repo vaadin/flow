@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,13 +23,13 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.ExecutionFailedException;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder.
@@ -56,7 +56,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-%s.json";
     private static final String[] tsconfigVersions = { "latest", "v23.3.0.1",
             "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4",
-            "v23.3.4-hilla" };
+            "v23.3.4-hilla", "es2020" };
 
     static final String ERROR_MESSAGE = """
 
@@ -154,14 +154,14 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     }
 
     private String getEsTargetVersion(String tsConfig) {
-        JsonObject parsed = parseTsConfig(tsConfig);
-        return parsed.getObject(COMPILER_OPTIONS).getString(ES_TARGET_VERSION);
+        JsonNode parsed = parseTsConfig(tsConfig);
+        return parsed.get(COMPILER_OPTIONS).get(ES_TARGET_VERSION).textValue();
     }
 
-    private JsonObject parseTsConfig(String tsConfig) {
+    private ObjectNode parseTsConfig(String tsConfig) {
         // remove comments so parser works
         String json = tsConfig.replaceAll("//.*", "");
-        return Json.parse(json);
+        return JacksonUtils.readTree(json);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         return !getGeneratedFile().exists();
     }
 
-    private void overrideIfObsolete() throws ExecutionFailedException {
+    private void overrideIfObsolete() {
         try {
             // Project's TS config
             File projectTsConfigFile = new File(
@@ -182,7 +182,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             String projectTsConfigAsString = FileUtils
                     .readFileToString(projectTsConfigFile, UTF_8);
 
-            JsonObject projectTsConfigContent;
+            ObjectNode projectTsConfigContent;
             try {
                 projectTsConfigContent = parseTsConfig(projectTsConfigAsString);
             } catch (Exception e) {
@@ -193,7 +193,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
             // Newest TS config template in Flow
             String latestTsConfigTemplate = getFileContent();
-            JsonObject latestTsConfigTemplateJson = parseTsConfig(
+            JsonNode latestTsConfigTemplateJson = parseTsConfig(
                     latestTsConfigTemplate);
 
             String projectTsConfigVersion = getConfigVersion(
@@ -212,7 +212,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             for (String tsconfigVersion : tsconfigVersions) {
                 String oldTsConfigContent = getFileContentForVersion(
                         tsconfigVersion);
-                JsonObject tsConfigTemplateJson = parseTsConfig(
+                ObjectNode tsConfigTemplateJson = parseTsConfig(
                         oldTsConfigContent);
                 if (tsConfigsEqual(tsConfigTemplateJson,
                         projectTsConfigContent)) {
@@ -241,33 +241,34 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         }
     }
 
-    private String getConfigVersion(JsonObject projectTsConfigContent) {
-        if (projectTsConfigContent.hasKey(VERSION)) {
-            return projectTsConfigContent.getString(VERSION);
+    private String getConfigVersion(JsonNode projectTsConfigContent) {
+        if (projectTsConfigContent.has(VERSION)) {
+            return projectTsConfigContent.get(VERSION).textValue();
         }
-        if (projectTsConfigContent.hasKey(OLD_VERSION_KEY)) {
-            return projectTsConfigContent.getString(OLD_VERSION_KEY);
+        if (projectTsConfigContent.has(OLD_VERSION_KEY)) {
+            return projectTsConfigContent.get(OLD_VERSION_KEY).textValue();
         }
         return null;
     }
 
-    private boolean tsConfigsEqual(JsonObject template,
-            JsonObject projectTsConfig) {
+    private boolean tsConfigsEqual(ObjectNode template,
+            ObjectNode projectTsConfig) {
         // exclude ES version from comparison, because it
         // might be different for webpack and vite
-        if (template.hasKey(COMPILER_OPTIONS)) {
-            template.getObject(COMPILER_OPTIONS).remove(ES_TARGET_VERSION);
+        if (template.has(COMPILER_OPTIONS)) {
+            ((ObjectNode) template.get(COMPILER_OPTIONS))
+                    .remove(ES_TARGET_VERSION);
         }
-        if (projectTsConfig.hasKey(COMPILER_OPTIONS)) {
-            projectTsConfig.getObject(COMPILER_OPTIONS)
+        if (projectTsConfig.has(COMPILER_OPTIONS)) {
+            ((ObjectNode) projectTsConfig.get(COMPILER_OPTIONS))
                     .remove(ES_TARGET_VERSION);
         }
 
         // exclude tsconfig version, because it's already compared
         template.remove(VERSION);
         projectTsConfig.remove(VERSION);
-        return removeWhiteSpaces(template.toJson())
-                .equals(removeWhiteSpaces(projectTsConfig.toJson()));
+        return removeWhiteSpaces(template.toString())
+                .equals(removeWhiteSpaces(projectTsConfig.toString()));
     }
 
     private String removeWhiteSpaces(String content) {

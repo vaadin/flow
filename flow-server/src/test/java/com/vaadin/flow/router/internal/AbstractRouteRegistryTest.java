@@ -6,27 +6,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.OptionalParameter;
-import com.vaadin.flow.router.RouteParameterRegex;
-import com.vaadin.flow.router.WildcardParameter;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
-import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.WildcardParameter;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.shared.Registration;
-import org.junit.rules.ExpectedException;
 
 public class AbstractRouteRegistryTest {
 
@@ -620,8 +620,7 @@ public class AbstractRouteRegistryTest {
     public void multiple_normal_routes_throw_exception()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
+        expectedEx.expectMessage(String.format(RouteUtil.ROUTE_CONFLICT,
                 NormalRoute.class.getName(),
                 SecondNormalRoute.class.getName()));
 
@@ -648,10 +647,10 @@ public class AbstractRouteRegistryTest {
     public void two_optionals_throw_exception()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                OptionalRoute.class.getName(),
-                SecondOptionalRoute.class.getName()));
+        expectedEx.expectMessage(
+                String.format(RouteUtil.ROUTE_CONFLICT_WITH_PARAMS,
+                        OptionalRoute.class.getName(),
+                        SecondOptionalRoute.class.getName()));
 
         addTarget(OptionalRoute.class);
         addTarget(SecondOptionalRoute.class);
@@ -675,10 +674,10 @@ public class AbstractRouteRegistryTest {
     public void two_has_route_parameters_throw_exception()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                HasUrlRoute.class.getName(),
-                SecondHasUrlRoute.class.getName()));
+        expectedEx.expectMessage(
+                String.format(RouteUtil.ROUTE_CONFLICT_WITH_PARAMS,
+                        HasUrlRoute.class.getName(),
+                        SecondHasUrlRoute.class.getName()));
 
         addTarget(HasUrlRoute.class);
         addTarget(SecondHasUrlRoute.class);
@@ -689,10 +688,10 @@ public class AbstractRouteRegistryTest {
     public void two_wildcard_parameters_throw_exception()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                WildcardRoute.class.getName(),
-                SecondWildcardRoute.class.getName()));
+        expectedEx.expectMessage(
+                String.format(RouteUtil.ROUTE_CONFLICT_WITH_PARAMS,
+                        WildcardRoute.class.getName(),
+                        SecondWildcardRoute.class.getName()));
 
         addTarget(WildcardRoute.class);
         addTarget(SecondWildcardRoute.class);

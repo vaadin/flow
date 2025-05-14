@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-polymer2lit</artifactId>
     <name>Polymer to Lit converter</name>
@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <version.roaster>2.29.0.Final</version.roaster>
+        <version.roaster>2.30.1.Final</version.roaster>
     </properties>
 
     <dependencies>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.12.0</version>
+            <version>1.13.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -67,7 +67,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>npm-install</id>

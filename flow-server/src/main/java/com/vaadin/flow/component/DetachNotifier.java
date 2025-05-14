@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -38,7 +40,14 @@ public interface DetachNotifier extends Serializable {
             ComponentEventListener<DetachEvent> listener) {
         if (this instanceof Component) {
             return ComponentUtil.addListener((Component) this,
-                    DetachEvent.class, listener);
+                    DetachEvent.class, event -> {
+                        try {
+                            listener.onComponentEvent(event);
+                        } catch (RuntimeException e) {
+                            VaadinSession.getCurrent().getErrorHandler()
+                                    .error(new ErrorEvent(e));
+                        }
+                    });
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "

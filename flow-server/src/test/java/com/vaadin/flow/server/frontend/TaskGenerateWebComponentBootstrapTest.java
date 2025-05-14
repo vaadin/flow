@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 
 public class TaskGenerateWebComponentBootstrapTest {
     @Rule
@@ -68,4 +69,13 @@ public class TaskGenerateWebComponentBootstrapTest {
                 "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                         + "FlowClient.js';\n" + "init()"));
     }
+
+    @Test
+    public void should_importFeatureFlagTS() throws ExecutionFailedException {
+        taskGenerateWebComponentBootstrap.execute();
+        String content = taskGenerateWebComponentBootstrap.getFileContent();
+        Assert.assertTrue(content.contains(
+                String.format("import './%s';", FEATURE_FLAGS_FILE_NAME)));
+    }
+
 }

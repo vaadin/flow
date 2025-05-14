@@ -17,7 +17,10 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.core.io.ClassPathResource;
 
 import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.RouteParamType;
 
 /**
  * Registers runtime hints for Spring 3 native support.
@@ -33,6 +36,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         // Bundles, build info etc
         hints.resources().registerPattern("META-INF/VAADIN/*");
         hints.resources().registerPattern("vaadin-i18n/*");
+        hints.resources().registerPattern("vaadin-featureflags.properties");
 
         // Random classes that need reflection
         for (String cls : getClasses()) {
@@ -106,7 +110,11 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter",
                 "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper",
                 "com.fasterxml.jackson.databind.ser.std.ToStringSerializer",
-                DefaultErrorHandler.class.getName() };
+                DefaultErrorHandler.class.getName(), MenuData.class.getName(),
+                AvailableViewInfo.class.getName(),
+                AvailableViewInfo.DetailDeserializer.class.getName(),
+                AvailableViewInfo.DetailSerializer.class.getName(),
+                RouteParamType.class.getName() };
     }
 
 }

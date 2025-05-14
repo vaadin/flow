@@ -1,7 +1,6 @@
 {
-  "name": "flow-vite-dependencies",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "A ",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,16 +9,16 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "vite": "5.4.2",
-    "@vitejs/plugin-react": "4.3.1",
-    "@preact/signals-react-transform": "0.4.0",
-    "@rollup/plugin-replace": "5.0.7",
-    "@rollup/pluginutils": "5.1.0",
-    "@babel/preset-react": "7.24.7",
-    "rollup-plugin-visualizer": "5.12.0",
+    "vite": "6.3.4",
+    "@vitejs/plugin-react": "4.4.1",
+    "@preact/signals-react-transform": "0.5.1",
+    "@rollup/plugin-replace": "6.0.2",
+    "@rollup/pluginutils": "5.1.4",
+    "@babel/preset-react": "7.26.3",
+    "rollup-plugin-visualizer": "5.14.0",
     "rollup-plugin-brotli": "3.1.0",
-    "vite-plugin-checker": "0.7.2",
-    "workbox-build": "7.1.1",
+    "vite-plugin-checker": "0.9.1",
+    "workbox-build": "7.3.0",
     "transform-ast": "2.4.4"
   }
 }

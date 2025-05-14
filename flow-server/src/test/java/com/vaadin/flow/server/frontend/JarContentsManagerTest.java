@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -461,14 +461,13 @@ public class JarContentsManagerTest {
         File jsonFile = copyFilesFromJar(outputDirectory, jarDirectory,
                 testJar);
 
-        long timestamp = System.currentTimeMillis();
-        Assert.assertTrue(FileUtils.isFileOlder(jsonFile, timestamp));
+        long timestamp = jsonFile.lastModified();
 
         jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar,
                 jarDirectory, outputDirectory);
 
-        // The file is still older
-        Assert.assertTrue(FileUtils.isFileOlder(jsonFile, timestamp));
+        // The file is unmodified
+        Assert.assertEquals(timestamp, jsonFile.lastModified());
     }
 
     @Test

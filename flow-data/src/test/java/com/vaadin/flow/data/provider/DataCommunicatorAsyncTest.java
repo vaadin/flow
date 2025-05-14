@@ -17,18 +17,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Range;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
-
 import elemental.json.JsonValue;
 
 @RunWith(Parameterized.class)
@@ -253,8 +253,14 @@ public class DataCommunicatorAsyncTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new AlwaysLockedVaadinSession(
-                        new VaadinServletService(new VaadinServlet(), null));
+                RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+                VaadinServletService service = new VaadinServletService() {
+                    @Override
+                    protected RouteRegistry getRouteRegistry() {
+                        return routeRegistry;
+                    }
+                };
+                session = new AlwaysLockedVaadinSession(service);
                 VaadinSession.setCurrent(session);
             }
             return session;

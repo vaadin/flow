@@ -1,7 +1,6 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 
 import org.junit.Assert;
@@ -99,18 +98,11 @@ public class ServerRpcHandlerTest {
         Mockito.verify(dependencyList).clearPendingSendToClient();
     }
 
-    @Test
-    public void handleRpc_duplicateMessage_doNotThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+    @Test(expected = ServerRpcHandler.ClientResentPayloadException.class)
+    public void handleRpc_duplicateMessage_throwsResendPayload()
+            throws InvalidUIDLSecurityKeyException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
-        ServerRpcHandler handler = new ServerRpcHandler() {
-            @Override
-            protected String getMessage(Reader reader) throws IOException {
-                return msg;
-            }
-
-            ;
-        };
+        ServerRpcHandler handler = new ServerRpcHandler();
 
         ui = new UI();
         ui.getInternals().setSession(session);
@@ -118,26 +110,19 @@ public class ServerRpcHandlerTest {
                 MessageDigestUtil.sha256(msg));
 
         // This invocation shouldn't throw. No other checks
-        handler.handleRpc(ui, Mockito.mock(Reader.class), request);
+        handler.handleRpc(ui, msg, request);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void handleRpc_unexpectedMessage_throw()
             throws InvalidUIDLSecurityKeyException, IOException {
-        ServerRpcHandler handler = new ServerRpcHandler() {
-            @Override
-            protected String getMessage(Reader reader) throws IOException {
-                return "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID
-                        + "\":1}";
-            }
-
-            ;
-        };
+        String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
+        ServerRpcHandler handler = new ServerRpcHandler();
 
         ui = new UI();
         ui.getInternals().setSession(session);
 
-        handler.handleRpc(ui, Mockito.mock(Reader.class), request);
+        handler.handleRpc(ui, msg, request);
     }
 
     @Test(expected = DauEnforcementException.class)

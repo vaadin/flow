@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2024 Vaadin Ltd
+ *    Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
+import java.io.File
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.FrontendUtils
-import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
-import java.io.File
 
 /**
  * Declaratively defines the outputs of the [VaadinPrepareFrontendTask]:
@@ -31,49 +30,44 @@ import java.io.File
  * of vaadinPrepareFrontend task to not run it again if inputs are the same.
  */
 internal class PrepareFrontendOutputProperties(
-    private val project: Project,
-    private val config: PluginEffectiveConfiguration,
+    adapter: GradlePluginAdapter
 ) {
 
-    @OutputFile
-    public fun getPackageJson(): File {
-        return File(project.projectDir, Constants.PACKAGE_JSON)
-    }
+    private val config = adapter.config
+    private val projectDir = config.projectDir
+    private val generatedTsFolder =
+        BuildFrontendUtil.getGeneratedFrontendDirectory(adapter)
+    private val resourceOutputDirectory = config.resourceOutputDirectory
 
     @OutputFile
-    public fun getPackageLockJson(): File {
-        return File(project.projectDir, Constants.PACKAGE_LOCK_JSON)
-    }
+    fun getPackageJson(): File = File(projectDir, Constants.PACKAGE_JSON)
 
     @OutputFile
-    public fun getPackageLockYaml(): File {
-        return File(project.projectDir, Constants.PACKAGE_LOCK_YAML)
-    }
+    fun getPackageLockJson(): File =
+        File(projectDir, Constants.PACKAGE_LOCK_JSON)
 
     @OutputFile
-    public fun getViteConfig(): File {
-        return File(project.projectDir, FrontendUtils.VITE_CONFIG)
-    }
+    fun getPackageLockYaml(): File =
+        File(projectDir, Constants.PACKAGE_LOCK_YAML)
 
     @OutputFile
-    public fun getViteGeneratedConfig(): File {
-        return File(project.projectDir, FrontendUtils.VITE_GENERATED_CONFIG)
-    }
+    fun getViteConfig(): File =
+        File(projectDir, FrontendUtils.VITE_CONFIG)
 
     @OutputFile
-    public fun getTsConfig(): File {
-        return File(project.projectDir, "tsconfig.json")
-    }
+    fun getViteGeneratedConfig(): File =
+        File(projectDir, FrontendUtils.VITE_GENERATED_CONFIG)
 
     @OutputFile
-    public fun getTsDefinition(): File {
-        return File(project.projectDir, "types.d.ts")
-    }
+    fun getTsConfig(): File = File(projectDir, "tsconfig.json")
+
+    @OutputFile
+    fun getTsDefinition(): File = File(projectDir, "types.d.ts")
 
     @OutputDirectory
-    public fun getGeneratedTsFolder(): File =
-            BuildFrontendUtil.getGeneratedFrontendDirectory(GradlePluginAdapter(project, config, true))
+    fun getGeneratedTsFolder(): File = generatedTsFolder
 
     @OutputDirectory
-    public fun getResourceOutputDirectory(): Property<File> = config.resourceOutputDirectory
+    fun getResourceOutputDirectory(): Property<File> =
+        resourceOutputDirectory
 }

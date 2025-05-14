@@ -6,6 +6,7 @@
     "theme-live-reload-plugin",
     "rollup-plugin-postcss-lit-custom",
     "react-function-location-plugin",
-    "rollup-plugin-vaadin-i18n"
+    "rollup-plugin-vaadin-i18n",
+    "vite-plugin-service-worker"
   ]
 }

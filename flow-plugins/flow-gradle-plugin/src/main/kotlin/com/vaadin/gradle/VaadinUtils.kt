@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2024 Vaadin Ltd
+ *    Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.file.FileCollection
-import com.vaadin.flow.function.SerializableSupplier
-import com.vaadin.flow.server.frontend.FrontendTools
-import com.vaadin.flow.server.frontend.FrontendToolsSettings
-import com.vaadin.flow.server.frontend.FrontendUtils
+import java.io.File
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.provider.Providers
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
-import java.io.File
-import java.net.URI
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 /**
  * Finds the value of a boolean property. It searches in gradle and system properties.
@@ -44,22 +37,9 @@ import kotlin.contracts.contract
  * @return `null` if the property is not present, `true` if it's defined or if it's set to "true"
  * and `false` otherwise.
  */
-public fun Project.getBooleanProperty(propertyName: String) : Boolean? {
-    if (System.getProperty(propertyName) != null) {
-        val value: String = System.getProperty(propertyName)
-        val valueBoolean: Boolean = value.isBlank() || value.toBoolean()
-        logger.info("Set $propertyName to $valueBoolean because of System property $propertyName='$value'")
-        return valueBoolean
-    }
-    if (project.hasProperty(propertyName)) {
-        val value: String = project.property(propertyName) as String
-        val valueBoolean: Boolean = value.isBlank() || value.toBoolean()
-        logger.info("Set $propertyName to $valueBoolean because of Gradle project property $propertyName='$value'")
-        return valueBoolean
-    }
-    return null
-}
-
+public fun Project.getBooleanProperty(propertyName: String) : Provider<Boolean> =
+    getStringProperty(propertyName)
+        .map { it.isBlank() || it.toBoolean() }
 /**
  * Finds the value of a string property. It searches in gradle and system properties.
  *
@@ -69,19 +49,10 @@ public fun Project.getBooleanProperty(propertyName: String) : Boolean? {
  *
  * @return the value of the property or `null` if the property is not present.
  */
-public fun Project.getStringProperty(propertyName: String) : String? {
-    if (System.getProperty(propertyName) != null) {
-        val value: String = System.getProperty(propertyName)
-        logger.info("Set $propertyName to $value because of System property $propertyName='$value'")
-        return value
-    }
-    if (project.hasProperty(propertyName)) {
-        val value: String = project.property(propertyName) as String
-        logger.info("Set $propertyName to $value because of Gradle project property $propertyName='$value'")
-        return value
-    }
-    return null
-}
+public fun Project.getStringProperty(propertyName: String) : Provider<String> =
+    providers.systemProperty(propertyName)
+        .orElse(providers.gradleProperty(propertyName))
+
 
 /**
  * Allows Kotlin-based gradle scripts to be configured via the `vaadin{}` DSL block:

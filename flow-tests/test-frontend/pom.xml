@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>test-frontend</artifactId>
     <name>Frontend build (npm + Webpack + Vite)</name>
@@ -33,8 +33,8 @@
                 <module>vite-basics</module>
                 <module>vite-production</module>
                 <module>vite-production-custom-frontend</module>
-                <module>vite-context-path/pom-production.xml</module>
                 <module>vite-context-path</module>
+                <module>vite-context-path/pom-production.xml</module>
                 <module>vite-pwa</module>
                 <module>vite-pwa-custom-offline-path</module>
                 <module>vite-pwa-custom-offline-path/pom-production.xml</module>
@@ -46,17 +46,20 @@
                 <!-- npm and pnpm dev mode and prod mode -->
                 <!-- run production build before dev build as dev build has npm i in thread -->
                 <module>vite-embedded-webcomponent-resync</module>
-                <module>test-npm/pom-production.xml</module>
+                <module>vite-embedded-webcomponent-resync-ws</module>
+                <module>vite-embedded-webcomponent-resync-wsxhr</module>
+                <module>vite-embedded-webcomponent-resync-longpolling</module>
                 <module>test-npm</module>
-                <module>test-pnpm/pom-production.xml</module>
+                <module>test-npm/pom-production.xml</module>
                 <module>test-pnpm</module>
+                <module>test-pnpm/pom-production.xml</module>
             </modules>
         </profile>
         <profile>
             <id>bun</id>
             <modules>
-                <module>test-bun/pom-production.xml</module>
                 <module>test-bun</module>
+                <module>test-bun/pom-production.xml</module>
             </modules>
         </profile>
     </profiles>

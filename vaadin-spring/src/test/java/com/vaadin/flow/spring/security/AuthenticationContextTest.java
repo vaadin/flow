@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -41,19 +41,28 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
+
+import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
+import elemental.json.JsonValue;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ObjectPostProcessorConfiguration.class)
@@ -404,7 +413,102 @@ public class AuthenticationContextTest {
 
     @Test
     @WithMockUser()
+    public void logout_allowNullResponse() {
+        authContext.setLogoutHandlers(Mockito.mock(LogoutSuccessHandler.class),
+                List.of(Mockito.mock(LogoutHandler.class)));
+        try {
+            CurrentInstance.set(VaadinRequest.class,
+                    Mockito.mock(VaadinServletRequest.class));
+            UI.setCurrent(Mockito.mock(UI.class));
+            mockPush(UI.getCurrent(), Transport.WEBSOCKET_XHR);
+            try {
+                authContext.logout();
+            } catch (NullPointerException e) {
+                Assert.fail("Should not throw NPE");
+            }
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    @WithMockUser()
     public void logout_handlersEngaged() throws Exception {
+        SetupForLogoutTest setup = getSetupForLogoutTest();
+
+        UI ui = Mockito.mock(UI.class);
+        Mockito.doAnswer(i -> {
+            i.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).accessSynchronously(ArgumentMatchers.any());
+        mockPush(ui);
+        try {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+            UI.setCurrent(ui);
+            authContext.logout();
+
+            Mockito.verify(setup.successHandler()).onLogoutSuccess(
+                    setup.request(), setup.response(), setup.authentication());
+            Mockito.verify(setup.handler2()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+            Mockito.verify(setup.handler1()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    @WithMockUser()
+    public void logout_pushWithWebsocket_handlersEngaged() throws Exception {
+        SetupForLogoutTest setup = getSetupForLogoutTest();
+
+        UI ui = Mockito.mock(UI.class);
+        Mockito.doAnswer(i -> {
+            i.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).accessSynchronously(ArgumentMatchers.any());
+        mockPush(ui, Transport.WEBSOCKET);
+        Page page = Mockito.mock(Page.class);
+        Mockito.when(ui.getPage()).thenReturn(page);
+        Mockito.when(page.executeJs(Mockito.anyString()))
+                .thenReturn(new PendingJavaScriptResult() {
+                    @Override
+                    public boolean cancelExecution() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isSentToBrowser() {
+                        return true;
+                    }
+
+                    @Override
+                    public void then(
+                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<String> errorHandler) {
+                        resultHandler.accept(null);
+                    }
+                });
+        try {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+            UI.setCurrent(ui);
+            authContext.logout();
+
+            Mockito.verify(setup.successHandler()).onLogoutSuccess(
+                    setup.request(), setup.response(), setup.authentication());
+            Mockito.verify(setup.handler2()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+            Mockito.verify(setup.handler1()).logout(setup.request(),
+                    setup.response(), setup.authentication());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    private SetupForLogoutTest getSetupForLogoutTest() {
         Authentication authentication = SecurityContextHolder.getContext()
                 .getAuthentication();
 
@@ -425,26 +529,15 @@ public class AuthenticationContextTest {
                 .mock(VaadinServletResponse.class);
         Mockito.when(vaadinResponse.getHttpServletResponse())
                 .thenReturn(response);
+        return new SetupForLogoutTest(authentication, successHandler, handler1,
+                handler2, request, vaadinRequest, response, vaadinResponse);
+    }
 
-        UI ui = Mockito.mock(UI.class);
-        Mockito.doAnswer(i -> {
-            i.<Command> getArgument(0).execute();
-            return null;
-        }).when(ui).accessSynchronously(ArgumentMatchers.any());
-
-        try {
-            CurrentInstance.set(VaadinRequest.class, vaadinRequest);
-            CurrentInstance.set(VaadinResponse.class, vaadinResponse);
-            UI.setCurrent(ui);
-            authContext.logout();
-
-            Mockito.verify(successHandler).onLogoutSuccess(request, response,
-                    authentication);
-            Mockito.verify(handler2).logout(request, response, authentication);
-            Mockito.verify(handler1).logout(request, response, authentication);
-        } finally {
-            CurrentInstance.clearAll();
-        }
+    private record SetupForLogoutTest(Authentication authentication,
+            LogoutSuccessHandler successHandler, LogoutHandler handler1,
+            LogoutHandler handler2, HttpServletRequest request,
+            VaadinServletRequest vaadinRequest, HttpServletResponse response,
+            VaadinServletResponse vaadinResponse) {
     }
 
     @Test
@@ -511,5 +604,24 @@ public class AuthenticationContextTest {
         var roles = authContext.getGrantedRoles();
         Assert.assertTrue(roles.contains("USER"));
         Assert.assertTrue(roles.contains("ADMIN"));
+    }
+
+    private static void mockPush(UI ui) {
+        mockPush(ui, null);
+    }
+
+    private static void mockPush(UI ui, Transport pushTransport) {
+        UIInternals internals = Mockito.mock(UIInternals.class);
+        PushConnection pushConnection = Mockito.mock(PushConnection.class);
+        PushConfiguration pushConfiguration = Mockito
+                .mock(PushConfiguration.class);
+
+        Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfiguration);
+        Mockito.when(pushConfiguration.getTransport())
+                .thenReturn(pushTransport == null ? Transport.WEBSOCKET_XHR
+                        : pushTransport);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
+        Mockito.when(internals.getPushConnection()).thenReturn(pushConnection);
+        Mockito.when(pushConnection.isConnected()).thenReturn(true);
     }
 }

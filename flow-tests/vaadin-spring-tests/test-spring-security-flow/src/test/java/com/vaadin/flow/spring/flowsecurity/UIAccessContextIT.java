@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.spring.flowsecurity;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.WebDriver;
+
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
 import com.vaadin.testbench.HasElementQuery;
 import com.vaadin.testbench.TestBenchElement;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.WebDriver;
 
 public class UIAccessContextIT extends AbstractIT {
 
@@ -37,14 +37,15 @@ public class UIAccessContextIT extends AbstractIT {
             super.setup();
             open("private");
             loginUser();
-            TestBenchElement balance = $("span").id("balanceText");
+            TestBenchElement balance = waitUntil(
+                    d -> $("span").id("balanceText"));
             Assert.assertEquals(expectedUserBalance, balance.getText());
 
             open("private", adminBrowser);
             HasElementQuery adminContext = () -> adminBrowser;
             loginAdmin(adminContext);
-            TestBenchElement adminBalance = adminContext.$("span")
-                    .id("balanceText");
+            TestBenchElement adminBalance = waitUntil(
+                    d -> adminContext.$("span").id("balanceText"));
             Assert.assertEquals(expectedAdminBalance, adminBalance.getText());
 
             ButtonElement sendRefresh = $(ButtonElement.class)
@@ -64,11 +65,16 @@ public class UIAccessContextIT extends AbstractIT {
     }
 
     private void loginAdmin(HasElementQuery adminContext) {
+        waitForClientRouter();
         LoginFormElement form = adminContext.$(LoginOverlayElement.class)
                 .first().getLoginForm();
         form.getUsernameField().setValue("emma");
         form.getPasswordField().setValue("emma");
         form.submit();
+        waitUntilNot(driver -> ((WebDriver) adminContext.getContext())
+                .getCurrentUrl().contains("my/login/page"));
+        waitUntilNot(
+                driver -> adminContext.$(LoginOverlayElement.class).exists());
     }
 
 }

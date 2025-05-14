@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,7 +32,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -244,7 +244,7 @@ public class WebComponentWrapperTest {
 
         UIInternals internals = new UIInternals(ui);
         internals.setSession(
-                new AlwaysLockedVaadinSession(mock(VaadinService.class)));
+                new AlwaysLockedVaadinSession(new MockVaadinServletService()));
         when(ui.getInternals()).thenReturn(internals);
 
         Component parent = new Parent();

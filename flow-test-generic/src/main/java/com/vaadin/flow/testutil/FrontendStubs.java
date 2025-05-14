@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 public class FrontendStubs {
 
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
+    public static final String VITE_PACKAGE_JSON = "node_modules/vite/package.json";
     public static final String VITE_TEST_OUT_FILE = "vite-out.test";
 
     private static final String NPM_BIN_PATH = System.getProperty("os.name")
@@ -145,6 +146,18 @@ public class FrontendStubs {
             throws IOException {
         createStubDevServer(new File(baseDir, VITE_SERVER), VITE_TEST_OUT_FILE,
                 readyString, milliSecondsToRun, enableListening);
+
+        var packageJson = new File(baseDir, VITE_PACKAGE_JSON);
+        packageJson.createNewFile();
+        FileUtils.write(packageJson, """
+                        {
+                          "name": "vite",
+                          "version": "4.0.0",
+                          "bin": {
+                            "vite": "bin/vite.js"
+                          }
+                        }
+                """, StandardCharsets.UTF_8);
     }
 
     /**
@@ -254,8 +267,8 @@ public class FrontendStubs {
      */
     public static class ToolStubBuilder {
 
-        private static final String DEFAULT_NPM_VERSION = "8.6.0";
-        private static final String DEFAULT_NODE_VERSION = "18.12.0";
+        private static final String DEFAULT_NPM_VERSION = "10.9.0";
+        private static final String DEFAULT_NODE_VERSION = "22.12.0";
 
         private String version;
         private String cacheDir;

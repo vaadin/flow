@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,9 +36,12 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -51,6 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.DevBundleBuildingHandler;
+import com.vaadin.base.devserver.OpenInCurrentIde;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
@@ -74,13 +78,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
@@ -168,6 +170,12 @@ public class DevModeInitializer implements Serializable {
     /**
      * Initialize the devmode server if not in production mode or compatibility
      * mode.
+     * <p>
+     * </p>
+     * Uses common ForkJoin pool to execute asynchronous tasks. It is
+     * recommended to use
+     * {@link #initDevModeHandler(Set, VaadinContext, Executor)} and provide a a
+     * custom executor if initialization starts long-running tasks.
      *
      * @param classes
      *            classes to check for npm- and js modules
@@ -178,9 +186,34 @@ public class DevModeInitializer implements Serializable {
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
+     * @deprecated use {@link #initDevModeHandler(Set, VaadinContext, Executor)}
+     *             providing a custom executor.
      */
+    @Deprecated(forRemoval = true)
     public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
             VaadinContext context) throws VaadinInitializerException {
+        return initDevModeHandler(classes, context, ForkJoinPool.commonPool());
+    }
+
+    /**
+     * Initialize the devmode server if not in production mode or compatibility
+     * mode.
+     *
+     * @param classes
+     *            classes to check for npm- and js modules
+     * @param context
+     *            VaadinContext we are running in
+     * @param taskExecutor
+     *            the executor to use for asynchronous execution
+     * @return the initialized dev mode handler or {@code null} if none was
+     *         created
+     *
+     * @throws VaadinInitializerException
+     *             if dev mode can't be initialized
+     */
+    public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
+            VaadinContext context, Executor taskExecutor)
+            throws VaadinInitializerException {
 
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.isProductionMode()) {
@@ -202,6 +235,9 @@ public class DevModeInitializer implements Serializable {
             StatisticsStorage storage = new StatisticsStorage();
             DevModeUsageStatistics.init(baseDir, storage,
                     new StatisticsSender(storage));
+            DevModeUsageStatistics.collectEvent(
+                    "ide_" + OpenInCurrentIde.getIdeAndProcessInfo().ide()
+                            .name().toLowerCase(Locale.ENGLISH));
         }
 
         File frontendFolder = config.getFrontendFolder();
@@ -265,11 +301,14 @@ public class DevModeInitializer implements Serializable {
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
-        JsonObject tokenFileData = Json.createObject();
         Mode mode = config.getMode();
         boolean reactEnable = config.getBooleanProperty(REACT_ENABLE,
                 FrontendUtils
                         .isReactRouterRequired(options.getFrontendDirectory()));
+
+        boolean npmExcludeWebComponents = config
+                .getBooleanProperty(NPM_EXCLUDE_WEB_COMPONENTS, false);
+
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -279,7 +318,6 @@ public class DevModeInitializer implements Serializable {
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
                 .withRunNpmInstall(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
-                .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
                 .withEnableBun(enableBun).useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
@@ -289,12 +327,15 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
-                .withReact(reactEnable);
+                .withFrontendExtraFileExtensions(
+                        getFrontendExtraFileExtensions(config))
+                .withReact(reactEnable)
+                .withNpmExcludeWebComponents(npmExcludeWebComponents);
 
+        // Do not execute inside runnable thread as static mocking doesn't work.
         NodeTasks tasks = new NodeTasks(options);
-
         Runnable runnable = () -> {
-            runNodeTasks(context, tokenFileData, tasks);
+            runNodeTasks(tasks);
             if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
@@ -311,7 +352,7 @@ public class DevModeInitializer implements Serializable {
         };
 
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
-                .runAsync(runnable);
+                .runAsync(runnable, taskExecutor);
 
         Lookup devServerLookup = Lookup.compose(lookup,
                 Lookup.of(config, ApplicationConfiguration.class));
@@ -327,6 +368,14 @@ public class DevModeInitializer implements Serializable {
                     () -> ViteWebsocketEndpoint.init(context, handler));
             return handler;
         }
+    }
+
+    private static List<String> getFrontendExtraFileExtensions(
+            ApplicationConfiguration config) {
+        List<String> stringProperty = Arrays.asList(config
+                .getStringProperty(InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")
+                .split(","));
+        return stringProperty;
     }
 
     private static Logger log() {
@@ -350,8 +399,7 @@ public class DevModeInitializer implements Serializable {
         return frontendFiles;
     }
 
-    private static void runNodeTasks(VaadinContext vaadinContext,
-            JsonObject tokenFileData, NodeTasks tasks) {
+    private static void runNodeTasks(NodeTasks tasks) {
         try {
             tasks.execute();
         } catch (ExecutionFailedException exception) {

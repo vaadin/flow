@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,22 +19,21 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 /**
  * Theme handling methods.
@@ -49,9 +49,9 @@ public class ThemeValidationUtil {
     private static final String FRONTEND_HASHES_KEY = "frontendHashes";
 
     public static boolean themeConfigurationChanged(Options options,
-            JsonObject statsJson,
+            JsonNode statsJson,
             FrontendDependenciesScanner frontendDependencies) {
-        Map<String, JsonObject> themeJsonContents = new HashMap<>();
+        Map<String, JsonNode> themeJsonContents = new HashMap<>();
 
         if (options.getJarFiles() != null) {
             options.getJarFiles().stream().filter(File::exists)
@@ -63,12 +63,12 @@ public class ThemeValidationUtil {
         Optional<String> maybeThemeName = Optional
                 .ofNullable(frontendDependencies.getThemeDefinition())
                 .map(ThemeDefinition::getName).filter(name -> !name.isBlank());
-        Optional<JsonObject> projectThemeJson = maybeThemeName
+        Optional<JsonNode> projectThemeJson = maybeThemeName
                 .flatMap(themeName -> ThemeUtils.getThemeJson(themeName,
                         options.getFrontendDirectory()));
         String projectThemeName = maybeThemeName.orElse(null);
 
-        JsonObject statsThemeJson = statsJson.getObject("themeJsonContents");
+        JsonNode statsThemeJson = statsJson.get("themeJsonContents");
         if (statsThemeJson == null && (!themeJsonContents.isEmpty()
                 || projectThemeJson.isPresent())) {
             getLogger().info(
@@ -78,13 +78,13 @@ public class ThemeValidationUtil {
 
         if (projectThemeJson.isPresent()) {
             String key;
-            if (statsThemeJson.hasKey(projectThemeName)) {
+            if (statsThemeJson.has(projectThemeName)) {
                 key = projectThemeName;
             } else if (!options.isProductionMode()
-                    && statsThemeJson.hasKey(Constants.DEV_BUNDLE_NAME)) {
+                    && statsThemeJson.has(Constants.DEV_BUNDLE_NAME)) {
                 key = Constants.DEV_BUNDLE_NAME;
             } else if (options.isProductionMode()
-                    && statsThemeJson.hasKey(Constants.PROD_BUNDLE_NAME)) {
+                    && statsThemeJson.has(Constants.PROD_BUNDLE_NAME)) {
                 key = Constants.PROD_BUNDLE_NAME;
             } else {
                 getLogger().info(
@@ -97,17 +97,17 @@ public class ThemeValidationUtil {
                     projectThemeJson.get());
         }
 
-        for (Map.Entry<String, JsonObject> themeContent : themeJsonContents
+        for (Map.Entry<String, JsonNode> themeContent : themeJsonContents
                 .entrySet()) {
             if (hasNewAssetsOrImports(statsThemeJson, themeContent)) {
                 getLogger().info(
                         "Found new configuration for theme '{}' in 'theme.json'.",
                         themeContent.getKey());
                 return true;
-            } else if (statsThemeJson.hasKey(themeContent.getKey())) {
+            } else if (statsThemeJson.has(themeContent.getKey())) {
                 List<String> missedKeys = new ArrayList<>();
-                JsonObject content = Json
-                        .parse(statsThemeJson.getString(themeContent.getKey()));
+                JsonNode content = JacksonUtils.readTree(
+                        statsThemeJson.get(themeContent.getKey()).textValue());
                 if (!objectIncludesEntry(content, themeContent.getValue(),
                         missedKeys)) {
                     getLogger().info(
@@ -137,7 +137,7 @@ public class ThemeValidationUtil {
      *         {@literal false}.
      */
     public static boolean themeShadowDOMStylesheetsChanged(Options options,
-            JsonObject statsJson,
+            JsonNode statsJson,
             FrontendDependenciesScanner frontendDependencies) {
         File frontendDirectory = options.getFrontendDirectory();
         // Scan the theme hierarchy and collect all <theme>/components folders
@@ -145,7 +145,7 @@ public class ThemeValidationUtil {
                 .ofNullable(frontendDependencies.getThemeDefinition())
                 .map(ThemeDefinition::getName).filter(name -> !name.isBlank())
                 .map(themeName -> {
-                    Map<String, JsonObject> themeJsonContents = new HashMap<>();
+                    Map<String, JsonNode> themeJsonContents = new HashMap<>();
                     ThemeUtils.getThemeJson(themeName, frontendDirectory)
                             .ifPresent(
                                     themeJson -> collectThemeJsonContentsInFrontend(
@@ -160,16 +160,16 @@ public class ThemeValidationUtil {
                 }).orElse(null);
         if (themeComponentsDirs != null) {
             Map<String, String> hashesWithNoComponentCssMatches = new HashMap<>();
-            if (statsJson.hasKey(FRONTEND_HASHES_KEY)) {
-                JsonObject json = statsJson.getObject(FRONTEND_HASHES_KEY);
-                Stream.of(json.keys())
+            if (statsJson.has(FRONTEND_HASHES_KEY)) {
+                JsonNode json = statsJson.get(FRONTEND_HASHES_KEY);
+                JacksonUtils.getKeys(json).stream()
                         // Only considers bundled resources located in
                         // '[generated/jar-resources/]themes/<themeName>/components'
                         .filter(path -> themeComponentsDirs.stream()
                                 .anyMatch(dir -> frontendDirectory.toPath()
                                         .resolve(path).startsWith(dir)))
                         .forEach(key -> hashesWithNoComponentCssMatches.put(key,
-                                json.getString(key)));
+                                json.get(key).textValue()));
             }
 
             List<String> themeComponentsCssFiles = new ArrayList<>();
@@ -201,26 +201,26 @@ public class ThemeValidationUtil {
         return false;
     }
 
-    private static boolean hasNewAssetsOrImports(JsonObject contentsInStats,
-            Map.Entry<String, JsonObject> themeContent) {
-        JsonObject json = themeContent.getValue();
-        boolean moreThanOneKey = json.keys().length > 1;
-        boolean noParentEntry = json.keys().length == 1
-                && !json.hasKey("parent");
+    private static boolean hasNewAssetsOrImports(JsonNode contentsInStats,
+            Map.Entry<String, JsonNode> themeContent) {
+        JsonNode json = themeContent.getValue();
+        int keys = JacksonUtils.getKeys(json).size();
+        boolean moreThanOneKey = keys > 1;
+        boolean noParentEntry = keys == 1 && !json.has("parent");
         // do not re-bundle immediately if theme.json is empty or has only
         // parent reference
-        return !contentsInStats.hasKey(themeContent.getKey())
+        return !contentsInStats.has(themeContent.getKey())
                 && (moreThanOneKey || noParentEntry);
     }
 
     private static void collectThemeJsonContentsInFrontend(Options options,
-            Map<String, JsonObject> themeJsonContents, String themeName,
-            JsonObject themeJson) {
+            Map<String, JsonNode> themeJsonContents, String themeName,
+            JsonNode themeJson) {
         Optional<String> parentThemeInFrontend = ThemeUtils
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
-            Optional<JsonObject> parentThemeJson = ThemeUtils.getThemeJson(
+            Optional<JsonNode> parentThemeJson = ThemeUtils.getThemeJson(
                     parentThemeName, options.getFrontendDirectory());
             parentThemeJson.ifPresent(
                     jsonObject -> collectThemeJsonContentsInFrontend(options,
@@ -230,33 +230,30 @@ public class ThemeValidationUtil {
         themeJsonContents.put(themeName, themeJson);
     }
 
-    static boolean objectIncludesEntry(JsonValue jsonFromBundle,
-            JsonValue projectJson, Collection<String> missedKeys) {
-        JsonType bundleJsonType = jsonFromBundle.getType();
-        JsonType projectJsonObjectTypeType = projectJson.getType();
-        assert bundleJsonType.equals(projectJsonObjectTypeType);
+    static boolean objectIncludesEntry(JsonNode jsonFromBundle,
+            JsonNode projectJson, Collection<String> missedKeys) {
+        JsonNodeType bundleJsonNodeType = jsonFromBundle.getNodeType();
+        JsonNodeType projectJsonNodeTypeType = projectJson.getNodeType();
+        assert bundleJsonNodeType.equals(projectJsonNodeTypeType);
 
-        if (bundleJsonType == JsonType.NULL) {
+        if (bundleJsonNodeType == JsonNodeType.NULL) {
             return true;
-        } else if (bundleJsonType == JsonType.BOOLEAN) {
-            return JsonUtils.booleanEqual(jsonFromBundle, projectJson);
-        } else if (bundleJsonType == JsonType.NUMBER) {
-            return JsonUtils.numbersEqual(jsonFromBundle, projectJson);
-        } else if (bundleJsonType == JsonType.STRING) {
-            return JsonUtils.stringEqual(jsonFromBundle, projectJson);
-        } else if (bundleJsonType == JsonType.ARRAY) {
-            JsonArray jsonArrayFromBundle = (JsonArray) jsonFromBundle;
-            JsonArray jsonArrayFromProject = (JsonArray) projectJson;
+        } else if (bundleJsonNodeType == JsonNodeType.BOOLEAN) {
+            return JacksonUtils.booleanEqual(jsonFromBundle, projectJson);
+        } else if (bundleJsonNodeType == JsonNodeType.NUMBER) {
+            return JacksonUtils.numbersEqual(jsonFromBundle, projectJson);
+        } else if (bundleJsonNodeType == JsonNodeType.STRING) {
+            return JacksonUtils.stringEqual(jsonFromBundle, projectJson);
+        } else if (bundleJsonNodeType == JsonNodeType.ARRAY) {
+            ArrayNode jsonArrayFromBundle = (ArrayNode) jsonFromBundle;
+            ArrayNode jsonArrayFromProject = (ArrayNode) projectJson;
             return compareArrays(missedKeys, jsonArrayFromBundle,
                     jsonArrayFromProject);
-        } else if (bundleJsonType == JsonType.OBJECT) {
-            JsonObject jsonObjectFromBundle = (JsonObject) jsonFromBundle;
-            JsonObject projectJsonObject = (JsonObject) projectJson;
-            return compareObjects(missedKeys, jsonObjectFromBundle,
-                    projectJsonObject);
+        } else if (bundleJsonNodeType == JsonNodeType.OBJECT) {
+            return compareObjects(missedKeys, jsonFromBundle, projectJson);
         } else {
             throw new IllegalArgumentException(
-                    "Unsupported JsonType: " + bundleJsonType);
+                    "Unsupported JsonNodeType: " + bundleJsonNodeType);
         }
     }
 
@@ -267,7 +264,7 @@ public class ThemeValidationUtil {
     }
 
     private static void getPackagedThemeJsonContents(File jarFileToLookup,
-            Map<String, JsonObject> packagedThemeHashes) {
+            Map<String, JsonNode> packagedThemeHashes) {
         JarContentsManager jarContentsManager = new JarContentsManager();
         if (jarContentsManager.containsPath(jarFileToLookup,
                 Constants.RESOURCES_THEME_JAR_DEFAULT)) {
@@ -286,29 +283,30 @@ public class ThemeValidationUtil {
                             "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
                 }
                 String themeName = matcher.group(1);
-                JsonObject jsonContent = Json.parse(content);
+                JsonNode jsonContent = null;
+                jsonContent = JacksonUtils.readTree(content);
                 packagedThemeHashes.put(themeName, jsonContent);
             }
         }
     }
 
     private static boolean compareObjects(Collection<String> missedKeys,
-            JsonObject jsonObjectFromBundle, JsonObject projectJsonObject) {
+            JsonNode jsonObjectFromBundle, JsonNode projectJsonNode) {
         boolean allEntriesFound = true;
 
-        for (String projectEntryKey : projectJsonObject.keys()) {
-            JsonValue projectEntry = projectJsonObject.get(projectEntryKey);
+        for (String projectEntryKey : JacksonUtils.getKeys(projectJsonNode)) {
+            JsonNode projectEntry = projectJsonNode.get(projectEntryKey);
             // ignore parent theme, because having a parent theme doesn't
             // need a new bundle per se
-            if (projectEntry.getType() == JsonType.STRING
+            if (projectEntry.getNodeType() == JsonNodeType.STRING
                     && "parent".equals(projectEntryKey)) {
                 continue;
             }
             boolean entryFound = false;
-            for (String bundleEntryKey : jsonObjectFromBundle.keys()) {
-                JsonValue bundleEntry = jsonObjectFromBundle
-                        .get(bundleEntryKey);
-                if (bundleEntry.getType() == projectEntry.getType()
+            for (String bundleEntryKey : JacksonUtils
+                    .getKeys(jsonObjectFromBundle)) {
+                JsonNode bundleEntry = jsonObjectFromBundle.get(bundleEntryKey);
+                if (bundleEntry.getNodeType() == projectEntry.getNodeType()
                         && objectIncludesEntry(bundleEntry, projectEntry,
                                 missedKeys)) {
                     entryFound = true;
@@ -324,7 +322,7 @@ public class ThemeValidationUtil {
     }
 
     private static boolean compareArrays(Collection<String> missedKeys,
-            JsonArray jsonArrayFromBundle, JsonArray jsonArrayFromProject) {
+            ArrayNode jsonArrayFromBundle, ArrayNode jsonArrayFromProject) {
 
         boolean allEntriesFound = checkMissedKeys(missedKeys,
                 jsonArrayFromBundle, jsonArrayFromProject);
@@ -336,7 +334,7 @@ public class ThemeValidationUtil {
         // jsonArrayFromBundle = [1,2,3]
         // jsonArrayFromProject = [1,2]
         // and the check would pass
-        if (jsonArrayFromBundle.length() != jsonArrayFromProject.length()) {
+        if (jsonArrayFromBundle.size() != jsonArrayFromProject.size()) {
             allEntriesFound = allEntriesFound && checkMissedKeys(missedKeys,
                     jsonArrayFromProject, jsonArrayFromBundle);
         }
@@ -345,20 +343,20 @@ public class ThemeValidationUtil {
     }
 
     private static boolean checkMissedKeys(Collection<String> missedKeys,
-            JsonArray arrayIterating, JsonArray arrayComparing) {
+            ArrayNode arrayIterating, ArrayNode arrayComparing) {
         boolean allEntriesFound = true;
 
         for (int arrayComparingIndex = 0; arrayComparingIndex < arrayComparing
-                .length(); arrayComparingIndex++) {
-            JsonValue arrayComparingEntry = arrayComparing
+                .size(); arrayComparingIndex++) {
+            JsonNode arrayComparingEntry = arrayComparing
                     .get(arrayComparingIndex);
             boolean entryFound = false;
             for (int arrayIteratingIndex = 0; arrayIteratingIndex < arrayIterating
-                    .length(); arrayIteratingIndex++) {
-                JsonValue arrayIteratingEntry = arrayIterating
+                    .size(); arrayIteratingIndex++) {
+                JsonNode arrayIteratingEntry = arrayIterating
                         .get(arrayIteratingIndex);
-                if (arrayIteratingEntry.getType() == arrayComparingEntry
-                        .getType()
+                if (arrayIteratingEntry.getNodeType() == arrayComparingEntry
+                        .getNodeType()
                         && objectIncludesEntry(arrayIteratingEntry,
                                 arrayComparingEntry, missedKeys)) {
                     entryFound = true;
@@ -366,7 +364,7 @@ public class ThemeValidationUtil {
                 }
             }
             if (!entryFound) {
-                missedKeys.add(arrayComparingEntry.toJson());
+                missedKeys.add(arrayComparingEntry.toString());
             }
             allEntriesFound = allEntriesFound && entryFound;
         }

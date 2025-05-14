@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,9 @@
 package com.vaadin.flow.spring;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -29,6 +31,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
 import com.vaadin.flow.spring.i18n.DefaultI18NProviderFactory;
+import com.vaadin.flow.spring.security.SpringMenuAccessControl;
 
 /**
  * Vaadin Application Spring configuration.
@@ -90,7 +93,22 @@ public class VaadinApplicationConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(value = MenuAccessControl.class)
+    @ConditionalOnMissingClass("org.springframework.security.core.context.SecurityContextHolder")
     public MenuAccessControl vaadinMenuAccessControl() {
         return new DefaultMenuAccessControl();
     }
+
+    /**
+     * Creates default {@link MenuAccessControl}. This is created only if
+     * there's no {@link MenuAccessControl} bean declared.
+     *
+     * @return default menu access control
+     */
+    @Bean
+    @ConditionalOnMissingBean(value = MenuAccessControl.class)
+    @ConditionalOnClass(name = "org.springframework.security.core.context.SecurityContextHolder")
+    public MenuAccessControl springSecurityVaadinMenuAccessControl() {
+        return new SpringMenuAccessControl();
+    }
+
 }

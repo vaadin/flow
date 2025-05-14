@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,8 +46,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +62,14 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
@@ -84,11 +89,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-
-import elemental.json.Json;
-import elemental.json.JsonException;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -239,11 +239,18 @@ public abstract class VaadinService implements Serializable {
         if (DAUUtils.isDauEnabled(this)) {
             getLogger().info("Daily Active User tracking enabled");
 
-            DAUCustomizer dauCustomizer = Optional
-                    .ofNullable(getContext().getAttribute(Lookup.class))
-                    .map(lookup -> lookup.lookup(DAUCustomizer.class))
-                    .orElse(null);
-            getContext().setAttribute(DAUCustomizer.class, dauCustomizer);
+            DAUCustomizer dauCustomizer;
+            try {
+                dauCustomizer = instantiator.getOrCreate(DAUCustomizer.class);
+                getContext().setAttribute(DAUCustomizer.class, dauCustomizer);
+            } catch (Exception e) {
+                getLogger().debug("DAUCustomizer not available");
+                if (getLogger().isTraceEnabled()) {
+                    getLogger().trace("Cannot get an instance of DAUCustomizer",
+                            e);
+                }
+                dauCustomizer = null;
+            }
 
             DAUVaadinRequestInterceptor dauInterceptor = new DAUVaadinRequestInterceptor(
                     getDeploymentConfiguration(), dauCustomizer);
@@ -296,6 +303,7 @@ public abstract class VaadinService implements Serializable {
                 addRouterUsageStatistics();
             }
             routeDataList.stream().map(Object::toString).forEach(logger::debug);
+            addAutoLayoutUsageStatistics();
             DevToolsToken.init(this);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
@@ -304,6 +312,9 @@ public abstract class VaadinService implements Serializable {
         if (getDeploymentConfiguration().isBunEnabled()) {
             UsageStatistics.markAsUsed("flow/bun", null);
         }
+
+        RouteUtil.checkForClientRouteCollisions(this,
+                getRouteRegistry().getRegisteredRoutes());
 
         initialized = true;
     }
@@ -321,6 +332,25 @@ public abstract class VaadinService implements Serializable {
                     Version.getFullVersion());
         }
         UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
+    }
+
+    private void addAutoLayoutUsageStatistics() {
+        if (getRouteRegistry() instanceof AbstractRouteRegistry registry
+                && RouteUtil.hasAutoLayout(registry)) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_AUTO_LAYOUT,
+                    null);
+            if (RouteUtil.hasClientRouteWithAutoLayout(
+                    getDeploymentConfiguration())) {
+                UsageStatistics.markAsUsed(
+                        Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT,
+                        null);
+            }
+            if (RouteUtil.hasServerRouteWithAutoLayout(registry)) {
+                UsageStatistics.markAsUsed(
+                        Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT,
+                        null);
+            }
+        }
     }
 
     /**
@@ -614,14 +644,21 @@ public abstract class VaadinService implements Serializable {
     /**
      * Adds a listener that gets notified when a Vaadin service session that has
      * been initialized for this service is destroyed.
+     *
      * <p>
      * The session being destroyed is locked and its UIs have been removed when
      * the listeners are called.
+     *
+     * <p>
+     * This method delivers notifications for all associated sessions. To be
+     * notified for only one specific session, use
+     * {@link VaadinSession#addSessionDestroyListener}.
      *
      * @param listener
      *            the vaadin service session destroy listener
      * @return a handle that can be used for removing the listener
      * @see #addSessionInitListener(SessionInitListener)
+     * @see VaadinSession#addSessionDestroyListener
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
@@ -662,33 +699,38 @@ public abstract class VaadinService implements Serializable {
             }
             List<UI> uis = new ArrayList<>(session.getUIs());
             for (final UI ui : uis) {
-                ui.accessSynchronously(() -> {
-                    /*
-                     * close() called here for consistency so that it is always
-                     * called before a UI is removed. UI.isClosing() is thus
-                     * always true in UI.detach() and associated detach
-                     * listeners.
-                     */
-                    if (!ui.isClosing()) {
-                        ui.close();
-                    }
-                    session.removeUI(ui);
-                });
-            }
-            SessionDestroyEvent event = new SessionDestroyEvent(
-                    VaadinService.this, session);
-            for (SessionDestroyListener listener : sessionDestroyListeners) {
                 try {
-                    listener.sessionDestroy(event);
+                    ui.accessSynchronously(() -> {
+                        /*
+                         * close() called here for consistency so that it is
+                         * always called before a UI is removed. UI.isClosing()
+                         * is thus always true in UI.detach() and associated
+                         * detach listeners.
+                         */
+                        if (!ui.isClosing()) {
+                            ui.close();
+                        }
+                        session.removeUI(ui);
+                    });
                 } catch (Exception e) {
-                    /*
-                     * for now, use the session error handler; in the future,
-                     * could have an API for using some other handler for
-                     * session init and destroy listeners
-                     */
                     session.getErrorHandler().error(new ErrorEvent(e));
                 }
             }
+            SessionDestroyEvent event = new SessionDestroyEvent(
+                    VaadinService.this, session);
+            Stream.concat(session.destroyListeners.stream(),
+                    sessionDestroyListeners.stream()).forEach(listener -> {
+                        try {
+                            listener.sessionDestroy(event);
+                        } catch (Exception e) {
+                            /*
+                             * for now, use the session error handler; in the
+                             * future, could have an API for using some other
+                             * handler for session init and destroy listeners
+                             */
+                            session.getErrorHandler().error(new ErrorEvent(e));
+                        }
+                    });
 
             session.setState(VaadinSessionState.CLOSED);
         });
@@ -1520,22 +1562,32 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
-        vaadinRequestInterceptors
-                .forEach(requestInterceptor -> requestInterceptor
-                        .requestEnd(request, response, session));
-        if (session != null) {
-            assert VaadinSession.getCurrent() == session;
-            session.lock();
+        vaadinRequestInterceptors.forEach(requestInterceptor -> {
             try {
-                cleanupSession(session);
-                final long duration = (System.nanoTime() - (Long) request
-                        .getAttribute(REQUEST_START_TIME_ATTRIBUTE)) / 1000000;
-                session.setLastRequestDuration(duration);
-            } finally {
-                session.unlock();
+                requestInterceptor.requestEnd(request, response, session);
+            } catch (Exception ex) {
+                getLogger().error(
+                        "Error occurred while processing Vaadin request interceptor {}",
+                        requestInterceptor.getClass().getName(), ex);
             }
+        });
+        try {
+            if (session != null) {
+                assert VaadinSession.getCurrent() == session;
+                session.lock();
+                try {
+                    cleanupSession(session);
+                    final long duration = (System.nanoTime() - (Long) request
+                            .getAttribute(REQUEST_START_TIME_ATTRIBUTE))
+                            / 1000000;
+                    session.setLastRequestDuration(duration);
+                } finally {
+                    session.unlock();
+                }
+            }
+        } finally {
+            CurrentInstance.clearAll();
         }
-        CurrentInstance.clearAll();
     }
 
     /**
@@ -1837,33 +1889,33 @@ public abstract class VaadinService implements Serializable {
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url, String querySelector) {
         try {
-            JsonObject appError = Json.createObject();
+            ObjectNode appError = JacksonUtils.createObjectNode();
             putValueOrJsonNull(appError, "caption", caption);
             putValueOrJsonNull(appError, "url", url);
             putValueOrJsonNull(appError, "message", message);
             putValueOrJsonNull(appError, "details", details);
             putValueOrJsonNull(appError, "querySelector", querySelector);
 
-            JsonObject meta = Json.createObject();
-            meta.put("appError", appError);
+            ObjectNode meta = JacksonUtils.createObjectNode();
+            meta.set("appError", appError);
 
-            JsonObject json = Json.createObject();
-            json.put("changes", Json.createObject());
-            json.put("resources", Json.createObject());
-            json.put("locales", Json.createObject());
-            json.put("meta", meta);
+            ObjectNode json = JacksonUtils.createObjectNode();
+            json.set("changes", JacksonUtils.createObjectNode());
+            json.set("resources", JacksonUtils.createObjectNode());
+            json.set("locales", JacksonUtils.createObjectNode());
+            json.set("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
             return wrapJsonForClient(json);
-        } catch (JsonException e) {
+        } catch (Exception e) {
             getLogger().warn(
                     "Error creating critical notification JSON message", e);
-            return wrapJsonForClient(Json.createObject());
+            return wrapJsonForClient(JacksonUtils.createObjectNode());
         }
 
     }
 
-    private static String wrapJsonForClient(JsonObject json) {
-        return "for(;;);[" + JsonUtil.stringify(json) + "]";
+    private static String wrapJsonForClient(ObjectNode json) {
+        return "for(;;);[" + json.toString() + "]";
     }
 
     /**
@@ -1876,9 +1928,9 @@ public abstract class VaadinService implements Serializable {
      *         a string
      */
     public static String createSessionExpiredJSON(boolean async) {
-        JsonObject json = Json.createObject();
-        JsonObject meta = Json.createObject();
-        json.put("meta", meta);
+        ObjectNode json = JacksonUtils.createObjectNode();
+        ObjectNode meta = JacksonUtils.createObjectNode();
+        json.set("meta", meta);
 
         if (async) {
             meta.put(JsonConstants.META_ASYNC, true);
@@ -1904,10 +1956,10 @@ public abstract class VaadinService implements Serializable {
         return createSessionExpiredJSON(async);
     }
 
-    private static void putValueOrJsonNull(JsonObject json, String key,
+    private static void putValueOrJsonNull(ObjectNode json, String key,
             String value) {
         if (value == null) {
-            json.put(key, Json.createNull());
+            json.set(key, JacksonUtils.nullNode());
         } else {
             json.put(key, value);
         }
@@ -2109,11 +2161,12 @@ public abstract class VaadinService implements Serializable {
         // Dump all current instances, not only the ones dumped by setCurrent
         Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
                 .getInstances();
-        CurrentInstance.setCurrent(session);
         try {
             while ((pendingAccess = session.getPendingAccessQueue()
                     .poll()) != null) {
                 if (!pendingAccess.isCancelled()) {
+                    CurrentInstance.clearAll();
+                    CurrentInstance.setCurrent(session);
                     pendingAccess.run();
 
                     try {
@@ -2163,8 +2216,21 @@ public abstract class VaadinService implements Serializable {
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
-        serviceDestroyListeners
-                .forEach(listener -> listener.serviceDestroy(event));
+        RuntimeException exception = null;
+        for (ServiceDestroyListener listener : serviceDestroyListeners) {
+            try {
+                listener.serviceDestroy(event);
+            } catch (RuntimeException e) {
+                if (exception == null) {
+                    exception = e;
+                } else {
+                    e.addSuppressed(e);
+                }
+            }
+        }
+        if (exception != null) {
+            throw exception;
+        }
     }
 
     /**

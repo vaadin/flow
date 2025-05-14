@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -159,12 +159,13 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
         @Override
         public void handleUnrecoverableError(String caption, String message,
-                                             String details, String url, String querySelector) {
+                String details, String url, String querySelector) {
             unrecoverableErrorHandled = true;
         }
     }
 
-    private static class TestApplicationConfiguration extends ApplicationConfiguration {
+    private static class TestApplicationConfiguration
+            extends ApplicationConfiguration {
         @Override
         public String getApplicationId() {
             return "test-application-id";
@@ -230,8 +231,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
             assertEquals(ResourceLoader.class.getName(),
                     eventsOrder.sources.get(0));
             // the second one is applying changes to StatTree
-            assertEquals(StateTree.class.getName(),
-                    eventsOrder.sources.get(1));
+            assertEquals(StateTree.class.getName(), eventsOrder.sources.get(1));
         });
     }
 
@@ -308,11 +308,13 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
         doAssert(() -> {
             // then: no session expire and unrecoverable error handling expected
-            assertFalse("Session Expired Message handling is not expected " +
-                        "when the page is being redirected",
+            assertFalse(
+                    "Session Expired Message handling is not expected "
+                            + "when the page is being redirected",
                     getSystemErrorHandler().sessionExpiredMessageHandled);
-            assertFalse("Unrecoverable Error Message handling was not " +
-                        "expected when the page is being redirected",
+            assertFalse(
+                    "Unrecoverable Error Message handling was not "
+                            + "expected when the page is being redirected",
                     getSystemErrorHandler().unrecoverableErrorHandled);
             assertEquals(UILifecycle.UIState.TERMINATED,
                     getUILifecycle().getState());
@@ -340,11 +342,13 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
         doAssert(() -> {
             // then: no session expire and unrecoverable error handling expected
-            assertFalse("Session Expired Message handling is not expected " +
-                        "when the page is being redirected",
+            assertFalse(
+                    "Session Expired Message handling is not expected "
+                            + "when the page is being redirected",
                     getSystemErrorHandler().sessionExpiredMessageHandled);
-            assertFalse("Unrecoverable Error Message handling was not " +
-                        "expected when the page is being redirected",
+            assertFalse(
+                    "Unrecoverable Error Message handling was not "
+                            + "expected when the page is being redirected",
                     getSystemErrorHandler().unrecoverableErrorHandled);
             assertEquals(UILifecycle.UIState.TERMINATED,
                     getUILifecycle().getState());
@@ -376,7 +380,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                     getSystemErrorHandler().unrecoverableErrorHandled);
             assertEquals(UILifecycle.UIState.TERMINATED,
                     getUILifecycle().getState());
-        });
+        }, 300);
     }
 
     public void testHandleJSON_unrecoverableErrorAndUIRunning_unrecoverableErrorMessageShown() {
@@ -423,8 +427,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         doAssert(assertions, 100);
     }
 
-    private void doAssert(Runnable assertions,
-                          int assertDelayInMillis) {
+    private void doAssert(Runnable assertions, int assertDelayInMillis) {
         delayTestFinish(500);
         new Timer() {
             @Override

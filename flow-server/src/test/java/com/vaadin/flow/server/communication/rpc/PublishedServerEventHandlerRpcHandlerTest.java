@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,11 +17,13 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -35,11 +37,13 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -149,6 +153,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         private Integer[] varArg;
         private int[][] doubleArray;
         private JsonValue jsonValue;
+        private JsonNode jsonNode;
 
         @Override
         @ClientCallable
@@ -183,6 +188,11 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         @ClientCallable
         protected void method4(@EventData("foo") JsonValue value) {
             jsonValue = value;
+        }
+
+        @ClientCallable
+        protected void method5(@EventData("foo") JsonNode value) {
+            jsonNode = value;
         }
     }
 
@@ -397,6 +407,41 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "varArgMethod", array, -1);
 
         Assert.assertEquals(0, component.varArg.length);
+    }
+
+    @Test
+    public void methodWithJsonValueIsInvoked() {
+        JsonArray array = Json.createArray();
+
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        array.set(0, json);
+
+        MethodWithParameters component = new MethodWithParameters();
+        UI ui = new MockUI();
+        ui.add(component);
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "method4", array, -1);
+
+        Assert.assertEquals(component.jsonValue, json);
+    }
+
+    @Test
+    public void methodWithJacksonJsonValueIsInvoked() {
+        JsonArray array = Json.createArray();
+
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        array.set(0, json);
+
+        MethodWithParameters component = new MethodWithParameters();
+        UI ui = new MockUI();
+        ui.add(component);
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "method5", array, -1);
+
+        Assert.assertEquals(component.jsonNode,
+                JacksonUtils.mapElemental(json));
     }
 
     @Test

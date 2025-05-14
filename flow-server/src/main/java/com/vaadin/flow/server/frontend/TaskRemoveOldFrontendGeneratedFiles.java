@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -125,12 +125,12 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
     }
 
     private Predicate<Path> isKnownUnhandledFile() {
-        Path flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendFolder).toPath()
-                .toAbsolutePath();
-        Path flowGeneratedWebComponentImports = FrontendUtils
+        Path flowGeneratedImports = normalizePath(
+                FrontendUtils.getFlowGeneratedImports(frontendFolder).toPath()
+                        .toAbsolutePath());
+        Path flowGeneratedWebComponentImports = normalizePath(FrontendUtils
                 .getFlowGeneratedWebComponentsImports(frontendFolder).toPath()
-                .toAbsolutePath();
+                .toAbsolutePath());
         Set<Path> knownFiles = new HashSet<>();
         knownFiles.add(flowGeneratedImports);
         knownFiles.add(flowGeneratedWebComponentImports);
@@ -138,6 +138,15 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                 .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME));
         knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(
                 new File(TaskGenerateReactFiles.FLOW_FLOW_TSX).toPath())));
+        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(
+                new File(TaskGenerateReactFiles.JSX_TRANSFORM_DEV_RUNTIME)
+                        .toPath())));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(new File(TaskGenerateReactFiles.JSX_TRANSFORM_RUNTIME)
+                        .toPath())));
+        knownFiles.add(normalizePath(frontendGeneratedFolder
+                .resolve(new File(TaskGenerateReactFiles.JSX_TRANSFORM_INDEX)
+                        .toPath())));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TSX)));
         knownFiles.add(normalizePath(

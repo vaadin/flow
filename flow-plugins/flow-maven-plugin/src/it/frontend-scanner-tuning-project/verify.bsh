@@ -1,0 +1,53 @@
+// Verifies that only artifacts matching the frontend scanner configuration
+// has been included in the bundle, by checking the Javascript generated imports.
+// Every project execution copies the generated imports into the 'generated-imports'
+// folder, categorized by bundle mode (optimized, not optimized) and invocation
+// profile, as in the following example.
+// Vaadin resources should always be present.
+// See com.vaadin.flow.plugin.maven.it.IntegrationTestHelper
+
+import com.vaadin.flow.plugin.maven.it.IntegrationTestHelper;
+
+verifications = new LinkedHashMap();
+verifications.put("all-deps", List.of(
+    "@vaadin/common-frontend/ConnectionIndicator.js",
+    "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
+    "Frontend/project-component.js",
+    "Frontend/generated/jar-resources/alpha.js",
+    "Frontend/generated/jar-resources/beta.js"
+));
+verifications.put("exclude-alpha", List.of(
+    "@vaadin/common-frontend/ConnectionIndicator.js",
+    "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
+    "Frontend/project-component.js",
+    "!Frontend/generated/jar-resources/alpha.js",
+    "Frontend/generated/jar-resources/beta.js"
+));
+verifications.put("include-alpha", List.of(
+    "@vaadin/common-frontend/ConnectionIndicator.js",
+    "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
+    "Frontend/project-component.js",
+    "Frontend/generated/jar-resources/alpha.js",
+    "!Frontend/generated/jar-resources/beta.js"
+));
+verifications.put("exclude-all", List.of(
+    "@vaadin/common-frontend/ConnectionIndicator.js",
+    "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
+    "Frontend/project-component.js",
+    "!Frontend/generated/jar-resources/alpha.js",
+    "!Frontend/generated/jar-resources/beta.js"
+));
+verifications.put("exclude-target", List.of(
+    "@vaadin/common-frontend/ConnectionIndicator.js",
+    "Frontend/generated/jar-resources/ReactRouterOutletElement.tsx",
+    "!Frontend/project-component.js",
+    "Frontend/generated/jar-resources/alpha.js",
+    "Frontend/generated/jar-resources/beta.js"
+));
+verifications.put("disabled-scan-config", verifications.get("all-deps"));
+
+path = basedir.toPath().resolve("generated-imports");
+System.out.println("Checking imports in " + path);
+IntegrationTestHelper.verifyImports(path, verifications);
+
+

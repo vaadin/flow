@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -292,7 +292,7 @@
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
                 <module>test-live-reload-multimodule</module>
-                <module>test-live-reload-multimodule/pom-devbundle.xml</module>
+                <module>test-live-reload-multimodule-devbundle</module>
                 <module>test-redeployment</module>
                 <module>test-redeployment-no-cache</module>
 
@@ -330,11 +330,14 @@
                 <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
+                <module>test-vaadin-router</module>
+                <module>test-vaadin-router/pom-production.xml</module>
                 <module>test-react-router</module>
                 <module>test-react-router/pom-production.xml</module>
                 <module>test-react-adapter</module>
                 <module>test-react-adapter/pom-production.xml</module>
                 <module>test-legacy-frontend</module>
+                <module>test-client-queue</module>
             </modules>
         </profile>
         <profile>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,8 +45,10 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
@@ -337,7 +339,12 @@ public class ComponentUtil {
         }
 
         DetachEvent detachEvent = new DetachEvent(component);
-        component.onDetach(detachEvent);
+        try {
+            component.onDetach(detachEvent);
+        } catch (RuntimeException e) {
+            VaadinSession.getCurrent().getErrorHandler()
+                    .error(new ErrorEvent(e));
+        }
         fireEvent(component, detachEvent);
 
         // inform component about onEnabledState if parent and child states
@@ -721,6 +728,24 @@ public class ComponentUtil {
                     "Implicit router instance is not available.");
         }
         return router;
+    }
+
+    /**
+     * Walk up from given component until a Component with a Route annotation is
+     * found or empty if no Route is present in parents.
+     *
+     * @param component
+     *            Component to find current route component for
+     * @return Optional containing Route component if found
+     */
+    public static Optional<Component> getRouteComponent(Component component) {
+        if (component.getClass().isAnnotationPresent(Route.class)) {
+            return Optional.of(component);
+        }
+        if (component.getParent().isPresent()) {
+            return getRouteComponent(component.getParent().get());
+        }
+        return Optional.empty();
     }
 
 }

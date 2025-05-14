@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -138,7 +138,8 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     private String specVersion;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    protected void executeInternal()
+            throws MojoExecutionException, MojoFailureException {
         InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
         InvocationRequest request = requestBuilder.groupId(GROUP)
                 .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
@@ -176,7 +177,11 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withHomeNodeExecRequired(requireHomeNodeExec())
                         .setJavaResourceFolder(javaResourceFolder())
                         .withProductionMode(productionMode)
-                        .withReact(isReactEnabled());
+                        .withReact(isReactEnabled())
+                        .withNpmExcludeWebComponents(
+                                isNpmExcludeWebComponents())
+                        .withFrontendIgnoreVersionChecks(
+                                isFrontendIgnoreVersionChecks());
                 new NodeTasks(options).execute();
                 logInfo("SBOM generation created node_modules and all needed metadata. "
                         + "If you don't need it, please run mvn vaadin:clean-frontend");

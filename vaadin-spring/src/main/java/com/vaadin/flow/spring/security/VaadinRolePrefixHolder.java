@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -109,19 +109,19 @@ public class VaadinRolePrefixHolder implements Serializable {
                 .findFirst().ifPresent(this::resetRolePrefix);
     }
 
-    private void resetRolePrefix(
+    void resetRolePrefix(
             SecurityContextHolderAwareRequestFilter securityContextHolderAwareRequestFilter) {
         resetRolePrefix(securityContextHolderAwareRequestFilter,
                 SecurityContextHolderAwareRequestFilter.class);
     }
 
-    private void resetRolePrefix(
+    void resetRolePrefix(
             SecurityContextHolderAwareRequestWrapper securityContextHolderAwareRequestWrapper) {
         resetRolePrefix(securityContextHolderAwareRequestWrapper,
                 SecurityContextHolderAwareRequestWrapper.class);
     }
 
-    private void resetRolePrefix(Object source, Class<?> type) {
+    void resetRolePrefix(Object source, Class<?> type) {
         if (source != null) {
             try {
                 Field field = FieldUtils.getField(type, "rolePrefix");

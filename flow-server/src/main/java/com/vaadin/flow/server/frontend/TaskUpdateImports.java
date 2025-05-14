@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -84,7 +84,8 @@ public class TaskUpdateImports extends NodeUpdater {
         String lockFile;
         String toolName = TaskRunNpmInstall.getToolName(options);
         if (options.isEnableBun()) {
-            lockFile = Constants.PACKAGE_LOCK_BUN;
+            lockFile = Constants.PACKAGE_LOCK_BUN + "/"
+                    + Constants.PACKAGE_LOCK_BUN_1_2;
         } else if (options.isEnablePnpm()) {
             lockFile = Constants.PACKAGE_LOCK_YAML;
         } else {

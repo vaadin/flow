@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -70,8 +70,9 @@ public class ProxyConfig {
                 + "development-mode/node-js#proxy-settings-for-downloading-"
                 + "frontend-toolchain for information on proxy configuration.";
         if (proxies.isEmpty()) {
-            getLogger().info("No proxies configured. "
-                    + "If you are behind a proxy server, " + docLink);
+            getLogger().debug(
+                    "No proxies configured. If you are behind a proxy server, {}",
+                    docLink);
             return null;
         }
         final URI uri = URI.create(requestUrl);
@@ -80,9 +81,8 @@ public class ProxyConfig {
                 return proxy;
             }
         }
-        getLogger().info(
-                "Could not find matching proxy for host: {}" + " - " + docLink,
-                uri.getHost());
+        getLogger().info("Could not find matching proxy for host: {} - {}",
+                uri.getHost(), docLink);
         return null;
     }
 

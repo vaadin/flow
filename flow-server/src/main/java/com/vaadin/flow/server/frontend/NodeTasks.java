@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +36,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
@@ -69,7 +69,6 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
-            TaskGenerateBootstrap.class,
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
@@ -80,11 +79,13 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
+            TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
             TaskCleanFrontendFiles.class,
@@ -103,13 +104,15 @@ public class NodeTasks implements FallibleCommand {
      *            the options
      */
     public NodeTasks(Options options) {
+        FrontendDependenciesScanner frontendDependencies = options
+                .getFrontendDependenciesScanner();
+
         // Lock file is created in the project root folder and not in target/ so
         // that Maven does not remove it
         lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
                 .toPath();
 
         ClassFinder classFinder = options.getClassFinder();
-        FrontendDependenciesScanner frontendDependencies = null;
 
         Set<String> webComponentTags = new HashSet<>();
 
@@ -119,9 +122,6 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
                 || options.isEnableConfigUpdate()) {
-            frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(options);
-
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,
                         frontendDependencies,
@@ -150,9 +150,7 @@ public class NodeTasks implements FallibleCommand {
                 // and no update tasks are executed before it.
                 if (BundleValidationUtil.needsBuild(options,
                         frontendDependencies, Mode.DEVELOPMENT_BUNDLE)) {
-                    commands.add(new TaskCleanFrontendFiles(
-                            options.getNpmFolder(),
-                            options.getFrontendDirectory(), classFinder));
+                    commands.add(new TaskCleanFrontendFiles(options));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     BundleUtils.copyPackageLockFromBundle(options);
@@ -259,6 +257,9 @@ public class NodeTasks implements FallibleCommand {
         } else {
             pwa = new PwaConfiguration();
         }
+        if (options.isProductionMode() && pwa.isEnabled()) {
+            commands.add(new TaskGeneratePWAIcons(options, pwa));
+        }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
             commands.add(new TaskUpdateVite(options, webComponentTags));
@@ -340,8 +341,14 @@ public class NodeTasks implements FallibleCommand {
             sortCommands(commands);
             GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
             for (FallibleCommand command : commands) {
+                long startTime = System.nanoTime();
                 command.setGeneratedFileSupport(generatedFilesSupport);
                 command.execute();
+                Duration durationInNs = Duration
+                        .ofNanos(System.nanoTime() - startTime);
+                getLogger().debug("Task [ {} ] completed in {} ms",
+                        command.getClass().getSimpleName(),
+                        durationInNs.toMillis());
             }
         } finally {
             releaseLock();

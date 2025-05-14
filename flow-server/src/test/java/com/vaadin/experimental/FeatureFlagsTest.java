@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -136,8 +136,9 @@ public class FeatureFlagsTest {
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
         Assert.assertTrue("Feature should have been enabled",
                 featureFlags.isEnabled(FeatureFlags.EXAMPLE));
-        Assert.assertEquals(
-                "# Example feature. Will be removed once the first real feature flag is added\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
+        Assert.assertEquals(String.format(
+                "# %s\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
+                FeatureFlags.EXAMPLE.getTitle()),
                 FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8));
 

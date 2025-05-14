@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,6 +51,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -62,9 +63,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 
 /**
  * Represents the class dependency tree of the application.
@@ -76,12 +77,14 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
     //@formatter:off
-    private static final Pattern VISITABLE_CLASS_PATTERN = Pattern.compile("(^$|"
+    private static final Pattern NOT_VISITABLE_CLASS_PATTERN = Pattern.compile("(^$|"
             + ".*(slf4j).*|"
             // #5803
-            + "^(java|sun|oracle|elemental|javax|jakarta|oshi|"
-            + "org\\.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq)\\b|"
-            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode)\\b|"
+            + "^(java|sun|oracle|elemental|javax|javafx|jakarta|oshi|cglib|"
+            + "org\\.(apache|antlr|atmosphere|aspectj|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq|springframework|bouncycastle|snakeyaml|keycloak|flywaydb)\\b|"
+            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode|ibm)\\b|"
+            + "ch\\.quos\\.logback\\b|"
+            + "io\\.(fabric8\\.kubernetes)\\b|"
             + "net\\.(sf|bytebuddy)\\b"
             + ").*|"
             + ".*(Exception)$"
@@ -104,7 +107,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *
      * @param finder
      *            the class finder
+     * @deprecated Use
+     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
+     *             instead.
      */
+    @Deprecated
     public FrontendDependencies(ClassFinder finder) {
         this(finder, true, null);
     }
@@ -120,7 +127,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@link com.vaadin.flow.component.WebComponentExporter} classes
      *            for dependencies. {@code true} is default for
      *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
+     * @deprecated Use
+     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
+     *             instead.
      */
+    @Deprecated
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents) {
         this(finder, generateEmbeddableWebComponents, null);
@@ -139,11 +150,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
      * @param featureFlags
      *            available feature flags and their status
+     * @deprecated Use
+     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
+     *             instead.
      */
+    @Deprecated
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents,
             FeatureFlags featureFlags) {
-        this(finder, generateEmbeddableWebComponents, null, true);
+        this(finder, generateEmbeddableWebComponents, featureFlags, true);
     }
 
     public FrontendDependencies(ClassFinder finder,
@@ -177,6 +192,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
                     ms);
+        } catch (IllegalArgumentException ex) {
+            StackTraceElement[] stackTrace = ex.getStackTrace();
+            if (ex.getMessage() != null
+                    && ex.getMessage().startsWith("Unsupported api ")
+                    && stackTrace.length > 0 && stackTrace[0].getClassName()
+                            .equals("org.objectweb.asm.ClassVisitor")) {
+                log().error(
+                        "Invalid asm library version. Please make sure that the project does not override org.ow2.asm:asm dependency defined by Vaadin with an incompatible version.");
+            }
+            throw ex;
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
@@ -465,6 +490,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             addInternalEntryPoint(initListener);
         }
 
+        for (Class<?> layout : getFinder().getAnnotatedClasses(
+                getFinder().loadClass(Layout.class.getName()))) {
+            addInternalEntryPoint(layout);
+        }
+
         for (Class<?> appShell : getFinder().getSubTypesOf(
                 getFinder().loadClass(AppShellConfigurator.class.getName()))) {
             addInternalEntryPoint(appShell);
@@ -742,14 +772,19 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 .getAnnotatedClasses(PWA.class.getName())) {
             if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
                     .contains(appShellConfiguratorClass)) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " " + hopefullyAppShellClass.getName()
+                        + " does not implement "
+                        + AppShellConfigurator.class.getSimpleName());
             }
             pwaVisitor.visitClass(hopefullyAppShellClass.getName());
         }
 
         Set<String> dependencies = pwaVisitor.getValues("name");
         if (dependencies.size() > 1) {
-            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                    + " Found " + dependencies.size() + " implementations: "
+                    + dependencies);
         }
         if (dependencies.isEmpty()) {
             this.pwaConfiguration = new PwaConfiguration();
@@ -881,8 +916,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // factories. This is the reason of having just a blacklist of some
         // common name-spaces that would not have components.
         // We also exclude Feature-Flag classes
-        return className != null && !isExperimental(className)
-                && !VISITABLE_CLASS_PATTERN.matcher(className).matches();
+        return className != null && getFinder().shouldInspectClass(className)
+                && !isDisabledExperimentalClass(className)
+                && !NOT_VISITABLE_CLASS_PATTERN.matcher(className).matches();
     }
 
     private URL getUrl(String className) {

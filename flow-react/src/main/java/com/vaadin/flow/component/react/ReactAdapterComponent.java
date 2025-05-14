@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,23 +16,24 @@
 package com.vaadin.flow.component.react;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
+
 import com.vaadin.flow.internal.JsonUtils;
-
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import elemental.json.JsonValue;
 
 /**
  * An abstract implementation of an adapter for integrating with React
@@ -110,7 +111,7 @@ public abstract class ReactAdapterComponent extends Component {
      *            value to assign
      */
     protected void setState(String stateName, Object value) {
-        getElement().setPropertyJson(stateName, writeAsJson(value));
+        getElement().setPropertyJson(stateName, writeToJson(value));
     }
 
     /**
@@ -153,10 +154,46 @@ public abstract class ReactAdapterComponent extends Component {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @deprecated use {@link #readFromJson(JsonNode, Class)} instead
      */
+    @Deprecated
     protected static <T> T readFromJson(JsonValue jsonValue,
             Class<T> typeClass) {
         return JsonUtils.readValue(jsonValue, typeClass);
+    }
+
+    /**
+     * Converts JsonValue into Java object of given type.
+     *
+     * @param jsonValue
+     *            JSON value to convert, not {@code null}
+     * @param typeClass
+     *            type class of converted object instance
+     * @return converted object instance
+     * @param <T>
+     *            type of result instance
+     */
+    protected static <T> T readFromJson(JsonNode jsonValue,
+            Class<T> typeClass) {
+        return JacksonUtils.readValue(jsonValue, typeClass);
+    }
+
+    /**
+     * Converts JsonValue into Java object of given type.
+     *
+     * @param jsonValue
+     *            JSON value to convert, not {@code null}
+     * @param typeReference
+     *            type reference of converted object instance
+     * @return converted object instance
+     * @param <T>
+     *            type of result instance
+     * @deprecated use {@link #readFromJson(JsonNode, TypeReference)} instead
+     */
+    @Deprecated
+    protected static <T> T readFromJson(JsonValue jsonValue,
+            TypeReference<T> typeReference) {
+        return JsonUtils.readValue(jsonValue, typeReference);
     }
 
     /**
@@ -170,9 +207,22 @@ public abstract class ReactAdapterComponent extends Component {
      * @param <T>
      *            type of result instance
      */
-    protected static <T> T readFromJson(JsonValue jsonValue,
+    protected static <T> T readFromJson(JsonNode jsonValue,
             TypeReference<T> typeReference) {
-        return JsonUtils.readValue(jsonValue, typeReference);
+        return JacksonUtils.readValue(jsonValue, typeReference);
+    }
+
+    /**
+     * Converts Java object into JsonValue.
+     *
+     * @param object
+     *            Java object to convert
+     * @return converted JSON value
+     * @deprecated use {@link #writeToJson(Object)}
+     */
+    @Deprecated
+    protected static JsonValue writeAsJson(Object object) {
+        return JsonUtils.writeValue(object);
     }
 
     /**
@@ -182,8 +232,8 @@ public abstract class ReactAdapterComponent extends Component {
      *            Java object to convert
      * @return converted JSON value
      */
-    protected static JsonValue writeAsJson(Object object) {
-        return JsonUtils.writeValue(object);
+    protected static BaseJsonNode writeToJson(Object object) {
+        return JacksonUtils.writeValue(object);
     }
 
     /**
@@ -210,29 +260,32 @@ public abstract class ReactAdapterComponent extends Component {
         return contentMap.get(name);
     }
 
-    private JsonValue getPropertyJson(String propertyName) {
+    private JsonNode getPropertyJson(String propertyName) {
         var rawValue = getElement().getPropertyRaw(propertyName);
         if (rawValue == null) {
-            return Json.createNull();
-        } else if (rawValue instanceof JsonValue jsonValue) {
-            return jsonValue;
+            return JacksonUtils.nullNode();
+        } else if (rawValue instanceof JsonNode jsonNode) {
+            return jsonNode;
         } else if (rawValue instanceof String stringValue) {
-            return Json.create(stringValue);
+            return JacksonUtils.createNode(stringValue);
         } else if (rawValue instanceof Double doubleValue) {
-            return Json.create(doubleValue);
+            return JacksonUtils.createNode(doubleValue);
         } else if (rawValue instanceof Boolean booleanValue) {
-            return Json.create(booleanValue);
+            return JacksonUtils.createNode(booleanValue);
+        } else if (rawValue instanceof JsonValue jsonValue) {
+            // TODO: remove when elemental dropped
+            return JacksonUtils.mapElemental(jsonValue);
         } else {
-            return Json.create(rawValue.toString());
+            return JacksonUtils.createNode(rawValue.toString());
         }
     }
 
     private <T> DomListenerRegistration addJsonReaderStateChangeListener(
-            String stateName, SerializableFunction<JsonValue, T> jsonReader,
+            String stateName, SerializableFunction<JsonNode, T> jsonReader,
             SerializableConsumer<T> listener) {
         return getElement().addPropertyChangeListener(stateName,
                 stateName + "-changed", (event -> {
-                    JsonValue newStateJson = JsonCodec
+                    JsonNode newStateJson = JacksonCodec
                             .encodeWithoutTypeInfo(event.getValue());
                     T newState = jsonReader.apply(newStateJson);
                     listener.accept(newState);

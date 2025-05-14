@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -180,8 +180,7 @@ public final class ParameterDeserializer {
      * @return parameter type class
      */
     public static Class<?> getClassType(Class<?> navigationTarget) {
-        Type type = GenericTypeReflector.getTypeParameter(navigationTarget,
-                HasUrlParameter.class.getTypeParameters()[0]);
+        Type type = findParameterType(navigationTarget);
         if (!(type instanceof Class<?>)) {
             throw new IllegalArgumentException(String.format(
                     "Parameter type of the given navigationTarget '%s' could not be resolved.",
@@ -209,6 +208,18 @@ public final class ParameterDeserializer {
                 .getFunctionalMethod(HasUrlParameter.class).getName());
 
         // Raw method has no parameter annotations if compiled by Eclipse
+        Type parameterType = findParameterType(navigationTarget);
+        Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
+
+        return Stream.of(navigationTarget.getMethods())
+                .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> hasValidParameterTypes(method,
+                        parameterClass))
+                .anyMatch(method -> method.getParameters()[1]
+                        .isAnnotationPresent(parameterAnnotation));
+    }
+
+    private static Type findParameterType(Class<?> navigationTarget) {
         Type parameterType = GenericTypeReflector.getTypeParameter(
                 navigationTarget, HasUrlParameter.class.getTypeParameters()[0]);
         if (parameterType == null) {
@@ -225,14 +236,7 @@ public final class ParameterDeserializer {
                 }
             }
         }
-        Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
-
-        return Stream.of(navigationTarget.getMethods())
-                .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasValidParameterTypes(method,
-                        parameterClass))
-                .anyMatch(method -> method.getParameters()[1]
-                        .isAnnotationPresent(parameterAnnotation));
+        return parameterType;
     }
 
     private static boolean hasValidParameterTypes(Method method,

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2000-2019 Vaadin Ltd.
+  ~ Copyright 2000-2025 Vaadin Ltd.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
   ~ use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,7 @@
     <parent>
         <artifactId>test-express-build</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -111,6 +111,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <frontendExtraFileExtensions>scss</frontendExtraFileExtensions>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
@@ -31,7 +32,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
@@ -82,11 +85,43 @@ public class TaskGenerateReactFilesTest {
                         "routes.tsx").exists());
         Assert.assertFalse("Missing ./frontend/routes.tsx",
                 new File(frontend, "routes.tsx").exists());
+        Assert.assertTrue(
+                "Missing ./frontend/" + FrontendUtils.GENERATED
+                        + "layouts.json",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "layouts.json").exists());
+        assertGeneratedFileExists("jsx-dev-transform/index.ts");
+        assertGeneratedFileExists("jsx-dev-transform/jsx-runtime.ts");
+        assertGeneratedFileExists("jsx-dev-transform/jsx-dev-runtime.ts");
+    }
+
+    private void assertGeneratedFileExists(String filename) {
+        Assert.assertTrue(
+                "Missing ./frontend/" + FrontendUtils.GENERATED + filename,
+                new File(new File(frontend, FrontendUtils.GENERATED), filename)
+                        .exists());
+    }
+
+    @Test
+    public void layoutsJson_containsExpectedPaths()
+            throws ExecutionFailedException, IOException {
+        Mockito.when(options.getClassFinder().getAnnotatedClasses(Layout.class))
+                .thenReturn(Collections.singleton(TestLayout.class));
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        task.execute();
+
+        String layoutsContent = Files.readString(
+                new File(options.getFrontendGeneratedFolder(), "layouts.json")
+                        .toPath());
+
+        Assert.assertEquals("[{\"path\":\"/test\"}]", layoutsContent);
+
     }
 
     @Test
     public void routesContainImportAndUsage_serverSideRoutes_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
@@ -116,11 +151,7 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
@@ -130,14 +161,8 @@ public class TaskGenerateReactFilesTest {
                          import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -149,23 +174,17 @@ public class TaskGenerateReactFilesTest {
                          ] as RouteObject[];
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
     public void routesContainMultipleFlowImports_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import { tea, serverSideRoutes, coffee } from "Frontend/generated/flow/Flow";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -187,20 +206,16 @@ public class TaskGenerateReactFilesTest {
                         export default createBrowserRouter(routes);
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
     public void routesMissingImportAndUsage_noBuildOrServerSideRoutes_exceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import { tea, coffee } from "Frontend/generated/flow/Flow";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -221,14 +236,8 @@ public class TaskGenerateReactFilesTest {
                         export default createBrowserRouter(routes);
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -237,7 +246,7 @@ public class TaskGenerateReactFilesTest {
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -258,14 +267,8 @@ public class TaskGenerateReactFilesTest {
                         export default createBrowserRouter(routes);
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -275,7 +278,7 @@ public class TaskGenerateReactFilesTest {
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { createBrowserRouter, RouteObject } from 'react-router';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -337,14 +340,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
-                exception.getMessage());
+        assertTaskExecutionFails(content,
+                TaskGenerateReactFiles.MISSING_ROUTES_EXPORT);
     }
 
     @Test
@@ -377,14 +374,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -399,14 +390,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -420,14 +405,8 @@ public class TaskGenerateReactFilesTest {
                             .build();
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
-                routesTsx.getPath()), exception.getMessage());
+        assertTaskExecutionFails(content, String
+                .format(TaskGenerateReactFiles.NO_IMPORT, routesTsx.getPath()));
     }
 
     @Test
@@ -454,6 +433,16 @@ public class TaskGenerateReactFilesTest {
         Assert.assertFalse(
                 "./frontend/routes.tsx.flowBackup should not be created with default content",
                 new File(frontend, "routes.tsx.flowBackup").exists());
+        assertGeneratedFileRemoved("jsx-dev-transform/index.ts");
+        assertGeneratedFileRemoved("jsx-dev-transform/jsx-dev-runtime.ts");
+        assertGeneratedFileRemoved("jsx-dev-transform/jsx-runtime.ts");
+    }
+
+    private void assertGeneratedFileRemoved(String filename) {
+        Assert.assertFalse(
+                "./frontend/generated/" + filename
+                        + " should be removed when react is disabled",
+                new File(frontendGenerated, filename).exists());
     }
 
     @Test
@@ -480,7 +469,7 @@ public class TaskGenerateReactFilesTest {
 
     @Test
     public void routesContainExport_noConst_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
@@ -493,16 +482,12 @@ public class TaskGenerateReactFilesTest {
                         export { router, routes }
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
     public void routesContainExport_twoSingleExports_noExceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
@@ -517,16 +502,12 @@ public class TaskGenerateReactFilesTest {
                         export {router}
                 """;
 
-        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
-
-        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
-
-        task.execute();
+        executeTask(content);
     }
 
     @Test
     public void routesContainExport_oneSingleExport_exceptionThrown()
-            throws IOException, ExecutionFailedException {
+            throws IOException {
         String content = """
                         import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
@@ -539,20 +520,41 @@ public class TaskGenerateReactFilesTest {
                         export { routes }
                 """;
 
+        assertTaskExecutionFails(content,
+                String.format(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
+                        routesTsx.getPath()));
+    }
+
+    private void assertTaskExecutionFails(String content, String errorMessage)
+            throws IOException {
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
 
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
 
-        Exception exception = Assert.assertThrows(
-                ExecutionFailedException.class, () -> task.execute());
-        Assert.assertEquals(
-                String.format(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
-                        routesTsx.getPath()),
-                exception.getMessage());
+        Exception exception = Assert
+                .assertThrows(ExecutionFailedException.class, task::execute);
+        Assert.assertEquals(errorMessage, exception.getMessage());
+    }
+
+    private void executeTask(String content) throws IOException {
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        try {
+            task.execute();
+        } catch (ExecutionFailedException e) {
+            throw new AssertionError(
+                    "Expected execution to complete successfully, but exception was thrown",
+                    e);
+        }
     }
 
     @Tag("div")
     @Route("test")
     private class TestRoute extends Component {
+    }
+
+    @Tag("div")
+    @Layout("/test")
+    private class TestLayout extends Component implements RouterLayout {
     }
 }

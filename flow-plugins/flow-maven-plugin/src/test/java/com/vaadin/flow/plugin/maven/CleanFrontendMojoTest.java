@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -33,12 +36,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -112,7 +114,8 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
-    public void should_removeNodeModulesFolder() throws MojoFailureException {
+    public void should_removeNodeModulesFolder()
+            throws MojoFailureException, MojoExecutionException {
         final File nodeModules = new File(projectBase, NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
                 nodeModules.mkdirs());
@@ -123,7 +126,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_notRemoveNodeModulesFolder_hilla()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         enableHilla();
         final File nodeModules = new File(projectBase, NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
@@ -135,7 +138,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeCompressedDevBundle()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File devBundleDir = new File(projectBase,
                 Constants.BUNDLE_LOCATION);
         final File devBundle = new File(projectBase,
@@ -150,7 +153,8 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
-    public void should_removeOldDevBundle() throws MojoFailureException {
+    public void should_removeOldDevBundle()
+            throws MojoFailureException, MojoExecutionException {
         final File devBundleDir = new File(projectBase, "src/main/dev-bundle/");
         Assert.assertTrue("Failed to create 'dev-bundle' folder",
                 devBundleDir.mkdirs());
@@ -161,7 +165,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeFrontendGeneratedFolder()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         Assert.assertTrue("Failed to create 'frontend/generated'",
                 frontendGenerated.mkdirs());
         FileUtils.fileWrite(new File(frontendGenerated, "my_theme.js"),
@@ -175,7 +179,8 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeGeneratedFolderForCustomFrontendFolder()
-            throws MojoFailureException, IOException, IllegalAccessException {
+            throws MojoFailureException, IOException, IllegalAccessException,
+            MojoExecutionException {
 
         File customFrontendFolder = new File(projectBase, "src/main/frontend");
         File customFrontendGenerated = new File(customFrontendFolder,
@@ -199,7 +204,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeNpmPackageLockFile()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File packageLock = new File(projectBase, "package-lock.json");
         FileUtils.fileWrite(packageLock, "{ \"fake\": \"lock\"}");
 
@@ -210,7 +215,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_notRemoveNpmPackageLockFile_hilla()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         enableHilla();
         final File packageLock = new File(projectBase, "package-lock.json");
         FileUtils.fileWrite(packageLock, "{ \"fake\": \"lock\"}");
@@ -222,7 +227,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removePnpmFile()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File pnpmFile = new File(projectBase, ".pnpmfile.cjs");
         FileUtils.fileWrite(pnpmFile, "{ \"fake\": \"pnpmfile\"}");
 
@@ -232,7 +237,7 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removePnpmPackageLockFile()
-            throws MojoFailureException, IOException {
+            throws MojoFailureException, IOException, MojoExecutionException {
         final File pnpmLock = new File(projectBase, "pnpm-lock.yaml");
         FileUtils.fileWrite(pnpmLock, "lockVersion: -1");
         mojo.execute();
@@ -241,57 +246,56 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_cleanPackageJson_removeVaadinAndHashObjects()
-            throws MojoFailureException, IOException {
-        JsonObject json = createInitialPackageJson();
-        FileUtils.fileWrite(packageJson, json.toJson());
+            throws MojoFailureException, IOException, MojoExecutionException {
+        ObjectNode json = createInitialPackageJson();
+        FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();
         assertPackageJsonContent();
 
-        JsonObject packageJsonObject = getPackageJson(packageJson);
+        ObjectNode packageObjectNode = getPackageJson(packageJson);
 
         Assert.assertFalse("'vaadin' object was left in package.json",
-                packageJsonObject.hasKey("vaadin"));
+                packageObjectNode.has("vaadin"));
         Assert.assertFalse("'hash' object was left in package.json",
-                packageJsonObject.hasKey("hash"));
+                packageObjectNode.has("hash"));
     }
 
     @Test
     public void should_cleanPackageJson_removeVaadinDependenciesInOverrides()
-            throws MojoFailureException, IOException {
-        JsonObject json = createInitialPackageJson(true);
-        FileUtils.fileWrite(packageJson, json.toJson());
+            throws MojoFailureException, IOException, MojoExecutionException {
+        ObjectNode json = createInitialPackageJson(true);
+        FileUtils.fileWrite(packageJson, json.toString());
 
-        assertContainsPackage(json.getObject("overrides"), "@polymer/polymer");
+        assertContainsPackage(json.get("overrides"), "@polymer/polymer");
 
         mojo.execute();
 
-        JsonObject packageJsonObject = getPackageJson(packageJson);
-        assertNotContainsPackage(packageJsonObject.getObject("overrides"),
+        ObjectNode packageObjectNode = getPackageJson(packageJson);
+        assertNotContainsPackage(packageObjectNode.get("overrides"),
                 "@polymer/polymer");
     }
 
     @Test
     public void should_keepUserDependencies_whenPackageJsonEdited()
-            throws MojoFailureException, IOException {
-        JsonObject json = createInitialPackageJson();
-        json.put("dependencies", Json.createObject());
-        json.getObject("dependencies").put("foo", "bar");
-        FileUtils.fileWrite(packageJson, json.toJson());
+            throws MojoFailureException, IOException, MojoExecutionException {
+        ObjectNode json = createInitialPackageJson();
+        json.put("dependencies", JacksonUtils.createObjectNode());
+        ((ObjectNode) json.get("dependencies")).put("foo", "bar");
+        FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();
         assertPackageJsonContent();
 
-        JsonObject packageJsonObject = getPackageJson(packageJson);
-        assertContainsPackage(packageJsonObject.getObject("dependencies"),
-                "foo");
+        ObjectNode packageObjectNode = getPackageJson(packageJson);
+        assertContainsPackage(packageObjectNode.get("dependencies"), "foo");
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = getPackageJson(packageJson);
+        ObjectNode packageObjectNode = getPackageJson(packageJson);
 
-        assertNotContainsPackage(packageJsonObject.getObject("dependencies"),
+        assertNotContainsPackage(packageObjectNode.get("dependencies"),
                 "@polymer/polymer", "@webcomponents/webcomponentsjs");
 
-        assertNotContainsPackage(packageJsonObject.getObject("devDependencies"),
+        assertNotContainsPackage(packageObjectNode.get("devDependencies"),
                 "vite");
     }
 
@@ -308,45 +312,45 @@ public class CleanFrontendMojoTest {
                 .resolve("index.ts"));
     }
 
-    static void assertNotContainsPackage(JsonObject dependencies,
+    static void assertNotContainsPackage(JsonNode dependencies,
             String... packages) {
-        Arrays.asList(packages).forEach(dep -> Assert.assertFalse("Has " + dep,
-                dependencies.hasKey(dep)));
+        Arrays.asList(packages).forEach(
+                dep -> Assert.assertFalse("Has " + dep, dependencies.has(dep)));
     }
 
-    static void assertContainsPackage(JsonObject dependencies,
+    static void assertContainsPackage(JsonNode dependencies,
             String... packages) {
         Arrays.asList(packages).forEach(dep -> Assert
-                .assertTrue("Not Have " + dep, dependencies.hasKey(dep)));
+                .assertTrue("Not Have " + dep, dependencies.has(dep)));
     }
 
-    static JsonObject createInitialPackageJson() {
+    static ObjectNode createInitialPackageJson() {
         return createInitialPackageJson(false);
     }
 
-    static JsonObject createInitialPackageJson(boolean withOverrides) {
-        JsonObject packageJson = Json.createObject();
-        JsonObject vaadinPackages = Json.createObject();
+    static ObjectNode createInitialPackageJson(boolean withOverrides) {
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+        ObjectNode vaadinPackages = JacksonUtils.createObjectNode();
 
-        vaadinPackages.put("dependencies", Json.createObject());
-        JsonObject defaults = vaadinPackages.getObject("dependencies");
+        vaadinPackages.set("dependencies", JacksonUtils.createObjectNode());
+        ObjectNode defaults = (ObjectNode) vaadinPackages.get("dependencies");
         defaults.put("@polymer/polymer", "3.2.0");
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
-        packageJson.put("dependencies", defaults);
+        packageJson.set("dependencies", defaults);
 
-        vaadinPackages.put("devDependencies", Json.createObject());
-        defaults = vaadinPackages.getObject("devDependencies");
+        vaadinPackages.set("devDependencies", JacksonUtils.createObjectNode());
+        defaults = (ObjectNode) vaadinPackages.get("devDependencies");
         defaults.put("vite", "3.4.5");
-        packageJson.put("devDependencies", defaults);
+        packageJson.set("devDependencies", defaults);
 
         vaadinPackages.put("hash", "");
-        packageJson.put("vaadin", vaadinPackages);
+        packageJson.set("vaadin", vaadinPackages);
 
         if (withOverrides) {
-            JsonObject overrides = Json.createObject();
+            ObjectNode overrides = JacksonUtils.createObjectNode();
             overrides.put("@polymer/polymer", "$@polymer/polymer");
-            packageJson.put("overrides", overrides);
+            packageJson.set("overrides", overrides);
         }
 
         return packageJson;

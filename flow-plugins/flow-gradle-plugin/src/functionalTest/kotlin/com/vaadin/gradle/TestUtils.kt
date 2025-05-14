@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult
@@ -213,7 +213,7 @@ object OsUtils {
  * Used to test the plugin. Contains helpful utility methods to manipulate folders
  * and files in the project.
  */
-class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVersion.toInt() >= 20) "8.3" else VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION) {
+class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION) {
     /**
      * The project root dir.
      */

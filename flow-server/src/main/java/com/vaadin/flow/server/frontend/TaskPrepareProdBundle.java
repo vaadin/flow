@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,14 +23,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
@@ -130,11 +129,10 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         try {
             File statsJsonFile = new File(options.getResourceOutputDirectory(),
                     "config/stats.json");
-            JsonObject statsJsonContent = Json.parse(FileUtils
+            ObjectNode statsJsonContent = JacksonUtils.readTree(FileUtils
                     .readFileToString(statsJsonFile, StandardCharsets.UTF_8));
             statsJsonContent.put("pre-compiled", true);
-            FileUtils.write(statsJsonFile,
-                    JsonUtil.stringify(statsJsonContent, 2) + "\n",
+            FileUtils.write(statsJsonFile, statsJsonContent + "\n",
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             throw new ExecutionFailedException(

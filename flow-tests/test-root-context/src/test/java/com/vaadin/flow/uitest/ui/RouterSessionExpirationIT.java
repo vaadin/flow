@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,11 +41,13 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
         navigateToSesssionExpireView();
         // expired session causes page reload, after the page reload there will
         // be a new session
-        Assert.assertNotEquals(sessionId, getSessionId());
-        sessionId = getSessionId();
+        // Assert.assertNotEquals(sessionId, getSessionId());
+        waitUntil(d -> !sessionId.equals(getSessionId()));
+
+        String newSessionId = getSessionId();
         navigateToAnotherView();
         // session is preserved
-        Assert.assertEquals(sessionId, getSessionId());
+        Assert.assertEquals(newSessionId, getSessionId());
     }
 
     @Test

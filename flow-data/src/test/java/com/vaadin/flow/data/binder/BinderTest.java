@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1301,6 +1301,23 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertFalse("Name field should be ignored and remain not readonly",
                 nameField.isReadOnly());
         assertTrue("Age field should be readonly", ageField.isReadOnly());
+    }
+
+    @Test
+    public void setReadonly_record_allFieldsAreReadonly() {
+        Binder<TestRecord> binder = new Binder<>(TestRecord.class);
+        binder.forField(nameField).bind("name");
+        binder.forField(ageField).bind("age");
+
+        binder.getBinding("name").ifPresent(b -> b.setReadOnly(true));
+        binder.setReadOnly(true);
+        assertTrue("Name field should be readonly", nameField.isReadOnly());
+        assertTrue("Age field should be readonly", ageField.isReadOnly());
+
+        binder.setReadOnly(false);
+        assertFalse("Name field should not be readonly",
+                nameField.isReadOnly());
+        assertFalse("Age field should not be readonly", ageField.isReadOnly());
     }
 
     @Test

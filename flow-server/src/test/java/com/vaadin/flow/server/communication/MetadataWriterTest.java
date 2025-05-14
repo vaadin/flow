@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +28,6 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.WrappedSession;
-
-import elemental.json.JsonObject;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -121,9 +120,9 @@ public class MetadataWriterTest {
 
     private void assertMetadataOutput(boolean repaintAll, boolean async,
             String expectedOutput) {
-        JsonObject meta = new MetadataWriter().createMetadata(ui, repaintAll,
+        ObjectNode meta = new MetadataWriter().createMetadata(ui, repaintAll,
                 async, messages);
-        Assert.assertEquals(expectedOutput, meta.toJson());
+        Assert.assertEquals(expectedOutput, meta.toString());
     }
 
 }

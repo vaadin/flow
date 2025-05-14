@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +47,8 @@ import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -63,7 +67,6 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -133,8 +136,8 @@ public class UidlWriter implements Serializable {
      *            True iff the client should be asked to resynchronize
      * @return JSON object containing the UIDL response
      */
-    public JsonObject createUidl(UI ui, boolean async, boolean resync) {
-        JsonObject response = Json.createObject();
+    public ObjectNode createUidl(UI ui, boolean async, boolean resync) {
+        ObjectNode response = JacksonUtils.createObjectNode();
 
         UIInternals uiInternals = ui.getInternals();
 
@@ -159,13 +162,13 @@ public class UidlWriter implements Serializable {
         SystemMessages messages = service.getSystemMessages(ui.getLocale(),
                 null);
 
-        JsonObject meta = new MetadataWriter().createMetadata(ui, false, async,
+        ObjectNode meta = new MetadataWriter().createMetadata(ui, false, async,
                 messages);
-        if (meta.keys().length > 0) {
-            response.put("meta", meta);
+        if (!JacksonUtils.getKeys(meta).isEmpty()) {
+            response.set("meta", meta);
         }
 
-        JsonArray stateChanges = Json.createArray();
+        ArrayNode stateChanges = JacksonUtils.createArrayNode();
 
         encodeChanges(ui, stateChanges);
 
@@ -173,11 +176,11 @@ public class UidlWriter implements Serializable {
                 new ResolveContext(service, session.getBrowser()));
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
-            response.put("constants",
+            response.set("constants",
                     uiInternals.getConstantPool().dumpConstants());
         }
-        if (stateChanges.length() != 0) {
-            response.put("changes", stateChanges);
+        if (!stateChanges.isEmpty()) {
+            response.set("changes", stateChanges);
         }
 
         List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals
@@ -211,11 +214,11 @@ public class UidlWriter implements Serializable {
      *            false if it is a response to a client message.
      * @return JSON object containing the UIDL response
      */
-    public JsonObject createUidl(UI ui, boolean async) {
+    public ObjectNode createUidl(UI ui, boolean async) {
         return createUidl(ui, async, false);
     }
 
-    private static void populateDependencies(JsonObject response,
+    private static void populateDependencies(ObjectNode response,
             DependencyList dependencyList, ResolveContext context) {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
@@ -228,8 +231,15 @@ public class UidlWriter implements Serializable {
 
         if (!pendingSendToClient.isEmpty()) {
             groupDependenciesByLoadMode(pendingSendToClient, context)
-                    .forEach((loadMode, dependencies) -> response
-                            .put(loadMode.name(), dependencies));
+                    .forEach((loadMode, dependencies) -> {
+                        try {
+                            response.set(loadMode.name(),
+                                    JacksonUtils.getMapper()
+                                            .readTree(dependencies.toJson()));
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
         }
         dependencyList.clearPendingSendToClient();
     }
@@ -302,11 +312,11 @@ public class UidlWriter implements Serializable {
     }
 
     // non-private for testing purposes
-    static JsonArray encodeExecuteJavaScriptList(
+    static ArrayNode encodeExecuteJavaScriptList(
             List<PendingJavaScriptInvocation> executeJavaScriptList) {
         return executeJavaScriptList.stream()
                 .map(UidlWriter::encodeExecuteJavaScript)
-                .collect(JsonUtils.asArray());
+                .collect(JacksonUtils.asArray());
     }
 
     private static ReturnChannelRegistration createReturnValueChannel(
@@ -325,10 +335,21 @@ public class UidlWriter implements Serializable {
         return channel;
     }
 
-    private static JsonArray encodeExecuteJavaScript(
+    private static ArrayNode encodeExecuteJavaScript(
             PendingJavaScriptInvocation invocation) {
         List<Object> parametersList = invocation.getInvocation()
                 .getParameters();
+        // TODO: remove when execJs takes Jackson instead of elemental
+        parametersList = parametersList.stream().map(param -> {
+            if (param instanceof JsonArray) {
+                return JacksonUtils.mapElemental((JsonArray) param);
+            } else if (param instanceof JsonObject) {
+                return JacksonUtils.mapElemental((JsonObject) param);
+            } else if (param instanceof JsonValue) {
+                return JacksonUtils.mapElemental((JsonValue) param);
+            }
+            return param;
+        }).toList();
 
         Stream<Object> parameters = parametersList.stream();
         String expression = invocation.getInvocation().getExpression();
@@ -370,9 +391,9 @@ public class UidlWriter implements Serializable {
 
         // [argument1, argument2, ..., script]
         return Stream
-                .concat(parameters.map(JsonCodec::encodeWithTypeInfo),
-                        Stream.of(Json.create(expression)))
-                .collect(JsonUtils.asArray());
+                .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                        Stream.of(JacksonUtils.createNode(expression)))
+                .collect(JacksonUtils.asArray());
     }
 
     /**
@@ -387,7 +408,7 @@ public class UidlWriter implements Serializable {
      *            a JSON array to put state changes into
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    private void encodeChanges(UI ui, JsonArray stateChanges) {
+    private void encodeChanges(UI ui, ArrayNode stateChanges) {
         UIInternals uiInternals = ui.getInternals();
         StateTree stateTree = uiInternals.getStateTree();
 
@@ -402,8 +423,7 @@ public class UidlWriter implements Serializable {
             }
 
             // Encode the actual change
-            stateChanges.set(stateChanges.length(),
-                    change.toJson(uiInternals.getConstantPool()));
+            stateChanges.add(change.toJson(uiInternals.getConstantPool()));
         };
         // A collectChanges round may add additional changes that needs to be
         // collected.
@@ -443,14 +463,14 @@ public class UidlWriter implements Serializable {
      * Adds the performance timing data (used by TestBench 3) to the UIDL
      * response.
      */
-    private JsonValue createPerformanceData(UI ui) {
-        JsonArray timings = Json.createArray();
-        timings.set(0, ui.getSession().getCumulativeRequestDuration());
-        timings.set(1, ui.getSession().getLastRequestDuration());
+    private ArrayNode createPerformanceData(UI ui) {
+        ArrayNode timings = JacksonUtils.createArrayNode();
+        timings.add(ui.getSession().getCumulativeRequestDuration());
+        timings.add(ui.getSession().getLastRequestDuration());
         return timings;
     }
 
-    private static final Logger getLogger() {
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(UidlWriter.class.getName());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,11 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -127,12 +131,27 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .replace("#webComponentTags#",
                         webComponentTags == null || webComponentTags.isEmpty()
                                 ? ""
-                                : String.join(";", webComponentTags));
+                                : String.join(";", webComponentTags))
+                .replace("#frontendExtraFileExtensions#",
+                        getFrontendExtraFileExtensions());
         template = updateFileSystemRouterVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);
+    }
+
+    private String getFrontendExtraFileExtensions() {
+        Optional<List<String>> frontendExtraFileExtensions = Optional
+                .ofNullable(options.getFrontendExtraFileExtensions());
+        if (frontendExtraFileExtensions.isPresent()
+                && frontendExtraFileExtensions.get().size() > 0) {
+            return frontendExtraFileExtensions.get().stream()
+                    .map(ext -> ext.replace("'", "\\'")).map(ext -> ext.trim())
+                    .map(ext -> ext.startsWith(".") ? ext : "." + ext)
+                    .collect(Collectors.joining("', '", ", '", "'"));
+        }
+        return "";
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {
@@ -143,7 +162,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                             "import vitePluginFileSystemRouter from '"
                                     + FILE_SYSTEM_ROUTER_DEPENDENCY + "';")
                     .replace("//#vitePluginFileSystemRouter#",
-                            ", vitePluginFileSystemRouter({isDevMode: devMode})");
+                            "vitePluginFileSystemRouter({isDevMode: devMode}),");
         }
         return template.replace("//#vitePluginFileSystemRouterImport#", "")
                 .replace("//#vitePluginFileSystemRouter#", "");

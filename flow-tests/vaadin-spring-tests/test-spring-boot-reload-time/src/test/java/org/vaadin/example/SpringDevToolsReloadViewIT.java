@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,18 +15,29 @@
  */
 package org.vaadin.example;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.annotations.BrowserConfiguration;
+import com.vaadin.testbench.parallel.Browser;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.logging.Logs;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
  * Class for testing reload time of tiny Vaadin app triggered by spring-boot Dev
  * Tool.
  */
+@NotThreadSafe
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
@@ -67,6 +78,25 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                 getVaadinMajorMinorVersion(), result);
 
         optionalAssertByReloadThreshold(result);
+    }
+
+    @BrowserConfiguration
+    public List<DesiredCapabilities> tuneChromeSettings() {
+        List<DesiredCapabilities> list = new ArrayList<>();
+        DesiredCapabilities desiredCapabilities = Browser.CHROME
+                .getDesiredCapabilities();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-dev-shm-usage");
+        list.add(desiredCapabilities.merge(options));
+        return list;
+    }
+
+    @After
+    public void dumpLogs() {
+        Logs logs = driver.manage().logs();
+        logs.getAvailableLogTypes().stream()
+                .flatMap(level -> logs.get(level).getAll().stream())
+                .forEach(System.out::println);
     }
 
     private void triggerReload() {

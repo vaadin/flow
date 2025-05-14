@@ -1,0 +1,14 @@
+import java.nio.file.*;
+
+vaadinTs = basedir.toPath().resolve("src/main/frontend/generated/vaadin.ts");
+if ( !Files.exists(vaadinTs, new LinkOption[0]) )
+{
+    throw new RuntimeException("vaadin.ts file not generated");
+}
+lines = Files.readAllLines(vaadinTs);
+if (!lines.contains("(window as any).testProject=1;")) {
+    throw new RuntimeException("vaadin.ts does note contain lines added by project TypeScriptBootstrapModifier");
+}
+if (!lines.contains("(window as any).testAddOn=1;")) {
+    throw new RuntimeException("vaadin.ts does note contain lines added by project dependency TypeScriptBootstrapModifier");
+}

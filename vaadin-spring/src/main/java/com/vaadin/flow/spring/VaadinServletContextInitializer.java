@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -327,7 +327,7 @@ public class VaadinServletContextInitializer
                 getLogger().debug("There are no discovered routes yet. "
                         + "Start to collect all routes from the classpath...");
                 try {
-                    Collection<String> routePackages = null;
+                    Collection<String> routePackages;
                     if (devModeCachingEnabled
                             && ReloadCache.routePackages != null) {
                         routePackages = ReloadCache.routePackages;
@@ -356,11 +356,27 @@ public class VaadinServletContextInitializer
                             "There are {} navigation targets after filtering route classes: {}",
                             navigationTargets.size(), navigationTargets);
 
+                    Collection<String> layoutPackages;
+                    if (devModeCachingEnabled
+                            && ReloadCache.layoutPackages != null) {
+                        layoutPackages = ReloadCache.layoutPackages;
+                    } else {
+                        layoutPackages = getDefaultPackages();
+                    }
+
                     Set<Class<?>> layoutClasses = findByAnnotation(
-                            routePackages, Layout.class)
+                            layoutPackages, Layout.class)
                             .collect(Collectors.toSet());
+
+                    if (devModeCachingEnabled) {
+                        ReloadCache.layoutPackages = layoutClasses.stream()
+                                .map(Class::getPackageName)
+                                .collect(Collectors.toSet());
+                    }
+
                     RouteRegistryInitializer
                             .validateLayoutAnnotations(layoutClasses);
+
                     // Collect all layouts to use with Hilla as a main layout
                     layoutClasses.stream().filter(
                             clazz -> RouterLayout.class.isAssignableFrom(clazz))
@@ -377,6 +393,8 @@ public class VaadinServletContextInitializer
 
                 } catch (InvalidRouteConfigurationException
                         | InvalidRouteLayoutConfigurationException e) {
+                    getLogger().error("Route configuration error found:");
+                    getLogger().error(e.getMessage());
                     throw new IllegalStateException(e);
                 }
             } else {
@@ -1009,7 +1027,7 @@ public class VaadinServletContextInitializer
 
         private Resource[] collectResources(String locationPattern)
                 throws IOException {
-            List<Resource> resourcesList = new ArrayList<>();
+            Set<Resource> resources = new HashSet<>();
 
             Set<String> skipped = ReloadCache.skippedResources;
             Set<String> valid = ReloadCache.validResources;
@@ -1031,7 +1049,7 @@ public class VaadinServletContextInitializer
                 }
 
                 if (isDevModeCacheUsed() && valid.contains(originalPath)) {
-                    resourcesList.add(resource);
+                    resources.add(resource);
                     // Restore root paths to ensure new resources are correctly
                     // validate and cached after a reload
                     if (originalPath.endsWith("/")) {
@@ -1039,10 +1057,10 @@ public class VaadinServletContextInitializer
                     }
                 } else {
                     if (path.endsWith(".jar!/")) {
-                        resourcesList.add(resource);
+                        resources.add(resource);
                     } else if (path.endsWith("/")) {
                         rootPaths.add(path);
-                        resourcesList.add(resource);
+                        resources.add(resource);
                     } else {
                         int index = path.lastIndexOf(".jar!/");
                         if (index >= 0) {
@@ -1057,7 +1075,7 @@ public class VaadinServletContextInitializer
                             }
                             if (shouldPathBeScanned(relativePath,
                                     path.substring(0, index))) {
-                                resourcesList.add(resource);
+                                resources.add(resource);
                             }
                         } else {
                             List<String> parents = rootPaths.stream()
@@ -1070,18 +1088,18 @@ public class VaadinServletContextInitializer
                             AtomicBoolean parentIsAllowedByPackageProperties = new AtomicBoolean(
                                     true);
                             if (parents.stream()
-                                    .anyMatch(parent -> shouldPathBeScanned(
+                                    .allMatch(parent -> shouldPathBeScanned(
                                             path.substring(parent.length()),
                                             parent,
                                             parentIsAllowedByPackageProperties))) {
-                                resourcesList.add(resource);
+                                resources.add(resource);
                             }
                         }
                     }
                 }
 
                 if (isDevModeCacheUsed()) {
-                    if (resourcesList.contains(resource)) {
+                    if (resources.contains(resource)) {
                         valid.add(originalPath);
                     } else {
                         skipped.add(originalPath);
@@ -1089,7 +1107,7 @@ public class VaadinServletContextInitializer
                 }
             }
 
-            return resourcesList.toArray(new Resource[0]);
+            return resources.toArray(new Resource[0]);
         }
 
         private boolean isDevModeCacheUsed() {

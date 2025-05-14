@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,7 +80,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
 
     @Test
     public void shortcutOnlyWorksWhenComponentIsEnabled() {
-        sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
+        sendKeys(Keys.CONTROL, Keys.SHIFT, "u");
 
         // clicking the button disables it, and clicking again should not have
         // and effect
@@ -89,7 +89,17 @@ public class ShortcutsIT extends ChromeBrowserTest {
         resetActual();
         assertActualEquals(DEFAULT_VALUE);
 
-        sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
+        sendKeys(Keys.CONTROL, Keys.SHIFT, "u");
+        assertActualEquals(DEFAULT_VALUE);
+    }
+
+    @Test
+    public void shortcutWithDisabledUpdateModeAlwaysWorksWhenComponentIsDisabled() {
+        sendKeys(Keys.CONTROL, Keys.SHIFT, "p");
+
+        assertActualEquals("DISABLED CLICKED");
+
+        resetActual();
         assertActualEquals(DEFAULT_VALUE);
     }
 

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-frontend</artifactId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>vite-embedded-webcomponent-resync</artifactId>
     <name>Vite embedded app - session resync</name>
@@ -99,6 +99,12 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <frontendExtraFileExtensions>
+                        <extension>swg</extension>
+                        <extension>ico</extension>
+                    </frontendExtraFileExtensions>
+                </configuration>
             </plugin>
         </plugins>
     </build>

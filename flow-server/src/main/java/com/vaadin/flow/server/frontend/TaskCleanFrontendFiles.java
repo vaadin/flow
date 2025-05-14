@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,22 +51,22 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
     private List<String> generatedFiles = List.of(NODE_MODULES,
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
             Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
-            TaskGenerateTsConfig.TSCONFIG_JSON,
+            Constants.PACKAGE_LOCK_BUN_1_2, TaskGenerateTsConfig.TSCONFIG_JSON,
             TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc",
             FrontendUtils.VITE_GENERATED_CONFIG, FrontendUtils.VITE_CONFIG);
     private Set<File> existingFiles = new HashSet<>();
 
+    private List<String> hillaGenerated = List.of("file-routes.ts",
+            "file-routes.json");
+
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
      *
-     * @param projectRoot
-     *            project root folder
-     * @param frontendDirectory
-     *            frontend directory
+     * @param options
+     *            options containing file paths and classfinder
      */
-    public TaskCleanFrontendFiles(File projectRoot, File frontendDirectory,
-            ClassFinder classFinder) {
-        this.projectRoot = projectRoot;
+    public TaskCleanFrontendFiles(Options options) {
+        this.projectRoot = options.getNpmFolder();
 
         Arrays.stream(projectRoot
                 .listFiles(file -> generatedFiles.contains(file.getName())))
@@ -74,10 +74,18 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
         // If we have an existing package.json or run Hilla, do not remove
         // node_modules
-        if (existingFiles
-                .contains(new File(projectRoot, Constants.PACKAGE_JSON))
-                || FrontendUtils.isHillaUsed(frontendDirectory, classFinder)) {
+        boolean hillaUsed = FrontendUtils.isHillaUsed(
+                options.getFrontendDirectory(), options.getClassFinder());
+
+        if (existingFiles.contains(
+                new File(projectRoot, Constants.PACKAGE_JSON)) || hillaUsed) {
             existingFiles.add(new File(projectRoot, NODE_MODULES));
+        }
+        // If hilla is not used clean generated hilla files.
+        if (!hillaUsed) {
+            hillaGenerated.forEach(
+                    file -> new File(options.getFrontendGeneratedFolder(), file)
+                            .delete());
         }
     }
 

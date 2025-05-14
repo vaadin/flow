@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,6 +39,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.KEYBOARD_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.LEMON_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.LUMO_BORDER_TOP_DIV;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
@@ -269,6 +270,23 @@ public class ThemeIT extends ChromeBrowserTest {
                 "Expecting relative asset URL to be resolved as "
                         + expectedIconsURL + "/sun.svg but was " + imageUrl,
                 imageUrl.matches(String.format(expectedIconsURL, "sun.svg")));
+    }
+
+    /**
+     * Main theme.json does not include utility Lumo import which has border
+     * styling etc. Parent theme.json does include Lumo utility import.
+     */
+    @Test
+    public void parentTheme_lumoStyleAppliedFromParentTheme() {
+        open();
+        WebElement cssNodeLumoBorderDiv = findElement(
+                By.id(LUMO_BORDER_TOP_DIV));
+        Assert.assertEquals("solid",
+                cssNodeLumoBorderDiv.getCssValue("border-top-style"));
+        Assert.assertNotEquals("0px",
+                cssNodeLumoBorderDiv.getCssValue("border-top-width"));
+        Assert.assertEquals("rgba(26, 57, 96, 0.1)",
+                cssNodeLumoBorderDiv.getCssValue("border-top-color"));
     }
 
     @Override

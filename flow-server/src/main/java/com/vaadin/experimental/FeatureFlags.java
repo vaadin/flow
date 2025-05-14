@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,7 +58,7 @@ public class FeatureFlags implements Serializable {
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
     public static final Feature EXAMPLE = new Feature(
-            "Example feature. Will be removed once the first real feature flag is added",
+            "Example feature. Internally used for testing purposes. Does not have any effect on production applications.",
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
@@ -66,11 +66,6 @@ public class FeatureFlags implements Serializable {
             "Collaboration Kit backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
-
-    public static final Feature WEB_PUSH = new Feature(
-            "Server side WebPush API", "webPush",
-            "https://vaadin.com/docs/latest/configuration/setting-up-webpush",
-            true, "com.vaadin.flow.server.webpush.WebPush");
 
     public static final Feature FORM_FILLER_ADDON = new Feature(
             "Form Filler Add-on", "formFillerAddon",
@@ -84,11 +79,45 @@ public class FeatureFlags implements Serializable {
 
     public static final Feature COPILOT_EXPERIMENTAL = new Feature(
             "Copilot experimental features", "copilotExperimentalFeatures",
-            "https://vaadin.com/docs/latest/tools", false, null);
+            "https://vaadin.com/docs/latest/tools/copilot", false, null);
 
     public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
             "Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
+
+    public static final Feature DASHBOARD_COMPONENT = new Feature(
+            "Dashboard component (Pro)", "dashboardComponent",
+            "https://github.com/vaadin/platform/issues/6626", true,
+            "com.vaadin.flow.component.dashboard.Dashboard");
+
+    public static final Feature CARD_COMPONENT = new Feature("Card component",
+            "cardComponent",
+            "https://github.com/vaadin/web-components/issues/5340", true,
+            "com.vaadin.flow.component.card.Card");
+
+    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
+            "Master Detail Layout component", "masterDetailLayoutComponent",
+            "https://github.com/vaadin/platform/issues/7173", true,
+            "com.vaadin.flow.component.masterdetaillayout.MasterDetailLayout");
+
+    public static final Feature REACT19 = new Feature(
+            "React 19 (default in Vaadin 25)", "react19",
+            "https://react.dev/blog/2024/12/05/react-19", true, null);
+
+    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
+            "Accessible disabled buttons", "accessibleDisabledButtons",
+            "https://github.com/vaadin/web-components/issues/4585", true, null);
+
+    public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = new Feature(
+            "HorizontalLayout and VerticalLayout improvements",
+            "layoutComponentImprovements",
+            "https://github.com/vaadin/flow-components/issues/6998", true,
+            null);
+
+    public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = new Feature(
+            "Form Layout auto-responsive mode enabled by default",
+            "defaultAutoResponsiveFormLayout",
+            "https://github.com/vaadin/platform/issues/7172", true, null);
 
     private List<Feature> features = new ArrayList<>();
 
@@ -112,11 +141,17 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
         features.add(new Feature(COPILOT_EXPERIMENTAL));
+        features.add(new Feature(DASHBOARD_COMPONENT));
+        features.add(new Feature(CARD_COMPONENT));
+        features.add(new Feature(MASTER_DETAIL_LAYOUT_COMPONENT));
+        features.add(new Feature(REACT19));
+        features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
+        features.add(new Feature(LAYOUT_COMPONENT_IMPROVEMENTS));
+        features.add(new Feature(DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT));
         loadProperties();
     }
 

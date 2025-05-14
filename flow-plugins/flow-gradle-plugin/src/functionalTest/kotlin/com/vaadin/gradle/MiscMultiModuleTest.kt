@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
+import com.vaadin.flow.internal.JacksonUtils
+import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
-import elemental.json.Json
 import org.gradle.testkit.runner.BuildResult
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.writeText
+import kotlin.test.assertContains
 import kotlin.test.expect
+import org.gradle.testkit.runner.TaskOutcome
 
 class MiscMultiModuleTest : AbstractGradleTest() {
     /**
@@ -35,7 +38,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -49,7 +52,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             }
             project(':web') {
                 apply plugin: 'war'
-                apply plugin: 'com.vaadin'
+                apply plugin: 'com.vaadin.flow'
                 
                 dependencies {
                     implementation project(':lib')
@@ -79,7 +82,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -93,7 +96,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             }
             project(':web') {
                 apply plugin: 'war'
-                apply plugin: 'com.vaadin'
+                apply plugin: 'com.vaadin.flow'
                 
                 dependencies {
                     implementation project(':lib')
@@ -117,8 +120,10 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect(null) { b.task(":vaadinBuildFrontend") }
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("web") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("app-" + StringUtil.getHash("web",
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -130,7 +135,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -148,7 +153,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
         webBuildFile.writeText("""
             apply plugin: 'war'
-            apply plugin: 'com.vaadin'
+            apply plugin: 'com.vaadin.flow'
             
             dependencies {
                 implementation project(':lib')
@@ -169,8 +174,10 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect(null) { b.task(":vaadinBuildFrontend") }
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("MY_APP_ID") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("app-" + StringUtil.getHash("MY_APP_ID",
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -179,7 +186,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
-                id 'com.vaadin' apply false
+                id 'com.vaadin.flow' apply false
             }
             allprojects {
                 repositories {
@@ -197,7 +204,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
         webBuildFile.writeText("""
             apply plugin: 'war'
-            apply plugin: 'com.vaadin'
+            apply plugin: 'com.vaadin.flow'
             
             dependencies {
                 implementation project(':lib')
@@ -219,8 +226,60 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect(null) { b.task(":vaadinBuildFrontend") }
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("MY_APP_ID") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("MY_APP_ID") { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
+
+    @Test
+    fun testPrepareFrontend_configurationCache() {
+        testProject.settingsFile.writeText("include 'lib', 'web'")
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+            }
+        """.trimIndent())
+        testProject.newFolder("lib")
+        val webFolder = testProject.newFolder("web")
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        webFolder.resolve("src/main/frontend").mkdirs()
+        val webBuildFile = Files.createFile(webFolder.toPath().resolve("build.gradle"))
+        webBuildFile.writeText("""
+            apply plugin: 'war'
+            apply plugin: 'com.vaadin.flow'
+            
+            dependencies {
+                implementation project(':lib')
+                implementation("com.vaadin:flow:$flowVersion")
+            }
+
+            vaadin {
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                applicationIdentifier = 'MY_APP_ID'
+            }
+        """.trimIndent())
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result.expectTaskSucceded("web:vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("web:vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
 
 }

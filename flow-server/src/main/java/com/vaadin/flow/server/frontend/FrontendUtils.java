@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,10 +35,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -53,17 +56,13 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.router.internal.ClientRoutesProvider;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.menu.MenuRegistry;
 
-import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -401,7 +400,7 @@ public class FrontendUtils {
     /**
      * Creates a process builder for the given list of program and arguments. If
      * the program is defined as an absolute path, then the directory that
-     * contains the program is also appended to PATH so that the it can locate
+     * contains the program is also appended to PATH so that it can locate
      * related tools.
      *
      * @param command
@@ -409,6 +408,24 @@ public class FrontendUtils {
      * @return a configured process builder
      */
     public static ProcessBuilder createProcessBuilder(List<String> command) {
+        return createProcessBuilder(command, UnaryOperator.identity());
+    }
+
+    /**
+     * Creates a process builder for the given list of program and arguments. If
+     * the program is defined as an absolute path, then the directory that
+     * contains the program is also appended to PATH so that it can locate
+     * related tools.
+     *
+     * @param command
+     *            a list with the program and arguments
+     * @param configureProcessBuilder
+     *            the function to make changes to the created instance of
+     *            ProcessBuilder, not {@literal null}.
+     * @return a configured process builder
+     */
+    public static ProcessBuilder createProcessBuilder(List<String> command,
+            UnaryOperator<ProcessBuilder> configureProcessBuilder) {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
         /*
@@ -445,7 +462,7 @@ public class FrontendUtils {
             environment.put(pathEnvVar, path);
         }
 
-        return processBuilder;
+        return configureProcessBuilder.apply(processBuilder);
     }
 
     /**
@@ -868,14 +885,36 @@ public class FrontendUtils {
      */
     public static String executeCommand(List<String> command)
             throws CommandExecutionException {
+        return executeCommand(command, UnaryOperator.identity());
+    }
+
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @param configureProcessBuilder
+     *            the function to make changes to the created instance of
+     *            ProcessBuilder, not {@literal null}.
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally.
+     */
+    public static String executeCommand(List<String> command,
+            UnaryOperator<ProcessBuilder> configureProcessBuilder)
+            throws CommandExecutionException {
         try {
-            Process process = FrontendUtils.createProcessBuilder(command)
+            Process process = FrontendUtils
+                    .createProcessBuilder(command, configureProcessBuilder)
                     .start();
 
             CompletableFuture<Pair<String, String>> streamConsumer = consumeProcessStreams(
                     process);
             int exitCode = process.waitFor();
             Pair<String, String> outputs = streamConsumer.get();
+
+            process.destroy();
+
             if (exitCode != 0) {
                 throw new CommandExecutionException(exitCode,
                         outputs.getFirst(), outputs.getSecond());
@@ -1037,13 +1076,13 @@ public class FrontendUtils {
      *            origin of the version (like a file), used in error message
      * @return the frontend version the package or {@code null}
      */
-    public static FrontendVersion getPackageVersionFromJson(
-            JsonObject sourceJson, String pkg, String versionOrigin) {
-        if (!sourceJson.hasKey(pkg)) {
+    public static FrontendVersion getPackageVersionFromJson(JsonNode sourceJson,
+            String pkg, String versionOrigin) {
+        if (!sourceJson.has(pkg)) {
             return null;
         }
         try {
-            final String versionString = sourceJson.getString(pkg);
+            final String versionString = sourceJson.get(pkg).textValue();
             return new FrontendVersion(pkg, versionString);
         } catch (ClassCastException classCastException) { // NOSONAR
             LoggerFactory.getLogger(FrontendVersion.class).warn(

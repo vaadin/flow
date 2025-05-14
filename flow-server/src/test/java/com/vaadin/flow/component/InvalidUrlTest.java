@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -91,9 +91,12 @@ public class InvalidUrlTest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
         Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
+        Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
+        Mockito.when(config.getBuildFolder()).thenReturn("build");
 
         session.lock();
         session.setConfiguration(config);
+        ((MockVaadinServletService) service).setConfiguration(config);
         CurrentInstance.set(VaadinSession.class, session);
 
         ui.getInternals().setSession(session);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,17 +15,20 @@
  */
 package com.vaadin.flow;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.internal.ComponentTracker;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.util.Map;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.internal.ComponentTracker;
+import com.vaadin.flow.component.internal.ComponentTracker.Location;
 
 /**
  * Note that this is intentionally in the "wrong" package as internal packages
@@ -68,14 +71,10 @@ public class ComponentTrackerTest {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
+        int c1Line = 71;
 
-        ComponentTracker.Location c1Location = ComponentTracker.findCreate(c1);
-        Assert.assertEquals(68, c1Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c1Location.className());
-
-        ComponentTracker.Location c2Location = ComponentTracker.findCreate(c2);
-        Assert.assertEquals(70, c2Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c2Location.className());
+        assertCreateLocation(c1, c1Line, getClass().getName());
+        assertCreateLocation(c2, c1Line + 2, getClass().getName());
     }
 
     @Test
@@ -86,24 +85,20 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        ComponentTracker.Location c1Location = ComponentTracker.findAttach(c1);
-        Assert.assertEquals(87, c1Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c1Location.className());
+        int c1Line = 82;
+
+        assertCreateLocation(c1, c1Line, getClass().getName());
 
         layout.add(c2);
 
-        ComponentTracker.Location c2Location = ComponentTracker.findAttach(c2);
-        Assert.assertEquals(93, c2Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c2Location.className());
+        assertAttachLocation(c2, c1Line + 10, getClass().getName());
 
         // Last attach is tracked
         layout.add(c3);
         layout.remove(c3);
         layout.add(c3);
 
-        ComponentTracker.Location c3Location = ComponentTracker.findAttach(c3);
-        Assert.assertEquals(102, c3Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c3Location.className());
+        assertAttachLocation(c3, c1Line + 17, getClass().getName());
     }
 
     @Test
@@ -112,56 +107,97 @@ public class ComponentTrackerTest {
         Component c2 = new Component1();
         Component c3 = new Component1();
 
-        ComponentTracker.Location c1Location = ComponentTracker.findCreate(c1);
-        Assert.assertEquals(111, c1Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c1Location.className());
+        int c1Line = 106;
+        assertCreateLocation(c1, c1Line, getClass().getName());
 
-        ComponentTracker.refreshLocation(c1Location, 3);
+        ComponentTracker.refreshLocation(ComponentTracker.findCreate(c1), 3);
 
-        ComponentTracker.Location c2Location = ComponentTracker.findCreate(c2);
-        Assert.assertEquals(112 + 3, c2Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c2Location.className());
+        assertCreateLocation(c2, c1Line + 1 + 3, getClass().getName());
 
-        ComponentTracker.refreshLocation(c2Location, 1);
+        ComponentTracker.refreshLocation(ComponentTracker.findCreate(c2), 1);
 
-        ComponentTracker.Location c3Location = ComponentTracker.findCreate(c3);
-        Assert.assertEquals(113 + 3 + 1, c3Location.lineNumber());
-        Assert.assertEquals(getClass().getName(), c3Location.className());
+        assertCreateLocation(c3, c1Line + 2 + 3 + 1, getClass().getName());
     }
 
     @Test
     public void memoryIsReleased() throws Exception {
         Field createLocationField = ComponentTracker.class
                 .getDeclaredField("createLocation");
+        Field createLocationsField = ComponentTracker.class
+                .getDeclaredField("createLocations");
         Field attachLocationField = ComponentTracker.class
                 .getDeclaredField("attachLocation");
+        Field attachLocationsField = ComponentTracker.class
+                .getDeclaredField("attachLocations");
         createLocationField.setAccessible(true);
+        createLocationsField.setAccessible(true);
         attachLocationField.setAccessible(true);
-        Map<Component, StackTraceElement> createMap = (Map<Component, StackTraceElement>) createLocationField
+        attachLocationsField.setAccessible(true);
+
+        Map<?, ?> createMap = (Map<?, ?>) createLocationField.get(null);
+        Map<?, ?> attachMap = (Map<?, ?>) attachLocationField.get(null);
+        Map<?, ?> createLocationsMap = (Map<?, ?>) createLocationsField
                 .get(null);
-        Map<Component, StackTraceElement> attachMap = (Map<Component, StackTraceElement>) attachLocationField
+        Map<?, ?> attachLocationsMap = (Map<?, ?>) attachLocationsField
                 .get(null);
         createMap.clear();
+        createLocationsMap.clear();
         attachMap.clear();
+        attachLocationsMap.clear();
 
         new Layout(new Component1());
 
         Assert.assertEquals(2, createMap.size());
+        Assert.assertEquals(2, createLocationsMap.size());
         Assert.assertEquals(1, attachMap.size());
+        Assert.assertEquals(1, attachLocationsMap.size());
 
         Assert.assertTrue(isCleared(createMap));
+        Assert.assertTrue(isCleared(createLocationsMap));
         Assert.assertTrue(isCleared(attachMap));
+        Assert.assertTrue(isCleared(attachLocationsMap));
     }
 
     private boolean isCleared(Map<?, ?> map) throws InterruptedException {
         for (int i = 0; i < 5; i++) {
             System.gc();
-            if (map.size() == 0) {
+            if (map.isEmpty()) {
                 return true;
             }
-            Thread.sleep(1);
+            Thread.sleep(100);
         }
         return false;
     }
 
+    private void assertCreateLocation(Component c, int lineNumber,
+            String name) {
+        ComponentTracker.Location location = ComponentTracker.findCreate(c);
+        Assert.assertEquals(lineNumber, location.lineNumber());
+        Assert.assertEquals(name, location.className());
+
+        Location locationFromArray = getLocationFromArray(
+                ComponentTracker.findCreateLocations(c));
+        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
+        Assert.assertEquals(name, locationFromArray.className());
+    }
+
+    private void assertAttachLocation(Component c, int lineNumber,
+            String name) {
+        ComponentTracker.Location location = ComponentTracker.findAttach(c);
+        Assert.assertEquals(lineNumber, location.lineNumber());
+        Assert.assertEquals(name, location.className());
+
+        Location locationFromArray = getLocationFromArray(
+                ComponentTracker.findAttachLocations(c));
+
+        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
+        Assert.assertEquals(name, locationFromArray.className());
+    }
+
+    private Location getLocationFromArray(Location[] locations) {
+        return Stream.of(locations).filter(
+                l -> l.className().equals(ComponentTrackerTest.class.getName()))
+                .findFirst().orElseThrow();
+
+    }
 }

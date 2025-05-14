@@ -1,6 +1,6 @@
 {
   "packages": {
-    "@testscope/all": {
+    "@vaadin/testscope-all": {
       "version": "1.0.0",
       "exposes": {
         "./all.js": {
@@ -9,19 +9,19 @@
         ".": {
           "exports": [
             {
-              "source": "@testscope/all/all.js"
+              "source": "@vaadin/testscope-all/all.js"
             }
           ]
         }
       }
     },
-    "@testscope/button": {
+    "@vaadin/testscope-button": {
       "version": "1.0.0",
       "exposes": {
         "./testscope-button.js": {
           "exports": [
             {
-              "source": "@testscope/button/src/testscope-button.js"
+              "source": "@vaadin/testscope-button/src/testscope-button.js"
             }
           ]
         },
@@ -33,19 +33,19 @@
         ".": {
           "exports": [
             {
-              "source": "@testscope/button/testscope-button.js"
+              "source": "@vaadin/testscope-button/testscope-button.js"
             }
           ]
         }
       }
     },
-    "@testscope/map": {
+    "@vaadin/testscope-map": {
       "version": "1.0.0",
       "exposes": {
         "./testscope-map.js": {
           "exports": [
             {
-              "source": "@testscope/map/src/testscope-map.js"
+              "source": "@vaadin/testscope-map/src/testscope-map.js"
             }
           ]
         },
@@ -62,7 +62,7 @@
         ".": {
           "exports": [
             {
-              "source": "@testscope/map/testscope-map.js"
+              "source": "@vaadin/testscope-map/testscope-map.js"
             }
           ]
         }

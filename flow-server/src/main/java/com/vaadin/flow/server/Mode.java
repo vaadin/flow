@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,9 +21,10 @@ package com.vaadin.flow.server;
  * One of production, development using livereload or development using bundle
  */
 public enum Mode {
-    PRODUCTION_CUSTOM("production", true), PRODUCTION_PRECOMPILED_BUNDLE(
-            "production", true), DEVELOPMENT_FRONTEND_LIVERELOAD("development",
-                    false), DEVELOPMENT_BUNDLE("development", false);
+    PRODUCTION_CUSTOM("production", true),
+    PRODUCTION_PRECOMPILED_BUNDLE("production", true),
+    DEVELOPMENT_FRONTEND_LIVERELOAD("development", false),
+    DEVELOPMENT_BUNDLE("development", false);
 
     private final String name;
     private final boolean production;

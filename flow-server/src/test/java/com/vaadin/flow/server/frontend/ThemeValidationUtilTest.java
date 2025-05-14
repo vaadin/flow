@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,21 +15,21 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.flow.internal.JacksonUtils;
+
 public class ThemeValidationUtilTest {
 
     @Test
     public void testObjectsIncludeMethodWithSameElementsInArrays() {
-        JsonArray jsonFromBundle = createJsonArray("a", "b", "c");
-        JsonArray projectJson = createJsonArray("a", "b", "c");
+        ArrayNode jsonFromBundle = createArrayNode("a", "b", "c");
+        ArrayNode projectJson = createArrayNode("a", "b", "c");
         List<String> missedKeys = new ArrayList<>();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
@@ -40,8 +40,8 @@ public class ThemeValidationUtilTest {
 
     @Test
     public void testObjectsIncludeMethodWithSameElementsInArraysDifferentOrder() {
-        JsonArray jsonFromBundle = createJsonArray("a", "b", "c");
-        JsonArray projectJson = createJsonArray("b", "a", "c");
+        ArrayNode jsonFromBundle = createArrayNode("a", "b", "c");
+        ArrayNode projectJson = createArrayNode("b", "a", "c");
         List<String> missedKeys = new ArrayList<>();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
@@ -53,20 +53,20 @@ public class ThemeValidationUtilTest {
     @Test
     public void testObjectsIncludeMethodArraysAreDifferent() {
         List<String> missedKeysForBundle = new ArrayList<>();
-        JsonArray jsonFromBundle = createJsonArray("a", "c");
-        JsonArray jsonFromProject = createJsonArray("a", "b", "c");
+        ArrayNode jsonFromBundle = createArrayNode("a", "c");
+        ArrayNode jsonFromProject = createArrayNode("a", "b", "c");
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
                 jsonFromProject, missedKeysForBundle);
         Assert.assertFalse(result);
         // the missed keys should be the same as the jsonFromBundle as the other
         // array is empty
-        // also because it's a JsonArray the keys are quoted
+        // also because it's a ArrayNode the keys are quoted
         Assert.assertEquals(missedKeysForBundle, List.of("\"b\""));
 
         List<String> missedKeysForProject = new ArrayList<>();
-        jsonFromBundle = createJsonArray("a", "b", "c");
-        jsonFromProject = createJsonArray("a");
+        jsonFromBundle = createArrayNode("a", "b", "c");
+        jsonFromProject = createArrayNode("a");
         result = ThemeValidationUtil.objectIncludesEntry(jsonFromProject,
                 jsonFromBundle, missedKeysForProject);
         Assert.assertFalse(result);
@@ -78,7 +78,8 @@ public class ThemeValidationUtilTest {
         List<String> missedKeys = new ArrayList<>();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(
-                Json.createArray(), Json.createArray(), missedKeys);
+                JacksonUtils.createArrayNode(), JacksonUtils.createArrayNode(),
+                missedKeys);
         Assert.assertTrue(result);
         Assert.assertTrue(missedKeys.isEmpty());
     }
@@ -86,8 +87,8 @@ public class ThemeValidationUtilTest {
     @Test
     public void testObjectsIncludeMethodOneArrayIsEmpty() {
         List<String> missedKeysFromProject = new ArrayList<>();
-        JsonArray jsonFromBundle = createJsonArray("a", "b", "c");
-        JsonArray jsonFromProjectEmpty = createJsonArray();
+        ArrayNode jsonFromBundle = createArrayNode("a", "b", "c");
+        ArrayNode jsonFromProjectEmpty = createArrayNode();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
                 jsonFromProjectEmpty, missedKeysFromProject);
@@ -95,13 +96,13 @@ public class ThemeValidationUtilTest {
 
         // the missed keys should be the same as the jsonFromBundle as the other
         // array is empty
-        // also because it's a JsonArray the keys are quoted
+        // also because it's a ArrayNode the keys are quoted
         Assert.assertEquals(missedKeysFromProject,
                 List.of("\"a\"", "\"b\"", "\"c\""));
 
         List<String> missedKeysFromBundle = new ArrayList<>();
-        JsonArray jsonFromProject = createJsonArray("a", "b", "c");
-        JsonArray jsonFromBundleEmpty = createJsonArray();
+        ArrayNode jsonFromProject = createArrayNode("a", "b", "c");
+        ArrayNode jsonFromBundleEmpty = createArrayNode();
 
         result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundleEmpty,
                 jsonFromProject, missedKeysFromBundle);
@@ -110,10 +111,10 @@ public class ThemeValidationUtilTest {
                 List.of("\"a\"", "\"b\"", "\"c\""));
     }
 
-    private JsonArray createJsonArray(String... values) {
-        JsonArray array = Json.createArray();
+    private ArrayNode createArrayNode(String... values) {
+        ArrayNode array = JacksonUtils.createArrayNode();
         for (String value : values) {
-            array.set(array.length(), value);
+            array.add(value);
         }
         return array;
     }

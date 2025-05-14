@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -445,6 +445,42 @@ public class AnnotatedViewAccessCheckerTest {
         AccessCheckResult result = checkAccess(
                 AccessControlTestClasses.NotAnnotatedCustomErrorView.class,
                 null);
+        Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
+    }
+
+    @Test
+    public void routeWithNoAnnotationLayout_deny() {
+        NavigationContext context = setupNavigationContext(
+                AccessControlTestClasses.AnonymousAllowedView.class, null);
+        RouteRegistry registry = context.getRouter().getRegistry();
+        Mockito.when(registry.hasLayout("anon")).thenReturn(true);
+        Mockito.when(registry.getLayout("anon")).thenAnswer(
+                invocation -> AccessControlTestClasses.NoAuthLayout.class);
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
+    }
+
+    @Test
+    public void routeWithNoAnnotationsAllowedLayout_allowed() {
+        NavigationContext context = setupNavigationContext(
+                AccessControlTestClasses.AnonymousAllowedView.class, null);
+        RouteRegistry registry = context.getRouter().getRegistry();
+        Mockito.when(registry.hasLayout("anon")).thenReturn(true);
+        Mockito.when(registry.getLayout("anon")).thenAnswer(
+                invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        Assert.assertEquals(AccessCheckDecision.ALLOW, result.decision());
+    }
+
+    @Test
+    public void routeWithNoAnnotationsAllowed_LayoutWithAllowed_denied() {
+        NavigationContext context = setupNavigationContext(
+                AccessControlTestClasses.NoAnnotationView.class, null);
+        RouteRegistry registry = context.getRouter().getRegistry();
+        Mockito.when(registry.hasLayout("noannotation")).thenReturn(true);
+        Mockito.when(registry.getLayout("noannotation")).thenAnswer(
+                invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
+        AccessCheckResult result = this.viewAccessChecker.check(context);
         Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
     }
 

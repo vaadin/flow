@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -26,12 +31,14 @@ import java.util.stream.Stream.Builder;
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.template.Id;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
@@ -172,9 +179,13 @@ public abstract class Component
                 throw new IllegalArgumentException(getClass().getName()
                         + ": event type must not be null for @Synchronize annotation");
             }
-            element.addPropertyChangeListener(info.getProperty(), eventType,
-                    NOOP_PROPERTY_LISTENER)
+            DomListenerRegistration propertyListener = element
+                    .addPropertyChangeListener(info.getProperty(), eventType,
+                            NOOP_PROPERTY_LISTENER)
                     .setDisabledUpdateMode(info.getUpdateMode());
+            if (info.getAllowInert()) {
+                propertyListener.allowInert();
+            }
         });
     }
 
@@ -818,6 +829,42 @@ public abstract class Component
      */
     public void removeFromParent() {
         getElement().removeFromParent();
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        if (this instanceof UI ui) {
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .setCurrent(ui);
+            try {
+                out.defaultWriteObject();
+            } finally {
+                CurrentInstance.clearAll();
+                CurrentInstance.restoreInstances(instances);
+            }
+        } else {
+            out.defaultWriteObject();
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        if (this instanceof UI ui) {
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .getInstances();
+            // Cannot use CurrentInstance.setCurrent(this) because it will try
+            // to get VaadinSession from UI.internals that is not yet available
+            CurrentInstance.set(UI.class, ui);
+            try {
+                in.defaultReadObject();
+            } finally {
+                CurrentInstance.clearAll();
+                CurrentInstance.restoreInstances(instances);
+            }
+        } else {
+            in.defaultReadObject();
+        }
     }
 
 }

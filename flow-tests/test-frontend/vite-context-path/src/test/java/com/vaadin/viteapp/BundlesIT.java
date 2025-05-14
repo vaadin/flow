@@ -23,8 +23,8 @@ public class BundlesIT extends ChromeBrowserTest {
 
     @Test
     public void optimizeDepsNotExcludeBundleContents() {
-        Assert.assertFalse(isExcluded("@testscope/all"));
-        Assert.assertFalse(isExcluded("@testscope/button"));
+        Assert.assertFalse(isExcluded("@vaadin/testscope-all"));
+        Assert.assertFalse(isExcluded("@vaadin/testscope-button"));
     }
 
     private boolean isExcluded(String dependency) {

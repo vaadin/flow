@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,33 +19,15 @@ package com.vaadin.flow.server;
 import java.io.EOFException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.InvalidLocationException;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * The default implementation of {@link ErrorHandler}.
@@ -74,9 +56,18 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 public class DefaultErrorHandler implements ErrorHandler {
 
     private final Set<String> ignoredExceptions;
+    private final Set<String> routeConfigurationExceptions;
 
     protected DefaultErrorHandler(Set<String> ignoredExceptions) {
         this.ignoredExceptions = Set.copyOf(ignoredExceptions);
+        this.routeConfigurationExceptions = new HashSet<>();
+    }
+
+    protected DefaultErrorHandler(Set<String> ignoredExceptions,
+            Set<String> routeConfigurationExceptions) {
+        this.ignoredExceptions = Set.copyOf(ignoredExceptions);
+        this.routeConfigurationExceptions = Set
+                .copyOf(routeConfigurationExceptions);
     }
 
     public DefaultErrorHandler() {
@@ -85,6 +76,10 @@ public class DefaultErrorHandler implements ErrorHandler {
                 EOFException.class.getName(),
                 "org.eclipse.jetty.io.EofException",
                 "org.apache.catalina.connector.ClientAbortException");
+        this.routeConfigurationExceptions = Set.of(
+                AmbiguousRouteConfigurationException.class.getName(),
+                InvalidRouteConfigurationException.class.getName(),
+                InvalidRouteLayoutConfigurationException.class.getName());
     }
 
     @Override
@@ -101,8 +96,14 @@ public class DefaultErrorHandler implements ErrorHandler {
                     getLogger().warn(marker, "", throwable);
                 }
             } else {
-                // print the error on console
-                getLogger().error("", throwable);
+                if (routeConfigurationExceptions
+                        .contains(throwable.getClass().getName())) {
+                    getLogger().error("Route configuration error found:");
+                    getLogger().error(throwable.getMessage());
+                } else {
+                    // print the error on console
+                    getLogger().error("", throwable);
+                }
             }
         }
     }

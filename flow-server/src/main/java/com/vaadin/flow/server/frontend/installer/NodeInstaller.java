@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,11 +26,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
@@ -52,6 +56,8 @@ public class NodeInstaller {
 
     public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
+    public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
+
     private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
             "\\\\") + "\\node.exe";
     private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
@@ -61,6 +67,7 @@ public class NodeInstaller {
     private static final int MAX_DOWNLOAD_ATTEMPS = 5;
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
+    public static final String ACCEPT_MISSING_SHA = "vaadin.node.download.acceptMissingSHA";
 
     private final Object lock = new Object();
 
@@ -490,21 +497,26 @@ public class NodeInstaller {
                         "The archive file {} is corrupted and will be deleted. "
                                 + "Please run the application again.",
                         archive.getPath());
-                boolean deleted = archive.delete();
-                if (!deleted) {
-                    getLogger().error("Failed to remove archive file {}. "
-                            + "Please remove it manually and run the application.",
-                            archive.getPath());
-                }
+                removeArchiveFile(archive);
                 try {
                     FileUtils.deleteDirectory(destinationDirectory);
                 } catch (IOException ioe) {
                     getLogger().error("Failed to remove target directory '{}'",
                             destinationDirectory, ioe);
                 }
+            } else {
+                removeArchiveFile(archive);
             }
 
             throw e;
+        }
+    }
+
+    private static void removeArchiveFile(File archive) {
+        if (!archive.delete()) {
+            getLogger().error("Failed to remove archive file {}. "
+                    + "Please remove it manually and run the application.",
+                    archive.getPath());
         }
     }
 
@@ -515,10 +527,13 @@ public class NodeInstaller {
             for (int i = 0; i < MAX_DOWNLOAD_ATTEMPS; i++) {
                 try {
                     fileDownloader.download(downloadUrl, destination, userName,
-                            password);
+                            password, null);
+
+                    verifyArchive(destination);
                     return;
                 } catch (DownloadException e) {
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
+                        removeArchiveFile(destination);
                         throw e;
                     }
 
@@ -529,10 +544,85 @@ public class NodeInstaller {
                     try {
                         Thread.sleep(DOWNLOAD_ATTEMPT_DELAY * 1000);
                     } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
+                    }
+                } catch (VerificationException ve) {
+                    getLogger().warn(
+                            "SHA256 verification of downloaded node archive failed.");
+                    if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
+                        removeArchiveFile(destination);
+                        throw new DownloadException(
+                                "Failed to download node matching SHA256.");
                     }
                 }
-
             }
+        } else {
+            try {
+                verifyArchive(destination);
+            } catch (VerificationException de) {
+                removeArchiveFile(destination);
+                downloadFileIfMissing(downloadUrl, destination, userName,
+                        password);
+            }
+        }
+    }
+
+    private void verifyArchive(File archive)
+            throws DownloadException, VerificationException {
+        try {
+            URI shaSumsURL = nodeDownloadRoot
+                    .resolve(nodeVersion + "/" + SHA_SUMS_FILE);
+            if ("file".equalsIgnoreCase(shaSumsURL.getScheme())) {
+                // The file is local so it can't be expected to have a SHA file
+                return;
+            }
+
+            File shaSums = new File(installDirectory, "node-" + SHA_SUMS_FILE);
+
+            getLogger().debug("Downloading {} to {}", shaSumsURL, shaSums);
+
+            try {
+                fileDownloader.download(shaSumsURL, shaSums, userName, password,
+                        null);
+            } catch (DownloadException e) {
+                if (Boolean.getBoolean(ACCEPT_MISSING_SHA)) {
+                    getLogger().warn(
+                            "Could not verify SHA256 sum of downloaded node in {}. Accepting missing checksum verification as set in '{}' system property.",
+                            archive, ACCEPT_MISSING_SHA);
+                    return;
+                } else {
+                    getLogger().info(
+                            "Download of {} failed. If failure persists, use system property '{}' to skip verification or download node manually.",
+                            SHA_SUMS_FILE, ACCEPT_MISSING_SHA);
+                    throw e;
+                }
+            }
+
+            String archiveSHA256 = MessageDigestUtil
+                    .sha256Hex(Files.readAllBytes(archive.toPath()));
+
+            List<String> sha256sums = Files.readAllLines(shaSums.toPath());
+            String archiveTargetSHA256 = sha256sums.stream()
+                    .filter(sum -> sum
+                            .endsWith(archive.getName()))
+                    .map(sum -> sum
+                            .substring(0,
+                                    sum.length() - archive.getName().length())
+                            .trim())
+                    .findFirst().orElse("-1");
+
+            shaSums.delete();
+
+            if (!archiveSHA256.equals(archiveTargetSHA256)) {
+                getLogger().error(
+                        "Expected SHA256 [{}] for downloaded node archive, got [{}]",
+                        archiveTargetSHA256, archiveSHA256);
+                throw new VerificationException(
+                        "SHA256 sums did not match for downloaded node");
+            }
+        } catch (IOException e) {
+            throw new VerificationException("Failed to validate archive hash.",
+                    e);
         }
     }
 
@@ -559,8 +649,14 @@ public class NodeInstaller {
                 throw new IOException("Process exited with non 0 exit code. ("
                         + exitCode + ")");
             }
-            return FrontendUtils.parseFrontendVersion(
-                    streamConsumer.getNow(new Pair<>("", "")).getFirst());
+            String version;
+            try {
+                version = streamConsumer.get(1, TimeUnit.SECONDS).getFirst();
+            } catch (ExecutionException | TimeoutException e) {
+                getLogger().debug("Cannot read {} version", tool, e);
+                version = "";
+            }
+            return FrontendUtils.parseFrontendVersion(version);
         } catch (InterruptedException | IOException e) {
             throw new InstallationException(String.format(
                     "Unable to detect version of %s. %s", tool,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -119,7 +119,8 @@ public class FilterableResourceResolver
     private List<String> blockedJarsList;
 
     private record PackageInfo(Set<String> allowedPackages,
-            Set<String> blockedPackages, boolean blockedJar) implements Serializable {
+            Set<String> blockedPackages,
+            boolean blockedJar) implements Serializable {
     }
 
     /**

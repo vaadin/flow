@@ -1,6 +1,7 @@
 package com.vaadin.flow.router;
 
 import jakarta.servlet.ServletContext;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -47,9 +49,16 @@ public class RouteConfigurationTest {
         vaadinContext = new MockVaadinContext(servletContext);
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File("/frontend"));
+
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
         Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(configuration);
 
         VaadinService.setCurrent(vaadinService);
 

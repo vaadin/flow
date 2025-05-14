@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -97,6 +97,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor\\$Marker",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinHintsRegistrar",
+                "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinRouteScope(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinSessionScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.AbstractScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinUIScope",
@@ -104,6 +105,8 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.NavigationAccessControlConfigurer",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinAwareSecurityContextHolderStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinAwareSecurityContextHolderStrategyConfiguration",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSecurityConfigurer",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSecurityConfigurer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurity",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurity\\$Http401UnauthorizedAccessDeniedHandler",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinDefaultRequestCache",

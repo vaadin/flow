@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,12 +27,15 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
@@ -40,8 +43,6 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.theme.Theme;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
@@ -129,7 +130,7 @@ public class ThemeUtils {
         return Optional.ofNullable(shell.getAnnotation(Theme.class));
     }
 
-    public static Optional<JsonObject> getThemeJson(String themeName,
+    public static Optional<JsonNode> getThemeJson(String themeName,
             AbstractConfiguration config) {
         String content = null;
         try {
@@ -157,7 +158,7 @@ public class ThemeUtils {
                     "Unable to read theme.json file of theme=" + themeName, e);
         }
 
-        return content != null ? Optional.of(Json.parse(content))
+        return content != null ? Optional.of(JacksonUtils.readTree(content))
                 : Optional.empty();
     }
 
@@ -185,7 +186,7 @@ public class ThemeUtils {
         return resourceUrl;
     }
 
-    public static Optional<JsonObject> getThemeJson(String themeName,
+    public static Optional<JsonNode> getThemeJson(String themeName,
             File frontendFolder) {
         File themeFolder = getThemeFolder(frontendFolder, themeName);
         File themeJsonFile = new File(themeFolder, "theme.json");
@@ -195,7 +196,7 @@ public class ThemeUtils {
             try {
                 content = FileUtils.readFileToString(themeJsonFile,
                         StandardCharsets.UTF_8);
-                return Optional.of(Json.parse(content));
+                return Optional.of(JacksonUtils.readTree(content));
             } catch (IOException e) {
                 getLogger().error(
                         "Unable to read theme json from " + themeJsonFile, e);
@@ -205,10 +206,10 @@ public class ThemeUtils {
 
     }
 
-    public static Optional<String> getParentThemeName(JsonObject themeJson) {
+    public static Optional<String> getParentThemeName(JsonNode themeJson) {
         if (themeJson != null) {
-            if (themeJson.hasKey("parent")) {
-                String parentThemeName = themeJson.getString("parent");
+            if (themeJson.has("parent")) {
+                String parentThemeName = themeJson.get("parent").textValue();
                 return Optional.of(parentThemeName);
             }
         }
@@ -278,7 +279,7 @@ public class ThemeUtils {
             AbstractConfiguration config) {
         themes.add(themeName);
 
-        Optional<JsonObject> themeJson = getThemeJson(themeName, config);
+        Optional<JsonNode> themeJson = getThemeJson(themeName, config);
         if (themeJson.isPresent()) {
             Optional<String> parentTheme = getParentThemeName(themeJson.get());
             if (parentTheme.isPresent()) {

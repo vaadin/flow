@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
@@ -28,6 +32,21 @@ import java.io.IOException;
  */
 public abstract class SynchronizedRequestHandler implements RequestHandler {
 
+    public static final int MAX_BUFFER_SIZE = 64 * 1024;
+
+    /**
+     * ResponseWriter is optionally returned by request handlers which implement
+     * {@link SynchronizedRequestHandler#synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse, String)}
+     *
+     * The ResponseWriter will be executed by
+     * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+     * without holding Vaadin session lock.
+     */
+    @FunctionalInterface
+    public interface ResponseWriter extends Serializable {
+        void writeResponse() throws IOException;
+    }
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -35,11 +54,27 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             return false;
         }
 
-        session.lock();
         try {
-            return synchronizedHandleRequest(session, request, response);
+            if (isReadAndWriteOutsideSessionLock()) {
+                BufferedReader reader = request.getReader();
+                String requestBody = reader == null ? null
+                        : getRequestBody(reader);
+                session.lock();
+                Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
+                        session, request, response, requestBody);
+                session.unlock();
+                if (responseWriter.isPresent()) {
+                    responseWriter.get().writeResponse();
+                }
+                return responseWriter.isPresent();
+            } else {
+                session.lock();
+                return synchronizedHandleRequest(session, request, response);
+            }
         } finally {
-            session.unlock();
+            if (session.hasLock()) {
+                session.unlock();
+            }
         }
     }
 
@@ -66,6 +101,51 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException;
 
     /**
+     * Gets if request body should be read and the response written without
+     * holding {@link VaadinSession} lock
+     *
+     * @return {@literal true} if
+     *         {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse, String)}
+     *         should be called. Returns {@literal false} if
+     *         {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+     *         should be called.
+     */
+    public boolean isReadAndWriteOutsideSessionLock() {
+        return false;
+    }
+
+    /**
+     * Identical to
+     * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+     * except the {@link VaadinSession} is locked before this is called and the
+     * response requestBody has been read before locking the session and is
+     * provided as a separate parameter.
+     *
+     * @param session
+     *            The session for the request
+     * @param request
+     *            The request to handle
+     * @param response
+     *            The response object to which a response can be written.
+     * @param requestBody
+     *            Request body pre-read from the request object
+     * @return a ResponseWriter wrapped into an Optional, if this handler will
+     *         write the response and no further request handlers should be
+     *         called, otherwise an empty Optional. The ResponseWriter will be
+     *         executed after the VaadinSession is unlocked.
+     *
+     * @throws IOException
+     *             If an IO error occurred
+     * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
+     */
+    public Optional<ResponseWriter> synchronizedHandleRequest(
+            VaadinSession session, VaadinRequest request,
+            VaadinResponse response, String requestBody)
+            throws IOException, UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Check whether a request may be handled by this handler. This can be used
      * as an optimization to avoid locking the session just to investigate some
      * method property. The default implementation just returns
@@ -85,4 +165,18 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         return true;
     }
 
+    public static String getRequestBody(Reader reader) throws IOException {
+        StringBuilder sb = new StringBuilder(MAX_BUFFER_SIZE);
+        char[] buffer = new char[MAX_BUFFER_SIZE];
+
+        while (true) {
+            int read = reader.read(buffer);
+            if (read == -1) {
+                break;
+            }
+            sb.append(buffer, 0, read);
+        }
+
+        return sb.toString();
+    }
 }

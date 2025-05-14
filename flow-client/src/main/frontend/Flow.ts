@@ -45,7 +45,7 @@ interface FlowRoot {
 
 export interface NavigationParameters {
   pathname: string;
-  search: string;
+  search?: string;
 }
 
 export interface PreventCommands {
@@ -289,6 +289,8 @@ export class Flow {
   private async flowInit(): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.isFlowClientLoaded()) {
+      $wnd.Vaadin.Flow.nonce = this.findNonce();
+
       // show flow progress indicator
       this.loadingStarted();
 
@@ -349,8 +351,24 @@ export class Flow {
       script.onload = () => resolve();
       script.onerror = reject;
       script.src = url;
+      const { nonce } = $wnd.Vaadin.Flow;
+      if (nonce !== undefined) {
+        script.setAttribute('nonce', nonce);
+      }
       document.body.appendChild(script);
     });
+  }
+
+  private findNonce(): string | undefined {
+    let nonce;
+    const scriptTags = document.head.getElementsByTagName('script');
+    for (const scriptTag of scriptTags) {
+      if (scriptTag.nonce) {
+        nonce = scriptTag.nonce;
+        break;
+      }
+    }
+    return nonce;
   }
 
   private injectAppIdScript(appId: string) {
@@ -358,6 +376,10 @@ export class Flow {
     const scriptAppId = document.createElement('script');
     scriptAppId.type = 'module';
     scriptAppId.setAttribute('data-app-id', appIdWithoutHashCode);
+    const { nonce } = $wnd.Vaadin.Flow;
+    if (nonce !== undefined) {
+      scriptAppId.setAttribute('nonce', nonce);
+    }
     document.body.append(scriptAppId);
   }
 

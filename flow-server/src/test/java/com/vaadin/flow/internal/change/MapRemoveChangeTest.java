@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.internal.change;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,8 +26,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-
 public class MapRemoveChangeTest {
     private NodeMap feature = AbstractNodeFeatureTest
             .createFeature(ElementPropertyMap.class);
@@ -35,16 +34,16 @@ public class MapRemoveChangeTest {
     public void testJson() {
         MapRemoveChange change = new MapRemoveChange(feature, "some");
 
-        JsonObject json = change.toJson(null);
+        ObjectNode json = change.toJson(null);
 
         Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber(JsonConstants.CHANGE_NODE));
+                json.get(JsonConstants.CHANGE_NODE).intValue());
         Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
-                (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
+                json.get(JsonConstants.CHANGE_FEATURE).intValue());
         Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
-                json.getString(JsonConstants.CHANGE_TYPE));
+                json.get(JsonConstants.CHANGE_TYPE).textValue());
         Assert.assertEquals("some",
-                json.getString(JsonConstants.CHANGE_MAP_KEY));
+                json.get(JsonConstants.CHANGE_MAP_KEY).textValue());
     }
 
 }

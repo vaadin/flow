@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,10 @@
 package com.vaadin.flow.server.frontend.installer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
@@ -27,11 +30,11 @@ import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.file.Path;
-import java.time.Duration;
+import java.net.http.HttpResponse.BodyHandler;
+import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +68,8 @@ public final class DefaultFileDownloader implements FileDownloader {
 
     @Override
     public void download(URI downloadURI, File destination, String userName,
-            String password) throws DownloadException {
+            String password, ProgressListener progressListener)
+            throws DownloadException {
         this.userName = userName;
         this.password = password;
 
@@ -76,7 +80,7 @@ public final class DefaultFileDownloader implements FileDownloader {
             if ("file".equalsIgnoreCase(downloadURI.getScheme())) {
                 FileUtils.copyFile(new File(downloadURI), destination);
             } else {
-                downloadFile(destination, downloadURI);
+                downloadFile(destination, downloadURI, progressListener);
             }
         } catch (IOException e) {
             throw new DownloadException("Could not download " + downloadURI, e);
@@ -90,7 +94,8 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
     }
 
-    private void downloadFile(File destination, URI downloadUri)
+    private void downloadFile(File destination, URI downloadUri,
+            ProgressListener progressListener)
             throws IOException, DownloadException {
 
         HttpClient.Builder clientBuilder = HttpClient.newBuilder()
@@ -136,17 +141,26 @@ public final class DefaultFileDownloader implements FileDownloader {
                 .build();
 
         try {
-            HttpResponse<Path> response = client.send(request,
-                    BodyHandlers.ofFile(destination.toPath()));
+            BodyHandler<InputStream> bodyHandler = HttpResponse.BodyHandlers
+                    .ofInputStream();
+
+            HttpResponse<InputStream> response = client.send(request,
+                    bodyHandler);
             if (response.statusCode() != 200) {
                 throw new DownloadException("Got error code "
                         + response.statusCode() + " from the server.");
             }
-            long expected = response.headers()
+            long contentLength = response.headers()
                     .firstValueAsLong("Content-Length").getAsLong();
-            if (destination.length() != expected) {
+
+            try (FileOutputStream out = FileUtils
+                    .openOutputStream(destination)) {
+                copy(response.body(), out, contentLength, progressListener);
+            }
+
+            if (destination.length() != contentLength) {
                 throw new DownloadException("Error downloading from "
-                        + downloadUri + ". Expected " + expected
+                        + downloadUri + ". Expected " + contentLength
                         + " bytes but got " + destination.length());
             }
 
@@ -155,6 +169,66 @@ public final class DefaultFileDownloader implements FileDownloader {
             throw new RuntimeException(ex);
         }
 
+    }
+
+    /**
+     * From {@link IOUtils#copyLarge(InputStream, OutputStream, byte[])} and
+     * {@link IOUtils#copyLarge(InputStream, OutputStream)}
+     *
+     * @param inputStream
+     *            the input stream
+     * @param outputStream
+     *            the output stream
+     * @param progressListener
+     *            the progress listener or null
+     * @return the number of bytes copied
+     * @throws IOException
+     */
+    long copy(InputStream inputStream, OutputStream outputStream, long total,
+            ProgressListener progressListener) throws IOException {
+        Objects.requireNonNull(inputStream, "inputStream");
+        Objects.requireNonNull(outputStream, "outputStream");
+        byte[] buffer = IOUtils.byteArray(IOUtils.DEFAULT_BUFFER_SIZE);
+
+        long count = 0;
+        int n;
+        double lastReportedProgress = 0.0;
+        while (IOUtils.EOF != (n = inputStream.read(buffer))) {
+            outputStream.write(buffer, 0, n);
+            count += n;
+
+            lastReportedProgress = reportProgress(progressListener, total,
+                    count, lastReportedProgress);
+        }
+        if (lastReportedProgress != 1.0 && lastReportedProgress != total) {
+            lastReportedProgress = reportProgress(progressListener, total,
+                    count, 0.0);
+        }
+        return count;
+    }
+
+    private double reportProgress(ProgressListener progressListener, long total,
+            long count, double lastReportedProgress) {
+        // Progress reporting
+        if (progressListener == null) {
+            return lastReportedProgress;
+        }
+
+        if (total == -1) {
+            // We don't know the total size, so send an event every 1MB
+            if (count >= (lastReportedProgress + 1024 * 1024)) {
+                progressListener.onProgress(count, total, -1);
+                return count;
+            }
+        } else {
+            // We know the total size, so send and event every 1%
+            double progress = (double) count / total;
+            if ((progress - lastReportedProgress) > 0.01) {
+                progressListener.onProgress(count, total, progress);
+                return progress;
+            }
+        }
+        return lastReportedProgress;
     }
 
     private Logger getLogger() {

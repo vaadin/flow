@@ -30,7 +30,8 @@ public class PopStateHandlerView extends RouterLinkView {
         Element button = ElementFactory.createButton(target).setAttribute("id",
                 target);
         String historyPush = "window.history.pushState(null, null, event.target.textContent)";
-        if (VaadinSession.getCurrent().getConfiguration().isReactEnabled()) {
+        if (VaadinSession.getCurrent().getService().getDeploymentConfiguration()
+                .isReactEnabled()) {
             historyPush = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: {  url: event.target.textContent, replace: false } }))";
         }
         button.addEventListener("click", e -> {

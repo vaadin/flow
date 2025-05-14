@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,8 +33,6 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -88,9 +87,9 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
-        JsonObject deps = task.getPackageJson().getObject("dependencies");
-        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_DEPS));
-        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_JARS));
+        JsonNode deps = task.getPackageJson().get("dependencies");
+        Assert.assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_DEPS));
+        Assert.assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_JARS));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,

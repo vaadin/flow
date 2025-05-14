@@ -1,0 +1,12 @@
+import java.nio.file.*;
+
+flowTsx = basedir.toPath().resolve("src/main/frontend/generated/flow/Flow.tsx");
+if ( !Files.exists(flowTsx, new LinkOption[0]) )
+{
+    throw new RuntimeException("Flow.tsx file not generated");
+}
+
+lines = Files.readAllLines(flowTsx);
+if (lines.contains("// Resource loaded from plugin dependency")) {
+    throw new RuntimeException("Flow.tsx has been extracted from plugin classloader");
+}

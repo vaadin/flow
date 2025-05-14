@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -200,7 +200,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
-        return allowUpdateFromClient(key, value);
+        return allowUpdateFromClient(key);
     }
 
     @Override
@@ -212,7 +212,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         return super.producePutChange(key, hadValueEarlier, newValue);
     }
 
-    private boolean allowUpdateFromClient(String key, Serializable value) {
+    private boolean allowUpdateFromClient(String key) {
         AllowUpdate isAllowed = isUpdateFromClientAllowedBeforeFilter(key);
         if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(isAllowed)) {
             return AllowUpdate.EXPLICITLY_ALLOW.equals(isAllowed);
@@ -476,19 +476,18 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     /**
      * The method first checks whether the update from client is allowed using
-     * the method {@link #allowUpdateFromClient(String, Serializable)}. Then if
-     * it's not allowed then it either throws or returns NO OPERATION runnable
-     * in case if {@link #updateFromClientFilter} disallows the update (in this
-     * case it's just an application business logic and we should not throw).
+     * the method {@link #allowUpdateFromClient(String)}. Then if it's not
+     * allowed then it either throws or returns NO OPERATION runnable in case if
+     * {@link #updateFromClientFilter} disallows the update (in this case it's
+     * just an application business logic and we should not throw).
      *
-     * The logic inside the {@link #allowUpdateFromClient(String, Serializable)}
-     * check block repeats its own logic to make sure that:
+     * The logic inside the {@link #allowUpdateFromClient(String)} check block
+     * repeats its own logic to make sure that:
      * <ul>
-     * <li>It's in sync with
-     * {@link #allowUpdateFromClient(String, Serializable)} (and
+     * <li>It's in sync with {@link #allowUpdateFromClient(String)} (and
      * {@link #mayUpdateFromClient(String, Serializable)}
      * <li>The update is disallowed by the filter (and not some other checks
-     * that are inside {@link #allowUpdateFromClient(String, Serializable)}
+     * that are inside {@link #allowUpdateFromClient(String)}
      * <ul>
      *
      * Here is the logic flow:
@@ -555,7 +554,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         // Use private <code>allowUpdateFromClient</code> method instead of
         // <code>mayUpdateFromClient</code> which may be overridden
         // The logic below
-        if (!allowUpdateFromClient(key, value)) {
+        if (!allowUpdateFromClient(key)) {
             if (isDisallowedByFilter(key)) {
                 return () -> {
                     // nop

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -68,6 +69,7 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -168,10 +170,9 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_fails_for_multiple_registration_of_same_route() {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(
-                "Navigation targets must have unique routes, found navigation targets "
-                        + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo' and "
-                        + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2' with the same route.");
+        expectedEx.expectMessage(String.format(RouteUtil.ROUTE_CONFLICT,
+                "com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo",
+                "com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2"));
 
         RouteConfiguration.forRegistry(registry)
                 .setAnnotatedRoute(NavigationTargetFoo.class);
@@ -880,17 +881,48 @@ public class RouteRegistryInitializerTest {
     public static class FaultyParentLayout extends Component {
     }
 
+    @Layout
+    @Tag(Tag.DIV)
+    public static class AnnotatedParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Layout
+    @Tag(Tag.DIV)
+    public static class AnotherAnnotatedParentLayout extends Component
+            implements RouterLayout {
+    }
+
     @Test
     public void layout_annotation_on_non_routelayout_throws()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
-                "Found @Layout on classes not extending RouterLayout.%nCheck the following classes: %s",
+                "Found @Layout on classes { %s } not implementing RouterLayout.",
                 FaultyParentLayout.class.getName()));
 
         routeRegistryInitializer.process(
                 Stream.of(FaultyParentLayout.class).collect(Collectors.toSet()),
                 servletContext);
+    }
+
+    @Test
+    public void same_layout_annotation_values_throws() {
+        StringBuilder messageBuilder = new StringBuilder(
+                "Found duplicate @Layout values in classes:");
+        messageBuilder.append("\n").append(" - ")
+                .append(AnnotatedParentLayout.class.getName()).append(" - ")
+                .append(AnotherAnnotatedParentLayout.class.getName());
+
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                StringContains.containsString(messageBuilder.toString()));
+
+        Set<Class<?>> classes = new LinkedHashSet<>(2);
+        classes.add(AnnotatedParentLayout.class);
+        classes.add(AnotherAnnotatedParentLayout.class);
+
+        routeRegistryInitializer.validateLayoutAnnotations(classes);
     }
 
     @Test

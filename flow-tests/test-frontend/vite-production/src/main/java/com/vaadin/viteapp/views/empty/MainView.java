@@ -11,10 +11,10 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-@JsModule("@testscope/button")
-@JsModule("@testscope/map")
-@JsModule("package-outside-npm/index.js")
-@JsModule("package2-outside-npm/index.js")
+@JsModule("@vaadin/testscope-button")
+@JsModule("@vaadin/testscope-map")
+@JsModule("@vaadin/test-package-outside-npm/index.js")
+@JsModule("@vaadin/test-package2-outside-npm/index.js")
 @JsModule("./toplevelawait-main.js")
 @CssImport("./image.css")
 public class MainView extends Div {

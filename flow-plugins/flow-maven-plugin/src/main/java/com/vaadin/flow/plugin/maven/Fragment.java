@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,9 @@ import java.util.Set;
  *
  * @author Vaadin Ltd
  * @since 1.0.
+ * @deprecated unused, will be removed without replacement.
  */
+@Deprecated(forRemoval = true)
 public class Fragment {
     private String name;
     private final Set<String> files = new HashSet<>();

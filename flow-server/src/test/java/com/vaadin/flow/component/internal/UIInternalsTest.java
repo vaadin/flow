@@ -22,7 +22,6 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -34,8 +33,7 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -44,8 +42,8 @@ public class UIInternalsTest {
 
     @Mock
     UI ui;
-    @Mock
-    VaadinService vaadinService;
+
+    MockVaadinServletService vaadinService;
 
     UIInternals internals;
 
@@ -118,14 +116,11 @@ public class UIInternalsTest {
         Element body = new Element("body");
         Mockito.when(ui.getElement()).thenReturn(body);
 
+        vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
         session.setConfiguration(Mockito.mock(DeploymentConfiguration.class));
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(vaadinService.getInstantiator())
-                .thenReturn(new DefaultInstantiator(vaadinService));
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
     }
@@ -554,8 +549,7 @@ public class UIInternalsTest {
     private PushConfiguration setUpInitialPush() {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(config);
+        vaadinService.setConfiguration(config);
 
         PushConfiguration pushConfig = Mockito.mock(PushConfiguration.class);
         Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfig);

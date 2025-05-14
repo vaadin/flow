@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,13 +22,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 /**
  * Utility class for cleaning the frontend files to a clean state.
@@ -77,6 +76,10 @@ public class CleanFrontendUtil {
             if (!lockFile.exists()) {
                 lockFile = new File(adapter.npmFolder(),
                         Constants.PACKAGE_LOCK_BUN);
+            }
+            if (!lockFile.exists()) {
+                lockFile = new File(adapter.npmFolder(),
+                        Constants.PACKAGE_LOCK_BUN_1_2);
             }
             if (!lockFile.exists()) {
                 lockFile = new File(adapter.npmFolder(),
@@ -129,13 +132,14 @@ public class CleanFrontendUtil {
             File packageJsonFile = new File(adapter.npmFolder(),
                     "package.json");
             if (packageJsonFile.exists() && options.isCleanPackageJson()) {
-                JsonObject packageJson = Json.parse(FileUtils.readFileToString(
-                        packageJsonFile, StandardCharsets.UTF_8.name()));
+                ObjectNode packageJson = JacksonUtils
+                        .readTree(FileUtils.readFileToString(packageJsonFile,
+                                StandardCharsets.UTF_8.name()));
 
                 cleanupPackage(adapter, packageJson);
 
                 FileUtils.write(packageJsonFile,
-                        JsonUtil.stringify(packageJson, 2) + "\n",
+                        packageJson.toPrettyString() + "\n",
                         StandardCharsets.UTF_8.name());
             }
         } catch (IOException e) {
@@ -198,16 +202,18 @@ public class CleanFrontendUtil {
     }
 
     private static void cleanupPackage(PluginAdapterBase adapter,
-            JsonObject packageJson) {
-        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
-        JsonObject overridesSection = packageJson.getObject(OVERRIDES);
+            ObjectNode packageJson) {
+        ObjectNode dependencies = (ObjectNode) packageJson.get(DEPENDENCIES);
+        ObjectNode devDependencies = (ObjectNode) packageJson
+                .get(DEV_DEPENDENCIES);
+        ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
 
-        if (packageJson.hasKey(VAADIN)) {
-            JsonObject vaadin = packageJson.getObject(VAADIN);
-            JsonObject vaadinDependencies = vaadin.getObject(DEPENDENCIES);
-            JsonObject vaadinDevDependencies = vaadin
-                    .getObject(DEV_DEPENDENCIES);
+        if (packageJson.has(VAADIN)) {
+            ObjectNode vaadin = (ObjectNode) packageJson.get(VAADIN);
+            ObjectNode vaadinDependencies = (ObjectNode) vaadin
+                    .get(DEPENDENCIES);
+            ObjectNode vaadinDevDependencies = (ObjectNode) vaadin
+                    .get(DEV_DEPENDENCIES);
 
             // Remove all
             cleanObject(dependencies, vaadinDependencies);
@@ -225,19 +231,19 @@ public class CleanFrontendUtil {
 
     }
 
-    private static void cleanObject(JsonObject target, JsonObject reference) {
+    private static void cleanObject(ObjectNode target, ObjectNode reference) {
         cleanObject(target, reference, true);
     }
 
-    private static void cleanObject(JsonObject target, JsonObject reference,
+    private static void cleanObject(ObjectNode target, ObjectNode reference,
             boolean requireVersionsMatch) {
         if (target == null) {
             return;
         }
         Set<String> removeKeys = new HashSet<>();
 
-        for (String key : target.keys()) {
-            if (reference.hasKey(key) && (!requireVersionsMatch
+        for (String key : JacksonUtils.getKeys(target)) {
+            if (reference.has(key) && (!requireVersionsMatch
                     || versionsMatch(target, reference, key))) {
                 removeKeys.add(key);
             }
@@ -248,9 +254,10 @@ public class CleanFrontendUtil {
         }
     }
 
-    private static boolean versionsMatch(JsonObject target,
-            JsonObject reference, String key) {
-        return target.getString(key).equals(reference.getString(key));
+    private static boolean versionsMatch(ObjectNode target,
+            ObjectNode reference, String key) {
+        return target.get(key).textValue()
+                .equals(reference.get(key).textValue());
     }
 
     /**
@@ -263,15 +270,16 @@ public class CleanFrontendUtil {
      *            json object to clean
      */
     private static void cleanFrameworkBuildDependenices(
-            PluginAdapterBase adapter, JsonObject dependencyObject) {
+            PluginAdapterBase adapter, ObjectNode dependencyObject) {
         if (dependencyObject == null) {
             return;
         }
         String buildTargetFolder = "./" + adapter.buildFolder();
 
         Set<String> removeKeys = new HashSet<>();
-        for (String key : dependencyObject.keys()) {
-            if (dependencyObject.getString(key).startsWith(buildTargetFolder)) {
+        for (String key : JacksonUtils.getKeys(dependencyObject)) {
+            if (dependencyObject.get(key).textValue()
+                    .startsWith(buildTargetFolder)) {
                 removeKeys.add(key);
             }
         }

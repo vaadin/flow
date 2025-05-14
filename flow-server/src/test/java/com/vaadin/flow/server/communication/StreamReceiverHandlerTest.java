@@ -10,12 +10,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +89,7 @@ public class StreamReceiverHandlerTest {
     private List<Part> parts;
 
     private boolean isGetContentLengthLongCalled;
+    private String requestCharacterEncoding;
 
     @Before
     public void setup() throws Exception {
@@ -180,6 +183,11 @@ public class StreamReceiverHandlerTest {
             public long getContentLengthLong() {
                 isGetContentLengthLongCalled = true;
                 return 0;
+            }
+
+            @Override
+            public String getCharacterEncoding() {
+                return requestCharacterEncoding;
             }
         };
     }
@@ -289,6 +297,27 @@ public class StreamReceiverHandlerTest {
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
         Assert.assertTrue(isGetContentLengthLongCalled);
+    }
+
+    @Test
+    public void createServletFileUpload_useUTF8HeaderCharacterEncodingWhenRequestCharEncodingIsNotSet() {
+        JakartaServletFileUpload servletFileUpload = handler
+                .createServletFileUpload(request);
+        Assert.assertNotNull(servletFileUpload);
+        Assert.assertEquals(
+                "Header encoding should be UTF-8 when request character encoding is null",
+                StandardCharsets.UTF_8, servletFileUpload.getHeaderCharset());
+    }
+
+    @Test
+    public void createServletFileUpload_dontSetHeaderCharEncodingWhenRequestCharEncodingIsSet() {
+        requestCharacterEncoding = "ASCII";
+        JakartaServletFileUpload servletFileUpload = handler
+                .createServletFileUpload(request);
+        Assert.assertNotNull(servletFileUpload);
+        Assert.assertNull(
+                "Header encoding should not be set by Flow when request character encoding is set",
+                servletFileUpload.getHeaderCharset());
     }
 
     @Test

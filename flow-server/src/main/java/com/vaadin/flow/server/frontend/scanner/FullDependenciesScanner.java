@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -89,9 +89,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      * @param featureFlags
      *            available feature flags and their status
+     * @param reactEnabled
+     *            true if react classes are enabled
      */
-    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
-        this(finder, AnnotationReader::getAnnotationsFor, featureFlags);
+    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags,
+            boolean reactEnabled) {
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags,
+                reactEnabled);
     }
 
     /**
@@ -104,10 +108,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a strategy to discover class annotations
      * @param featureFlags
      *            available feature flags and their status
+     * @param reactEnabled
+     *            true if react classes are enabled
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
-            FeatureFlags featureFlags) {
+            FeatureFlags featureFlags, boolean reactEnabled) {
         super(finder, featureFlags);
 
         long start = System.currentTimeMillis();
@@ -143,6 +149,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         collectScripts(modulesSet, modulesSetDevelopment, JsModule.class);
         collectScripts(scriptsSet, scriptsSetDevelopment, JavaScript.class);
         cssData = discoverCss();
+
+        if (!reactEnabled) {
+            modulesSet.removeIf(
+                    module -> module.contains("ReactRouterOutletElement.tsx"));
+        }
 
         modules = new ArrayList<>(modulesSet);
         modulesDevelopment = new ArrayList<>(modulesSetDevelopment);
@@ -302,7 +313,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
 
-            annotatedClasses.stream().filter(c -> !isExperimental(c.getName()))
+            annotatedClasses.stream()
+                    .filter(c -> !isDisabledExperimentalClass(c.getName()))
                     .forEach(clazz -> annotationFinder
                             .apply(clazz, loadedAnnotation).forEach(ann -> {
                                 String value = getAnnotationValueAsString(ann,
@@ -496,7 +508,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             if (annotatedClasses.isEmpty()) {
                 return new PwaConfiguration();
             } else if (annotatedClasses.size() != 1) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " Found " + annotatedClasses.size()
+                        + " implementations: " + annotatedClasses);
             }
 
             Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
@@ -504,7 +518,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
                     .map(Class::getName).collect(Collectors.toList())
                     .contains(AppShellConfigurator.class.getName())) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " " + hopefullyAppShellClass.getName()
+                        + " does not implement "
+                        + AppShellConfigurator.class.getSimpleName());
             }
 
             Annotation pwa = annotationFinder

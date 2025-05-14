@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -71,7 +71,7 @@ public class ApplicationConnection {
         rootNode.setDomNode(body);
         Binder.bind(rootNode, body);
 
-        Console.log("Starting application "
+        Console.debug("Starting application "
                 + applicationConfiguration.getApplicationId());
 
         String appRootPanelName = applicationConfiguration.getApplicationId();
@@ -88,7 +88,7 @@ public class ApplicationConnection {
                     .getServletVersion();
             publishDevelopmentModeJavascriptMethods(appRootPanelName,
                     servletVersion);
-            Console.log(
+            Console.debug(
                     "Vaadin application servlet version: " + servletVersion);
         }
 
@@ -236,6 +236,15 @@ public class ApplicationConnection {
                         .getValueOrDefault(null);
     }
 
+    private boolean isHiddenByServer(int id) {
+        StateNode node = registry.getStateTree().getNode(id);
+        boolean visible = node == null ? true
+                : node.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.VISIBLE)
+                        .getValueOrDefault(true);
+        return !visible;
+    }
+
     public static final class Styles extends JavaScriptObject {
         protected Styles() {
 
@@ -307,6 +316,7 @@ public class ApplicationConnection {
             return {
                 element: ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId),
                 javaClass: ap.@ApplicationConnection::getJavaClass(*)(nodeId),
+                hiddenByServer: ap.@ApplicationConnection::isHiddenByServer(*)(nodeId),
                 styles: ap.@ApplicationConnection::getElementStyleProperties(*)(nodeId)
             };
         });

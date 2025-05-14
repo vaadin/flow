@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,9 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 /**
  * Component representing a <code>&lt;object&gt;</code> element.
@@ -102,7 +104,9 @@ public class HtmlObject extends HtmlContainer implements
      *            the resource value, not null
      * @param type
      *            a type attribute value
+     * @deprecated use {@link #HtmlObject(DownloadHandler,String)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, String type) {
         setData(data);
         setType(type);
@@ -123,12 +127,95 @@ public class HtmlObject extends HtmlContainer implements
      *            a type attribute value
      * @param params
      *            parameter components
+     * @deprecated use {@link #HtmlObject(DownloadHandler,String, Param...)}
+     *             instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, String type,
             Param... params) {
         setData(data);
         setType(type);
         add(params);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with given
+     * {@link DownloadHandler} callback for providing an object data and type
+     * value.
+     *
+     * @see #setData(DownloadHandler)
+     * @see #setType(String)
+     *
+     * @param data
+     *            the callback for providing resource data, not null
+     * @param type
+     *            a type attribute value
+     */
+    public HtmlObject(DownloadHandler data, String type) {
+        setData(data);
+        setType(type);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with given data
+     * resource, type value and "param" components.
+     *
+     * @see #setData(String)
+     * @see #setType(String)
+     * @see #add(Component...)
+     *
+     *
+     * @param data
+     *            a data attribute value
+     * @param type
+     *            a type attribute value
+     * @param params
+     *            parameter components
+     */
+    public HtmlObject(DownloadHandler data, String type, Param... params) {
+        setData(new StreamResourceRegistry.ElementStreamResource(data,
+                this.getElement()));
+        setType(type);
+        add(params);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with given data
+     * resource, type value and "param" components.
+     *
+     * @see #setData(String)
+     * @see #setType(String)
+     * @see #add(Component...)
+     *
+     *
+     * @param data
+     *            a handler that defines the data to be set to this object
+     *            component
+     * @param params
+     *            parameter components
+     */
+    public HtmlObject(DownloadHandler data, Param... params) {
+        setData(new StreamResourceRegistry.ElementStreamResource(data,
+                this.getElement()));
+        add(params);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with given data
+     * resource, type value and "param" components.
+     *
+     * @see #setData(String)
+     * @see #setType(String)
+     * @see #add(Component...)
+     *
+     *
+     * @param data
+     *            a handler that defines the data to be set to this object
+     *            component
+     */
+    public HtmlObject(DownloadHandler data) {
+        setData(new StreamResourceRegistry.ElementStreamResource(data,
+                this.getElement()));
     }
 
     /**
@@ -157,7 +244,9 @@ public class HtmlObject extends HtmlContainer implements
      *
      * @param data
      *            the resource value, not {@code null}
+     * @deprecated use {@link #HtmlObject(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data) {
         setData(data);
     }
@@ -173,7 +262,9 @@ public class HtmlObject extends HtmlContainer implements
      *            the resource value, not {@code null}
      * @param params
      *            parameter components
+     * @deprecated use {@link #HtmlObject(DownloadHandler,Param...)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, Param... params) {
         setData(data);
         add(params);
@@ -194,9 +285,24 @@ public class HtmlObject extends HtmlContainer implements
      *
      * @param data
      *            a "data" attribute value,, not {@code null}
+     * @deprecated use {@link #setData(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setData(AbstractStreamResource data) {
         getElement().setAttribute("data", data);
+    }
+
+    /**
+     * Sets the URL for {@link DownloadHandler} callback as "data" attribute
+     * value .
+     *
+     * @param data
+     *            a "data" attribute value,, not {@code null}
+     */
+    public void setData(DownloadHandler data) {
+        getElement().setAttribute("data",
+                new StreamResourceRegistry.ElementStreamResource(data,
+                        this.getElement()));
     }
 
     /**
@@ -205,7 +311,7 @@ public class HtmlObject extends HtmlContainer implements
      * @return the "data" attribute value
      *
      * @see #setData(String)
-     * @see #setData(AbstractStreamResource)
+     * @see #setData(DownloadHandler)
      */
     public String getData() {
         return get(dataDescriptor);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 
 import elemental.json.JsonValue;
@@ -37,12 +41,17 @@ public class DefaultRpcDecoder implements RpcDecoder {
 
     @Override
     public boolean isApplicable(JsonValue value, Class<?> type) {
-        return JsonCodec.canEncodeWithoutTypeInfo(type);
+        return JsonCodec.canEncodeWithoutTypeInfo(type)
+                || JacksonCodec.canEncodeWithoutTypeInfo(type);
     }
 
     @Override
     public <T> T decode(JsonValue value, Class<T> type)
             throws RpcDecodeException {
+        if (type.isAssignableFrom(JsonNode.class)) {
+            return JacksonCodec.decodeAs(JacksonUtils.mapElemental(value),
+                    type);
+        }
         return JsonCodec.decodeAs(value, type);
     }
 

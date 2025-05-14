@@ -2,6 +2,7 @@ package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,51 +124,65 @@ public class DAUUtilsTest {
 
     @Test
     public void jsonEnforcementResponse_noDauCustomizer_defaultMessages() {
-        VaadinService service = VaadinServiceDauTest.vaadinServiceWithDau(null);
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getService()).thenReturn(service);
-        String response = DAUUtils.jsonEnforcementResponse(request,
-                new DauEnforcementException(new EnforcementException("STOP")));
+        try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
+                .mockStatic(DauIntegration.class)) {
+            VaadinService service = VaadinServiceDauTest
+                    .vaadinServiceWithDau(null);
+            VaadinRequest request = Mockito.mock(VaadinRequest.class);
+            Mockito.when(request.getService()).thenReturn(service);
+            String response = DAUUtils.jsonEnforcementResponse(request,
+                    new DauEnforcementException(
+                            new EnforcementException("STOP")));
 
-        // remove JSON wrap
-        response = response.replace("for(;;);[", "").replaceFirst("]$", "");
-        JsonObject json = Json.parse(response).getObject("meta")
-                .getObject("appError");
+            // remove JSON wrap
+            response = response.replace("for(;;);[", "").replaceFirst("]$", "");
+            JsonObject json = Json.parse(response).getObject("meta")
+                    .getObject("appError");
 
-        EnforcementNotificationMessages expectedMessages = EnforcementNotificationMessages.DEFAULT;
-        assertJsonErrorProperty("caption", expectedMessages.caption(), json);
-        assertJsonErrorProperty("message", expectedMessages.message(), json);
-        assertJsonErrorProperty("details", expectedMessages.details(), json);
-        assertJsonErrorProperty("url", expectedMessages.url(), json);
+            EnforcementNotificationMessages expectedMessages = EnforcementNotificationMessages.DEFAULT;
+            assertJsonErrorProperty("caption", expectedMessages.caption(),
+                    json);
+            assertJsonErrorProperty("message", expectedMessages.message(),
+                    json);
+            assertJsonErrorProperty("details", expectedMessages.details(),
+                    json);
+            assertJsonErrorProperty("url", expectedMessages.url(), json);
+        }
     }
 
     @Test
     public void jsonEnforcementResponse_customMessages() {
-        EnforcementNotificationMessages expectedMessages = new EnforcementNotificationMessages(
-                "caption", "message", "details", "url");
-        DAUCustomizer customizer = new DAUCustomizer() {
-            @Override
-            public EnforcementNotificationMessages getEnforcementNotificationMessages(
-                    SystemMessagesInfo systemMessagesInfo) {
-                return expectedMessages;
-            }
-        };
-        VaadinService service = VaadinServiceDauTest
-                .vaadinServiceWithDau(customizer);
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getService()).thenReturn(service);
+        try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
+                .mockStatic(DauIntegration.class)) {
+            EnforcementNotificationMessages expectedMessages = new EnforcementNotificationMessages(
+                    "caption", "message", "details", "url");
+            DAUCustomizer customizer = new DAUCustomizer() {
+                @Override
+                public EnforcementNotificationMessages getEnforcementNotificationMessages(
+                        SystemMessagesInfo systemMessagesInfo) {
+                    return expectedMessages;
+                }
+            };
+            VaadinService service = VaadinServiceDauTest
+                    .vaadinServiceWithDau(customizer);
+            VaadinRequest request = Mockito.mock(VaadinRequest.class);
+            Mockito.when(request.getService()).thenReturn(service);
 
-        String response = DAUUtils.jsonEnforcementResponse(request,
-                new DauEnforcementException(new EnforcementException("STOP")));
-        response = response.replace("for(;;);[", "").replaceFirst("]$", "");
-        JsonObject json = Json.parse(response).getObject("meta")
-                .getObject("appError");
+            String response = DAUUtils.jsonEnforcementResponse(request,
+                    new DauEnforcementException(
+                            new EnforcementException("STOP")));
+            response = response.replace("for(;;);[", "").replaceFirst("]$", "");
+            JsonObject json = Json.parse(response).getObject("meta")
+                    .getObject("appError");
 
-        assertJsonErrorProperty("caption", expectedMessages.caption(), json);
-        assertJsonErrorProperty("message", expectedMessages.message(), json);
-        assertJsonErrorProperty("details", expectedMessages.details(), json);
-        assertJsonErrorProperty("url", expectedMessages.url(), json);
-
+            assertJsonErrorProperty("caption", expectedMessages.caption(),
+                    json);
+            assertJsonErrorProperty("message", expectedMessages.message(),
+                    json);
+            assertJsonErrorProperty("details", expectedMessages.details(),
+                    json);
+            assertJsonErrorProperty("url", expectedMessages.url(), json);
+        }
     }
 
     @Test

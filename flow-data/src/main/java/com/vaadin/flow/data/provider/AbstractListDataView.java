@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -110,11 +110,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addFilter(SerializablePredicate<T> filter) {
         Objects.requireNonNull(filter, "Filter to add cannot be null");
-        Optional<SerializablePredicate<T>> originalFilter = DataViewUtils
-                .getComponentFilter(component);
-        SerializablePredicate<T> newFilter = originalFilter.isPresent()
-                ? item -> originalFilter.get().test(item) && filter.test(item)
-                : filter;
+        SerializablePredicate<T> newFilter = DataViewUtils
+                .<T> getComponentFilter(component)
+                .map(originalFilter -> originalFilter.and(filter))
+                .orElse(filter);
         return setFilter(newFilter);
     }
 
@@ -130,6 +129,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         fireFilteringOrSortingChangeEvent(filter,
                 (SerializableComparator<T>) DataViewUtils
                         .getComponentSortComparator(component).orElse(null));
+        refreshAll();
         return this;
     }
 
@@ -142,6 +142,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 (SerializablePredicate<T>) DataViewUtils
                         .getComponentFilter(component).orElse(null),
                 sortComparator);
+        refreshAll();
         return this;
     }
 

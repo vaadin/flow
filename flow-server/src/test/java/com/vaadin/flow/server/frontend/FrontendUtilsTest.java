@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -143,7 +143,7 @@ public class FrontendUtilsTest {
                 import MainLayout from 'Frontend/views/MainLayout';
                 import ContactsView from 'Frontend/views/ContactsView';
                 import AboutView from 'Frontend/views/AboutView';
-                import { RouteObject } from 'react-router-dom';
+                import { RouteObject } from 'react-router';
 
                 export const routes: RouteObject[] = [
                       {
@@ -163,7 +163,7 @@ public class FrontendUtilsTest {
                 import MainLayout from 'Frontend/views/MainLayout';
                 import ContactsView from 'Frontend/views/ContactsView';
                 import AboutView from 'Frontend/views/AboutView';
-                import { RouteObject } from 'react-router-dom';
+                import { RouteObject } from 'react-router';
 
                 export const routes: RouteObject[] = [
                       {
@@ -256,8 +256,8 @@ public class FrontendUtilsTest {
         Assert.assertEquals("8.0.0",
                 FrontendUtils.parseVersionString("v8.0.0"));
         Assert.assertEquals("8.0.0", FrontendUtils.parseVersionString("8.0.0"));
-        Assert.assertEquals("6.9.0", FrontendUtils.parseVersionString(
-                "Aktive Codepage: 1252\n" + "6.9.0\n" + ""));
+        Assert.assertEquals("6.9.0", FrontendUtils
+                .parseVersionString("Aktive Codepage: 1252\n6.9.0\n"));
     }
 
     @Test(expected = IOException.class)
@@ -336,10 +336,14 @@ public class FrontendUtilsTest {
                 "--config", "./webpack.config.js", "--port 57799",
                 "--env watchDogPort=57798", "-d", "--inline=false");
         String wrappedCommand = FrontendUtils.commandToString(".", command);
-        Assert.assertEquals("\n" + "./node/node \\ \n"
-                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
-                + "    --config ./webpack.config.js --port 57799 \\ \n"
-                + "    --env watchDogPort=57798 -d --inline=false \n",
+        Assert.assertEquals(
+                """
+
+                        ./node/node \\\s
+                            ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\\s
+                            --config ./webpack.config.js --port 57799 \\\s
+                            --env watchDogPort=57798 -d --inline=false\s
+                        """,
                 wrappedCommand);
     }
 
@@ -349,8 +353,12 @@ public class FrontendUtilsTest {
                 "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
         String wrappedCommand = FrontendUtils
                 .commandToString("/somewhere/not/disclosable", command);
-        Assert.assertEquals("\n" + "./node/node \\ \n"
-                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
+        Assert.assertEquals(
+                """
+
+                        ./node/node \\\s
+                            ./node_modules/webpack-dev-server/bin/webpack-dev-server.js\s
+                        """,
                 wrappedCommand);
     }
 
@@ -435,7 +443,8 @@ public class FrontendUtilsTest {
         NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
-            public void execute() throws ExecutionFailedException {
+            public void execute() {
+                // no need to execute logic for this test
             }
 
             @Override

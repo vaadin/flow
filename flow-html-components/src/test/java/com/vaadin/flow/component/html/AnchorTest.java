@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,13 +17,14 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.AbstractStreamResource;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 public class AnchorTest extends ComponentTest {
 
@@ -253,6 +254,45 @@ public class AnchorTest extends ComponentTest {
 
         };
         Anchor anchor = new Anchor(resource, "bar");
+        String href = anchor.getHref();
+        anchor.setEnabled(false);
+
+        anchor.setHref(new AbstractStreamResource() {
+
+            @Override
+            public String getName() {
+                return "baz";
+            }
+        });
+
+        anchor.setEnabled(true);
+
+        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assert.assertNotEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setDownload_hrefIsRemoved_enableAnchor_hrefIsRestored() {
+        mockUI();
+        DownloadHandler downloadHandler = event -> event.getWriter()
+                .write("foo");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+        String href = anchor.getHref();
+        anchor.setEnabled(false);
+
+        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+        Assert.assertEquals(href, anchor.getHref());
+
+        anchor.setEnabled(true);
+        Assert.assertEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setDownloadWhenDisabled_hrefIsPreserved() {
+        mockUI();
+        DownloadHandler downloadHandler = event -> event.getWriter()
+                .write("foo");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
         String href = anchor.getHref();
         anchor.setEnabled(false);
 

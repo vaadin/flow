@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.spring.instantiator;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +22,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import org.atmosphere.cpr.AtmosphereFramework;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +34,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -55,6 +56,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
@@ -70,6 +72,16 @@ public class SpringInstantiatorTest {
     @Configuration
     @ComponentScan
     public static class TestConfiguration {
+
+        // Expose at least one bean definition so that the configuration class
+        // get proxied
+        @Bean
+        Dummy dummy() {
+            return new Dummy();
+        }
+
+        static class Dummy {
+        }
 
     }
 
@@ -205,6 +217,7 @@ public class SpringInstantiatorTest {
                 return super.createDeploymentConfiguration(initParameters);
             }
         };
+        String servletName = SpringServlet.class.getSimpleName();
 
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
@@ -236,12 +249,19 @@ public class SpringInstantiatorTest {
                 .thenReturn(lookup);
 
         Mockito.when(config.getServletContext()).thenReturn(servletContext);
-
+        Mockito.when(config.getServletName()).thenReturn(servletName);
         Mockito.when(config.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getServerInfo()).thenReturn("MockServer");
+        // Prevent Atmosphere initialization by providing a mock framework
+        // instance. Push is not required by calling tests, and initialization
+        // would anyway fail because of mocking Servlet environment
+        Mockito.when(servletContext.getAttribute(
+                JSR356WebsocketInitializer.getAttributeName(servletName)))
+                .thenReturn(Mockito.mock(AtmosphereFramework.class));
         servlet.init(config);
         return servlet.getService();
     }

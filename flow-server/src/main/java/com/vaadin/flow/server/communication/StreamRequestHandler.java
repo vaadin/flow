@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,26 +18,34 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.streams.UploadHandler;
 
-import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
-import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
-import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
 
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances
@@ -96,7 +104,7 @@ public class StreamRequestHandler implements RequestHandler {
         try {
             abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
                     .flatMap(session.getResourceRegistry()::getResource);
-            if (!abstractStreamResource.isPresent()) {
+            if (abstractStreamResource.isEmpty()) {
                 response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                         "Resource is not found for path=" + pathInfo);
                 return true;
@@ -105,22 +113,89 @@ public class StreamRequestHandler implements RequestHandler {
             session.unlock();
         }
 
-        if (abstractStreamResource.isPresent()) {
-            AbstractStreamResource resource = abstractStreamResource.get();
-            if (resource instanceof StreamResource) {
-                resourceHandler.handleRequest(session, request, response,
-                        (StreamResource) resource);
-            } else if (resource instanceof StreamReceiver) {
-                StreamReceiver streamReceiver = (StreamReceiver) resource;
-                String[] parts = parsePath(pathInfo);
+        AbstractStreamResource resource = abstractStreamResource.get();
+        if (resource instanceof StreamResourceRegistry.ElementStreamResource elementRequest) {
+            callElementResourceHandler(session, request, response,
+                    elementRequest, pathInfo);
+        } else if (resource instanceof StreamResource) {
+            resourceHandler.handleRequest(session, request, response,
+                    (StreamResource) resource);
+        } else if (resource instanceof StreamReceiver streamReceiver) {
+            PathData parts = parsePath(pathInfo);
 
-                receiverHandler.handleRequest(session, request, response,
-                        streamReceiver, parts[0], parts[1]);
-            } else {
-                getLogger().warn("Received unknown stream resource.");
-            }
+            receiverHandler.handleRequest(session, request, response,
+                    streamReceiver, parts.UIid, parts.securityKey);
+        } else {
+            getLogger().warn("Received unknown stream resource.");
         }
         return true;
+    }
+
+    private void callElementResourceHandler(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            StreamResourceRegistry.ElementStreamResource elementRequest,
+            String pathInfo) throws IOException {
+        Element owner = elementRequest.getOwner();
+        StateNode node = owner.getNode();
+
+        if ((node.isInert()
+                && !elementRequest.getElementRequestHandler().allowInert())
+                || !node.isAttached() || !node.isEnabled()) {
+            response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                    "Resource not available");
+            return;
+        }
+
+        if (elementRequest
+                .getElementRequestHandler() instanceof UploadHandler) {
+            // Validate upload security key. Else respond with
+            // FORBIDDEN.
+            PathData parts = parsePath(pathInfo);
+            session.lock();
+            try {
+                String secKey = elementRequest.getId();
+                if (secKey == null || !MessageDigest.isEqual(
+                        secKey.getBytes(StandardCharsets.UTF_8),
+                        parts.securityKey.getBytes(StandardCharsets.UTF_8))) {
+                    LoggerFactory.getLogger(StreamRequestHandler.class).warn(
+                            "Received incoming stream with faulty security key.");
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return;
+                }
+
+                // Set current UI to upload url ui.
+                UI ui = session.getUIById(Integer.parseInt(parts.UIid));
+                UI.setCurrent(ui);
+
+                if (node == null) {
+                    session.getErrorHandler()
+                            .error(new ErrorEvent(new UploadException(
+                                    "File upload ignored because the node for the upload owner component was not found")));
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return;
+                }
+                if (!node.isAttached()) {
+                    session.getErrorHandler()
+                            .error(new ErrorEvent(new UploadException(
+                                    "Warning: file upload ignored for "
+                                            + node.getId()
+                                            + " because the component was disabled")));
+                    response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                            "Resource not available");
+                    return;
+                }
+            } finally {
+                session.unlock();
+            }
+        }
+
+        elementRequest.getElementRequestHandler().handleRequest(request,
+                response, session, elementRequest.getOwner());
+    }
+
+    private record PathData(String UIid, String securityKey, String fileName) {
     }
 
     /**
@@ -130,14 +205,18 @@ public class StreamRequestHandler implements RequestHandler {
      *
      * @see #generateURI
      */
-    private String[] parsePath(String pathInfo) {
+    private PathData parsePath(String pathInfo) {
         // strip away part until the data we are interested starts
         int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
                 + DYN_RES_PREFIX.length();
 
         String uppUri = pathInfo.substring(startOfData);
         // [0] UIid, [1] security key, [2] name
-        return uppUri.split("/", 3);
+        String[] split = uppUri.split("/", 3);
+        if (split.length == 3) {
+            return new PathData(split[0], split[1], split[2]);
+        }
+        return new PathData(split[0], split[1], "");
     }
 
     /**
@@ -151,12 +230,8 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
-        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
-
-        builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
-        builder.append(id).append(PATH_SEPARATOR);
-        builder.append(UrlUtil.encodeURIComponent(name));
-        return builder.toString();
+        return DYN_RES_PREFIX + UI.getCurrent().getUIId() + PATH_SEPARATOR + id
+                + PATH_SEPARATOR + UrlUtil.encodeURIComponent(name);
     }
 
     private static Optional<URI> getPathUri(String path) {
@@ -186,7 +261,7 @@ public class StreamRequestHandler implements RequestHandler {
      * @return maximum request size for upload
      */
     protected long getRequestSizeMax() {
-        return DEFAULT_SIZE_MAX;
+        return DEFAULT_REQUEST_SIZE_MAX;
     }
 
     /**

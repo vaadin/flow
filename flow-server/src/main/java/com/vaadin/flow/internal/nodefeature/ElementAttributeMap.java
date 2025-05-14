@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -33,9 +37,6 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Map for element attribute values.
@@ -112,13 +113,13 @@ public class ElementAttributeMap extends NodeMap {
             return (String) value;
         } else {
             // If the value is not a string then current impl only uses
-            // JsonObject
-            assert value instanceof JsonObject;
-            JsonObject object = (JsonObject) value;
+            // JsonNode
+            assert value instanceof JsonNode;
+            JsonNode node = (JsonNode) value;
             // The only object which may be set by the current imlp contains
             // "uri" attribute, only this situation is expected here.
-            assert object.hasKey(NodeProperties.URI_ATTRIBUTE);
-            return object.getString(NodeProperties.URI_ATTRIBUTE);
+            assert node.has(NodeProperties.URI_ATTRIBUTE);
+            return node.get(NodeProperties.URI_ATTRIBUTE).textValue();
         }
     }
 
@@ -158,9 +159,9 @@ public class ElementAttributeMap extends NodeMap {
         } else {
             targetUri = StreamResourceRegistry.getURI(resource);
         }
-        JsonObject object = Json.createObject();
+        ObjectNode object = JacksonUtils.createObjectNode();
         object.put(NodeProperties.URI_ATTRIBUTE, targetUri.toASCIIString());
-        // don't use sring as a value, but wrap it into an object to let know
+        // don't use string as a value, but wrap it into an object to let know
         // the client side about specific nature of the value
         doSet(attribute, object);
     }

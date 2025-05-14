@@ -1,15 +1,8 @@
 {
-  "name": "flow-vaadin-router-dependencies",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "Apache-2.0",
+  "private": true,
+  "description": "A list of Flow dependencies when using Vaadin router for Web Components",
   "dependencies": {
-    "@vaadin/router": "1.7.5"
+    "@vaadin/router": "2.0.0"
   },
   "devDependencies": {
   }

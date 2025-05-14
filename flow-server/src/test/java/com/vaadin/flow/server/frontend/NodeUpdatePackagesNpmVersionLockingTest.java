@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,16 +31,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 
@@ -86,44 +84,42 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     public void shouldLockPinnedVersion_whenExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
-        JsonObject packageJson = packageUpdater.getPackageJson();
-        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
-        Assert.assertNull(packageJson.getObject(OVERRIDES));
+        Assert.assertNull(packageJson.get(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
-                packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).textValue());
     }
 
     @Test
     public void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
-        JsonObject packageJson = packageUpdater.getPackageJson();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
 
-        Assert.assertNull(packageJson.getObject(OVERRIDES));
-        Assert.assertNull(
-                packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
+        Assert.assertNull(packageJson.get(OVERRIDES));
+        Assert.assertNull(packageJson.get(DEPENDENCIES).get(TEST_DEPENDENCY));
 
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
-        Assert.assertNull(
-                packageJson.getObject(OVERRIDES).get(TEST_DEPENDENCY));
+        Assert.assertNull(packageJson.get(OVERRIDES).get(TEST_DEPENDENCY));
     }
 
     @Test
     public void shouldNotUpdatesOverrides_whenHasUserModification()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
-        JsonObject packageJson = packageUpdater.getPackageJson();
-        JsonObject overridesSection = Json.createObject();
-        packageJson.put(OVERRIDES, overridesSection);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        packageJson.set(OVERRIDES, overridesSection);
 
-        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
@@ -131,7 +127,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
-                packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).textValue());
     }
 
     @Test
@@ -142,21 +138,21 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 .thenReturn(null);
 
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
-        JsonObject packageJson = packageUpdater.getPackageJson();
-        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
-        Assert.assertNull(packageJson.getObject(OVERRIDES));
+        Assert.assertNull(packageJson.get(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
-        Assert.assertTrue(
-                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
+        Assert.assertTrue(packageUpdater.versionsJson.toString()
+                .contains(TEST_DEPENDENCY));
 
-        packageJson.getObject(DEPENDENCIES).remove(TEST_DEPENDENCY);
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).remove(TEST_DEPENDENCY);
 
         packageUpdater.versionsJson = null;
         packageUpdater.generateVersionsJson(packageJson);
-        Assert.assertFalse(
-                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
+        Assert.assertFalse(packageUpdater.versionsJson.toString()
+                .contains(TEST_DEPENDENCY));
 
     }
 

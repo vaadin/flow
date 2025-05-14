@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,12 @@
 package com.vaadin.flow.server.auth;
 
 import java.io.Serializable;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.function.Predicate;
+
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
  * Interface for controlling access to routes in the application's menu
@@ -64,5 +70,52 @@ public interface MenuAccessControl extends Serializable {
      * @return enum of type {@link PopulateClientMenu}
      */
     PopulateClientMenu getPopulateClientSideMenu();
+
+    /**
+     * Determines if current user has permissions to access the given view.
+     * <p>
+     * </p>
+     * It checks view against authentication state: - If view does not require
+     * login -> allow - If not authenticated and login required -> deny. - If
+     * user doesn't have correct roles -> deny.
+     *
+     * @param viewInfo
+     *            view info
+     * @return true if the view is accessible, false if something is not
+     *         authenticated.
+     */
+    default boolean canAccessView(AvailableViewInfo viewInfo) {
+        VaadinRequest request = VaadinRequest.getCurrent();
+        if (request == null) {
+            return !viewInfo.loginRequired();
+        }
+        return canAccessView(viewInfo, request.getUserPrincipal(),
+                request::isUserInRole);
+    }
+
+    /**
+     * Check view against authentication state.
+     * <p>
+     * If not authenticated and login required -> invalid. If user doesn't have
+     * correct roles -> invalid.
+     *
+     * @param viewInfo
+     *            view info
+     * @param principal
+     *            current user, can be {@literal null}
+     * @param roleChecker
+     *            function to authenticate if user has role
+     * @return true if accessible, false if something is not authenticated
+     */
+    static boolean canAccessView(AvailableViewInfo viewInfo,
+            Principal principal, Predicate<String> roleChecker) {
+        boolean isUserAuthenticated = principal != null;
+        if (viewInfo.loginRequired() && !isUserAuthenticated) {
+            return false;
+        }
+        String[] roles = viewInfo.rolesAllowed();
+        return roles == null || roles.length == 0
+                || Arrays.stream(roles).anyMatch(roleChecker);
+    }
 
 }

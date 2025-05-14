@@ -1,25 +1,18 @@
 {
-  "name": "flow-default-dependencies",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Artur Signell",
-  "license": "Apache-2.0",
+  "private": true,
+  "description": "A list of default Flow dependencies",
   "dependencies": {
-    "@polymer/polymer": "3.5.1",
+    "@polymer/polymer": "3.5.2",
     "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "3.2.0"
+    "lit": "3.3.0"
   },
   "devDependencies": {
     "async": "3.2.6",
-    "glob": "10.4.5",
-    "typescript": "5.5.4",
-    "workbox-core": "7.1.0",
-    "workbox-precaching": "7.1.0",
+    "glob": "11.0.2",
+    "typescript": "5.8.3",
+    "workbox-core": "7.3.0",
+    "workbox-precaching": "7.3.0",
     "strip-css-comments": "5.0.0"
   }
 }

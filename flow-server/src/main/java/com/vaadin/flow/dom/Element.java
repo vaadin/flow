@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
@@ -68,6 +75,7 @@ public class Element extends Node<Element> {
     static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
 
     private static final String USE_SET_PROPERTY_WITH_JSON_NULL = "setProperty(name, Json.createNull()) must be used to set a property to null";
+    private static final String USE_SET_PROPERTY_WITH_JACKSON_NULL = "setProperty(name, JacksonUtils.nullNode()) must be used to set a property to null";
 
     // Can't set $name as a property, use $replacement instead.
     private static final Map<String, String> illegalPropertyReplacements = new HashMap<>();
@@ -683,6 +691,36 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Sets the given property to the given JSON value.
+     * <p>
+     * Please note that this method does not accept <code>null</code> as a
+     * value, since {@link com.vaadin.flow.internal.JacksonUtils#nullNode()}
+     * should be used instead for JSON values.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    // Distinct name so setProperty("foo", null) is not ambiguous
+    public Element setPropertyJson(String name, BaseJsonNode value) {
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    USE_SET_PROPERTY_WITH_JACKSON_NULL);
+        }
+
+        setRawProperty(name, value);
+        return this;
+    }
+
+    /**
      * Sets the given property to the given bean, converted to a JSON object.
      * <p>
      * Note that properties changed on the server are updated on the client but
@@ -856,6 +894,8 @@ public class Element extends Node<Element> {
             return defaultValue;
         } else if (value instanceof JsonValue) {
             return ((JsonValue) value).toJson();
+        } else if (value instanceof NullNode) {
+            return defaultValue;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
             int intValue = (int) doubleValue;
@@ -954,6 +994,10 @@ public class Element extends Node<Element> {
                     return Double.NaN;
                 }
             }
+        } else if (value instanceof BooleanNode) {
+            return ((BooleanNode) value).booleanValue() ? 1 : 0;
+        } else if (value instanceof JsonNode) {
+            return ((JsonNode) value).asDouble(Double.NaN);
         } else {
             throw new IllegalStateException(
                     "Unsupported property type: " + value.getClass());

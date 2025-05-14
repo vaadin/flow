@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -77,13 +79,14 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import elemental.json.JsonValue;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -131,7 +134,11 @@ public class UIInternals implements Serializable {
              */
             for (Object argument : parameters) {
                 // Throws IAE for unsupported types
-                JsonCodec.encodeWithTypeInfo(argument);
+                if (argument instanceof JsonValue) {
+                    JsonCodec.encodeWithTypeInfo(argument);
+                } else {
+                    JacksonCodec.encodeWithTypeInfo(argument);
+                }
             }
 
             this.expression = expression;
@@ -214,6 +221,8 @@ public class UIInternals implements Serializable {
     private final ConstantPool constantPool = new ConstantPool();
 
     private byte[] lastProcessedMessageHash = null;
+
+    private String lastRequestResponse;
 
     private String contextRootRelativePath;
 
@@ -303,6 +312,25 @@ public class UIInternals implements Serializable {
             byte[] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
         this.lastProcessedMessageHash = lastProcessedMessageHash;
+    }
+
+    /**
+     * Sets the response created for the last UIDL request.
+     *
+     * @param lastRequestResponse
+     *            The request that was sent for the last UIDL request.
+     */
+    public void setLastRequestResponse(String lastRequestResponse) {
+        this.lastRequestResponse = lastRequestResponse;
+    }
+
+    /**
+     * Returns the response created for the last UIDL request.
+     *
+     * @return The request that was sent for the last UIDL request.
+     */
+    public String getLastRequestResponse() {
+        return lastRequestResponse;
     }
 
     /**
@@ -699,18 +727,31 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-        JavaScriptInvocation invocation = new JavaScriptInvocation("""
-                    document.title = $0;
-                    if(window?.Vaadin?.documentTitleSignal) {
-                        window.Vaadin.documentTitleSignal.value = $0;
-                    }
-                """.stripIndent(), title);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(
+                generateTitleScript().stripIndent(), title);
 
         pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
                 getStateTree().getRootNode(), invocation);
         addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
+    }
+
+    private String generateTitleScript() {
+        String setTitleScript = """
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """;
+        if (getSession().getConfiguration().isReactEnabled()) {
+            // For react-router we should wait for navigation to finish
+            // before updating the title.
+            setTitleScript = String.format(
+                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
+                    setTitleScript);
+        }
+        return setTitleScript;
     }
 
     /**
@@ -764,6 +805,19 @@ public class UIInternals implements Serializable {
         boolean result = pendingTitleUpdateCanceler.cancelExecution();
         pendingTitleUpdateCanceler = null;
         return result;
+    }
+
+    /**
+     * Populate the routerTargetChain with RouterLayouts, but only if the target
+     * chain is empty. If the chain contains elements the given list is ignored.
+     *
+     * @param layouts
+     *            stored router target chain to set as last navigated chain
+     */
+    public void setRouterTargetChain(List<RouterLayout> layouts) {
+        if (routerTargetChain.isEmpty()) {
+            routerTargetChain.addAll(layouts);
+        }
     }
 
     /**
@@ -845,7 +899,8 @@ public class UIInternals implements Serializable {
             }
             previous = current;
         }
-        if (getSession().getConfiguration().isReactEnabled()
+        if (getSession().getService().getDeploymentConfiguration()
+                .isReactEnabled()
                 && getRouter().getRegistry()
                         .getNavigationTarget(viewLocation.getPath()).isEmpty()
                 && target instanceof RouterLayout) {
@@ -1073,13 +1128,29 @@ public class UIInternals implements Serializable {
     public void setLastHandledNavigation(Location location) {
         lastHandledNavigation = location;
         if (location != null) {
-            locationForRefresh = location;
+            setLocationForRefresh(location);
         }
+    }
+
+    /**
+     * Store refresh location for refreshCurrentRoute.
+     *
+     * @param location
+     *            current location.
+     */
+    public void setLocationForRefresh(Location location) {
+        locationForRefresh = location;
     }
 
     /**
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
+     * <p>
+     * </p>
+     * If modal components are currently defined for the UI, the whole route
+     * chain will be refreshed regardless the {@code refreshRouteChain}
+     * parameter, because otherwise it would not be possible to preserve the
+     * correct modality cardinality and order.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
@@ -1091,8 +1162,8 @@ public class UIInternals implements Serializable {
                     + "Unable to refresh the current route.");
         } else {
             getRouter().navigate(ui, locationForRefresh,
-                    NavigationTrigger.PROGRAMMATIC, null, true,
-                    refreshRouteChain);
+                    NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, true,
+                    refreshRouteChain || hasModalComponent());
         }
     }
 
@@ -1110,7 +1181,7 @@ public class UIInternals implements Serializable {
      * Clear latest handled navigation location.
      */
     public void clearLastHandledNavigation() {
-        setLastHandledNavigation(null);
+        lastHandledNavigation = null;
     }
 
     /**

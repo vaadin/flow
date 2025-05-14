@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -16,8 +17,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-
-import elemental.json.JsonObject;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
  * Build a <code>NodeExecutor</code> instance.
@@ -58,7 +58,7 @@ public class Options implements Serializable {
 
     private boolean useByteCodeScanner = false;
 
-    private JsonObject tokenFileData;
+    private JsonNode tokenFileData;
 
     private File tokenFile;
 
@@ -83,6 +83,10 @@ public class Options implements Serializable {
     private boolean skipDevBundle = false;
 
     private boolean compressBundle = true;
+
+    private List<String> frontendExtraFileExtensions = null;
+
+    private FrontendDependenciesScanner frontendDependenciesScanner;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -125,11 +129,15 @@ public class Options implements Serializable {
 
     private boolean reactEnable = true;
 
+    private boolean npmExcludeWebComponents = false;
+
     /**
      * Removes generated files from a previous execution that are no more
      * created.
      */
     private boolean cleanOldGeneratedFiles = false;
+
+    private boolean frontendIgnoreVersionChecks = false;
 
     /**
      * Creates a new instance.
@@ -419,7 +427,7 @@ public class Options implements Serializable {
      *            the object to fill with token file data
      * @return the builder, for chaining
      */
-    public Options populateTokenFileData(JsonObject object) {
+    public Options populateTokenFileData(JsonNode object) {
         tokenFileData = object;
         return this;
     }
@@ -564,6 +572,19 @@ public class Options implements Serializable {
      */
     public Options withFrontendHotdeploy(boolean frontendHotdeploy) {
         this.frontendHotdeploy = frontendHotdeploy;
+        return this;
+    }
+
+    /**
+     * Whether to ignore node/npm tool version checks or not. Defaults to
+     * {@code false}.
+     *
+     * @param frontendIgnoreVersionChecks
+     *            {@code true} to ignore node/npm tool version checks
+     */
+    public Options withFrontendIgnoreVersionChecks(
+            boolean frontendIgnoreVersionChecks) {
+        this.frontendIgnoreVersionChecks = frontendIgnoreVersionChecks;
         return this;
     }
 
@@ -798,7 +819,7 @@ public class Options implements Serializable {
         return useByteCodeScanner;
     }
 
-    public JsonObject getTokenFileData() {
+    public JsonNode getTokenFileData() {
         return tokenFileData;
     }
 
@@ -966,5 +987,88 @@ public class Options implements Serializable {
      */
     public boolean isCleanOldGeneratedFiles() {
         return cleanOldGeneratedFiles;
+    }
+
+    /**
+     * Sets the extra file extensions used in the project.
+     *
+     * @param frontendExtraFileExtensions
+     *            the file extensions to add for the project
+     * @return this builder
+     */
+    public Options withFrontendExtraFileExtensions(
+            List<String> frontendExtraFileExtensions) {
+        this.frontendExtraFileExtensions = frontendExtraFileExtensions;
+        return this;
+    }
+
+    /**
+     * Gets the project file extensions.
+     *
+     * @return the project file extensions
+     */
+    public List<String> getFrontendExtraFileExtensions() {
+        return frontendExtraFileExtensions;
+    }
+
+    /**
+     * Sets whether to exclude web component npm packages in packages.json.
+     *
+     * @return this builder
+     */
+    public boolean isNpmExcludeWebComponents() {
+        return npmExcludeWebComponents;
+    }
+
+    /**
+     * Sets whether to exclude web component npm packages in packages.json.
+     *
+     * @param exclude
+     *            whether to exclude web component npm packages
+     * @return this builder
+     */
+    public Options withNpmExcludeWebComponents(boolean exclude) {
+        this.npmExcludeWebComponents = exclude;
+        return this;
+    }
+
+    /**
+     * Whether to ignore node/npm tool version checks or not.
+     *
+     * @return {@code true} to ignore node/npm tool version checks
+     */
+    public boolean isFrontendIgnoreVersionChecks() {
+        return frontendIgnoreVersionChecks;
+    }
+
+    /**
+     * Sets the frontend dependencies scanner to use.
+     *
+     * @param frontendDependenciesScanner
+     *            frontend dependencies scanner
+     * @return this builder
+     */
+    public Options withFrontendDependenciesScanner(
+            FrontendDependenciesScanner frontendDependenciesScanner) {
+        this.frontendDependenciesScanner = frontendDependenciesScanner;
+        return this;
+    }
+
+    /**
+     * Gets the frontend dependencies scanner to use. If not is not pre-set,
+     * this initializes a new one based on the Options set.
+     *
+     * @return frontend dependencies scanner
+     */
+    public FrontendDependenciesScanner getFrontendDependenciesScanner() {
+        if (frontendDependenciesScanner == null) {
+            boolean reactEnabled = isReactEnabled() && FrontendUtils
+                    .isReactRouterRequired(getFrontendDirectory());
+            frontendDependenciesScanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                    .createScanner(!isUseByteCodeScanner(), getClassFinder(),
+                            isGenerateEmbeddableWebComponents(),
+                            getFeatureFlags(), reactEnabled);
+        }
+        return frontendDependenciesScanner;
     }
 }

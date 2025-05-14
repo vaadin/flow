@@ -6,7 +6,7 @@
     <parent>
         <artifactId>vaadin-spring-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>test-spring-boot-multimodule-reload-time</artifactId>
     <name>The main module for a Spring boot multimodule reload time project

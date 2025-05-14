@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,8 @@ package com.vaadin.base.devserver;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.methvin.watcher.DirectoryWatcher;
 import org.slf4j.Logger;
@@ -31,6 +33,10 @@ import com.vaadin.flow.function.SerializableConsumer;
 public class FileWatcher {
 
     private DirectoryWatcher watcher;
+
+    private static final ExecutorService executorService = Executors
+            .newCachedThreadPool(
+                    new NamedDaemonThreadFactory("vaadin-file-watcher"));
 
     /**
      * Creates an instance of the file watcher for the given directory.
@@ -62,7 +68,7 @@ public class FileWatcher {
      * Starts the file watching.
      */
     public void start() {
-        watcher.watchAsync().exceptionally((e) -> {
+        watcher.watchAsync(executorService).exceptionally((e) -> {
             getLogger().error("Error starting file watcher", e);
             return null;
         });

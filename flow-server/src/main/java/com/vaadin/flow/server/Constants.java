@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -70,19 +70,24 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
-     * Name of the <code>npm</code> version locking ile.
+     * Name of the <code>npm</code> version locking file.
      */
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
 
     /**
-     * Name of the <code>pnpm</code> version locking ile.
+     * Name of the <code>pnpm</code> version locking file.
      */
     public static final String PACKAGE_LOCK_YAML = "pnpm-lock.yaml";
 
     /**
-     * Name of the <code>bun</code> version locking ile.
+     * Name of the <code>bun</code> version locking file.
      */
     public static final String PACKAGE_LOCK_BUN = "bun.lockb";
+
+    /**
+     * Name of the <code>bun</code> version locking file, starting from bun 1.2.
+     */
+    public static final String PACKAGE_LOCK_BUN_1_2 = "bun.lock";
 
     /**
      * Target folder constant.
@@ -186,6 +191,11 @@ public final class Constants implements Serializable {
     public static final String VAADIN_WEBAPP = "webapp/";
 
     /**
+     * The generated PWA icons folder.
+     */
+    public static final String VAADIN_PWA_ICONS = "pwa-icons/";
+
+    /**
      * The path to meta-inf/VAADIN/ where static resources are put on the
      * servlet.
      */
@@ -263,6 +273,24 @@ public final class Constants implements Serializable {
      * RouteRegistry is not empty.
      */
     public static final String STATISTIC_HAS_FLOW_ROUTE = "has-flow-route";
+
+    /**
+     * UsageEntry name for automatic layout. Marked used, if Layout annotation
+     * is used or RouteRegistry#setLayout is used directly.
+     */
+    public static final String STATISTIC_HAS_AUTO_LAYOUT = "has-auto-layout";
+
+    /**
+     * UsageEntry name for client route using automatic layout. Marked used, if
+     * AvailableViewInfo#flowLayout is true for any client route.
+     */
+    public static final String STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT = "has-auto-layout/client";
+
+    /**
+     * UsageEntry name for server route using automatic layout. Marked used, if
+     * any server route's layout matches Layout annotated layout.
+     */
+    public static final String STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT = "has-auto-layout/server";
 
     /**
      * UsageEntry name for exported web components. Marked used, if either
@@ -367,6 +395,35 @@ public final class Constants implements Serializable {
      * Gradle builds in a build info (token) file.
      */
     public static final String DISABLE_PREPARE_FRONTEND_CACHE = "disable.prepare.frontend.cache";
+
+    /**
+     * Attribute used by HasSize to mark elements that have been set to full
+     * width.
+     */
+    public static final String ATTRIBUTE_WIDTH_FULL = "data-width-full";
+
+    /**
+     * Attribute used by HasSize to mark elements that have been set to full
+     * height.
+     */
+    public static final String ATTRIBUTE_HEIGHT_FULL = "data-height-full";
+
+    /**
+     * maximum allowed size of a complete request for multipart stream upload
+     * requests.
+     */
+    public static final long DEFAULT_REQUEST_SIZE_MAX = -1;
+
+    /**
+     * maximum allowed size of a single uploaded file for multipart stream
+     * upload requests.
+     */
+    public static final long DEFAULT_FILE_SIZE_MAX = -1;
+
+    /**
+     * maximum number of files allowed per multipart stream upload requests.
+     */
+    public static final long DEFAULT_FILE_COUNT_MAX = 10000;
 
     private Constants() {
         // prevent instantiation constants class only

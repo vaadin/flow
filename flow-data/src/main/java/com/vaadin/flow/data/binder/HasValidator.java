@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -74,31 +74,31 @@ public interface HasValidator<V> extends Serializable {
      * public class DatePickerDemo implements HasValidator&lt;LocalDate&gt; {
      *
      *     // Each web component has a way to communicate its validation status
-     *     // to its server-side component instance. The following clientSideValid
-     *     // state is introduced here just for the sake of simplicity of this code
-     *     // snippet:
+     *     // to its server-side component instance. The following
+     *     // clientSideValid state is introduced here just for the sake of
+     *     // simplicity of this code snippet:
      *     boolean clientSideValid = true;
      *
      *     /**
-     *      * Note how <code>clientSideValid</code> engaged in the definition
-     *      * of this method. It is important to reflect this status either
-     *      * in the returning validation result of this method or any other
-     *      * validation that is associated with this component.
-     *      *&#47;
+     *      * Note how <code>clientSideValid</code> engaged in the definition of
+     *      * this method. It is important to reflect this status either in the
+     *      * returning validation result of this method or any other validation
+     *      * that is associated with this component.
+     *     *&#47;
      *     &#64;Override
      *     public Validator getDefaultValidator() {
-     *          return (value, valueContext) -&gt; clientSideValid ? ValidationResult.ok()
+     *         return (value, valueContext) -&gt; clientSideValid
+     *                 ? ValidationResult.ok()
      *                 : ValidationResult.error("Invalid date format");
      *     }
      *
-     *     private final Collection&lt;ValidationStatusChangeListener&lt;LocalDate&gt;&gt;
-     *         validationStatusListeners = new ArrayList&lt;&gt;();
+     *     private final Collection&lt;ValidationStatusChangeListener&lt;LocalDate&gt;&gt; validationStatusListeners = new ArrayList&lt;&gt;();
      *
      *     /**
      *      * This enables the binding to subscribe for the validation status
      *      * change events that are fired by this component and revalidate
      *      * itself respectively.
-     *      *&#47;
+     *     *&#47;
      *     &#64;Override
      *     public Registration addValidationStatusChangeListener(
      *             ValidationStatusChangeListener&lt;LocalDate&gt; listener) {

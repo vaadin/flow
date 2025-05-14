@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
 
@@ -51,7 +52,7 @@ public class TaskGenerateWebComponentBootstrap
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
-
+        lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT

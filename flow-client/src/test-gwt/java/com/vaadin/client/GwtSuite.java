@@ -5,7 +5,7 @@ import junit.framework.TestSuite;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
 
-import com.vaadin.client.communication.GwtAtmoshperePushConnectionTest;
+import com.vaadin.client.communication.GwtAtmospherePushConnectionTest;
 import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.GwtErrotHandlerTest;
@@ -52,7 +52,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtMultipleBindingTest.class);
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
         suite.addTestSuite(GwtErrotHandlerTest.class);
-        suite.addTestSuite(GwtAtmoshperePushConnectionTest.class);
+        suite.addTestSuite(GwtAtmospherePushConnectionTest.class);
         return suite;
     }
 }

@@ -69,7 +69,8 @@ public class BeanValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testAddressNestedPropertyInvalidPostalCodeFails() {
-        assertFails(100_000,"must be less than or equal to 99999",validator("address.postalCode"));
+        assertFails(100_000, "must be less than or equal to 99999",
+                validator("address.postalCode"));
     }
 
     @Test

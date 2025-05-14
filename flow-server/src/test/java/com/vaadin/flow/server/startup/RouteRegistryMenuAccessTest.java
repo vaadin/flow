@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -291,7 +291,9 @@ public class RouteRegistryMenuAccessTest {
         when(vaadinRequest.getService()).thenReturn(vaadinService);
         var instantiator = mock(Instantiator.class);
         when(vaadinService.getInstantiator()).thenReturn(instantiator);
-        when(vaadinService.getRouter()).thenReturn(mock(Router.class));
+        Router router = mock(Router.class);
+        when(vaadinService.getRouter()).thenReturn(router);
+        when(router.getRegistry()).thenReturn(registry);
         when(instantiator.getMenuAccessControl())
                 .thenReturn(new MenuAccessControl() {
                     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -330,11 +330,38 @@ public interface PluginAdapterBase {
      * Gets the application identifier.
      * <p>
      * The application identifier is usually computed against project unique
-     * information, such as {@literal groupId} and {@literal artifactId}, but it
-     * can be any kind of not blank string.
+     * information, such as hashed {@literal groupId} and {@literal artifactId},
+     * but it can be any kind of not blank string.
      *
      * @return application identifier, never {@literal null} nor
      *         {@literal blank}.
      */
     String applicationIdentifier();
+
+    /**
+     * Get the list of project file extensions.
+     * <p>
+     * File extensions are given with or without . prefix eg "png" and ".png"
+     * are both accepted.
+     *
+     * @return list of project file extensions
+     */
+    List<String> frontendExtraFileExtensions();
+
+    /**
+     * Whether to exclude Vaadin web component npm packages in packages.json.
+     *
+     * @return {@code true} to exclude Vaadin web component npm packages.
+     */
+    boolean isNpmExcludeWebComponents();
+
+    /**
+     * Whether to ignore node/npm tool version checks or not.
+     *
+     * Note that disabling frontend tools version checking could cause failing
+     * builds and other issues that are difficult to debug.
+     *
+     * @return {@code true} to ignore node/npm tool version checks
+     */
+    boolean isFrontendIgnoreVersionChecks();
 }

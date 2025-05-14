@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -62,37 +62,30 @@ public final class OpenInCurrentIde {
     public static boolean openFile(File file, int lineNumber) {
         String absolutePath = file.getAbsolutePath();
 
-        Optional<Info> maybeIdeCommand = findIdeCommandInfo();
-        if (!maybeIdeCommand.isPresent()) {
-            getLogger().debug("Unable to detect IDE from process tree");
-            printProcessTree(msg -> getLogger().debug(msg));
-            return false;
-        }
-
-        Info processInfo = maybeIdeCommand.get();
-
-        if (isVSCode(processInfo)) {
+        IdeAndProcessInfo ideInfo = getIdeAndProcessInfo();
+        if (ideInfo.ide == Ide.VSCODE) {
             return Open.open("vscode://file" + absolutePath + ":" + lineNumber);
-        } else if (isIdea(processInfo)) {
+        } else if (ideInfo.ide == Ide.INTELLIJ) {
             try {
-                run(getBinary(processInfo), "--line", lineNumber + "",
+                run(getBinary(ideInfo.processInfo), "--line", lineNumber + "",
                         absolutePath);
                 return true;
             } catch (Exception e) {
                 getLogger().error("Unable to launch IntelliJ IDEA", e);
             }
 
-        } else if (isEclipse(processInfo)) {
+        } else if (ideInfo.ide == Ide.ECLIPSE) {
             if (OSUtils.isMac()) {
                 try {
-                    run("open", "-a", getBinary(processInfo), absolutePath);
+                    run("open", "-a", getBinary(ideInfo.processInfo),
+                            absolutePath);
                     return true;
                 } catch (Exception e) {
                     getLogger().error("Unable to launch Eclipse", e);
                 }
             } else {
                 try {
-                    run(getBinary(processInfo),
+                    run(getBinary(ideInfo.processInfo),
                             absolutePath + ":" + lineNumber);
                     return true;
                 } catch (Exception e) {
@@ -103,6 +96,41 @@ public final class OpenInCurrentIde {
 
         return false;
 
+    }
+
+    public enum Ide {
+        ECLIPSE, VSCODE, INTELLIJ, OTHER
+    }
+
+    public record IdeAndProcessInfo(Ide ide, Info processInfo) {
+    }
+
+    /**
+     * Gets the IDE and process info for the current process.
+     *
+     * @return the IDE and process info
+     */
+    public static IdeAndProcessInfo getIdeAndProcessInfo() {
+        Optional<Info> maybeIdeCommand = findIdeCommandInfo();
+        if (!maybeIdeCommand.isPresent()) {
+            getLogger().debug("Unable to detect IDE from process tree");
+            printProcessTree(msg -> getLogger().debug(msg));
+            return new IdeAndProcessInfo(Ide.OTHER, null);
+        }
+
+        Info processInfo = maybeIdeCommand.get();
+
+        Ide ide;
+        if (isVSCode(processInfo)) {
+            ide = Ide.VSCODE;
+        } else if (isIdea(processInfo)) {
+            ide = Ide.INTELLIJ;
+        } else if (isEclipse(processInfo)) {
+            ide = Ide.ECLIPSE;
+        } else {
+            ide = Ide.OTHER;
+        }
+        return new IdeAndProcessInfo(ide, processInfo);
     }
 
     static String getBinary(Info info) {

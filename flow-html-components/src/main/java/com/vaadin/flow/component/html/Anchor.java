@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -104,9 +105,30 @@ public class Anchor extends HtmlContainer
      *            the resource value, not null
      * @param text
      *            the text content to set
+     *
+     * @deprecated use {@link #Anchor(DownloadHandler, String)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public Anchor(AbstractStreamResource href, String text) {
         setHref(href);
+        setText(text);
+    }
+
+    /**
+     * Creates an anchor component with the given text content and a callback
+     * that handles data download from the server to the client when clicking an
+     * anchor.
+     *
+     * @see #setHref(DownloadHandler)
+     * @see #setText(String)
+     *
+     * @param downloadHandler
+     *            the callback that handles data download, not null
+     * @param text
+     *            the text content to set
+     */
+    public Anchor(DownloadHandler downloadHandler, String text) {
+        setHref(downloadHandler);
         setText(text);
     }
 
@@ -114,7 +136,7 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given href and components as
      * children of this component.
      *
-     * @see #setHref(AbstractStreamResource)
+     * @see #setHref(DownloadHandler)
      * @see #add(Component...)
      *
      * @param href
@@ -137,7 +159,7 @@ public class Anchor extends HtmlContainer
      * instead of setting it to an empty string.
      *
      * @see #removeHref()
-     * @see #setHref(AbstractStreamResource)
+     * @see #setHref(DownloadHandler)
      *
      * @param href
      *            the href to set
@@ -167,9 +189,26 @@ public class Anchor extends HtmlContainer
      *
      * @param href
      *            the resource value, not null
+     * @deprecated use {@link #setHref(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setHref(AbstractStreamResource href) {
         this.href = href;
+        setRouterIgnore(true);
+        assignHrefAttribute();
+    }
+
+    /**
+     * Sets the URL that this anchor links to and that is bound to a given
+     * {@link DownloadHandler} callback on the server for handling data download
+     * from the server to the client when clicking an anchor.
+     *
+     * @param downloadHandler
+     *            the callback that handles data download, not null
+     */
+    public void setHref(DownloadHandler downloadHandler) {
+        this.href = new StreamResourceRegistry.ElementStreamResource(
+                downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
     }

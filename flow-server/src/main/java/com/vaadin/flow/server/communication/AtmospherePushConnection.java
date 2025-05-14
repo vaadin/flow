@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
@@ -35,8 +36,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.communication.PushConstants;
-
-import elemental.json.JsonObject;
 
 /**
  * A {@link PushConnection} implementation using the Atmosphere push support
@@ -204,9 +203,9 @@ public class AtmospherePushConnection
         } else {
             synchronized (lock) {
                 try {
-                    JsonObject response = new UidlWriter().createUidl(getUI(),
+                    JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
-                    sendMessage("for(;;);[" + response.toJson() + "]");
+                    sendMessage("for(;;);[" + response + "]");
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }
@@ -466,6 +465,11 @@ public class AtmospherePushConnection
 
         boolean alreadySeen(int lastSeenOnClient) {
             return serverSyncId <= lastSeenOnClient;
+        }
+
+        @Override
+        public String toString() {
+            return "PushMessage " + serverSyncId + ", body: " + message;
         }
     }
 

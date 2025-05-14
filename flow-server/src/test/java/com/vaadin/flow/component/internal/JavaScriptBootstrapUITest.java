@@ -1,10 +1,5 @@
 package com.vaadin.flow.component.internal;
 
-import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Optional;
@@ -15,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -32,6 +28,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -45,7 +42,12 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinSessionState;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class JavaScriptBootstrapUITest {
 
@@ -417,7 +419,8 @@ public class JavaScriptBootstrapUITest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(internals.getSession()).thenReturn(session);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.isReactEnabled()).thenReturn(false);
+        ((MockDeploymentConfiguration) session.getService()
+                .getDeploymentConfiguration()).setReactEnabled(false);
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
@@ -435,22 +438,30 @@ public class JavaScriptBootstrapUITest {
         ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
                 .forClass(Serializable[].class);
 
-        ui.navigate("clean/1");
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
 
-        boolean reactEnabled = ui.getSession().getConfiguration()
-                .isReactEnabled();
+            menuRegistry
+                    .when(() -> MenuRegistry.hasClientRoute("clean/1", true))
+                    .thenReturn(false);
 
-        final Serializable[] execValues = execArg.getValue();
-        if (reactEnabled) {
-            assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(1, execValues.length);
-            assertEquals("clean/1", execValues[0]);
-        } else {
-            assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(2, execValues.length);
-            assertNull(execValues[0]);
-            assertEquals("clean/1", execValues[1]);
+            ui.navigate("clean/1");
+            Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
+
+            boolean reactEnabled = ui.getSession().getConfiguration()
+                    .isReactEnabled();
+
+            final Serializable[] execValues = execArg.getValue();
+            if (reactEnabled) {
+                assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
+                assertEquals(1, execValues.length);
+                assertEquals("clean/1", execValues[0]);
+            } else {
+                assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+                assertEquals(2, execValues.length);
+                assertNull(execValues[0]);
+                assertEquals("clean/1", execValues[1]);
+            }
         }
     }
 

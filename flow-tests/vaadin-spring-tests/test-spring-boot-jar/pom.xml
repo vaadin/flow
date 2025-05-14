@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>vaadin-spring-tests</artifactId>
-		<version>24.5-SNAPSHOT</version>
+		<version>24.8-SNAPSHOT</version>
 	</parent>
 	<artifactId>vaadin-test-spring-boot-jar</artifactId>
 	<name>Vaadin Spring Boot executable Jar integration tests</name>
@@ -161,7 +161,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<id>pre-it</id>

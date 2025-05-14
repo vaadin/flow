@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,7 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -85,6 +86,20 @@ public class ShortcutsView extends Div {
                 KeyModifier.CONTROL);
 
         add(disabledButton);
+
+        // DisabledUpdateMode.ALWAYS makes shortcut work when component is
+        // disabled
+        NativeButton disabledButtonWithAlwaysMode = new NativeButton();
+        disabledButtonWithAlwaysMode.setEnabled(false);
+        disabledButtonWithAlwaysMode.addClickListener(event -> {
+            actual.setValue("DISABLED CLICKED");
+        });
+        disabledButtonWithAlwaysMode
+                .addClickShortcut(Key.KEY_P, KeyModifier.SHIFT,
+                        KeyModifier.CONTROL)
+                .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+
+        add(disabledButtonWithAlwaysMode);
 
         // listenOnScopesTheShortcut
         Div subview = new Div();

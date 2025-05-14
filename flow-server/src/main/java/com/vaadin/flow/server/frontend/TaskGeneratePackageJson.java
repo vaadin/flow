@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Creates the <code>package.json</code> if missing.
@@ -43,11 +43,11 @@ public class TaskGeneratePackageJson extends NodeUpdater {
     public void execute() {
         try {
             modified = false;
-            JsonObject mainContent = getPackageJson();
+            ObjectNode mainContent = getPackageJson();
             modified = updateDefaultDependencies(mainContent);
             if (modified) {
-                if (!mainContent.hasKey("type")
-                        || !mainContent.getString("type").equals("module")) {
+                if (!mainContent.has("type") || !mainContent.get("type")
+                        .textValue().equals("module")) {
                     mainContent.put("type", "module");
                     log().info(
                             """

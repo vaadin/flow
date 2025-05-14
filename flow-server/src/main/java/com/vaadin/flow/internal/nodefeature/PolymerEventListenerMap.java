@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,11 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
 
 /**
  * Map of PolymerTemplate events with server-side listeners. The key set of this
@@ -104,8 +102,8 @@ public class PolymerEventListenerMap extends NodeMap {
 
     private static ConstantPoolKey createConstantPoolKey(
             List<String> eventData) {
-        return new ConstantPoolKey(eventData.stream().map(Json::create)
-                .collect(JsonUtils.asArray()));
+        return new ConstantPoolKey(eventData.stream()
+                .map(JacksonUtils::createNode).collect(JacksonUtils.asArray()));
     }
 
     private void removeListener(String eventType) {

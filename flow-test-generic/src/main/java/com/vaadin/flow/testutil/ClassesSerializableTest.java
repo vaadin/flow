@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -85,8 +85,9 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.DevToolsMessageHandler",
                 "com\\.vaadin\\.base\\.devserver\\.ExternalDependencyWatcher",
                 "com\\.vaadin\\.base\\.devserver\\.FileWatcher",
+                "com\\.vaadin\\.base\\.devserver\\.NamedDaemonThreadFactory",
                 "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
-                "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
+                "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde.*",
                 "com\\.vaadin\\.base\\.devserver\\.RestartMonitor",
                 "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
                 "com\\.vaadin\\.base\\.devserver\\.editor..*",
@@ -113,6 +114,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
                 "com\\.vaadin\\.flow\\.function\\.VaadinApplicationInitializationBootstrap",
+                "com\\.vaadin\\.flow\\.hotswap\\.HotswapCompleteEvent",
                 "com\\.vaadin\\.flow\\.hotswap\\.Hotswapper",
                 "com\\.vaadin\\.flow\\.hotswap\\.VaadinHotswapper",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccessor",
@@ -123,6 +125,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.DevModeHandler",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
+                "com\\.vaadin\\.flow\\.internal\\.JacksonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCacheHotswapper",
                 "com\\.vaadin\\.flow\\.internal\\.UsageStatistics(\\$.*)?",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatureRegistry",
@@ -145,6 +148,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletRequest",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletResponse",
                 "com\\.vaadin\\.flow\\.server\\.auth\\.NavigationContext",
+                "com\\.vaadin\\.flow\\.server\\.menu\\.AvailableViewInfo\\$.+",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AnnotationValidator",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AppShellPredicate",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationConfigurationFactory",
@@ -168,7 +172,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.menu\\.MenuRegistry(\\$.*)?",
+                "com\\.vaadin\\.flow\\.internal\\.menu\\.MenuRegistry(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.menu\\.MenuConfiguration(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
@@ -214,6 +219,11 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.TransferContext",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.DownloadEvent",
+                "com\\.vaadin\\.flow\\.server\\.communication\\.StreamRequestHandler\\$PathData",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.UploadEvent",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.UploadMetadata",
 
                 "com\\.vaadin\\.flow\\.server\\.DevModeHandler(\\$.*)?",
                 // Frontend tasks classes which are not stored anywhere but used
@@ -250,12 +260,13 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ArchiveExtractor",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller\\$InstallData",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.Platform",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig\\$Proxy",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.ProxyFactory",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",

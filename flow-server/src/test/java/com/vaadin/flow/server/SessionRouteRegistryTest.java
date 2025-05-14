@@ -4,6 +4,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
@@ -47,6 +49,7 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
@@ -64,6 +67,12 @@ public class SessionRouteRegistryTest {
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File("/frontend"));
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(configuration);
         VaadinServletContext context = new MockVaadinContext();
 
         ApplicationConfiguration applicationConfiguration = Mockito
@@ -480,8 +489,7 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals(
                 "Expected 4 route already exists exceptions due to route target validation",
                 THREADS - 1, exceptions.size());
-        String expected = String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
+        String expected = String.format(RouteUtil.ROUTE_CONFLICT,
                 MyRoute.class.getName(), MyRoute.class.getName());
         for (String exception : exceptions) {
             Assert.assertEquals(expected, exception);
@@ -532,8 +540,7 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals(
                 "Expected 4 route already exists exceptions due to route target validation",
                 THREADS - 1, exceptions.size());
-        String expected = String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
+        String expected = String.format(RouteUtil.ROUTE_CONFLICT,
                 MyRoute.class.getName(), MyRoute.class.getName());
         for (String exception : exceptions) {
             Assert.assertEquals(expected, exception);

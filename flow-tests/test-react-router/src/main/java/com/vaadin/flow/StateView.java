@@ -29,7 +29,7 @@ public class StateView extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         Span enabled = new Span("React enabled: " + getUI().get().getSession()
-                .getConfiguration().isReactEnabled());
+                .getService().getDeploymentConfiguration().isReactEnabled());
         enabled.setId(ENABLED_SPAN);
 
         File baseDir = attachEvent.getSession().getConfiguration()

@@ -1,0 +1,13 @@
+{
+  "name": "@vaadin/testscope-map",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "testscope-map.js",
+  "module": "testscope-map.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0"
+}

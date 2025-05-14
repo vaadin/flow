@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import com.google.web.bindery.event.shared.UmbrellaException;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
@@ -144,45 +145,94 @@ public class SystemErrorHandler {
         }
     }
 
+    private boolean resyncInProgress = false;
+
     /**
      * Send GET async request to acquire new JSESSIONID, browser will set cookie
      * automatically based on Set-Cookie response header.
      */
     private void resynchronizeSession() {
+        if (resyncInProgress) {
+            Console.debug(
+                    "Web components resynchronization already in progress");
+            return;
+        }
+        resyncInProgress = true;
         String serviceUrl = registry.getApplicationConfiguration()
                 .getServiceUrl() + "web-component/web-component-bootstrap.js";
+
+        // Stop heart beat to prevent requests during resynchronization
+        registry.getHeartbeat().setInterval(-1);
+        if (registry.getPushConfiguration().isPushEnabled()) {
+            registry.getMessageSender().setPushEnabled(false, false);
+        }
+
         String sessionResyncUri = SharedUtil.addGetParameter(serviceUrl,
                 ApplicationConstants.REQUEST_TYPE_PARAMETER,
                 ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC);
 
-        Xhr.get(sessionResyncUri, new Xhr.Callback() {
+        Xhr.getWithCredentials(sessionResyncUri, new Xhr.Callback() {
             @Override
             public void onFail(XMLHttpRequest xhr, Exception exception) {
+                registry.getHeartbeat().setInterval(registry
+                        .getApplicationConfiguration().getHeartbeatInterval());
                 handleError(exception);
             }
 
             @Override
             public void onSuccess(XMLHttpRequest xhr) {
-
                 Console.log(
                         "Received xhr HTTP session resynchronization message: "
                                 + xhr.getResponseText());
 
-                registry.reset();
-                registry.getUILifecycle().setState(UILifecycle.UIState.RUNNING);
+                // Make sure heartbeat has not been restarted. This is
+                // especially important if the uiId gets reset after session
+                // expiration, to prevent multiple heartbeats requests for
+                // different ui
+                registry.getHeartbeat().setInterval(-1);
 
+                int uiId = registry.getApplicationConfiguration().getUIId();
                 ValueMap json = MessageHandler
                         .parseWrappedJson(xhr.getResponseText());
-                registry.getMessageHandler().handleMessage(json);
-                registry.getApplicationConfiguration()
-                        .setUIId(json.getInt(ApplicationConstants.UI_ID));
+                int newUiId = json.getInt(ApplicationConstants.UI_ID);
+                if (newUiId != uiId) {
+                    Console.debug("UI ID switched from " + uiId + " to "
+                            + newUiId + " after resynchronization");
+                    registry.getApplicationConfiguration().setUIId(newUiId);
+                }
+                registry.reset();
 
-                Scheduler.get().scheduleDeferred(() -> Arrays
-                        .stream(registry.getApplicationConfiguration()
-                                .getExportedWebComponents())
-                        .forEach(SystemErrorHandler.this::recreateNodes));
+                registry.getUILifecycle().setState(UILifecycle.UIState.RUNNING);
+                registry.getMessageHandler().handleMessage(json);
+
+                boolean pushEnabled = registry.getPushConfiguration()
+                        .isPushEnabled();
+                if (pushEnabled) {
+                    // PUSH connection might have been closed in response to
+                    // sever session expiration. If PUSH is required, reconnect
+                    // before recreating web components to make sure the
+                    // connected events can be propagated to the server.
+                    // PUSH reconnection is deferred to allow current request
+                    // to complete and process the Set-Cookie header.
+                    Scheduler.get().scheduleDeferred(() -> {
+                        Console.debug("Re-establish PUSH connection");
+                        registry.getMessageSender().setPushEnabled(true);
+                        Scheduler.get().scheduleDeferred(
+                                () -> recreateWebComponents());
+                    });
+                } else {
+                    Scheduler.get()
+                            .scheduleDeferred(() -> recreateWebComponents());
+                }
             }
         });
+    }
+
+    private void recreateWebComponents() {
+        Arrays.stream(registry.getApplicationConfiguration()
+                .getExportedWebComponents())
+                .forEach(SystemErrorHandler.this::recreateNodes);
+        resyncInProgress = false;
     }
 
     private native void recreateNodes(String elementName)

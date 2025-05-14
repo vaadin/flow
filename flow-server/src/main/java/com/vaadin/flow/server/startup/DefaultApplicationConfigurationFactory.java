@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -32,12 +33,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
@@ -101,13 +100,13 @@ public class DefaultApplicationConfigurationFactory
             final String name = paramNames.nextElement();
             props.put(name, context.getContextParameter(name));
         }
-        JsonObject buildInfo = null;
+        JsonNode buildInfo = null;
         try {
             String content = getTokenFileContent(props::get);
             if (content == null) {
                 content = getTokenFileFromClassloader(context);
             }
-            buildInfo = content == null ? null : JsonUtil.parse(content);
+            buildInfo = content == null ? null : JacksonUtils.readTree(content);
             if (buildInfo != null) {
                 props.putAll(getConfigParametersUsingTokenData(buildInfo));
             }
@@ -216,9 +215,9 @@ public class DefaultApplicationConfigurationFactory
         if (resources.size() > 1) {
             String warningMessage = String.format(
                     "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible.%n"
+                            + "Accepting file '%s' first match of '%s' possible (%s).%n"
                             + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size());
+                    firstResource.getPath(), resources.size(), resources);
             getLogger().warn(warningMessage);
         } else {
             String debugMessage = String.format(

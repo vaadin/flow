@@ -50,6 +50,8 @@ public final class DAUUtils {
     public static final String ENFORCEMENT_EXCEPTION_KEY = DAUUtils.class
             .getName() + ".EnforcementException";
 
+    public static final String STATUS_CODE_KEY = "Vaadin-DAU-Status-Code";
+
     private DAUUtils() {
     }
 
@@ -320,7 +322,7 @@ public final class DAUUtils {
      *            the enforcement messages or null if enforcement should not be
      *            applied
      * @param origin
-     *          the exception that caused the enforcement
+     *            the exception that caused the enforcement
      * @param endRequestAction
      *            the action to be run at the end of the request
      */

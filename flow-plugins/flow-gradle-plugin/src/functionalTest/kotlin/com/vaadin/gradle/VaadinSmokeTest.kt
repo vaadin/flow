@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import kotlin.io.path.div
+import kotlin.io.path.writeText
 import kotlin.test.assertContains
 import kotlin.test.expect
+import com.vaadin.flow.internal.JacksonUtils
+import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendUtils
-import elemental.json.JsonObject
-import elemental.json.impl.JsonUtil
+import com.fasterxml.jackson.databind.JsonNode
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Test
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 
 /**
@@ -41,7 +44,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -70,8 +73,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
         val tokenFile = File(testProject.dir, "build/vaadin-generated/META-INF/VAADIN/config/flow-build-info.json")
         expect(true, tokenFile.toString()) { tokenFile.isFile }
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect(false, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
     }
 
     @Test
@@ -99,9 +102,11 @@ class VaadinSmokeTest : AbstractGradleTest() {
         build.find("*.br", 4..10)
         build.find("*.js", 4..10)
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(true, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
-        expect(testProject.dir.name, buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect(true, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
+        expect("app-" + StringUtil.getHash(testProject.dir.name,
+            java.nio.charset.StandardCharsets.UTF_8
+        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -112,8 +117,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskSucceded("vaadinPrepareFrontend")
 
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect("MY_APP_ID", buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
+        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 
     @Test
@@ -193,7 +198,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -224,7 +229,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -263,7 +268,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -307,7 +312,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -394,7 +399,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             """
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -434,7 +439,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             addonJar.toPath(), StandardCopyOption.REPLACE_EXISTING
         )
 
-        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build", debug = true)
         result.expectTaskSucceded("vaadinPrepareFrontend")
         result.expectTaskSucceded("vaadinBuildFrontend")
 
@@ -461,27 +466,217 @@ class VaadinSmokeTest : AbstractGradleTest() {
             setup()
         }
 
-        for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.5", "8.6") ) {
+        for (supportedVersion in arrayOf(FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.8", "8.10") ) {
                 setupProjectForGradleVersion(supportedVersion)
                 val result = testProject.build("vaadinClean")
                 result.expectTaskSucceded("vaadinClean")
         }
 
-        for (unsupportedVersion in arrayOf("8.3")) {
+        for (unsupportedVersion in arrayOf("8.3", "8.4", "8.5", "8.6")) {
             setupProjectForGradleVersion(unsupportedVersion)
             val result = testProject.buildAndFail("vaadinClean")
-            assertContains(
-                result.output,
-                "requires Gradle ${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
-                true,
-                "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                        "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
-            )
-            assertContains(
-                result.output,
-                "current version is ${unsupportedVersion}"
-            )
+            if (result.output.contains("Unsupported class file major version")) {
+                assertContains(
+                    result.output,
+                    Regex("Failed to process the entry 'META-INF/versions/(\\d+)/com/fasterxml/jackson/"),
+                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
+                            "as it is lower than the supported one (${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION}) " +
+                            "and it is incompatible with Jackson library used by Flow"
+                )
+            } else {
+                assertContains(
+                    result.output,
+                    "requires Gradle ${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
+                    true,
+                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
+                            "as it is lower than the supported one (${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
+                )
+                assertContains(
+                    result.output,
+                    "current version is ${unsupportedVersion}"
+                )
+            }
         }
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache_configurationChange_cacheInvalidated() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val buildFile = testProject.buildFile.readText()
+            .replace("nodeAutoUpdate = true", "nodeAutoUpdate = false")
+        testProject.buildFile.writeText(buildFile)
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.SUCCESS)
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache_gradlePropertyChange_cacheInvalidated() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", "-Pvaadin.eagerServerLoad=true", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.SUCCESS)
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+    }
+
+    @Test
+    fun testPrepareFrontend_configurationCache_systemPropertyChange_cacheInvalidated() {
+        // Create frontend folder, that will otherwise be created by the first
+        // execution of vaadinPrepareFrontend, invalidating the cache on the
+        // second run
+        testProject.newFolder("src/main/frontend")
+
+        val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", "-Dvaadin.eagerServerLoad=true", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.SUCCESS)
+        assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
+    }
+
+    // When Hilla is detected, frontend hot deploy should be automatically
+    // enabled and as a consequence prepare frontend task should create react
+    // related files
+    @Test
+    fun vaadinPrepareFrontend_hillaAvailable_frontendHotDeployEnabled() {
+        // Setup a project local maven repo to simulate the presence of Hilla
+        val fakeHillaVersion = "0.0.0.localtest";
+        val projectLocalMavenRepo = testProject.newFolder("libs").absoluteFile
+        val hillaEndpointFolder =
+            projectLocalMavenRepo.toPath() / "com" / "vaadin" / "hilla-endpoint" / fakeHillaVersion
+        Files.createDirectories(hillaEndpointFolder)
+
+        // hilla-endpoint-stub.jar contains only stub for com.vaadin.hilla.EndpointController.class
+        val hillaEndpointJar =
+            hillaEndpointFolder / "hilla-endpoint-${fakeHillaVersion}.jar"
+        Files.copy(
+            File(javaClass.classLoader.getResource("hilla-endpoint-stub.jar").path).toPath(),
+            hillaEndpointJar, StandardCopyOption.REPLACE_EXISTING
+        )
+        val hillaEndpointPom =
+            hillaEndpointFolder / "hilla-endpoint-${fakeHillaVersion}.pom"
+        hillaEndpointPom.writeText(
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+                xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>hilla-endpoint</artifactId>
+                <version>${fakeHillaVersion}</version>
+                <name>Fake Hilla Endpoint</name>
+            </project>
+            """.trimIndent()
+        )
+        enableHilla()
+
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'com.vaadin.flow'
+            }
+            repositories {
+                maven {
+                    url = '${projectLocalMavenRepo.toURI().toURL()}'
+                }
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                flatDir {
+                   dirs("libs")
+                }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:hilla-endpoint:${fakeHillaVersion}")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+            }
+        """.trimIndent()
+        )
+
+        val flowTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "flow/Flow.tsx"
+        )
+        val vaadinReactTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "vaadin-react.tsx"
+        )
+
+        testProject.build("vaadinPrepareFrontend")
+        expect(
+            true,
+            "Expected Flow.tsx to be created when Hilla is available"
+        ) { flowTsx.exists() }
+        expect(
+            true,
+            "Expected vaadin-react.tsx to be created when Hilla is available"
+        ) { vaadinReactTsx.exists() }
+    }
+
+    // When Hilla is not available, frontend hot deploy should not be enabled
+    // by default and react related files should not be created
+    @Test
+    fun vaadinPrepareFrontend_hillaNotAvailable_frontendHotDeployNotEnabled() {
+        val flowTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "flow/Flow.tsx"
+        )
+        val vaadinReactTsx = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "vaadin-react.tsx"
+        )
+
+        testProject.build("vaadinPrepareFrontend")
+        expect(
+            false,
+            "Expected Flow.tsx not to be created when Hilla is not available"
+        ) { flowTsx.exists() }
+        expect(
+            false,
+            "Expected vaadin-react.tsx not to be created when Hilla is not available"
+        ) { vaadinReactTsx.exists() }
     }
 
     private fun enableHilla() {

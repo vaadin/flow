@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -38,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -52,6 +46,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.Pair;
@@ -60,16 +55,18 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.slf4j.LoggerFactory;
-
+import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 
 @NotThreadSafe
 @Category(SlowTests.class)
 public class FrontendToolsTest {
 
-    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "18.12.0";
+    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "20.0.0";
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
@@ -185,6 +182,9 @@ public class FrontendToolsTest {
     @Test
     public void nodeIsBeingLocated_unsupportedNodeInstalled_defaultNodeVersionInstalledToAlternativeDirectory()
             throws FrontendUtils.UnknownVersionException, IOException {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         // Unsupported node version
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
@@ -207,6 +207,9 @@ public class FrontendToolsTest {
     @Test
     public void nodeIsBeingLocated_unsupportedNodeInstalled_fallbackToNodeInstalledToAlternativeDirectory()
             throws IOException, FrontendUtils.UnknownVersionException {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         // Unsupported node version
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
@@ -491,14 +494,14 @@ public class FrontendToolsTest {
         settings.setBaseDir(npmrc.getParent());
         settings.setAlternativeDirGetter(null);
 
-        FrontendTools tools = new FrontendTools(settings);
+        tools = new FrontendTools(settings);
 
         Properties properties = new Properties();
-        properties.put(FrontendTools.NPMRC_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
-        properties.put(FrontendTools.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
                 "http://httpsuser:httpspassword@httpshost:8081");
-        properties.put(FrontendTools.NPMRC_NOPROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_NOPROXY_PROPERTY_KEY,
                 "192.168.1.1,vaadin.com,mycompany.com");
         try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
             properties.store(fileOutputStream, null);
@@ -572,9 +575,9 @@ public class FrontendToolsTest {
             throws IOException {
         File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
         Properties properties = new Properties();
-        properties.put(FrontendTools.NPMRC_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
-        properties.put(FrontendTools.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
                 "http://httpsuser:httpspassword@httpshost:8081");
         try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
             properties.store(fileOutputStream, null);
@@ -583,7 +586,7 @@ public class FrontendToolsTest {
         settings.setBaseDir(npmrc.getParent());
         settings.setAlternativeDirGetter(null);
 
-        FrontendTools tools = new FrontendTools(settings);
+        tools = new FrontendTools(settings);
 
         List<ProxyConfig.Proxy> proxyList = tools.getProxies();
         Assert.assertEquals(2, proxyList.size());
@@ -612,11 +615,11 @@ public class FrontendToolsTest {
             throws IOException {
         File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
         Properties properties = new Properties();
-        properties.put(FrontendTools.NPMRC_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
-        properties.put(FrontendTools.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
                 "http://httpsuser:httpspassword@httpshost:8081");
-        properties.put(FrontendTools.NPMRC_NOPROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_NOPROXY_PROPERTY_KEY,
                 "192.168.1.1,vaadin.com,mycompany.com");
         try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
             properties.store(fileOutputStream, null);
@@ -625,7 +628,7 @@ public class FrontendToolsTest {
         settings.setBaseDir(npmrc.getParent());
         settings.setAlternativeDirGetter(null);
 
-        FrontendTools tools = new FrontendTools(settings);
+        tools = new FrontendTools(settings);
 
         List<ProxyConfig.Proxy> proxyList = tools.getProxies();
         Assert.assertEquals(2, proxyList.size());
@@ -733,6 +736,8 @@ public class FrontendToolsTest {
 
     @Test
     public void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
+        Assume.assumeFalse("Skipping test on windows.",
+                FrontendUtils.isWindows());
         Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
         Assume.assumeFalse("Skip this test once globally installed pnpm is "
                 + "discovered", pnpm.isPresent());
@@ -850,8 +855,8 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void getNpmCacheDir_returnsCorrectPath() throws IOException,
-            InterruptedException, FrontendUtils.CommandExecutionException {
+    public void getNpmCacheDir_returnsCorrectPath()
+            throws IOException, FrontendUtils.CommandExecutionException {
         FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
                 .builder(FrontendStubs.Tool.NPM).withCacheDir("/foo/bar")
@@ -867,6 +872,39 @@ public class FrontendToolsTest {
                 npmCachePath
                         .substring(FilenameUtils.getPrefixLength(npmCachePath))
                         .replace("\\", "/"));
+    }
+
+    @Test
+    public void getViteExecutable_returnsCorrectPath()
+            throws IOException, FrontendUtils.CommandExecutionException {
+        var projectDir = tmpDir.newFolder();
+        var packageJson = Files
+                .createFile(projectDir.toPath().resolve("package.json"));
+
+        Files.write(packageJson, """
+                  {
+                  "name": "test",
+                  "private": true
+                }
+                """.getBytes());
+        Files.createDirectories(
+                projectDir.toPath().resolve("node_modules/vite/"));
+        var vitePackageJson = Files.createFile(
+                projectDir.toPath().resolve("node_modules/vite/package.json"));
+
+        Files.write(vitePackageJson, """
+                {
+                  "name": "vite",
+                  "version": "4.0.0",
+                  "bin": {
+                    "vite": "bin/vite.js"
+                  }
+                }
+                """.getBytes());
+        var vite = tools.getNpmPackageExecutable("vite", "vite", projectDir);
+        Assert.assertEquals(
+                projectDir.toPath().resolve("node_modules/vite/bin/vite.js"),
+                vite);
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {
@@ -903,23 +941,6 @@ public class FrontendToolsTest {
                             .contains("Your installed 'npm' version ("
                                     + version.getFullVersion()
                                     + ") is known to have problems."));
-        }
-    }
-
-    private void createFakePnpm(String defaultPnpmVersion) throws Exception {
-        final String npxPath = NPM_BIN_PATH + "npx-cli.js";
-        File npxJs = new File(baseDir, npxPath);
-        FileUtils.forceMkdir(npxJs.getParentFile());
-
-        FileWriter fileWriter = new FileWriter(npxJs);
-        try {
-            fileWriter.write(
-                    "pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
-                            + defaultPnpmVersion + "'\n"
-                            + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
-                            + "    console.log(pnpmVersion);\n" + "}\n");
-        } finally {
-            fileWriter.close();
         }
     }
 

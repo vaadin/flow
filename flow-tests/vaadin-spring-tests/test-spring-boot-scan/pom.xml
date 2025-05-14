@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>24.5-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-test-spring-boot-scan</artifactId>
     <name>Vaadin Spring Boot integration tests with custom packages to scan</name>

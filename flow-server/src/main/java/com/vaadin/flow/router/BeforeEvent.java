@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,6 +58,7 @@ public abstract class BeforeEvent extends EventObject {
     private String unknownReroute = null;
 
     private String externalForwardUrl = null;
+    private boolean useForwardCallback;
 
     /**
      * Constructs event from a NavigationEvent.
@@ -341,6 +342,30 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
+     * Forward the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
+     * <p>
+     * This function changes the browser URL as opposed to
+     * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
+     *
+     * @param forwardTargetComponent
+     *            the component type to display, not {@code null}
+     * @param useForwardCallback
+     *            {@literal true} to request navigation callback from client
+     */
+    public void forwardTo(Class<? extends Component> forwardTargetComponent,
+            boolean useForwardCallback) {
+        Objects.requireNonNull(forwardTargetComponent,
+                "forwardTargetComponent cannot be null");
+        this.useForwardCallback = useForwardCallback;
+        forwardTo(getNavigationState(forwardTargetComponent,
+                RouteParameters.empty(), null));
+    }
+
+    /**
      * Forward the navigation to show the given component with given route
      * parameter instead of the component that is currently about to be
      * displayed.
@@ -590,11 +615,11 @@ public abstract class BeforeEvent extends EventObject {
      */
     public void forwardTo(String locationString,
             QueryParameters queryParameters) {
-        final Optional<Class<? extends Component>> target = getSource()
-                .getRegistry().getNavigationTarget(locationString);
+        final Optional<NavigationState> navigationState = getSource()
+                .resolveNavigationTarget(new Location(locationString));
         this.redirectQueryParameters = queryParameters;
-        if (target.isPresent()) {
-            forwardTo(getNavigationState(locationString, List.of()));
+        if (navigationState.isPresent()) {
+            forwardTo(navigationState.get());
         } else {
             // Inform that forward target location is not known.
             unknownForward = PathUtil.trimPath(locationString);
@@ -885,12 +910,11 @@ public abstract class BeforeEvent extends EventObject {
      *            query parameters for the target
      */
     public void rerouteTo(String route, QueryParameters queryParameters) {
-        final Optional<Class<? extends Component>> target = getSource()
-                .getRegistry().getNavigationTarget(route);
-
+        final Optional<NavigationState> navigationState = getSource()
+                .resolveNavigationTarget(new Location(route));
         this.redirectQueryParameters = queryParameters;
-        if (target.isPresent()) {
-            rerouteTo(getNavigationState(route, List.of()));
+        if (navigationState.isPresent()) {
+            rerouteTo(navigationState.get());
         } else {
             // Inform that reroute target location is not known.
             unknownReroute = PathUtil.trimPath(route);
@@ -1137,6 +1161,17 @@ public abstract class BeforeEvent extends EventObject {
      */
     public ErrorParameter<?> getErrorParameter() {
         return errorParameter;
+    }
+
+    /**
+     * Determines is client side callback should be requested when executing
+     * pending forward operation.
+     *
+     * @return {@literal true} if callback should be used,
+     *         {@literal false otherwise}
+     */
+    public boolean isUseForwardCallback() {
+        return useForwardCallback;
     }
 
     /**

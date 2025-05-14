@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright 2000-2025 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -142,7 +142,8 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
   Object.keys(assets).forEach((module) => {
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
-      const nodeSources = resolve('node_modules/', module, copyRule);
+      // Glob doesn't work with windows path separator so replacing it here.
+      const nodeSources = resolve('node_modules/', module, copyRule).replace(/\\/g,'/');
       const files = globSync(nodeSources, { nodir: true });
       const targetFolder = resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
 
