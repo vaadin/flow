@@ -15,7 +15,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
@@ -131,6 +134,58 @@ public class StreamRequestHandlerTest {
             throws IOException {
         testStreamResourceStreamResourceWriter("plus surrounded by spaces",
                 "readme + mine.md");
+    }
+
+    @Test
+    public void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
+            throws IOException {
+        stateNodeStatesTestInternal(false, true);
+        Mockito.verify(response).sendError(403, "Resource not available");
+    }
+
+    @Test
+    public void stateNodeStates_handlerMustNotReplyWhenNodeDetached()
+            throws IOException {
+        stateNodeStatesTestInternal(true, false);
+        Mockito.verify(response).sendError(403, "Resource not available");
+    }
+
+    @Test
+    public void stateNodeStates_handlerMustReplyWhenNodeAttachedAndEnabled()
+            throws IOException {
+        stateNodeStatesTestInternal(true, true);
+        Mockito.verify(response, Mockito.never()).sendError(Mockito.anyInt(),
+                Mockito.anyString());
+    }
+
+    private VaadinResponse stateNodeStatesTestInternal(boolean enabled,
+            boolean attached) throws IOException {
+        ElementRequestHandler stateHandler = (request, response, session,
+                owner) -> {
+        };
+
+        Element owner = Mockito.mock(Element.class);
+        StateNode stateNode = Mockito.mock(StateNode.class);
+        Mockito.when(owner.getNode()).thenReturn(stateNode);
+
+        Mockito.when(stateNode.isEnabled()).thenReturn(enabled);
+        Mockito.when(stateNode.isAttached()).thenReturn(attached);
+
+        StreamResourceRegistry.ElementStreamResource res = new StreamResourceRegistry.ElementStreamResource(
+                stateHandler, owner);
+
+        streamResourceRegistry.registerResource(res);
+
+        ServletOutputStream outputStream = Mockito
+                .mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(request.getPathInfo())
+                .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
+                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+
+        handler.handleRequest(session, request, response);
+
+        return response;
     }
 
     private void testStreamResourceInputStreamFactory(String testString,

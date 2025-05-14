@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 public class AnchorTest extends ComponentTest {
 

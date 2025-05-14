@@ -47,6 +47,7 @@
             <groupId>com.vaadin</groupId>
             <artifactId>test-spring-security-flow</artifactId>
             <version>${project.version}</version>
+            <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

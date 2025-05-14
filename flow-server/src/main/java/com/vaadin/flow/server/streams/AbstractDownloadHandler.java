@@ -16,42 +16,21 @@
 
 package com.vaadin.flow.server.streams;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.VaadinSession;
-
 /**
  * Abstract class for common methods used in pre-made download handlers.
  *
+ * @param <R>
+ *            the type of the subclass implementing this abstract class
  * @since 24.8
  */
-public abstract class AbstractDownloadHandler implements DownloadHandler {
+public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
+        extends TransferProgressAwareHandler<DownloadEvent, R>
+        implements DownloadHandler {
 
-    /**
-     * Read buffer amount of bytes from the input stream.
-     *
-     * @param session
-     *            vaadin session in use
-     * @param source
-     *            input stream source
-     * @param buffer
-     *            byte buffer to read into
-     * @return amount of bytes read into buffer
-     * @throws IOException
-     *             If the first byte cannot be read for any reason other than
-     *             the end of the file, if the input stream has been closed, or
-     *             if some other I/O error occurs.
-     */
-    protected int read(VaadinSession session, InputStream source, byte[] buffer)
-            throws IOException {
-        session.lock();
-        try {
-            return source.read(buffer);
-        } finally {
-            session.unlock();
-        }
+    @Override
+    protected TransferContext getTransferContext(DownloadEvent transferEvent) {
+        return new TransferContext(transferEvent.getRequest(),
+                transferEvent.getResponse(), transferEvent.getSession(),
+                transferEvent.getFileName(), transferEvent.owningElement(), -1);
     }
-
 }

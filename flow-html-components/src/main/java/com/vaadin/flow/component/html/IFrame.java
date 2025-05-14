@@ -21,7 +21,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -168,7 +168,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param src
      *            the resource value, not null
+     * @deprecated use {@link #setSrc(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);
     }

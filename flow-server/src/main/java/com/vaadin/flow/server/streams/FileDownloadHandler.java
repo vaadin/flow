@@ -20,11 +20,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
-import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Download handler for use with a given File that will be read and written as
@@ -32,7 +31,8 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @since 24.8
  */
-public class FileDownloadHandler extends AbstractDownloadHandler {
+public class FileDownloadHandler
+        extends AbstractDownloadHandler<FileDownloadHandler> {
 
     private final File file;
     private final String name;
@@ -62,24 +62,19 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest event) {
-        VaadinSession session = event.getSession();
-        VaadinResponse response = event.getResponse();
-
-        final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream();
+    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+        VaadinResponse response = downloadEvent.getResponse();
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            int n;
-            while ((n = read(session, inputStream, buf)) >= 0) {
-                outputStream.write(buf, 0, n);
-            }
+            TransferProgressListener.transfer(inputStream, outputStream,
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw new RuntimeException(ioe);
+            notifyError(downloadEvent, ioe);
+            throw new UncheckedIOException(ioe);
         }
-        response.setContentType(event.getContentType());
+        response.setContentType(downloadEvent.getContentType());
         response.setContentLength(Math.toIntExact(file.length()));
     }
 
@@ -89,5 +84,13 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
             return name;
         }
         return file.getName();
+    }
+
+    @Override
+    protected TransferContext getTransferContext(DownloadEvent transferEvent) {
+        return new TransferContext(transferEvent.getRequest(),
+                transferEvent.getResponse(), transferEvent.session(),
+                transferEvent.fileName(), transferEvent.owningElement(),
+                file.length());
     }
 }

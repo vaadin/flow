@@ -19,9 +19,9 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 
@@ -30,9 +30,10 @@ import com.vaadin.flow.server.VaadinResponse;
  *
  * @since 24.8
  */
-public class InputStreamDownloadHandler extends AbstractDownloadHandler {
+public class InputStreamDownloadHandler
+        extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
-    private final SerializableFunction<DownloadRequest, DownloadResponse> handler;
+    private final SerializableFunction<DownloadEvent, DownloadResponse> handler;
     private final String name;
 
     /**
@@ -43,7 +44,7 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
      *            serializable function for handling download
      */
     public InputStreamDownloadHandler(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler) {
+            SerializableFunction<DownloadEvent, DownloadResponse> handler) {
         this(handler, null);
     }
 
@@ -58,33 +59,30 @@ public class InputStreamDownloadHandler extends AbstractDownloadHandler {
      *            generated before postfix
      */
     public InputStreamDownloadHandler(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler,
+            SerializableFunction<DownloadEvent, DownloadResponse> handler,
             String name) {
         this.handler = handler;
         this.name = name;
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest event) {
-        DownloadResponse download = handler.apply(event);
-        VaadinResponse response = event.getResponse();
+    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+        DownloadResponse download = handler.apply(downloadEvent);
+        VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {
             response.setStatus(download.getError());
             return;
         }
 
-        final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream();
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            int n;
-            while ((n = read(event.getSession(), inputStream, buf)) >= 0) {
-                outputStream.write(buf, 0, n);
-            }
+            TransferProgressListener.transfer(inputStream, outputStream,
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw new RuntimeException(ioe);
+            notifyError(downloadEvent, ioe);
+            throw new UncheckedIOException(ioe);
         }
 
         response.setContentType(download.getContentType());

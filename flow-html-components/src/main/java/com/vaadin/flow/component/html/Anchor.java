@@ -27,8 +27,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.ElementRequestHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -106,7 +105,10 @@ public class Anchor extends HtmlContainer
      *            the resource value, not null
      * @param text
      *            the text content to set
+     *
+     * @deprecated use {@link #Anchor(DownloadHandler, String)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public Anchor(AbstractStreamResource href, String text) {
         setHref(href);
         setText(text);
@@ -134,7 +136,7 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given href and components as
      * children of this component.
      *
-     * @see #setHref(AbstractStreamResource)
+     * @see #setHref(DownloadHandler)
      * @see #add(Component...)
      *
      * @param href
@@ -157,7 +159,7 @@ public class Anchor extends HtmlContainer
      * instead of setting it to an empty string.
      *
      * @see #removeHref()
-     * @see #setHref(AbstractStreamResource)
+     * @see #setHref(DownloadHandler)
      *
      * @param href
      *            the href to set
@@ -187,7 +189,9 @@ public class Anchor extends HtmlContainer
      *
      * @param href
      *            the resource value, not null
+     * @deprecated use {@link #setHref(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setHref(AbstractStreamResource href) {
         this.href = href;
         setRouterIgnore(true);

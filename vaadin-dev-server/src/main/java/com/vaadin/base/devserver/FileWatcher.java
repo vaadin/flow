@@ -34,8 +34,9 @@ public class FileWatcher {
 
     private DirectoryWatcher watcher;
 
-    private static ExecutorService executorService = Executors
-            .newCachedThreadPool();
+    private static final ExecutorService executorService = Executors
+            .newCachedThreadPool(
+                    new NamedDaemonThreadFactory("vaadin-file-watcher"));
 
     /**
      * Creates an instance of the file watcher for the given directory.
