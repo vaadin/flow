@@ -80,9 +80,8 @@ public class SynchronousSignalTree extends SignalTree {
 
             @Override
             public void markAsAborted() {
-                var rejected = CommandResult.rejectAll(results,
-                        "Transaction aborted");
-                changes.notifyResultHandlers(rejected);
+                changes.notifyResultHandlers(CommandResult.rejectAll(results,
+                        "Transaction aborted"));
 
                 for (SignalCommand command : changes.getCommands()) {
                     notifyPublishedCommandSubscribers(command);

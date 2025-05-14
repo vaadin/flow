@@ -18,21 +18,19 @@ public class SignalUtils {
      * @param signal
      *            the signal to get the tree of, not <code>null</code>
      * @return the signal tree instance, not <code>null</code>
-     * @throws NullPointerException
-     *             if the signal is null
      */
     public static SignalTree treeOf(Signal<?> signal) {
         return signal.tree();
     }
 
     /**
-     * Checks whether the given command is considered valid the validator
+     * Checks whether the given command is considered valid by the validator
      * instance of the provided signal. In case of composite commands such as
      * transactions, this method will recursively check the validity of all
      * commands in the transaction.
      * <p>
-     * <strong>Note</strong>: This does not evaluate conditions such as value
-     * condition or position condition.
+     * <strong>Note</strong>: This only checks the validity of the commands that
+     * might make changes to the data.
      *
      * @param command
      *            the command to check, not <code>null</code>

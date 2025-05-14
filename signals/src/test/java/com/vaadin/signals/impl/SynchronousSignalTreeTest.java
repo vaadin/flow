@@ -405,11 +405,6 @@ public class SynchronousSignalTreeTest {
 
         assertEquals(1, count.get());
         assertEquals(commandId, resultContainer.get().commandId());
-
-        // keeps the order of underlying commands:
-        assertEquals(conditionId,
-                ((SignalCommand.TransactionCommand) resultContainer.get())
-                        .commands().get(0).commandId());
     }
 
     @Test

@@ -340,30 +340,30 @@ public abstract class SignalTree {
     }
 
     /**
-     * Subscribes to the published result of processed commands. The subscriber
-     * callback is executed after commands are processed and results are
-     * published (either accepted or rejected). Contrary to the observers that
-     * are attached to a specific node by calling {@link #observeNextChange},
-     * the <code>subscriber</code> remains active indefinitely until it is
-     * removed by executing the returned callback or the tree is destroyed.
+     * Registers a callback that is executed after commands are processed
+     * (regardless of acceptance or rejection). It is guaranteed that the
+     * callback is invoked in the order the commands are processed. Contrary to
+     * the observers that are attached to a specific node by calling
+     * {@link #observeNextChange}, the <code>subscriber</code> remains active
+     * indefinitely until it is removed by executing the returned callback.
      *
      * @param subscriber
      *            the callback to run when a command is confirmed, not
      *            <code>null</code>
-     * @return a callback that can be used to remove the subscriber before it's
-     *         triggered, not <code>null</code>
+     * @return a callback that can be used to remove the subscriber, not
+     *         <code>null</code>
      */
     public Runnable subscribeToPublished(Consumer<SignalCommand> subscriber) {
+        assert subscriber != null;
         return getWithLock(() -> {
-            assert subscriber != null;
             subscribers.add(subscriber);
-            return () -> subscribers.remove(subscriber);
+            return wrapWithLock(() -> subscribers.remove(subscriber));
         });
     }
 
     /**
-     * Notifies all subscribers about the result of a processed command. This
-     * method must be called from a code block that holds the tree lock.
+     * Notifies all subscribers after a command is processed. This method must
+     * be called from a code block that holds the tree lock.
      *
      * @param command
      *            the command that was processed, not <code>null</code>

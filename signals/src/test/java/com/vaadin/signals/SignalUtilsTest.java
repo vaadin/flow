@@ -6,8 +6,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.signals.impl.SignalTree;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
 public class SignalUtilsTest {
@@ -17,7 +16,7 @@ public class SignalUtilsTest {
         SignalTree tree = Mockito.mock(SignalTree.class);
         Signal<?> signal = Mockito.mock(Signal.class);
         Mockito.when(signal.tree()).thenReturn(tree);
-        assertEquals(tree, SignalUtils.treeOf(signal));
+        assertSame(tree, SignalUtils.treeOf(signal));
         Mockito.verify(signal, Mockito.times(1)).tree();
 
     }
@@ -25,8 +24,7 @@ public class SignalUtilsTest {
     @Test
     void isValid_callsSignalsIsValid() {
         Signal<?> signal = Mockito.mock(Signal.class);
-        SignalCommand command = new SignalCommand.SetCommand(Id.random(),
-                Id.ZERO, new TextNode("test"));
+        SignalCommand command = TestUtil.writeRootValueCommand();
         Mockito.when(signal.isValid(any())).thenReturn(true);
         assertTrue(SignalUtils.isValid(command, signal));
         Mockito.verify(signal, Mockito.times(1)).isValid(command);
