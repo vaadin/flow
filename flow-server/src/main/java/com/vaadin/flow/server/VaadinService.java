@@ -582,7 +582,6 @@ public abstract class VaadinService implements Serializable {
                 return thread;
             }
         }
-        ;
         // Defaults taken from Spring Boot configuration
         // org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
