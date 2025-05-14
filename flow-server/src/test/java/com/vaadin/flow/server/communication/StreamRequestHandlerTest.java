@@ -147,7 +147,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void stateNodeStates_handlerMustReplyWhenNodeDisabledButAllowesAllMode()
+    public void stateNodeStates_handlerMustReplyWhenNodeDisabledButAllowsAllMode()
             throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
