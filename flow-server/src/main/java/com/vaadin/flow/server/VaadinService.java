@@ -557,8 +557,8 @@ public abstract class VaadinService implements Serializable {
         this.defaultExecutorInUse = true;
         int corePoolSize = 8;
         int keepAliveTimeSec = 60;
-        ThreadFactory threadFactory = new ThreadFactory() {
 
+        class VaadinThreadFactory implements ThreadFactory {
             private final AtomicInteger threadNumber = new AtomicInteger(0);
 
             @Override
@@ -581,12 +581,14 @@ public abstract class VaadinService implements Serializable {
                 thread.setPriority(Thread.NORM_PRIORITY);
                 return thread;
             }
-        };
+        }
+        ;
         // Defaults taken from Spring Boot configuration
         // org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
                 corePoolSize, Integer.MAX_VALUE, keepAliveTimeSec,
-                TimeUnit.SECONDS, new LinkedBlockingQueue<>(), threadFactory);
+                TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+                new VaadinThreadFactory());
         // Enables dynamic growing and shrinking of the pool.
         threadPoolExecutor.allowCoreThreadTimeOut(true);
         return threadPoolExecutor;
