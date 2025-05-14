@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UrlUtil;
@@ -40,7 +41,6 @@ import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.streams.UploadHandler;
 
 import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
@@ -138,9 +138,9 @@ public class StreamRequestHandler implements RequestHandler {
         Element owner = elementRequest.getOwner();
         StateNode node = owner.getNode();
 
-        if ((node.isInert()
-                && !elementRequest.getElementRequestHandler().allowInert())
-                || !node.isAttached() || !node.isEnabled()) {
+        if (inertNotAllowed(elementRequest, node)
+                || disabledNotAllowed(elementRequest, node)
+                || !node.isAttached() || !node.isVisible()) {
             response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                     "Resource not available");
             return;
@@ -193,6 +193,20 @@ public class StreamRequestHandler implements RequestHandler {
 
         elementRequest.getElementRequestHandler().handleRequest(request,
                 response, session, elementRequest.getOwner());
+    }
+
+    private static boolean disabledNotAllowed(
+            StreamResourceRegistry.ElementStreamResource elementRequest,
+            StateNode node) {
+        return !node.isEnabled() && elementRequest.getElementRequestHandler()
+                .getDisabledUpdateMode() == DisabledUpdateMode.ONLY_WHEN_ENABLED;
+    }
+
+    private static boolean inertNotAllowed(
+            StreamResourceRegistry.ElementStreamResource elementRequest,
+            StateNode node) {
+        return node.isInert()
+                && !elementRequest.getElementRequestHandler().allowInert();
     }
 
     private record PathData(String UIid, String securityKey, String fileName) {
