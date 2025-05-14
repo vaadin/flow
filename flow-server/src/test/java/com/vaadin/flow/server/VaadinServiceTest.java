@@ -828,7 +828,7 @@ public class VaadinServiceTest {
         Assert.assertNotNull("Task has not been not executed",
                 threadName.get());
         Assert.assertTrue("Task was not executed by Vaadin default executor",
-                threadName.get().startsWith("VaadinExecutor-"));
+                threadName.get().startsWith("VaadinTaskExecutor-"));
     }
 
     @Test

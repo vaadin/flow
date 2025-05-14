@@ -43,9 +43,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -528,46 +531,74 @@ public abstract class VaadinService implements Serializable {
     /**
      * Creates a default executor instance to use with this service.
      * <p>
+     * This default implementation creates a thread pool executor with a custom
+     * thread factory to generate daemon threads. It uses a core pool size of 8,
+     * an unbounded maximum pool size, and a keep-alive time of 60 seconds for
+     * idle threads. The thread pool grows dynamically as required, and idle
+     * core threads are allowed to time out.
+     * <p>
      * A custom {@link VaadinService} implementation can override this method to
      * provide its own ad-hoc executor tailored to specific environments like
      * CDI or Spring.
      * <p>
-     * This default implementation creates a single-threaded daemon executor
-     * suitable for short-lived tasks only. For long-running or
-     * resource-intensive operations, the application should provide a more
-     * appropriate executor implementation through a
-     * {@link VaadinServiceInitListener}.
-     * <p>
      * Implementors should never return {@literal null}; if an executor instance
      * cannot be provided, the method should call
      * {@code super.createDefaultExecutor()}.
+     * <p>
+     * The application can provide a more appropriate executor implementation
+     * through a {@link VaadinServiceInitListener} and calling
+     * {@link ServiceInitEvent#setExecutor(Executor)}.
      *
      * @return a default executor instance to use, never {@literal null}.
+     * @see VaadinServiceInitListener
+     * @see ServiceInitEvent#setExecutor(Executor)
      */
     protected Executor createDefaultExecutor() {
         this.defaultExecutorInUse = true;
-        return Executors.newSingleThreadExecutor(runnable -> {
-            getLogger().warn(
-                    "The application is using Vaadin's default single-threaded executor, "
-                            + "which can lead to poor performance in production environments. "
-                            + "Consider providing a custom executor with an appropriate thread pool by "
-                            + "registering a {}. ",
-                    VaadinServiceInitListener.class.getSimpleName());
-            Thread thread = new Thread(runnable, "VaadinExecutor-thread");
-            // Thread marked as daemon to prevent task execution to block
-            // JVM shutdown
-            thread.setDaemon(true);
-            thread.setPriority(Thread.NORM_PRIORITY);
-            return thread;
-        });
+        int corePoolSize = 8;
+        int keepAliveTimeSec = 60;
+        ThreadFactory threadFactory = new ThreadFactory() {
+
+            private final AtomicInteger threadNumber = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable runnable) {
+                int threadNumber = this.threadNumber.incrementAndGet();
+                if (threadNumber == 1) {
+                    getLogger().info(
+                            "The application is using Vaadin's default ThreadPoolExecutor "
+                                    + "(pool size = {}, keep alive time = {} seconds). "
+                                    + "A custom executor with an appropriate thread pool "
+                                    + "can be provided registering a {}.",
+                            corePoolSize, keepAliveTimeSec,
+                            VaadinServiceInitListener.class.getSimpleName());
+                }
+                Thread thread = new Thread(runnable,
+                        "VaadinTaskExecutor-thread-" + threadNumber);
+                // Thread marked as daemon to prevent task execution to block
+                // JVM shutdown
+                thread.setDaemon(true);
+                thread.setPriority(Thread.NORM_PRIORITY);
+                return thread;
+            }
+        };
+        // Defaults taken from Spring Boot configuration
+        // org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                corePoolSize, Integer.MAX_VALUE, keepAliveTimeSec,
+                TimeUnit.SECONDS, new LinkedBlockingQueue<>(), threadFactory);
+        // Enables dynamic growing and shrinking of the pool.
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
+        return threadPoolExecutor;
     }
 
     /**
      * Gets the executor instance used for managing concurrent tasks.
      * <p>
-     * The default executor is intended for short-lived tasks only. For
-     * long-running or resource-intensive operations, it is recommended to
-     * provide a custom executor.
+     * By default, a thread pool executor with a custom with core pool size of
+     * 8, an unbounded maximum pool size, and a keep-alive time of 60 seconds
+     * for idle threads is provided. The thread pool grows dynamically as
+     * required, and idle core threads are allowed to time out.
      * <p>
      * {@link VaadinService} implementations for specific environments like CDI
      * or Spring might provide their own ad-hoc Executors tailored to those
