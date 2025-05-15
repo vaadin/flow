@@ -351,21 +351,21 @@ public class SynchronousSignalTreeTest {
     }
 
     @Test
-    void subscribeToPublished_noChanges_doesNotReceive() {
+    void subscribeToProcessed_noChanges_doesNotReceive() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToPublished(resultContainer::set);
+        tree.subscribeToProcessed(resultContainer::set);
 
         assertNull(resultContainer.get());
     }
 
     @Test
-    void subscribeToPublished_receivesPublished_bothAcceptedAndFailed() {
+    void subscribeToProcessed_receivesProcessed_bothAcceptedAndFailed() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToPublished(resultContainer::set);
+        tree.subscribeToProcessed(resultContainer::set);
 
         var id1 = Id.random();
         tree.commitSingleCommand(
@@ -381,12 +381,12 @@ public class SynchronousSignalTreeTest {
     }
 
     @Test
-    void subscribeToPublished_transactionCommand_receives() {
+    void subscribeToProcessed_transactionCommand_receives() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
 
         AtomicInteger count = new AtomicInteger();
-        tree.subscribeToPublished(command -> {
+        tree.subscribeToProcessed(command -> {
             count.incrementAndGet();
             resultContainer.set(command);
         });
@@ -408,14 +408,14 @@ public class SynchronousSignalTreeTest {
     }
 
     @Test
-    void subscribeToPublished_subscriberRemoved_doesNotReceiveAnymore() {
+    void subscribeToProcessed_subscriberRemoved_doesNotReceiveAnymore() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicReference<SignalCommand> resultContainer1 = new AtomicReference<>();
         AtomicReference<SignalCommand> resultContainer2 = new AtomicReference<>();
 
-        var canceler1 = tree.subscribeToPublished(resultContainer1::set);
+        var canceler1 = tree.subscribeToProcessed(resultContainer1::set);
 
-        var canceler2 = tree.subscribeToPublished(resultContainer2::set);
+        var canceler2 = tree.subscribeToProcessed(resultContainer2::set);
 
         var id1 = Id.random();
         tree.commitSingleCommand(

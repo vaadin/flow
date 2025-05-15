@@ -26,7 +26,7 @@ public class SignalUtilsTest {
         Signal<?> signal = Mockito.mock(Signal.class);
         SignalCommand command = TestUtil.writeRootValueCommand();
         Mockito.when(signal.isValid(any())).thenReturn(true);
-        assertTrue(SignalUtils.isValid(command, signal));
+        assertTrue(SignalUtils.isValid(signal, command));
         Mockito.verify(signal, Mockito.times(1)).isValid(command);
     }
 }

@@ -119,21 +119,21 @@ public class AsynchronousSignalTreeTest {
     }
 
     @Test
-    void subscribeToPublished_noChanges_doesNotReceive() {
+    void subscribeToProcessed_noChanges_doesNotReceive() {
         AsyncTestTree tree = new AsyncTestTree();
         AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToPublished(resultContainer::set);
+        tree.subscribeToProcessed(resultContainer::set);
 
         assertNull(resultContainer.get());
     }
 
     @Test
-    void subscribeToPublished_changesConfirmed_receives() {
+    void subscribeToProcessed_changesConfirmed_receives() {
         AsyncTestTree tree = new AsyncTestTree();
         AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToPublished(resultContainer::set);
+        tree.subscribeToProcessed(resultContainer::set);
 
         SignalCommand command = TestUtil.writeRootValueCommand("submitted");
         tree.commitSingleCommand(command);
@@ -158,11 +158,11 @@ public class AsynchronousSignalTreeTest {
     }
 
     @Test
-    void subscribeToPublished_failingCommandConfirmed_receives() {
+    void subscribeToProcessed_failingCommandConfirmed_receives() {
         AsyncTestTree tree = new AsyncTestTree();
         AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToPublished(resultContainer::set);
+        tree.subscribeToProcessed(resultContainer::set);
 
         SignalCommand command = TestUtil.failingCommand();
         tree.commitSingleCommand(command);

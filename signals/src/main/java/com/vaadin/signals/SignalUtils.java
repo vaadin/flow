@@ -32,14 +32,14 @@ public class SignalUtils {
      * <strong>Note</strong>: This only checks the validity of the commands that
      * might make changes to the data.
      *
-     * @param command
-     *            the command to check, not <code>null</code>
      * @param signal
      *            the signal to check the command against, not<code>null</code>
+     * @param command
+     *            the command to check, not <code>null</code>
      * @return <code>true</code> if the command is valid, <code>false</code>
      *         otherwise
      */
-    public static boolean isValid(SignalCommand command, Signal<?> signal) {
+    public static boolean isValid(Signal<?> signal, SignalCommand command) {
         return signal.isValid(command);
     }
 }

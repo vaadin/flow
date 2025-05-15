@@ -353,7 +353,7 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the subscriber, not
      *         <code>null</code>
      */
-    public Runnable subscribeToPublished(Consumer<SignalCommand> subscriber) {
+    public Runnable subscribeToProcessed(Consumer<SignalCommand> subscriber) {
         assert subscriber != null;
         return getWithLock(() -> {
             subscribers.add(subscriber);
@@ -365,11 +365,16 @@ public abstract class SignalTree {
      * Notifies all subscribers after a command is processed. This method must
      * be called from a code block that holds the tree lock.
      *
-     * @param command
-     *            the command that was processed, not <code>null</code>
+     * @param commands
+     *            the list of processed commands, not <code>null</code>
      */
-    protected void notifyPublishedCommandSubscribers(SignalCommand command) {
+    protected void notifyProcessedCommandSubscribers(
+            List<SignalCommand> commands) {
         assert hasLock();
-        subscribers.forEach(subscriber -> subscriber.accept(command));
+        for (SignalCommand command : commands) {
+            for (Consumer<SignalCommand> subscriber : subscribers) {
+                subscriber.accept(command);
+            }
+        }
     }
 }
