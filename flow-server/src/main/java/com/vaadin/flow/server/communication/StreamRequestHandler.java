@@ -138,9 +138,9 @@ public class StreamRequestHandler implements RequestHandler {
         Element owner = elementRequest.getOwner();
         StateNode node = owner.getNode();
 
-        if (inertNotAllowed(elementRequest, node)
-                || disabledNotAllowed(elementRequest, node)
-                || !node.isAttached() || !node.isVisible()) {
+        if (blockInert(elementRequest, node)
+                || blockDisabled(elementRequest, node) || !node.isAttached()
+                || !node.isVisible()) {
             response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                     "Resource not available");
             return;
@@ -195,14 +195,14 @@ public class StreamRequestHandler implements RequestHandler {
                 response, session, elementRequest.getOwner());
     }
 
-    private static boolean disabledNotAllowed(
+    private static boolean blockDisabled(
             StreamResourceRegistry.ElementStreamResource elementRequest,
             StateNode node) {
         return !node.isEnabled() && elementRequest.getElementRequestHandler()
                 .getDisabledUpdateMode() == DisabledUpdateMode.ONLY_WHEN_ENABLED;
     }
 
-    private static boolean inertNotAllowed(
+    private static boolean blockInert(
             StreamResourceRegistry.ElementStreamResource elementRequest,
             StateNode node) {
         return node.isInert()

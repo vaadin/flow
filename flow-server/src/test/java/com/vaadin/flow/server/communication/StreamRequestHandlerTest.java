@@ -147,7 +147,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void stateNodeStates_handlerMustReplyWhenNodeDisabledButAllowsAllMode()
+    public void nodeDisabled_shouldReplyForDisabledUpdateModeAlways()
             throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
@@ -157,7 +157,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void stateNodeStates_handlerMustNotReplyWhenNodeInert()
+    public void nodeInert_shouldRespondWithResourceNotAvailable()
             throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true);
@@ -166,8 +166,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void stateNodeStates_handlerMustReplyWhenNodeInertButAllowsInert()
-            throws IOException {
+    public void nodeInert_handlerShouldReplyForAllowInert() throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true).withAllowInert(true);
         stateNodeStatesTestInternal(builder);
@@ -176,7 +175,7 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void stateNodeStates_handlerMustNotReplyWhenNodeHidden()
+    public void nodeHidden_shouldRespondWithResourceNotAvailable()
             throws IOException {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withVisible(false);
