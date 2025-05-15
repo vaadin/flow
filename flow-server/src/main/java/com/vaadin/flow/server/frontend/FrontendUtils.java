@@ -138,10 +138,15 @@ public class FrontendUtils {
     public static final String VITE_GENERATED_CONFIG = "vite.generated.ts";
 
     /**
-     * The name of the service worker source file for InjectManifest method of
-     * the workbox plugin.
+     * The name of the service worker entrypoint source file.
      */
     public static final String SERVICE_WORKER_SRC = "sw.ts";
+
+    /**
+     * The name of the generated service worker source file for
+     * InjectManifest method of the workbox plugin.
+     */
+    public static final String SERVICE_WORKER_GENERATED_SRC = "sw.generated.ts";
 
     /**
      * The JavaScript version of the service worker file, for checking if a user

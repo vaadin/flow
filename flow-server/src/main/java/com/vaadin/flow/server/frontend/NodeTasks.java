@@ -69,6 +69,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
+            TaskGenerateSwTs.class,
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
@@ -308,6 +309,7 @@ public class NodeTasks implements FallibleCommand {
     private void addGenerateServiceWorkerTask(Options options,
             PwaConfiguration pwaConfiguration) {
         if (pwaConfiguration.isEnabled()) {
+            commands.add(new TaskGenerateSwTs(options));
             commands.add(new TaskGenerateServiceWorker(options));
         }
     }
