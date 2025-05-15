@@ -446,7 +446,7 @@ public class UidlWriterTest {
         when(vaadinRequestMock.getHttpServletRequest())
                 .thenReturn(servletRequestMock);
 
-        ui.doInit(vaadinRequestMock, 1);
+        ui.doInit(vaadinRequestMock, 1, "foo");
         ui.getInternals().getRouter().initializeUI(ui,
                 UITest.requestToLocation(vaadinRequestMock));
 

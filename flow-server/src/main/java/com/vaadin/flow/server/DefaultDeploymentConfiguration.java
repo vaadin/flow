@@ -274,11 +274,6 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public boolean frontendHotdeploy() {
-        return frontendHotdeploy;
-    }
-
-    @Override
     public SessionLockCheckStrategy getSessionLockCheckStrategy() {
         return sessionLockCheckStrategy;
     }

@@ -209,7 +209,8 @@ public class FeatureFlagsTest {
     public void featureFlagShouldBeOverridableWithSystemProperty()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         try {
@@ -236,7 +237,8 @@ public class FeatureFlagsTest {
     public void featureFlagLoadedByResourceProviderShouldBeOverridableWithSystemProperty()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         File flagsFile = new File(propertiesDir,
@@ -275,7 +277,8 @@ public class FeatureFlagsTest {
     public void noFeatureFlagFile_systemPropertyProvided_featureEnabled()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         try {
@@ -300,7 +303,8 @@ public class FeatureFlagsTest {
     public void noFeatureFlagFile_noSystemPropertyProvided_allFeatureDisabled()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         try {
@@ -455,12 +459,8 @@ public class FeatureFlagsTest {
     @Test
     public void systemPropertiesCheckedForUnsupportedFeatureFlags() {
         Logger mockedLogger = Mockito.mock(Logger.class);
-        String examplePropertyDeprecatedFormat = FeatureFlags.SYSTEM_PROPERTY_PREFIX
-                + "exampleFeatureFlag";
         String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "exampleFeatureFlag";
-        String unsupportedDeprecatedFormatProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
-                + "unsupportedFeature";
         String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "unsupportedFeature";
         var previousValue = System.getProperty(exampleProperty);
@@ -471,9 +471,7 @@ public class FeatureFlagsTest {
                     .when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
 
-            System.setProperty(examplePropertyDeprecatedFormat, "true");
             System.setProperty(exampleProperty, "true");
-            System.setProperty(unsupportedDeprecatedFormatProperty, "true");
             System.setProperty(unsupportedProperty, "true");
             // resetting feature flags to manually retry check (because it was
             // run in @Before block)
@@ -484,13 +482,6 @@ public class FeatureFlagsTest {
             // prefix
             Mockito.verify(mockedLogger, Mockito.never()).warn(
                     "Unsupported feature flag is present: {}", exampleProperty);
-            Mockito.verify(mockedLogger, Mockito.never()).warn(
-                    "Unsupported feature flag is present: {}",
-                    examplePropertyDeprecatedFormat);
-            // We do not want warning message for vaadin.unsupportedFeature
-            Mockito.verify(mockedLogger, Mockito.never()).warn(
-                    "Unsupported feature flag is present: {}",
-                    unsupportedDeprecatedFormatProperty);
             // We do want warning message for
             // vaadin.experimental.unsupportedFeature
             Mockito.verify(mockedLogger, Mockito.times(1)).warn(
@@ -499,11 +490,9 @@ public class FeatureFlagsTest {
         } finally {
             if (previousValue == null) {
                 System.clearProperty(exampleProperty);
-                System.clearProperty(examplePropertyDeprecatedFormat);
             } else {
                 System.setProperty(exampleProperty, previousValue);
             }
-            System.clearProperty(unsupportedDeprecatedFormatProperty);
             System.clearProperty(unsupportedProperty);
         }
     }
