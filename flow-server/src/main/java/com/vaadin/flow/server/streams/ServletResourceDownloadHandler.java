@@ -72,10 +72,10 @@ public class ServletResourceDownloadHandler
                             .getServletContext().getResourceAsStream(path)) {
                 TransferProgressListener.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
+                responseHandled(true, downloadEvent.getResponse());
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
-                downloadEvent.getResponse().setStatus(
-                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                responseHandled(false, downloadEvent.getResponse());
                 notifyError(downloadEvent, ioe);
                 throw new UncheckedIOException(ioe);
             }

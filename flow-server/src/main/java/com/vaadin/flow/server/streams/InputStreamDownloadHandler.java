@@ -78,9 +78,10 @@ public class InputStreamDownloadHandler
                 InputStream inputStream = download.getInputStream()) {
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
+            responseHandled(true, response);
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
-            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            responseHandled(false, response);
             notifyError(downloadEvent, ioe);
             throw new UncheckedIOException(ioe);
         }

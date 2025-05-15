@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -54,6 +55,29 @@ public interface DownloadHandler extends ElementRequestHandler {
                 owner);
 
         handleDownloadRequest(downloadEvent);
+    }
+
+    /**
+     * Method called by framework when the download is completed, either
+     * successfully or with an error.
+     * <p>
+     * This method sets the http response return codes according to internal
+     * exception handling in the framework.
+     * <p>
+     * If you want custom exception handling and to set the return code,
+     * implement this method and overwrite the default functionality.
+     *
+     * @param success
+     *            if there was no exception thrown for download
+     * @param response
+     *            the response object for the upload request
+     */
+    default void responseHandled(boolean success, VaadinResponse response) {
+        if (success) {
+            response.setStatus(HttpStatusCode.OK.getCode());
+        } else {
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        }
     }
 
     /**
