@@ -1097,9 +1097,11 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route) {
-
+        Instantiator instantiator = navigationEvent.getUI().getSession()
+                .getService().getInstantiator();
         Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
-                routeTarget).map(PageTitle::value).orElse("");
+                instantiator.getApplicationClass(routeTarget))
+                .map(PageTitle::value).orElse("");
 
         // check for HasDynamicTitle in current router targets chain
         String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
@@ -1113,9 +1115,8 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static Optional<PageTitle> lookForTitleInTarget(
-            Component routeTarget) {
-        return Optional.ofNullable(
-                routeTarget.getClass().getAnnotation(PageTitle.class));
+            Class<?> routeTarget) {
+        return Optional.ofNullable(routeTarget.getAnnotation(PageTitle.class));
     }
 
     private static boolean isPreserveOnRefreshTarget(
