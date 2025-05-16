@@ -18,6 +18,8 @@ package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -193,5 +195,12 @@ public class AbstractDownloadHandlerTest {
 
         customHandler.handleDownloadRequest(downloadEvent);
         Assert.assertFalse(successAtomic.get());
+    }
+
+    @Test
+    public void doesNotRequireToCatchIOException() {
+        DownloadHandler handler = event -> {
+            new FileInputStream(new File("foo"));
+        };
     }
 }
