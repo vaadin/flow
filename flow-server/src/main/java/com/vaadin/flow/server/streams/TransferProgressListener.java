@@ -185,8 +185,7 @@ public interface TransferProgressListener extends Serializable {
                 listeners.size());
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         int read;
-        while ((read = read(transferContext.session(), inputStream,
-                buffer)) >= 0) {
+        while ((read = inputStream.read(buffer, 0, DEFAULT_BUFFER_SIZE)) >= 0) {
             outputStream.write(buffer, 0, read);
             if (transferred < Long.MAX_VALUE) {
                 try {
@@ -213,30 +212,5 @@ public interface TransferProgressListener extends Serializable {
         listeners.forEach(listener -> listener.onComplete(transferContext,
                 finalTransferred));
         return transferred;
-    }
-
-    /**
-     * Read buffer amount of bytes from the input stream.
-     *
-     * @param session
-     *            vaadin session in use
-     * @param source
-     *            input stream source
-     * @param buffer
-     *            byte buffer to read into
-     * @return amount of bytes read into buffer
-     * @throws IOException
-     *             If the first byte cannot be read for any reason other than
-     *             the end of the file, if the input stream has been closed, or
-     *             if some other I/O error occurs.
-     */
-    static int read(VaadinSession session, InputStream source, byte[] buffer)
-            throws IOException {
-        session.lock();
-        try {
-            return source.read(buffer, 0, DEFAULT_BUFFER_SIZE);
-        } finally {
-            session.unlock();
-        }
     }
 }
