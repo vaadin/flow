@@ -83,8 +83,7 @@ public class ServletResourceDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadEvent = new DownloadEvent(request, response, session,
-                "download", "application/octet-stream", owner);
+        downloadEvent = new DownloadEvent(request, response, session, owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
     }
@@ -147,7 +146,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(downloadEvent.getRequest()).thenReturn(request);
         Mockito.when(downloadEvent.getSession()).thenReturn(session);
         Mockito.when(downloadEvent.getResponse()).thenReturn(response);
-        Mockito.when(downloadEvent.owningElement()).thenReturn(owner);
+        Mockito.when(downloadEvent.getOwningElement()).thenReturn(owner);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),

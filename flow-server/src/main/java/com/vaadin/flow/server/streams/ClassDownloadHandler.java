@@ -90,6 +90,9 @@ public class ClassDownloadHandler
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
+            downloadEvent.setContentType(getContentType(getUrlPostfix(),
+                    downloadEvent.getResponse()));
+            downloadEvent.setFileName(getUrlPostfix());
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
@@ -99,9 +102,6 @@ public class ClassDownloadHandler
             notifyError(downloadEvent, ioe);
             throw new UncheckedIOException(ioe);
         }
-
-        downloadEvent.getResponse()
-                .setContentType(downloadEvent.getContentType());
     }
 
     @Override

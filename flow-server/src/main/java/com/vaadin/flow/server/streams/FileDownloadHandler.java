@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
@@ -66,6 +67,10 @@ public class FileDownloadHandler
         VaadinResponse response = downloadEvent.getResponse();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
+            downloadEvent.setFileName(file.getName());
+            downloadEvent
+                    .setContentType(getContentType(file.getName(), response));
+            downloadEvent.setContentLength(file.length());
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
@@ -74,8 +79,6 @@ public class FileDownloadHandler
             notifyError(downloadEvent, ioe);
             throw new UncheckedIOException(ioe);
         }
-        response.setContentType(downloadEvent.getContentType());
-        response.setContentLength(Math.toIntExact(file.length()));
     }
 
     @Override
@@ -89,8 +92,8 @@ public class FileDownloadHandler
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
-                transferEvent.getResponse(), transferEvent.session(),
-                transferEvent.fileName(), transferEvent.owningElement(),
+                transferEvent.getResponse(), transferEvent.getSession(),
+                file.getName(), transferEvent.getOwningElement(),
                 file.length());
     }
 }

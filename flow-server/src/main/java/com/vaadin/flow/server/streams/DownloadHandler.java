@@ -45,13 +45,8 @@ public interface DownloadHandler extends ElementRequestHandler {
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) {
-        String fileName = getUrlPostfix() == null ? "" : getUrlPostfix();
-
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, fileName,
-                Optional.ofNullable(response.getService().getMimeType(fileName))
-                        .orElse("application/octet-stream"),
-                owner);
+                session, owner);
 
         handleDownloadRequest(downloadEvent);
     }
