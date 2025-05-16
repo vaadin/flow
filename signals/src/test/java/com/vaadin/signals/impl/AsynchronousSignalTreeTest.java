@@ -117,4 +117,60 @@ public class AsynchronousSignalTreeTest {
         assertEquals(new TextNode("Submitted"),
                 TestUtil.readConfirmedRootValue(tree));
     }
+
+    @Test
+    void subscribeToProcessed_noChanges_doesNotReceive() {
+        AsyncTestTree tree = new AsyncTestTree();
+        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToProcessed(resultContainer::set);
+
+        assertNull(resultContainer.get());
+    }
+
+    @Test
+    void subscribeToProcessed_changesConfirmed_receives() {
+        AsyncTestTree tree = new AsyncTestTree();
+        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToProcessed(resultContainer::set);
+
+        SignalCommand command = TestUtil.writeRootValueCommand("submitted");
+        tree.commitSingleCommand(command);
+
+        assertNull(resultContainer.get());
+
+        // Directly confirm another command:
+        tree.confirm(List.of(TestUtil.writeRootValueCommand("confirmed")));
+
+        assertEquals(new TextNode("confirmed"),
+                ((SignalCommand.SetCommand) resultContainer.get()).value());
+
+        tree.confirmSubmitted();
+        assertEquals(new TextNode("submitted"),
+                ((SignalCommand.SetCommand) resultContainer.get()).value());
+
+        resultContainer.set(null);
+
+        // No new things to confirm, no events to publish:
+        tree.confirmSubmitted();
+        assertNull(resultContainer.get());
+    }
+
+    @Test
+    void subscribeToProcessed_failingCommandConfirmed_receives() {
+        AsyncTestTree tree = new AsyncTestTree();
+        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToProcessed(resultContainer::set);
+
+        SignalCommand command = TestUtil.failingCommand();
+        tree.commitSingleCommand(command);
+
+        assertNull(resultContainer.get());
+
+        tree.confirmSubmitted();
+
+        assertEquals(command, resultContainer.get());
+    }
 }

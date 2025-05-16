@@ -219,7 +219,7 @@ public abstract class Signal<T> {
      */
     protected abstract Object usageChangeValue(Data data);
 
-    private boolean isValid(SignalCommand command) {
+    boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
             return true;
         } else if (command instanceof SignalCommand.TransactionCommand tx) {

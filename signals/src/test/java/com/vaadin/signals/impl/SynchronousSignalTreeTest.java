@@ -350,4 +350,97 @@ public class SynchronousSignalTreeTest {
         assertEquals(1, count.get());
     }
 
+    @Test
+    void subscribeToProcessed_noChanges_doesNotReceive() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToProcessed(resultContainer::set);
+
+        assertNull(resultContainer.get());
+    }
+
+    @Test
+    void subscribeToProcessed_receivesProcessed_bothAcceptedAndFailed() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+
+        tree.subscribeToProcessed(resultContainer::set);
+
+        var id1 = Id.random();
+        tree.commitSingleCommand(
+                new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(2)));
+
+        assertEquals(id1, resultContainer.get().commandId());
+
+        var id2 = Id.random();
+        tree.commitSingleCommand(
+                new SignalCommand.RemoveByKeyCommand(id2, Id.ZERO, "3"));
+
+        assertEquals(id2, resultContainer.get().commandId());
+    }
+
+    @Test
+    void subscribeToProcessed_transactionCommand_receives() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+
+        AtomicInteger count = new AtomicInteger();
+        tree.subscribeToProcessed(command -> {
+            count.incrementAndGet();
+            resultContainer.set(command);
+        });
+
+        var conditionId = Id.random();
+        var conditionCommand = new SignalCommand.ValueCondition(conditionId,
+                Id.ZERO, null);
+        var setCommandId = Id.random();
+        var setCommand = new SignalCommand.SetCommand(setCommandId, Id.ZERO,
+                new DoubleNode(2));
+        var commandId = Id.random();
+        var transactionCommand = new SignalCommand.TransactionCommand(commandId,
+                List.of(conditionCommand, setCommand));
+
+        tree.commitSingleCommand(transactionCommand);
+
+        assertEquals(1, count.get());
+        assertEquals(commandId, resultContainer.get().commandId());
+    }
+
+    @Test
+    void subscribeToProcessed_subscriberRemoved_doesNotReceiveAnymore() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicReference<SignalCommand> resultContainer1 = new AtomicReference<>();
+        AtomicReference<SignalCommand> resultContainer2 = new AtomicReference<>();
+
+        var canceler1 = tree.subscribeToProcessed(resultContainer1::set);
+
+        var canceler2 = tree.subscribeToProcessed(resultContainer2::set);
+
+        var id1 = Id.random();
+        tree.commitSingleCommand(
+                new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(2)));
+
+        assertEquals(id1, resultContainer1.get().commandId());
+        assertEquals(id1, resultContainer2.get().commandId());
+
+        canceler1.run(); // removes the first subscriber
+
+        resultContainer1.set(null);
+        resultContainer2.set(null);
+
+        tree.commitSingleCommand(
+                new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(3)));
+        assertNull(resultContainer1.get());
+        assertEquals(id1, resultContainer2.get().commandId());
+
+        canceler2.run();
+        resultContainer2.set(null);
+
+        tree.commitSingleCommand(
+                new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(4)));
+
+        assertNull(resultContainer1.get());
+        assertNull(resultContainer2.get());
+    }
 }
