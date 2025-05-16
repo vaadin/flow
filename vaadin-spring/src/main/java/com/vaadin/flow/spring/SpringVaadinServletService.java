@@ -141,8 +141,8 @@ public class SpringVaadinServletService extends VaadinServletService {
                 + "(2) Marking the bean to use with Vaadin by: "
                 + "naming it '%s' (e.g. @Bean(\"%s\")), or "
                 + "applying the @%s qualifier annotation to the bean definition. "
-                + "Note: To prevent a custom executor from replacing the default one, "
-                + "consider setting '@Bean(defaultCandidate=false)' on your bean definition.",
+                + "Note: To prevent an Executor bean from replacing the default one "
+                + "provided by Spring, consider setting '@Bean(defaultCandidate=false)' on its definition.",
                 candidates, VaadinTaskExecutor.NAME, VaadinTaskExecutor.NAME,
                 VaadinTaskExecutor.class.getSimpleName());
         throw new IllegalStateException(message);

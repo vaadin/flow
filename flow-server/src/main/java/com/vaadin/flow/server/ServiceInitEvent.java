@@ -111,12 +111,16 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Sets the {@link Executor} to be used by the service.
-     *
+     * Sets the {@link Executor} to be used by Vaadin for running asynchronous
+     * tasks.
+     * <p>
+     * The application can also benefit from this executor to submit its own
+     * asynchronous tasks.
+     * <p>
      * The developer is responsible for managing the executor's lifecycle, for
      * example, by registering a {@link VaadinService} destroy listener to shut
      * it down.
-     *
+     * <p>
      * A {@literal null} value can be given to switch back to the Vaadin default
      * executor.
      *
@@ -168,7 +172,8 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets the optional {@link Executor} that is currently set for the service.
+     * Gets the optional {@link Executor} that is currently set to be used by
+     * Vaadin for running asynchronous tasks.
      *
      * @return an {@link Optional} containing the {@link Executor}, or an empty
      *         {@link Optional} if no executor is set.

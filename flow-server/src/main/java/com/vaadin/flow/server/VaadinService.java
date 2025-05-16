@@ -594,7 +594,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Gets the executor instance used for managing concurrent tasks.
+     * Gets the executor instance used by Vaadin for managing concurrent tasks.
      * <p>
      * By default, a thread pool executor with a custom with core pool size of
      * 8, an unbounded maximum pool size, and a keep-alive time of 60 seconds
@@ -608,6 +608,9 @@ public abstract class VaadinService implements Serializable {
      * A custom executor can be configured by registering a
      * {@link VaadinServiceInitListener} and providing the executor instance to
      * the {@link ServiceInitEvent}.
+     * <p>
+     * A Vaadin application can also benefit from this executor to submit
+     * asynchronous tasks.
      *
      * @return the Executor instance, never {@literal null}.
      * @see VaadinServiceInitListener
