@@ -97,6 +97,18 @@ public class AuthenticationContext {
     }
 
     /**
+     * Gets an {@link Optional} with an instance of the current user if it has
+     * been authenticated, or empty if the user is not authenticated.
+     *
+     * @return an {@link Optional} with the current authenticated user, or empty
+     *         if none available
+     */
+    public Optional<VaadinUser> getAuthenticatedUser() {
+        return getAuthentication()
+                .map(VaadinUserFactory::createVaadinUser);
+    }
+
+    /**
      * Gets an {@link Optional} containing the authenticated principal name, or
      * an empty optional if the user is not authenticated.
      *
