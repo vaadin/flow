@@ -1,6 +1,8 @@
 package com.vaadin.flow.server.communication;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -40,6 +42,7 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.FileUploadHandler;
 import com.vaadin.flow.server.streams.InMemoryUploadHandler;
 import com.vaadin.flow.server.streams.TemporaryFileUploadHandler;
@@ -512,6 +515,13 @@ public class UploadHandlerTest {
         handler.handleRequest(session, request, response);
 
         Assert.assertTrue("Handled was not called at the end", handled.get());
+    }
+
+    @Test
+    public void doesNotRequireToCatchIOException() {
+        UploadHandler handler = event -> {
+            new FileInputStream(new File("foo"));
+        };
     }
 
     private Part createPart(InputStream inputStream, String contentType,

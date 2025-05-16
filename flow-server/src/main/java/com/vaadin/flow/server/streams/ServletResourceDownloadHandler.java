@@ -64,7 +64,8 @@ public class ServletResourceDownloadHandler
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
         VaadinService service = downloadEvent.getRequest().getService();
         if (service instanceof VaadinServletService servletService) {
             try (OutputStream outputStream = downloadEvent.getOutputStream();
@@ -77,7 +78,7 @@ public class ServletResourceDownloadHandler
                 downloadEvent.getResponse().setStatus(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 notifyError(downloadEvent, ioe);
-                throw new UncheckedIOException(ioe);
+                throw ioe;
             }
 
             downloadEvent.getResponse()
