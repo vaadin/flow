@@ -67,6 +67,8 @@ public class InputStreamDownloadHandler
 
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent) {
+        downloadEvent.setContentType(
+                getContentType(name, downloadEvent.getResponse()));
         DownloadResponse download = handler.apply(downloadEvent);
         VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {
@@ -84,11 +86,6 @@ public class InputStreamDownloadHandler
             notifyError(downloadEvent, ioe);
             throw new UncheckedIOException(ioe);
         }
-
-        response.setContentType(download.getContentType());
-        response.setContentLength(download.getSize());
-        response.setHeader("Content-Disposition",
-                "attachment;filename=" + download.getFileName());
     }
 
     @Override

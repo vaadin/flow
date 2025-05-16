@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 
@@ -66,22 +67,24 @@ public class ServletResourceDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent) {
         VaadinService service = downloadEvent.getRequest().getService();
+        VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
             try (OutputStream outputStream = downloadEvent.getOutputStream();
                     InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
+                String resourceName = getUrlPostfix();
+                downloadEvent
+                        .setContentType(getContentType(resourceName, response));
+                downloadEvent.setFileName(resourceName);
                 TransferProgressListener.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
-                downloadEvent.getResponse().setStatus(
+                response.setStatus(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 notifyError(downloadEvent, ioe);
                 throw new UncheckedIOException(ioe);
             }
-
-            downloadEvent.getResponse()
-                    .setContentType(downloadEvent.getContentType());
         }
     }
 

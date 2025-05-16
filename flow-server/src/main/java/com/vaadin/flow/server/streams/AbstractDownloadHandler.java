@@ -16,6 +16,10 @@
 
 package com.vaadin.flow.server.streams;
 
+import java.util.Optional;
+
+import com.vaadin.flow.server.VaadinResponse;
+
 /**
  * Abstract class for common methods used in pre-made download handlers.
  *
@@ -31,6 +35,12 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
-                transferEvent.getFileName(), transferEvent.owningElement(), -1);
+                transferEvent.getFileName(), transferEvent.getOwningElement(),
+                -1);
+    }
+
+    protected String getContentType(String fileName, VaadinResponse response) {
+        return Optional.ofNullable(response.getService().getMimeType(fileName))
+                .orElse("application/octet-stream");
     }
 }

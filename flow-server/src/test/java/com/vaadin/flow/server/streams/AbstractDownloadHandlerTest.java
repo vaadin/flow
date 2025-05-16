@@ -79,8 +79,7 @@ public class AbstractDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadEvent = new DownloadEvent(request, response, session,
-                "download", "application/octet-stream", owner);
+        downloadEvent = new DownloadEvent(request, response, session, owner);
 
         handler = new AbstractDownloadHandler<>() {
             @Override
