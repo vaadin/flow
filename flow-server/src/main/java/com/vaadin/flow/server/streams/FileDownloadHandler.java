@@ -75,7 +75,7 @@ public class FileDownloadHandler
             throw new UncheckedIOException(ioe);
         }
         response.setContentType(downloadEvent.getContentType());
-        response.setContentLength(Math.toIntExact(file.length()));
+        response.setContentLengthLong(file.length());
     }
 
     @Override

@@ -232,7 +232,7 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a upload handler for storing upload stream into a file.
+     * Generate an upload handler for storing upload stream into a file.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -247,7 +247,8 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a upload handler for storing upload stream into a file.
+     * Generate an upload handler for storing upload stream into a file with
+     * progress handling.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -267,7 +268,8 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate upload handler for storing upload stream into a temporary file.
+     * Generate an upload handler for storing upload stream into a temporary
+     * file.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -279,7 +281,8 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate upload handler for storing upload stream into a temporary file.
+     * Generate an upload handler for storing upload stream into a temporary
+     * file with progress handling.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -302,7 +305,7 @@ public interface UploadHandler extends ElementRequestHandler {
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
-     * @return in-memory upoload handler
+     * @return in-memory upload handler
      */
     static InMemoryUploadHandler inMemory(
             SerializableBiConsumer<UploadMetadata, byte[]> successHandler) {
@@ -311,13 +314,13 @@ public interface UploadHandler extends ElementRequestHandler {
 
     /**
      * Generate upload handler for storing download into in-memory
-     * {@code byte[]}.
+     * {@code byte[]} with progress handling.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
      * @param listener
      *            listener for transfer progress events
-     * @return in-memory upoload handler with progress listener
+     * @return in-memory upload handler with progress listener
      */
     static InMemoryUploadHandler inMemory(
             SerializableBiConsumer<UploadMetadata, byte[]> successHandler,
