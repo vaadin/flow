@@ -65,18 +65,19 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * <p>
      * The calls of the given listener's methods are wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of the given listener. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
-     * application to properly send the UI changes to client.
+     * defined here asynchrously when the download or upload request is being
+     * handled. This needs {@link com.vaadin.flow.component.page.Push} to be
+     * enabled in the application to properly send the UI changes to client.
+     * <p>
+     * Custom download/upload handler implementations can change this method to
+     * be public or use it in handler's constructor.
      *
      * @param listener
      *            progress listener to be added to this handler
      * @return a {@link Registration} object that can be used to remove the
      *         added listener
      */
-    public Registration addTransferProgressListener(
+    protected Registration addTransferProgressListener(
             TransferProgressListener listener) {
         Objects.requireNonNull(listener, "Listener cannot be null");
         TransferProgressListener wrapper = new TransferProgressListenerWrapper(
@@ -230,7 +231,31 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
                 : Collections.unmodifiableList(listeners);
     }
 
-    void notifyError(T transferEvent, IOException ioe) {
+    /**
+     * Notifies all registered listeners about an error that occurred during a
+     * data transfer operation.
+     * <p>
+     * Custom download/upload handler implementations can use this method to
+     * notify listeners in the catch block, e.g.:
+     *
+     * <pre>
+     * try () {
+     *     // handler download/upload request
+     * } catch (IOException ioe) {
+     *     // process the error
+     *     notifyError(event, ioe);
+     *     throw ioe;
+     * }
+     * </pre>
+     *
+     *
+     * @param transferEvent
+     *            the meta-data associated with the operation where the error
+     *            occurred
+     * @param ioe
+     *            the exception that describes the error
+     */
+    protected void notifyError(T transferEvent, IOException ioe) {
         TransferContext transferContext = getTransferContext(transferEvent);
         getListeners()
                 .forEach(listener -> listener.onError(transferContext, ioe));
