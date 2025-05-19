@@ -22,7 +22,7 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - run: echo "Concurrency Group = $HEAD_REF || $REF_NAME"
+      - run: echo "Concurrency Group = ${HEAD_REF:-$REF_NAME}"
       - uses: actions-cool/check-user-permission@main
         id: checkUser
         with:
