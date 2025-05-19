@@ -141,7 +141,7 @@ public class DownloadEvent {
     public void setFileName(String fileName) {
         fileName = fileName != null ? fileName : "";
         response.setHeader("Content-Disposition",
-                "attachment;filename=\"" + fileName + "\"");
+                "attachment; filename=\"" + fileName + "\"");
         this.fileName = fileName;
     }
 

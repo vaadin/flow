@@ -195,4 +195,48 @@ public class ServletResourceDownloadHandlerTest {
         }
         Assert.assertEquals(List.of("onStart", "onError"), invocations);
     }
+
+    @Test
+    public void inline_setFileNameInvokedByDefault() throws IOException {
+        DownloadHandler handler = DownloadHandler
+                .forServletResource(PATH_TO_FILE, "my-download.bin");
+
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getRequest()).thenReturn(request);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(event).setFileName("my-download.bin");
+        Mockito.verify(event).setContentType("application/octet-stream");
+    }
+
+    @Test
+    public void attachment_doesNotSetFileNameWhenInlined() throws IOException {
+        DownloadHandler handler = DownloadHandler
+                .forServletResource(PATH_TO_FILE, "my-download.bin").inline();
+
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getRequest()).thenReturn(request);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(event, Mockito.times(0)).setFileName("my-download.bin");
+        Mockito.verify(event).setContentType("application/octet-stream");
+    }
 }

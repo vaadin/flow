@@ -179,4 +179,46 @@ public class ClassDownloadHandlerTest {
         }
         Assert.assertEquals(List.of("onStart", "onError"), invocations);
     }
+
+    @Test
+    public void inline_setFileNameInvokedByDefault() throws IOException {
+        DownloadHandler handler = DownloadHandler.forClassResource(
+                this.getClass(), PATH_TO_FILE, "my-download.pdf");
+
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/pdf");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(event).setFileName("my-download.pdf");
+        Mockito.verify(event).setContentType("application/pdf");
+    }
+
+    @Test
+    public void attachment_doesNotSetFileNameWhenInlined() throws IOException {
+        DownloadHandler handler = DownloadHandler.forClassResource(
+                this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();
+
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/pdf");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(event, Mockito.times(0)).setFileName("my-download.pdf");
+        Mockito.verify(event).setContentType("application/pdf");
+    }
 }

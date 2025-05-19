@@ -209,4 +209,15 @@ public class AbstractDownloadHandlerTest {
         customHandler.handleDownloadRequest(downloadEvent);
         Assert.assertFalse(successAtomic.get());
     }
+
+    @Test
+    public void inline_attachmentUsedByDefault() {
+        Assert.assertFalse(handler.isInline());
+    }
+
+    @Test
+    public void inline_inlinedWhenExplicitlyCalled() {
+        handler.inline();
+        Assert.assertTrue(handler.isInline());
+    }
 }
