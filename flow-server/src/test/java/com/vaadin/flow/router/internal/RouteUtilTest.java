@@ -1039,19 +1039,16 @@ public class RouteUtilTest {
         Map<String, AvailableViewInfo> clientRoutes = new HashMap<>();
 
         clientRoutes.put("", new AvailableViewInfo("public", null, false, "",
-                false, false, null, null, null, false));
-        clientRoutes
-                .put("/flow",
-                        new AvailableViewInfo("public", null, false, "", false,
-                                false, null,
-                                Arrays.asList(new AvailableViewInfo("child",
-                                        null, false, "", false, false, null,
-                                        null, null, false)),
-                                null, false));
+                false, false, null, null, null, false, null));
+        clientRoutes.put("/flow", new AvailableViewInfo("public", null, false,
+                "", false, false, null,
+                Arrays.asList(new AvailableViewInfo("child", null, false, "",
+                        false, false, null, null, null, false, null)),
+                null, false, null));
         clientRoutes.put("/hilla/components", new AvailableViewInfo("public",
-                null, false, "", false, false, null, null, null, false));
+                null, false, "", false, false, null, null, null, false, null));
         clientRoutes.put("/hilla", new AvailableViewInfo("public", null, false,
-                "", false, false, null, null, null, false));
+                "", false, false, null, null, null, false, null));
 
         try (MockedStatic<MenuRegistry> registry = Mockito
                 .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
@@ -1084,13 +1081,13 @@ public class RouteUtilTest {
         Map<String, AvailableViewInfo> clientRoutes = new HashMap<>();
 
         clientRoutes.put("", new AvailableViewInfo("public", null, false, "",
-                false, false, null, null, null, false));
+                false, false, null, null, null, false, null));
         clientRoutes.put("/flow", new AvailableViewInfo("public", null, false,
-                "", false, false, null, null, null, false));
+                "", false, false, null, null, null, false, null));
         clientRoutes.put("/hilla/components", new AvailableViewInfo("public",
-                null, false, "", false, false, null, null, null, false));
+                null, false, "", false, false, null, null, null, false, null));
         clientRoutes.put("/hilla", new AvailableViewInfo("public", null, false,
-                "", false, false, null, null, null, false));
+                "", false, false, null, null, null, false, null));
 
         try (MockedStatic<MenuRegistry> registry = Mockito
                 .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS);

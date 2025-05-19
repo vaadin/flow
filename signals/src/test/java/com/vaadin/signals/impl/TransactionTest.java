@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
@@ -280,6 +282,27 @@ public class TransactionTest {
 
             assertNotNull(TestUtil.readTransactionRootValue(tree));
         }, Type.WRITE_THROUGH);
+    }
+
+    @Test
+    void writeThrough_readValueInObserver_updatedValueRead() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        List<String> invocations = new ArrayList<>();
+        tree.observeNextChange(Id.ZERO, () -> {
+            invocations.add(TestUtil.readTransactionRootValue(tree).asText());
+            return true;
+        });
+
+        Transaction.runInTransaction(() -> {
+            // Include original value in read revision
+            TestUtil.readTransactionRootValue(tree);
+
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("update"), null);
+        }, Type.WRITE_THROUGH);
+
+        assertEquals(List.of("update"), invocations);
     }
 
     @Test
