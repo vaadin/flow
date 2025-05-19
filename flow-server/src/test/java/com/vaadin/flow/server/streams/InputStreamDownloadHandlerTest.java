@@ -36,12 +36,14 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 public class InputStreamDownloadHandlerTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
+    private VaadinService service;
     private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
@@ -51,6 +53,7 @@ public class InputStreamDownloadHandlerTest {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
+        service = Mockito.mock(VaadinService.class);
 
         UI ui = Mockito.mock(UI.class);
         // run the command immediately
@@ -69,6 +72,9 @@ public class InputStreamDownloadHandlerTest {
         downloadEvent = new DownloadEvent(request, response, session, owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
     }
 
     @Test

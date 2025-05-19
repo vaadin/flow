@@ -42,7 +42,11 @@ public class ServletResourceDownloadHandler
 
     /**
      * Create download handler for servlet resource. Uses url postfix as file
-     * name from path
+     * name from path.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to the file
+     * name from <code>path</code>. If you want to use a different file name,
+     * use {@link #ServletResourceDownloadHandler(String, String)} instead.
      *
      * @param path
      *            path of servlet resource
@@ -53,6 +57,9 @@ public class ServletResourceDownloadHandler
 
     /**
      * Create download handler for servlet resource.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param path
      *            path of servlet resource
@@ -75,7 +82,9 @@ public class ServletResourceDownloadHandler
                 String resourceName = getUrlPostfix();
                 downloadEvent
                         .setContentType(getContentType(resourceName, response));
-                downloadEvent.setFileName(resourceName);
+                if (isAttachment()) {
+                    downloadEvent.setFileName(resourceName);
+                }
                 TransferProgressListener.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
             } catch (IOException ioe) {

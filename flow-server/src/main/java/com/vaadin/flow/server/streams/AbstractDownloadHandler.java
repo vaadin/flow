@@ -31,6 +31,9 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         extends TransferProgressAwareHandler<DownloadEvent, R>
         implements DownloadHandler {
 
+    // Content-Disposition: attachment by default
+    private boolean attachment = true;
+
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
@@ -42,5 +45,29 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     protected String getContentType(String fileName, VaadinResponse response) {
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
+    }
+
+    /**
+     * Sets this download content to be displayed inside the Web page, or as the
+     * Web page, e.g. as an image or inside an iframe.
+     * <p>
+     * Sets the 'Content-Disposition' attribute to 'inline'.
+     *
+     * @return this instance for method chaining
+     */
+    public R inline() {
+        attachment = false;
+        return (R) this;
+    }
+
+    /**
+     * Returns if the download content to be displayed inside the Web page or
+     * downloaded as a file.
+     *
+     * @return true if the content is to be downloaded as a file, false if it is
+     *         to be displayed inline
+     */
+    protected boolean isAttachment() {
+        return attachment;
     }
 }

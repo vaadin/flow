@@ -140,7 +140,7 @@ public class DownloadEvent {
      */
     public void setFileName(String fileName) {
         response.setHeader("Content-Disposition",
-                "attachment;filename=" + fileName);
+                "attachment;filename=\"" + fileName + "\"");
         this.fileName = fileName;
     }
 

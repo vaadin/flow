@@ -49,8 +49,11 @@ public class InputStreamDownloadHandler
     }
 
     /**
-     * Create a input stream download handler for given event -> response
+     * Create an input stream download handler for given event -> response
      * function.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param handler
      *            serializable function for handling download
@@ -67,8 +70,12 @@ public class InputStreamDownloadHandler
 
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent) {
+        String resourceName = getUrlPostfix();
         downloadEvent.setContentType(
-                getContentType(name, downloadEvent.getResponse()));
+                getContentType(resourceName, downloadEvent.getResponse()));
+        if (isAttachment()) {
+            downloadEvent.setFileName(resourceName);
+        }
         DownloadResponse download = handler.apply(downloadEvent);
         VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {

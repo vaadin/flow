@@ -40,7 +40,11 @@ public class FileDownloadHandler
 
     /**
      * Create a download handler for given file. Url postfix will be used as
-     * {@code file.getName()}
+     * {@code file.getName()}.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>file.getName()</code>. If you want to use a different file name,
+     * use {@link #FileDownloadHandler(File, String)} instead.
      *
      * @param file
      *            file to download
@@ -51,6 +55,9 @@ public class FileDownloadHandler
 
     /**
      * Create a download handler for given file.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param file
      *            file to download
@@ -67,9 +74,12 @@ public class FileDownloadHandler
         VaadinResponse response = downloadEvent.getResponse();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
-            downloadEvent.setFileName(file.getName());
+            String resourceName = getUrlPostfix();
+            if (isAttachment()) {
+                downloadEvent.setFileName(resourceName);
+            }
             downloadEvent
-                    .setContentType(getContentType(file.getName(), response));
+                    .setContentType(getContentType(resourceName, response));
             downloadEvent.setContentLength(file.length());
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
@@ -93,7 +103,7 @@ public class FileDownloadHandler
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
-                file.getName(), transferEvent.getOwningElement(),
+                getUrlPostfix(), transferEvent.getOwningElement(),
                 file.length());
     }
 }

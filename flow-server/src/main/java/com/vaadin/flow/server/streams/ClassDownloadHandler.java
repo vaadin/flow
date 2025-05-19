@@ -44,6 +44,10 @@ public class ClassDownloadHandler
     /**
      * Create a class resource download handler with the resource name as the
      * url postfix (file name).
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>resourceName</code>. If you want to use a different file name, use
+     * {@link #ClassDownloadHandler(Class, String, String)} instead.
      *
      * @param clazz
      *            class to use for getting resource
@@ -57,6 +61,9 @@ public class ClassDownloadHandler
     /**
      * Create a class resource download handler with the given file name as the
      * url postfix.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>fileName</code>.
      *
      * @param clazz
      *            class to use for getting resource
@@ -90,9 +97,12 @@ public class ClassDownloadHandler
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
-            downloadEvent.setContentType(getContentType(getUrlPostfix(),
-                    downloadEvent.getResponse()));
-            downloadEvent.setFileName(getUrlPostfix());
+            String resourceName = getUrlPostfix();
+            downloadEvent.setContentType(
+                    getContentType(resourceName, downloadEvent.getResponse()));
+            if (isAttachment()) {
+                downloadEvent.setFileName(resourceName);
+            }
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
