@@ -80,7 +80,7 @@ public class ClassDownloadHandlerTest {
 
     @Test
     public void transferProgressListener_addListener_listenersInvoked()
-            throws URISyntaxException {
+            throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
         DownloadHandler handler = DownloadHandler.forClassResource(

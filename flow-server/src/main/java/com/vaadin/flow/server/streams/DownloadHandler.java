@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
@@ -40,11 +41,13 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @param event
      *            download event containing the necessary data for writing the
      *            response
+     * @throws IOException
+     *             if an IO error occurred during download
      */
-    void handleDownloadRequest(DownloadEvent event);
+    void handleDownloadRequest(DownloadEvent event) throws IOException;
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, Element owner) {
+            VaadinSession session, Element owner) throws IOException {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, owner);
 
