@@ -2,10 +2,8 @@ package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -92,7 +90,7 @@ public abstract class SignalTree {
 
     private final Type type;
 
-    private final Set<Consumer<SignalCommand>> subscribers = new HashSet<>();
+    private final List<Consumer<SignalCommand>> subscribers = new ArrayList<>();
 
     /**
      * Creates a new signal tree with the given type.
