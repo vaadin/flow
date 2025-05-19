@@ -78,7 +78,7 @@ public class FileDownloadHandlerTest {
 
     @Test
     public void transferProgressListener_addListener_listenersInvoked()
-            throws URISyntaxException {
+            throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
