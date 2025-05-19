@@ -26,6 +26,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -294,12 +295,17 @@ public class HtmlObject extends HtmlContainer implements
 
     /**
      * Sets the URL for {@link DownloadHandler} callback as "data" attribute
-     * value .
+     * value.
      *
      * @param data
-     *            a "data" attribute value,, not {@code null}
+     *            a "data" attribute value, not {@code null}
      */
     public void setData(DownloadHandler data) {
+        if (data instanceof AbstractDownloadHandler<?> handler) {
+            // change disposition to inline in pre-defined handlers,
+            // where it is 'attachment' by default
+            handler.inline();
+        }
         getElement().setAttribute("data",
                 new StreamResourceRegistry.ElementStreamResource(data,
                         this.getElement()));

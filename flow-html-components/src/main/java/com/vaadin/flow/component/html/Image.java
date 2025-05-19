@@ -24,6 +24,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -149,6 +150,11 @@ public class Image extends HtmlContainer
      *            the download handler resource, not null
      */
     public void setSrc(DownloadHandler downloadHandler) {
+        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
+            // change disposition to inline in pre-defined handlers,
+            // where it is 'attachment' by default
+            handler.inline();
+        }
         getElement().setAttribute("src",
                 new StreamResourceRegistry.ElementStreamResource(
                         downloadHandler, this.getElement()));
