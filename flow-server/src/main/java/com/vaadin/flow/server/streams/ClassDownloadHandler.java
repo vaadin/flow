@@ -79,7 +79,8 @@ public class ClassDownloadHandler
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
@@ -97,7 +98,7 @@ public class ClassDownloadHandler
             downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             notifyError(downloadEvent, ioe);
-            throw new UncheckedIOException(ioe);
+            throw ioe;
         }
 
         downloadEvent.getResponse()

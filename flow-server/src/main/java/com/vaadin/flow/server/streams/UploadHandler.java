@@ -67,8 +67,10 @@ public interface UploadHandler extends ElementRequestHandler {
      * @param event
      *            upload event containing the necessary data for getting the
      *            request
+     * @throws IOException
+     *             if an error occurs during upload
      */
-    void handleUploadRequest(UploadEvent event);
+    void handleUploadRequest(UploadEvent event) throws IOException;
 
     /**
      * Method called by framework when
@@ -95,7 +97,7 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, Element owner) {
+            VaadinSession session, Element owner) throws IOException {
         boolean isMultipartUpload = request instanceof HttpServletRequest
                 && JakartaServletFileUpload
                         .isMultipartContent((HttpServletRequest) request);

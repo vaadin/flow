@@ -1,6 +1,7 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -111,7 +112,8 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled() {
+    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled()
+            throws IOException {
         UploadHandler handler = (event) -> {
             event.getResponse().setContentType("text/html; charset=utf-8");
         };
@@ -124,7 +126,8 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled() {
+    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled()
+            throws IOException {
         UploadHandler handler = (event) -> {
             throw new RuntimeException("Exception in xrh upload");
         };
@@ -512,6 +515,13 @@ public class UploadHandlerTest {
         handler.handleRequest(session, request, response);
 
         Assert.assertTrue("Handled was not called at the end", handled.get());
+    }
+
+    @Test
+    public void doesNotRequireToCatchIOException() {
+        UploadHandler handler = event -> {
+            new FileInputStream(new File("foo"));
+        };
     }
 
     private Part createPart(InputStream inputStream, String contentType,
