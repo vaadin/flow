@@ -114,7 +114,7 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled() {
+    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled() throws IOException {
         UploadHandler handler = (event) -> {
             event.getResponse().setContentType("text/html; charset=utf-8");
         };
@@ -127,7 +127,7 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled() {
+    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled() throws IOException {
         UploadHandler handler = (event) -> {
             throw new RuntimeException("Exception in xrh upload");
         };
