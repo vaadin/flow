@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -185,14 +186,18 @@ public class InputStreamDownloadHandlerTest {
 
     @Test
     public void inline_setFileNameInvokedByDefault() throws IOException {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
         DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
+            Mockito.verify(event, Mockito.times(0))
+                    .setFileName("my-download.bin");
+            Mockito.verify(event, Mockito.times(0))
+                    .setContentType("application/octet-stream");
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            return new DownloadResponse(inputStream, "download",
+            return new DownloadResponse(inputStream, "my-download.bin",
                     "application/octet-stream", data.length);
-        }, "my-download.bin");
+        });
 
-        DownloadEvent event = Mockito.mock(DownloadEvent.class);
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getRequest()).thenReturn(request);
         Mockito.when(event.getResponse()).thenReturn(response);

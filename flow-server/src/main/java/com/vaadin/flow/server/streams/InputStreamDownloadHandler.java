@@ -70,17 +70,17 @@ public class InputStreamDownloadHandler
 
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent) {
-        String resourceName = getUrlPostfix();
-        downloadEvent.setContentType(
-                getContentType(resourceName, downloadEvent.getResponse()));
-        if (!isInline()) {
-            downloadEvent.setFileName(resourceName);
-        }
         DownloadResponse download = handler.apply(downloadEvent);
         VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {
             response.setStatus(download.getError());
             return;
+        }
+
+        String downloadName = download.getFileName();
+        downloadEvent.setContentType(getContentType(downloadName, response));
+        if (!isInline()) {
+            downloadEvent.setFileName(downloadName);
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
