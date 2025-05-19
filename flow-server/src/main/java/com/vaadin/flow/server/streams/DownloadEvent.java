@@ -170,7 +170,7 @@ public class DownloadEvent {
      *            the length of the response content in bytes
      */
     public void setContentLength(long contentLength) {
-        response.setContentLength(Math.toIntExact(contentLength));
+        response.setContentLengthLong(contentLength);
         this.contentLength = contentLength;
     }
 

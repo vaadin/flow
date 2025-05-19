@@ -39,6 +39,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 public class FileDownloadHandlerTest {
 
@@ -132,7 +133,7 @@ public class FileDownloadHandlerTest {
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
-        Mockito.verify(response).setContentLength(165000);
+        Mockito.verify(response).setContentLengthLong(165000);
     }
 
     @Test
@@ -163,8 +164,11 @@ public class FileDownloadHandlerTest {
                     public void onError(TransferContext context,
                             IOException reason) {
                         invocations.add("onError");
-                        Assert.assertEquals(
-                                "non-existing-file (No such file or directory)",
+                        String expectedMessage = "non-existing-file (No such file or directory)";
+                        if (FrontendUtils.isWindows()) {
+                            expectedMessage = "non-existing-file (The system cannot find the file specified)";
+                        }
+                        Assert.assertEquals(expectedMessage,
                                 reason.getMessage());
                     }
                 });

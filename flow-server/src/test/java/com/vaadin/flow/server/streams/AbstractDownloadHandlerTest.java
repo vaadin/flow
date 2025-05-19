@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -153,6 +154,21 @@ public class AbstractDownloadHandlerTest {
         });
         Mockito.verify(completeHandler).accept(true);
         Mockito.verify(completeHandler).accept(false);
+    }
+
+    @Test
+    public void transferProgressListener_transfer_sessionNotLocked()
+            throws IOException {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                "Hello".getBytes(StandardCharsets.UTF_8));
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        TransferContext context = Mockito.mock(TransferContext.class);
+        Mockito.when(context.session()).thenReturn(session);
+        OutputStream outputStream = Mockito.mock(OutputStream.class);
+        Collection<TransferProgressListener> listeners = new ArrayList<>();
+        TransferProgressListener.transfer(inputStream, outputStream, context,
+                listeners);
+        Mockito.verify(session, Mockito.times(0)).lock();
     }
 
     @Test
