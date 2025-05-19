@@ -73,7 +73,7 @@ public class InputStreamDownloadHandler
         String resourceName = getUrlPostfix();
         downloadEvent.setContentType(
                 getContentType(resourceName, downloadEvent.getResponse()));
-        if (isAttachment()) {
+        if (!isInline()) {
             downloadEvent.setFileName(resourceName);
         }
         DownloadResponse download = handler.apply(downloadEvent);

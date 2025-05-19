@@ -100,7 +100,7 @@ public class ClassDownloadHandler
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(
                     getContentType(resourceName, downloadEvent.getResponse()));
-            if (isAttachment()) {
+            if (!isInline()) {
                 downloadEvent.setFileName(resourceName);
             }
             TransferProgressListener.transfer(inputStream, outputStream,

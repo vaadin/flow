@@ -82,7 +82,7 @@ public class ServletResourceDownloadHandler
                 String resourceName = getUrlPostfix();
                 downloadEvent
                         .setContentType(getContentType(resourceName, response));
-                if (isAttachment()) {
+                if (!isInline()) {
                     downloadEvent.setFileName(resourceName);
                 }
                 TransferProgressListener.transfer(inputStream, outputStream,

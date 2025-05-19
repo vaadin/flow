@@ -32,7 +32,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         implements DownloadHandler {
 
     // Content-Disposition: attachment by default
-    private boolean attachment = true;
+    private boolean inline = false;
 
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
@@ -56,7 +56,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @return this instance for method chaining
      */
     public R inline() {
-        attachment = false;
+        inline = true;
         return (R) this;
     }
 
@@ -64,10 +64,10 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * Returns if the download content to be displayed inside the Web page or
      * downloaded as a file.
      *
-     * @return true if the content is to be downloaded as a file, false if it is
-     *         to be displayed inline
+     * @return true if the content is to be displayed inline, false if it is to
+     *         be downloaded as a file
      */
-    protected boolean isAttachment() {
-        return attachment;
+    public boolean isInline() {
+        return inline;
     }
 }

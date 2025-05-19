@@ -75,7 +75,7 @@ public class FileDownloadHandler
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             String resourceName = getUrlPostfix();
-            if (isAttachment()) {
+            if (!isInline()) {
                 downloadEvent.setFileName(resourceName);
             }
             downloadEvent
