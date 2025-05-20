@@ -98,7 +98,9 @@ public class Image extends HtmlContainer
      * default empty string which is not retained with {@link #setAlt(String)}.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param downloadHandler
      *            the download handler callback that provides an image data, not
@@ -150,7 +152,9 @@ public class Image extends HtmlContainer
      * callback.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param downloadHandler
      *            the download handler resource, not null

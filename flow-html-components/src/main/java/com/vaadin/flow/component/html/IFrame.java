@@ -142,7 +142,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * resource from server.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param downloadHandler
      *            the download handler callback that provides a resource from
@@ -184,7 +186,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * {@link DownloadHandler} callback.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @see #setSrc(String)
      *

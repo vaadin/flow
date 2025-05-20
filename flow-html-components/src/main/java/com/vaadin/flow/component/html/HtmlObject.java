@@ -145,7 +145,9 @@ public class HtmlObject extends HtmlContainer implements
      * value.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @see #setData(DownloadHandler)
      * @see #setType(String)
@@ -165,7 +167,9 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -190,7 +194,9 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -213,7 +219,9 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -307,7 +315,9 @@ public class HtmlObject extends HtmlContainer implements
      * value.
      * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods.
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param data
      *            a "data" attribute value, not {@code null}
