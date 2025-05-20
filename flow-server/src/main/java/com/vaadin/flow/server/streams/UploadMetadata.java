@@ -19,7 +19,7 @@ package com.vaadin.flow.server.streams;
 /**
  * Metadata for successful upload.
  * <p>
- * For fileXHR uploads the fileName and contentType will be {@code unknown}.
+ * The fileName and contentType will only be available for multipart uploads.
  */
 public record UploadMetadata(String fileName, String contentType,
         long contentLength) {

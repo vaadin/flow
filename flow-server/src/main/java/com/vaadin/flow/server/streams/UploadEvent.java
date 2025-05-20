@@ -146,7 +146,7 @@ public class UploadEvent {
     /**
      * Get the set file name for current upload.
      * <p>
-     * The file name is always {@code unknown} for filexhr.
+     * The file name will only be available for multipart uploads.
      *
      * @return file name
      */
@@ -157,7 +157,7 @@ public class UploadEvent {
     /**
      * Get the content type for the data to download.
      * <p>
-     * The content type is always {@code unknown} for filexhr.
+     * The content type will only be available for multipart uploads.
      *
      * @return set content type
      */
