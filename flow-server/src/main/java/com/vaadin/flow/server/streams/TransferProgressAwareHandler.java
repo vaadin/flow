@@ -192,8 +192,6 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * @param progressHandler
      *            the handler to be called with the transfer context, current
      *            and total bytes
-     * @param progressIntervalInBytes
-     *            the interval in bytes for reporting progress
      * @return this instance for method chaining
      */
     public R onProgress(
