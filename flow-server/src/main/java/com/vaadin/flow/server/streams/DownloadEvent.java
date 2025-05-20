@@ -48,7 +48,7 @@ public class DownloadEvent {
     private Element owningElement;
     private String fileName;
     private String contentType;
-    private long contentLength;
+    private long contentLength = -1;
 
     public DownloadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owningElement) {
@@ -165,9 +165,9 @@ public class DownloadEvent {
     }
 
     /**
-     * Sets the length of the content body in the response. This method utilizes
-     * the HTTP Content-Length header to specify the length of the content being
-     * sent to the client.
+     * Sets the length of the content body in the response if the length is not
+     * <code>-1</code>. This method utilizes the HTTP Content-Length header to
+     * specify the length of the content being sent to the client.
      * <p>
      * To be called before the response is committed.
      *
@@ -175,12 +175,18 @@ public class DownloadEvent {
      *            the length of the response content in bytes
      */
     public void setContentLength(long contentLength) {
-        response.setContentLengthLong(contentLength);
+        if (contentLength != -1) {
+            response.setContentLengthLong(contentLength);
+        }
         this.contentLength = contentLength;
     }
 
     /**
      * Get owner {@link Component} for this event.
+     * <p>
+     * The download handler may change the component's state during donwload,
+     * e.g. disable or hide it during download or get the component's own data
+     * like id.
      *
      * @return owning component or null in none defined
      */
@@ -190,6 +196,11 @@ public class DownloadEvent {
 
     /**
      * Get the owning element for the download related to this event.
+     * <p>
+     * The download handler may use element's attributes or properties to define
+     * what to download or change the element, e.g. element's id or data id to
+     * fetch a row from a database or disable element once the download is
+     * started.
      *
      * @return owning element
      */

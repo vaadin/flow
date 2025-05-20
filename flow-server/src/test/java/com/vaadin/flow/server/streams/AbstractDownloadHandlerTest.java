@@ -43,6 +43,7 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
@@ -228,5 +229,30 @@ public class AbstractDownloadHandlerTest {
     public void inline_inlinedWhenExplicitlyCalled() {
         handler.inline();
         Assert.assertTrue(handler.isInline());
+    }
+
+    @Test
+    public void getTransferContext_returnsExpectedContextFromEvent() {
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Element owner = Mockito.mock(Element.class);
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                owner);
+        event.setContentLength(1024);
+        event.setFileName("test.txt");
+        AbstractDownloadHandler<AbstractDownloadHandler> handler = new AbstractDownloadHandler<>() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event)
+                    throws IOException {
+            }
+        };
+        TransferContext context = handler.getTransferContext(event);
+        Assert.assertEquals(owner, context.owningElement());
+        Assert.assertEquals(session, context.session());
+        Assert.assertEquals(request, context.request());
+        Assert.assertEquals(response, context.response());
+        Assert.assertEquals(1024, context.contentLength());
+        Assert.assertEquals("test.txt", context.fileName());
     }
 }

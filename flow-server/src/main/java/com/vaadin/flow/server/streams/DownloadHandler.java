@@ -226,7 +226,10 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a function for downloading from a generated inputStream.
+     * Generate a function for downloading from a generated InputStream.
+     * <p>
+     * <code>DownloadResponse</code> instances can be created using various
+     * factory methods or with new operator.
      *
      * @param handler
      *            handler function that will be called on download
@@ -238,8 +241,11 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a function for downloading from a generated inputStream with the
+     * Generate a function for downloading from a generated InputStream with the
      * given download name.
+     * <p>
+     * <code>DownloadResponse</code> instances can be created using various
+     * factory methods or with new operator.
      *
      * @param handler
      *            handler function that will be called on download
@@ -254,8 +260,11 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a function for downloading from a generated inputStream with the
+     * Generate a function for downloading from a generated InputStream with the
      * given download name and progress listener.
+     * <p>
+     * <code>DownloadResponse</code> instances can be created using various
+     * factory methods or with new operator.
      *
      * @param handler
      *            handler function that will be called on download
