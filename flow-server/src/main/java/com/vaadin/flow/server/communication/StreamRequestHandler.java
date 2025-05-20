@@ -206,7 +206,7 @@ public class StreamRequestHandler implements RequestHandler {
             StreamResourceRegistry.ElementStreamResource elementRequest,
             StateNode node) {
         return node.isInert()
-                && !elementRequest.getElementRequestHandler().allowInert();
+                && !elementRequest.getElementRequestHandler().isAllowInert();
     }
 
     private record PathData(String UIid, String securityKey, String fileName) {

@@ -363,7 +363,7 @@ public class StreamRequestHandlerTest {
                 }
 
                 @Override
-                public boolean allowInert() {
+                public boolean isAllowInert() {
                     return elementHandlerProperties.allowInert;
                 }
 

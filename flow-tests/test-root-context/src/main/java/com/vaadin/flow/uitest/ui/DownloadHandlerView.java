@@ -64,7 +64,7 @@ public class DownloadHandlerView extends Div {
         File jsonFile = new File(getClass().getClassLoader()
                 .getResource("download.json").getFile());
         streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(DownloadHandler.forFile(jsonFile));
+                .registerResource(DownloadHandler.forFile(jsonFile).inline());
         registrations.add(streamRegistration);
 
         Anchor fileDownload = new Anchor("", "File DownloadHandler shorthand");
@@ -73,7 +73,8 @@ public class DownloadHandlerView extends Div {
 
         streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(DownloadHandler
-                        .forClassResource(this.getClass(), "class-file.json"));
+                        .forClassResource(this.getClass(), "class-file.json")
+                        .inline());
         registrations.add(streamRegistration);
 
         Anchor classDownload = new Anchor("",
@@ -83,7 +84,7 @@ public class DownloadHandlerView extends Div {
 
         streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(DownloadHandler
-                        .forServletResource("/WEB-INF/servlet.json"));
+                        .forServletResource("/WEB-INF/servlet.json").inline());
         registrations.add(streamRegistration);
 
         Anchor servletDownload = new Anchor("",
@@ -96,7 +97,8 @@ public class DownloadHandlerView extends Div {
                         new ByteArrayInputStream(
                                 "foo".getBytes(StandardCharsets.UTF_8)),
                         "file+.jpg", "text/plain",
-                        "foo".getBytes(StandardCharsets.UTF_8).length));
+                        "foo".getBytes(StandardCharsets.UTF_8).length))
+                .inline();
         streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(inputStream);
         registrations.add(streamRegistration);
@@ -109,7 +111,8 @@ public class DownloadHandlerView extends Div {
         streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(DownloadHandler
                         .fromInputStream(downloadEvent -> DownloadResponse
-                                .error(HttpStatusCode.INTERNAL_SERVER_ERROR)));
+                                .error(HttpStatusCode.INTERNAL_SERVER_ERROR))
+                        .inline());
         registrations.add(streamRegistration);
 
         Anchor inputStreamErrorDownload = new Anchor("",

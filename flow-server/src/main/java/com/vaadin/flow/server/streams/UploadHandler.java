@@ -59,16 +59,15 @@ public interface UploadHandler extends ElementRequestHandler {
      * stored for this specific handler registration.
      * <p>
      * After upload of all files is done the method
-     * {@link UploadEvent#sendUploadResponse(boolean)} can be called to write an
-     * upload response. The method
-     * {@link #responseHandled(boolean, VaadinResponse)} will be called when all
-     * upload items have been handled.
+     * {@link #responseHandled(boolean, VaadinResponse)} will be called.
      *
      * @param event
      *            upload event containing the necessary data for getting the
      *            request
+     * @throws IOException
+     *             if an error occurs during upload
      */
-    void handleUploadRequest(UploadEvent event);
+    void handleUploadRequest(UploadEvent event) throws IOException;
 
     /**
      * Method called by framework when
@@ -95,7 +94,7 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, Element owner) {
+            VaadinSession session, Element owner) throws IOException {
         boolean isMultipartUpload = request instanceof HttpServletRequest
                 && JakartaServletFileUpload
                         .isMultipartContent((HttpServletRequest) request);
@@ -232,7 +231,7 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a upload handler for storing upload stream into a file.
+     * Generate an upload handler for storing upload stream into a file.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -247,7 +246,8 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a upload handler for storing upload stream into a file.
+     * Generate an upload handler for storing upload stream into a file with
+     * progress handling.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -267,7 +267,8 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate upload handler for storing upload stream into a temporary file.
+     * Generate an upload handler for storing upload stream into a temporary
+     * file.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -279,7 +280,8 @@ public interface UploadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate upload handler for storing upload stream into a temporary file.
+     * Generate an upload handler for storing upload stream into a temporary
+     * file with progress handling.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
@@ -302,7 +304,7 @@ public interface UploadHandler extends ElementRequestHandler {
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
-     * @return in-memory upoload handler
+     * @return in-memory upload handler
      */
     static InMemoryUploadHandler inMemory(
             SerializableBiConsumer<UploadMetadata, byte[]> successHandler) {
@@ -311,13 +313,13 @@ public interface UploadHandler extends ElementRequestHandler {
 
     /**
      * Generate upload handler for storing download into in-memory
-     * {@code byte[]}.
+     * {@code byte[]} with progress handling.
      *
      * @param successHandler
      *            consumer to be called when upload successfully completes
      * @param listener
      *            listener for transfer progress events
-     * @return in-memory upoload handler with progress listener
+     * @return in-memory upload handler with progress listener
      */
     static InMemoryUploadHandler inMemory(
             SerializableBiConsumer<UploadMetadata, byte[]> successHandler,

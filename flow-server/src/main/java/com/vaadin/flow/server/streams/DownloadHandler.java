@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
@@ -40,18 +41,15 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @param event
      *            download event containing the necessary data for writing the
      *            response
+     * @throws IOException
+     *             if an IO error occurred during download
      */
-    void handleDownloadRequest(DownloadEvent event);
+    void handleDownloadRequest(DownloadEvent event) throws IOException;
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, Element owner) {
-        String fileName = getUrlPostfix() == null ? "" : getUrlPostfix();
-
+            VaadinSession session, Element owner) throws IOException {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, fileName,
-                Optional.ofNullable(response.getService().getMimeType(fileName))
-                        .orElse("application/octet-stream"),
-                owner);
+                session, owner);
 
         handleDownloadRequest(downloadEvent);
     }
@@ -68,7 +66,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Get a download handler for serving given {@link File}.
+     * Get a download handler for serving given {@link File} with the given
+     * download name.
      *
      * @param file
      *            file to server for download
@@ -118,7 +117,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a download handler for class resource.
+     * Generate a download handler for class resource with the given download
+     * name.
      * <p>
      * For instance for the file {@code resources/com/example/ui/MyData.json}
      * and class {@code com.example.ui.MyData} the definition would be
@@ -179,7 +179,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a download handler for a servlet resource.
+     * Generate a download handler for a servlet resource with the given
+     * download name.
      * <p>
      * For instance for the file {@code webapp/WEB-INF/servlet.json} the path
      * would be {@code /WEB-INF/servlet.json}
@@ -199,7 +200,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a download handler for a servlet resource.
+     * Generate a download handler for a servlet resource with the given
+     * download name and progress listener.
      * <p>
      * For instance for the file {@code webapp/WEB-INF/servlet.json} the path
      * would be {@code /WEB-INF/servlet.json}
@@ -236,7 +238,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a function for downloading from a generated inputStream.
+     * Generate a function for downloading from a generated inputStream with the
+     * given download name.
      *
      * @param handler
      *            handler function that will be called on download
@@ -251,7 +254,8 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Generate a function for downloading from a generated inputStream.
+     * Generate a function for downloading from a generated inputStream with the
+     * given download name and progress listener.
      *
      * @param handler
      *            handler function that will be called on download

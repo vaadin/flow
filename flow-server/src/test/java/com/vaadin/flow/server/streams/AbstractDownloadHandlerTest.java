@@ -18,10 +18,13 @@ package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -79,8 +82,7 @@ public class AbstractDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadEvent = new DownloadEvent(request, response, session,
-                "download", "application/octet-stream", owner);
+        downloadEvent = new DownloadEvent(request, response, session, owner);
 
         handler = new AbstractDownloadHandler<>() {
             @Override
@@ -157,6 +159,21 @@ public class AbstractDownloadHandlerTest {
     }
 
     @Test
+    public void transferProgressListener_transfer_sessionNotLocked()
+            throws IOException {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                "Hello".getBytes(StandardCharsets.UTF_8));
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        TransferContext context = Mockito.mock(TransferContext.class);
+        Mockito.when(context.session()).thenReturn(session);
+        OutputStream outputStream = Mockito.mock(OutputStream.class);
+        Collection<TransferProgressListener> listeners = new ArrayList<>();
+        TransferProgressListener.transfer(inputStream, outputStream, context,
+                listeners);
+        Mockito.verify(session, Mockito.times(0)).lock();
+    }
+
+    @Test
     public void customHandlerWithShorthandCompleteListener_noErrorInTransfer_success_errorInTransfer_failure()
             throws IOException {
         AtomicBoolean successAtomic = new AtomicBoolean(false);
@@ -193,5 +210,23 @@ public class AbstractDownloadHandlerTest {
 
         customHandler.handleDownloadRequest(downloadEvent);
         Assert.assertFalse(successAtomic.get());
+    }
+
+    @Test
+    public void doesNotRequireToCatchIOException() {
+        DownloadHandler handler = event -> {
+            new FileInputStream(new File("foo"));
+        };
+    }
+
+    @Test
+    public void inline_attachmentUsedByDefault() {
+        Assert.assertFalse(handler.isInline());
+    }
+
+    @Test
+    public void inline_inlinedWhenExplicitlyCalled() {
+        handler.inline();
+        Assert.assertTrue(handler.isInline());
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -47,9 +48,11 @@ public interface ElementRequestHandler extends Serializable {
      *            VaadinSession current VaadinSession
      * @param owner
      *            Element owner element
+     * @throws IOException
+     *             if an IO error occurred during data transfer
      */
     void handleRequest(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, Element owner);
+            VaadinSession session, Element owner) throws IOException;
 
     /**
      * Optional URL postfix allows appending an application-controlled string,
@@ -71,7 +74,7 @@ public interface ElementRequestHandler extends Serializable {
      * @return {@code true} to invoke for inert elements, {@code false}
      *         otherwise. Defaults to {@code false}.
      */
-    default boolean allowInert() {
+    default boolean isAllowInert() {
         return false;
     }
 

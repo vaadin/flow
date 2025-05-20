@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
@@ -39,7 +40,11 @@ public class FileDownloadHandler
 
     /**
      * Create a download handler for given file. Url postfix will be used as
-     * {@code file.getName()}
+     * {@code file.getName()}.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>file.getName()</code>. If you want to use a different file name,
+     * use {@link #FileDownloadHandler(File, String)} instead.
      *
      * @param file
      *            file to download
@@ -50,6 +55,9 @@ public class FileDownloadHandler
 
     /**
      * Create a download handler for given file.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param file
      *            file to download
@@ -62,20 +70,26 @@ public class FileDownloadHandler
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
         VaadinResponse response = downloadEvent.getResponse();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
+            String resourceName = getUrlPostfix();
+            if (!isInline()) {
+                downloadEvent.setFileName(resourceName);
+            }
+            downloadEvent
+                    .setContentType(getContentType(resourceName, response));
+            downloadEvent.setContentLength(file.length());
             TransferProgressListener.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             notifyError(downloadEvent, ioe);
-            throw new UncheckedIOException(ioe);
+            throw ioe;
         }
-        response.setContentType(downloadEvent.getContentType());
-        response.setContentLength(Math.toIntExact(file.length()));
     }
 
     @Override
@@ -89,8 +103,8 @@ public class FileDownloadHandler
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
-                transferEvent.getResponse(), transferEvent.session(),
-                transferEvent.fileName(), transferEvent.owningElement(),
+                transferEvent.getResponse(), transferEvent.getSession(),
+                getUrlPostfix(), transferEvent.getOwningElement(),
                 file.length());
     }
 }

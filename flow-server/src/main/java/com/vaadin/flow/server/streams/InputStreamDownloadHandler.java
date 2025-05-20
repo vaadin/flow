@@ -49,8 +49,11 @@ public class InputStreamDownloadHandler
     }
 
     /**
-     * Create a input stream download handler for given event -> response
+     * Create an input stream download handler for given event -> response
      * function.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param handler
      *            serializable function for handling download
@@ -66,12 +69,19 @@ public class InputStreamDownloadHandler
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
         DownloadResponse download = handler.apply(downloadEvent);
         VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {
             response.setStatus(download.getError());
             return;
+        }
+
+        String downloadName = download.getFileName();
+        downloadEvent.setContentType(getContentType(downloadName, response));
+        if (!isInline()) {
+            downloadEvent.setFileName(downloadName);
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
@@ -82,13 +92,8 @@ public class InputStreamDownloadHandler
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             notifyError(downloadEvent, ioe);
-            throw new UncheckedIOException(ioe);
+            throw ioe;
         }
-
-        response.setContentType(download.getContentType());
-        response.setContentLength(download.getSize());
-        response.setHeader("Content-Disposition",
-                "attachment;filename=" + download.getFileName());
     }
 
     @Override
