@@ -180,6 +180,40 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
     }
 
     /**
+     * Adds a listener to be notified of transfer progress with giving the
+     * transfer context object and with the default progress interval.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
+     *
+     * @param progressHandler
+     *            the handler to be called with the transfer context, current
+     *            and total bytes
+     * @param progressIntervalInBytes
+     *            the interval in bytes for reporting progress
+     * @return this instance for method chaining
+     */
+    public R onProgress(
+            SerializableTriConsumer<TransferContext, Long, Long> progressHandler) {
+        Objects.requireNonNull(progressHandler,
+                "Progress handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
+            @Override
+            public void onProgress(TransferContext context,
+                    long transferredBytes, long totalBytes) {
+                context.getUI().access(() -> {
+                    progressHandler.accept(context, transferredBytes,
+                            totalBytes);
+                });
+            }
+        });
+        return (R) this;
+    }
+
+    /**
      * Adds a listener to be notified of transfer progress with the given
      * interval.
      * <p>
