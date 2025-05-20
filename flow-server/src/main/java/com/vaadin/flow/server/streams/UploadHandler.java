@@ -59,10 +59,7 @@ public interface UploadHandler extends ElementRequestHandler {
      * stored for this specific handler registration.
      * <p>
      * After upload of all files is done the method
-     * {@link UploadEvent#sendUploadResponse(boolean)} can be called to write an
-     * upload response. The method
-     * {@link #responseHandled(boolean, VaadinResponse)} will be called when all
-     * upload items have been handled.
+     * {@link #responseHandled(boolean, VaadinResponse)} will be called.
      *
      * @param event
      *            upload event containing the necessary data for getting the

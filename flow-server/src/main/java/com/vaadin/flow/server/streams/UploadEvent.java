@@ -117,32 +117,6 @@ public class UploadEvent {
     }
 
     /**
-     * Write response for handled upload.
-     *
-     * @param success
-     *            {@code true} will send 200 http ok, {@code false} will send
-     *            500 error code
-     */
-    public void sendUploadResponse(boolean success) {
-        response.setContentType(
-                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        if (success) {
-            try (PrintWriter writer = response.getWriter()) {
-                try {
-                    writer.print("<html><body>upload handled</body></html>");
-                } finally {
-                    writer.flush();
-                }
-            } catch (IOException e) {
-                LoggerFactory.getLogger(UploadEvent.class)
-                        .error("Error writing upload response", e);
-            }
-        } else {
-            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-        }
-    }
-
-    /**
      * Get {@link VaadinRequest} for download event.
      *
      * @return vaadin request
@@ -170,7 +144,9 @@ public class UploadEvent {
     }
 
     /**
-     * Get the set file name.
+     * Get the set file name for current upload.
+     * <p>
+     * The file name is always {@code unknown} for filexhr.
      *
      * @return file name
      */
@@ -180,6 +156,8 @@ public class UploadEvent {
 
     /**
      * Get the content type for the data to download.
+     * <p>
+     * The content type is always {@code unknown} for filexhr.
      *
      * @return set content type
      */
