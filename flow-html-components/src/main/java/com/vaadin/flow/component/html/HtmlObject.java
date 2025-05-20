@@ -174,8 +174,7 @@ public class HtmlObject extends HtmlContainer implements
      *            parameter components
      */
     public HtmlObject(DownloadHandler data, String type, Param... params) {
-        setData(new StreamResourceRegistry.ElementStreamResource(data,
-                this.getElement()));
+        setData(data);
         setType(type);
         add(params);
     }
@@ -196,8 +195,7 @@ public class HtmlObject extends HtmlContainer implements
      *            parameter components
      */
     public HtmlObject(DownloadHandler data, Param... params) {
-        setData(new StreamResourceRegistry.ElementStreamResource(data,
-                this.getElement()));
+        setData(data);
         add(params);
     }
 
@@ -215,8 +213,7 @@ public class HtmlObject extends HtmlContainer implements
      *            component
      */
     public HtmlObject(DownloadHandler data) {
-        setData(new StreamResourceRegistry.ElementStreamResource(data,
-                this.getElement()));
+        setData(data);
     }
 
     /**
