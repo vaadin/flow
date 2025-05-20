@@ -47,11 +47,12 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setFileName_nullFileName_setsContentDispositionToResponse() {
+    public void setFileName_nullFileName_doesNotSetContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.setFileName(null);
-        Mockito.verify(response).setHeader("Content-Disposition", "attachment");
+        Mockito.verify(response, Mockito.times(0))
+                .setHeader(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
