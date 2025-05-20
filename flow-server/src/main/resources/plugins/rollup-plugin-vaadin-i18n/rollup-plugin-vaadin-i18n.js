@@ -57,11 +57,15 @@ export default function vaadinI18n(options = {}) {
       const translateBindings = new Set();
       const ast = this.parse(code, {});
       const moduleKeySet = new Set();
+      let hasI18nImport = false;
       const magicString = transformAst(code, {ast}, (node) => {
         if (node.type === 'ImportDeclaration' && node.source?.value === '@vaadin/hilla-react-i18n') {
           for (const spec of node?.specifiers) {
             if (spec.imported?.name === 'translate') {
               translateBindings.add(spec.local?.name);
+            }
+            if (spec.type === 'ImportSpecifier' && spec.imported?.name === 'i18n') {
+              hasI18nImport = true;
             }
           }
         }
@@ -76,9 +80,14 @@ export default function vaadinI18n(options = {}) {
         return {code, map: null};
       }
 
-      // Prepend the automatic registerChunk import and call
-      magicString.prepend(registerChunkImport);
+      // Prepend the automatic registerChunk call
+      if (!hasI18nImport) {
+        magicString.prepend(registerChunkImport);
+      }
       magicString.prepend(registerChunkCall);
+
+      // Log the transformed code
+      console.log('Transformed code:', magicString.toString());
 
       return {
         code: magicString.toString(),
@@ -100,15 +109,19 @@ export default function vaadinI18n(options = {}) {
       // the modules using Hilla i18n. One such call per chunk is enough
       // to load all the translations for the code below it, so let us
       // remove the duplicate calls.
-      let first = true;
-      magicString.replaceAll(registerChunkCall, () => {
-        if (first) {
-          first = false;
-          return registerChunkCall;
+      let idx = 0;
+      let firstIdx = -1;
+      let searchIdx = 0;
+      while ((idx = magicString.toString().indexOf(registerChunkCall, searchIdx)) !== -1) {
+        if (firstIdx === -1) {
+          firstIdx = idx;
+          searchIdx = idx + registerChunkCall.length;
         } else {
-          return '';
+          // Remove this occurrence
+          magicString.remove(idx, idx + registerChunkCall.length);
+          searchIdx = idx; // Don't advance, as string just got shorter
         }
-      });
+      }
 
       // Replace the chunk name markers with the actual chunk name
       magicString.replace(chunkNameMarker, chunk.name);
@@ -125,6 +138,10 @@ export default function vaadinI18n(options = {}) {
       // Write a chunk metadata JSON file with the keys
       const keys = Array.from(chunkKeySet);
       chunkKeySets.set(chunk.name, chunkKeySet);
+
+      // Log the rendered chunk code
+      console.log('Rendered chunk code:', magicString.toString());
+
       return { code: magicString.toString(), map: magicString.generateMap({hires: true}) };
     },
     async writeBundle(options, bundle) {
