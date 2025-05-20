@@ -12,6 +12,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
+        
         <version>3.0.0</version>
     </parent>
 
@@ -224,7 +225,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.19</version>
+                <version>1.17.5</version>
             </dependency>
 
             <dependency>
