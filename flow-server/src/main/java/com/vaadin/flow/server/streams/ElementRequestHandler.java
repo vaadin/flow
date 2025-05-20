@@ -74,7 +74,7 @@ public interface ElementRequestHandler extends Serializable {
      * @return {@code true} to invoke for inert elements, {@code false}
      *         otherwise. Defaults to {@code false}.
      */
-    default boolean allowInert() {
+    default boolean isAllowInert() {
         return false;
     }
 
