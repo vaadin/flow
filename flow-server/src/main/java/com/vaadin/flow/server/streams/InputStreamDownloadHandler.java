@@ -49,8 +49,11 @@ public class InputStreamDownloadHandler
     }
 
     /**
-     * Create a input stream download handler for given event -> response
+     * Create an input stream download handler for given event -> response
      * function.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param handler
      *            serializable function for handling download
@@ -75,6 +78,12 @@ public class InputStreamDownloadHandler
             return;
         }
 
+        String downloadName = download.getFileName();
+        downloadEvent.setContentType(getContentType(downloadName, response));
+        if (!isInline()) {
+            downloadEvent.setFileName(downloadName);
+        }
+
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
             TransferProgressListener.transfer(inputStream, outputStream,
@@ -85,11 +94,6 @@ public class InputStreamDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
-
-        response.setContentType(download.getContentType());
-        response.setContentLength(download.getSize());
-        response.setHeader("Content-Disposition",
-                "attachment;filename=" + download.getFileName());
     }
 
     @Override

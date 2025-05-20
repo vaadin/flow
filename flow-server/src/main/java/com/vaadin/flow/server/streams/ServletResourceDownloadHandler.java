@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 
@@ -41,7 +42,11 @@ public class ServletResourceDownloadHandler
 
     /**
      * Create download handler for servlet resource. Uses url postfix as file
-     * name from path
+     * name from path.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to the file
+     * name from <code>path</code>. If you want to use a different file name,
+     * use {@link #ServletResourceDownloadHandler(String, String)} instead.
      *
      * @param path
      *            path of servlet resource
@@ -52,6 +57,9 @@ public class ServletResourceDownloadHandler
 
     /**
      * Create download handler for servlet resource.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param path
      *            path of servlet resource
@@ -67,22 +75,26 @@ public class ServletResourceDownloadHandler
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
         VaadinService service = downloadEvent.getRequest().getService();
+        VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
             try (OutputStream outputStream = downloadEvent.getOutputStream();
                     InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
+                String resourceName = getUrlPostfix();
+                downloadEvent
+                        .setContentType(getContentType(resourceName, response));
+                if (!isInline()) {
+                    downloadEvent.setFileName(resourceName);
+                }
                 TransferProgressListener.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
-                downloadEvent.getResponse().setStatus(
+                response.setStatus(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 notifyError(downloadEvent, ioe);
                 throw ioe;
             }
-
-            downloadEvent.getResponse()
-                    .setContentType(downloadEvent.getContentType());
         }
     }
 
