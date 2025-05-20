@@ -53,8 +53,11 @@ public class InMemoryUploadHandler
             notifyError(event, e);
             throw e;
         }
-        successHandler.accept(new UploadMetadata(event.getFileName(),
-                event.getContentType(), event.getFileSize()), data);
+        event.getUI()
+                .access(() -> successHandler.accept(
+                        new UploadMetadata(event.getFileName(),
+                                event.getContentType(), event.getFileSize()),
+                        data));
     }
 
     @Override
