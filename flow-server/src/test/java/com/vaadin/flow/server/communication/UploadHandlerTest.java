@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,6 +32,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -83,11 +85,23 @@ public class UploadHandlerTest {
     @Before
     public void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
+        ui = new MockUI() {
+            @Override
+            public Future<Void> access(Command command) {
+                command.execute();
+                return null;
+            }
+        };
 
         session = new AlwaysLockedVaadinSession(service) {
             @Override
             public StreamResourceRegistry getResourceRegistry() {
                 return streamResourceRegistry;
+            }
+
+            @Override
+            public UI getUIById(int uiId) {
+                return ui;
             }
         };
         streamResourceRegistry = new StreamResourceRegistry(session);
@@ -101,8 +115,6 @@ public class UploadHandlerTest {
         element = Mockito.mock(Element.class);
         Mockito.when(element.getNode()).thenReturn(stateNode);
         response = Mockito.mock(VaadinResponse.class);
-        ui = new MockUI();
-        UI.setCurrent(ui);
     }
 
     @After
@@ -196,6 +208,8 @@ public class UploadHandlerTest {
         mockRequest(res, testString);
 
         handler.handleRequest(session, request, response);
+        session.getPendingAccessQueue()
+                .forEach(futureAccess -> futureAccess.run());
 
         Assert.assertArrayEquals("Output differed from expected", testBytes,
                 output);
