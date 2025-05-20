@@ -90,10 +90,8 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * <p>
      * The call of the given callback is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of the given handler. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
      * @param startHandler
@@ -118,10 +116,8 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * <p>
      * The call of the given callback is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of the given handler. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
      * @param progressHandler
@@ -160,11 +156,12 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * <p>
      * The call of the given callback is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of the given handler. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
+     * <p>
+     * The default progress report internal is <code>65536</code> bytes. To
+     * change it, use {@link #onProgress(SerializableBiConsumer, long)}.
      *
      * @param progressHandler
      *            the handler to be called with the current and total bytes
@@ -182,10 +179,8 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * <p>
      * The call of the given callback is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here when the download or upload request is being handled. Thus,
-     * no need to call {@link com.vaadin.flow.component.UI#access(Command)} in
-     * the implementation of the given handler. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
      *
      * @param completeOrTerminateHandler
