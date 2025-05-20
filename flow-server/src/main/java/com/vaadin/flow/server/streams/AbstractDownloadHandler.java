@@ -51,7 +51,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * Sets this download content to be displayed inside the Web page, or as the
      * Web page, e.g. as an image or inside an iframe.
      * <p>
-     * Sets the 'Content-Disposition' attribute to 'inline'.
+     * Implementations of this class should ensure that the
+     * 'Content-Disposition' attribute is 'inline', if this method is called.
      *
      * @return this instance for method chaining
      */
