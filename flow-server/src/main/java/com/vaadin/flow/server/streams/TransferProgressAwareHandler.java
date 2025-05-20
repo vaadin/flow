@@ -198,19 +198,8 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      */
     public R onProgress(
             SerializableTriConsumer<TransferContext, Long, Long> progressHandler) {
-        Objects.requireNonNull(progressHandler,
-                "Progress handler cannot be null");
-        addTransferProgressListenerInternal(new TransferProgressListener() {
-            @Override
-            public void onProgress(TransferContext context,
-                    long transferredBytes, long totalBytes) {
-                context.getUI().access(() -> {
-                    progressHandler.accept(context, transferredBytes,
-                            totalBytes);
-                });
-            }
-        });
-        return (R) this;
+        return onProgress(progressHandler,
+                TransferProgressListener.DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES);
     }
 
     /**
