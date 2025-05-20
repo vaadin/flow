@@ -30,15 +30,17 @@ import com.vaadin.flow.server.VaadinSession;
  * data transfer progress or a notification.
  *
  * @param request
- *            current Vaadin request instance
+ *            The current Vaadin request instance
  * @param response
- *            current Vaadin response instance
+ *            The current Vaadin response instance
  * @param session
- *            current Vaadin session instance
+ *            The current Vaadin session instance
  * @param fileName
- *            name of the file being transferred
+ *            The name of the file being transferred. Might be <code>null</code>
+ *            if the file name is not known.
  * @param owningElement
- *            the element that initiated the transfer
+ *            The owner element that initiated the transfer. Can be used to get
+ *            element's attributes or properties.
  * @param contentLength
  *            the total number of bytes to be transferred or <code>-1</code> if
  *            total number is unknown in advance, e.g. when reading from an
@@ -49,18 +51,24 @@ public record TransferContext(VaadinRequest request, VaadinResponse response,
         long contentLength) {
 
     /**
-     * Get owner {@link Component} for this event.
+     * Get owner {@link Component} for this data transfer.
+     * <p>
+     * The progress listener may change the component's state during donwload,
+     * e.g. disable or hide it during transfer or get the component's own data
+     * like id.
      *
-     * @return owning component or null in none defined
+     * @return owning component or null if none is defined
      */
     public Component getOwningComponent() {
         return owningElement.getComponent().orElse(null);
     }
 
     /**
-     * Get the UI instance for this request.
+     * Get the current UI instance for this data transfer that can be used to
+     * make asynchronnous UI updates with
+     * {@link UI#access(com.vaadin.flow.server.Command)}.
      *
-     * @return Current UI
+     * @return Current UI instance
      */
     public UI getUI() {
         Optional<Component> component = owningElement.getComponent();

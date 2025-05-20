@@ -52,7 +52,7 @@ public class DownloadResponse implements Serializable {
      * @param contentType
      *            content type
      * @param size
-     *            byte size of stream
+     *            byte size of a stream or <code>-1</code> if unknown
      */
     public DownloadResponse(InputStream inputStream, String fileName,
             String contentType, int size) {
@@ -92,7 +92,7 @@ public class DownloadResponse implements Serializable {
     }
 
     /**
-     * Get the defined size for the content
+     * Get the defined size for the content or <code>-1</code> if unknown.
      *
      * @return content size
      */

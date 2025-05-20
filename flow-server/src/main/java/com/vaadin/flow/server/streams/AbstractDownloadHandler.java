@@ -39,7 +39,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
                 transferEvent.getFileName(), transferEvent.getOwningElement(),
-                -1);
+                transferEvent.getContentLength());
     }
 
     protected String getContentType(String fileName, VaadinResponse response) {

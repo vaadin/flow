@@ -71,4 +71,14 @@ public class DownloadEventTest {
         downloadEvent.setContentLength(contentLength);
         Mockito.verify(response).setContentLengthLong(contentLength);
     }
+
+    @Test
+    public void setContentLenght_unknownLength_doesNotSetContentLengthToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        int contentLength = -1;
+        downloadEvent.setContentLength(contentLength);
+        Mockito.verify(response, Mockito.times(0))
+                .setContentLengthLong(contentLength);
+    }
 }
