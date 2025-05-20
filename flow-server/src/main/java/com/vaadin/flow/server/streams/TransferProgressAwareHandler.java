@@ -26,6 +26,7 @@ import java.util.Objects;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
@@ -112,7 +113,75 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
     }
 
     /**
-     * Adds a listener to be notified of transfer progress.
+     * Adds a listener to be notified when the transfer starts that receives the
+     * transfer context as input.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
+     *
+     * @param startHandler
+     *            the handler to be called when the transfer starts
+     * @return this instance for method chaining
+     */
+    public R whenStart(SerializableConsumer<TransferContext> startHandler) {
+        Objects.requireNonNull(startHandler, "Start handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
+            @Override
+            public void onStart(TransferContext context) {
+                context.getUI().access(() -> {
+                    startHandler.accept(context);
+                });
+            }
+        });
+        return (R) this;
+    }
+
+    /**
+     * Adds a listener to be notified of transfer progress with giving the
+     * transfer context object and with the given interval.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
+     *
+     * @param progressHandler
+     *            the handler to be called with the transfer context, current
+     *            and total bytes
+     * @param progressIntervalInBytes
+     *            the interval in bytes for reporting progress
+     * @return this instance for method chaining
+     */
+    public R onProgress(
+            SerializableTriConsumer<TransferContext, Long, Long> progressHandler,
+            long progressIntervalInBytes) {
+        Objects.requireNonNull(progressHandler,
+                "Progress handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
+            @Override
+            public void onProgress(TransferContext context,
+                    long transferredBytes, long totalBytes) {
+                context.getUI().access(() -> {
+                    progressHandler.accept(context, transferredBytes,
+                            totalBytes);
+                });
+            }
+
+            @Override
+            public long progressReportInterval() {
+                return progressIntervalInBytes;
+            }
+        });
+        return (R) this;
+    }
+
+    /**
+     * Adds a listener to be notified of transfer progress with the given
+     * interval.
      * <p>
      * The call of the given callback is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
@@ -174,8 +243,10 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
 
     /**
      * Adds a listener to be notified when the transfer is completed
-     * successfully or with an error. Gives a <code>Boolean</code> indicating
-     * whether the transfer was completed successfully (true) or not (false).
+     * successfully or with an error.
+     * <p>
+     * Gives a <code>Boolean</code> indicating whether the transfer was
+     * completed successfully (true) or not (false).
      * <p>
      * The call of the given callback is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
@@ -204,6 +275,48 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
                     long transferredBytes) {
                 context.getUI().access(() -> {
                     completeOrTerminateHandler.accept(true);
+                });
+            }
+        });
+        return (R) this;
+    }
+
+    /**
+     * Adds a listener to be notified when the transfer is completed
+     * successfully or with an error with the trasfer context object given as an
+     * input.
+     * <p>
+     * Gives a <code>Boolean</code> indicating whether the transfer was
+     * completed successfully (true) or not (false) and transfer context to
+     * obtain more meta-data.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
+     *
+     * @param completeOrTerminateHandler
+     *            the handler to be called when the transfer is completed
+     * @return this instance for method chaining
+     */
+    public R whenComplete(
+            SerializableBiConsumer<TransferContext, Boolean> completeOrTerminateHandler) {
+        Objects.requireNonNull(completeOrTerminateHandler,
+                "Complete or terminate handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
+            @Override
+            public void onError(TransferContext context, IOException reason) {
+                context.getUI().access(() -> {
+                    completeOrTerminateHandler.accept(context, false);
+                });
+            }
+
+            @Override
+            public void onComplete(TransferContext context,
+                    long transferredBytes) {
+                context.getUI().access(() -> {
+                    completeOrTerminateHandler.accept(context, true);
                 });
             }
         });
