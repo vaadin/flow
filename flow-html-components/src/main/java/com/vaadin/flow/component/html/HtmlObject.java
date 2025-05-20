@@ -143,6 +143,9 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given
      * {@link DownloadHandler} callback for providing an object data and type
      * value.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods.
      *
      * @see #setData(DownloadHandler)
      * @see #setType(String)
@@ -160,6 +163,9 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -182,6 +188,9 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -202,6 +211,9 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -293,6 +305,9 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Sets the URL for {@link DownloadHandler} callback as "data" attribute
      * value.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods.
      *
      * @param data
      *            a "data" attribute value, not {@code null}

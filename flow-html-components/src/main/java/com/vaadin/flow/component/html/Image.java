@@ -96,6 +96,9 @@ public class Image extends HtmlContainer
      * <p>
      * The alternative text given to constructor is always set even if it is the
      * default empty string which is not retained with {@link #setAlt(String)}.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods.
      *
      * @param downloadHandler
      *            the download handler callback that provides an image data, not
@@ -145,6 +148,9 @@ public class Image extends HtmlContainer
     /**
      * Sets the image URL with the URL of the given {@link DownloadHandler}
      * callback.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods.
      *
      * @param downloadHandler
      *            the download handler resource, not null
