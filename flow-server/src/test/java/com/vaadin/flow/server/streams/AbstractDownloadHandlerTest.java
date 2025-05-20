@@ -255,4 +255,48 @@ public class AbstractDownloadHandlerTest {
         Assert.assertEquals(1024, context.contentLength());
         Assert.assertEquals("test.txt", context.fileName());
     }
+
+    @Test
+    public void whenStartWithContext_onStartCalled() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.whenStart((context) -> invoked.set(true));
+        handler.getListeners()
+                .forEach(listener -> listener.onStart(mockContext));
+        Assert.assertTrue("Start with context should be invoked",
+                invoked.get());
+    }
+
+    @Test
+    public void whenProgressWithContext_onProgressCalled() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.onProgress((context, current, total) -> invoked.set(true),
+                1024);
+        handler.getListeners().forEach(listener -> listener
+                .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
+        Assert.assertTrue("Progress with context should be invoked",
+                invoked.get());
+    }
+
+    @Test
+    public void whenProgressWithContextNoInterval_onProgressCalled() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.onProgress((context, current, total) -> invoked.set(true));
+        handler.getListeners().forEach(listener -> listener
+                .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
+        Assert.assertTrue(
+                "Progress with context and interval should be invoked",
+                invoked.get());
+    }
+
+    @Test
+    public void whenCompleteWithContext() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.whenComplete((context, success) -> invoked.set(true));
+        handler.getListeners().forEach(listener -> {
+            listener.onComplete(mockContext, TRANSFERRED_BYTES);
+            listener.onError(mockContext, EXCEPTION);
+        });
+        Assert.assertTrue("Progress with context should be invoked",
+                invoked.get());
+    }
 }
