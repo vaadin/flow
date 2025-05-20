@@ -28,14 +28,30 @@ public class DownloadEventTest {
     }
 
     @Test
-    public void setFileName_setsContentDispositionToResponse() {
+    public void setFileName_nonEmptyFileName_setsContentDispositionFilenameQuotedToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "test.txt";
         downloadEvent.setFileName(fileName);
-
         Mockito.verify(response).setHeader("Content-Disposition",
                 "attachment; filename=\"" + fileName + "\"");
+    }
+
+    @Test
+    public void setFileName_emptyFileName_setsContentDispositionToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        String fileName = "";
+        downloadEvent.setFileName(fileName);
+        Mockito.verify(response).setHeader("Content-Disposition", "attachment");
+    }
+
+    @Test
+    public void setFileName_nullFileName_setsContentDispositionToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName(null);
+        Mockito.verify(response).setHeader("Content-Disposition", "attachment");
     }
 
     @Test
@@ -44,7 +60,6 @@ public class DownloadEventTest {
                 session, null);
         String contentType = "application/pdf";
         downloadEvent.setContentType(contentType);
-
         Mockito.verify(response).setContentType(contentType);
     }
 
@@ -54,7 +69,6 @@ public class DownloadEventTest {
                 session, null);
         int contentLength = 1024;
         downloadEvent.setContentLength(contentLength);
-
         Mockito.verify(response).setContentLengthLong(contentLength);
     }
 }

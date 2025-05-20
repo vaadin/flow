@@ -140,8 +140,12 @@ public class DownloadEvent {
      */
     public void setFileName(String fileName) {
         fileName = fileName != null ? fileName : "";
-        response.setHeader("Content-Disposition",
-                "attachment; filename=\"" + fileName + "\"");
+        if (fileName.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment");
+        } else {
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+        }
         this.fileName = fileName;
     }
 
