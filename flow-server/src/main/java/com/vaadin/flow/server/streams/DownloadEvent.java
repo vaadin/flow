@@ -134,12 +134,17 @@ public class DownloadEvent {
      * downloaded.
      * <p>
      * To be called before the response is committed.
+     * <p>
+     * If the <code>fileName</code> is <code>null</code>, the
+     * Content-Disposition header won't be set.
      *
      * @param fileName
      *            the name to be assigned to the file
      */
     public void setFileName(String fileName) {
-        fileName = fileName != null ? fileName : "";
+        if (fileName == null) {
+            return;
+        }
         if (fileName.isEmpty()) {
             response.setHeader("Content-Disposition", "attachment");
         } else {

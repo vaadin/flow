@@ -48,7 +48,9 @@ public class DownloadResponse implements Serializable {
      *            data stream for data to send to client, stream will be closed
      *            automatically after use by the caller.
      * @param fileName
-     *            file name of download
+     *            name of the file to be downloaded, configured by setting the
+     *            Content-Disposition header to 'attachment' if the value is not
+     *            <code>null</code>, otherwise the header is not set
      * @param contentType
      *            content type
      * @param size
