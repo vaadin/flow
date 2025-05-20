@@ -82,12 +82,13 @@ public interface TransferProgressListener extends Serializable {
      * <p>
      * The call of this method is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
-     * to send UI changes defined here when the download or upload request is
-     * being handled. Thus, no need to call
-     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
-     * in the implementation of this method. This needs
+     * to send UI changes defined here asynchronously when the download or
+     * upload request is being handled. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
+     * <p>
+     * The default progress report internal is <code>65536</code> bytes. To
+     * change it, override {@link #progressReportInterval()}.
      *
      * @param context
      *            the context of the transfer
@@ -147,6 +148,8 @@ public interface TransferProgressListener extends Serializable {
      * Returns the interval in bytes for reporting progress.
      * <p>
      * <code>-1</code> to not report progress.
+     * <p>
+     * The default value is <code>65536</code> bytes.
      *
      * @return the interval in bytes
      */
