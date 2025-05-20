@@ -44,7 +44,7 @@ export default function vaadinI18n(options = {}) {
 
   const cwd = options?.cwd ?? defaultOptions.cwd;
   const metaOutputDir = path.resolve(cwd, options?.meta?.output?.dir ?? defaultOptions.meta.output.dir);
-  const metaOutputFilename = path.resolve(cwd, options?.meta?.output?.filename ?? defaultOptions.meta.output.filename);
+  const metaOutputFilename = path.resolve(metaOutputDir, options?.meta?.output?.filename ?? defaultOptions.meta.output.filename);
 
   const chunkKeySets = new Map();
 
