@@ -2,18 +2,18 @@
   "private": true,
   "description": "A list of default Flow dependencies",
   "dependencies": {
-    "@polymer/polymer": "3.5.1",
-    "@vaadin/common-frontend": "0.0.18",
+    "@polymer/polymer": "3.5.2",
+    "@vaadin/common-frontend": "0.0.19",
     "@vaadin/router": "1.7.5",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.6.1"
+    "lit": "2.8.0"
   },
   "devDependencies": {
-    "async": "3.2.2",
+    "async": "3.2.6",
     "glob": "7.2.3",
     "typescript": "4.9.5",
-    "workbox-core": "6.5.4",
-    "workbox-precaching": "6.5.4",
+    "workbox-core": "6.6.1",
+    "workbox-precaching": "6.6.1",
     "strip-css-comments": "5.0.0"
   }
 }
