@@ -9,15 +9,15 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "vite": "6.3.4",
+    "vite": "6.3.5",
     "@vitejs/plugin-react": "4.4.1",
     "@preact/signals-react-transform": "0.5.1",
     "@rollup/plugin-replace": "6.0.2",
     "@rollup/pluginutils": "5.1.4",
-    "@babel/preset-react": "7.26.3",
+    "@babel/preset-react": "7.27.1",
     "rollup-plugin-visualizer": "5.14.0",
     "rollup-plugin-brotli": "3.1.0",
-    "vite-plugin-checker": "0.9.1",
+    "vite-plugin-checker": "0.9.3",
     "workbox-build": "7.3.0",
     "transform-ast": "2.4.4"
   }
