@@ -47,7 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
 
-    private static final String POLYMER_VERSION = "3.5.1";
+    private static final String POLYMER_VERSION = "3.5.2";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
