@@ -99,54 +99,55 @@ export default function vaadinI18n(options = {}) {
     renderStart() {
       chunkKeySets.clear();
     },
-    async renderChunk(code, chunk) {
-      const magicString = new MagicString(code);
-      // Extra imports are removed automatically from the final chunk, but
-      // there might be still multiple registerChunk calls originating from
-      // the modules using Hilla i18n. One such call per chunk is enough
-      // to load all the translations for the code below it, so let us
-      // remove the duplicate calls.
-      let idx = 0;
-      let firstIdx = -1;
-      let searchIdx = 0;
-      while ((idx = magicString.toString().indexOf(registerChunkCall, searchIdx)) !== -1) {
-        if (firstIdx === -1) {
-          firstIdx = idx;
-          searchIdx = idx + registerChunkCall.length;
-        } else {
-          // Remove this occurrence
-          magicString.remove(idx, idx + registerChunkCall.length);
-          searchIdx = idx; // Don't advance, as string just got shorter
+    async generateBundle(_options, bundle) {
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk.type === 'chunk') {
+          const magicString = new MagicString(chunk.code);
+          // Extra imports are removed automatically from the final chunk, but
+          // there might be still multiple registerChunk calls originating from
+          // the modules using Hilla i18n. One such call per chunk is enough
+          // to load all the translations for the code below it, so let us
+          // remove the duplicate calls.
+          let idx = 0;
+          let firstIdx = -1;
+          let searchIdx = 0;
+          while ((idx = magicString.toString().indexOf(registerChunkCall, searchIdx)) !== -1) {
+            if (firstIdx === -1) {
+              firstIdx = idx;
+              searchIdx = idx + registerChunkCall.length;
+            } else {
+              // Remove this occurrence
+              magicString.remove(idx, idx + registerChunkCall.length);
+              searchIdx = idx; // Don't advance, as string just got shorter
+            }
+          }
+
+          // Replace the chunk name markers with the actual chunk name
+          magicString.replace(chunkNameMarker, fileName);
+          chunk.code = magicString.toString();
+          chunk.map = magicString.generateMap({ hires: true });
+
+          // Collect i18n translation keys from all modules of the chunk
+          const chunkKeySet = new Set();
+          for (const id of chunk.moduleIds) {
+            if (!filter(id)) {
+              continue;
+            }
+            const info = this.getModuleInfo(id);
+            (info?.meta?.vaadinI18n?.keys ?? []).forEach((key) => chunkKeySet.add(key));
+          }
+          // Write a chunk metadata JSON file with the keys
+          chunkKeySets.set(fileName, chunkKeySet);
         }
       }
-
-      // Replace the chunk name markers with the actual chunk name
-      magicString.replace(chunkNameMarker, chunk.name);
-
-      // Collect i18n translation keys from all modules of the chunk
-      const chunkKeySet = new Set();
-      for (const id of chunk.moduleIds) {
-        if (!filter(id)) {
-          continue;
-        }
-        const info = this.getModuleInfo(id);
-        (info?.meta?.vaadinI18n?.keys ?? []).forEach((key) => chunkKeySet.add(key));
-      }
-      // Write a chunk metadata JSON file with the keys
-      const keys = Array.from(chunkKeySet);
-      chunkKeySets.set(chunk.name, chunkKeySet);
-
-      // Log the rendered chunk code
-      console.log('Rendered chunk code:', magicString.toString());
-
-      return { code: magicString.toString(), map: magicString.generateMap({hires: true}) };
-    },
-    async writeBundle(options, bundle) {
       // Serialize chunk key sets
       const chunks = {};
       for (const [name, chunkKeySet] of chunkKeySets.entries()) {
         const keys = Array.from(chunkKeySet);
-        chunks[name] = {keys};
+
+        if (keys.length > 0) {
+          chunks[name] = {keys};
+        }
       }
       // Write i18n metadata JSON file:
       // {
