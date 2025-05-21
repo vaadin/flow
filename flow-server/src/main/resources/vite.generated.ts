@@ -53,6 +53,7 @@ const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
 const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
+const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
@@ -710,7 +711,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         cwd: __dirname,
         meta: {
           output: {
-            dir: statsFolder,
+            dir: i18nFolder,
           },
         },
       }),

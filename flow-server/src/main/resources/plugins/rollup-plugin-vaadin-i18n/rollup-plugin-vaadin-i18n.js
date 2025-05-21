@@ -86,9 +86,6 @@ export default function vaadinI18n(options = {}) {
       }
       magicString.prepend(registerChunkCall);
 
-      // Log the transformed code
-      console.log('Transformed code:', magicString.toString());
-
       return {
         code: magicString.toString(),
         map: magicString.generateMap({hires: true}),

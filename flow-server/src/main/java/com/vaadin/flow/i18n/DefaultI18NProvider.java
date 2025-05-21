@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.i18n;
 
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,7 @@ public class DefaultI18NProvider implements I18NProvider {
     // Get bundles named `translations` from `vaadin-i18n` folder.
     public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
             + BUNDLE_FILENAME;
+    public static final String CHUNK_RESOURCE = BUNDLE_FOLDER + "/i18n.json";
 
     /**
      * Construct {@link DefaultI18NProvider} for a list of locales that we have
@@ -115,6 +117,10 @@ public class DefaultI18NProvider implements I18NProvider {
         }
         return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader,
                 control);
+    }
+
+    URL getChunkResource() {
+        return classLoader.getResource(CHUNK_RESOURCE);
     }
 
     static Logger getLogger() {
