@@ -170,6 +170,9 @@ public class Query<T, F> implements Serializable {
      * <strong>Note: </strong> Sort orders and in-memory sorting are mutually
      * exclusive. If the {@link DataProvider} handles one, it should ignore the
      * other.
+     * <p>
+     * <strong>Note: </strong> Sort orders are populated only with the properties
+     * in Grid that have key set.
      *
      * @return list of sort orders
      */
