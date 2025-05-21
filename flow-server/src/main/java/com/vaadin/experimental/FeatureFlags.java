@@ -85,6 +85,10 @@ public class FeatureFlags implements Serializable {
             "Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
 
+    public static final Feature FLOW_FULLSTACK_SIGNALS = new Feature(
+            "Flow Full-stack Signals", "flowFullstackSignals",
+            "https://github.com/vaadin/platform/issues/7373", true, null);
+
     public static final Feature DASHBOARD_COMPONENT = new Feature(
             "Dashboard component (Pro)", "dashboardComponent",
             "https://github.com/vaadin/platform/issues/6626", true,
@@ -144,6 +148,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
+        features.add(new Feature(FLOW_FULLSTACK_SIGNALS));
         features.add(new Feature(COPILOT_EXPERIMENTAL));
         features.add(new Feature(DASHBOARD_COMPONENT));
         features.add(new Feature(CARD_COMPONENT));
