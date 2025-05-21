@@ -151,14 +151,14 @@ public final class DefaultFileDownloader implements FileDownloader {
                         + response.statusCode() + " from the server.");
             }
             long contentLength = response.headers()
-                    .firstValueAsLong("Content-Length").getAsLong();
+                    .firstValueAsLong("Content-Length").orElse(-1L);
 
             try (FileOutputStream out = FileUtils
                     .openOutputStream(destination)) {
                 copy(response.body(), out, contentLength, progressListener);
             }
 
-            if (destination.length() != contentLength) {
+            if (contentLength != -1 && destination.length() != contentLength) {
                 throw new DownloadException("Error downloading from "
                         + downloadUri + ". Expected " + contentLength
                         + " bytes but got " + destination.length());
@@ -179,6 +179,7 @@ public final class DefaultFileDownloader implements FileDownloader {
      *            the input stream
      * @param outputStream
      *            the output stream
+     * @param total the total number of bytes to copy or -1 if unknown
      * @param progressListener
      *            the progress listener or null
      * @return the number of bytes copied
