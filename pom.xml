@@ -12,7 +12,6 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
-        
         <version>3.0.0</version>
     </parent>
 
