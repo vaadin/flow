@@ -179,7 +179,8 @@ public final class DefaultFileDownloader implements FileDownloader {
      *            the input stream
      * @param outputStream
      *            the output stream
-     * @param total the total number of bytes to copy or -1 if unknown
+     * @param total
+     *            the total number of bytes to copy or -1 if unknown
      * @param progressListener
      *            the progress listener or null
      * @return the number of bytes copied
