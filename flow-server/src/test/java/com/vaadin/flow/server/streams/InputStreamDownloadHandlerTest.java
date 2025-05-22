@@ -88,7 +88,7 @@ public class InputStreamDownloadHandlerTest {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             return new DownloadResponse(inputStream, "download",
                     "application/octet-stream", data.length);
-        }, "download", new TransferProgressListener() {
+        }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
                 Assert.assertEquals(-1, context.contentLength());
@@ -151,7 +151,7 @@ public class InputStreamDownloadHandlerTest {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             return new DownloadResponse(inputStream, "download",
                     "application/octet-stream", data.length);
-        }, "download", new TransferProgressListener() {
+        }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
                 invocations.add("onStart");
@@ -221,7 +221,7 @@ public class InputStreamDownloadHandlerTest {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             return new DownloadResponse(inputStream, "download",
                     "application/octet-stream", data.length);
-        }, "my-download.bin").inline();
+        }).inline();
 
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
         Mockito.when(event.getSession()).thenReturn(session);
