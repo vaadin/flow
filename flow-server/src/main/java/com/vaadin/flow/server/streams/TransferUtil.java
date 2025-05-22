@@ -136,9 +136,8 @@ public final class TransferUtil {
      * @param owner
      *            The element that owns the request handler
      */
-    public static void handleUpload(UploadHandler handler,
-            VaadinRequest request, VaadinResponse response,
-            VaadinSession session, Element owner) {
+    static void handleUpload(UploadHandler handler, VaadinRequest request,
+            VaadinResponse response, VaadinSession session, Element owner) {
         boolean isMultipartUpload = request instanceof HttpServletRequest
                 && JakartaServletFileUpload
                         .isMultipartContent((HttpServletRequest) request);
