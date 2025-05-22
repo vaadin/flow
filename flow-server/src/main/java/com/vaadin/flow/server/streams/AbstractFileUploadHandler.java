@@ -62,7 +62,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
             try (InputStream inputStream = event.getInputStream();
                     FileOutputStream outputStream = new FileOutputStream(
                             file)) {
-                TransferProgressListener.transfer(inputStream, outputStream,
+                TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(event), getListeners());
             }
         } catch (IOException e) {
