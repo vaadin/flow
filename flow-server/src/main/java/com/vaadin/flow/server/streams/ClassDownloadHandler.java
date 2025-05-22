@@ -70,7 +70,8 @@ public class ClassDownloadHandler
      * @param resourceName
      *            resource to get
      * @param fileName
-     *            name to use as url postfix
+     *            download file name that overrides <code>resourceName</code>
+     *            and also used as a download request URL postfix
      */
     public ClassDownloadHandler(Class<?> clazz, String resourceName,
             String fileName) {

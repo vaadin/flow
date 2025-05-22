@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
-import java.util.Optional;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
@@ -36,7 +34,7 @@ public class FileDownloadHandler
         extends AbstractDownloadHandler<FileDownloadHandler> {
 
     private final File file;
-    private final String name;
+    private final String fileNameOverride;
 
     /**
      * Create a download handler for given file. Url postfix will be used as
@@ -56,17 +54,20 @@ public class FileDownloadHandler
     /**
      * Create a download handler for given file.
      * <p>
-     * The downloaded file name and download URL postfix will be set to
-     * <code>name</code>.
+     * The downloaded file fileNameOverride and download URL postfix will be set
+     * to <code>fileNameOverride</code>.
      *
      * @param file
      *            file to download
-     * @param name
-     *            url postfix name to use instead of file name
+     * @param fileNameOverride
+     *            used as a downloaded file name (overrides
+     *            <code>file.getName()</code>) and also as a download request
+     *            URL postfix, e.g.
+     *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
      */
-    public FileDownloadHandler(File file, String name) {
+    public FileDownloadHandler(File file, String fileNameOverride) {
         this.file = file;
-        this.name = name;
+        this.fileNameOverride = fileNameOverride;
     }
 
     @Override
@@ -94,8 +95,8 @@ public class FileDownloadHandler
 
     @Override
     public String getUrlPostfix() {
-        if (name != null) {
-            return name;
+        if (fileNameOverride != null) {
+            return fileNameOverride;
         }
         return file.getName();
     }

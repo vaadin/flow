@@ -19,7 +19,6 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
@@ -38,7 +37,7 @@ public class ServletResourceDownloadHandler
         extends AbstractDownloadHandler<ServletResourceDownloadHandler> {
 
     private final String path;
-    private final String name;
+    private final String fileNameOverride;
 
     /**
      * Create download handler for servlet resource. Uses url postfix as file
@@ -58,17 +57,20 @@ public class ServletResourceDownloadHandler
     /**
      * Create download handler for servlet resource.
      * <p>
-     * The downloaded file name and download URL postfix will be set to
-     * <code>name</code>.
+     * The downloaded file fileNameOverride and download URL postfix will be set
+     * to <code>fileNameOverride</code>.
      *
      * @param path
      *            path of servlet resource
-     * @param name
-     *            name to use as url postfix (can be given as empty string)
+     * @param fileNameOverride
+     *            download file name that overrides the name taken from
+     *            <code>path</code> and also used as a download request URL
+     *            postfix
      */
-    public ServletResourceDownloadHandler(String path, String name) {
+    public ServletResourceDownloadHandler(String path,
+            String fileNameOverride) {
         this.path = path;
-        this.name = name;
+        this.fileNameOverride = fileNameOverride;
     }
 
     @Override
@@ -100,8 +102,8 @@ public class ServletResourceDownloadHandler
 
     @Override
     public String getUrlPostfix() {
-        if (name != null) {
-            return name;
+        if (fileNameOverride != null) {
+            return fileNameOverride;
         }
         if (path.contains("/")) {
             return path.substring(path.lastIndexOf('/') + 1);
