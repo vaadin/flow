@@ -17,6 +17,11 @@ package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -61,5 +66,26 @@ public class IFrameTest extends ComponentTest {
     @Override
     public void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
+    }
+
+    @Test
+    public void downloadHandler_isSetToInline() {
+        Element element = Mockito.mock(Element.class);
+        class TestIFrame extends IFrame {
+            public TestIFrame(DownloadHandler downloadHandler) {
+                super(downloadHandler);
+            }
+
+            @Override
+            public Element getElement() {
+                return element;
+            }
+        }
+        // dummy handler
+        InputStreamDownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> DownloadResponse.error(500));
+        Assert.assertFalse(handler.isInline());
+        new TestIFrame(handler);
+        Assert.assertTrue(handler.isInline());
     }
 }

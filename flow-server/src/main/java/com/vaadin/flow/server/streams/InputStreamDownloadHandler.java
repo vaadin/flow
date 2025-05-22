@@ -19,7 +19,6 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -34,10 +33,9 @@ public class InputStreamDownloadHandler
         extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
     private final SerializableFunction<DownloadEvent, DownloadResponse> handler;
-    private final String name;
 
     /**
-     * Create a input stream download handler for given event -> response
+     * Create an input stream download handler for given event -> response
      * function.
      *
      * @param handler
@@ -45,24 +43,7 @@ public class InputStreamDownloadHandler
      */
     public InputStreamDownloadHandler(
             SerializableFunction<DownloadEvent, DownloadResponse> handler) {
-        this(handler, null);
-    }
-
-    /**
-     * Create a input stream download handler for given event -> response
-     * function.
-     *
-     * @param handler
-     *            serializable function for handling download
-     * @param name
-     *            name to use as the url postfix as download response is not
-     *            generated before postfix
-     */
-    public InputStreamDownloadHandler(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler,
-            String name) {
         this.handler = handler;
-        this.name = name;
     }
 
     @Override
@@ -75,6 +56,12 @@ public class InputStreamDownloadHandler
             return;
         }
 
+        String downloadName = download.getFileName();
+        downloadEvent.setContentType(getContentType(downloadName, response));
+        if (!isInline()) {
+            downloadEvent.setFileName(downloadName);
+        }
+
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
             TransferProgressListener.transfer(inputStream, outputStream,
@@ -85,15 +72,5 @@ public class InputStreamDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
-
-        response.setContentType(download.getContentType());
-        response.setContentLength(download.getSize());
-        response.setHeader("Content-Disposition",
-                "attachment;filename=" + download.getFileName());
-    }
-
-    @Override
-    public String getUrlPostfix() {
-        return name;
     }
 }

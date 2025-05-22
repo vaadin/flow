@@ -48,11 +48,13 @@ public class DownloadResponse implements Serializable {
      *            data stream for data to send to client, stream will be closed
      *            automatically after use by the caller.
      * @param fileName
-     *            file name of download
+     *            name of the file to be downloaded, configured by setting the
+     *            Content-Disposition header to 'attachment' if the value is not
+     *            <code>null</code>, otherwise the header is not set
      * @param contentType
      *            content type
      * @param size
-     *            byte size of stream
+     *            byte size of a stream or <code>-1</code> if unknown
      */
     public DownloadResponse(InputStream inputStream, String fileName,
             String contentType, int size) {
@@ -92,7 +94,7 @@ public class DownloadResponse implements Serializable {
     }
 
     /**
-     * Get the defined size for the content
+     * Get the defined size for the content or <code>-1</code> if unknown.
      *
      * @return content size
      */

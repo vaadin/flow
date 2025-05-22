@@ -15,8 +15,6 @@
  */
 package com.vaadin.base.devserver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import com.vaadin.flow.internal.JacksonUtils;
 
 import elemental.json.JsonObject;
@@ -47,5 +45,5 @@ public interface DevToolsInterface {
      * @param data
      *            data, specific to the command
      */
-    void send(String command, JsonNode data);
+    void send(String command, Object data);
 }

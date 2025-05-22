@@ -43,6 +43,7 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
@@ -82,8 +83,7 @@ public class AbstractDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadEvent = new DownloadEvent(request, response, session,
-                "download", "application/octet-stream", owner);
+        downloadEvent = new DownloadEvent(request, response, session, owner);
 
         handler = new AbstractDownloadHandler<>() {
             @Override
@@ -218,5 +218,85 @@ public class AbstractDownloadHandlerTest {
         DownloadHandler handler = event -> {
             new FileInputStream(new File("foo"));
         };
+    }
+
+    @Test
+    public void inline_attachmentUsedByDefault() {
+        Assert.assertFalse(handler.isInline());
+    }
+
+    @Test
+    public void inline_inlinedWhenExplicitlyCalled() {
+        handler.inline();
+        Assert.assertTrue(handler.isInline());
+    }
+
+    @Test
+    public void getTransferContext_returnsExpectedContextFromEvent() {
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Element owner = Mockito.mock(Element.class);
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                owner);
+        event.setContentLength(1024);
+        event.setFileName("test.txt");
+        AbstractDownloadHandler<AbstractDownloadHandler> handler = new AbstractDownloadHandler<>() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event)
+                    throws IOException {
+            }
+        };
+        TransferContext context = handler.getTransferContext(event);
+        Assert.assertEquals(owner, context.owningElement());
+        Assert.assertEquals(session, context.session());
+        Assert.assertEquals(request, context.request());
+        Assert.assertEquals(response, context.response());
+        Assert.assertEquals(1024, context.contentLength());
+        Assert.assertEquals("test.txt", context.fileName());
+    }
+
+    @Test
+    public void whenStartWithContext_onStartCalled() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.whenStart((context) -> invoked.set(true));
+        handler.getListeners()
+                .forEach(listener -> listener.onStart(mockContext));
+        Assert.assertTrue("Start with context should be invoked",
+                invoked.get());
+    }
+
+    @Test
+    public void whenProgressWithContext_onProgressCalled() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.onProgress((context, current, total) -> invoked.set(true),
+                1024);
+        handler.getListeners().forEach(listener -> listener
+                .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
+        Assert.assertTrue("Progress with context should be invoked",
+                invoked.get());
+    }
+
+    @Test
+    public void whenProgressWithContextNoInterval_onProgressCalled() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.onProgress((context, current, total) -> invoked.set(true));
+        handler.getListeners().forEach(listener -> listener
+                .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
+        Assert.assertTrue(
+                "Progress with context and interval should be invoked",
+                invoked.get());
+    }
+
+    @Test
+    public void whenCompleteWithContext() {
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        handler.whenComplete((context, success) -> invoked.set(true));
+        handler.getListeners().forEach(listener -> {
+            listener.onComplete(mockContext, TRANSFERRED_BYTES);
+            listener.onError(mockContext, EXCEPTION);
+        });
+        Assert.assertTrue("Progress with context should be invoked",
+                invoked.get());
     }
 }

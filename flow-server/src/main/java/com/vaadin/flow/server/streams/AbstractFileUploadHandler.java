@@ -69,8 +69,11 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
             notifyError(event, e);
             throw e;
         }
-        successHandler.accept(new UploadMetadata(event.getFileName(),
-                event.getContentType(), event.getFileSize()), file);
+        event.getUI()
+                .access(() -> successHandler.accept(
+                        new UploadMetadata(event.getFileName(),
+                                event.getContentType(), event.getFileSize()),
+                        file));
     }
 
     @Override
