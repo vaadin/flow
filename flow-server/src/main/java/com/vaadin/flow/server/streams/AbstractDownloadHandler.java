@@ -16,9 +16,16 @@
 
 package com.vaadin.flow.server.streams;
 
+import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Abstract class for common methods used in pre-made download handlers.
@@ -45,6 +52,19 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     protected String getContentType(String fileName, VaadinResponse response) {
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
+    }
+
+    @Override
+    public void handleRequest(VaadinRequest request, VaadinResponse response,
+            VaadinSession session, Element owner) throws IOException {
+        DownloadHandler.super.handleRequest(request, response, session, owner);
+        AtomicLong contentLength = new AtomicLong(-1);
+        if (this instanceof FileDownloadHandler downloadHandler) {
+            contentLength.set(downloadHandler.getContentLength());
+        }
+        getListeners().forEach(listener -> listener
+                .onAllComplete(new TransferContext(request, response, session,
+                        getUrlPostfix(), owner, contentLength.get())));
     }
 
     /**

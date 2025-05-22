@@ -345,6 +345,101 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
     }
 
     /**
+     * Adds a listener to be notified when the transfer is completed
+     * successfully or with an error.
+     * <p>
+     * Gives a <code>Boolean</code> indicating whether the transfer was
+     * completed successfully (true) or not (false).
+     * <p>
+     * In case of a multipart upload, this method is called after all
+     * parts/files are uploaded and gives success <code>false</code> if any of
+     * the uploads failed. In case of a single file upload or download, this
+     * method is called at the same time as
+     * {@link #whenComplete(SerializableConsumer)}, so either of them can be
+     * used.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
+     *
+     * @param completeOrTerminateHandler
+     *            the handler to be called when the transfer is completed
+     * @return this instance for method chaining
+     */
+    public R whenAllComplete(
+            SerializableConsumer<Boolean> completeOrTerminateHandler) {
+        Objects.requireNonNull(completeOrTerminateHandler,
+                "Complete or terminate handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
+            private boolean success = true;
+
+            @Override
+            public void onError(TransferContext context, IOException reason) {
+                success = false;
+            }
+
+            @Override
+            public void onComplete(TransferContext context,
+                    long transferredBytes) {
+                context.getUI().access(() -> {
+                    completeOrTerminateHandler.accept(success);
+                });
+            }
+        });
+        return (R) this;
+    }
+
+    /**
+     * Adds a listener to be notified when the all the transfers are completed
+     * successfully or with an error with the trasfer context object given as an
+     * input.
+     * <p>
+     * Gives a <code>Boolean</code> indicating whether the transfer was
+     * completed successfully (true) or not (false) and transfer context to
+     * obtain more meta-data.
+     * <p>
+     * In case of a multipart upload, this method is called after all
+     * parts/files are uploaded and gives success <code>false</code> if any of
+     * the uploads failed. In case of a single file upload or download, this
+     * method is called at the same time as
+     * {@link #whenComplete(SerializableBiConsumer)}, so either of them can be
+     * used.
+     * <p>
+     * The call of the given callback is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
+     * defined here when the download or upload request is being handled. This
+     * needs {@link com.vaadin.flow.component.page.Push} to be enabled in the
+     * application to properly send the UI changes to client.
+     *
+     * @param completeOrTerminateHandler
+     *            the handler to be called when the transfer is completed
+     * @return this instance for method chaining
+     */
+    public R whenAllComplete(
+            SerializableBiConsumer<TransferContext, Boolean> completeOrTerminateHandler) {
+        Objects.requireNonNull(completeOrTerminateHandler,
+                "Complete or terminate handler cannot be null");
+        addTransferProgressListenerInternal(new TransferProgressListener() {
+            private boolean success = true;
+
+            @Override
+            public void onError(TransferContext context, IOException reason) {
+                success = false;
+            }
+
+            @Override
+            public void onAllComplete(TransferContext context) {
+                context.getUI().access(() -> {
+                    completeOrTerminateHandler.accept(context, success);
+                });
+            }
+        });
+        return (R) this;
+    }
+
+    /**
      * Get the listeners that are registered to this handler.
      * <p>
      * For the custom data transfer implementation, one may need to notify
@@ -439,6 +534,13 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         public void onComplete(TransferContext context, long transferredBytes) {
             context.getUI().access(() -> {
                 delegate.onComplete(context, transferredBytes);
+            });
+        }
+
+        @Override
+        public void onAllComplete(TransferContext context) {
+            context.getUI().access(() -> {
+                delegate.onAllComplete(context);
             });
         }
 

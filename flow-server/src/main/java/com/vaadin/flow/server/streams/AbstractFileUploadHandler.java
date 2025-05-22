@@ -22,7 +22,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Abstract class for file upload handler.
@@ -74,6 +80,21 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
                         new UploadMetadata(event.getFileName(),
                                 event.getContentType(), event.getFileSize()),
                         file));
+    }
+
+    @Override
+    public void handleRequest(VaadinRequest request, VaadinResponse response,
+            VaadinSession session, Element owner) throws IOException {
+        UploadHandler.super.handleRequest(request, response, session, owner);
+        try {
+            getListeners().forEach(
+                    listener -> listener.onAllComplete(new TransferContext(
+                            request, response, session, null, owner, -1)));
+        } catch (Exception e) {
+            LoggerFactory.getLogger(UploadHandler.class).error(
+                    "Exception during invoking onAllCompleted listeners", e);
+            responseHandled(false, response);
+        }
     }
 
     @Override

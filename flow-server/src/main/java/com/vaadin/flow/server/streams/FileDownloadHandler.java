@@ -108,4 +108,8 @@ public class FileDownloadHandler
                 getUrlPostfix(), transferEvent.getOwningElement(),
                 file.length());
     }
+
+    long getContentLength() {
+        return file.length();
+    }
 }

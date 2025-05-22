@@ -64,11 +64,8 @@ public interface TransferProgressListener extends Serializable {
      * The call of this method is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
      * to send UI changes defined here when the download or upload request is
-     * being handled. Thus, no need to call
-     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
-     * in the implementation of this method. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
-     * application to properly send the UI changes to client.
+     * being handled. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
      *
      * @param context
      *            the context of the transfer
@@ -110,11 +107,8 @@ public interface TransferProgressListener extends Serializable {
      * The call of this method is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
      * to send UI changes defined here when the download or upload request is
-     * being handled. Thus, no need to call
-     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
-     * in the implementation of this method. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
-     * application to properly send the UI changes to client.
+     * being handled. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
      *
      * @param context
      *            the context of the transfer
@@ -126,21 +120,45 @@ public interface TransferProgressListener extends Serializable {
     }
 
     /**
-     * Called when the transfer is started.
+     * Called when the transfer is completed.
+     * <p>
+     * In case of a multipart upload, this method is called for each part/file
+     * upload. In case of a single file upload or download, this method is
+     * called at the same time as {@link #onAllComplete(TransferContext)}, so
+     * either of them can be used.
      * <p>
      * The call of this method is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
      * to send UI changes defined here when the download or upload request is
-     * being handled. Thus, no need to call
-     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
-     * in the implementation of this method. This needs
-     * {@link com.vaadin.flow.component.page.Push} to be enabled in the
-     * application to properly send the UI changes to client.
+     * being handled. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
      *
      * @param context
      *            the context of the transfer
      */
     default void onComplete(TransferContext context, long transferredBytes) {
+        // Default implementation does nothing
+    }
+
+    /**
+     * Called when the transfer is started.
+     * <p>
+     * In case of a multipart upload, this method is called after all
+     * parts/files are uploaded. In case of a single file upload or download,
+     * this method is called at the same time as
+     * {@link #onComplete(TransferContext, long)}, so either of them can be
+     * used.
+     * <p>
+     * The call of this method is wrapped by the
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
+     * to send UI changes defined here when the download or upload request is
+     * being handled. This needs {@link com.vaadin.flow.component.page.Push} to
+     * be enabled in the application to properly send the UI changes to client.
+     *
+     * @param context
+     *            the context of the transfer
+     */
+    default void onAllComplete(TransferContext context) {
         // Default implementation does nothing
     }
 
