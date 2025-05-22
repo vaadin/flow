@@ -41,8 +41,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.vaadin.flow.i18n.DefaultI18NProvider.CHUNK_RESOURCE;
-
 /**
  * Handles translation file requests. Translation file requests are internal
  * requests sent by the client-side to retrieve the translation file for the
