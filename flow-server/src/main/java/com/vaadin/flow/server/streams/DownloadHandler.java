@@ -242,25 +242,6 @@ public interface DownloadHandler extends ElementRequestHandler {
 
     /**
      * Generate a function for downloading from a generated InputStream with the
-     * given download name.
-     * <p>
-     * <code>DownloadResponse</code> instances can be created using various
-     * factory methods or with new operator.
-     *
-     * @param handler
-     *            handler function that will be called on download
-     * @param name
-     *            resource name
-     * @return DownloadHandler implementation for download from an input stream
-     */
-    static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler,
-            String name) {
-        return new InputStreamDownloadHandler(handler, name);
-    }
-
-    /**
-     * Generate a function for downloading from a generated InputStream with the
      * given download name and progress listener.
      * <p>
      * <code>DownloadResponse</code> instances can be created using various
@@ -268,17 +249,15 @@ public interface DownloadHandler extends ElementRequestHandler {
      *
      * @param handler
      *            handler function that will be called on download
-     * @param name
-     *            resource name
      * @param listener
      *            listener for transfer progress events
      * @return DownloadHandler implementation for download from an input stream
      */
     static InputStreamDownloadHandler fromInputStream(
             SerializableFunction<DownloadEvent, DownloadResponse> handler,
-            String name, TransferProgressListener listener) {
+            TransferProgressListener listener) {
         InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(
-                handler, name);
+                handler);
         downloadHandler.addTransferProgressListener(listener);
         return downloadHandler;
     }
