@@ -47,8 +47,6 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Utility class with methods for handling transfer of upload and download
  * requests.
- *
- * For internal use only. May be renamed or removed in a future release.
  */
 public final class TransferUtil {
 
@@ -124,6 +122,8 @@ public final class TransferUtil {
      * Handle upload request and call
      * {@link UploadHandler#handleUploadRequest(UploadEvent)} correctly for xhr
      * and multipart uploads.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      *
      * @param handler
      *            UploadHandler that should be called for this upload
