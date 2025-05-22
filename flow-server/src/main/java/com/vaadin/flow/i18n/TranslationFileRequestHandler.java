@@ -146,6 +146,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         var chunks = request.getParameterMap().get(CHUNK_PARAMETER_NAME);
 
         if (chunks != null && chunks.length > 0) {
+            // Filter the keys based on the requested chunks.
             var chunkData = getChunkData();
             var keys = Arrays.stream(chunks).map(chunkData::get)
                     .filter(Objects::nonNull).flatMap(Arrays::stream)
@@ -250,6 +251,13 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         return false;
     }
 
+    /**
+     * Retrieves the chunk data from the JSON file.
+     *
+     * @return a map containing chunk names and their corresponding keys
+     * @throws IOException
+     *             if thrown when reading the chunk resource
+     */
     private Map<String, String[]> getChunkData() throws IOException {
         if (chunkData == null) {
             chunkData = new HashMap<>();

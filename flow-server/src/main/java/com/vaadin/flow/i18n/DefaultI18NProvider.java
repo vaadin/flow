@@ -41,6 +41,7 @@ public class DefaultI18NProvider implements I18NProvider {
     // Get bundles named `translations` from `vaadin-i18n` folder.
     public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
             + BUNDLE_FILENAME;
+    // Resource path for the file that contains the list of keys for each chunk.
     public static final String CHUNK_RESOURCE = BUNDLE_FOLDER + "/i18n.json";
 
     /**
