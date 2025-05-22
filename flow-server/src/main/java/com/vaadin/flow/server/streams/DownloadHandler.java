@@ -27,7 +27,58 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Interface for handling download of data from the server to the client.
+ * Provides a flexible high-level abstraction for implementing file and
+ * arbitrary content downloads from server to client in Vaadin applications.
+ * <p>
+ * This interface can be implemented in two ways:
+ * <ul>
+ * <li>By creating a lambda expression that implements the
+ * {@link #handleDownloadRequest(DownloadEvent)} method</li>
+ * <li>By creating a child or anonymous class that implements this
+ * interface</li>
+ * </ul>
+ * <p>
+ * The interface provides several factory methods for common download scenarios:
+ * <ul>
+ * <li>{@link #forFile(File)} - for downloading files from the server</li>
+ * <li>{@link #forClassResource(Class, String)} - for downloading class
+ * resources</li>
+ * <li>{@link #forServletResource(String)} - for downloading servlet
+ * resources</li>
+ * <li>{@link #fromInputStream(SerializableFunction)} - for downloading from
+ * input streams</li>
+ * </ul>
+ * Example:
+ *
+ * <pre>
+ * DownloadHandler.forFile(new File("path/to/file.txt"));
+ * </pre>
+ *
+ * All factory methods have overloads that allow adding a download progress
+ * listener and set a custom file name and URL postfix:
+ *
+ * <pre>
+ * DownloadHandler.forClassResource(MyView.class, "attachment-XYZ.txt",
+ *         "attachment.txt", new TransferProgressListener() {
+ *             &#064;Override
+ *             public void onComplete(TransferContext context,
+ *                     long transferredBytes) {
+ *                 // update UI on complete
+ *             }
+ *         });
+ * </pre>
+ * <p>
+ * If you need to write directly to an OutputStream, you can use a lambda
+ * expression with {@code event.getOutputStream()} to access the output stream:
+ *
+ * <pre>
+ * DownloadHandler handler = event -> {
+ *     try (OutputStream out = event.getOutputStream()) {
+ *         // Write your data to the output stream
+ *         out.write(yourData);
+ *     }
+ * };
+ * </pre>
  *
  * @since 24.8
  */
