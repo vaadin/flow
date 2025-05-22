@@ -1461,7 +1461,7 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Returns the Deployment Configuration for the session
+     * Returns the Deployment Configuration for the application
      *
      * @return The Deployment Configuration
      */

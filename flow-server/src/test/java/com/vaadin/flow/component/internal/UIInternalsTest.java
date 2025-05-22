@@ -560,15 +560,18 @@ public class UIInternalsTest {
 
     @Test
     public void getDeploymentConfiguration() {
-        AlwaysLockedVaadinSession session = Mockito.mock(AlwaysLockedVaadinSession.class);
-        MockVaadinServletService mockVaadinServletService = Mockito.mock(MockVaadinServletService.class);
+        AlwaysLockedVaadinSession session = Mockito
+                .mock(AlwaysLockedVaadinSession.class);
+        MockVaadinServletService mockVaadinServletService = Mockito
+                .mock(MockVaadinServletService.class);
 
         internals = new UIInternals(ui);
         internals.setSession(session);
 
         Mockito.when(session.getService()).thenReturn(mockVaadinServletService);
         DeploymentConfiguration config = new MockDeploymentConfiguration();
-        Mockito.when(mockVaadinServletService.getDeploymentConfiguration()).thenReturn(config);
+        Mockito.when(mockVaadinServletService.getDeploymentConfiguration())
+                .thenReturn(config);
 
         DeploymentConfiguration result = internals.getDeploymentConfiguration();
 
