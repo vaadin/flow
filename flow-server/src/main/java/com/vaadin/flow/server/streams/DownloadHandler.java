@@ -324,51 +324,6 @@ public interface DownloadHandler extends ElementRequestHandler {
 
     /**
      * Generate a function for downloading from a generated InputStream with the
-     * given download urlPostfix.
-     * <p>
-     * <code>DownloadResponse</code> instances can be created using various
-     * factory methods or with new operator.
-     *
-     * @param handler
-     *            handler function that will be called on download
-     * @param urlPostfix
-     *            download request URL postfix, e.g. e.g.
-     *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
-     * @return DownloadHandler implementation for download from an input stream
-     */
-    static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler,
-            String urlPostfix) {
-        return new InputStreamDownloadHandler(handler, urlPostfix);
-    }
-
-    /**
-     * Generate a function for downloading from a generated InputStream with the
-     * given download name and progress listener.
-     * <p>
-     * <code>DownloadResponse</code> instances can be created using various
-     * factory methods or with new operator.
-     *
-     * @param handler
-     *            handler function that will be called on download
-     * @param urlPostfix
-     *            download request URL postfix, e.g.
-     *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
-     * @param listener
-     *            listener for transfer progress events
-     * @return DownloadHandler implementation for download from an input stream
-     */
-    static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler,
-            String urlPostfix, TransferProgressListener listener) {
-        InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(
-                handler, urlPostfix);
-        downloadHandler.addTransferProgressListener(listener);
-        return downloadHandler;
-    }
-
-    /**
-     * Generate a function for downloading from a generated InputStream with the
      * given progress listener.
      * <p>
      * <code>DownloadResponse</code> instances can be created using various

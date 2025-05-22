@@ -19,6 +19,7 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -33,7 +34,7 @@ public class InputStreamDownloadHandler
         extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
     private final SerializableFunction<DownloadEvent, DownloadResponse> handler;
-    private final String urlPostfix;
+    private final String name;
 
     /**
      * Create a input stream download handler for given event -> response
@@ -51,20 +52,20 @@ public class InputStreamDownloadHandler
      * Create an input stream download handler for given event -> response
      * function.
      * <p>
-     * The downloaded file urlPostfix and download URL postfix will be set to
-     * <code>urlPostfix</code>.
+     * The downloaded file name and download URL postfix will be set to
+     * <code>name</code>.
      *
      * @param handler
      *            serializable function for handling download
-     * @param urlPostfix
-     *            download request URL postfix, e.g.
-     *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
+     * @param name
+     *            name to use as the url postfix as download response is not
+     *            generated before postfix
      */
     public InputStreamDownloadHandler(
             SerializableFunction<DownloadEvent, DownloadResponse> handler,
-            String urlPostfix) {
+            String name) {
         this.handler = handler;
-        this.urlPostfix = urlPostfix;
+        this.name = name;
     }
 
     @Override
@@ -77,9 +78,7 @@ public class InputStreamDownloadHandler
             return;
         }
 
-        String downloadName = download.getFileName() != null
-                ? download.getFileName()
-                : urlPostfix;
+        String downloadName = download.getFileName();
         downloadEvent.setContentType(getContentType(downloadName, response));
         if (!isInline()) {
             downloadEvent.setFileName(downloadName);
@@ -99,6 +98,6 @@ public class InputStreamDownloadHandler
 
     @Override
     public String getUrlPostfix() {
-        return urlPostfix;
+        return name;
     }
 }
