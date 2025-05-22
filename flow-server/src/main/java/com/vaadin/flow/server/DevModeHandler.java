@@ -93,10 +93,15 @@ public final class DevModeHandler implements RequestHandler {
     private static final Pattern WEBPACK_ILLEGAL_CHAR_PATTERN = Pattern
             .compile("\"|%22");
     // It's not possible to know whether webpack is ready unless reading output
-    // messages. When webpack finishes, it writes either a `Compiled` or a
-    // `Failed` in the last line
-    private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
-    private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
+    // messages. When webpack finishes, it writes either a `compiled` or a
+    // `compiled with error` in the last line
+    // Webpack output can be
+    // webpack 5.51.1 compiled successfully in 27409ms
+    // webpack 5.51.1 compiled with 34 errors in 42936ms
+    // webpack 5.51.1 compiled with 2 warnings in 1233ms
+    // webpack 5.51.1 compiled with 1 error and 1 warning in 7110 ms
+    private static final String DEFAULT_OUTPUT_PATTERN = "webpack .* compiled .* in .*ms";
+    private static final String DEFAULT_ERROR_PATTERN = "webpack .* compiled with .* error.* in .* ms";
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. -----------------";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------";
     private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
@@ -686,11 +691,10 @@ public final class DevModeHandler implements RequestHandler {
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
                         DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
-
             if (!webpackProcess.get().isAlive()) {
-                getLogger().error(
-                        String.format("Webpack failed with the exception:%n%s",
-                                cumulativeOutput.toString()));
+                getLogger().error("Webpack failed ({}) with the exception:\n{}",
+                        webpackProcess.get().exitValue(),
+                        cumulativeOutput.toString());
                 throw new IllegalStateException("Webpack exited prematurely");
             }
 
@@ -724,13 +728,12 @@ public final class DevModeHandler implements RequestHandler {
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
-        // Workaround for issue with Node 17 webpack dev server denying
-        // request to localhost. See https://github.com/vaadin/flow/issues/12546
-        command.add("--host=127.0.0.1");
+        // Tell wds to stop even if watchDog fail
+        command.add("--watch-options-stdin");
 
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false")
+                        "--devtool=eval-source-map")
                 .split(" +")));
         return command;
     }

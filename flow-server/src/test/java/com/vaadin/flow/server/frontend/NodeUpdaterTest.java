@@ -167,7 +167,7 @@ public class NodeUpdaterTest {
         Assert.assertEquals("^2.2.10",
                 packageJson.getObject(NodeUpdater.DEPENDENCIES)
                         .getString("@webcomponents/webcomponentsjs"));
-        Assert.assertEquals("4.47.0", packageJson
+        Assert.assertEquals("5.99.6", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
@@ -180,13 +180,13 @@ public class NodeUpdaterTest {
         packageJson.getObject(NodeUpdater.DEPENDENCIES)
                 .put("@webcomponents/webcomponentsjs", "2.3.1");
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "5.0.1");
+                "5.100.1");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         Assert.assertEquals("2.3.1",
                 packageJson.getObject(NodeUpdater.DEPENDENCIES)
                         .getString("@webcomponents/webcomponentsjs"));
-        Assert.assertEquals("5.0.1", packageJson
+        Assert.assertEquals("5.100.1", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 

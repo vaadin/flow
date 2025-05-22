@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -69,6 +70,9 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("restriction")
 public class DevModeHandlerTest {
 
+    public static final String COMPILE_OK_OUTPUT = "webpack 5.16.0 compiled successfully in 12300 ms";
+    public static final String COMPILE_ERROR_OUTPUT = "webpack 5.16.0 compiled with 2 errors in 27203 ms";
+
     private MockDeploymentConfiguration configuration;
 
     private HttpServer httpServer;
@@ -97,7 +101,7 @@ public class DevModeHandlerTest {
         configuration.setProductionMode(false);
 
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        createStubWebpackServer("Compiled", 100, baseDir);
+        createStubWebpackServer(COMPILE_OK_OUTPUT, 100, baseDir);
     }
 
     @After
@@ -205,8 +209,8 @@ public class DevModeHandlerTest {
     @Test
     public void should_CaptureWebpackOutput_When_Failed() throws Exception {
         configuration.setApplicationOrSystemProperty(
-                SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
-        createStubWebpackServer("Failed to compile", 300, baseDir);
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "400");
+        createStubWebpackServer(COMPILE_ERROR_OUTPUT, 300, baseDir);
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
         assertNotNull(handler);
