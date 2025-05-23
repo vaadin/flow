@@ -27,6 +27,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -202,6 +203,9 @@ public class Anchor extends HtmlContainer
      * Sets the URL that this anchor links to and that is bound to a given
      * {@link DownloadHandler} callback on the server for handling data download
      * from the server to the client when clicking an anchor.
+     * <p>
+     * Sets the 'download' attribute for link when given a non-inline handler
+     * implementing AbstractDownloadHandler.
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
@@ -211,6 +215,10 @@ public class Anchor extends HtmlContainer
                 downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
+        if (downloadHandler instanceof AbstractDownloadHandler<?> abstractDownloadHandler
+                && !abstractDownloadHandler.isInline()) {
+            getElement().setAttribute("download", true);
+        }
     }
 
     /**
