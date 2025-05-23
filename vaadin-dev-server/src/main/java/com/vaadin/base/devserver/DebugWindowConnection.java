@@ -147,11 +147,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
 
         @Override
-        public void send(String command, JsonNode data) {
+        public void send(String command, Object data) {
             ObjectNode msg = JacksonUtils.createObjectNode();
             msg.put("command", command);
-            if (data != null) {
-                msg.set("data", data);
+            if (data instanceof JsonNode jsonNode) {
+                msg.set("data", jsonNode);
+            } else if (data != null) {
+                msg.set("data", JacksonUtils.beanToJson(data));
             }
 
             debugWindowConnection.send(resource, msg.toString());
