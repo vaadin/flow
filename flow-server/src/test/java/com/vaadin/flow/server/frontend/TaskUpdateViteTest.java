@@ -116,7 +116,8 @@ public class TaskUpdateViteTest {
                 IOUtils.toString(settings.toURI(), StandardCharsets.UTF_8));
 
         final Matcher matcher = Pattern
-                .compile("settings\\.(?!json)([a-zA-z]*)").matcher(template);
+                .compile("settings\\.(?!json)([a-zA-z][a-zA-z0-9]*)")
+                .matcher(template);
         StringBuilder faulty = new StringBuilder();
         while (matcher.find()) {
             if (!settingsJson.hasKey(matcher.group(1))) {

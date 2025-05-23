@@ -27,6 +27,7 @@ import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
+import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
 
 import { createRequire } from 'module';
@@ -52,6 +53,7 @@ const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
 const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
+const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
@@ -704,6 +706,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
             ]
           ].filter(Boolean)
         }
+      }),
+      vaadinI18n({
+        cwd: __dirname,
+        meta: {
+          output: {
+            dir: i18nFolder,
+          },
+        },
       }),
       {
         name: 'vaadin:force-remove-html-middleware',
