@@ -91,7 +91,7 @@ public class AuthenticationContext {
      *             if the current user instance does not match the given
      *             {@code userType}.
      */
-    public <U> Optional<U> getAuthenticatedUser(Class<U> userType) {
+    public static <U> Optional<U> getAuthenticatedUser(Class<U> userType) {
         return getAuthentication().map(Authentication::getPrincipal)
                 .map(userType::cast);
     }
