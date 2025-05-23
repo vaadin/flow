@@ -47,7 +47,62 @@ import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
 import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
 
 /**
- * Interface for handling upload of data from the client to the server.
+ * Provides a flexible high-level abstraction for implementing file and
+ * arbitrary content uploads from client to server in Vaadin applications.
+ * <p>
+ * This interface can be implemented in two ways:
+ * <ul>
+ * <li>By creating a lambda expression that implements the
+ * {@link #handleUploadRequest(UploadEvent)} method</li>
+ * <li>By creating a child or anonymous class that implements this
+ * interface</li>
+ * </ul>
+ * <p>
+ * The interface provides several factory methods for common upload scenarios:
+ * <ul>
+ * <li>{@link #toFile(SerializableBiConsumer, FileFactory)} - for uploading
+ * files to the server file system</li>
+ * <li>{@link #toTempFile(SerializableBiConsumer)} - for uploading to temporary
+ * files</li>
+ * <li>{@link #inMemory(SerializableBiConsumer)} - for uploading files to
+ * memory</li>
+ * </ul>
+ * Example:
+ *
+ * <pre>
+ * UploadHandler.inMemory((metadata, bytes) -> {
+ *     // validate and save data
+ * });
+ * </pre>
+ *
+ * All factory methods have overloads that allow adding a transfer progress
+ * listener:
+ *
+ * <pre>
+ * UploadHandler.toFile((metadata, file) -> {
+ *     // validate and save file
+ * }, filename -> new File("/path/to/file", filename),
+ *         new TransferProgressListener() {
+ *             &#064;Override
+ *             public void onComplete(TransferContext context,
+ *                     long transferredBytes) {
+ *                 // show notification about file upload completion
+ *             }
+ *         });
+ * </pre>
+ * <p>
+ * You can use a lambda expression to handle uploads directly:
+ *
+ * <pre>
+ * UploadHandler handler = event -> {
+ *     var name = event.getContentType();
+ *     var size = event.getFileSize();
+ *     // validate file
+ *     try (InputStream inputStream = event.getInputStream()) {
+ *         // process input stream
+ *     }
+ * };
+ * </pre>
  *
  * @since 24.8
  */
