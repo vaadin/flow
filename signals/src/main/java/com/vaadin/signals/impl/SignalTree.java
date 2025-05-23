@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -89,6 +90,8 @@ public abstract class SignalTree {
     private final ReentrantLock lock = new ReentrantLock();
 
     private final Type type;
+
+    private final List<BiConsumer<SignalCommand, CommandResult>> subscribers = new ArrayList<>();
 
     /**
      * Creates a new signal tree with the given type.
@@ -333,5 +336,47 @@ public abstract class SignalTree {
      */
     public Type type() {
         return type;
+    }
+
+    /**
+     * Registers a callback that is executed after commands are processed
+     * (regardless of acceptance or rejection). It is guaranteed that the
+     * callback is invoked in the order the commands are processed. Contrary to
+     * the observers that are attached to a specific node by calling
+     * {@link #observeNextChange}, the <code>subscriber</code> remains active
+     * indefinitely until it is removed by executing the returned callback.
+     *
+     * @param subscriber
+     *            the callback to run when a command is confirmed, not
+     *            <code>null</code>
+     * @return a callback that can be used to remove the subscriber, not
+     *         <code>null</code>
+     */
+    public Runnable subscribeToProcessed(
+            BiConsumer<SignalCommand, CommandResult> subscriber) {
+        assert subscriber != null;
+        return getWithLock(() -> {
+            subscribers.add(subscriber);
+            return wrapWithLock(() -> subscribers.remove(subscriber));
+        });
+    }
+
+    /**
+     * Notifies all subscribers after a command is processed. This method must
+     * be called from a code block that holds the tree lock.
+     *
+     * @param commands
+     *            the list of processed commands, not <code>null</code>
+     * @param results
+     *            the map of results for the commands, not <code>null</code>
+     */
+    protected void notifyProcessedCommandSubscribers(
+            List<SignalCommand> commands, Map<Id, CommandResult> results) {
+        assert hasLock();
+        for (var command : commands) {
+            for (var subscriber : subscribers) {
+                subscriber.accept(command, results.get(command.commandId()));
+            }
+        }
     }
 }
