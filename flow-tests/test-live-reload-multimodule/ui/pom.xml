@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-test-live-reload-multimodule-hotdeploy</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-live-reload-multimodule-ui-hotdeploy</artifactId>
     <name>The UI module for a live reload multi module project (hotdeploy)</name>

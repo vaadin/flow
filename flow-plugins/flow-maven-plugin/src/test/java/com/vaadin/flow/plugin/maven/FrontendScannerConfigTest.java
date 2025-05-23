@@ -138,14 +138,14 @@ public class FrontendScannerConfigTest {
     // <groupId>:<artifactId>:<type>:<classifier>:<version>:<scope> (optional)
     //
     private static final String TEST_DEPENDENCIES_LIST = """
-            com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile
-            com.vaadin:vaadin-internal:jar:24.8-SNAPSHOT:compile
-            com.vaadin:vaadin-core-internal:jar:24.8-SNAPSHOT:compile
-            com.vaadin:vaadin-accordion-flow:jar:24.8-SNAPSHOT:compile
-            com.vaadin:vaadin-avatar-flow:jar:24.8-SNAPSHOT:compile
-            com.vaadin:vaadin-checkbox-flow:jar:24.8-SNAPSHOT:compile
-            com.vaadin:flow-server:jar:24.8-SNAPSHOT:compile
-            com.vaadin:flow-push:jar:24.8-SNAPSHOT:compile
+            com.vaadin:vaadin:jar:25.0-SNAPSHOT:compile
+            com.vaadin:vaadin-internal:jar:25.0-SNAPSHOT:compile
+            com.vaadin:vaadin-core-internal:jar:25.0-SNAPSHOT:compile
+            com.vaadin:vaadin-accordion-flow:jar:25.0-SNAPSHOT:compile
+            com.vaadin:vaadin-avatar-flow:jar:25.0-SNAPSHOT:compile
+            com.vaadin:vaadin-checkbox-flow:jar:25.0-SNAPSHOT:compile
+            com.vaadin:flow-server:jar:25.0-SNAPSHOT:compile
+            com.vaadin:flow-push:jar:25.0-SNAPSHOT:compile
             com.vaadin.external.atmosphere:atmosphere-runtime:jar:3.0.5.slf4jvaadin1:compile
             com.vaadin.servletdetector:throw-if-servlet3:jar:1.0.2:compile
             org.jspecify:jspecify:jar:1.0.0:compile
@@ -167,7 +167,7 @@ public class FrontendScannerConfigTest {
             org.apache.commons:commons-compress:jar:1.27.1:compile
             commons-codec:commons-codec:jar:1.17.1:compile
             org.apache.commons:commons-lang3:jar:3.16.0:compile
-            com.vaadin:flow-client:jar:24.8-SNAPSHOT:compile
+            com.vaadin:flow-client:jar:25.0-SNAPSHOT:compile
             org.yaml:snakeyaml:jar:2.2:compile
             org.yaml:snakeyaml:jar:android:1.23:compile
             org.springframework.boot:spring-boot-autoconfigure:jar:3.4.3:compile
