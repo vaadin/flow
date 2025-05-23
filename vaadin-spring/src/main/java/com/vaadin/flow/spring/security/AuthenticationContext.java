@@ -92,6 +92,27 @@ public class AuthenticationContext {
      *             {@code userType}.
      */
     public <U> Optional<U> getAuthenticatedUser(Class<U> userType) {
+        return getCurrentAuthenticatedUser(userType);
+    }
+
+    /**
+     * Gets an {@link Optional} with an instance of the current user if it has
+     * been authenticated, or empty if the user is not authenticated.
+     *
+     * Anonymous users are considered not authenticated.
+     *
+     * @param <U>
+     *            the type parameter of the expected user instance
+     * @param userType
+     *            the type of the expected user instance
+     * @return an {@link Optional} with the current authenticated user, or empty
+     *         if none available
+     * @throws ClassCastException
+     *             if the current user instance does not match the given
+     *             {@code userType}.
+     */
+    public static <U> Optional<U> getCurrentAuthenticatedUser(
+            Class<U> userType) {
         return getAuthentication().map(Authentication::getPrincipal)
                 .map(userType::cast);
     }
