@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -558,4 +558,25 @@ public class UIInternalsTest {
         return pushConfig;
     }
 
+    @Test
+    public void getDeploymentConfiguration() {
+        AlwaysLockedVaadinSession session = Mockito
+                .mock(AlwaysLockedVaadinSession.class);
+        MockVaadinServletService mockVaadinServletService = Mockito
+                .mock(MockVaadinServletService.class);
+
+        internals = new UIInternals(ui);
+        internals.setSession(session);
+
+        Mockito.when(session.getService()).thenReturn(mockVaadinServletService);
+        DeploymentConfiguration config = new MockDeploymentConfiguration();
+        Mockito.when(mockVaadinServletService.getDeploymentConfiguration())
+                .thenReturn(config);
+
+        DeploymentConfiguration result = internals.getDeploymentConfiguration();
+
+        Mockito.verify(session).getService();
+        Mockito.verify(mockVaadinServletService).getDeploymentConfiguration();
+        Assert.assertEquals(config, result);
+    }
 }
