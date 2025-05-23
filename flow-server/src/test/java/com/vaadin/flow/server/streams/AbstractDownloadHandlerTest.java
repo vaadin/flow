@@ -169,8 +169,7 @@ public class AbstractDownloadHandlerTest {
         Mockito.when(context.session()).thenReturn(session);
         OutputStream outputStream = Mockito.mock(OutputStream.class);
         Collection<TransferProgressListener> listeners = new ArrayList<>();
-        TransferProgressListener.transfer(inputStream, outputStream, context,
-                listeners);
+        TransferUtil.transfer(inputStream, outputStream, context, listeners);
         Mockito.verify(session, Mockito.times(0)).lock();
     }
 
@@ -185,8 +184,8 @@ public class AbstractDownloadHandlerTest {
                         "Hello".getBytes(StandardCharsets.UTF_8));
                 TransferContext context = getTransferContext(event);
                 try {
-                    TransferProgressListener.transfer(inputStream,
-                            event.getOutputStream(), context, getListeners());
+                    TransferUtil.transfer(inputStream, event.getOutputStream(),
+                            context, getListeners());
                 } catch (IOException e) {
                     getListeners()
                             .forEach(listener -> listener.onError(context, e));
