@@ -172,7 +172,7 @@ public class Query<T, F> implements Serializable {
      * other.
      * <p>
      * <strong>Note: </strong> Sort orders are populated only with the
-     * properties in Grid that have key set.
+     * columns in Grid that have key set using {@code Column#setKey} method.
      *
      * @return list of sort orders
      */
