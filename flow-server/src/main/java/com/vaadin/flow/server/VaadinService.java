@@ -391,7 +391,7 @@ public abstract class VaadinService implements Serializable {
         }
         if (!SignalEnvironment.tryInitialize(createDefaultObjectMapper(),
                 signalsExecutor)) {
-            getLogger().warn("Signals environment it is already initialized. "
+            getLogger().warn("Signals environment is already initialized. "
                     + "It is recommended to let Vaadin setup Signals environment to prevent unexpected behavior. "
                     + "Please, avoid calling SignalEnvironment.tryInitialize() in application code.");
         }
