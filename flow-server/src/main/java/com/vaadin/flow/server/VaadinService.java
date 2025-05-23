@@ -51,14 +51,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -95,6 +100,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.signals.SignalEnvironment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -318,6 +324,8 @@ public abstract class VaadinService implements Serializable {
                             + " providing a custom Executor instance.");
         }
 
+        initSignalsEnvironment();
+
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
@@ -342,6 +350,54 @@ public abstract class VaadinService implements Serializable {
                 getRouteRegistry().getRegisteredRoutes());
 
         initialized = true;
+    }
+
+    private void initSignalsEnvironment() {
+        Executor signalsExecutor;
+        Supplier<Executor> flowDispatcherOverride;
+        FeatureFlags featureFlags = FeatureFlags.get(getContext());
+        if (featureFlags
+                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
+            signalsExecutor = this.executor;
+            flowDispatcherOverride = () -> {
+                UI owner = UI.getCurrent();
+                if (owner == null) {
+                    return null;
+                }
+
+                return task -> {
+                    if (UI.getCurrent() == owner) {
+                        task.run();
+                    } else {
+                        try {
+                            SignalEnvironment.defaultDispatcher()
+                                    .execute(() -> owner.access(task::run));
+                        } catch (Exception e) {
+                            // a task is submitted when executor is shut down,
+                            // ignore
+                        }
+                    }
+                };
+            };
+        } else {
+            signalsExecutor = task -> {
+                throw new DisabledFeatureException(
+                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+            };
+            flowDispatcherOverride = () -> {
+                throw new DisabledFeatureException(
+                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+            };
+        }
+        if (!SignalEnvironment.tryInitialize(createDefaultObjectMapper(),
+                signalsExecutor)) {
+            getLogger().warn("Signals environment is already initialized. "
+                    + "It is recommended to let Vaadin setup Signals environment to prevent unexpected behavior. "
+                    + "Please, avoid calling SignalEnvironment.tryInitialize() in application code.");
+        }
+        Runnable unregister = SignalEnvironment
+                .addDispatcherOverride(flowDispatcherOverride);
+        addServiceDestroyListener(event -> unregister.run());
     }
 
     private void addRouterUsageStatistics() {
@@ -618,6 +674,20 @@ public abstract class VaadinService implements Serializable {
      */
     public Executor getExecutor() {
         return executor;
+    }
+
+    /**
+     * Creates and configures a default instance of {@link ObjectMapper}. The
+     * configured {@link ObjectMapper} includes the registration of the
+     * {@link JavaTimeModule} to handle serialization and deserialization of
+     * Java time API objects.
+     *
+     * @return the configured {@link ObjectMapper} instance
+     */
+    protected ObjectMapper createDefaultObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
     }
 
     /**

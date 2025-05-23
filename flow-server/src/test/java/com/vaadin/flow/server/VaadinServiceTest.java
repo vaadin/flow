@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,14 +33,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpSessionBindingEvent;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -44,6 +47,8 @@ import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Tag;
@@ -69,7 +74,12 @@ import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -696,11 +706,9 @@ public class VaadinServiceTest {
     @Test
     public void loadInstantiators_instantiatorIsLoadedUsingFactoryFromLookup()
             throws ServiceException {
-        VaadinService service = createService();
+        MockVaadinServletService service = createService();
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-
-        service.getContext().setAttribute(Lookup.class, lookup);
+        Lookup lookup = service.getLookup();
 
         InstantiatorFactory factory = createInstantiatorFactory();
 
@@ -717,11 +725,9 @@ public class VaadinServiceTest {
     @Test(expected = ServiceException.class)
     public void loadInstantiators_twoFactoriesInLookup_throws()
             throws ServiceException {
-        VaadinService service = createService();
+        MockVaadinServletService service = createService();
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-
-        service.getContext().setAttribute(Lookup.class, lookup);
+        Lookup lookup = service.getLookup();
 
         InstantiatorFactory factory1 = createInstantiatorFactory();
         InstantiatorFactory factory2 = createInstantiatorFactory();
@@ -956,7 +962,7 @@ public class VaadinServiceTest {
         return factory;
     }
 
-    private static VaadinService createService() {
+    private static MockVaadinServletService createService() {
         return new MockVaadinServletService();
     }
 }

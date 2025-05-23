@@ -86,16 +86,15 @@ public class HotswapperTest {
 
     Hotswapper hotswapper;
     Lookup lookup;
-    private VaadinService service;
+    private MockVaadinServletService service;
     private VaadinHotswapper flowHotswapper;
     private VaadinHotswapper hillaHotswapper;
     private BrowserLiveReload liveReload;
 
     @Before
     public void setup() {
-        lookup = Mockito.mock(Lookup.class);
         service = new MockVaadinServletService();
-        service.getContext().setAttribute(Lookup.class, lookup);
+        lookup = service.getLookup();
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -1098,14 +1097,18 @@ public class HotswapperTest {
                 uiInitInstalled.set(true);
                 return super.addUIInitListener(listener);
             }
+
+            @Override
+            protected void instrumentMockLookup(Lookup lookup) {
+                ApplicationConfiguration appConfig = Mockito
+                        .mock(ApplicationConfiguration.class);
+                Mockito.when(appConfig.isProductionMode()).then(
+                        i -> getDeploymentConfiguration().isProductionMode());
+                Mockito.when(
+                        lookup.lookup(ApplicationConfigurationFactory.class))
+                        .thenReturn(context -> appConfig);
+            }
         };
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).then(i -> vaadinService
-                .getDeploymentConfiguration().isProductionMode());
-        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
-                .thenReturn(context -> appConfig);
-        vaadinService.getContext().setAttribute(Lookup.class, lookup);
         Hotswapper.register(vaadinService);
 
         Assert.assertTrue(
@@ -1135,21 +1138,27 @@ public class HotswapperTest {
             @Override
             public Registration addSessionInitListener(
                     SessionInitListener listener) {
-                sessionInitInstalled.set(true);
+                if (listener instanceof Hotswapper) {
+                    sessionInitInstalled.set(true);
+                }
                 return super.addSessionInitListener(listener);
             }
 
             @Override
             public Registration addSessionDestroyListener(
                     SessionDestroyListener listener) {
-                sessionDestroyInstalled.set(true);
+                if (listener instanceof Hotswapper) {
+                    sessionDestroyInstalled.set(true);
+                }
                 return super.addSessionDestroyListener(listener);
             }
 
             @Override
             public Registration addServiceDestroyListener(
                     ServiceDestroyListener listener) {
-                serviceDestroyInstalled.set(true);
+                if (listener instanceof Hotswapper) {
+                    serviceDestroyInstalled.set(true);
+                }
                 return super.addServiceDestroyListener(listener);
             }
         };

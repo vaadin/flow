@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -195,9 +196,12 @@ public class WebComponentBootstrapHandlerViteTest {
             protected PwaRegistry getPwaRegistry() {
                 return registry;
             };
-        };
 
-        initLookup(service);
+            @Override
+            protected void instrumentMockLookup(Lookup lookup) {
+                initLookup(lookup);
+            }
+        };
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
@@ -231,8 +235,12 @@ public class WebComponentBootstrapHandlerViteTest {
     public void writeBootstrapPage_devToolsDisabled()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
-        VaadinServletService service = new MockVaadinServletService();
-        initLookup(service);
+        VaadinServletService service = new MockVaadinServletService() {
+            @Override
+            protected void instrumentMockLookup(Lookup lookup) {
+                initLookup(lookup);
+            }
+        };
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
@@ -296,9 +304,12 @@ public class WebComponentBootstrapHandlerViteTest {
     public void writeBootstrapPage_withExportChunk()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
-        VaadinServletService service = new MockVaadinServletService();
-
-        initLookup(service);
+        VaadinServletService service = new MockVaadinServletService() {
+            @Override
+            protected void instrumentMockLookup(Lookup lookup) {
+                initLookup(lookup);
+            }
+        };
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
@@ -330,9 +341,12 @@ public class WebComponentBootstrapHandlerViteTest {
     public void writeBootstrapPage_noExportChunk()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
-        VaadinServletService service = new MockVaadinServletService();
-
-        initLookup(service);
+        VaadinServletService service = new MockVaadinServletService() {
+            @Override
+            protected void instrumentMockLookup(Lookup lookup) {
+                initLookup(lookup);
+            }
+        };
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
@@ -409,11 +423,8 @@ public class WebComponentBootstrapHandlerViteTest {
         return request;
     }
 
-    private void initLookup(VaadinServletService service) throws IOException {
-        VaadinContext context = service.getContext();
-        Lookup lookup = Mockito.mock(Lookup.class);
-        context.setAttribute(Lookup.class, lookup);
-
+    private void initLookup(Lookup lookup) {
+        Mockito.reset(lookup);
         ResourceProvider provider = Mockito.mock(ResourceProvider.class);
 
         Mockito.when(lookup.lookup(ResourceProvider.class))
@@ -423,11 +434,16 @@ public class WebComponentBootstrapHandlerViteTest {
                 .thenAnswer(answer -> WebComponentBootstrapHandlerViteTest.class
                         .getClassLoader().getResource(answer.getArgument(0)));
 
-        Mockito.when(provider.getClientResourceAsStream(
-                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties"))
-                .thenAnswer(invocation -> new ByteArrayInputStream(
-                        "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+        try {
+            Mockito.when(
+                    provider.getClientResourceAsStream("META-INF/resources/"
+                            + ApplicationConstants.CLIENT_ENGINE_PATH
+                            + "/compile.properties"))
+                    .thenAnswer(invocation -> new ByteArrayInputStream(
+                            "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private VaadinResponse getMockResponse(ByteArrayOutputStream stream)
