@@ -105,7 +105,7 @@ public class ClassDownloadHandler
             if (!isInline()) {
                 downloadEvent.setFileName(resourceName);
             }
-            TransferProgressListener.transfer(inputStream, outputStream,
+            TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
