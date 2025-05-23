@@ -51,7 +51,7 @@ import com.vaadin.flow.server.VaadinSession;
  * Example:
  *
  * <pre>
- * DownloadHandler.forFile(new File("path/to/file.txt"));
+ * DownloadHandler.forFile(new File("/path/to/file.txt"));
  * </pre>
  *
  * All factory methods have overloads that allow adding a download progress

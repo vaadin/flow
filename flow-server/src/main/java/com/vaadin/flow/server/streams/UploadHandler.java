@@ -98,8 +98,9 @@ import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
  *     var name = event.getContentType();
  *     var size = event.getFileSize();
  *     // validate file
- *     InputStream inputStream = event.getInputStream();
- *     // process input stream
+ *     try (InputStream inputStream = event.getInputStream()) {
+ *         // process input stream
+ *     }
  * };
  * </pre>
  *
