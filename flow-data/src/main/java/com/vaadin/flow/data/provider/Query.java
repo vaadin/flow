@@ -171,8 +171,9 @@ public class Query<T, F> implements Serializable {
      * exclusive. If the {@link DataProvider} handles one, it should ignore the
      * other.
      * <p>
-     * <strong>Note: </strong> Sort orders are populated only with the columns
-     * in Grid that have key set using {@code Column#setKey} method.
+     * <strong>Note: </strong> Sort orders are populated in the Vaadin Grid
+     * component only for the columns that have key set using either
+     * {@code Column#setKey} or {@code Grid#setColumns} methods.
      *
      * @return list of sort orders
      */
