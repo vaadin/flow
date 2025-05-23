@@ -83,7 +83,7 @@ public class FileDownloadHandler
             downloadEvent
                     .setContentType(getContentType(resourceName, response));
             downloadEvent.setContentLength(file.length());
-            TransferProgressListener.transfer(inputStream, outputStream,
+            TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
