@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -121,9 +122,10 @@ public class AsynchronousSignalTreeTest {
     @Test
     void subscribeToProcessed_noChanges_doesNotReceive() {
         AsyncTestTree tree = new AsyncTestTree();
-        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToProcessed(resultContainer::set);
+        tree.subscribeToProcessed((event, result) -> resultContainer
+                .set(Map.entry(event, result)));
 
         assertNull(resultContainer.get());
     }
@@ -131,9 +133,10 @@ public class AsynchronousSignalTreeTest {
     @Test
     void subscribeToProcessed_changesConfirmed_receives() {
         AsyncTestTree tree = new AsyncTestTree();
-        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToProcessed(resultContainer::set);
+        tree.subscribeToProcessed((event, result) -> resultContainer
+                .set(Map.entry(event, result)));
 
         SignalCommand command = TestUtil.writeRootValueCommand("submitted");
         tree.commitSingleCommand(command);
@@ -144,11 +147,13 @@ public class AsynchronousSignalTreeTest {
         tree.confirm(List.of(TestUtil.writeRootValueCommand("confirmed")));
 
         assertEquals(new TextNode("confirmed"),
-                ((SignalCommand.SetCommand) resultContainer.get()).value());
+                ((SignalCommand.SetCommand) resultContainer.get().getKey())
+                        .value());
 
         tree.confirmSubmitted();
         assertEquals(new TextNode("submitted"),
-                ((SignalCommand.SetCommand) resultContainer.get()).value());
+                ((SignalCommand.SetCommand) resultContainer.get().getKey())
+                        .value());
 
         resultContainer.set(null);
 
@@ -160,9 +165,10 @@ public class AsynchronousSignalTreeTest {
     @Test
     void subscribeToProcessed_failingCommandConfirmed_receives() {
         AsyncTestTree tree = new AsyncTestTree();
-        AtomicReference<SignalCommand> resultContainer = new AtomicReference<>();
+        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
 
-        tree.subscribeToProcessed(resultContainer::set);
+        tree.subscribeToProcessed((event, result) -> resultContainer
+                .set(Map.entry(event, result)));
 
         SignalCommand command = TestUtil.failingCommand();
         tree.commitSingleCommand(command);
@@ -171,6 +177,6 @@ public class AsynchronousSignalTreeTest {
 
         tree.confirmSubmitted();
 
-        assertEquals(command, resultContainer.get());
+        assertEquals(command, resultContainer.get().getKey());
     }
 }

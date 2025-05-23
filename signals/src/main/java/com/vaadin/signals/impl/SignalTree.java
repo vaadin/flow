@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -90,7 +91,7 @@ public abstract class SignalTree {
 
     private final Type type;
 
-    private final List<Consumer<SignalCommand>> subscribers = new ArrayList<>();
+    private final List<BiConsumer<SignalCommand, CommandResult>> subscribers = new ArrayList<>();
 
     /**
      * Creates a new signal tree with the given type.
@@ -351,7 +352,8 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the subscriber, not
      *         <code>null</code>
      */
-    public Runnable subscribeToProcessed(Consumer<SignalCommand> subscriber) {
+    public Runnable subscribeToProcessed(
+            BiConsumer<SignalCommand, CommandResult> subscriber) {
         assert subscriber != null;
         return getWithLock(() -> {
             subscribers.add(subscriber);
@@ -365,13 +367,15 @@ public abstract class SignalTree {
      *
      * @param commands
      *            the list of processed commands, not <code>null</code>
+     * @param results
+     *            the map of results for the commands, not <code>null</code>
      */
     protected void notifyProcessedCommandSubscribers(
-            List<SignalCommand> commands) {
+            List<SignalCommand> commands, Map<Id, CommandResult> results) {
         assert hasLock();
-        for (SignalCommand command : commands) {
-            for (Consumer<SignalCommand> subscriber : subscribers) {
-                subscriber.accept(command);
+        for (var command : commands) {
+            for (var subscriber : subscribers) {
+                subscriber.accept(command, results.get(command.commandId()));
             }
         }
     }
