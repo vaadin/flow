@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-custom-frontend-directory</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-themes-custom-generatedTs-directory</artifactId>
     <name>Flow themes tests in NPM mode with custom generatedTs directory</name>
