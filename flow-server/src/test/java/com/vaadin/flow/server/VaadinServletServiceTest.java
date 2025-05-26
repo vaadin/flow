@@ -1,16 +1,8 @@
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.theme.AbstractTheme;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,6 +12,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.mockito.Mockito.when;
 
@@ -127,6 +130,8 @@ public class VaadinServletServiceTest {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
         ServletContext context = Mockito.mock(ServletContext.class);
         when(servlet.getServletContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class.getName()))
+                .thenReturn(Mockito.mock(Lookup.class));
 
         ClassLoader loader = Mockito.mock(ClassLoader.class);
         when(context.getClassLoader()).thenReturn(loader);
