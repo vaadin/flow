@@ -119,6 +119,9 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given text content and a callback
      * that handles data download from the server to the client when clicking an
      * anchor.
+     * <p>
+     * Sets the 'download' attribute for link when given a non-inline handler
+     * implementing AbstractDownloadHandler.
      *
      * @see #setHref(DownloadHandler)
      * @see #setText(String)
