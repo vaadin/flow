@@ -68,7 +68,7 @@ public class UploadEvent {
      *            defined download file name
      * @param contentType
      *            content type string for upload
-     * @param fileSize
+     * @param contentLength
      *            size of the upload
      * @param owningElement
      *            element owning this upload
@@ -80,14 +80,14 @@ public class UploadEvent {
      *            stream
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, String fileName, long fileSize,
+            VaadinSession session, String fileName, long contentLength,
             String contentType, Element owningElement, FileItemInput item,
             Part part) {
         this.request = request;
         this.response = response;
         this.session = session;
         this.fileName = fileName;
-        this.fileSize = fileSize;
+        this.fileSize = contentLength;
         this.owningElement = owningElement;
         this.contentType = contentType;
         this.item = item;
@@ -113,32 +113,6 @@ public class UploadEvent {
             LoggerFactory.getLogger(UploadEvent.class)
                     .error("Error getting input stream", e);
             throw new UncheckedIOException("Error getting input stream", e);
-        }
-    }
-
-    /**
-     * Write response for handled upload.
-     *
-     * @param success
-     *            {@code true} will send 200 http ok, {@code false} will send
-     *            500 error code
-     */
-    public void sendUploadResponse(boolean success) {
-        response.setContentType(
-                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        if (success) {
-            try (PrintWriter writer = response.getWriter()) {
-                try {
-                    writer.print("<html><body>upload handled</body></html>");
-                } finally {
-                    writer.flush();
-                }
-            } catch (IOException e) {
-                LoggerFactory.getLogger(UploadEvent.class)
-                        .error("Error writing upload response", e);
-            }
-        } else {
-            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
@@ -170,7 +144,9 @@ public class UploadEvent {
     }
 
     /**
-     * Get the set file name.
+     * Get the set file name for current upload.
+     * <p>
+     * The file name will only be available for multipart uploads.
      *
      * @return file name
      */
@@ -180,6 +156,8 @@ public class UploadEvent {
 
     /**
      * Get the content type for the data to download.
+     * <p>
+     * The content type will only be available for multipart uploads.
      *
      * @return set content type
      */
@@ -203,6 +181,15 @@ public class UploadEvent {
      */
     public Component getOwningComponent() {
         return owningElement.getComponent().orElse(null);
+    }
+
+    /**
+     * Get the owning element for the upload related to this event.
+     *
+     * @return owning element
+     */
+    public Element getOwningElement() {
+        return owningElement;
     }
 
     /**

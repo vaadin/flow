@@ -1,11 +1,15 @@
 package com.vaadin.flow.server.communication;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,9 +29,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -37,8 +43,12 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.streams.FileUploadHandler;
+import com.vaadin.flow.server.streams.InMemoryUploadHandler;
+import com.vaadin.flow.server.streams.TemporaryFileUploadHandler;
 import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.server.streams.UploadMetadata;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
@@ -76,11 +86,23 @@ public class UploadHandlerTest {
     @Before
     public void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
+        ui = new MockUI() {
+            @Override
+            public Future<Void> access(Command command) {
+                command.execute();
+                return null;
+            }
+        };
 
         session = new AlwaysLockedVaadinSession(service) {
             @Override
             public StreamResourceRegistry getResourceRegistry() {
                 return streamResourceRegistry;
+            }
+
+            @Override
+            public UI getUIById(int uiId) {
+                return ui;
             }
         };
         streamResourceRegistry = new StreamResourceRegistry(session);
@@ -94,8 +116,6 @@ public class UploadHandlerTest {
         element = Mockito.mock(Element.class);
         Mockito.when(element.getNode()).thenReturn(stateNode);
         response = Mockito.mock(VaadinResponse.class);
-        ui = new MockUI();
-        UI.setCurrent(ui);
     }
 
     @After
@@ -104,7 +124,8 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled() {
+    public void doUploadHandleXhrFilePost_happyPath_setContentTypeAndResponseHandled()
+            throws IOException {
         UploadHandler handler = (event) -> {
             event.getResponse().setContentType("text/html; charset=utf-8");
         };
@@ -117,7 +138,8 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled() {
+    public void doUploadHandleXhrFilePost_unhappyPath_responseHandled()
+            throws IOException {
         UploadHandler handler = (event) -> {
             throw new RuntimeException("Exception in xrh upload");
         };
@@ -160,6 +182,112 @@ public class UploadHandlerTest {
                 output);
 
         Assert.assertEquals("", testBytes.length, amount.get());
+    }
+
+    @Test
+    public void createInMemoryUploadHandler_streamMatchesInput()
+            throws IOException {
+        String testString = "Test string for upload";
+
+        final byte[] testBytes = testString.getBytes();
+
+        final byte[] output = new byte[testBytes.length];
+
+        // No lambda as that would require strange things from output
+        InMemoryUploadHandler uploadHandler = UploadHandler
+                .inMemory(new SerializableBiConsumer<UploadMetadata, byte[]>() {
+                    @Override
+                    public void accept(UploadMetadata uploadMetadata,
+                            byte[] bytes) {
+                        Assert.assertEquals(output.length, bytes.length);
+                        System.arraycopy(bytes, 0, output, 0, bytes.length);
+                    }
+                });
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, testString);
+
+        handler.handleRequest(session, request, response);
+        session.getPendingAccessQueue()
+                .forEach(futureAccess -> futureAccess.run());
+
+        Assert.assertArrayEquals("Output differed from expected", testBytes,
+                output);
+    }
+
+    @Test
+    public void createTempFileUploadHandler_streamMatchesInput()
+            throws IOException {
+        String testString = "Test string for upload";
+
+        final byte[] testBytes = testString.getBytes();
+
+        List<File> outputFiles = new ArrayList<>(1);
+
+        TemporaryFileUploadHandler uploadHandler = UploadHandler
+                .toTempFile((uploadMetadata, file) -> outputFiles.add(file));
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, testString);
+
+        try {
+            handler.handleRequest(session, request, response);
+
+            Assert.assertEquals("Only one uploaded file expected.", 1,
+                    outputFiles.size());
+            System.out.println(outputFiles.get(0).getPath());
+
+            Assert.assertArrayEquals("Output differed from expected", testBytes,
+                    Files.readAllBytes(outputFiles.get(0).toPath()));
+        } finally {
+            // Cleanup temp file after test
+            for (File file : outputFiles) {
+                file.delete();
+            }
+        }
+    }
+
+    @Test
+    public void createFileUploadHandler_streamMatchesInput()
+            throws IOException {
+        String testString = "Test string for upload";
+
+        final byte[] testBytes = testString.getBytes();
+
+        List<File> outputFiles = new ArrayList<>(1);
+
+        FileUploadHandler uploadHandler = UploadHandler.toFile(
+                (uploadMetadata, file) -> outputFiles.add(file),
+                (fileName) -> new File(System.getProperty("java.io.tmpdir"),
+                        fileName));
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, testString);
+
+        try {
+            handler.handleRequest(session, request, response);
+
+            Assert.assertEquals("Only one uploaded file expected.", 1,
+                    outputFiles.size());
+            System.out.println(outputFiles.get(0).getPath());
+
+            Assert.assertArrayEquals("Output differed from expected", testBytes,
+                    Files.readAllBytes(outputFiles.get(0).toPath()));
+        } finally {
+            // Cleanup temp file after test
+            for (File file : outputFiles) {
+                file.delete();
+            }
+        }
     }
 
     @Test
@@ -401,6 +529,13 @@ public class UploadHandlerTest {
         handler.handleRequest(session, request, response);
 
         Assert.assertTrue("Handled was not called at the end", handled.get());
+    }
+
+    @Test
+    public void doesNotRequireToCatchIOException() {
+        UploadHandler handler = event -> {
+            new FileInputStream(new File("foo"));
+        };
     }
 
     private Part createPart(InputStream inputStream, String contentType,

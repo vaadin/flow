@@ -27,8 +27,8 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.ElementRequestHandler;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -106,7 +106,10 @@ public class Anchor extends HtmlContainer
      *            the resource value, not null
      * @param text
      *            the text content to set
+     *
+     * @deprecated use {@link #Anchor(DownloadHandler, String)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public Anchor(AbstractStreamResource href, String text) {
         setHref(href);
         setText(text);
@@ -116,6 +119,9 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given text content and a callback
      * that handles data download from the server to the client when clicking an
      * anchor.
+     * <p>
+     * Sets the 'download' attribute for link when given a non-inline handler
+     * implementing AbstractDownloadHandler.
      *
      * @see #setHref(DownloadHandler)
      * @see #setText(String)
@@ -134,7 +140,7 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given href and components as
      * children of this component.
      *
-     * @see #setHref(AbstractStreamResource)
+     * @see #setHref(DownloadHandler)
      * @see #add(Component...)
      *
      * @param href
@@ -157,7 +163,7 @@ public class Anchor extends HtmlContainer
      * instead of setting it to an empty string.
      *
      * @see #removeHref()
-     * @see #setHref(AbstractStreamResource)
+     * @see #setHref(DownloadHandler)
      *
      * @param href
      *            the href to set
@@ -187,7 +193,9 @@ public class Anchor extends HtmlContainer
      *
      * @param href
      *            the resource value, not null
+     * @deprecated use {@link #setHref(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setHref(AbstractStreamResource href) {
         this.href = href;
         setRouterIgnore(true);
@@ -198,6 +206,9 @@ public class Anchor extends HtmlContainer
      * Sets the URL that this anchor links to and that is bound to a given
      * {@link DownloadHandler} callback on the server for handling data download
      * from the server to the client when clicking an anchor.
+     * <p>
+     * Sets the 'download' attribute for link when given a non-inline handler
+     * implementing AbstractDownloadHandler.
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
@@ -207,6 +218,10 @@ public class Anchor extends HtmlContainer
                 downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
+        if (downloadHandler instanceof AbstractDownloadHandler<?> abstractDownloadHandler
+                && !abstractDownloadHandler.isInline()) {
+            getElement().setAttribute("download", true);
+        }
     }
 
     /**

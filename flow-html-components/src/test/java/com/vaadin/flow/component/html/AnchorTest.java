@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 public class AnchorTest extends ComponentTest {
 
@@ -308,6 +308,30 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertTrue(anchor.getElement().hasAttribute("href"));
         Assert.assertNotEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_downloadAttributeIsSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertTrue(
+                "Pre-built download handlers should set download attribute",
+                anchor.getElement().hasAttribute("download"));
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_inlineSet_downloadAttributeIsNotSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path").inline();
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertFalse(
+                "Inline download handlers should not add download attribute",
+                anchor.getElement().hasAttribute("download"));
     }
 
     private void mockUI() {

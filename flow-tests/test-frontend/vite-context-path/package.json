@@ -6,18 +6,18 @@
     "@polymer/polymer": "3.5.2",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.19",
-    "@vaadin/polymer-legacy-adapter": "24.7.3",
+    "@vaadin/polymer-legacy-adapter": "24.7.6",
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
-    "@vaadin/text-field": "24.7.3",
-    "@vaadin/vaadin-lumo-styles": "24.7.3",
-    "@vaadin/vaadin-themable-mixin": "24.7.3",
+    "@vaadin/text-field": "24.7.6",
+    "@vaadin/vaadin-lumo-styles": "24.7.6",
+    "@vaadin/vaadin-themable-mixin": "24.7.6",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "3.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router": "7.5.0"
+    "react-router": "7.5.2"
   },
   "devDependencies": {
     "@babel/preset-react": "7.26.3",
@@ -26,9 +26,9 @@
     "@rollup/pluginutils": "5.1.4",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
-    "@vitejs/plugin-react": "4.4.0",
+    "@vitejs/plugin-react": "4.4.1",
     "async": "3.2.6",
-    "glob": "11.0.1",
+    "glob": "11.0.2",
     "rollup-plugin-brotli": "3.1.0",
     "rollup-plugin-visualizer": "5.14.0",
     "strip-css-comments": "5.0.0",
@@ -44,15 +44,15 @@
     "dependencies": {
       "@polymer/polymer": "3.5.2",
       "@vaadin/common-frontend": "0.0.19",
-      "@vaadin/polymer-legacy-adapter": "24.7.3",
-      "@vaadin/text-field": "24.7.3",
-      "@vaadin/vaadin-lumo-styles": "24.7.3",
-      "@vaadin/vaadin-themable-mixin": "24.7.3",
+      "@vaadin/polymer-legacy-adapter": "24.7.6",
+      "@vaadin/text-field": "24.7.6",
+      "@vaadin/vaadin-lumo-styles": "24.7.6",
+      "@vaadin/vaadin-themable-mixin": "24.7.6",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "3.3.0",
       "react": "18.3.1",
       "react-dom": "18.3.1",
-      "react-router": "7.5.0"
+      "react-router": "7.5.2"
     },
     "devDependencies": {
       "@babel/preset-react": "7.26.3",
@@ -61,9 +61,9 @@
       "@rollup/pluginutils": "5.1.4",
       "@types/react": "18.3.20",
       "@types/react-dom": "18.3.6",
-      "@vitejs/plugin-react": "4.4.0",
+      "@vitejs/plugin-react": "4.4.1",
       "async": "3.2.6",
-      "glob": "11.0.1",
+      "glob": "11.0.2",
       "rollup-plugin-brotli": "3.1.0",
       "rollup-plugin-visualizer": "5.14.0",
       "strip-css-comments": "5.0.0",
@@ -75,7 +75,7 @@
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0"
     },
-    "hash": "0e5a445ccd54f178d3431e563499744c10a27f3d6b8af74a2ab5a9223487c5de"
+    "hash": "1ed8a460d059c9970a2b4bd85c850a98cb05c141b46869be7ea55347ace520c7"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",

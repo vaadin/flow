@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,17 +35,16 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.DownloadHandler;
-import com.vaadin.flow.server.DownloadEvent;
-import com.vaadin.flow.server.TransferProgressListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 public class InputStreamDownloadHandlerTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
+    private VaadinService service;
     private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
@@ -54,6 +54,7 @@ public class InputStreamDownloadHandlerTest {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
+        service = Mockito.mock(VaadinService.class);
 
         UI ui = Mockito.mock(UI.class);
         // run the command immediately
@@ -69,15 +70,17 @@ public class InputStreamDownloadHandlerTest {
                 .thenReturn(Optional.of(componentOwner));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
-        downloadEvent = new DownloadEvent(request, response, session,
-                "download", "application/octet-stream", owner);
+        downloadEvent = new DownloadEvent(request, response, session, owner);
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
     }
 
     @Test
     public void transferProgressListener_addListener_listenersInvoked()
-            throws URISyntaxException {
+            throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
         DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
@@ -85,10 +88,10 @@ public class InputStreamDownloadHandlerTest {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             return new DownloadResponse(inputStream, "download",
                     "application/octet-stream", data.length);
-        }, "download", new TransferProgressListener() {
+        }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                Assert.assertEquals(-1, context.totalBytes());
+                Assert.assertEquals(-1, context.contentLength());
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onStart");
             }
@@ -105,7 +108,7 @@ public class InputStreamDownloadHandlerTest {
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                Assert.assertEquals(-1, context.totalBytes());
+                Assert.assertEquals(-1, context.contentLength());
                 Assert.assertEquals(165000, transferredBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onComplete");
@@ -135,7 +138,7 @@ public class InputStreamDownloadHandlerTest {
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
-        Mockito.when(event.owningElement()).thenReturn(owner);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
@@ -148,7 +151,7 @@ public class InputStreamDownloadHandlerTest {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             return new DownloadResponse(inputStream, "download",
                     "application/octet-stream", data.length);
-        }, "download", new TransferProgressListener() {
+        }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
                 invocations.add("onStart");
@@ -179,6 +182,62 @@ public class InputStreamDownloadHandlerTest {
         } catch (Exception e) {
         }
         Assert.assertEquals(List.of("onStart", "onError"), invocations);
+    }
+
+    @Test
+    public void inline_setFileNameInvokedByDefault() throws IOException {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
+            Mockito.verify(event, Mockito.times(0))
+                    .setFileName("my-download.bin");
+            Mockito.verify(event, Mockito.times(0))
+                    .setContentType("application/octet-stream");
+            byte[] data = getBytes();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+            return new DownloadResponse(inputStream, "my-download.bin",
+                    "application/octet-stream", data.length);
+        });
+
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getRequest()).thenReturn(request);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(event).setFileName("my-download.bin");
+        Mockito.verify(event).setContentType("application/octet-stream");
+    }
+
+    @Test
+    public void attachment_doesNotSetFileNameWhenInlined() throws IOException {
+        DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
+            byte[] data = getBytes();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+            return new DownloadResponse(inputStream, "download",
+                    "application/octet-stream", data.length);
+        }).inline();
+
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getRequest()).thenReturn(request);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(event, Mockito.times(0)).setFileName("my-download.bin");
+        Mockito.verify(event).setContentType("application/octet-stream");
     }
 
     private static byte[] getBytes() {

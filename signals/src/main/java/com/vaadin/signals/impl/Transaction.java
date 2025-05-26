@@ -94,9 +94,11 @@ public abstract class Transaction {
         @Override
         public void include(SignalTree tree, SignalCommand command,
                 Consumer<CommandResult> resultHandler, boolean applyToTree) {
-            super.include(tree, command, resultHandler, applyToTree);
-
+            // Update the read revision first so that change observers can read
+            // the updated value
             getOrCreateReadRevision(tree).apply(command, null);
+
+            super.include(tree, command, resultHandler, applyToTree);
 
             // Let an outer transaction update its own read revision
             outer.include(tree, command, null, false);

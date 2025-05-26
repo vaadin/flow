@@ -85,15 +85,9 @@ public class FeatureFlags implements Serializable {
             "Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
 
-    public static final Feature DASHBOARD_COMPONENT = new Feature(
-            "Dashboard component (Pro)", "dashboardComponent",
-            "https://github.com/vaadin/platform/issues/6626", true,
-            "com.vaadin.flow.component.dashboard.Dashboard");
-
-    public static final Feature CARD_COMPONENT = new Feature("Card component",
-            "cardComponent",
-            "https://github.com/vaadin/web-components/issues/5340", true,
-            "com.vaadin.flow.component.card.Card");
+    public static final Feature FLOW_FULLSTACK_SIGNALS = new Feature(
+            "Flow Full-stack Signals", "flowFullstackSignals",
+            "https://github.com/vaadin/platform/issues/7373", true, null);
 
     public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
             "Master Detail Layout component", "masterDetailLayoutComponent",
@@ -144,9 +138,8 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
+        features.add(new Feature(FLOW_FULLSTACK_SIGNALS));
         features.add(new Feature(COPILOT_EXPERIMENTAL));
-        features.add(new Feature(DASHBOARD_COMPONENT));
-        features.add(new Feature(CARD_COMPONENT));
         features.add(new Feature(MASTER_DETAIL_LAYOUT_COMPONENT));
         features.add(new Feature(REACT19));
         features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));

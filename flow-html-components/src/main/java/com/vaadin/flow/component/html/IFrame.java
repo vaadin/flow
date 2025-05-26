@@ -21,7 +21,8 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -139,6 +140,11 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     /**
      * Creates a new iframe with download handler callback that provides a
      * resource from server.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param downloadHandler
      *            the download handler callback that provides a resource from
@@ -168,7 +174,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param src
      *            the resource value, not null
+     * @deprecated use {@link #setSrc(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setSrc(AbstractStreamResource src) {
         getElement().setAttribute("src", src);
     }
@@ -176,6 +184,11 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     /**
      * Sets the source of the iframe with a source URL with the URL of the given
      * {@link DownloadHandler} callback.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @see #setSrc(String)
      *
@@ -183,6 +196,11 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *            the download handler resource, not null
      */
     public void setSrc(DownloadHandler downloadHandler) {
+        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
+            // change disposition to inline in pre-defined handlers,
+            // where it is 'attachment' by default
+            handler.inline();
+        }
         getElement().setAttribute("src",
                 new StreamResourceRegistry.ElementStreamResource(
                         downloadHandler, this.getElement()));
