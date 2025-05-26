@@ -539,6 +539,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         }
     }
 
+    @Test
+    public void getFrontendExtraExtensions_noExtensionsSet_returnsNull() {
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")).thenReturn("");
+
+        List<String> frontendExtraFileExtensions = DevModeInitializer
+                .getFrontendExtraFileExtensions(appConfig);
+        Assert.assertNull(frontendExtraFileExtensions);
+    }
+
+    @Test
+    public void getFrontendExtraExtensions_extensionsSet_returnsExtensionsList() {
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.FRONTEND_EXTRA_EXTENSIONS, ""))
+                .thenReturn(".svg,.ico,png");
+
+        List<String> frontendExtraFileExtensions = DevModeInitializer
+                .getFrontendExtraFileExtensions(appConfig);
+        Assert.assertEquals(3, frontendExtraFileExtensions.size());
+    }
+
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, VaadinInitializerException {
         loadingJarsWithProtocol_allFilesExist(resourcesFolder,
