@@ -4,7 +4,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-react-router-prod</artifactId>
     <name>Flow tests for routing using react-router in production mode</name>

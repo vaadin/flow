@@ -45,7 +45,7 @@ public class InMemoryUploadHandler
         try {
             try (InputStream inputStream = event.getInputStream();
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
-                TransferProgressListener.transfer(inputStream, outputStream,
+                TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(event), getListeners());
                 data = outputStream.toByteArray();
             }
