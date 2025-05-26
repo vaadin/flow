@@ -310,6 +310,30 @@ public class AnchorTest extends ComponentTest {
         Assert.assertNotEquals(href, anchor.getHref());
     }
 
+    @Test
+    public void anchorWithDownloadHandler_downloadAttributeIsSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertTrue(
+                "Pre-built download handlers should set download attribute",
+                anchor.getElement().hasAttribute("download"));
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_inlineSet_downloadAttributeIsNotSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path").inline();
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertFalse(
+                "Inline download handlers should not add download attribute",
+                anchor.getElement().hasAttribute("download"));
+    }
+
     private void mockUI() {
         ui = new UI();
         UI.setCurrent(ui);
