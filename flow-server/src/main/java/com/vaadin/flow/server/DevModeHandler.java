@@ -733,7 +733,7 @@ public final class DevModeHandler implements RequestHandler {
 
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "--devtool=eval-source-map")
+                        "--devtool=eval-source-map --mode=development")
                 .split(" +")));
         return command;
     }
