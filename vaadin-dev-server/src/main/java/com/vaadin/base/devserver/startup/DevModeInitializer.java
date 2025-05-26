@@ -374,7 +374,7 @@ public class DevModeInitializer implements Serializable {
             ApplicationConfiguration config) {
         List<String> stringProperty = Arrays.stream(config
                 .getStringProperty(InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")
-                .split(",")).filter(input -> !input.isEmpty()).toList();
+                .split(",")).filter(input -> !input.isBlank()).toList();
         return stringProperty.isEmpty() ? null : stringProperty;
     }
 
