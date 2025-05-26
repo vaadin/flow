@@ -370,12 +370,12 @@ public class DevModeInitializer implements Serializable {
         }
     }
 
-    private static List<String> getFrontendExtraFileExtensions(
+    static List<String> getFrontendExtraFileExtensions(
             ApplicationConfiguration config) {
-        List<String> stringProperty = Arrays.asList(config
+        List<String> stringProperty = Arrays.stream(config
                 .getStringProperty(InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")
-                .split(","));
-        return stringProperty;
+                .split(",")).filter(input -> !input.isBlank()).toList();
+        return stringProperty.isEmpty() ? null : stringProperty;
     }
 
     private static Logger log() {
