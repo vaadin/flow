@@ -19,7 +19,6 @@ package com.vaadin.flow.server.streams;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
 
@@ -44,7 +43,7 @@ public class InMemoryUploadHandler
         byte[] data;
         try {
             try (InputStream inputStream = event.getInputStream();
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(event), getListeners());
                 data = outputStream.toByteArray();

@@ -66,7 +66,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * <p>
      * The calls of the given listener's methods are wrapped by the
      * {@link com.vaadin.flow.component.UI#access(Command)} to send UI changes
-     * defined here asynchrously when the download or upload request is being
+     * defined here asynchronously when the download or upload request is being
      * handled. This needs {@link com.vaadin.flow.component.page.Push} to be
      * enabled in the application to properly send the UI changes to client.
      * <p>
@@ -104,9 +104,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                context.getUI().access(() -> {
-                    startHandler.run();
-                });
+                context.getUI().access(startHandler::run);
             }
         });
         return (R) this;
@@ -131,9 +129,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                context.getUI().access(() -> {
-                    startHandler.accept(context);
-                });
+                context.getUI().access(() -> startHandler.accept(context));
             }
         });
         return (R) this;
@@ -165,10 +161,8 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             @Override
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
-                context.getUI().access(() -> {
-                    progressHandler.accept(context, transferredBytes,
-                            totalBytes);
-                });
+                context.getUI().access(() -> progressHandler.accept(context,
+                        transferredBytes, totalBytes));
             }
 
             @Override
@@ -224,9 +218,8 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             @Override
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
-                context.getUI().access(() -> {
-                    progressHandler.accept(transferredBytes, totalBytes);
-                });
+                context.getUI().access(() -> progressHandler
+                        .accept(transferredBytes, totalBytes));
             }
 
             @Override
@@ -286,17 +279,15 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onError(TransferContext context, IOException reason) {
-                context.getUI().access(() -> {
-                    completeOrTerminateHandler.accept(false);
-                });
+                context.getUI()
+                        .access(() -> completeOrTerminateHandler.accept(false));
             }
 
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                context.getUI().access(() -> {
-                    completeOrTerminateHandler.accept(true);
-                });
+                context.getUI()
+                        .access(() -> completeOrTerminateHandler.accept(true));
             }
         });
         return (R) this;
@@ -304,8 +295,8 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
 
     /**
      * Adds a listener to be notified when the transfer is completed
-     * successfully or with an error with the trasfer context object given as an
-     * input.
+     * successfully or with an error with the transfer context object given as
+     * an input.
      * <p>
      * Gives a <code>Boolean</code> indicating whether the transfer was
      * completed successfully (true) or not (false) and transfer context to
@@ -328,17 +319,15 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onError(TransferContext context, IOException reason) {
-                context.getUI().access(() -> {
-                    completeOrTerminateHandler.accept(context, false);
-                });
+                context.getUI().access(() -> completeOrTerminateHandler
+                        .accept(context, false));
             }
 
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                context.getUI().access(() -> {
-                    completeOrTerminateHandler.accept(context, true);
-                });
+                context.getUI().access(
+                        () -> completeOrTerminateHandler.accept(context, true));
             }
         });
         return (R) this;
@@ -348,7 +337,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * Get the listeners that are registered to this handler.
      * <p>
      * For the custom data transfer implementation, one may need to notify
-     * listeners manualy. This method can be used like
+     * listeners manually. This method can be used like
      * <code>getListeners().forEach(listener -> listener.onStart(getTransferContext(event)))</code>.
      * <p>
      * The listeners are kept in order of registration.
@@ -404,9 +393,9 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
      * updates in transfer progress listeners are pushed to client
      * asynchronously.
      */
-    private final class TransferProgressListenerWrapper
+    private static final class TransferProgressListenerWrapper
             implements TransferProgressListener {
-        private TransferProgressListener delegate;
+        private final TransferProgressListener delegate;
 
         public TransferProgressListenerWrapper(
                 TransferProgressListener delegate) {
@@ -415,31 +404,25 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
 
         @Override
         public void onStart(TransferContext context) {
-            context.getUI().access(() -> {
-                delegate.onStart(context);
-            });
+            context.getUI().access(() -> delegate.onStart(context));
         }
 
         @Override
         public void onProgress(TransferContext context, long transferredBytes,
                 long totalBytes) {
-            context.getUI().access(() -> {
-                delegate.onProgress(context, transferredBytes, totalBytes);
-            });
+            context.getUI().access(() -> delegate.onProgress(context,
+                    transferredBytes, totalBytes));
         }
 
         @Override
         public void onError(TransferContext context, IOException reason) {
-            context.getUI().access(() -> {
-                delegate.onError(context, reason);
-            });
+            context.getUI().access(() -> delegate.onError(context, reason));
         }
 
         @Override
         public void onComplete(TransferContext context, long transferredBytes) {
-            context.getUI().access(() -> {
-                delegate.onComplete(context, transferredBytes);
-            });
+            context.getUI().access(
+                    () -> delegate.onComplete(context, transferredBytes));
         }
 
         @Override
