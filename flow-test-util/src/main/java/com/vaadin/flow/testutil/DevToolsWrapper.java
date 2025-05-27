@@ -28,7 +28,7 @@ import org.openqa.selenium.devtools.SeleniumCdpConnection;
 import org.openqa.selenium.devtools.idealized.Domains;
 import org.openqa.selenium.devtools.idealized.target.model.SessionID;
 import org.openqa.selenium.devtools.idealized.target.model.TargetID;
-import org.openqa.selenium.devtools.v133.network.Network;
+import org.openqa.selenium.devtools.v136.network.Network;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.RemoteWebDriver;
 

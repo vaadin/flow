@@ -24,6 +24,9 @@ import com.vaadin.flow.server.HttpStatusCode;
 /**
  * Data class containing required information for sending the given input stream
  * to the client.
+ * <p>
+ * The given input stream will be read at a later time and will be automatically
+ * closed by the caller.
  *
  * @since 24.8
  */
@@ -36,18 +39,22 @@ public class DownloadResponse implements Serializable {
     private final int size;
 
     private Integer error;
+    private String errorMessage;
 
     /**
      * Create a download response with content stream and content data.
      *
      * @param inputStream
-     *            data stream for data to send to client
+     *            data stream for data to send to client, stream will be closed
+     *            automatically after use by the caller.
      * @param fileName
-     *            file name of download
+     *            name of the file to be downloaded, configured by setting the
+     *            Content-Disposition header to 'attachment' if the value is not
+     *            <code>null</code>, otherwise the header is not set
      * @param contentType
      *            content type
      * @param size
-     *            byte size of stream
+     *            byte size of a stream or <code>-1</code> if unknown
      */
     public DownloadResponse(InputStream inputStream, String fileName,
             String contentType, int size) {
@@ -59,6 +66,8 @@ public class DownloadResponse implements Serializable {
 
     /**
      * Get the InputStream to read the content data from.
+     * <p>
+     * InputStream needs to be closed by the called after reading is over.
      *
      * @return content InputStream
      */
@@ -85,7 +94,7 @@ public class DownloadResponse implements Serializable {
     }
 
     /**
-     * Get the defined size for the content
+     * Get the defined size for the content or <code>-1</code> if unknown.
      *
      * @return content size
      */
@@ -108,6 +117,22 @@ public class DownloadResponse implements Serializable {
     }
 
     /**
+     * Generate an error response for download with message.
+     *
+     * @param statusCode
+     *            error status code
+     * @param message
+     *            error message for details on what went wrong
+     * @return DownloadResponse for request
+     */
+    public static DownloadResponse error(int statusCode, String message) {
+        DownloadResponse downloadResponse = new DownloadResponse(null, null,
+                null, -1);
+        downloadResponse.setError(statusCode, message);
+        return downloadResponse;
+    }
+
+    /**
      * Generate an error response for download.
      *
      * @param statusCode
@@ -118,6 +143,23 @@ public class DownloadResponse implements Serializable {
         DownloadResponse downloadResponse = new DownloadResponse(null, null,
                 null, -1);
         downloadResponse.setError(statusCode);
+        return downloadResponse;
+    }
+
+    /**
+     * Generate an error response for download with message.
+     *
+     * @param statusCode
+     *            error status code
+     * @param message
+     *            error message for details on what went wrong
+     * @return DownloadResponse for request
+     */
+    public static DownloadResponse error(HttpStatusCode statusCode,
+            String message) {
+        DownloadResponse downloadResponse = new DownloadResponse(null, null,
+                null, -1);
+        downloadResponse.setError(statusCode, message);
         return downloadResponse;
     }
 
@@ -141,6 +183,19 @@ public class DownloadResponse implements Serializable {
     }
 
     /**
+     * Set http error code and error message.
+     *
+     * @param error
+     *            error code
+     * @param errorMessage
+     *            error message
+     */
+    public void setError(int error, String errorMessage) {
+        this.error = error;
+        this.errorMessage = errorMessage;
+    }
+
+    /**
      * Set http error code.
      *
      * @param error
@@ -148,6 +203,19 @@ public class DownloadResponse implements Serializable {
      */
     public void setError(HttpStatusCode error) {
         this.error = error.getCode();
+    }
+
+    /**
+     * Set http error code and error message.
+     *
+     * @param error
+     *            error code
+     * @param errorMessage
+     *            error message
+     */
+    public void setError(HttpStatusCode error, String errorMessage) {
+        this.error = error.getCode();
+        this.errorMessage = errorMessage;
     }
 
     /**
@@ -160,5 +228,14 @@ public class DownloadResponse implements Serializable {
             return -1;
         }
         return error;
+    }
+
+    /**
+     * Get error message if set for error response.
+     *
+     * @return error message or null if not set
+     */
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }

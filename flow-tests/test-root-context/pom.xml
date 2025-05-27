@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-root-context-npm</artifactId>
     <name>Flow root context tests in NPM dev mode</name>

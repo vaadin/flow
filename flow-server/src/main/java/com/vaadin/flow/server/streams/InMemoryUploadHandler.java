@@ -40,21 +40,24 @@ public class InMemoryUploadHandler
     }
 
     @Override
-    public void handleUploadRequest(UploadEvent event) {
+    public void handleUploadRequest(UploadEvent event) throws IOException {
         byte[] data;
         try {
             try (InputStream inputStream = event.getInputStream();
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
-                TransferProgressListener.transfer(inputStream, outputStream,
+                TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(event), getListeners());
                 data = outputStream.toByteArray();
             }
         } catch (IOException e) {
             notifyError(event, e);
-            throw new UncheckedIOException(e);
+            throw e;
         }
-        successHandler.accept(new UploadMetadata(event.getFileName(),
-                event.getContentType(), event.getFileSize()), data);
+        event.getUI()
+                .access(() -> successHandler.accept(
+                        new UploadMetadata(event.getFileName(),
+                                event.getContentType(), event.getFileSize()),
+                        data));
     }
 
     @Override

@@ -24,6 +24,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -95,6 +96,11 @@ public class Image extends HtmlContainer
      * <p>
      * The alternative text given to constructor is always set even if it is the
      * default empty string which is not retained with {@link #setAlt(String)}.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param downloadHandler
      *            the download handler callback that provides an image data, not
@@ -144,11 +150,21 @@ public class Image extends HtmlContainer
     /**
      * Sets the image URL with the URL of the given {@link DownloadHandler}
      * callback.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param downloadHandler
      *            the download handler resource, not null
      */
     public void setSrc(DownloadHandler downloadHandler) {
+        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
+            // change disposition to inline in pre-defined handlers,
+            // where it is 'attachment' by default
+            handler.inline();
+        }
         getElement().setAttribute("src",
                 new StreamResourceRegistry.ElementStreamResource(
                         downloadHandler, this.getElement()));

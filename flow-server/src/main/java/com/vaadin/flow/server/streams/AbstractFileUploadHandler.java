@@ -55,22 +55,25 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
     }
 
     @Override
-    public void handleUploadRequest(UploadEvent event) {
+    public void handleUploadRequest(UploadEvent event) throws IOException {
         File file;
         try {
             file = fileFactory.createFile(event.getFileName());
             try (InputStream inputStream = event.getInputStream();
                     FileOutputStream outputStream = new FileOutputStream(
                             file)) {
-                TransferProgressListener.transfer(inputStream, outputStream,
+                TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(event), getListeners());
             }
         } catch (IOException e) {
             notifyError(event, e);
-            throw new UncheckedIOException(e);
+            throw e;
         }
-        successHandler.accept(new UploadMetadata(event.getFileName(),
-                event.getContentType(), event.getFileSize()), file);
+        event.getUI()
+                .access(() -> successHandler.accept(
+                        new UploadMetadata(event.getFileName(),
+                                event.getContentType(), event.getFileSize()),
+                        file));
     }
 
     @Override

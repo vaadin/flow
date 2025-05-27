@@ -44,6 +44,10 @@ public class ClassDownloadHandler
     /**
      * Create a class resource download handler with the resource name as the
      * url postfix (file name).
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>resourceName</code>. If you want to use a different file name, use
+     * {@link #ClassDownloadHandler(Class, String, String)} instead.
      *
      * @param clazz
      *            class to use for getting resource
@@ -57,13 +61,17 @@ public class ClassDownloadHandler
     /**
      * Create a class resource download handler with the given file name as the
      * url postfix.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>fileName</code>.
      *
      * @param clazz
      *            class to use for getting resource
      * @param resourceName
      *            resource to get
      * @param fileName
-     *            name to use as url postfix
+     *            download file name that overrides <code>resourceName</code>
+     *            and also used as a download request URL postfix
      */
     public ClassDownloadHandler(Class<?> clazz, String resourceName,
             String fileName) {
@@ -79,7 +87,8 @@ public class ClassDownloadHandler
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
@@ -90,18 +99,21 @@ public class ClassDownloadHandler
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
-            TransferProgressListener.transfer(inputStream, outputStream,
+            String resourceName = getUrlPostfix();
+            downloadEvent.setContentType(
+                    getContentType(resourceName, downloadEvent.getResponse()));
+            if (!isInline()) {
+                downloadEvent.setFileName(resourceName);
+            }
+            TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             notifyError(downloadEvent, ioe);
-            throw new UncheckedIOException(ioe);
+            throw ioe;
         }
-
-        downloadEvent.getResponse()
-                .setContentType(downloadEvent.getContentType());
     }
 
     @Override

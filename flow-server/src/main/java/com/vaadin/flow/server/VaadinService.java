@@ -41,18 +41,29 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -89,6 +100,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.signals.SignalEnvironment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -184,6 +196,10 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
+    private Executor executor;
+
+    private boolean defaultExecutorInUse;
+
     private VaadinContext vaadinContext;
 
     private Iterable<VaadinRequestInterceptor> vaadinRequestInterceptors;
@@ -267,6 +283,9 @@ public abstract class VaadinService implements Serializable {
             instantiator.getServiceInitListeners()
                     .forEach(listener -> listener.serviceInit(event));
 
+            this.executor = event.getExecutor()
+                    .orElseGet(this::createDefaultExecutor);
+
             event.getAddedRequestHandlers().forEach(handlers::add);
 
             Collections.reverse(handlers);
@@ -293,6 +312,20 @@ public abstract class VaadinService implements Serializable {
                     .collect(Collectors.toList());
         });
 
+        if (this.executor == null) {
+            throw new ServiceException(
+                    "Unable to create the default Executor for "
+                            + getClass().getName()
+                            + ". This is most likely a bug in a custom VaadinService implementation "
+                            + "that overrides the createDefaultExecutor() method "
+                            + "but returns a null Executor instance. "
+                            + "As a workaround, you can register a "
+                            + VaadinServiceInitListener.class.getSimpleName()
+                            + " providing a custom Executor instance.");
+        }
+
+        initSignalsEnvironment();
+
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
@@ -317,6 +350,54 @@ public abstract class VaadinService implements Serializable {
                 getRouteRegistry().getRegisteredRoutes());
 
         initialized = true;
+    }
+
+    private void initSignalsEnvironment() {
+        Executor signalsExecutor;
+        Supplier<Executor> flowDispatcherOverride;
+        FeatureFlags featureFlags = FeatureFlags.get(getContext());
+        if (featureFlags
+                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
+            signalsExecutor = this.executor;
+            flowDispatcherOverride = () -> {
+                UI owner = UI.getCurrent();
+                if (owner == null) {
+                    return null;
+                }
+
+                return task -> {
+                    if (UI.getCurrent() == owner) {
+                        task.run();
+                    } else {
+                        try {
+                            SignalEnvironment.defaultDispatcher()
+                                    .execute(() -> owner.access(task::run));
+                        } catch (Exception e) {
+                            // a task is submitted when executor is shut down,
+                            // ignore
+                        }
+                    }
+                };
+            };
+        } else {
+            signalsExecutor = task -> {
+                throw new DisabledFeatureException(
+                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+            };
+            flowDispatcherOverride = () -> {
+                throw new DisabledFeatureException(
+                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+            };
+        }
+        if (!SignalEnvironment.tryInitialize(createDefaultObjectMapper(),
+                signalsExecutor)) {
+            getLogger().warn("Signals environment is already initialized. "
+                    + "It is recommended to let Vaadin setup Signals environment to prevent unexpected behavior. "
+                    + "Please, avoid calling SignalEnvironment.tryInitialize() in application code.");
+        }
+        Runnable unregister = SignalEnvironment
+                .addDispatcherOverride(flowDispatcherOverride);
+        addServiceDestroyListener(event -> unregister.run());
     }
 
     private void addRouterUsageStatistics() {
@@ -501,6 +582,112 @@ public abstract class VaadinService implements Serializable {
      */
     public Instantiator getInstantiator() {
         return instantiator;
+    }
+
+    /**
+     * Creates a default executor instance to use with this service.
+     * <p>
+     * This default implementation creates a thread pool executor with a custom
+     * thread factory to generate daemon threads. It uses a core pool size of 8,
+     * an unbounded maximum pool size, and a keep-alive time of 60 seconds for
+     * idle threads. The thread pool grows dynamically as required, and idle
+     * core threads are allowed to time out.
+     * <p>
+     * A custom {@link VaadinService} implementation can override this method to
+     * provide its own ad-hoc executor tailored to specific environments like
+     * CDI or Spring.
+     * <p>
+     * Implementors should never return {@literal null}; if an executor instance
+     * cannot be provided, the method should call
+     * {@code super.createDefaultExecutor()}.
+     * <p>
+     * The application can provide a more appropriate executor implementation
+     * through a {@link VaadinServiceInitListener} and calling
+     * {@link ServiceInitEvent#setExecutor(Executor)}.
+     *
+     * @return a default executor instance to use, never {@literal null}.
+     * @see VaadinServiceInitListener
+     * @see ServiceInitEvent#setExecutor(Executor)
+     */
+    protected Executor createDefaultExecutor() {
+        this.defaultExecutorInUse = true;
+        int corePoolSize = 8;
+        int keepAliveTimeSec = 60;
+
+        class VaadinThreadFactory implements ThreadFactory {
+            private final AtomicInteger threadNumber = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable runnable) {
+                int threadNumber = this.threadNumber.incrementAndGet();
+                if (threadNumber == 1) {
+                    getLogger().info(
+                            "The application is using Vaadin's default ThreadPoolExecutor "
+                                    + "(pool size = {}, keep alive time = {} seconds). "
+                                    + "A custom executor with an appropriate thread pool "
+                                    + "can be provided registering a {}.",
+                            corePoolSize, keepAliveTimeSec,
+                            VaadinServiceInitListener.class.getSimpleName());
+                }
+                Thread thread = new Thread(runnable,
+                        "VaadinTaskExecutor-thread-" + threadNumber);
+                // Thread marked as daemon to prevent task execution to block
+                // JVM shutdown
+                thread.setDaemon(true);
+                thread.setPriority(Thread.NORM_PRIORITY);
+                return thread;
+            }
+        }
+        // Defaults taken from Spring Boot configuration
+        // org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                corePoolSize, Integer.MAX_VALUE, keepAliveTimeSec,
+                TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+                new VaadinThreadFactory());
+        // Enables dynamic growing and shrinking of the pool.
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
+        return threadPoolExecutor;
+    }
+
+    /**
+     * Gets the executor instance used by Vaadin for managing concurrent tasks.
+     * <p>
+     * By default, a thread pool executor with a custom with core pool size of
+     * 8, an unbounded maximum pool size, and a keep-alive time of 60 seconds
+     * for idle threads is provided. The thread pool grows dynamically as
+     * required, and idle core threads are allowed to time out.
+     * <p>
+     * {@link VaadinService} implementations for specific environments like CDI
+     * or Spring might provide their own ad-hoc Executors tailored to those
+     * environments.
+     * <p>
+     * A custom executor can be configured by registering a
+     * {@link VaadinServiceInitListener} and providing the executor instance to
+     * the {@link ServiceInitEvent}.
+     * <p>
+     * A Vaadin application can also benefit from this executor to submit
+     * asynchronous tasks.
+     *
+     * @return the Executor instance, never {@literal null}.
+     * @see VaadinServiceInitListener
+     * @see ServiceInitEvent#setExecutor(Executor)
+     */
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    /**
+     * Creates and configures a default instance of {@link ObjectMapper}. The
+     * configured {@link ObjectMapper} includes the registration of the
+     * {@link JavaTimeModule} to handle serialization and deserialization of
+     * Java time API objects.
+     *
+     * @return the configured {@link ObjectMapper} instance
+     */
+    protected ObjectMapper createDefaultObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
     }
 
     /**
@@ -2216,6 +2403,10 @@ public abstract class VaadinService implements Serializable {
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
+        if (defaultExecutorInUse && executor instanceof ExecutorService cast) {
+            cast.shutdownNow();
+            this.executor = null;
+        }
         RuntimeException exception = null;
         for (ServiceDestroyListener listener : serviceDestroyListeners) {
             try {

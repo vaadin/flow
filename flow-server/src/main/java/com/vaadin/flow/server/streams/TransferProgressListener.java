@@ -51,14 +51,6 @@ public interface TransferProgressListener extends Serializable {
     long DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES = 65536;
 
     /**
-     * Default buffer size for reading data from the input stream.
-     * <p>
-     * Follows the default buffer size of the Java
-     * {@link InputStream#transferTo(OutputStream)}.
-     */
-    int DEFAULT_BUFFER_SIZE = 16384;
-
-    /**
      * Called when the data transfer is started.
      * <p>
      * The call of this method is wrapped by the
@@ -82,12 +74,13 @@ public interface TransferProgressListener extends Serializable {
      * <p>
      * The call of this method is wrapped by the
      * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
-     * to send UI changes defined here when the download or upload request is
-     * being handled. Thus, no need to call
-     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}
-     * in the implementation of this method. This needs
+     * to send UI changes defined here asynchronously when the download or
+     * upload request is being handled. This needs
      * {@link com.vaadin.flow.component.page.Push} to be enabled in the
      * application to properly send the UI changes to client.
+     * <p>
+     * The default progress report internal is <code>65536</code> bytes. To
+     * change it, override {@link #progressReportInterval()}.
      *
      * @param context
      *            the context of the transfer
@@ -147,96 +140,12 @@ public interface TransferProgressListener extends Serializable {
      * Returns the interval in bytes for reporting progress.
      * <p>
      * <code>-1</code> to not report progress.
+     * <p>
+     * The default value is <code>65536</code> bytes.
      *
      * @return the interval in bytes
      */
     default long progressReportInterval() {
         return DEFAULT_PROGRESS_REPORT_INTERVAL_IN_BYTES;
-    }
-
-    /**
-     * Transfers data from the given input stream to the output stream while
-     * notifying the progress to the given listeners.
-     *
-     * @param inputStream
-     *            the input stream to read from
-     * @param outputStream
-     *            the output stream to write to
-     * @param transferContext
-     *            the transfer request containing metadata about the transfer
-     * @param listeners
-     *            collection of listeners to notify about progress
-     * @return the number of bytes transferred
-     * @throws IOException
-     *             if an I/O error occurs during the transfer
-     */
-    static long transfer(InputStream inputStream, OutputStream outputStream,
-            TransferContext transferContext,
-            Collection<TransferProgressListener> listeners) throws IOException {
-        Objects.requireNonNull(inputStream, "InputStream cannot be null");
-        Objects.requireNonNull(outputStream, "OutputStream cannot be null");
-        Objects.requireNonNull(transferContext,
-                "TransferRequest cannot be null");
-        Objects.requireNonNull(listeners,
-                "TransferProgressListener cannot be null");
-        listeners.forEach(listener -> listener.onStart(transferContext));
-        long transferred = 0;
-        Map<TransferProgressListener, Long> lastNotified = new HashMap<>(
-                listeners.size());
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        int read;
-        while ((read = read(transferContext.session(), inputStream,
-                buffer)) >= 0) {
-            outputStream.write(buffer, 0, read);
-            if (transferred < Long.MAX_VALUE) {
-                try {
-                    transferred = Math.addExact(transferred, read);
-                } catch (ArithmeticException ignore) {
-                    transferred = Long.MAX_VALUE;
-                }
-                for (TransferProgressListener listener : listeners) {
-                    Long lastNotifiedLong = lastNotified.getOrDefault(listener,
-                            0L);
-                    long progressReportInterval = listener
-                            .progressReportInterval();
-                    if (progressReportInterval > -1 && transferred
-                            - lastNotifiedLong >= progressReportInterval) {
-                        long finalTransferred = transferred;
-                        listener.onProgress(transferContext, finalTransferred,
-                                transferContext.contentLength());
-                        lastNotified.put(listener, transferred);
-                    }
-                }
-            }
-        }
-        long finalTransferred = transferred;
-        listeners.forEach(listener -> listener.onComplete(transferContext,
-                finalTransferred));
-        return transferred;
-    }
-
-    /**
-     * Read buffer amount of bytes from the input stream.
-     *
-     * @param session
-     *            vaadin session in use
-     * @param source
-     *            input stream source
-     * @param buffer
-     *            byte buffer to read into
-     * @return amount of bytes read into buffer
-     * @throws IOException
-     *             If the first byte cannot be read for any reason other than
-     *             the end of the file, if the input stream has been closed, or
-     *             if some other I/O error occurs.
-     */
-    static int read(VaadinSession session, InputStream source, byte[] buffer)
-            throws IOException {
-        session.lock();
-        try {
-            return source.read(buffer, 0, DEFAULT_BUFFER_SIZE);
-        } finally {
-            session.unlock();
-        }
     }
 }

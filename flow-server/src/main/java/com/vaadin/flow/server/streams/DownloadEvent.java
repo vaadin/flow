@@ -32,13 +32,31 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Class containing data on requested client download.
+ * Class containing meta-data for handling the requested client download.
+ * <p>
+ * It gives direct access to the underlying request, response and session as
+ * well as various helpers specifically for handling downloads.
+ *
  *
  * @since 24.8
  */
-public record DownloadEvent(VaadinRequest request, VaadinResponse response,
-        VaadinSession session, String fileName, String contentType,
-        Element owningElement) {
+public class DownloadEvent {
+
+    private VaadinRequest request;
+    private VaadinResponse response;
+    private VaadinSession session;
+    private Element owningElement;
+    private String fileName;
+    private String contentType;
+    private long contentLength = -1;
+
+    public DownloadEvent(VaadinRequest request, VaadinResponse response,
+            VaadinSession session, Element owningElement) {
+        this.request = request;
+        this.response = response;
+        this.session = session;
+        this.owningElement = owningElement;
+    }
 
     /**
      * Returns a <code>OutputStream</code> for writing binary data in the
@@ -111,25 +129,69 @@ public record DownloadEvent(VaadinRequest request, VaadinResponse response,
     }
 
     /**
-     * Get the set file name.
+     * Sets the name of the file to be downloaded. This method utilizes the HTTP
+     * Content-Disposition header to specify the name of the file to be
+     * downloaded.
+     * <p>
+     * To be called before the response is committed.
+     * <p>
+     * If the <code>fileName</code> is <code>null</code>, the
+     * Content-Disposition header won't be set.
      *
-     * @return file name
+     * @param fileName
+     *            the name to be assigned to the file
      */
-    public String getFileName() {
-        return fileName == null ? "" : fileName;
+    public void setFileName(String fileName) {
+        if (fileName == null) {
+            return;
+        }
+        if (fileName.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment");
+        } else {
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+        }
+        this.fileName = fileName;
     }
 
     /**
-     * Get the content type for the data to download.
+     * Sets the content type for the current download. This methods utilizes the
+     * HTTP Content-Type header to specify the type of content being sent to the
+     * client.
+     * <p>
+     * To be called before the response is committed.
      *
-     * @return set content type
+     * @param contentType
+     *            the MIME type to set as the content type
      */
-    public String getContentType() {
-        return contentType;
+    public void setContentType(String contentType) {
+        response.setContentType(contentType);
+        this.contentType = contentType;
+    }
+
+    /**
+     * Sets the length of the content body in the response if the length is not
+     * <code>-1</code>. This method utilizes the HTTP Content-Length header to
+     * specify the length of the content being sent to the client.
+     * <p>
+     * To be called before the response is committed.
+     *
+     * @param contentLength
+     *            the length of the response content in bytes
+     */
+    public void setContentLength(long contentLength) {
+        if (contentLength != -1) {
+            response.setContentLengthLong(contentLength);
+        }
+        this.contentLength = contentLength;
     }
 
     /**
      * Get owner {@link Component} for this event.
+     * <p>
+     * The download handler may change the component's state during donwload,
+     * e.g. disable or hide it during download or get the component's own data
+     * like id.
      *
      * @return owning component or null in none defined
      */
@@ -139,6 +201,11 @@ public record DownloadEvent(VaadinRequest request, VaadinResponse response,
 
     /**
      * Get the owning element for the download related to this event.
+     * <p>
+     * The download handler may use element's attributes or properties to define
+     * what to download or change the element, e.g. element's id or data id to
+     * fetch a row from a database or disable element once the download is
+     * started.
      *
      * @return owning element
      */
@@ -147,13 +214,27 @@ public record DownloadEvent(VaadinRequest request, VaadinResponse response,
     }
 
     /**
-     * Get the UI instance for this request.
+     * Get the current UI instance for this request that can be used to make
+     * asynchronnous UI updates with
+     * {@link UI#access(com.vaadin.flow.server.Command)}.
      *
-     * @return Current UI
+     * @return Current UI instance
      */
     public UI getUI() {
         Optional<Component> component = owningElement.getComponent();
         return component.map(value -> value.getUI().orElseGet(UI::getCurrent))
                 .orElseGet(UI::getCurrent);
+    }
+
+    String getFileName() {
+        return fileName;
+    }
+
+    String getContentType() {
+        return contentType;
+    }
+
+    long getContentLength() {
+        return contentLength;
     }
 }

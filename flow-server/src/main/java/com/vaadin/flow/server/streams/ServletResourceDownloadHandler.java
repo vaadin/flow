@@ -19,9 +19,9 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 
@@ -37,11 +37,15 @@ public class ServletResourceDownloadHandler
         extends AbstractDownloadHandler<ServletResourceDownloadHandler> {
 
     private final String path;
-    private final String name;
+    private final String fileNameOverride;
 
     /**
      * Create download handler for servlet resource. Uses url postfix as file
-     * name from path
+     * name from path.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to the file
+     * name from <code>path</code>. If you want to use a different file name,
+     * use {@link #ServletResourceDownloadHandler(String, String)} instead.
      *
      * @param path
      *            path of servlet resource
@@ -52,43 +56,54 @@ public class ServletResourceDownloadHandler
 
     /**
      * Create download handler for servlet resource.
+     * <p>
+     * The downloaded file fileNameOverride and download URL postfix will be set
+     * to <code>fileNameOverride</code>.
      *
      * @param path
      *            path of servlet resource
-     * @param name
-     *            name to use as url postfix (can be given as empty string)
+     * @param fileNameOverride
+     *            download file name that overrides the name taken from
+     *            <code>path</code> and also used as a download request URL
+     *            postfix
      */
-    public ServletResourceDownloadHandler(String path, String name) {
+    public ServletResourceDownloadHandler(String path,
+            String fileNameOverride) {
         this.path = path;
-        this.name = name;
+        this.fileNameOverride = fileNameOverride;
     }
 
     @Override
-    public void handleDownloadRequest(DownloadEvent downloadEvent) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
         VaadinService service = downloadEvent.getRequest().getService();
+        VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
             try (OutputStream outputStream = downloadEvent.getOutputStream();
                     InputStream inputStream = servletService.getServlet()
                             .getServletContext().getResourceAsStream(path)) {
-                TransferProgressListener.transfer(inputStream, outputStream,
+                String resourceName = getUrlPostfix();
+                downloadEvent
+                        .setContentType(getContentType(resourceName, response));
+                if (!isInline()) {
+                    downloadEvent.setFileName(resourceName);
+                }
+                TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
-                downloadEvent.getResponse().setStatus(
+                response.setStatus(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 notifyError(downloadEvent, ioe);
-                throw new UncheckedIOException(ioe);
+                throw ioe;
             }
-
-            downloadEvent.getResponse()
-                    .setContentType(downloadEvent.getContentType());
         }
     }
 
     @Override
     public String getUrlPostfix() {
-        if (name != null) {
-            return name;
+        if (fileNameOverride != null) {
+            return fileNameOverride;
         }
         if (path.contains("/")) {
             return path.substring(path.lastIndexOf('/') + 1);

@@ -15,10 +15,17 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 public class ImageTest extends ComponentTest {
 
@@ -43,5 +50,26 @@ public class ImageTest extends ComponentTest {
         img.setAlt(null);
         Assert.assertEquals(Optional.empty(), img.getAlt());
         Assert.assertFalse(img.getElement().hasAttribute("alt"));
+    }
+
+    @Test
+    public void downloadHandler_isSetToInline() {
+        Element element = Mockito.mock(Element.class);
+        class TestImage extends Image {
+            public TestImage(DownloadHandler downloadHandler, String alt) {
+                super(downloadHandler, alt);
+            }
+
+            @Override
+            public Element getElement() {
+                return element;
+            }
+        }
+        // dummy handler
+        InputStreamDownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> DownloadResponse.error(500));
+        Assert.assertFalse(handler.isInline());
+        new TestImage(handler, "test.png");
+        Assert.assertTrue(handler.isInline());
     }
 }

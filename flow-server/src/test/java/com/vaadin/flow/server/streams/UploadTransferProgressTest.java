@@ -127,6 +127,7 @@ public class UploadTransferProgressTest {
             command.execute();
             return null;
         }).when(ui).access(Mockito.any(Command.class));
+        Mockito.when(uploadEvent.getUI()).thenReturn(ui);
 
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
         Mockito.when(uploadEvent.getOwningComponent())
