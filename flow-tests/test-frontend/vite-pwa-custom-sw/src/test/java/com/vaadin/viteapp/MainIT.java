@@ -47,7 +47,7 @@ public class MainIT extends ChromeDeviceTest {
     @Test
     public void openHomePage_changeServiceWorker_serviceWorkerIsUpdated()
             throws IOException {
-        openPage("/");
+        openAndReload("/");
 
         Assume.assumeFalse("Development mode feature", isProductionMode());
 
@@ -85,7 +85,7 @@ public class MainIT extends ChromeDeviceTest {
                 .equals("complete"));
     }
 
-    private void openPage(String url) {
+    private void openAndReload(String url) {
         getDriver().get(getRootURL() + url);
         waitForDevServer();
         waitForServiceWorkerReady();

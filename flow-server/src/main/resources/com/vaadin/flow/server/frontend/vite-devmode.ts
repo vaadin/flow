@@ -38,7 +38,7 @@ if (import.meta.hot) {
       return;
     }
 
-    const registration = await navigator.serviceWorker.getRegistration()
+    const registration = await navigator.serviceWorker.getRegistration();
     if (registration) {
       await registration.update();
     }

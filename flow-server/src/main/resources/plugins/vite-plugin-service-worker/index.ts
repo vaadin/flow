@@ -111,7 +111,7 @@ export default function serviceWorkerPlugin({ srcPath }: { srcPath: string }): P
         });
       }
     },
-    async hotUpdate({ file}) {
+    async hotUpdate({ file }) {
       if (this.environment.name !== 'client') {
         return;
       }
