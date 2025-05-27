@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import type { RollupOutput } from 'rollup';
 import { build, InlineConfig, Plugin } from 'vite';
 import { getManifest, ManifestTransform } from 'workbox-build';
+// @ts-ignore
 import brotli from 'rollup-plugin-brotli';
 
 const APP_SHELL_URL = '.';
@@ -110,5 +111,31 @@ export default function serviceWorkerPlugin({ srcPath }: { srcPath: string }): P
         });
       }
     },
+    async hotUpdate({ file }) {
+      if (this.environment.name !== 'client') {
+        return;
+      }
+
+      const needsSwRebuild = !buildOutput || buildOutput.output[0].moduleIds.includes(file);
+      if (!needsSwRebuild) {
+        return;
+      }
+
+      try {
+        buildOutput = await build(buildConfig) as RollupOutput;
+        const mg = this.environment.moduleGraph;
+        if (!mg) {
+          return;
+        }
+        for (const module of mg.getModulesByFile(swSourcePath) ?? []) {
+          mg.invalidateModule(module);
+        }
+        this.environment.hot.send({ type: 'custom', event: 'sw-js-update' });
+      } catch (error) {
+        if (error instanceof Error) {
+          this.environment.logger.error(error.message, { error });
+        }
+      }
+    }
   };
 }
