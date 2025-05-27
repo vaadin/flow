@@ -189,10 +189,16 @@ public class StreamRequestHandler implements RequestHandler {
             } finally {
                 session.unlock();
             }
+            try {
+                elementRequest.getElementRequestHandler().handleRequest(request,
+                        response, session, elementRequest.getOwner());
+            } finally {
+                UI.setCurrent(null);
+            }
+        } else {
+            elementRequest.getElementRequestHandler().handleRequest(request,
+                    response, session, elementRequest.getOwner());
         }
-
-        elementRequest.getElementRequestHandler().handleRequest(request,
-                response, session, elementRequest.getOwner());
     }
 
     private static boolean blockDisabled(
