@@ -264,8 +264,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
             var chunkResource = i18NProvider.getChunkResource();
 
             if (chunkResource != null) {
-                var mapper = new ObjectMapper();
-                var json = mapper.readTree(chunkResource);
+                var json = JacksonUtils.getMapper().readTree(chunkResource);
                 var chunksNode = json.get("chunks");
 
                 if (chunksNode != null && chunksNode.isObject()) {
