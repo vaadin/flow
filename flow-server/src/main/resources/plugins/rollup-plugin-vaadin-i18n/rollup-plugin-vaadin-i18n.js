@@ -54,23 +54,31 @@ export default function vaadinI18n(options = {}) {
       if (!filter(id)) {
         return;
       }
-      const translateBindings = new Set();
+      const keyTagBindings = new Set();
       const ast = this.parse(code, {});
       const moduleKeySet = new Set();
       let hasI18nImport = false;
-      const magicString = transformAst(code, {ast}, (node) => {
+      const magicString = transformAst(code, { ast }, (node) => {
         if (node.type === 'ImportDeclaration' && node.source?.value === '@vaadin/hilla-react-i18n') {
           for (const spec of node?.specifiers) {
-            if (spec.imported?.name === 'translate') {
-              translateBindings.add(spec.local?.name);
+            if (spec.imported?.name === 'key') {
+              keyTagBindings.add(spec.local?.name);
             }
             if (spec.type === 'ImportSpecifier' && spec.imported?.name === 'i18n') {
               hasI18nImport = true;
             }
           }
         }
-        if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && translateBindings.has(node.callee.name) && node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
-          moduleKeySet.add(node.arguments[0].value);
+        if (
+          node.type === 'TaggedTemplateExpression' &&
+          node.tag.type === 'Identifier' &&
+          keyTagBindings.has(node.tag.name) &&
+          node.quasi &&
+          node.quasi.type === 'TemplateLiteral' &&
+          node.quasi.quasis.length === 1 &&
+          typeof node.quasi.quasis[0].value.raw === 'string'
+        ) {
+          moduleKeySet.add(node.quasi.quasis[0].value.raw);
         }
       });
 
