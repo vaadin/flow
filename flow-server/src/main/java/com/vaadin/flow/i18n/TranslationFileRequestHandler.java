@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.i18n;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
