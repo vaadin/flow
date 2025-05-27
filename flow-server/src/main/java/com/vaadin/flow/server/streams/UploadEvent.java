@@ -18,7 +18,6 @@ package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 
 import jakarta.servlet.http.Part;
@@ -28,11 +27,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Class containing data on requested client upload to server.

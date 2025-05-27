@@ -155,7 +155,7 @@ public class DownloadEvent {
     }
 
     /**
-     * Sets the content type for the current download. This methods utilizes the
+     * Sets the content type for the current download. These methods utilize the
      * HTTP Content-Type header to specify the type of content being sent to the
      * client.
      * <p>
@@ -189,7 +189,7 @@ public class DownloadEvent {
     /**
      * Get owner {@link Component} for this event.
      * <p>
-     * The download handler may change the component's state during donwload,
+     * The download handler may change the component's state during download,
      * e.g. disable or hide it during download or get the component's own data
      * like id.
      *
@@ -215,7 +215,7 @@ public class DownloadEvent {
 
     /**
      * Get the current UI instance for this request that can be used to make
-     * asynchronnous UI updates with
+     * asynchronous UI updates with
      * {@link UI#access(com.vaadin.flow.server.Command)}.
      *
      * @return Current UI instance
