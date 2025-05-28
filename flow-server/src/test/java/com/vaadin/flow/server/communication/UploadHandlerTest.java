@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,11 +28,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.streams.UploadCompleteEvent;
+import com.vaadin.flow.internal.streams.UploadStartEvent;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -50,6 +58,7 @@ import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.server.streams.UploadMetadata;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
@@ -82,6 +91,7 @@ public class UploadHandlerTest {
     private UI ui;
     private StateNode stateNode;
     private Element element;
+    private TestComponent component;
 
     @Before
     public void setUp() throws ServletException, ServiceException {
@@ -114,7 +124,10 @@ public class UploadHandlerTest {
         stateNode = Mockito.mock(StateNode.class);
         when(stateNode.isAttached()).thenReturn(true);
         element = Mockito.mock(Element.class);
+        component = new TestComponent();
         Mockito.when(element.getNode()).thenReturn(stateNode);
+        Mockito.when(element.getComponent())
+                .thenReturn(Optional.of(this.component));
         response = Mockito.mock(VaadinResponse.class);
     }
 
@@ -538,6 +551,44 @@ public class UploadHandlerTest {
         };
     }
 
+    @Test
+    public void multipartRequest_startAndComplete_firesInternalEvents()
+            throws IOException, ServletException {
+        AtomicBoolean startFired = new AtomicBoolean(false);
+        AtomicBoolean completeFired = new AtomicBoolean(false);
+        component.addListener(UploadStartEvent.class,
+                (ComponentEventListener) event -> {
+                    startFired.set(true);
+                });
+        component.addListener(UploadCompleteEvent.class,
+                (ComponentEventListener) event -> {
+                    completeFired.set(true);
+                });
+        UploadHandler handler = (event) -> {
+        };
+        handler.handleRequest(request, response, session, element);
+        Assert.assertTrue("Start event was not fired", startFired.get());
+        Assert.assertTrue("Complete event was not fired", completeFired.get());
+
+        startFired.set(false);
+        completeFired.set(false);
+
+        handler = (event) -> {
+            throw new RuntimeException("Test exception");
+        };
+
+        try {
+            handler.handleRequest(request, response, session, element);
+        } catch (RuntimeException e) {
+            // expected
+        }
+
+        Assert.assertTrue("Start event was not fired before exception",
+                startFired.get());
+        Assert.assertTrue("Complete event was not fired after exception",
+                completeFired.get());
+    }
+
     private Part createPart(InputStream inputStream, String contentType,
             String name, long size) throws IOException {
         Part part = mock(Part.class);
@@ -605,6 +656,15 @@ public class UploadHandlerTest {
                 return read;
             }
         };
+    }
+
+    @Tag("div")
+    private static class TestComponent extends Component {
+        @Override
+        public <T extends ComponentEvent<?>> Registration addListener(
+                Class<T> eventType, ComponentEventListener<T> listener) {
+            return super.addListener(eventType, listener);
+        }
     }
 
 }
