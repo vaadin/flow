@@ -25,6 +25,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
@@ -164,9 +165,9 @@ public class StreamRequestHandler implements RequestHandler {
                     return;
                 }
 
-                // Set current UI to upload url ui.
-                UI ui = session.getUIById(Integer.parseInt(parts.UIid));
-                UI.setCurrent(ui);
+                elementRequest.getOwner().getComponent()
+                        .ifPresent(value -> ComponentUtil.setData(value, "uiid",
+                                parts.UIid));
 
                 if (node == null) {
                     session.getErrorHandler()
@@ -189,16 +190,9 @@ public class StreamRequestHandler implements RequestHandler {
             } finally {
                 session.unlock();
             }
-            try {
-                elementRequest.getElementRequestHandler().handleRequest(request,
-                        response, session, elementRequest.getOwner());
-            } finally {
-                UI.setCurrent(null);
-            }
-        } else {
-            elementRequest.getElementRequestHandler().handleRequest(request,
-                    response, session, elementRequest.getOwner());
         }
+        elementRequest.getElementRequestHandler().handleRequest(request,
+                response, session, elementRequest.getOwner());
     }
 
     private static boolean blockDisabled(
