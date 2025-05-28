@@ -250,8 +250,11 @@ public class MessageSender {
      *            The contents of the request to send
      */
     private void sendPayload(final JsonObject payload) {
-        payload.put(ApplicationConstants.SERVER_SYNC_ID,
-                registry.getMessageHandler().getLastSeenServerSyncId());
+        // Do not update server sync id for enqueued messages
+        if (!payload.hasKey(ApplicationConstants.SERVER_SYNC_ID)) {
+            payload.put(ApplicationConstants.SERVER_SYNC_ID,
+                    registry.getMessageHandler().getLastSeenServerSyncId());
+        }
         // clientID should only be set and updated if payload doesn't contain
         // clientID. If one exists we are probably trying to resend.
         if (!payload.hasKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
@@ -277,8 +280,8 @@ public class MessageSender {
             push.push(payload);
         } else {
             Console.debug("send XHR");
-            registry.getXhrConnection().send(payload);
             resetTimer();
+            registry.getXhrConnection().send(payload);
             // resend last payload if response hasn't come in.
             resendMessageTimer = new Timer() {
                 @Override
