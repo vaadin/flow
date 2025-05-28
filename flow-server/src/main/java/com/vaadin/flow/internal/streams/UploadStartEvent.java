@@ -29,12 +29,9 @@ import com.vaadin.flow.component.ComponentEvent;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @param <C>
- *            the event source type, which is a subclass of {@link Component}
- *
  * @since 24.8
  */
-public class UploadStartEvent<C extends Component> extends ComponentEvent<C> {
+public class UploadStartEvent extends ComponentEvent<Component> {
     /**
      * Creates a new event using the given source. Always fired on the server
      * side.
@@ -42,7 +39,7 @@ public class UploadStartEvent<C extends Component> extends ComponentEvent<C> {
      * @param source
      *            the source component
      */
-    public UploadStartEvent(C source) {
+    public UploadStartEvent(Component source) {
         super(source, false);
     }
 }

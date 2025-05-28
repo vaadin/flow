@@ -251,7 +251,7 @@ public final class TransferUtil {
             ComponentUtil.fireEvent(owner, new UploadStartEvent(owner));
             handler.handleUploadRequest(event);
         } finally {
-            ComponentUtil.fireEvent(owner, new UploadCompleteEvent<>(owner));
+            ComponentUtil.fireEvent(owner, new UploadCompleteEvent(owner));
         }
     }
 }

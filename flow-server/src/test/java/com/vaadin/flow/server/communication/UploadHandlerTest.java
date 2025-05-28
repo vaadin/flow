@@ -552,18 +552,16 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void multipartRequest_startAndComplete_firesInternalEvents()
+    public void singleUpload_startAndComplete_firesInternalEvents()
             throws IOException, ServletException {
         AtomicBoolean startFired = new AtomicBoolean(false);
         AtomicBoolean completeFired = new AtomicBoolean(false);
-        component.addListener(UploadStartEvent.class,
-                (ComponentEventListener) event -> {
-                    startFired.set(true);
-                });
-        component.addListener(UploadCompleteEvent.class,
-                (ComponentEventListener) event -> {
-                    completeFired.set(true);
-                });
+        component.addListener(UploadStartEvent.class, event -> {
+            startFired.set(true);
+        });
+        component.addListener(UploadCompleteEvent.class, event -> {
+            completeFired.set(true);
+        });
         UploadHandler handler = (event) -> {
         };
         handler.handleRequest(request, response, session, element);
@@ -587,6 +585,74 @@ public class UploadHandlerTest {
                 startFired.get());
         Assert.assertTrue("Complete event was not fired after exception",
                 completeFired.get());
+    }
+
+    @Test
+    public void multipartStreamRequest_startAndComplete_firesInternalEvents()
+            throws IOException, ServletException {
+        AtomicBoolean startFired = new AtomicBoolean(false);
+        AtomicBoolean completeFired = new AtomicBoolean(false);
+        component.addListener(UploadStartEvent.class, event -> {
+            startFired.set(true);
+        });
+        component.addListener(UploadCompleteEvent.class, event -> {
+            completeFired.set(true);
+        });
+        UploadHandler handler = (event) -> {
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(handler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, MULTIPART_STREAM_CONTENT);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(request, response, session, element);
+        Assert.assertTrue("Start event was not fired", startFired.get());
+        Assert.assertTrue("Complete event was not fired", completeFired.get());
+
+        startFired.set(false);
+        completeFired.set(false);
+    }
+
+    @Test
+    public void multipartRequest_startAndComplete_firesInternalEvents()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "one.txt", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "two.txt", 3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        AtomicBoolean startFired = new AtomicBoolean(false);
+        AtomicBoolean completeFired = new AtomicBoolean(false);
+        component.addListener(UploadStartEvent.class, event -> {
+            startFired.set(true);
+        });
+        component.addListener(UploadCompleteEvent.class, event -> {
+            completeFired.set(true);
+        });
+        UploadHandler handler = (event) -> {
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(handler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, MULTIPART_STREAM_CONTENT);
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(request, response, session, element);
+        Assert.assertTrue("Start event was not fired", startFired.get());
+        Assert.assertTrue("Complete event was not fired", completeFired.get());
+
+        startFired.set(false);
+        completeFired.set(false);
     }
 
     private Part createPart(InputStream inputStream, String contentType,
