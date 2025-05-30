@@ -39,7 +39,11 @@ import org.apache.commons.fileupload2.core.FileUploadSizeException;
 import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.streams.UploadCompleteEvent;
+import com.vaadin.flow.internal.streams.UploadStartEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -123,6 +127,9 @@ public final class TransferUtil {
      * {@link UploadHandler#handleUploadRequest(UploadEvent)} correctly for xhr
      * and multipart uploads.
      * <p>
+     * Fires internal events for the owner upload component to indicate that the
+     * upload has started and completed.
+     * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
      * @param handler
@@ -160,7 +167,7 @@ public final class TransferUtil {
                                 session, part.getSubmittedFileName(),
                                 part.getSize(), part.getContentType(), owner,
                                 null, part);
-                        handler.handleUploadRequest(event);
+                        handleUploadRequest(handler, event);
                     }
                     handler.responseHandled(true, response);
                 } else {
@@ -189,7 +196,7 @@ public final class TransferUtil {
                                     response, session, item.getName(),
                                     contentLength, item.getContentType(), owner,
                                     item, null);
-                            handler.handleUploadRequest(event);
+                            handleUploadRequest(handler, event);
                         }
                         handler.responseHandled(true, response);
                     } catch (FileUploadException e) {
@@ -227,13 +234,24 @@ public final class TransferUtil {
                         fileName, request.getContentLengthLong(), contentType,
                         owner, null, null);
 
-                handler.handleUploadRequest(event);
+                handleUploadRequest(handler, event);
                 handler.responseHandled(true, response);
             }
         } catch (Exception e) {
             LoggerFactory.getLogger(UploadHandler.class)
                     .error("Exception during upload", e);
             handler.responseHandled(false, response);
+        }
+    }
+
+    private static void handleUploadRequest(UploadHandler handler,
+            UploadEvent event) throws IOException {
+        Component owner = event.getOwningComponent();
+        try {
+            ComponentUtil.fireEvent(owner, new UploadStartEvent(owner));
+            handler.handleUploadRequest(event);
+        } finally {
+            ComponentUtil.fireEvent(owner, new UploadCompleteEvent(owner));
         }
     }
 }
