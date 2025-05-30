@@ -14,5 +14,10 @@
   },
   "files": [
     "rollup-plugin-vaadin-i18n.js"
-  ]
+  ],
+  "dependencies": {
+    "@rollup/pluginutils": "5.1.4",
+    "transform-ast": "2.4.4",
+    "magic-string": "0.30.17"
+  }
 }
