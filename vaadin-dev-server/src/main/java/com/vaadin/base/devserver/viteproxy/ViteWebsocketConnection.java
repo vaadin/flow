@@ -139,7 +139,7 @@ public class ViteWebsocketConnection implements Listener {
     public void send(String message)
             throws InterruptedException, ExecutionException {
         CompletableFuture<WebSocket> send = clientWebsocket.get()
-                .sendText(message, false);
+                .sendText(message, true);
         send.get();
     }
 
