@@ -27,8 +27,8 @@ public class ViteCommunicationIT extends ChromeBrowserTest {
     public void messageSentToViteAndBack() {
         open();
         $(NativeButtonElement.class).id("send").click();
-        waitUntil(driver -> $(DivElement.class).id("response").getText()
-                .equals("Got event test-event-response with data {\"foo\":\"bar\"}"));
+        waitUntil(driver -> $(DivElement.class).id("response").getText().equals(
+                "Got event test-event-response with data {\"foo\":\"bar\"}"));
     }
 
 }

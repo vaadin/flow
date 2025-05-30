@@ -41,8 +41,8 @@ public class ViteCommunicationView extends Div {
                         """);
 
         NativeButton sendMessage = new NativeButton("Send message",
-                e -> ui.getPage()
-                        .executeJs("window.importmetahot.send('test-event', {foo: 'bar'});"));
+                e -> ui.getPage().executeJs(
+                        "window.importmetahot.send('test-event', {foo: 'bar'});"));
         sendMessage.setId("send");
         Div response = new Div();
         response.setId("response");
