@@ -172,6 +172,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        expectedDependencies.add("magic-string");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
