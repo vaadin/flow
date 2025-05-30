@@ -62,9 +62,40 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
                 embeddedDiv.getText());
     }
 
+    @Test
+    public void webpackErrorIsShownAfterReloadAndHiddenAfterFix() {
+        open();
+
+        // when: a webpack error occurs during frontend file edit
+        WebElement codeField = findElement(
+                By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
+        String oldCode = getValue(codeField);
+        String erroneousCode = "{" + oldCode;
+        codeField.clear();
+        codeField.sendKeys(erroneousCode); // illegal TS
+        WebElement insertWebpackError = findElement(
+                By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
+        insertWebpackError.click();
+
+        // then: an error box is shown
+        testBench().disableWaitForVaadin();
+        waitForElementPresent(errorBoxSelector());
+
+        // when: the error is corrected
+        resetFrontend();
+        testBench().enableWaitForVaadin();
+
+        // then: the error box is not shown and the view is reloaded
+        waitForElementNotPresent(errorBoxSelector());
+    }
+
     private String getValue(WebElement element) {
         Object result = getCommandExecutor()
                 .executeScript("return arguments[0].value;", element);
         return result == null ? "" : result.toString();
+    }
+
+    protected By errorBoxSelector() {
+        return By.tagName("vite-error-overlay");
     }
 }
