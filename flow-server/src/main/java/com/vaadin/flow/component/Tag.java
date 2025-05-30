@@ -228,6 +228,10 @@ public @interface Tag {
      * Tag for a <code>&lt;ul&gt;</code>.
      */
     String UL = "ul";
+    /**
+     * Tag for a <code>&lt;code&gt;</code>.
+     */
+    String CODE = "code";
 
     /**
      * Gets the tag name.
