@@ -707,7 +707,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ].filter(Boolean)
         }
       }),
-      vaadinI18n({
+      productionMode && vaadinI18n({
         cwd: __dirname,
         meta: {
           output: {

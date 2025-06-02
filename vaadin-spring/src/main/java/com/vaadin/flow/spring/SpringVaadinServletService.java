@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.TaskScheduler;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -129,6 +130,24 @@ public class SpringVaadinServletService extends VaadinServletService {
                 || !annotatedBeans.isEmpty()) {
             candidates.removeIf(name -> !annotatedBeans.contains(name)
                     && !name.equals(VaadinTaskExecutor.NAME));
+        }
+
+        if (candidates.size() > 1) {
+            // Gives preference to regular executors over schedulers when both
+            // types are present.
+            Map<Boolean, List<String>> byType = candidates.stream()
+                    .collect(Collectors.partitioningBy(name -> context
+                            .isTypeMatch(name, TaskScheduler.class)));
+            if (!byType.get(true).isEmpty() && !byType.get(false).isEmpty()) {
+                // Remove TaskScheduler's from candidates list
+                byType.get(true).forEach(candidates::remove);
+            }
+        }
+
+        if (candidates.size() > 1) {
+            // Remove Spring default executor to select an application defined
+            // bean
+            candidates.remove("applicationTaskExecutor");
         }
         if (candidates.size() == 1) {
             return context.getBean(candidates.iterator().next(),

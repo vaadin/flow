@@ -19,6 +19,7 @@
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.9.3",
     "workbox-build": "7.3.0",
-    "transform-ast": "2.4.4"
+    "transform-ast": "2.4.4",
+    "magic-string": "0.30.17"
   }
 }
