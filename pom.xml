@@ -106,7 +106,7 @@
         <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
-        <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
+        <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>9.4.0.beta1</testbench.version>
         <jetty.version>12.0.21</jetty.version>
