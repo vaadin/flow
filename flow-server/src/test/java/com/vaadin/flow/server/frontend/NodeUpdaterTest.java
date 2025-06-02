@@ -363,7 +363,7 @@ public class NodeUpdaterTest {
         packageJsonWriter.close();
         ObjectNode actualDevDeps = (ObjectNode) nodeUpdater.getPackageJson()
                 .get(NodeUpdater.DEV_DEPENDENCIES);
-        Assert.assertFalse(actualDevDeps.has("some-old-plugin"));
+        Assert.assertFalse(actualDevDeps.has("@vaadin/some-old-plugin"));
         Assert.assertFalse(
                 actualDevDeps.has("@vaadin/application-theme-plugin"));
     }
