@@ -19,12 +19,14 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import jakarta.servlet.http.Part;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
@@ -195,7 +197,20 @@ public class UploadEvent {
      * @return UI for upload event
      */
     public UI getUI() {
-        return UI.getCurrent();
+        Optional<Component> component = owningElement.getComponent();
+        return component.map(
+                value -> value.getUI().orElseGet(() -> getUiFromSession(value)))
+                .orElseGet(UI::getCurrent);
+    }
+
+    private UI getUiFromSession(Component value) {
+        try {
+            session.lock();
+            return session.getUIById(Integer
+                    .parseInt((String) ComponentUtil.getData(value, "uiid")));
+        } finally {
+            session.unlock();
+        }
     }
 
     /**
