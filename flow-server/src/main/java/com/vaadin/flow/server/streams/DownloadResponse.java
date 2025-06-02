@@ -36,7 +36,7 @@ public class DownloadResponse implements Serializable {
 
     private final String fileName;
     private final String contentType;
-    private final int size;
+    private final long contentLength;
 
     private Integer error;
     private String errorMessage;
@@ -53,15 +53,15 @@ public class DownloadResponse implements Serializable {
      *            <code>null</code>, otherwise the header is not set
      * @param contentType
      *            content type
-     * @param size
+     * @param contentLength
      *            byte size of a stream or <code>-1</code> if unknown
      */
     public DownloadResponse(InputStream inputStream, String fileName,
-            String contentType, int size) {
+            String contentType, long contentLength) {
         this.inputStream = inputStream;
         this.fileName = fileName;
         this.contentType = contentType;
-        this.size = size;
+        this.contentLength = contentLength;
     }
 
     /**
@@ -98,8 +98,8 @@ public class DownloadResponse implements Serializable {
      *
      * @return content size
      */
-    public int getSize() {
-        return size;
+    public long getContentLength() {
+        return contentLength;
     }
 
     /**
