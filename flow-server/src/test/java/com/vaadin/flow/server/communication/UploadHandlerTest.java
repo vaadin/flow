@@ -590,13 +590,13 @@ public class UploadHandlerTest {
     @Test
     public void multipartStreamRequest_startAndComplete_firesInternalEvents()
             throws IOException, ServletException {
-        AtomicBoolean startFired = new AtomicBoolean(false);
-        AtomicBoolean completeFired = new AtomicBoolean(false);
+        AtomicInteger startFired = new AtomicInteger(0);
+        AtomicInteger completeFired = new AtomicInteger(0);
         component.addListener(UploadStartEvent.class, event -> {
-            startFired.set(true);
+            startFired.incrementAndGet();
         });
         component.addListener(UploadCompleteEvent.class, event -> {
-            completeFired.set(true);
+            completeFired.incrementAndGet();
         });
         UploadHandler handler = (event) -> {
         };
@@ -610,11 +610,9 @@ public class UploadHandlerTest {
                 .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
-        Assert.assertTrue("Start event was not fired", startFired.get());
-        Assert.assertTrue("Complete event was not fired", completeFired.get());
-
-        startFired.set(false);
-        completeFired.set(false);
+        Assert.assertEquals("Start event was not fired", 2, startFired.get());
+        Assert.assertEquals("Complete event was not fired", 2,
+                completeFired.get());
     }
 
     @Test
@@ -628,13 +626,13 @@ public class UploadHandlerTest {
 
         Mockito.when(request.getParts()).thenReturn(parts);
 
-        AtomicBoolean startFired = new AtomicBoolean(false);
-        AtomicBoolean completeFired = new AtomicBoolean(false);
+        AtomicInteger startFired = new AtomicInteger(0);
+        AtomicInteger completeFired = new AtomicInteger(0);
         component.addListener(UploadStartEvent.class, event -> {
-            startFired.set(true);
+            startFired.incrementAndGet();
         });
         component.addListener(UploadCompleteEvent.class, event -> {
-            completeFired.set(true);
+            completeFired.incrementAndGet();
         });
         UploadHandler handler = (event) -> {
         };
@@ -648,11 +646,9 @@ public class UploadHandlerTest {
                 .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
-        Assert.assertTrue("Start event was not fired", startFired.get());
-        Assert.assertTrue("Complete event was not fired", completeFired.get());
-
-        startFired.set(false);
-        completeFired.set(false);
+        Assert.assertEquals("Start event was not fired", 2, startFired.get());
+        Assert.assertEquals("Complete event was not fired", 2,
+                completeFired.get());
     }
 
     private Part createPart(InputStream inputStream, String contentType,
