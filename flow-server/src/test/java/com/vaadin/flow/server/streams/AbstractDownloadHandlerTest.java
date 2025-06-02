@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,11 +45,13 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 public class AbstractDownloadHandlerTest {
+    private static final String PATH_TO_FILE = "downloads/generated_binary_file.bin";
     private static final long TOTAL_BYTES = 100L;
     private static final long TRANSFERRED_BYTES = 42L;
     private static final IOException EXCEPTION = new IOException("Test error");
@@ -59,6 +63,7 @@ public class AbstractDownloadHandlerTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
+    private VaadinService service;
     private DownloadEvent downloadEvent;
     private ByteArrayOutputStream outputStream;
     private Element owner;
@@ -68,6 +73,7 @@ public class AbstractDownloadHandlerTest {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
+        service = Mockito.mock(VaadinService.class);
 
         UI ui = Mockito.mock(UI.class);
         // run the command immediately
@@ -99,6 +105,10 @@ public class AbstractDownloadHandlerTest {
 
         outputStream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
     }
 
     @Test
@@ -297,5 +307,61 @@ public class AbstractDownloadHandlerTest {
         });
         Assert.assertTrue("Progress with context should be invoked",
                 invoked.get());
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_downloadAttributeIsSet()
+            throws IOException, URISyntaxException {
+        URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
+        DownloadHandler handler = DownloadHandler
+                .forFile(new File(resource.toURI()), "my-download.bin");
+        Element element = new Element("a");
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                element);
+        handler.handleDownloadRequest(event);
+        Assert.assertTrue(element.hasAttribute("download"));
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_inlineSet_downloadAttributeIsNotSet()
+            throws IOException {
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path").inline();
+        Element element = new Element("a");
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                element);
+        downloadHandler.handleDownloadRequest(event);
+        Assert.assertFalse(
+                "Inline download handlers should not add download attribute",
+                element.hasAttribute("download"));
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_asLambda_setFileName_downloadAttributeIsSet()
+            throws IOException {
+        DownloadHandler downloadHandler = event -> {
+            event.setFileName("foo.txt");
+        };
+        Element element = new Element("a");
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                element);
+        downloadHandler.handleDownloadRequest(event);
+        Assert.assertTrue(
+                "Lambda download handler should set download attribute when file name is set",
+                element.hasAttribute("download"));
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_asLambda_downloadAttributeIsNotSet()
+            throws IOException {
+        DownloadHandler downloadHandler = event -> {
+        };
+        Element element = new Element("a");
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                element);
+        downloadHandler.handleDownloadRequest(event);
+        Assert.assertFalse(
+                "Lambda download handler shouldn't set download attribute when no file name is set",
+                element.hasAttribute("download"));
     }
 }

@@ -25,6 +25,7 @@ import java.util.Optional;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
@@ -131,12 +132,13 @@ public class DownloadEvent {
     /**
      * Sets the name of the file to be downloaded. This method utilizes the HTTP
      * Content-Disposition header to specify the name of the file to be
-     * downloaded.
+     * downloaded and additionally sets the "download" attribute to the owner
+     * element.
      * <p>
      * To be called before the response is committed.
      * <p>
-     * If the <code>fileName</code> is <code>null</code>, the
-     * Content-Disposition header won't be set.
+     * If the <code>fileName</code> is <code>null</code>, neither the
+     * Content-Disposition header, nor the attribute are set.
      *
      * @param fileName
      *            the name to be assigned to the file
@@ -151,6 +153,10 @@ public class DownloadEvent {
             response.setHeader("Content-Disposition",
                     "attachment; filename=\"" + fileName + "\"");
         }
+        if (Tag.A.equals(getOwningElement().getTag())) {
+            getOwningElement().setAttribute("download", true);
+        }
+
         this.fileName = fileName;
     }
 
