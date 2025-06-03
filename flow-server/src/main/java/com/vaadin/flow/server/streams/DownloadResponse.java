@@ -18,8 +18,10 @@ package com.vaadin.flow.server.streams;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Optional;
 
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Data class containing required information for sending the given input stream
