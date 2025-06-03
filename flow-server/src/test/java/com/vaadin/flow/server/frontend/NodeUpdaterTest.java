@@ -172,6 +172,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        expectedDependencies.add("magic-string");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -362,7 +363,7 @@ public class NodeUpdaterTest {
         packageJsonWriter.close();
         ObjectNode actualDevDeps = (ObjectNode) nodeUpdater.getPackageJson()
                 .get(NodeUpdater.DEV_DEPENDENCIES);
-        Assert.assertFalse(actualDevDeps.has("some-old-plugin"));
+        Assert.assertFalse(actualDevDeps.has("@vaadin/some-old-plugin"));
         Assert.assertFalse(
                 actualDevDeps.has("@vaadin/application-theme-plugin"));
     }
