@@ -29,8 +29,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 public class TemporaryFileUploadHandler
         extends AbstractFileUploadHandler<TemporaryFileUploadHandler> {
 
-    public TemporaryFileUploadHandler(
-            SerializableBiConsumer<UploadMetadata, File> successHandler) {
-        super(successHandler, new TemporaryFileFactory());
+    public TemporaryFileUploadHandler(FileUploadCallback successCallback) {
+        super(successCallback, new TemporaryFileFactory());
     }
 }

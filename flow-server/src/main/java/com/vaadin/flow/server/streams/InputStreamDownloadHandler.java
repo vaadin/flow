@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 
@@ -32,24 +31,23 @@ import com.vaadin.flow.server.VaadinResponse;
 public class InputStreamDownloadHandler
         extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
-    private final SerializableFunction<DownloadEvent, DownloadResponse> handler;
+    private final InputStreamDownloadCallback callback;
 
     /**
      * Create an input stream download handler for given event -> response
      * function.
      *
-     * @param handler
+     * @param callback
      *            serializable function for handling download
      */
-    public InputStreamDownloadHandler(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler) {
-        this.handler = handler;
+    public InputStreamDownloadHandler(InputStreamDownloadCallback callback) {
+        this.callback = callback;
     }
 
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
-        DownloadResponse download = handler.apply(downloadEvent);
+        DownloadResponse download = callback.apply(downloadEvent);
         VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {
             response.setStatus(download.getError());

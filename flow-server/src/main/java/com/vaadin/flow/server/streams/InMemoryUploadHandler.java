@@ -19,6 +19,7 @@ package com.vaadin.flow.server.streams;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
 
@@ -31,11 +32,10 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 public class InMemoryUploadHandler
         extends TransferProgressAwareHandler<UploadEvent, InMemoryUploadHandler>
         implements UploadHandler {
-    private final SerializableBiConsumer<UploadMetadata, byte[]> successHandler;
+    private final InMemoryUploadCallback successCallback;
 
-    public InMemoryUploadHandler(
-            SerializableBiConsumer<UploadMetadata, byte[]> successHandler) {
-        this.successHandler = successHandler;
+    public InMemoryUploadHandler(InMemoryUploadCallback successCallback) {
+        this.successCallback = successCallback;
     }
 
     @Override
@@ -52,11 +52,17 @@ public class InMemoryUploadHandler
             notifyError(event, e);
             throw e;
         }
-        event.getUI()
-                .access(() -> successHandler.accept(
+        event.getUI().access(() -> {
+            try {
+                successCallback.apply(
                         new UploadMetadata(event.getFileName(),
                                 event.getContentType(), event.getFileSize()),
-                        data));
+                        data);
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Error in memory upload callback", e);
+            }
+        });
     }
 
     @Override
