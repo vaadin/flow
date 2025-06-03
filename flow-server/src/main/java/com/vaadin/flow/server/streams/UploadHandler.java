@@ -43,8 +43,8 @@ import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
  * <p>
  * The interface provides several factory methods for common upload scenarios:
  * <ul>
- * <li>{@link #toFile(FileUploadCallback, FileFactory)} - for uploading
- * files to the server file system</li>
+ * <li>{@link #toFile(FileUploadCallback, FileFactory)} - for uploading files to
+ * the server file system</li>
  * <li>{@link #toTempFile(FileUploadCallback)} - for uploading to temporary
  * files</li>
  * <li>{@link #inMemory(InMemoryUploadCallback)} - for uploading files to
