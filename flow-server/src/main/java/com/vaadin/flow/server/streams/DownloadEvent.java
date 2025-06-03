@@ -132,8 +132,8 @@ public class DownloadEvent {
     /**
      * Sets the name of the file to be downloaded. This method utilizes the HTTP
      * Content-Disposition header to specify the name of the file to be
-     * downloaded and additionally sets the "download" attribute to the owner
-     * element.
+     * downloaded and additionally sets the "download" attribute to the
+     * &lt;a&gt; element.
      * <p>
      * To be called before the response is committed.
      * <p>

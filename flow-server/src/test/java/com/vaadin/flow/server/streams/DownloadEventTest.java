@@ -2,10 +2,12 @@ package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -29,21 +31,25 @@ public class DownloadEventTest {
 
     @Test
     public void setFileName_nonEmptyFileName_setsContentDispositionFilenameQuotedToResponse() {
+        Element element = new Element("a");
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
+                session, element);
         String fileName = "test.txt";
         downloadEvent.setFileName(fileName);
         Mockito.verify(response).setHeader("Content-Disposition",
                 "attachment; filename=\"" + fileName + "\"");
+        Assert.assertTrue(element.hasAttribute("download"));
     }
 
     @Test
     public void setFileName_emptyFileName_setsContentDispositionToResponse() {
+        Element element = new Element("a");
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
+                session, element);
         String fileName = "";
         downloadEvent.setFileName(fileName);
         Mockito.verify(response).setHeader("Content-Disposition", "attachment");
+        Assert.assertTrue(element.hasAttribute("download"));
     }
 
     @Test
