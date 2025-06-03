@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -44,11 +43,11 @@ import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
  * <p>
  * The interface provides several factory methods for common upload scenarios:
  * <ul>
- * <li>{@link #toFile(SerializableBiConsumer, FileFactory)} - for uploading
+ * <li>{@link #toFile(FileUploadCallback, FileFactory)} - for uploading
  * files to the server file system</li>
- * <li>{@link #toTempFile(SerializableBiConsumer)} - for uploading to temporary
+ * <li>{@link #toTempFile(FileUploadCallback)} - for uploading to temporary
  * files</li>
- * <li>{@link #inMemory(SerializableBiConsumer)} - for uploading files to
+ * <li>{@link #inMemory(InMemoryUploadCallback)} - for uploading files to
  * memory</li>
  * </ul>
  * Example:

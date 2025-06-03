@@ -54,7 +54,7 @@ public class InMemoryUploadHandler
         }
         event.getUI().access(() -> {
             try {
-                successCallback.apply(
+                successCallback.complete(
                         new UploadMetadata(event.getFileName(),
                                 event.getContentType(), event.getFileSize()),
                         data);

@@ -41,5 +41,5 @@ public interface InputStreamDownloadCallback extends Serializable {
      * @throws IOException
      *             if an error occurs while reading from InputStream fails
      */
-    DownloadResponse apply(DownloadEvent downloadEvent) throws IOException;
+    DownloadResponse complete(DownloadEvent downloadEvent) throws IOException;
 }

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -45,7 +44,7 @@ import com.vaadin.flow.server.VaadinSession;
  * resources</li>
  * <li>{@link #forServletResource(String)} - for downloading servlet
  * resources</li>
- * <li>{@link #fromInputStream(SerializableFunction)} - for downloading from
+ * <li>{@link #fromInputStream(InputStreamDownloadCallback)} - for downloading from
  * input streams</li>
  * </ul>
  * Example:

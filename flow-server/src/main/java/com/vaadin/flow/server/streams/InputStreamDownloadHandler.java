@@ -47,7 +47,7 @@ public class InputStreamDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
-        DownloadResponse download = callback.apply(downloadEvent);
+        DownloadResponse download = callback.complete(downloadEvent);
         VaadinResponse response = downloadEvent.getResponse();
         if (download.hasError()) {
             response.setStatus(download.getError());

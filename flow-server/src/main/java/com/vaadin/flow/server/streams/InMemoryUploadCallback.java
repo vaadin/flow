@@ -39,5 +39,5 @@ public interface InMemoryUploadCallback extends Serializable {
      * @throws IOException
      *             if an I/O error occurs in the callback
      */
-    void apply(UploadMetadata metadata, byte[] data) throws IOException;
+    void complete(UploadMetadata metadata, byte[] data) throws IOException;
 }

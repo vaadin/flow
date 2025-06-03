@@ -45,5 +45,5 @@ public interface FileUploadCallback extends Serializable {
      * @throws IOException
      *             if an I/O error occurs in the callback
      */
-    void apply(UploadMetadata metadata, File file) throws IOException;
+    void complete(UploadMetadata metadata, File file) throws IOException;
 }

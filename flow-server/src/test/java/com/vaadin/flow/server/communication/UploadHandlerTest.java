@@ -213,7 +213,7 @@ public class UploadHandlerTest {
         InMemoryUploadHandler uploadHandler = UploadHandler
                 .inMemory(new InMemoryUploadCallback() {
                     @Override
-                    public void apply(UploadMetadata uploadMetadata,
+                    public void complete(UploadMetadata uploadMetadata,
                             byte[] bytes) {
                         Assert.assertEquals(output.length, bytes.length);
                         System.arraycopy(bytes, 0, output, 0, bytes.length);
