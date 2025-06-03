@@ -90,6 +90,11 @@ public class VaadinRouteScope extends AbstractScope {
                                 .remove(getUIStoreKey(uiInstance)));
                 routeStores.put(key, beanStore);
             }
+            if (!ui.equals(beanStore.currentUI)) {
+                // Reloading for new UI on same window name. Update UI for
+                // beanStore.
+                beanStore.currentUI = ui;
+            }
             return beanStore;
         }
 
