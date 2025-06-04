@@ -220,11 +220,40 @@ public class Anchor extends HtmlContainer
         assignHrefAttribute();
         if (downloadHandler instanceof AbstractDownloadHandler<?> abstractDownloadHandler) {
             if (!abstractDownloadHandler.isInline()) {
-                getElement().setAttribute("download", true);
+                setDownload(true);
             } else {
-                getElement().removeAttribute("download");
+                setDownload(false);
             }
         }
+    }
+
+    /**
+     * Set the download state of the anchor.
+     * <p>
+     * {@code true} will add the download attribute making the anchor target to
+     * be downloaded on click.
+     * <p>
+     * {@code false} will remove the download attribute.
+     *
+     * @param download
+     *            {@code true} to add the 'download' attribute and {@code false}
+     *            to remove it
+     */
+    public void setDownload(boolean download) {
+        if (download) {
+            getElement().setAttribute("download", true);
+        } else {
+            getElement().removeAttribute("download");
+        }
+    }
+
+    /**
+     * Check if the anchor target will be downloaded for a click.
+     *
+     * @return {@code true} if download is set for this anchor
+     */
+    public boolean isDownload() {
+        return getElement().hasAttribute("download");
     }
 
     /**
