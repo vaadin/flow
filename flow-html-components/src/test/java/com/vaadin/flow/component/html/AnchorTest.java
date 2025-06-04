@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.beans.IntrospectionException;
 import java.util.Optional;
 
 import org.junit.After;
@@ -35,6 +36,13 @@ public class AnchorTest extends ComponentTest {
     public void tearDown() {
         ui = null;
         UI.setCurrent(null);
+    }
+
+    @Override
+    public void setup() throws IntrospectionException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
+        whitelistProperty("download");
+        super.setup();
     }
 
     @Test
@@ -320,7 +328,7 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertTrue(
                 "Pre-built download handlers should set download attribute",
-                anchor.getElement().hasAttribute("download"));
+                anchor.isDownload());
     }
 
     @Test
@@ -332,7 +340,7 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertTrue(
                 "Pre-built download handlers should set download attribute",
-                anchor.getElement().hasAttribute("download"));
+                anchor.isDownload());
 
         downloadHandler.inline();
 
@@ -340,7 +348,7 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertFalse(
                 "Setting inline download handler should clear download attribute",
-                anchor.getElement().hasAttribute("download"));
+                anchor.isDownload());
     }
 
     @Test
@@ -351,13 +359,13 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertTrue(
                 "Pre-built download handlers should set download attribute",
-                anchor.getElement().hasAttribute("download"));
+                anchor.isDownload());
 
         anchor.setHref(event -> event.getWriter().write("foo"));
 
         Assert.assertTrue(
                 "Setting custom download handler should not clear download attribute",
-                anchor.getElement().hasAttribute("download"));
+                anchor.isDownload());
     }
 
     @Test
@@ -369,7 +377,7 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertFalse(
                 "Inline download handlers should not add download attribute",
-                anchor.getElement().hasAttribute("download"));
+                anchor.isDownload());
     }
 
     private void mockUI() {
