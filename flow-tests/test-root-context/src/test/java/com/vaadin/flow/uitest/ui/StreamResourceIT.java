@@ -11,8 +11,9 @@ package com.vaadin.flow.uitest.ui;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -63,7 +64,8 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
                 link.getAttribute("router-ignore"));
         String url = link.getAttribute("href");
 
-        getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
+        getDriver().manage().timeouts()
+                .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
 
         try (InputStream stream = download(url)) {
             List<String> lines = IOUtils.readLines(stream,
