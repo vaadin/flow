@@ -452,7 +452,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         if (!"script".equalsIgnoreCase(element.tagName())) {
             return null;
         }
-        // Injecting a webpack bundle twice can never work.
+        // Injecting a frontend bundle twice can never work.
         // The bundle contains web components that register
         // themselves and loading twice will always cause
         // custom element conflicts

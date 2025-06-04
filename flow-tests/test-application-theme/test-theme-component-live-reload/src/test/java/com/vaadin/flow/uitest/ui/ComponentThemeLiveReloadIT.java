@@ -103,13 +103,13 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void webpackLiveReload_newComponentStylesCreatedAndDeleted_stylesUpdatedOnFly() {
+    public void frontendLiveReload_newComponentStylesCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
 
         /*
          * Access browser logs in order to clear them to avoid to check entries
-         * from a previous run if the test is flaky due to webpack file change
-         * detection during parent css deletion
+         * from a previous run if the test is flaky due to dev frontend file
+         * change detection during parent css deletion
          */
         getLogEntries(java.util.logging.Level.ALL);
 
@@ -138,7 +138,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                 this::deleteCurrentThemeComponentStyles);
         waitUntilComponentInitialStyle(
                 "Wait for current theme component initial styles timeout");
-        checkNoWebpackErrors(CURRENT_THEME);
+        checkNoFrontendErrors(CURRENT_THEME);
 
         // Test parent theme live reload:
 
@@ -153,7 +153,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                 this::deleteParentThemeComponentStyles);
         waitUntilComponentInitialStyle(
                 "Wait for parent theme component initial styles timeout");
-        checkNoWebpackErrors(PARENT_THEME);
+        checkNoFrontendErrors(PARENT_THEME);
     }
 
     private void waitUntilComponentInitialStyle(String errMessage) {
@@ -270,11 +270,11 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    private void checkNoWebpackErrors(String theme) {
+    private void checkNoFrontendErrors(String theme) {
         getLogEntries(java.util.logging.Level.ALL).forEach(logEntry -> {
             if (logEntry.getMessage().contains("Module build failed")) {
                 Assert.fail(String.format(
-                        "Webpack error detected in the browser console after "
+                        "Frontend error detected in the browser console after "
                                 + "deleting '%s' component style sheet: %s\n\n",
                         theme, logEntry.getMessage()));
             }
@@ -286,7 +286,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         } catch (TimeoutException e) {
             WebElement error = findElement(byErrorOverlayClass);
             Assert.fail(String.format(
-                    "Webpack error overlay detected after deleting '%s' "
+                    "Frontend error overlay detected after deleting '%s' "
                             + "component style sheet: %s\n\n",
                     theme, error.getText()));
         }
