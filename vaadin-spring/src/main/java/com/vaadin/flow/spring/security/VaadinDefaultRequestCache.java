@@ -15,18 +15,30 @@
  */
 package com.vaadin.flow.spring.security;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import com.vaadin.flow.server.HandlerHelper;
-
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.web.accept.ContentNegotiationStrategy;
+import org.springframework.web.accept.HeaderContentNegotiationStrategy;
+
+import com.vaadin.flow.server.HandlerHelper;
 
 /**
  * A default request cache implementation which aims to ignore requests that are
@@ -42,6 +54,12 @@ import org.springframework.stereotype.Component;
  * Using this class helps with redirecting the user to the correct route after
  * login instead of redirecting to some internal URL like a service worker or
  * some data the service worker has fetched.
+ * <p>
+ * Custom request matchers can be provided using the {@code ignoreRequests}
+ * method to fine-tune which URLs should be excluded from being cached, in
+ * addition to the default exclusions. This is useful for ignoring
+ * application-specific paths that should never be used as redirect targets
+ * after authentication.
  */
 @Component
 public class VaadinDefaultRequestCache implements RequestCache {
@@ -54,24 +72,52 @@ public class VaadinDefaultRequestCache implements RequestCache {
 
     private RequestCache delegateRequestCache = new HttpSessionRequestCache();
 
+    private final RequestMatcher defaultIgnoreRules = createDefaultIgnoreRules();
+
+    private RequestMatcher ignoreRequestMatcher = null;
+
     @Override
     public void saveRequest(HttpServletRequest request,
             HttpServletResponse response) {
         if (requestUtil.isFrameworkInternalRequest(request)) {
+            getLogger().debug(
+                    "Did not save request since it is a Vaadin internal framework request");
             return;
         }
         if (requestUtil.isEndpointRequest(request)) {
+            getLogger().debug(
+                    "Did not save request since it is a Hilla endpoint request");
             return;
         }
         if (isServiceWorkerInitiated(request)) {
+            getLogger().debug(
+                    "Did not save request since it is a service worker initiated request");
             return;
         }
         if (isErrorRequest(request)) {
+            getLogger().debug("Did not save request since it is an error page");
+            return;
+        }
+        if (HandlerHelper.isNonHtmlInitiatedRequest(request)) {
+            getLogger().debug(
+                    "Did not save request since its initiator is not a web page");
+            return;
+        }
+        if (defaultIgnoreRules.matches(request)) {
+            getLogger().debug(
+                    "Did not save request since it matched default ignore rules {}",
+                    defaultIgnoreRules);
+            return;
+        }
+        if (ignoreRequestMatcher != null
+                && ignoreRequestMatcher.matches(request)) {
+            getLogger().debug(
+                    "Did not save request since it matched custom ignore rules {}",
+                    ignoreRequestMatcher);
             return;
         }
 
-        LoggerFactory.getLogger(getClass())
-                .debug("Saving request to " + request.getRequestURI());
+        getLogger().debug("Saving request to {}", request.getRequestURI());
 
         delegateRequestCache.saveRequest(request, response);
     }
@@ -124,5 +170,54 @@ public class VaadinDefaultRequestCache implements RequestCache {
      */
     public void setDelegateRequestCache(RequestCache delegateRequestCache) {
         this.delegateRequestCache = delegateRequestCache;
+    }
+
+    /**
+     * Allows further restricting requests to be saved.
+     * <p>
+     * If set, matching requests will not be cached.
+     *
+     * @param requestMatcher
+     *            a request matching strategy which defines which requests
+     *            should not be cached.
+     */
+    public void ignoreRequests(RequestMatcher requestMatcher) {
+        this.ignoreRequestMatcher = requestMatcher;
+    }
+
+    /*
+     * Rules adapted from Spring Security's RequestCacheConfigurer
+     */
+    private static RequestMatcher createDefaultIgnoreRules() {
+        RequestMatcher favIcon = new AntPathRequestMatcher("/**/favicon.*");
+        RequestMatcher wellKnown = new AntPathRequestMatcher(
+                "/**/.well-known/**");
+        RequestMatcher xhrRequestedWith = new RequestHeaderRequestMatcher(
+                "X-Requested-With", "XMLHttpRequest");
+        List<RequestMatcher> matchers = new ArrayList<>();
+        matchers.add(favIcon);
+        matchers.add(wellKnown);
+        HeaderContentNegotiationStrategy contentNegotiationStrategy = new HeaderContentNegotiationStrategy();
+        matchers.add(matchingMediaType(contentNegotiationStrategy,
+                MediaType.APPLICATION_JSON));
+        matchers.add(xhrRequestedWith);
+        matchers.add(matchingMediaType(contentNegotiationStrategy,
+                MediaType.MULTIPART_FORM_DATA));
+        matchers.add(matchingMediaType(contentNegotiationStrategy,
+                MediaType.TEXT_EVENT_STREAM));
+        return new OrRequestMatcher(matchers);
+    }
+
+    private static RequestMatcher matchingMediaType(
+            ContentNegotiationStrategy contentNegotiationStrategy,
+            MediaType mediaType) {
+        MediaTypeRequestMatcher mediaRequest = new MediaTypeRequestMatcher(
+                contentNegotiationStrategy, mediaType);
+        mediaRequest.setIgnoredMediaTypes(Collections.singleton(MediaType.ALL));
+        return mediaRequest;
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 }
