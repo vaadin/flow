@@ -53,9 +53,11 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
 
     @Override
     public void handleUploadRequest(UploadEvent event) throws IOException {
+        UploadMetadata metadata = new UploadMetadata(event.getFileName(),
+                event.getContentType(), event.getFileSize());
         File file;
         try {
-            file = fileFactory.createFile(event.getFileName());
+            file = fileFactory.createFile(metadata);
             try (InputStream inputStream = event.getInputStream();
                     FileOutputStream outputStream = new FileOutputStream(
                             file)) {
@@ -68,10 +70,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
         }
         event.getUI().access(() -> {
             try {
-                successCallback.complete(
-                        new UploadMetadata(event.getFileName(),
-                                event.getContentType(), event.getFileSize()),
-                        file);
+                successCallback.complete(metadata, file);
             } catch (IOException e) {
                 throw new UncheckedIOException("Error in file upload callback",
                         e);

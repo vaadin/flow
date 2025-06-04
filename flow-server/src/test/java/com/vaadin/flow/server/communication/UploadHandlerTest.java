@@ -280,8 +280,9 @@ public class UploadHandlerTest {
 
         FileUploadHandler uploadHandler = UploadHandler.toFile(
                 (uploadMetadata, file) -> outputFiles.add(file),
-                (fileName) -> new File(System.getProperty("java.io.tmpdir"),
-                        fileName));
+                (uploadMetadata) -> new File(
+                        System.getProperty("java.io.tmpdir"),
+                        uploadMetadata.fileName()));
 
         StreamRegistration streamRegistration = streamResourceRegistry
                 .registerResource(uploadHandler);
@@ -658,7 +659,7 @@ public class UploadHandlerTest {
     public void fileUploadCallback_doesNotRequireCatch() {
         new FileUploadHandler((meta, file) -> {
             new FileInputStream(file);
-        }, fileName -> new File("foo"));
+        }, uploadMetadata -> new File("foo"));
     }
 
     @Test
