@@ -1,5 +1,7 @@
 package com.vaadin.base.devserver.startup;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -11,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
@@ -23,6 +24,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
@@ -30,8 +32,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import jakarta.servlet.ServletContext;
 
 public abstract class AbstractDevModeTest {
 
@@ -121,11 +121,8 @@ public abstract class AbstractDevModeTest {
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
-                    .thenReturn(false);
-        }
+        Mockito.when(appConfig.getMode())
+                .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
 
         Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),

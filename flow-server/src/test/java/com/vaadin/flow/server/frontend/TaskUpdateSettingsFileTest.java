@@ -70,6 +70,11 @@ public class TaskUpdateSettingsFileTest {
     public void execute_withWebappResourcesDirectory_useAbsolutePaths()
             throws IOException {
 
+        options.withBuildResultFolders(
+                Paths.get(buildDirectory.getPath(), "classes",
+                        VAADIN_WEBAPP_RESOURCES).toFile(),
+                Paths.get(buildDirectory.getPath(), "classes",
+                        VAADIN_SERVLET_RESOURCES).toFile());
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
                 options, "theme", new PwaConfiguration());
         updateSettings.execute();

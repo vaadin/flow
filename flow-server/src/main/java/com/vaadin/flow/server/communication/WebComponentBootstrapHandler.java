@@ -129,6 +129,15 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if (deploymentConfiguration.isProductionMode()) {
                     // The web-component.html is fetched from the bundle so it
                     // includes the entry point javascripts
+                } else if (deploymentConfiguration
+                        .getMode() != Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
+                    // When running without a frontend server, the
+                    // web-component.html comes
+                    // directly from the frontend folder and the JS
+                    // entrypoint(s) need
+                    // to be added
+                    addGeneratedIndexContent(document,
+                            getStatsJson(deploymentConfiguration));
                 }
 
                 // Specify the application ID for scripts of the

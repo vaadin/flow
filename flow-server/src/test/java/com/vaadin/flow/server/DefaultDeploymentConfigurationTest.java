@@ -251,6 +251,20 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
+    public void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+        Assert.assertEquals("Expected dev server to be disabled by default",
+                Mode.DEVELOPMENT_BUNDLE, config.getMode());
+
+        Properties init = new Properties();
+        init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
+        config = createDeploymentConfig(init);
+        Assert.assertEquals("Expected dev server to be enabled when set true",
+                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
+    }
+
+    @Test
     public void checkLockStrategy_defaultsToAssert() {
         Properties init = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
@@ -307,6 +321,8 @@ public class DefaultDeploymentConfigurationTest {
                     projectRoot.getAbsolutePath());
             DefaultDeploymentConfiguration config = createDeploymentConfig(
                     init);
+            Assert.assertEquals("Should use the legacy frontend folder",
+                    Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
         }
     }
 

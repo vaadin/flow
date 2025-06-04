@@ -67,6 +67,9 @@ public interface AbstractConfiguration extends Serializable {
             return BundleUtils.isPreCompiledProductionBundle()
                     ? Mode.PRODUCTION_PRECOMPILED_BUNDLE
                     : Mode.PRODUCTION_CUSTOM;
+        } else if (getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
+                FrontendUtils.isHillaUsed(getFrontendFolder()))) {
+            return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
         } else {
             return Mode.DEVELOPMENT_BUNDLE;
         }
