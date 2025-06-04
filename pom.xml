@@ -28,7 +28,6 @@
         <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
         <module>flow-migration</module>
@@ -618,6 +617,18 @@
                 </test.excludegroup>
             </properties>
         </profile>
+        <profile>
+            <id>test</id>
+            <activation>
+                <property>
+                    <name>!release</name>
+                </property>
+            </activation>
+            <modules>
+                <module>flow-tests</module>
+            </modules>
+        </profile>
+
         <profile>
             <id>validation</id>
             <properties>
