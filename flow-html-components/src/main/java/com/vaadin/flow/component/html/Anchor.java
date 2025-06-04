@@ -218,9 +218,12 @@ public class Anchor extends HtmlContainer
                 downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
-        if (downloadHandler instanceof AbstractDownloadHandler<?> abstractDownloadHandler
-                && !abstractDownloadHandler.isInline()) {
-            getElement().setAttribute("download", true);
+        if (downloadHandler instanceof AbstractDownloadHandler<?> abstractDownloadHandler) {
+            if (!abstractDownloadHandler.isInline()) {
+                getElement().setAttribute("download", true);
+            } else {
+                getElement().removeAttribute("download");
+            }
         }
     }
 
