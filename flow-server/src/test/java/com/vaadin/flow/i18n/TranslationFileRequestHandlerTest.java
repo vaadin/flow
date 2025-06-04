@@ -25,9 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -92,7 +92,7 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void pathDoesNotMatch_requestNotHandled() throws IOException {
         configure(true);
-        setRequestParams(null, "other", null);
+        setRequestParams(null, "other", null, null);
         Assert.assertFalse(handler.handleRequest(session, request, response));
     }
 
@@ -231,9 +231,7 @@ public class TranslationFileRequestHandlerTest {
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
-    @Test
-    public void productionMode_withChunks_filtersKeys() throws IOException {
-        // configure(true, DefaultI18NProvider.class, true);
+    private void setUpChunkedTest() throws IOException {
         createTranslationFile("""
                 title=Root bundle lang
                 key1=Value1
@@ -249,7 +247,7 @@ public class TranslationFileRequestHandlerTest {
                 key1=EspanolValue1
                 key2=EspanolValue2
                 """.stripIndent(), "_es_ES");
-        File file = new File(translationsFolder, "i18n.json");
+        var i18nJson = new File(translationsFolder, "i18n.json");
         var json = """
                 {
                     "chunks": {
@@ -267,13 +265,25 @@ public class TranslationFileRequestHandlerTest {
                     }
                 }
                 """.stripIndent();
-        Files.writeString(file.toPath(), json, StandardCharsets.UTF_8,
+        Files.writeString(i18nJson.toPath(), json, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE);
         mockI18nProvider(DefaultI18NProvider.class);
         mockService(true);
         handler = new TranslationFileRequestHandler(i18NProvider);
         mockResponse();
-        testResponseContent("", new String[] { "indexhtml" },
+    }
+
+    @Test
+    public void productionMode_withChunks_filtersKeys() throws IOException {
+        setUpChunkedTest();
+        testResponseContent("", new String[] { "indexhtml" }, null,
+                "{\"title\":\"Root bundle lang\"}", "und");
+    }
+
+    @Test
+    public void productionMode_withKeys_onlyReturnsThose() throws IOException {
+        setUpChunkedTest();
+        testResponseContent("", null, new String[] { "title" },
                 "{\"title\":\"Root bundle lang\"}", "und");
     }
 
@@ -296,16 +306,17 @@ public class TranslationFileRequestHandlerTest {
     private void testResponseContent(String requestedLanguageTag,
             String expectedResponseContent, String expectedResponseLanguageTag)
             throws IOException {
-        testResponseContent(requestedLanguageTag, null, expectedResponseContent,
-                expectedResponseLanguageTag);
+        testResponseContent(requestedLanguageTag, null, null,
+                expectedResponseContent, expectedResponseLanguageTag);
     }
 
     private void testResponseContent(String requestedLanguageTag,
-            String[] requestedChunks, String expectedResponseContent,
-            String expectedResponseLanguageTag) throws IOException {
+            String[] requestedChunks, String[] requestedKeys,
+            String expectedResponseContent, String expectedResponseLanguageTag)
+            throws IOException {
         setRequestParams(requestedLanguageTag,
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
-                requestedChunks);
+                requestedChunks, requestedKeys);
         Assert.assertTrue("The request was not handled by the handler.",
                 handler.handleRequest(session, request, response));
         Assert.assertEquals(
@@ -328,21 +339,24 @@ public class TranslationFileRequestHandlerTest {
     }
 
     private void setRequestParams(String langtag, String requestTypeId,
-            String[] chunks) {
+            String[] chunks, String[] keys) {
         Mockito.when(request.getParameter(
                 TranslationFileRequestHandler.LANGUAGE_TAG_PARAMETER_NAME))
                 .thenReturn(langtag);
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(requestTypeId);
+        // The parameter map is incomplete, but it is enough for the tests
+        var paramMap = new HashMap<String, String[]>();
         if (chunks != null) {
-            // the parameter map is incomplete, but at the moment only the chunk
-            // functionality uses it
-            Mockito.when(request.getParameterMap())
-                    .thenReturn(Map.of(
-                            TranslationFileRequestHandler.CHUNK_PARAMETER_NAME,
-                            chunks));
+            paramMap.put(TranslationFileRequestHandler.CHUNK_PARAMETER_NAME,
+                    chunks);
         }
+        if (keys != null) {
+            paramMap.put(TranslationFileRequestHandler.KEYS_PARAMETER_NAME,
+                    keys);
+        }
+        Mockito.when(request.getParameterMap()).thenReturn(paramMap);
     }
 
     private void createTranslationFiles(boolean withRootBundleFile)
