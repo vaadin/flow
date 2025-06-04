@@ -35,9 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -72,11 +70,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     static final String RETRIEVED_LOCALE_HEADER_NAME = "X-Vaadin-Retrieved-Locale";
 
-    private static final Locale FALLBACK_LOCALE = Locale.ROOT;
-
     private final DefaultI18NProvider i18NProvider;
-
-    private final boolean hasFallbackBundle;
 
     private Map<String, String[]> chunkData;
 
@@ -86,7 +80,6 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         this.i18NProvider = hasDefaultI18NProvider
                 ? (DefaultI18NProvider) i18NProvider
                 : null;
-        this.hasFallbackBundle = hasFallbackBundle();
     }
 
     @Override
@@ -97,12 +90,12 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
             return true;
         }
         Locale locale = getLocale(request);
-        ResourceBundle translationPropertyFile = getTranslationPropertyFile(
-                locale);
-        if (translationPropertyFile == null) {
-            handleNotFound(response);
-        } else {
+        try {
+            ResourceBundle translationPropertyFile = i18NProvider
+                    .getBundle(locale, null);
             handleFound(request, response, translationPropertyFile);
+        } catch (MissingResourceException ex) {
+            handleNotFound(response);
         }
         return true;
     }
@@ -188,82 +181,6 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
             return new Locale(language, country, variant);
         }
         return Locale.forLanguageTag(languageTag);
-    }
-
-    private ResourceBundle getTranslationPropertyFile(Locale locale) {
-        Locale bestMatchLocale = getBestMatchLocale(locale);
-        if (bestMatchLocale == null) {
-            if (FALLBACK_LOCALE.equals(locale)) {
-                getLogger().debug(
-                        "Missing the requested default bundle for {}.",
-                        DefaultI18NProvider.BUNDLE_PREFIX);
-            } else {
-                getLogger().debug(
-                        "Missing resource bundles for {}, both the requested locale {} and the default bundle.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName());
-            }
-            return null;
-        }
-        if (!locale.equals(bestMatchLocale)) {
-            if (FALLBACK_LOCALE.equals(bestMatchLocale)) {
-                getLogger().debug(
-                        "Missing resource bundle for {} and locale {}. Using the default bundle.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName());
-            } else {
-                getLogger().debug(
-                        "Missing resource bundle for {} and locale {}. Using the best match locale {}.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName(),
-                        bestMatchLocale.getDisplayName());
-            }
-        }
-        return i18NProvider.getBundle(bestMatchLocale,
-                ResourceBundle.Control.getNoFallbackControl(
-                        ResourceBundle.Control.FORMAT_PROPERTIES));
-    }
-
-    private Locale getBestMatchLocale(Locale locale) {
-        Set<Locale> providedLocales = Set
-                .copyOf(i18NProvider.getProvidedLocales());
-        if (providedLocales.contains(locale)) {
-            return locale;
-        }
-        Optional<Locale> languageAndCountryMatch = providedLocales.stream()
-                .filter(providedLocale -> providedLocale.getLanguage()
-                        .equals(locale.getLanguage())
-                        && providedLocale.getCountry()
-                                .equals(locale.getCountry()))
-                .findAny();
-        if (languageAndCountryMatch.isPresent()) {
-            return languageAndCountryMatch.get();
-        }
-        Optional<Locale> languageMatch = providedLocales.stream()
-                .filter(providedLocale -> providedLocale.getLanguage()
-                        .equals(locale.getLanguage()))
-                .findAny();
-        if (languageMatch.isPresent()) {
-            return languageMatch.get();
-        }
-        if (hasFallbackBundle) {
-            return FALLBACK_LOCALE;
-        }
-        return null;
-    }
-
-    private boolean hasFallbackBundle() {
-        if (this.i18NProvider != null) {
-            try {
-                this.i18NProvider.getBundle(FALLBACK_LOCALE,
-                        ResourceBundle.Control.getNoFallbackControl(
-                                ResourceBundle.Control.FORMAT_PROPERTIES));
-                return true;
-            } catch (MissingResourceException e) {
-                // NO-OP
-            }
-        }
-        return false;
     }
 
     /**
