@@ -141,8 +141,8 @@ public class UploadTransferProgressTest {
         AtomicReference<File> expectedFile = new AtomicReference<>();
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
-        UploadHandler handler = UploadHandler
-                .toFile((meta, file) -> actualFile.set(file), (fileName) -> {
+        UploadHandler handler = UploadHandler.toFile(
+                (meta, file) -> actualFile.set(file), (uploadMetadata) -> {
                     try {
                         File file = temporaryFolder.newFile(DUMMY_FILE_NAME);
                         expectedFile.set(file);
@@ -166,7 +166,7 @@ public class UploadTransferProgressTest {
             throws URISyntaxException {
         List<String> invocations = new ArrayList<>();
         UploadHandler handler = UploadHandler.toFile((meta, file) -> {
-        }, (fileName) -> {
+        }, (uploadMetadata) -> {
             throw new IOException("Test exception");
         }, createErrorTransferProgressListener(invocations));
 

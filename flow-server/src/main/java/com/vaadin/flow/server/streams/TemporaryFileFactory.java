@@ -32,7 +32,7 @@ public class TemporaryFileFactory implements FileFactory {
      * Create a new temporary file for filename. Adds the suffix {@code .tmp}
      */
     @Override
-    public File createFile(String fileName) throws IOException {
+    public File createFile(UploadMetadata uploadMetadata) throws IOException {
 
         Path tempDirPath;
         try {
@@ -41,6 +41,8 @@ public class TemporaryFileFactory implements FileFactory {
             throw new IOException("Failed to create temp directory", e);
         }
 
-        return Files.createTempFile(tempDirPath, fileName, ".tmp").toFile();
+        return Files
+                .createTempFile(tempDirPath, uploadMetadata.fileName(), ".tmp")
+                .toFile();
     }
 }
