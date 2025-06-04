@@ -212,13 +212,4 @@ public class UploadEvent {
             session.unlock();
         }
     }
-
-    /**
-     * Check if this file is part of a multipart upload request.
-     *
-     * @return {@code true} if multipart request
-     */
-    public boolean isMultipartRequest() {
-        return part != null || item != null;
-    }
 }
