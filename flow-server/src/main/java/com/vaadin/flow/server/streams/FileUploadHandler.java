@@ -32,14 +32,13 @@ public class FileUploadHandler
     /**
      * Constructor for file upload handler.
      *
-     * @param successHandler
+     * @param successCallback
      *            consumer to be called when upload successfully completes
      * @param fileFactory
      *            factory for generating file to write to
      */
-    public FileUploadHandler(
-            SerializableBiConsumer<UploadMetadata, File> successHandler,
+    public FileUploadHandler(FileUploadCallback successCallback,
             FileFactory fileFactory) {
-        super(successHandler, fileFactory);
+        super(successCallback, fileFactory);
     }
 }

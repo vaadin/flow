@@ -19,6 +19,7 @@ package com.vaadin.flow.server.streams;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -238,6 +239,17 @@ public class InputStreamDownloadHandlerTest {
 
         Mockito.verify(event, Mockito.times(0)).setFileName("my-download.bin");
         Mockito.verify(event).setContentType("application/octet-stream");
+    }
+
+    @Test
+    public void inputStreamDownloadCallback_doesNotRequireCatch() {
+        new InputStreamDownloadHandler(event -> {
+            try (InputStream inputStream = new ByteArrayInputStream(
+                    getBytes())) {
+                inputStream.readAllBytes();
+                return null;
+            }
+        });
     }
 
     private static byte[] getBytes() {
