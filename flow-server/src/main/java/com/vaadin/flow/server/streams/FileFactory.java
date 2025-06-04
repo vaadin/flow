@@ -31,9 +31,9 @@ public interface FileFactory extends Serializable {
     /**
      * Create a new file for given file name.
      *
-     * @param fileName
-     *            file name to create file for
+     * @param uploadMetadata
+     *            metadata for upload that should get a file created
      * @return {@link File} that should be used
      */
-    File createFile(String fileName) throws IOException;
+    File createFile(UploadMetadata uploadMetadata) throws IOException;
 }
