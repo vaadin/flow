@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -45,8 +44,8 @@ import com.vaadin.flow.server.VaadinSession;
  * resources</li>
  * <li>{@link #forServletResource(String)} - for downloading servlet
  * resources</li>
- * <li>{@link #fromInputStream(SerializableFunction)} - for downloading from
- * input streams</li>
+ * <li>{@link #fromInputStream(InputStreamDownloadCallback)} - for downloading
+ * from input streams</li>
  * </ul>
  * Example:
  *
@@ -364,13 +363,13 @@ public interface DownloadHandler extends ElementRequestHandler {
      * <code>DownloadResponse</code> instances can be created using various
      * factory methods or with new operator.
      *
-     * @param handler
-     *            handler function that will be called on download
+     * @param callback
+     *            a function that will be called on download
      * @return DownloadHandler implementation for download from an input stream
      */
     static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler) {
-        return new InputStreamDownloadHandler(handler);
+            InputStreamDownloadCallback callback) {
+        return new InputStreamDownloadHandler(callback);
     }
 
     /**
@@ -380,17 +379,17 @@ public interface DownloadHandler extends ElementRequestHandler {
      * <code>DownloadResponse</code> instances can be created using various
      * factory methods or with new operator.
      *
-     * @param handler
-     *            handler function that will be called on download
+     * @param callback
+     *            a function that will be called on download
      * @param listener
      *            listener for transfer progress events
      * @return DownloadHandler implementation for download from an input stream
      */
     static InputStreamDownloadHandler fromInputStream(
-            SerializableFunction<DownloadEvent, DownloadResponse> handler,
+            InputStreamDownloadCallback callback,
             TransferProgressListener listener) {
         InputStreamDownloadHandler downloadHandler = new InputStreamDownloadHandler(
-                handler);
+                callback);
         downloadHandler.addTransferProgressListener(listener);
         return downloadHandler;
     }
