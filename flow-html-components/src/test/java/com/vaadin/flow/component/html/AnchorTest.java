@@ -25,6 +25,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 
 public class AnchorTest extends ComponentTest {
 
@@ -319,6 +320,43 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertTrue(
                 "Pre-built download handlers should set download attribute",
+                anchor.getElement().hasAttribute("download"));
+    }
+
+    @Test
+    public void anchorWithDownloadAttributeSet_newHandler_downloadAttributeCleared() {
+        mockUI();
+        ServletResourceDownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertTrue(
+                "Pre-built download handlers should set download attribute",
+                anchor.getElement().hasAttribute("download"));
+
+        downloadHandler.inline();
+
+        anchor.setHref(downloadHandler);
+
+        Assert.assertFalse(
+                "Setting inline download handler should clear download attribute",
+                anchor.getElement().hasAttribute("download"));
+    }
+
+    @Test
+    public void anchorWithDownloadAttributeSet_newCustomHandler_downloadAttributeNotTouched() {
+        mockUI();
+        Anchor anchor = new Anchor("/home", "bar");
+        anchor.getElement().setAttribute("download", true);
+
+        Assert.assertTrue(
+                "Pre-built download handlers should set download attribute",
+                anchor.getElement().hasAttribute("download"));
+
+        anchor.setHref(event -> event.getWriter().write("foo"));
+
+        Assert.assertTrue(
+                "Setting custom download handler should not clear download attribute",
                 anchor.getElement().hasAttribute("download"));
     }
 
