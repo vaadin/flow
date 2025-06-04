@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Assert;
@@ -39,7 +40,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -52,7 +52,6 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -1076,8 +1075,8 @@ public class RouteUtilTest {
     @Test
     public void clientHasOverlappingTarget_validateClientRouteCollision() {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(
-                "Invalid route configuration. The following Hilla route(s) conflict with configured Flow routes: flow");
+        expectedEx.expectMessage(CoreMatchers.containsString(
+                "Invalid route configuration. The following Hilla route(s) conflict with configured Flow routes: 'flow'"));
         Map<String, AvailableViewInfo> clientRoutes = new HashMap<>();
 
         clientRoutes.put("", new AvailableViewInfo("public", null, false, "",
@@ -1099,7 +1098,7 @@ public class RouteUtilTest {
             Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
             Mockito.when(conf.isProductionMode()).thenReturn(false);
             Mockito.when(conf.getFrontendFolder())
-                    .thenReturn(Mockito.mock(File.class));
+                    .thenReturn(new File("/tmp/folder"));
 
             registry.when(
                     () -> MenuRegistry.collectClientMenuItems(false, conf))
