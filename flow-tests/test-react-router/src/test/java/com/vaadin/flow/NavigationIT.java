@@ -267,7 +267,7 @@ public class NavigationIT extends ChromeBrowserTest {
 
         Assert.assertFalse("Flow navigation view contents should not exist",
                 $(AnchorElement.class)
-                        .attribute("id", NavigationView.REACT_ANCHOR_ID)
+                        .withAttribute("id", NavigationView.REACT_ANCHOR_ID)
                         .exists());
     }
 

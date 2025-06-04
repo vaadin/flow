@@ -105,21 +105,22 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     protected void assertRootPageShown() {
         waitForClientRouter();
-        waitUntil(drive -> $("h1").attribute("id", "header").exists());
+        waitUntil(drive -> $("h1").withAttribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
         Assert.assertEquals(ROOT_PAGE_HEADER_TEXT, headerText);
     }
 
     protected void assertAnotherPublicPageShown() {
         waitForClientRouter();
-        waitUntil(drive -> $("h1").attribute("id", "header").exists());
+        waitUntil(drive -> $("h1").withAttribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
         Assert.assertEquals(ANOTHER_PUBLIC_PAGE_HEADER_TEXT, headerText);
     }
 
     protected void assertPrivatePageShown(String fullName) {
         assertPathShown("private");
-        waitUntil(driver -> $("span").attribute("id", "balanceText").exists());
+        waitUntil(driver -> $("span").withAttribute("id", "balanceText")
+                .exists());
         String balance = $("span").id("balanceText").getText();
         Assert.assertTrue(balance.startsWith(
                 "Hello " + fullName + ", your bank account balance is $"));

@@ -3,11 +3,8 @@ package com.vaadin.flow.spring.flowsecurity.views;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
@@ -155,7 +152,7 @@ public class MainView extends AppLayout {
         return tabs;
     }
 
-    private Component[] createMenuItems() {
+    private Tab[] createMenuItems() {
         Tab[] tabs = new Tab[3];
         tabs[0] = createTab("Public", PublicView.class);
         if (accessChecker.hasAccess(PrivateView.class)) {

@@ -106,11 +106,11 @@ public class NotEmptyTest {
     public void notEmptyAnnotationIsNotInClasspath()
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException, IOException,
-            InterruptedException {
+            IllegalArgumentException, InvocationTargetException, IOException {
         try (URLClassLoader loader = new TestClassLoader()) {
             Class<?> clazz = loader.loadClass(NotEmptyUnitTest.class.getName());
-            UnitTest test = (UnitTest) clazz.newInstance();
+            UnitTest test = (UnitTest) clazz.getDeclaredConstructor()
+                    .newInstance();
             test.execute();
         }
     }

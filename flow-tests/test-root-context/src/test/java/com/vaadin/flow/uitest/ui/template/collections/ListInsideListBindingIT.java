@@ -45,7 +45,7 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
             int initialSize) {
         for (int i = 0; i < initialSize; i++) {
             List<TestBenchElement> currentMessages = template
-                    .$(TestBenchElement.class).attribute("class", "submsg")
+                    .$(TestBenchElement.class).withAttribute("class", "submsg")
                     .all();
             Assert.assertEquals("Wrong amount of nested messages",
                     initialSize - i, currentMessages.size());
@@ -66,7 +66,7 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
             int initialSize) {
         template.$(TestBenchElement.class).id("updateAllElements").click();
         List<TestBenchElement> msgs = template.$(TestBenchElement.class)
-                .attribute("class", "submsg").all();
+                .withAttribute("class", "submsg").all();
         Assert.assertEquals("Wrong amount of nested messages", initialSize,
                 msgs.size());
         msgs.forEach(msg -> Assert.assertEquals("Message was not updated",

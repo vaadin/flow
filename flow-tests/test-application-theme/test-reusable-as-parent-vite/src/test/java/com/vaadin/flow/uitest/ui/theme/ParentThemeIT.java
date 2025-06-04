@@ -82,7 +82,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
         TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
+                .withAttribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 

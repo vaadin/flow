@@ -8,9 +8,6 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +18,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
 import org.junit.Assert;
@@ -41,6 +39,9 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.server.VaadinService;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TemplateModelTest extends HasCurrentService {
 
@@ -1060,7 +1061,7 @@ public class TemplateModelTest extends HasCurrentService {
             boolean notSameInstances, T... beans) {
         Assert.assertEquals(beans.length, list.size());
         for (int i = 0; i < beans.length; i++) {
-            Assert.assertThat(list.get(i),
+            MatcherAssert.assertThat(list.get(i),
                     Matchers.samePropertyValuesAs(beans[i]));
             if (notSameInstances) {
                 Assert.assertNotSame(beans[i], list.get(i));

@@ -16,7 +16,7 @@ public class TemplateScalabilityIT extends ChromeBrowserTest {
         waitUntil(input -> {
             TestBenchElement view = $("*").id("scalability-view");
             return view.$("*")
-                    .attribute("id", TemplateScalabilityView.COMPLETED)
+                    .withAttribute("id", TemplateScalabilityView.COMPLETED)
                     .exists();
         });
 

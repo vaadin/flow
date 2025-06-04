@@ -18,16 +18,16 @@ package com.vaadin.flow.webcomponent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.html.Div;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.H1Element;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
@@ -125,7 +125,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
                 .id(MY_COMPONENT_ID);
         TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
+                .withAttribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
@@ -217,8 +217,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final List<TestBenchElement> links = themedComponent.$("link").all();
 
         List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
+                .map(link -> link.getDomAttribute("href")).toList();
         Assert.assertTrue("Missing link for external url", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Itim"));
     }

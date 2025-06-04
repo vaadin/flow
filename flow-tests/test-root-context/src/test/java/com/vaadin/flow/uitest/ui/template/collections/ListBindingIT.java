@@ -79,7 +79,7 @@ public class ListBindingIT extends ChromeBrowserTest {
         resetState(template);
 
         List<TestBenchElement> msgs = template.$(TestBenchElement.class)
-                .attribute("class", "msg").all();
+                .withAttribute("class", "msg").all();
 
         // Click b message
         msgs.get(1).click();
@@ -111,7 +111,7 @@ public class ListBindingIT extends ChromeBrowserTest {
     }
 
     private List<String> getMessages(TestBenchElement template) {
-        return template.$(TestBenchElement.class).attribute("class", "msg")
+        return template.$(TestBenchElement.class).withAttribute("class", "msg")
                 .all().stream().map(WebElement::getText)
                 .collect(Collectors.toList());
     }

@@ -241,7 +241,7 @@ public final class WebComponentModulesWriter implements Serializable {
                                     + "received writer '%s'.",
                             WRITE_MODULES_METHOD, writerClass.getName())));
             try {
-                final boolean accessible = writeMethod.isAccessible();
+                final boolean accessible = writeMethod.canAccess(null);
                 writeMethod.setAccessible(true);
                 Set<File> files = ((Set<File>) writeMethod.invoke(null,
                         exporterClasses, outputDirectory, themeName));

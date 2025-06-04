@@ -70,7 +70,7 @@ public class InputTextElement extends TestBenchElement
 
     @Override
     public String getPlaceholder() {
-        final String ret = getAttribute("placeholder");
+        final String ret = getDomAttribute("placeholder");
         return ret == null ? "" : ret;
     }
 }

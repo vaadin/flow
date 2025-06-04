@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import static org.hamcrest.CoreMatchers.is;
-
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+import static org.hamcrest.CoreMatchers.is;
 
 public class PaperSliderIT extends ChromeBrowserTest {
 
@@ -62,14 +63,14 @@ public class PaperSliderIT extends ChromeBrowserTest {
 
     private static void assertSliderValue(WebElement paperSlider,
             int expectedValue) {
-        Assert.assertThat("Slider has incorrect value",
+        MatcherAssert.assertThat("Slider has incorrect value",
                 Integer.valueOf(paperSlider.getAttribute("value")),
                 is(expectedValue));
     }
 
     private static void assertEventFieldValue(WebElement eventField,
             int expectedValue) {
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Expected event field to be updated after slider value was changed",
                 eventField.getText(),
                 is(String.format("Value: %s (set on client)", expectedValue)));

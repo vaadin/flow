@@ -25,9 +25,9 @@ public class SetInitialTextIT extends ChromeBrowserTest {
         TestBenchElement child = template.$(TestBenchElement.class).id("child");
 
         Assert.assertTrue(child.$(TestBenchElement.class)
-                .attribute("id", "client-side").exists());
+                .withAttribute("id", "client-side").exists());
         Assert.assertTrue(child.$(TestBenchElement.class)
-                .attribute("id", "new-child").exists());
+                .withAttribute("id", "new-child").exists());
     }
 
 }

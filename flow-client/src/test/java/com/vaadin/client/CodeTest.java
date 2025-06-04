@@ -65,7 +65,7 @@ public class CodeTest {
     }
 
     private static void gwtGenerics(File file) throws IOException {
-        ASTParser parser = ASTParser.newParser(AST.JLS8);
+        ASTParser parser = ASTParser.newParser(AST.JLS11);
         String value = FileUtils.readFileToString(file, UTF_8);
         parser.setSource(value.toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);

@@ -32,7 +32,7 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
         TestBenchElement themedComponent = $("npm-themed-component").first();
         TestBenchElement nestedDiv = themedComponent.$("div").first();
 
-        String id = nestedDiv.getAttribute("id");
+        String id = nestedDiv.getDomAttribute("id");
         // make sure that component which is created from the server side is
         // themed
         Assert.assertEquals("The server side component is not themed", "themed",
@@ -53,7 +53,7 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
                 .get(0);
         // make sure that the nested client side is themed
         Assert.assertEquals("The server side component is not themed", "themed",
-                divInClientSideComponent.getAttribute("id"));
+                divInClientSideComponent.getDomAttribute("id"));
     }
 
     @Override

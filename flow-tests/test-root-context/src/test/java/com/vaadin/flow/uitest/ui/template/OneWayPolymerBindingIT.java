@@ -16,13 +16,13 @@
 
 package com.vaadin.flow.uitest.ui.template;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Vaadin Ltd
@@ -58,9 +58,9 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
 
     private void checkTemplateModel(TestBenchElement template) {
         assertTrue(template.$(TestBenchElement.class)
-                .attribute("id", "titleDivConditional").all().size() > 0);
+                .withAttribute("id", "titleDivConditional").all().isEmpty());
         Assert.assertEquals(0, template.$(TestBenchElement.class)
-                .attribute("id", "nonExistingProperty").all().size());
+                .withAttribute("id", "nonExistingProperty").all().size());
     }
 
     private void checkStateAfterClick(TestBenchElement template) {

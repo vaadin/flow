@@ -130,7 +130,7 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                         fis);
                 TarArchiveInputStream tarIn = new TarArchiveInputStream(gis)) {
 
-            TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
+            TarArchiveEntry tarEntry = tarIn.getNextEntry();
             String canonicalDestinationDirectory = destinationDirectory
                     .getCanonicalPath();
             while (tarEntry != null) {
@@ -147,7 +147,7 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                 }
 
                 copyTarFileContents(tarIn, tarEntry, destPath);
-                tarEntry = tarIn.getNextTarEntry();
+                tarEntry = tarIn.getNextEntry();
             }
         }
     }

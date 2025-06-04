@@ -129,11 +129,11 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         ObjectNode packageJson = JacksonUtils.createObjectNode();
         ObjectNode vaadinPackages = JacksonUtils.createObjectNode();
 
-        vaadinPackages.put("dependencies", JacksonUtils.createObjectNode());
+        vaadinPackages.set("dependencies", JacksonUtils.createObjectNode());
         ObjectNode defaults = (ObjectNode) vaadinPackages.get("dependencies");
         defaults.put("@polymer/polymer", "3.2.0");
 
-        vaadinPackages.put("devDependencies", JacksonUtils.createObjectNode());
+        vaadinPackages.set("devDependencies", JacksonUtils.createObjectNode());
         defaults = (ObjectNode) vaadinPackages.get("devDependencies");
         defaults.put("webpack", "4.30.0");
         defaults.put("webpack-cli", "3.3.0");
@@ -145,7 +145,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
 
         vaadinPackages.put("hash", "");
 
-        packageJson.put("vaadin", vaadinPackages);
+        packageJson.set("vaadin", vaadinPackages);
 
         return packageJson;
     }

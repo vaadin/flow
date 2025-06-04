@@ -15,6 +15,8 @@ import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 public class PageIT extends ChromeBrowserTest {
 
     @Test
@@ -84,7 +86,7 @@ public class PageIT extends ChromeBrowserTest {
         open();
 
         findElement(By.id("setLocation")).click();
-        Assert.assertThat(getDriver().getCurrentUrl(),
+        assertThat(getDriver().getCurrentUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
@@ -96,8 +98,7 @@ public class PageIT extends ChromeBrowserTest {
         findElement(By.id("open")).click();
         ArrayList<String> tabs = new ArrayList<>(
                 getDriver().getWindowHandles());
-        Assert.assertThat(
-                getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
+        assertThat(getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
@@ -110,7 +111,7 @@ public class PageIT extends ChromeBrowserTest {
 
         waitUntil(driver -> !getIframeUrl().equals("about:blank"));
 
-        Assert.assertThat(getIframeUrl(),
+        assertThat(getIframeUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName()));
     }
 

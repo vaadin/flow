@@ -38,7 +38,7 @@ class ThemeWrapper implements AbstractTheme, Serializable {
 
     public ThemeWrapper(Class<? extends AbstractTheme> theme)
             throws InstantiationException, IllegalAccessException {
-        instance = theme.newInstance();
+        instance = theme.getDeclaredConstructor().newInstance();
     }
 
     @Override

@@ -30,8 +30,8 @@ public class EmptyListsIT extends ChromeBrowserTest {
 
         TestBenchElement template = $("*").id("template");
 
-        Assert.assertTrue(
-                template.$("*").attributeContains("class", "item").exists());
+        Assert.assertTrue(template.$("*")
+                .withAttributeContainingWord("class", "item").exists());
 
         findElement(By.id("set-empty")).click();
 

@@ -26,11 +26,11 @@ public class ReactComponentsIT extends ChromeBrowserTest {
 
     @Test
     public void functionLocationsAvailable() {
-        List<TestBenchElement> elements = $("*").hasAttribute("data-expected")
+        List<TestBenchElement> elements = $("*").withAttribute("data-expected")
                 .all();
         Assert.assertTrue(elements.size() > 5);
         for (TestBenchElement element : elements) {
-            String expected = element.getAttribute("data-expected");
+            String expected = element.getDomAttribute("data-expected");
             Long line = Long.parseLong(expected.split("_")[0]);
             Long column = Long.parseLong(expected.split("_")[1]);
             String filenameEnd = "vite-basics/src/main/frontend/ReactComponents.tsx";

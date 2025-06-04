@@ -31,7 +31,7 @@ public class BasicTypeInListIT extends ChromeBrowserTest {
         open();
         TestBenchElement template = $(TestBenchElement.class).id("template");
         List<TestBenchElement> items = template.$(TestBenchElement.class)
-                .attribute("class", "item").all();
+                .withAttribute("class", "item").all();
 
         Assert.assertEquals(2, items.size());
         Assert.assertEquals("foo", items.get(0).getText());
@@ -39,16 +39,16 @@ public class BasicTypeInListIT extends ChromeBrowserTest {
 
         findElement(By.id("add")).click();
 
-        items = template.$(TestBenchElement.class).attribute("class", "item")
-                .all();
+        items = template.$(TestBenchElement.class)
+                .withAttribute("class", "item").all();
 
         Assert.assertEquals(3, items.size());
         Assert.assertEquals("newItem", items.get(2).getText());
 
         findElement(By.id("remove")).click();
 
-        items = template.$(TestBenchElement.class).attribute("class", "item")
-                .all();
+        items = template.$(TestBenchElement.class)
+                .withAttribute("class", "item").all();
 
         Assert.assertEquals(2, items.size());
         Assert.assertEquals("bar", items.get(0).getText());

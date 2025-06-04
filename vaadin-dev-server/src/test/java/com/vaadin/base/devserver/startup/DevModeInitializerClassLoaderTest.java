@@ -35,7 +35,7 @@ public class DevModeInitializerClassLoaderTest {
         // Load the base class with the custom loader
         Class<?> clz = customLoader
                 .loadClass(DevModeInitializerTestBase.class.getName());
-        Object initializer = clz.newInstance();
+        Object initializer = clz.getDeclaredConstructor().newInstance();
 
         // Since base class was created using a different classLoader,
         // its methods and fields need to be called using reflection

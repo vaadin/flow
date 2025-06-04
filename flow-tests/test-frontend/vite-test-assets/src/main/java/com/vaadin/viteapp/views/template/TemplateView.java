@@ -1,6 +1,7 @@
 package com.vaadin.viteapp.views.template;
 
 import org.vaadin.example.addon.AddonLitComponent;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
@@ -38,7 +39,7 @@ public class TemplateView extends Div {
         try {
             Class<?> clazz = Class.forName(
                     "com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent");
-            add((Component) clazz.newInstance());
+            add((Component) clazz.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             e.printStackTrace();
         }

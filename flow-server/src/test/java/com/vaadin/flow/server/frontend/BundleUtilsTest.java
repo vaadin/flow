@@ -134,9 +134,11 @@ public class BundleUtilsTest {
                 Constants.PACKAGE_LOCK_JSON);
 
         final String existingLockFile = "{ \"existing\" }";
-        FileUtils.write(packageLockFile, existingLockFile);
+        FileUtils.write(packageLockFile, existingLockFile,
+                StandardCharsets.UTF_8);
 
-        FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
+        FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}",
+                StandardCharsets.UTF_8);
 
         BundleUtils.copyPackageLockFromBundle(options);
 
@@ -155,7 +157,8 @@ public class BundleUtilsTest {
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
-        FileUtils.write(jarPackageLock, jarPackageLockContent);
+        FileUtils.write(jarPackageLock, jarPackageLockContent,
+                StandardCharsets.UTF_8);
 
         Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
@@ -170,7 +173,8 @@ public class BundleUtilsTest {
                 Constants.PACKAGE_LOCK_JSON);
 
         final String packageLockContent = "{ \"bundleFile\"}";
-        FileUtils.write(devPackageLockJson, packageLockContent);
+        FileUtils.write(devPackageLockJson, packageLockContent,
+                StandardCharsets.UTF_8);
 
         BundleUtils.copyPackageLockFromBundle(options);
 
@@ -190,12 +194,14 @@ public class BundleUtilsTest {
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
-        FileUtils.write(jarPackageLock, jarPackageLockContent);
+        FileUtils.write(jarPackageLock, jarPackageLockContent,
+                StandardCharsets.UTF_8);
 
         File jarHybridPackageLock = new File(options.getNpmFolder(),
                 "hybrid-temp.json");
         final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
-        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
+        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent,
+                StandardCharsets.UTF_8);
 
         Mockito.doThrow(new ClassNotFoundException("No Hilla"))
                 .when(options.getClassFinder())
@@ -230,12 +236,14 @@ public class BundleUtilsTest {
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
-        FileUtils.write(jarPackageLock, jarPackageLockContent);
+        FileUtils.write(jarPackageLock, jarPackageLockContent,
+                StandardCharsets.UTF_8);
 
         File jarHybridPackageLock = new File(options.getNpmFolder(),
                 "hybrid-temp.json");
         final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
-        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
+        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent,
+                StandardCharsets.UTF_8);
 
         Mockito.when(options.getClassFinder()
                 .loadClass("com.vaadin.hilla.EndpointController"))
@@ -270,7 +278,8 @@ public class BundleUtilsTest {
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
-        FileUtils.write(jarPackageLock, jarPackageLockContent);
+        FileUtils.write(jarPackageLock, jarPackageLockContent,
+                StandardCharsets.UTF_8);
 
         Mockito.when(options.getClassFinder()
                 .loadClass("com.vaadin.hilla.EndpointController"))
@@ -300,7 +309,8 @@ public class BundleUtilsTest {
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
-        FileUtils.write(jarPackageLock, jarPackageLockContent);
+        FileUtils.write(jarPackageLock, jarPackageLockContent,
+                StandardCharsets.UTF_8);
 
         Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
@@ -317,8 +327,10 @@ public class BundleUtilsTest {
                 Constants.PACKAGE_LOCK_YAML);
 
         final String packageLockContent = "{ \"bundleFile\"}";
-        FileUtils.write(devPackageLock, packageLockContent);
-        FileUtils.write(devPackageLockJson, "{ \"json\"}");
+        FileUtils.write(devPackageLock, packageLockContent,
+                StandardCharsets.UTF_8);
+        FileUtils.write(devPackageLockJson, "{ \"json\"}",
+                StandardCharsets.UTF_8);
 
         BundleUtils.copyPackageLockFromBundle(options);
 
@@ -347,9 +359,11 @@ public class BundleUtilsTest {
                 Constants.PACKAGE_LOCK_YAML);
 
         final String existingLockFile = "{ \"existing\" }";
-        FileUtils.write(packageLockFile, existingLockFile);
+        FileUtils.write(packageLockFile, existingLockFile,
+                StandardCharsets.UTF_8);
 
-        FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
+        FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}",
+                StandardCharsets.UTF_8);
 
         BundleUtils.copyPackageLockFromBundle(options);
 

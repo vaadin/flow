@@ -108,7 +108,7 @@ public class MainView extends AppLayout {
         return tabs;
     }
 
-    private Component[] createMenuItems() {
+    private Tab[] createMenuItems() {
         Tab[] tabs = new Tab[3];
         tabs[0] = createTab("Public", PublicView.class);
         if (accessChecker.hasAccess(PrivateView.class)) {

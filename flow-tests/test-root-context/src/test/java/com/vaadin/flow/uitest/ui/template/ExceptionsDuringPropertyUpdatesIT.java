@@ -42,7 +42,7 @@ public class ExceptionsDuringPropertyUpdatesIT extends AbstractErrorIT {
         Assert.assertEquals("Name is updated to bar", msg.getText());
 
         List<TestBenchElement> errors = template.$("div")
-                .attribute("class", "error").all();
+                .withAttribute("class", "error").all();
 
         Set<String> errorMsgs = errors.stream().map(TestBenchElement::getText)
                 .collect(Collectors.toSet());

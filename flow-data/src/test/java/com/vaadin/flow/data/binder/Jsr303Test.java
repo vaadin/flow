@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.data.binder;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -24,7 +22,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import jakarta.validation.Validation;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,6 +30,8 @@ import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Vaadin Ltd
@@ -114,13 +113,14 @@ public class Jsr303Test {
     }
 
     @Test
-    public void beanBinderWithoutJsr303() throws ClassNotFoundException,
-            NoSuchMethodException, SecurityException, InstantiationException,
-            IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException, IOException, InterruptedException {
+    public void beanBinderWithoutJsr303()
+            throws ClassNotFoundException, NoSuchMethodException,
+            SecurityException, InstantiationException, IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException, IOException {
         try (URLClassLoader loader = new TestClassLoader()) {
             Class<?> clazz = loader.loadClass(Jsr303UnitTest.class.getName());
-            UnitTest test = (UnitTest) clazz.newInstance();
+            UnitTest test = (UnitTest) clazz.getDeclaredConstructor()
+                    .newInstance();
             test.execute();
         }
     }

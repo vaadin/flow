@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.component.JsonSerializable;
+
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonNull;
@@ -207,7 +208,7 @@ public final class JsonSerializer {
 
         T instance;
         try {
-            instance = type.newInstance();
+            instance = type.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not create an instance of type " + type
@@ -391,7 +392,8 @@ public final class JsonSerializer {
                             + "'. Use Lists, Sets or concrete classes that implement java.util.Collection.");
         }
         try {
-            return (Collection<?>) collectionType.newInstance();
+            return (Collection<?>) collectionType.getDeclaredConstructor()
+                    .newInstance();
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not create an instance of the collection of type "

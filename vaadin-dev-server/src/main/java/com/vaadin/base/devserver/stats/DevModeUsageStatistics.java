@@ -153,7 +153,7 @@ public class DevModeUsageStatistics {
                 JsonNode clientData = JsonHelpers.getJsonMapper()
                         .readTree(json);
                 if (clientData != null && clientData.isObject()) {
-                    clientData.fields().forEachRemaining(
+                    clientData.properties().forEachRemaining(
                             e -> project.setValue(e.getKey(), e.getValue()));
                 }
             } catch (Exception e) {

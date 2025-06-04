@@ -3,6 +3,7 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.Locale;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -27,9 +28,9 @@ public class PushConfigurationWebSocketIT extends PushConfigurationTest {
                         PushMode.AUTOMATIC.name().toLowerCase(Locale.ENGLISH)))
                 .click();
 
-        Assert.assertThat(getStatusText(),
+        MatcherAssert.assertThat(getStatusText(),
                 CoreMatchers.containsString("fallbackTransport: long-polling"));
-        Assert.assertThat(getStatusText(),
+        MatcherAssert.assertThat(getStatusText(),
                 CoreMatchers.containsString("transport: websocket"));
 
         waitForServerCounterToUpdate();

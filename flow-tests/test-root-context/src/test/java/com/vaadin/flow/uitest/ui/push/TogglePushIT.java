@@ -1,6 +1,7 @@
 package com.vaadin.flow.uitest.ui.push;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,7 +31,7 @@ public class TogglePushIT extends ChromeBrowserTest {
 
         // Open with push enabled
         open("push=enabled");
-        Assert.assertThat(getPushToggle().getText(),
+        MatcherAssert.assertThat(getPushToggle().getText(),
                 CoreMatchers.containsString("Push enabled"));
 
         getDelayedCounterUpdateButton().click();

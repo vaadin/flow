@@ -16,6 +16,7 @@
 package com.vaadin.flow.webcomponent;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -68,17 +69,17 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
 
         waitForElementVisible(By.id("show-message"));
         TestBenchElement showMessage = byId("show-message");
-        waitUntil(
-                driver -> showMessage.$("*").attribute("id", "link").exists());
+        waitUntil(driver -> showMessage.$("*").withAttribute("id", "link")
+                .exists());
         TestBenchElement link = showMessage.$("a").id("link");
-        String href = link.getAttribute("href");
+        String href = link.getDomAttribute("href");
         // self check
         Assert.assertTrue(href.startsWith(getRootURL()));
         // remove host and port
         href = href.substring(getRootURL().length());
         // now the URI should starts with "/vaadin" since this is the URI of
         // embedded app
-        Assert.assertThat(href,
+        MatcherAssert.assertThat(href,
                 CoreMatchers.startsWith("/vaadin/VAADIN/dynamic/resource/"));
     }
 

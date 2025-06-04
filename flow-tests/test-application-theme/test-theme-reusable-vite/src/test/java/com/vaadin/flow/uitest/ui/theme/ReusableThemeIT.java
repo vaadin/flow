@@ -113,7 +113,7 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         TestBenchElement myField = $(TestBenchElement.class)
                 .id(MY_COMPONENT_ID);
         TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
+                .withAttribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
@@ -139,10 +139,10 @@ public class ReusableThemeIT extends ChromeBrowserTest {
                 "Node assets should have been copied to 'themes/reusable-theme'",
                 getRootURL()
                         + "/path/themes/reusable-theme/fortawesome/icons/snowflake.svg",
-                $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
+                $(ImageElement.class).id(SNOWFLAKE_ID).getDomAttribute("src"));
 
-        open(getRootURL() + "/path/"
-                + $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
+        open(getRootURL() + "/path/" + $(ImageElement.class).id(SNOWFLAKE_ID)
+                .getDomAttribute("src"));
         Assert.assertFalse("Node static icon should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }

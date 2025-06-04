@@ -28,6 +28,7 @@ import com.vaadin.testbench.TestBenchElement;
 import static com.vaadin.flow.navigate.HelloWorldView.IS_CONNECTED_ON_ATTACH;
 import static com.vaadin.flow.navigate.HelloWorldView.IS_CONNECTED_ON_INIT;
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
@@ -39,7 +40,7 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/hello");
         waitForDevServer();
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
+        assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
 
         waitUntil(driver -> $(NativeButtonElement.class).id(NAVIGATE_ABOUT))
@@ -50,7 +51,7 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
                 .isDisplayed());
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
+        assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/about"));
         TestBenchElement aboutView = $("about-view").first();
 
@@ -72,7 +73,7 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
         getCommandExecutor().waitForVaadin();
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
+        assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
 
         Assert.assertTrue("Missing expected native button on page",
@@ -84,7 +85,7 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/hello");
         waitForDevServer();
 
-        Assert.assertThat(getDriver().getCurrentUrl(),
+        assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
 
         assertIsConnected();

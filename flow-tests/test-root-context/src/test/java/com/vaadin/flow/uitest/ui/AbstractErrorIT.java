@@ -33,7 +33,7 @@ public abstract class AbstractErrorIT extends ChromeBrowserTest {
 
     protected void assertErrorReported(String expectedMsg) {
         List<DivElement> errors = $(DivElement.class)
-                .attributeContains("class", "error").all();
+                .withAttributeContainingWord("class", "error").all();
         Assert.assertEquals(1, errors.size());
         Assert.assertEquals(expectedMsg, errors.get(0).getText());
     }

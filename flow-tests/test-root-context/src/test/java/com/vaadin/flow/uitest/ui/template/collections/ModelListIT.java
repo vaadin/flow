@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,7 +113,7 @@ public class ModelListIT extends ChromeBrowserTest {
             int index = i;
             boolean clickedState = IntStream.of(clicked)
                     .anyMatch(x -> x == index);
-            Assert.assertThat(divs.get(index).getText(),
+            MatcherAssert.assertThat(divs.get(index).getText(),
                     CoreMatchers.startsWith(String.valueOf(clickedState)));
         }
     }

@@ -514,7 +514,8 @@ public class BuildFrontendUtilTest {
         File featureFlagsResourceFile = new File(testClassesDir,
                 FeatureFlags.PROPERTIES_FILENAME);
         FileUtils.write(featureFlagsResourceFile,
-                "com.vaadin.experimental.exampleFeatureFlag = true\n");
+                "com.vaadin.experimental.exampleFeatureFlag = true\n",
+                StandardCharsets.UTF_8);
         featureFlagsResourceFile.deleteOnExit();
 
         ClassLoader classLoader = new URLClassLoader(

@@ -36,7 +36,7 @@ public class InvisibleDefaultPropertyValueIT extends ChromeBrowserTest {
         // template is initially invisible
         TestBenchElement template = $("default-property").first();
         Assert.assertEquals(Boolean.TRUE.toString(),
-                template.getAttribute("hidden"));
+                template.getDomProperty("hidden"));
 
         // The element is not bound -> not value for "text" property
         WebElement text = template.$(TestBenchElement.class).id("text");

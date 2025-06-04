@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,9 +26,9 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-import com.vaadin.flow.testcategory.SlowTests;
 
 /**
  * Tests for validating the {@code removeAll()} feature, that should clear all
@@ -84,7 +85,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
         Assert.assertEquals(expectedInnerText,
-                container.getAttribute("innerText"));
+                container.getDomProperty("innerText"));
     }
 
     @Test
@@ -130,7 +131,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
         Assert.assertEquals(expectedInnerText,
-                container.getAttribute("innerText"));
+                container.getDomProperty("innerText"));
     }
 
     @Test
@@ -178,7 +179,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
         Assert.assertEquals(expectedInnerText,
-                container.getAttribute("innerText"));
+                container.getDomProperty("innerText"));
     }
 
     @Test
@@ -200,7 +201,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         TestBenchElement container = root.$(TestBenchElement.class)
                 .id("containerWithMixedChildren");
 
-        Assert.assertThat(container.getText(),
+        MatcherAssert.assertThat(container.getText(),
                 CoreMatchers.allOf(CoreMatchers.containsString("Some text 1"),
                         CoreMatchers.containsString("Some text 2"),
                         CoreMatchers.containsString("Some text 3")));
@@ -218,7 +219,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
         Assert.assertEquals(expectedInnerText,
-                container.getAttribute("innerText"));
+                container.getDomProperty("innerText"));
     }
 
     @Test
@@ -262,7 +263,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
         Assert.assertEquals(expectedInnerText,
-                container.getAttribute("innerText"));
+                container.getDomProperty("innerText"));
     }
 
     @Test
@@ -315,7 +316,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
         Assert.assertEquals(expectedInnerText,
-                container.getAttribute("innerText"));
+                container.getDomProperty("innerText"));
     }
 
     @Test
@@ -355,7 +356,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         assertMessageEndsWith(expectedMessage);
         divs = root.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
-        Assert.assertEquals(expectedInnerText, root.getAttribute("innerText"));
+        Assert.assertEquals(expectedInnerText,
+                root.getDomProperty("innerText"));
     }
 
     @Test
@@ -409,7 +411,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     }
 
     private void assertMessageEndsWith(String text) {
-        Assert.assertThat(message.getText(), CoreMatchers.endsWith(text));
+        MatcherAssert.assertThat(message.getText(),
+                CoreMatchers.endsWith(text));
     }
 
     private void waitForMessageToChange(String oldText) {

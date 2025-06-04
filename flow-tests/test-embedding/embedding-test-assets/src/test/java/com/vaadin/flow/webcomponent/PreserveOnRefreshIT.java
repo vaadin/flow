@@ -176,7 +176,7 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
     }
 
     private String getValue(TestBenchElement element) {
-        return byId(element, INTERNAL_INPUT_ID).getAttribute("value");
+        return byId(element, INTERNAL_INPUT_ID).getDomAttribute("value");
     }
 
     private void writeInInput(String id, String text) {
@@ -200,8 +200,8 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
     }
 
     private TestBenchElement findTagWithoutId(String tag) {
-        return $(tag).all().stream()
-                .filter(webElement -> webElement.getAttribute("id").isEmpty())
+        return $(tag).all().stream().filter(
+                webElement -> webElement.getDomAttribute("id").isEmpty())
                 .findFirst().get();
     }
 }

@@ -126,7 +126,7 @@ public class ReflectTools implements Serializable {
         }
 
         // Try to get the value or throw an exception
-        if (!field.isAccessible()) {
+        if (!field.canAccess(object)) {
             // Try to gain access even if field is private
             field.setAccessible(true);
         }
@@ -176,7 +176,7 @@ public class ReflectTools implements Serializable {
             throw new IllegalArgumentException();
         }
         // Try to get the value or throw an exception
-        if (!field.isAccessible()) {
+        if (!field.canAccess(object)) {
             // Try to gain access even if field is private
             field.setAccessible(true);
         }
@@ -199,7 +199,7 @@ public class ReflectTools implements Serializable {
             java.lang.reflect.Field field, Object value)
             throws IllegalArgumentException {
         // Try to set the value directly to the field or throw an exception
-        if (!field.isAccessible()) {
+        if (!field.canAccess(object)) {
             // Try to gain access even if field is private
             field.setAccessible(true);
         }

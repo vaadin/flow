@@ -47,7 +47,7 @@ public class ClearListIT extends ChromeBrowserTest {
     }
 
     private List<String> getMessages(TestBenchElement template) {
-        return template.$(TestBenchElement.class).attribute("class", "msg")
+        return template.$(TestBenchElement.class).withAttribute("class", "msg")
                 .all().stream().map(WebElement::getText)
                 .collect(Collectors.toList());
     }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -44,7 +45,7 @@ public class ExceptionStacktraceIT extends ChromeBrowserTest {
         // The first string is the op level exception thrown in the core, the
         // second string is the cause of the exception. Both should be in the
         // stacktrace
-        Assert.assertThat("There is no stacktrace on the page",
+        MatcherAssert.assertThat("There is no stacktrace on the page",
                 stacktrace.getText(),
                 CoreMatchers.allOf(
                         CoreMatchers.containsString(

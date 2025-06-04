@@ -28,7 +28,7 @@ public class AppViewIT extends AbstractIT {
     private static final String ADMIN_FULLNAME = "Emma the Admin";
 
     private void logout() {
-        if (!$(ButtonElement.class).attribute("id", "logout").exists()) {
+        if (!$(ButtonElement.class).withAttribute("id", "logout").exists()) {
             open("");
             assertRootPageShown();
         }
@@ -71,7 +71,7 @@ public class AppViewIT extends AbstractIT {
         Assert.assertEquals("1/2/3", $("span").id("p-wild").getText());
 
         String path = "hey/anchor/welcome/home";
-        $("a").attribute("href", path).first().click();
+        $("a").withAttribute("href", path).first().click();
         assertPathShown(path);
         assertAnotherPublicPageShown();
         Assert.assertEquals("anchor", $("span").id("p-name").getText());
@@ -327,7 +327,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private void navigateTo(String path, boolean assertPathShown) {
-        getMainView().$("a").attribute("href", path).first().click();
+        getMainView().$("a").withAttribute("href", path).first().click();
         if (assertPathShown) {
             assertPathShown(path);
         }

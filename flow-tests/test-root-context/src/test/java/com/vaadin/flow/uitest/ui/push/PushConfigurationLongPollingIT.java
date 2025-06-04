@@ -3,7 +3,7 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.Locale;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -18,9 +18,9 @@ public class PushConfigurationLongPollingIT extends PushConfigurationTest {
                 .id(Transport.LONG_POLLING.name().toLowerCase(Locale.ENGLISH)))
                 .click();
 
-        Assert.assertThat(getStatusText(),
+        MatcherAssert.assertThat(getStatusText(),
                 CoreMatchers.containsString("fallbackTransport: long-polling"));
-        Assert.assertThat(getStatusText(),
+        MatcherAssert.assertThat(getStatusText(),
                 CoreMatchers.containsString("transport: long-polling"));
 
         findElement(By.id("push-mode"))

@@ -28,7 +28,7 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
                 .id(InnerTemplateVisibilityView.INNER_ID);
         Assert.assertFalse("expected inner to be hidden", inner.isDisplayed());
         Assert.assertNotNull("expected attribute hidden on inner",
-                inner.getAttribute("hidden"));
+                inner.getDomProperty("hidden"));
         Assert.assertEquals("expected 'display: none' on inner", "none",
                 inner.getCssValue("display"));
     }
@@ -51,7 +51,7 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
                 .id(InnerTemplateVisibilityView.INNER_ID);
         Assert.assertTrue("expected inner to be visible", inner.isDisplayed());
         Assert.assertNull("inner should not have attribute hidden",
-                inner.getAttribute("hidden"));
+                inner.getDomProperty("hidden"));
         Assert.assertEquals("expected 'display: block' on inner", "block",
                 inner.getCssValue("display"));
     }

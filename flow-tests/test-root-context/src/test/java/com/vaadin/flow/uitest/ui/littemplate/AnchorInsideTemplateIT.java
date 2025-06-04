@@ -33,7 +33,7 @@ public class AnchorInsideTemplateIT extends ChromeBrowserTest {
         TestBenchElement anchor = template.$(TestBenchElement.class)
                 .id("anchor");
 
-        String href = anchor.getAttribute("href");
+        String href = anchor.getDomAttribute("href");
         MatcherAssert.assertThat(href,
                 CoreMatchers.containsString("VAADIN/dynamic/resource"));
     }

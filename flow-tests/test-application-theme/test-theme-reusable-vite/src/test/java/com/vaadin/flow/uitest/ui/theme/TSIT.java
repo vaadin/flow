@@ -16,11 +16,11 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class TSIT extends ChromeBrowserTest {
 
@@ -30,7 +30,7 @@ public class TSIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         DivElement badge = $("ts-component").first().$(DivElement.class)
-                .attribute("theme", "badge").first();
+                .withAttribute("theme", "badge").first();
         String badgeBackgroundColor = badge.getCssValue("backgroundColor");
         Assert.assertEquals("rgba(51, 139, 255, 0.13)", badgeBackgroundColor);
     }

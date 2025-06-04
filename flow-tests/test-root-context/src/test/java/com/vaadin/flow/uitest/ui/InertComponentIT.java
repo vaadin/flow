@@ -112,7 +112,7 @@ public class InertComponentIT extends ChromeBrowserTest {
     private <T extends TestBenchElement> Stream<T> getAll(Class<T> elementClass,
             String idPrefix) {
         return $(elementClass).all().stream()
-                .filter(e -> e.getAttribute("id").startsWith(idPrefix));
+                .filter(e -> e.getDomAttribute("id").startsWith(idPrefix));
     }
 
     private void validateBoxCount(long initialBoxCount, String message) {

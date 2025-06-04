@@ -1240,7 +1240,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 if (atmosphereVersion != null) {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
-                appConfig.put("versionInfo", versionInfo);
+                appConfig.set("versionInfo", versionInfo);
                 appConfig.put(ApplicationConstants.DEV_TOOLS_ENABLED,
                         deploymentConfiguration.isDevToolsEnabled());
             }
@@ -1259,7 +1259,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 putValueOrNull(sessExpMsg, URL,
                         systemMessages.getSessionExpiredURL());
 
-                appConfig.put("sessExpMsg", sessExpMsg);
+                appConfig.set("sessExpMsg", sessExpMsg);
             }
 
             String contextRoot = contextCallback.apply(request);

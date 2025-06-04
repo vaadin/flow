@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.server.startup;
 
-import jakarta.servlet.ServletContainerInitializer;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -95,11 +95,12 @@ public interface ClassLoaderAwareServletContainerInitializer
                 Method operation = Stream.of(initializer.getMethods()).filter(
                         method -> method.getName().equals(processMethodName))
                         .findFirst().get();
-                operation.invoke(initializer.newInstance(),
+                operation.invoke(
+                        initializer.getDeclaredConstructor().newInstance(),
                         new Object[] { set, ctx });
-            } catch (ClassNotFoundException | IllegalAccessException
-                    | IllegalArgumentException | InvocationTargetException
-                    | InstantiationException e) {
+            } catch (ClassNotFoundException | NoSuchMethodException
+                    | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | InstantiationException e) {
                 throw new ServletException(e);
             }
         };

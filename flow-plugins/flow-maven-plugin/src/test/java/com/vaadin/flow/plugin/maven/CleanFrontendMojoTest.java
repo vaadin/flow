@@ -279,7 +279,7 @@ public class CleanFrontendMojoTest {
     public void should_keepUserDependencies_whenPackageJsonEdited()
             throws MojoFailureException, IOException, MojoExecutionException {
         ObjectNode json = createInitialPackageJson();
-        json.put("dependencies", JacksonUtils.createObjectNode());
+        json.replace("dependencies", JacksonUtils.createObjectNode());
         ((ObjectNode) json.get("dependencies")).put("foo", "bar");
         FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();

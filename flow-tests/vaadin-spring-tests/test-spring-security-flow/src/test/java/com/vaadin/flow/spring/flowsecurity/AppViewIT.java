@@ -403,7 +403,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     protected void navigateTo(String path, boolean assertPathShown) {
-        getMainView().$("a").attribute("href", path).first().click();
+        getMainView().$("a").withAttribute("href", path).first().click();
         if (assertPathShown) {
             assertPathShown(path);
         }

@@ -13,6 +13,7 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Assert;
@@ -305,7 +306,7 @@ public class NpmTemplateParserTest {
         // name", the second one doesn't contain this string.
         // The second module should be chosen since its name matches the tag
         // name
-        Assert.assertThat(templateContent.getTemplateElement().html(),
+        MatcherAssert.assertThat(templateContent.getTemplateElement().html(),
                 CoreMatchers.not(CoreMatchers.containsString(
                         "Tag name doesn't match the JS module name")));
     }

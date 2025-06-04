@@ -35,11 +35,11 @@ public class TranslationView extends Div {
     public TranslationView() {
         setId(TEST_VIEW_ID);
 
-        Span defaultLang = new Span(getTranslation("label", Locale.ENGLISH));
+        Span defaultLang = new Span(getTranslation(Locale.ENGLISH, "label"));
         defaultLang.setId("english");
-        Span french = new Span(getTranslation("label", Locale.FRANCE));
+        Span french = new Span(getTranslation(Locale.FRANCE, "label"));
         french.setId("french");
-        Span japanese = new Span(getTranslation("label", Locale.JAPAN));
+        Span japanese = new Span(getTranslation(Locale.JAPAN, "label"));
         japanese.setId("japanese");
 
         Optional<I18NProvider> i18NProvider = LocaleUtil.getI18NProvider();
@@ -47,7 +47,7 @@ public class TranslationView extends Div {
             add(new Span("Available translation locales:"));
             StringBuilder locales = new StringBuilder();
             for (Locale locale : i18NProvider.get().getProvidedLocales()) {
-                if (locales.length() > 0) {
+                if (!locales.isEmpty()) {
                     locales.append(", ");
                 }
                 locales.append(locale.toString());

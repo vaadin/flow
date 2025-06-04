@@ -28,6 +28,7 @@ import com.vaadin.flow.shared.Registration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -97,12 +98,12 @@ public class CompositeDataGeneratorTest {
         JsonObject json = Json.createObject();
         composite.generateData("item1", json);
 
-        Assert.assertEquals("value1", json.getString("mock1"));
-        Assert.assertEquals("value2", json.getString("mock2"));
-        Assert.assertEquals("value3", json.getString("mock3"));
-        Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertEquals("value1", json.getString("mock1"));
+        assertEquals("value2", json.getString("mock2"));
+        assertEquals("value3", json.getString("mock3"));
+        assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item1"));
     }
 
     @Test
@@ -119,9 +120,9 @@ public class CompositeDataGeneratorTest {
 
         composite.refreshData("item1");
 
-        Assert.assertThat(mock1.getRefreshed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock2.getRefreshed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock3.getRefreshed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock1.getRefreshed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getRefreshed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock3.getRefreshed(), CoreMatchers.hasItem("item1"));
     }
 
     @Test
@@ -142,15 +143,15 @@ public class CompositeDataGeneratorTest {
         composite.refreshData("item2");
         composite.destroyData("item1");
 
-        Assert.assertThat(mock1.getProcessed(),
+        assertThat(mock1.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item2"));
-        Assert.assertThat(mock2.getProcessed(),
+        assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item2"));
+        assertThat(mock2.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item2"));
-        Assert.assertThat(mock3.getProcessed(),
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item2"));
+        assertThat(mock3.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item2"));
+        assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item2"));
     }
 
     @Test
@@ -186,16 +187,16 @@ public class CompositeDataGeneratorTest {
         Registration registration2 = composite.addDataGenerator(mock2);
 
         composite.generateData("item1", Json.createObject());
-        Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
         registration1.remove();
-        Assert.assertThat(mock1.getProcessed(),
+        assertThat(mock1.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
         registration2.remove();
-        Assert.assertThat(mock2.getProcessed(),
+        assertThat(mock2.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
     }
 

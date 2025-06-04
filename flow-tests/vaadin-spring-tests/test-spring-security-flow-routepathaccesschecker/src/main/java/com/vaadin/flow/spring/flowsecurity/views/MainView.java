@@ -105,7 +105,7 @@ public class MainView extends AppLayout {
         return tabs;
     }
 
-    private Component[] createMenuItems() {
+    private Tab[] createMenuItems() {
         Tab[] tabs = new Tab[3];
         tabs[0] = createTab("Public", PublicView.class);
         tabs[1] = createTab("Private", PrivateView.class);

@@ -379,12 +379,13 @@ public class HtmlComponentSmokeTest {
 
     private static HtmlComponent createInstance(
             Class<? extends HtmlComponent> clazz)
-            throws InstantiationException, IllegalAccessException {
+            throws InstantiationException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         Supplier<HtmlComponent> constructor = customConstructors.get(clazz);
         if (constructor != null) {
             return constructor.get();
         } else {
-            return clazz.newInstance();
+            return clazz.getDeclaredConstructor().newInstance();
         }
     }
 

@@ -26,6 +26,8 @@ import org.openqa.selenium.logging.LogEntry;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 public class DynamicDependencyIT extends ChromeBrowserTest {
 
     @Test
@@ -65,9 +67,9 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
         List<LogEntry> entries = getLogEntries(java.util.logging.Level.SEVERE);
         Assert.assertEquals(2, entries.size());
 
-        Assert.assertThat(entries.get(0).getMessage(),
+        assertThat(entries.get(0).getMessage(),
                 Matchers.containsString(errorMessageSnippet));
-        Assert.assertThat(entries.get(1).getMessage(),
+        assertThat(entries.get(1).getMessage(),
                 Matchers.containsString("could not be loaded"));
     }
 }

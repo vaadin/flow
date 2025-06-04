@@ -71,7 +71,7 @@ public class BeanInListingIT extends ChromeBrowserTest {
             String item) {
         TestBenchElement template = $(TestBenchElement.class).id("template");
         List<TestBenchElement> items = template.$(TestBenchElement.class)
-                .attribute("class", className).all();
+                .withAttribute("class", className).all();
         items.stream().filter(itemElement -> itemElement.getText().equals(item))
                 .findFirst().get().click();
 

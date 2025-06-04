@@ -16,13 +16,13 @@
 
 package com.vaadin.flow.uitest.ui.scroll;
 
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
+
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MultipleAnchorsIT extends AbstractScrollIT {
 
