@@ -68,6 +68,8 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     static final String CHUNK_PARAMETER_NAME = "chunks";
 
+    static final String KEYS_PARAMETER_NAME = "keys";
+
     static final String RETRIEVED_LOCALE_HEADER_NAME = "X-Vaadin-Retrieved-Locale";
 
     private static final Locale FALLBACK_LOCALE = Locale.ROOT;
@@ -153,6 +155,20 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
             if (!keys.isEmpty()) {
                 stream = stream.filter(keys::contains);
+            }
+        }
+
+        var keys = request.getParameterMap().get(KEYS_PARAMETER_NAME);
+
+        if (keys != null && keys.length > 0) {
+            // Filter the keys based on the requested keys.
+            var keySet = Arrays.stream(keys).collect(Collectors.toSet());
+
+            if (!keySet.isEmpty()) {
+                // For now, return exactly the keys requested by the client, but
+                // it is also possible to use some heuristics to return more
+                // keys, for example by guessing a prefix.
+                stream = stream.filter(keySet::contains);
             }
         }
 
