@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.beans.IntrospectionException;
 
 public class RangeInputTest extends ComponentTest {
 
@@ -26,7 +27,8 @@ public class RangeInputTest extends ComponentTest {
 
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
         whitelistProperty("enabled");

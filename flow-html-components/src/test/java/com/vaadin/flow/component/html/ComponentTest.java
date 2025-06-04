@@ -48,7 +48,8 @@ public abstract class ComponentTest {
 
     @Before
     public void setup() throws IntrospectionException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
         component = createComponent();
         whitelistProperty("visible");
         addProperties();

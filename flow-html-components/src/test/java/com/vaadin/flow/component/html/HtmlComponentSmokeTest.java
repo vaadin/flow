@@ -138,7 +138,8 @@ public class HtmlComponentSmokeTest {
             // Test that all setters produce a result
             testSetters(instance);
         } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException e) {
+                | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
