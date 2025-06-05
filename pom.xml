@@ -28,7 +28,6 @@
         <module>flow-html-components-testbench</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-plugins</module>
         <module>flow-test-generic</module>
@@ -684,6 +683,18 @@
         </pluginManagement>
     </build>
     <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <property>
+                    <name>!release</name>
+                </property>
+            </activation>
+            <modules>
+                <module>flow-tests</module>
+            </modules>
+        </profile>
+        
         <profile>
             <id>validation</id>
             <properties>
