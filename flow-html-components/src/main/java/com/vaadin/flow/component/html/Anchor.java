@@ -137,6 +137,34 @@ public class Anchor extends HtmlContainer
     }
 
     /**
+     * Creates an anchor component with the given text content and a callback
+     * that handles data download from the server to the client when clicking an
+     * anchor.
+     * <p>
+     * Sets the 'download' attribute for link when given a non-inline handler
+     * implementing AbstractDownloadHandler.
+     * <p>
+     * LinkMode determines if the attribute `download` should be set or not.
+     * {@link LinkMode#DOWNLOAD} will set the download attribute, where as
+     * {@link LinkMode#INLINE} will remove it.
+     *
+     * @see #setHref(DownloadHandler, LinkMode)
+     * @see #setText(String)
+     *
+     * @param downloadHandler
+     *            the callback that handles data download, not null
+     * @param text
+     *            the text content to set
+     * @param linkMode
+     *            set the correct attribute for anchor according to given mode
+     */
+    public Anchor(DownloadHandler downloadHandler, String text,
+            LinkMode linkMode) {
+        setHref(downloadHandler, linkMode);
+        setText(text);
+    }
+
+    /**
      * Creates an anchor component with the given href and components as
      * children of this component.
      *
@@ -224,6 +252,32 @@ public class Anchor extends HtmlContainer
             } else {
                 setDownload(false);
             }
+        }
+    }
+
+    /**
+     * Sets the URL that this anchor links to and that is bound to a given
+     * {@link DownloadHandler} callback on the server for handling data download
+     * from the server to the client when clicking an anchor.
+     * <p>
+     * LinkMode determines if the attribute `download` should be set or not.
+     * {@link LinkMode#DOWNLOAD} will set the download attribute, where as
+     * {@link LinkMode#INLINE} will remove it.
+     *
+     * @param downloadHandler
+     *            the callback that handles data download, not null
+     * @param linkMode
+     *            set the correct attribute for anchor according to given mode
+     */
+    public void setHref(DownloadHandler downloadHandler, LinkMode linkMode) {
+        this.href = new StreamResourceRegistry.ElementStreamResource(
+                downloadHandler, this.getElement());
+        setRouterIgnore(true);
+        assignHrefAttribute();
+        if (linkMode.equals(LinkMode.INLINE)) {
+            setDownload(false);
+        } else {
+            setDownload(true);
         }
     }
 
