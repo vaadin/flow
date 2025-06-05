@@ -12,6 +12,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +63,8 @@ public class StreamResourceIT extends ChromeBrowserTest {
                 link.getAttribute("router-ignore"));
         String url = link.getAttribute("href");
 
-        getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
+        getDriver().manage().timeouts()
+                .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
 
         try (InputStream stream = download(url)) {
             List<String> lines = IOUtils.readLines(stream,
