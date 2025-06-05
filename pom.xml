@@ -684,7 +684,7 @@
     </build>
     <profiles>
         <profile>
-            <id>defalut</id>
+            <id>default</id>
             <activation>
                 <property>
                     <name>!release</name>
