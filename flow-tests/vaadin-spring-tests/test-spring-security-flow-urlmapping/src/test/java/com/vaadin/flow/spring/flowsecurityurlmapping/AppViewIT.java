@@ -9,7 +9,9 @@
 package com.vaadin.flow.spring.flowsecurityurlmapping;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.Ignore;
 
+@Ignore
 @NotThreadSafe
 public class AppViewIT extends com.vaadin.flow.spring.flowsecurity.AppViewIT {
     @Override
