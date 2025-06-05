@@ -228,7 +228,7 @@ jobs:
       pull-requests: write
     if: ${{ failure() || success() }}
     needs: [unit-tests, it-tests]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
@@ -249,7 +249,7 @@ jobs:
           junit_files: "**/target/*-reports/TEST*.xml"
           check_run_annotations: all tests, skipped tests
           check_run_annotations_branch: master, 9.0
-      - uses: geekyeggo/delete-artifact@v2
+      - uses: geekyeggo/delete-artifact@v4
         with:
           name: |
             saved-workspace
