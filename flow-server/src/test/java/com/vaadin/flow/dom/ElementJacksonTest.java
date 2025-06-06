@@ -997,11 +997,14 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ElementFactory.createDiv().setProperty("className", "foo");
     }
 
+    @Test
     public void setStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         Assert.assertEquals("bar", s.get("foo"));
+        s.set("--lumo-primary-text-color", "hsl(12, 12%, 12%)");
+        Assert.assertEquals("hsl(12, 12%, 12%)", s.get("--lumo-primary-text-color"));
     }
 
     @Test
@@ -1108,8 +1111,8 @@ public class ElementJacksonTest extends AbstractNodeTest {
         testStyleAttribute("width:calc(100% - 80px)");
         testStyleAttribute("width:var(--widthB)");
         testStyleAttribute("color:var(--mainColor)");
-        // Reduced calc does not work (http://cssnext.io/features/#reduced-calc)
-        // testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("--lumo-primary-text-color:hsl(12, 12%, 12%)");
     }
 
     private void testStyleAttribute(String style) {
