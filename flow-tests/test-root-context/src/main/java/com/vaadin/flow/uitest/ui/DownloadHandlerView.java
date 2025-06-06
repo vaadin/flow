@@ -51,7 +51,6 @@ public class DownloadHandlerView extends Div {
             }
         };
 
-
         Anchor handlerDownload = new Anchor("", "Textual DownloadHandler");
         handlerDownload.setHref(downloadHandler);
         handlerDownload.setId("download-handler-text");
@@ -66,8 +65,7 @@ public class DownloadHandlerView extends Div {
         Anchor classDownload = new Anchor("",
                 "Class resource DownloadHandler shorthand");
         classDownload.setHref(DownloadHandler
-                .forClassResource(this.getClass(), "class-file.json")
-                .inline());
+                .forClassResource(this.getClass(), "class-file.json").inline());
         classDownload.setId("download-handler-class");
 
         Anchor servletDownload = new Anchor("",
@@ -91,10 +89,11 @@ public class DownloadHandlerView extends Div {
 
         Anchor inputStreamErrorDownload = new Anchor("",
                 "InputStream DownloadHandler shorthand");
-        inputStreamErrorDownload.setHref(DownloadHandler
-                .fromInputStream(downloadEvent -> DownloadResponse
-                        .error(HttpStatusCode.INTERNAL_SERVER_ERROR))
-                .inline());
+        inputStreamErrorDownload
+                .setHref(DownloadHandler
+                        .fromInputStream(downloadEvent -> DownloadResponse
+                                .error(HttpStatusCode.INTERNAL_SERVER_ERROR))
+                        .inline());
         inputStreamErrorDownload.setId("download-handler-input-stream-error");
 
         add(handlerDownload, fileDownload, classDownload, servletDownload,

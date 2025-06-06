@@ -352,9 +352,9 @@ public class Element extends Node<Element> {
         return this;
     }
 
-
     /**
-     * Sets the given attribute to the given {@link ElementRequestHandler} value.
+     * Sets the given attribute to the given {@link ElementRequestHandler}
+     * value.
      * <p>
      * Attribute names are considered case insensitive and all names will be
      * converted to lower case automatically.
@@ -372,11 +372,12 @@ public class Element extends Node<Element> {
      *            the resource value, not null
      * @return this element
      */
-    public Element setAttribute(String attribute, ElementRequestHandler requestHandler) {
+    public Element setAttribute(String attribute,
+            ElementRequestHandler requestHandler) {
         AbstractStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
-                    requestHandler, this);
+                requestHandler, this);
 
-       return setAttribute(attribute, resource);
+        return setAttribute(attribute, resource);
     }
 
     /**
