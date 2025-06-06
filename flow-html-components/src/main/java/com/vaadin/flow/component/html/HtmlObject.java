@@ -328,9 +328,7 @@ public class HtmlObject extends HtmlContainer implements
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("data",
-                new StreamResourceRegistry.ElementStreamResource(data,
-                        this.getElement()));
+        getElement().setAttribute("data", data);
     }
 
     /**
