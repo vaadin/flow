@@ -33,6 +33,7 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -91,14 +92,19 @@ class VaadinSecurityConfigurerTest {
 
     private HttpSecurity http;
 
+    private SecurityContextHolderStrategy securityContextHolderStrategy;
+
     private VaadinSecurityConfigurer configurer;
 
     @BeforeEach
     void setUp() {
         var authManagerBuilder = new AuthenticationManagerBuilder(postProcessor)
                 .authenticationProvider(new TestingAuthenticationProvider());
+        securityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
         http = new HttpSecurity(postProcessor, authManagerBuilder,
-                Map.of(ApplicationContext.class, applicationContext));
+                Map.of(ApplicationContext.class, applicationContext,
+                        SecurityContextHolderStrategy.class,
+                        securityContextHolderStrategy));
         configurer = VaadinSecurityConfigurer.vaadin();
     }
 
@@ -152,7 +158,7 @@ class VaadinSecurityConfigurerTest {
     void logoutSuccessHandler_handlerIsConfigured(
             @Mock LogoutSuccessHandler handler) throws Exception {
         var auth = new UsernamePasswordAuthenticationToken("user", "password");
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        securityContextHolderStrategy.getContext().setAuthentication(auth);
         when(request.getMethod()).thenReturn("POST");
         when(request.getPathInfo()).thenReturn("/logout");
 
@@ -171,7 +177,7 @@ class VaadinSecurityConfigurerTest {
     void addLogoutHandler_handlerIsAdded(@Mock LogoutHandler handler)
             throws Exception {
         var auth = new UsernamePasswordAuthenticationToken("user", "password");
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        securityContextHolderStrategy.getContext().setAuthentication(auth);
         when(request.getMethod()).thenReturn("POST");
         when(request.getPathInfo()).thenReturn("/logout");
 
@@ -190,7 +196,7 @@ class VaadinSecurityConfigurerTest {
     void anyRequest_authorizeRuleIsConfigured() throws Exception {
         var auth = new AnonymousAuthenticationToken("key", "user",
                 List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        securityContextHolderStrategy.getContext().setAuthentication(auth);
         when(request.getPathInfo()).thenReturn("/any");
 
         var filters = http.with(configurer, c -> {
