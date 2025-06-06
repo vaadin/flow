@@ -47,6 +47,7 @@ export default function vaadinI18n(options = {}) {
   const metaOutputFilename = path.resolve(metaOutputDir, options?.meta?.output?.filename ?? defaultOptions.meta.output.filename);
 
   const chunkKeySets = new Map();
+  const mainChunkKeySet = new Set();
 
   return {
     name: 'vaadin-i18n',
@@ -55,6 +56,7 @@ export default function vaadinI18n(options = {}) {
         return;
       }
       const keyTagBindings = new Set();
+      const translateBindings = new Set();
       const ast = this.parse(code, {});
       const moduleKeySet = new Set();
       let hasI18nImport = false;
@@ -63,6 +65,9 @@ export default function vaadinI18n(options = {}) {
           for (const spec of node?.specifiers) {
             if (spec.imported?.name === 'key') {
               keyTagBindings.add(spec.local?.name);
+            }
+            if (spec.imported?.name === 'translate') {
+              translateBindings.add(spec.local?.name);
             }
             if (spec.type === 'ImportSpecifier' && spec.imported?.name === 'i18n') {
               hasI18nImport = true;
@@ -78,7 +83,18 @@ export default function vaadinI18n(options = {}) {
           node.quasi.quasis.length === 1 &&
           typeof node.quasi.quasis[0].value.raw === 'string'
         ) {
-          moduleKeySet.add(node.quasi.quasis[0].value.raw);
+          if (
+            node.parent &&
+            node.parent.type === 'CallExpression' &&
+            node.parent.callee.type === 'Identifier' &&
+            translateBindings.has(node.parent.callee.name)
+          ) {
+            // translate(key`something`) goes to the module chunk
+            moduleKeySet.add(node.quasi.quasis[0].value.raw);
+          } else {
+            // key`something` goes to the main chunk (assume ViewConfig)
+            mainChunkKeySet.add(node.quasi.quasis[0].value.raw);
+          }
         }
       });
 
@@ -151,6 +167,15 @@ export default function vaadinI18n(options = {}) {
       // Serialize chunk key sets
       const chunks = {};
       for (const [name, chunkKeySet] of chunkKeySets.entries()) {
+        // Main chunk name is supposed to always contain 'indexhtml'
+        if (name.includes('indexhtml')) {
+          // Add the main chunk keys to the main chunk key set
+          for (const key of mainChunkKeySet) {
+            chunkKeySet.add(key);
+          }
+          mainChunkKeySet.clear();
+        }
+
         const keys = Array.from(chunkKeySet);
 
         if (keys.length > 0) {
