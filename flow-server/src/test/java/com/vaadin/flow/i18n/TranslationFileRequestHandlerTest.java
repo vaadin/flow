@@ -137,11 +137,11 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void tagContainsOnlyLanguage_languageOnlyAvailableWithCountry_responseHasTheCorrectLanguage()
+    public void tagContainsOnlyLanguage_languageOnlyAvailableWithCountry_responseIsEmpty()
             throws IOException {
         configure(false);
-        testResponseContent("es", "{\"title\":\"Espanol (Spain)\"}", "es-ES");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        testResponseContent("es", "", null);
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
@@ -157,8 +157,7 @@ public class TranslationFileRequestHandlerTest {
     public void withRootBundle_requestedLocaleBundleNotAvailable_responseIsRootBundle()
             throws IOException {
         configure(true);
-        testResponseContentWithMockedDefaultLocale("es-ES", "en-US",
-                "{\"title\":\"Root bundle lang\"}", "und");
+        testResponseContent("en-US", "{\"title\":\"Root bundle lang\"}", "und");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
@@ -166,7 +165,7 @@ public class TranslationFileRequestHandlerTest {
     public void withoutRootBundle_requestedLocaleBundleNotAvailable_responseIsEmpty()
             throws IOException {
         configure(false);
-        testResponseContentWithMockedDefaultLocale("es-ES", "en-US", "", null);
+        testResponseContent("en-US", "", null);
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
@@ -285,22 +284,6 @@ public class TranslationFileRequestHandlerTest {
         setUpChunkedTest();
         testResponseContent("", null, new String[] { "title" },
                 "{\"title\":\"Root bundle lang\"}", "und");
-    }
-
-    private void testResponseContentWithMockedDefaultLocale(
-            String defaultLocaleLanguageTag, String requestedLanguageTag,
-            String expectedResponseContent, String expectedResponseLanguageTag)
-            throws IOException {
-        Locale originalDefaultLocale = Locale.getDefault();
-        try {
-            Locale defaultLocale = Locale
-                    .forLanguageTag(defaultLocaleLanguageTag);
-            Locale.setDefault(defaultLocale);
-            testResponseContent(requestedLanguageTag, expectedResponseContent,
-                    expectedResponseLanguageTag);
-        } finally {
-            Locale.setDefault(originalDefaultLocale);
-        }
     }
 
     private void testResponseContent(String requestedLanguageTag,
