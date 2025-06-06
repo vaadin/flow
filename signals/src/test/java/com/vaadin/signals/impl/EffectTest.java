@@ -268,6 +268,27 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void changeTracking_readChildNodes_coveredByNextEffectInvocation() {
+        ListSignal<String> signal = new ListSignal<>(String.class);
+        ArrayList<List<String>> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            List<String> values = signal.value().stream().map(Signal::value)
+                    .toList();
+            invocations.add(values);
+        });
+
+        assertEquals(List.of(List.of()), invocations);
+
+        signal.insertLast("One");
+        assertEquals(List.of(List.of(), List.of("One")), invocations);
+
+        signal.insertLast("Two");
+        assertEquals(List.of(List.of(), List.of("One"), List.of("One", "Two")),
+                invocations);
+    }
+
+    @Test
     void callback_updateSignal_throws() {
         ValueSignal<String> signal = new ValueSignal<>("value");
 
