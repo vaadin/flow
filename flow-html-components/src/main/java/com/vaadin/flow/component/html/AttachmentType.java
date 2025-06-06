@@ -23,6 +23,6 @@ package com.vaadin.flow.component.html;
  * {@link #DOWNLOAD} will set the download attribute to Anchor, where as
  * {@link #INLINE} will remove it.
  */
-public enum LinkMode {
+public enum AttachmentType {
     DOWNLOAD, INLINE
 }
