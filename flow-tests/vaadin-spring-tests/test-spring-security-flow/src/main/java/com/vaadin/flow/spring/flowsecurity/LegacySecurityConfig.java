@@ -167,7 +167,8 @@ public class LegacySecurityConfig extends VaadinWebSecurity {
     }
 
     @Bean
-    public SwitchUserFilter switchUserFilter(SecurityContextHolderStrategy securityContextHolderStrategy) {
+    public SwitchUserFilter switchUserFilter(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
         SwitchUserFilter filter = new SwitchUserFilter();
         filter.setSecurityContextHolderStrategy(securityContextHolderStrategy);
         filter.setUserDetailsService(userDetailsService());
