@@ -79,10 +79,6 @@ public class StyleAttributeHandler extends CustomAttribute {
                     throw new IllegalArgumentException(
                             "Style rule must contain name and value");
                 }
-                // TODO figure out if any better sanitatization is
-                // needed/feasible
-                // Probably not: users are on the "pro API" already and modern
-                // browsers doing enough sanitatision later in the browser
                 parsedStyles.put(name, value);
             }
             return parsedStyles;
