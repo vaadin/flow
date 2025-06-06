@@ -201,9 +201,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src",
-                new StreamResourceRegistry.ElementStreamResource(
-                        downloadHandler, this.getElement()));
+        getElement().setAttribute("src", downloadHandler);
     }
 
     /**

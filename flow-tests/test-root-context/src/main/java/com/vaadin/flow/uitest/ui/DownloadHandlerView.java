@@ -37,8 +37,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.DownloadHandlerView", layout = ViewTestLayout.class)
 public class DownloadHandlerView extends Div {
 
-    List<StreamRegistration> registrations = new ArrayList<>();
-
     public DownloadHandlerView() {
 
         DownloadHandler downloadHandler = new DownloadHandler() {
@@ -53,43 +51,27 @@ public class DownloadHandlerView extends Div {
             }
         };
 
-        StreamRegistration streamRegistration = VaadinSession.getCurrent()
-                .getResourceRegistry().registerResource(downloadHandler);
-        registrations.add(streamRegistration);
-
         Anchor handlerDownload = new Anchor("", "Textual DownloadHandler");
-        handlerDownload.setHref(streamRegistration.getResource());
+        handlerDownload.setHref(downloadHandler);
         handlerDownload.setId("download-handler-text");
 
         File jsonFile = new File(getClass().getClassLoader()
                 .getResource("download.json").getFile());
-        streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(DownloadHandler.forFile(jsonFile).inline());
-        registrations.add(streamRegistration);
 
         Anchor fileDownload = new Anchor("", "File DownloadHandler shorthand");
-        fileDownload.setHref(streamRegistration.getResource());
+        fileDownload.setHref(DownloadHandler.forFile(jsonFile).inline());
         fileDownload.setId("download-handler-file");
-
-        streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(DownloadHandler
-                        .forClassResource(this.getClass(), "class-file.json")
-                        .inline());
-        registrations.add(streamRegistration);
 
         Anchor classDownload = new Anchor("",
                 "Class resource DownloadHandler shorthand");
-        classDownload.setHref(streamRegistration.getResource());
+        classDownload.setHref(DownloadHandler
+                .forClassResource(this.getClass(), "class-file.json").inline());
         classDownload.setId("download-handler-class");
-
-        streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(DownloadHandler
-                        .forServletResource("/WEB-INF/servlet.json").inline());
-        registrations.add(streamRegistration);
 
         Anchor servletDownload = new Anchor("",
                 "Servlet resource DownloadHandler shorthand");
-        servletDownload.setHref(streamRegistration.getResource());
+        servletDownload.setHref(DownloadHandler
+                .forServletResource("/WEB-INF/servlet.json").inline());
         servletDownload.setId("download-handler-servlet");
 
         DownloadHandler inputStream = DownloadHandler
@@ -99,25 +81,19 @@ public class DownloadHandlerView extends Div {
                         "file+.jpg", "text/plain",
                         "foo".getBytes(StandardCharsets.UTF_8).length))
                 .inline();
-        streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(inputStream);
-        registrations.add(streamRegistration);
 
         Anchor inputStreamDownload = new Anchor("",
                 "InputStream DownloadHandler shorthand");
-        inputStreamDownload.setHref(streamRegistration.getResource());
+        inputStreamDownload.setHref(inputStream);
         inputStreamDownload.setId("download-handler-input-stream");
-
-        streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(DownloadHandler
-                        .fromInputStream(downloadEvent -> DownloadResponse
-                                .error(HttpStatusCode.INTERNAL_SERVER_ERROR))
-                        .inline());
-        registrations.add(streamRegistration);
 
         Anchor inputStreamErrorDownload = new Anchor("",
                 "InputStream DownloadHandler shorthand");
-        inputStreamErrorDownload.setHref(streamRegistration.getResource());
+        inputStreamErrorDownload
+                .setHref(DownloadHandler
+                        .fromInputStream(downloadEvent -> DownloadResponse
+                                .error(HttpStatusCode.INTERNAL_SERVER_ERROR))
+                        .inline());
         inputStreamErrorDownload.setId("download-handler-input-stream-error");
 
         add(handlerDownload, fileDownload, classDownload, servletDownload,
@@ -131,10 +107,5 @@ public class DownloadHandlerView extends Div {
         reattach.setId("detach-attach");
 
         add(reattach);
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        registrations.forEach(StreamRegistration::unregister);
     }
 }
