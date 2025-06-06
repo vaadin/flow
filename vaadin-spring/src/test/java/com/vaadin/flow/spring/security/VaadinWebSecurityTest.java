@@ -37,6 +37,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -75,6 +76,7 @@ public class VaadinWebSecurityTest {
                         PathPatternRequestMatcher.Builder.class,
                         requestMatcherBuilder));
         TestConfig testConfig = new VaadinWebSecurityTest.TestConfig();
+        mockVaadinWebSecurityInjection(testConfig);
         testConfig.filterChain(httpSecurity);
 
         Assert.assertTrue("VaadinWebSecurity HTTP configuration invoked",
@@ -202,8 +204,15 @@ public class VaadinWebSecurityTest {
     private static TestNavigationAccessControl mockVaadinWebSecurityInjection(
             VaadinWebSecurity testConfig) {
         TestNavigationAccessControl accessControl = new TestNavigationAccessControl();
-        ReflectionTestUtils.setField(testConfig, "accessControl",
-                accessControl);
+        ObjectProvider<NavigationAccessControl> accessControlProvider = mock(
+                ObjectProvider.class);
+        Mockito.when(accessControlProvider.getIfAvailable())
+                .thenReturn(accessControl);
+        ReflectionTestUtils.setField(testConfig, "accessControlProvider",
+                accessControlProvider);
+        ReflectionTestUtils.setField(testConfig,
+                "securityContextHolderStrategy",
+                new VaadinAwareSecurityContextHolderStrategy());
         RequestUtil requestUtil = mock(RequestUtil.class);
         Mockito.when(requestUtil.getUrlMapping()).thenReturn("/*");
         Mockito.when(requestUtil.applyUrlMapping(anyString())).then(i -> {
@@ -215,6 +224,7 @@ public class VaadinWebSecurityTest {
         });
         ReflectionTestUtils.setField(testConfig, "requestUtil", requestUtil);
         ReflectionTestUtils.setField(testConfig, "servletContextPath", "");
+        testConfig.afterPropertiesSet();
         return accessControl;
     }
 
