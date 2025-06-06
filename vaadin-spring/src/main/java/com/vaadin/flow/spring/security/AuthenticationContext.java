@@ -39,6 +39,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -74,6 +75,46 @@ public class AuthenticationContext {
     private CompositeLogoutHandler logoutHandler;
 
     private VaadinRolePrefixHolder rolePrefixHolder;
+
+    private final SecurityContextHolderStrategy securityContextHolderStrategy;
+
+    /**
+     * Creates a new instance of {@link AuthenticationContext} using the
+     * provided {@link SecurityContextHolderStrategy} to get the current
+     * {@link SecurityContext}.
+     *
+     * @param strategy
+     *            the strategy to get the current {@link SecurityContext}
+     */
+    public AuthenticationContext(SecurityContextHolderStrategy strategy) {
+        this.securityContextHolderStrategy = strategy;
+    }
+
+    /**
+     * Creates a new instance of {@link AuthenticationContext} using the
+     * {@link SecurityContextHolderStrategy} from
+     * {@link SecurityContextHolder#getContextHolderStrategy()}.
+     * <p>
+     * Prefer using
+     * {@link #AuthenticationContext(SecurityContextHolderStrategy)} to ensure
+     * the correct strategy for the current context is used.
+     *
+     * @deprecated Use
+     *             {@link #AuthenticationContext(SecurityContextHolderStrategy)}
+     */
+    @Deprecated(since = "24.8", forRemoval = true)
+    public AuthenticationContext() {
+        this(SecurityContextHolder.getContextHolderStrategy());
+    }
+
+    /**
+     * Gets the current {@link SecurityContext}.
+     *
+     * @return the current {@link SecurityContext}
+     */
+    public SecurityContext getSecurityContext() {
+        return securityContextHolderStrategy.getContext();
+    }
 
     /**
      * Gets an {@link Optional} with an instance of the current user if it has
@@ -171,7 +212,7 @@ public class AuthenticationContext {
                 .ofNullable(VaadinServletResponse.getCurrent())
                 .map(VaadinServletResponse::getHttpServletResponse)
                 .orElse(null);
-        Authentication auth = SecurityContextHolder.getContext()
+        Authentication auth = securityContextHolderStrategy.getContext()
                 .getAuthentication();
 
         logoutHandler.logout(request, response, auth);
@@ -433,8 +474,9 @@ public class AuthenticationContext {
         this.rolePrefixHolder = rolePrefixHolder;
     }
 
-    private static Optional<Authentication> getAuthentication() {
-        return Optional.of(SecurityContextHolder.getContext())
+    private Optional<Authentication> getAuthentication() {
+        return Optional.of(securityContextHolderStrategy)
+                .map(SecurityContextHolderStrategy::getContext)
                 .map(SecurityContext::getAuthentication)
                 .filter(auth -> !(auth instanceof AnonymousAuthenticationToken));
     }

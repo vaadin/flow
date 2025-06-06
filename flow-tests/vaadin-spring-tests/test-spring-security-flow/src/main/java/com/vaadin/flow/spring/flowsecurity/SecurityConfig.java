@@ -10,14 +10,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -36,7 +35,6 @@ import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
@@ -45,7 +43,6 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @EnableWebSecurity
 @Configuration
 @Profile("default")
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
 
     private final UserInfoService userInfoService;
@@ -159,9 +156,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    @DependsOn("VaadinSecurityContextHolderStrategy")
-    public SwitchUserFilter switchUserFilter() {
+    public SwitchUserFilter switchUserFilter(SecurityContextHolderStrategy securityContextHolderStrategy) {
         SwitchUserFilter filter = new SwitchUserFilter();
+        filter.setSecurityContextHolderStrategy(securityContextHolderStrategy);
         filter.setUserDetailsService(userDetailsService());
         filter.setSwitchUserMatcher(antMatcher(HttpMethod.GET, "/impersonate"));
         filter.setSwitchFailureUrl("/switchUser");
