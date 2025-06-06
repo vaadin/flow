@@ -1004,7 +1004,8 @@ public class ElementJacksonTest extends AbstractNodeTest {
         s.set("foo", "bar");
         Assert.assertEquals("bar", s.get("foo"));
         s.set("--lumo-primary-text-color", "hsl(12, 12%, 12%)");
-        Assert.assertEquals("hsl(12, 12%, 12%)", s.get("--lumo-primary-text-color"));
+        Assert.assertEquals("hsl(12, 12%, 12%)",
+                s.get("--lumo-primary-text-color"));
     }
 
     @Test
