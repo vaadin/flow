@@ -48,7 +48,7 @@ public class AdminView extends VerticalLayout {
                 }
             };
             Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
-                    doNavigation, SecurityContextHolder.getContext());
+                    doNavigation, securityUtils.getSecurityContext());
             new Thread(wrappedRunnable).start();
         });
         add(accessRolePrefixedAdminPageFromThread);
