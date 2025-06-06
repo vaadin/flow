@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
@@ -46,6 +47,9 @@ class SpringAccessPathCheckerTest {
 
     @Autowired
     private SpringAccessPathChecker accessPathChecker;
+
+    @Autowired
+    private SecurityContextHolderStrategy securityContextHolderStrategy;
 
     @Test
     @WithAnonymousUser
@@ -140,7 +144,7 @@ class SpringAccessPathCheckerTest {
     }
 
     private boolean checkAccess(String admin) {
-        Principal principal = SecurityContextHolder.getContext()
+        Principal principal = securityContextHolderStrategy.getContext()
                 .getAuthentication();
         Function<String, Boolean> roleChecker = AuthenticationUtil
                 .getSecurityHolderRoleChecker();
@@ -153,9 +157,16 @@ class SpringAccessPathCheckerTest {
     public static class TestConfig {
 
         @Bean
+        SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+            return new VaadinAwareSecurityContextHolderStrategy();
+        }
+
+        @Bean
         SpringAccessPathChecker rootPathAccessChecker(
+                SecurityContextHolderStrategy securityContextHolderStrategy,
                 WebInvocationPrivilegeEvaluator evaluator) {
-            return new SpringAccessPathChecker(evaluator);
+            return new SpringAccessPathChecker(securityContextHolderStrategy,
+                    evaluator);
         }
 
         @Bean

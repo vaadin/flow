@@ -23,12 +23,15 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
@@ -37,6 +40,7 @@ import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -65,8 +69,18 @@ import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHand
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ObjectPostProcessorConfiguration.class,
+        AuthenticationContextTest.AuthenticationContextTestConfiguration.class,
         VaadinSecurityConfigurerTest.TestConfig.class })
 public class AuthenticationContextTest {
+
+    @TestConfiguration
+    static class AuthenticationContextTestConfiguration {
+
+        @Bean
+        SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+            return new VaadinAwareSecurityContextHolderStrategy();
+        }
+    }
 
     @Autowired
     ObjectPostProcessor<Object> postProcessor;
@@ -77,7 +91,15 @@ public class AuthenticationContextTest {
     @Autowired
     ApplicationContext appCtx;
 
-    private final AuthenticationContext authContext = new AuthenticationContext();
+    @Autowired
+    SecurityContextHolderStrategy securityContextHolderStrategy;
+
+    private AuthenticationContext authContext;
+
+    @Before
+    public void setUp() {
+        authContext = new AuthenticationContext(securityContextHolderStrategy);
+    }
 
     @Test
     public void isAuthenticated_notAuthenticated_false() {
@@ -512,8 +534,8 @@ public class AuthenticationContextTest {
     }
 
     private SetupForLogoutTest getSetupForLogoutTest() {
-        Authentication authentication = SecurityContextHolder.getContext()
-                .getAuthentication();
+        Authentication authentication = securityContextHolderStrategy
+                .getContext().getAuthentication();
 
         LogoutSuccessHandler successHandler = Mockito
                 .mock(LogoutSuccessHandler.class);
@@ -560,7 +582,8 @@ public class AuthenticationContextTest {
                 .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
                         .addLogoutHandler(handler1).addLogoutHandler(handler2));
         httpSecurity.build();
-        AuthenticationContext authCtx = new AuthenticationContext();
+        AuthenticationContext authCtx = new AuthenticationContext(
+                securityContextHolderStrategy);
         AuthenticationContext.applySecurityConfiguration(httpSecurity, authCtx);
 
         Assert.assertNotNull(authCtx.getLogoutSuccessHandler());
@@ -589,7 +612,8 @@ public class AuthenticationContextTest {
                 .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
                         .addLogoutHandler(handler1).addLogoutHandler(handler2));
 
-        AuthenticationContext authCtx = new AuthenticationContext();
+        AuthenticationContext authCtx = new AuthenticationContext(
+                securityContextHolderStrategy);
 
         IllegalStateException exception = Assert.assertThrows(
                 IllegalStateException.class, () -> AuthenticationContext
@@ -602,7 +626,8 @@ public class AuthenticationContextTest {
     @WithMockUser(authorities = { "FOO_USER", "FOO_ADMIN" })
     public void supportsCustomRolePrefixes() {
         var prefixHolder = new VaadinRolePrefixHolder("FOO_");
-        var authContext = new AuthenticationContext();
+        var authContext = new AuthenticationContext(
+                securityContextHolderStrategy);
         authContext.setRolePrefixHolder(prefixHolder);
         Assert.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
         Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
