@@ -12,7 +12,7 @@
     "vite": "3.2.11",
     "@rollup/plugin-replace": "3.1.0",
     "rollup-plugin-brotli": "3.1.0",
-    "vite-plugin-checker": "0.9.3",
+    "vite-plugin-checker": "0.6.4",
     "mkdirp": "3.0.1",
     "workbox-build": "6.6.1",
     "@rollup/pluginutils": "4.2.1",
