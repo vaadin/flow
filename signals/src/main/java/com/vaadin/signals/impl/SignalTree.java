@@ -234,7 +234,7 @@ public abstract class SignalTree {
         }
 
         runWithLock(() -> {
-            observers.forEach((nodeId, list) -> {
+            Map.copyOf(observers).forEach((nodeId, list) -> {
                 Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
                 Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
 
