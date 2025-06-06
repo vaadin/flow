@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -87,6 +88,7 @@ public class AuthenticationContext {
      *            the strategy to get the current {@link SecurityContext}
      */
     public AuthenticationContext(SecurityContextHolderStrategy strategy) {
+        Objects.requireNonNull(strategy, "strategy cannot be null");
         this.securityContextHolderStrategy = strategy;
     }
 
