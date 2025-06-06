@@ -122,6 +122,8 @@ public class Anchor extends HtmlContainer
      * <p>
      * Sets the 'download' attribute for link when given a non-inline handler
      * implementing AbstractDownloadHandler.
+     * <p>
+     * For custom handlers the mode {@link AttachmentType#DOWNLOAD} will be set.
      *
      * @see #setHref(DownloadHandler)
      * @see #setText(String)
@@ -132,7 +134,9 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      */
     public Anchor(DownloadHandler downloadHandler, String text) {
-        this(downloadHandler, null, text);
+        AttachmentType att = downloadHandler instanceof AbstractDownloadHandler ? getLinkMode(downloadHandler) : AttachmentType.DOWNLOAD;
+        setHref(downloadHandler, att);
+        setText(text);
     }
 
     /**
@@ -153,14 +157,15 @@ public class Anchor extends HtmlContainer
      * @param downloadHandler
      *            the callback that handles data download, not null
      * @param attachmentType
-     *            set the correct attribute for anchor according to given mode
+     *            set the correct attribute for anchor according to given mode,
+     *            {@code null} will set type to {@link AttachmentType#DOWNLOAD}
      * @param text
      *            the text content to set
      */
     public Anchor(DownloadHandler downloadHandler,
             AttachmentType attachmentType, String text) {
         setHref(downloadHandler,
-                attachmentType == null ? getLinkMode(downloadHandler)
+                attachmentType == null ? AttachmentType.DOWNLOAD
                         : attachmentType);
         setText(text);
     }
@@ -271,7 +276,8 @@ public class Anchor extends HtmlContainer
      * @param downloadHandler
      *            the callback that handles data download, not null
      * @param attachmentType
-     *            set the correct attribute for anchor according to given mode
+     *            set the correct attribute for anchor according to given mode,
+     *            {@code null} will set the type to {@link AttachmentType#DOWNLOAD}
      */
     public void setHref(DownloadHandler downloadHandler,
             AttachmentType attachmentType) {
@@ -279,8 +285,8 @@ public class Anchor extends HtmlContainer
                 downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
-        setDownload(attachmentType != null
-                && attachmentType.equals(AttachmentType.DOWNLOAD));
+        setDownload(attachmentType == null
+                || attachmentType.equals(AttachmentType.DOWNLOAD));
     }
 
     /**
