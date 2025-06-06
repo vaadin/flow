@@ -385,7 +385,7 @@ public class AnchorTest extends ComponentTest {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path").inline();
-        Anchor anchor = new Anchor(downloadHandler, "bar", LinkMode.DOWNLOAD);
+        Anchor anchor = new Anchor(downloadHandler, LinkMode.DOWNLOAD, "bar");
 
         Assert.assertTrue(
                 "Inline download handlers should not add download attribute",
@@ -397,7 +397,7 @@ public class AnchorTest extends ComponentTest {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path");
-        Anchor anchor = new Anchor(downloadHandler, "bar", LinkMode.INLINE);
+        Anchor anchor = new Anchor(downloadHandler, LinkMode.INLINE, "bar");
 
         Assert.assertFalse(
                 "Inline download handlers should not add download attribute",

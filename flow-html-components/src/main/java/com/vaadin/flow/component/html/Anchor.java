@@ -132,8 +132,7 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      */
     public Anchor(DownloadHandler downloadHandler, String text) {
-        setHref(downloadHandler);
-        setText(text);
+        this(downloadHandler, null, text);
     }
 
     /**
@@ -153,14 +152,15 @@ public class Anchor extends HtmlContainer
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
-     * @param text
-     *            the text content to set
      * @param linkMode
      *            set the correct attribute for anchor according to given mode
+     * @param text
+     *            the text content to set
      */
-    public Anchor(DownloadHandler downloadHandler, String text,
-            LinkMode linkMode) {
-        setHref(downloadHandler, linkMode);
+    public Anchor(DownloadHandler downloadHandler, LinkMode linkMode,
+            String text) {
+        setHref(downloadHandler,
+                linkMode == null ? getLinkMode(downloadHandler) : linkMode);
         setText(text);
     }
 
@@ -242,17 +242,20 @@ public class Anchor extends HtmlContainer
      *            the callback that handles data download, not null
      */
     public void setHref(DownloadHandler downloadHandler) {
-        this.href = new StreamResourceRegistry.ElementStreamResource(
-                downloadHandler, this.getElement());
-        setRouterIgnore(true);
-        assignHrefAttribute();
+        setHref(downloadHandler, getLinkMode(downloadHandler));
+    }
+
+    private LinkMode getLinkMode(DownloadHandler downloadHandler) {
         if (downloadHandler instanceof AbstractDownloadHandler<?> abstractDownloadHandler) {
-            if (!abstractDownloadHandler.isInline()) {
-                setDownload(true);
+            if (abstractDownloadHandler.isInline()) {
+                return LinkMode.INLINE;
             } else {
-                setDownload(false);
+                return LinkMode.DOWNLOAD;
             }
         }
+        // For a non abstract download handler the state should not change when
+        // setting new handler
+        return isDownload() ? LinkMode.DOWNLOAD : LinkMode.INLINE;
     }
 
     /**
@@ -274,11 +277,7 @@ public class Anchor extends HtmlContainer
                 downloadHandler, this.getElement());
         setRouterIgnore(true);
         assignHrefAttribute();
-        if (linkMode.equals(LinkMode.INLINE)) {
-            setDownload(false);
-        } else {
-            setDownload(true);
-        }
+        setDownload(linkMode != null && linkMode.equals(LinkMode.DOWNLOAD));
     }
 
     /**
