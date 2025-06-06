@@ -351,6 +351,37 @@ public class SynchronousSignalTreeTest {
     }
 
     @Test
+    void observe_observeAnotherNodeInCallback_observerAdded() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        Id childId = Id.random();
+        AtomicInteger count = new AtomicInteger();
+        tree.observeNextChange(Id.ZERO, () -> {
+            tree.observeNextChange(childId, () -> {
+                count.incrementAndGet();
+                return false;
+            });
+            return false;
+        });
+
+        tree.commitSingleCommand(new SignalCommand.InsertCommand(childId,
+                Id.ZERO, null, new DoubleNode(2), ListPosition.last()));
+
+        // Nothing yet since root observer not invoked
+        assertEquals(0, count.get());
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+
+        // Nothing yet since child observer not invoked
+        assertEquals(0, count.get());
+
+        tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                childId, new DoubleNode(3)));
+
+        assertEquals(1, count.get());
+    }
+
+    @Test
     void subscribeToProcessed_noChanges_doesNotReceive() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
