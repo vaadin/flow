@@ -128,15 +128,17 @@ public abstract class VaadinWebSecurity {
     @Autowired
     private SecurityContextHolderStrategy securityContextHolderStrategy;
 
+    private AuthenticationContext authenticationContext;
+
     @PostConstruct
     void afterPropertiesSet() {
         accessControl = accessControlProvider.getIfAvailable();
+        authenticationContext = new AuthenticationContext(
+                securityContextHolderStrategy);
         authenticationContext.setRolePrefixHolder(vaadinRolePrefixHolder);
         SecurityContextHolder
                 .setContextHolderStrategy(securityContextHolderStrategy);
     }
-
-    private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
     /**
      * Registers default {@link SecurityFilterChain} bean.
