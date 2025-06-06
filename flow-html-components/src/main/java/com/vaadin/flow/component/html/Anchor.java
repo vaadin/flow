@@ -134,7 +134,9 @@ public class Anchor extends HtmlContainer
      *            the text content to set
      */
     public Anchor(DownloadHandler downloadHandler, String text) {
-        AttachmentType att = downloadHandler instanceof AbstractDownloadHandler ? getLinkMode(downloadHandler) : AttachmentType.DOWNLOAD;
+        AttachmentType att = downloadHandler instanceof AbstractDownloadHandler
+                ? getLinkMode(downloadHandler)
+                : AttachmentType.DOWNLOAD;
         setHref(downloadHandler, att);
         setText(text);
     }
@@ -277,7 +279,8 @@ public class Anchor extends HtmlContainer
      *            the callback that handles data download, not null
      * @param attachmentType
      *            set the correct attribute for anchor according to given mode,
-     *            {@code null} will set the type to {@link AttachmentType#DOWNLOAD}
+     *            {@code null} will set the type to
+     *            {@link AttachmentType#DOWNLOAD}
      */
     public void setHref(DownloadHandler downloadHandler,
             AttachmentType attachmentType) {

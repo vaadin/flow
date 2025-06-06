@@ -406,6 +406,32 @@ public class AnchorTest extends ComponentTest {
                 anchor.isDownload());
     }
 
+    @Test
+    public void customDownloadHandler_constructorSetsDownloadMode() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(event -> {
+        }, "bar");
+
+        Assert.assertTrue(
+                "Custom download handlers should by default add download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void customDownloadHandler_nullType_constructorSetsDownloadMode() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(event -> {
+        }, null, "bar");
+
+        Assert.assertTrue(
+                "Custom download handlers should by default add download attribute",
+                anchor.isDownload());
+    }
+
     private void mockUI() {
         ui = new UI();
         UI.setCurrent(ui);
