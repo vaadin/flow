@@ -125,8 +125,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
                                 .setLocation("impersonate?username=john")));
                 impersonate.setId("impersonate");
                 layout.add(impersonate);
-            } else if (SecurityContextHolder.getContext().getAuthentication()
-                    .getAuthorities().stream().anyMatch(
+            } else if (securityUtils.getAuthorities().stream().anyMatch(
                             auth -> SwitchUserFilter.ROLE_PREVIOUS_ADMINISTRATOR
                                     .equals(auth.getAuthority()))) {
                 Button impersonate = new Button("Exit impersonation",

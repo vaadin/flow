@@ -282,7 +282,6 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("Requires VaadinAwareSecurityContextHolderStrategyConfiguration usually installed by VaadinWebSecurity")
     public void navigate_in_thread_with_access() {
         open(LOGIN_PATH);
         loginAdmin();

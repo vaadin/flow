@@ -28,6 +28,7 @@ import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 
 @Route(value = "", layout = MainView.class)
 @PageTitle("Public View")
@@ -37,7 +38,7 @@ public class PublicView extends FlexLayout {
 
     public static final String BACKGROUND_NAVIGATION_ID = "backgroundNavi";
 
-    public PublicView() {
+    public PublicView(SecurityUtils securityUtils) {
         setFlexDirection(FlexDirection.COLUMN);
         setHeightFull();
 
@@ -65,7 +66,7 @@ public class PublicView extends FlexLayout {
                     };
                     Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
                             navigateToAdmin,
-                            SecurityContextHolder.getContext());
+                            securityUtils.getSecurityContext());
                     new Thread(wrappedRunnable).start();
                 });
         backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);

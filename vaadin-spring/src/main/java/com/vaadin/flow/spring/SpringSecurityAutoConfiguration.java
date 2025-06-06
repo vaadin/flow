@@ -154,9 +154,10 @@ public class SpringSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public AccessPathChecker accessPatchChecker(
             VaadinConfigurationProperties vaadinProperties,
-            @Lazy WebInvocationPrivilegeEvaluator evaluator) {
-        return new SpringAccessPathChecker(evaluator,
-                vaadinProperties.getUrlMapping());
+            @Lazy WebInvocationPrivilegeEvaluator evaluator,
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        return new SpringAccessPathChecker(securityContextHolderStrategy,
+                evaluator, vaadinProperties.getUrlMapping());
     }
 
     /**
@@ -202,13 +203,14 @@ public class SpringSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    AuthenticationContext authenticationContext() {
-        return new AuthenticationContext();
+    SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+        return new VaadinAwareSecurityContextHolderStrategy();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
-        return new VaadinAwareSecurityContextHolderStrategy();
+    AuthenticationContext authenticationContext(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        return new AuthenticationContext(securityContextHolderStrategy);
     }
 }
