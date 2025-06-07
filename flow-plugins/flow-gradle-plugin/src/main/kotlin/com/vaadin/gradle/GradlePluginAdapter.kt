@@ -233,8 +233,10 @@ internal class GradlePluginAdapter private constructor(
         return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
     }
 
-    override fun webpackOutputDirectory(): File =
-        config.webpackOutputDirectory.get()
+    override fun webpackOutputDirectory(): File = frontendOutputDirectory()
+
+    override fun frontendOutputDirectory(): File =
+        config.frontendOutputDirectory.get()
 
     override fun frontendResourcesDirectory(): File =
         config.frontendResourcesDirectory.get()

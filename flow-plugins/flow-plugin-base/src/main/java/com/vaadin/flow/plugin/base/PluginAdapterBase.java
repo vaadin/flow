@@ -278,8 +278,20 @@ public interface PluginAdapterBase {
      * files.
      *
      * @return {@link File}
+     * @deprecated since 24.8, use {@link #frontendOutputDirectory()} instead.
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     File webpackOutputDirectory();
+
+    /**
+     * The folder where the frontend build tool should output index.js and other
+     * generated files.
+     *
+     * @return {@link File}
+     */
+    default File frontendOutputDirectory() {
+        return webpackOutputDirectory();
+    }
 
     /**
      * The folder where everything is built into.
