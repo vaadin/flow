@@ -263,7 +263,7 @@ public class UITest {
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        ui.doInit(request, 0);
+        ui.doInit(request, 0, "foo");
         ui.getInternals().getRouter().initializeUI(ui,
                 requestToLocation(request));
 

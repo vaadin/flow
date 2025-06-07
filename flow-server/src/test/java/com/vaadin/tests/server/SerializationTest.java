@@ -101,7 +101,7 @@ public class SerializationTest {
         session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
                 Mockito.withSettings().serializable()));
         MockUI ui = new MockUI(session);
-        ui.doInit(null, 42);
+        ui.doInit(null, 42, "foo");
         session.addUI(ui);
 
         session.lock();
@@ -279,7 +279,7 @@ public class SerializationTest {
         session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
                 withSettings().serializable()));
         MockUI ui = new MockUI(session);
-        ui.doInit(null, 42);
+        ui.doInit(null, 42, "foo");
         session.addUI(ui);
         uiConsumer.accept(ui);
 

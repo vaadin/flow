@@ -129,7 +129,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if (deploymentConfiguration.isProductionMode()) {
                     // The web-component.html is fetched from the bundle so it
                     // includes the entry point javascripts
-                } else if (!deploymentConfiguration.frontendHotdeploy()) {
+                } else if (deploymentConfiguration
+                        .getMode() != Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                     // When running without a frontend server, the
                     // web-component.html comes
                     // directly from the frontend folder and the JS
@@ -451,7 +452,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         if (!"script".equalsIgnoreCase(element.tagName())) {
             return null;
         }
-        // Injecting a webpack bundle twice can never work.
+        // Injecting a frontend bundle twice can never work.
         // The bundle contains web components that register
         // themselves and loading twice will always cause
         // custom element conflicts

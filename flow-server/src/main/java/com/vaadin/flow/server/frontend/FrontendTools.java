@@ -830,7 +830,10 @@ public class FrontendTools {
      * https://github.com/vaadin/flow/issues/12649
      *
      * @return the flags
+     * @deprecated Webpack is not used anymore, this method is obsolete and have
+     *             no replacements.
      */
+    @Deprecated(forRemoval = true, since = "24.8")
     public Map<String, String> getWebpackNodeEnvironment() {
         Map<String, String> environment = new HashMap<>();
         ProcessBuilder processBuilder = new ProcessBuilder()

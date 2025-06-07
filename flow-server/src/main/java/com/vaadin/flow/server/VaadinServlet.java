@@ -15,6 +15,14 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,14 +45,6 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
-
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -403,9 +403,8 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Handles a request by serving a static file from Webpack when in
-     * npm-dev-mode, or from a WebJar when in bower-dev-mode or from the
-     * file-system when in production.
+     * Handles a request by serving a static file from the dev server or from
+     * the file-system.
      *
      * It's not done via {@link VaadinService} handlers because static requests
      * do not need a established session.

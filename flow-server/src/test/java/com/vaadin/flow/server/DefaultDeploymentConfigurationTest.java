@@ -251,17 +251,17 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotdeployParameter_expressBuildFeatureFlagIsON_resetsFrontendHotdeployToFalse() {
+    public void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
-        Assert.assertFalse("Expected dev server to be disabled by default",
-                config.frontendHotdeploy());
+        Assert.assertEquals("Expected dev server to be disabled by default",
+                Mode.DEVELOPMENT_BUNDLE, config.getMode());
 
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         config = createDeploymentConfig(init);
-        Assert.assertTrue("Expected dev server to be enabled when set true",
-                config.frontendHotdeploy());
+        Assert.assertEquals("Expected dev server to be enabled when set true",
+                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
     }
 
     @Test
@@ -294,9 +294,6 @@ public class DefaultDeploymentConfigurationTest {
 
         Assert.assertTrue("ProductionMode should be enabled",
                 config.isProductionMode());
-        Assert.assertFalse(
-                "Frontend hotdeploy should return false in production mode",
-                config.frontendHotdeploy());
     }
 
     @Test
@@ -324,9 +321,8 @@ public class DefaultDeploymentConfigurationTest {
                     projectRoot.getAbsolutePath());
             DefaultDeploymentConfiguration config = createDeploymentConfig(
                     init);
-            boolean hotdeploy = config.frontendHotdeploy();
-            Assert.assertTrue("Should use the legacy frontend folder",
-                    hotdeploy);
+            Assert.assertEquals("Should use the legacy frontend folder",
+                    Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
         }
     }
 
