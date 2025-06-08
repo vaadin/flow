@@ -143,10 +143,12 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
         var chunkStream = Optional.ofNullable(chunks).map(chunkNames -> {
             var chunkData = getChunkData();
+            // for each chunk name, retrieve the keys from the chunk data
             return Arrays.stream(chunks).map(chunkData::get)
                     .filter(Objects::nonNull).flatMap(Arrays::stream);
         });
 
+        // add single keys if requested
         var keyStream = Optional.ofNullable(keys).map(Arrays::stream);
 
         var requestedKeys = Stream.of(chunkStream, keyStream)

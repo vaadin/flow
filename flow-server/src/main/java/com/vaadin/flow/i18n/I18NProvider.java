@@ -73,8 +73,6 @@ public interface I18NProvider extends Serializable {
         return getTranslation(key.toString(), locale, params);
     }
 
-    // TODO: remove default implementation in next major release
-
     /**
      * Retrieves all available translations. This is currently used only by
      * Hilla in development mode.
@@ -89,7 +87,9 @@ public interface I18NProvider extends Serializable {
     }
 
     /**
-     * Retrieves the translations for a collection of keys.
+     * Retrieves the translations for a collection of keys. By default, it calls
+     * `getTranslation` on each key, but this can be optimized by the
+     * implementation.
      *
      * @param keys
      *            the keys to be translated
