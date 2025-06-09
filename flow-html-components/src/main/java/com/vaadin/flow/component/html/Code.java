@@ -1,6 +1,5 @@
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
@@ -9,10 +8,10 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;code&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 25.0
  */
 @Tag(Tag.CODE)
-public class Code extends HtmlContainer implements ClickNotifier<Code> {
+public class Code extends HtmlContainer {
 
     /**
      * Creates a new empty code.
