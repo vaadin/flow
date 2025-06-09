@@ -230,4 +230,24 @@ public class FileDownloadHandlerTest {
         Mockito.verify(event).setContentType("application/octet-stream");
         Mockito.verify(event).setContentLength(165000);
     }
+
+    @Test
+    public void handleSetToInline_contentTypeIsInline()
+            throws IOException, URISyntaxException {
+        URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
+        DownloadHandler handler = DownloadHandler
+                .forFile(new File(resource.toURI()), "my-download.bin")
+                .inline();
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
 }

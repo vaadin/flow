@@ -87,6 +87,9 @@ public class ServletResourceDownloadHandler
                         .setContentType(getContentType(resourceName, response));
                 if (!isInline()) {
                     downloadEvent.setFileName(resourceName);
+                } else {
+                    downloadEvent.getResponse().setHeader("Content-Disposition",
+                            "inline");
                 }
                 TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
