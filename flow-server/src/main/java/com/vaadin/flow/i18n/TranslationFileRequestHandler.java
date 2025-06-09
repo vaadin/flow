@@ -126,7 +126,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     private void handleMissingI18NProvider(VaadinSession session,
             VaadinResponse response) throws IOException {
-        String errorMessage = "Loading translations is not supported when using a custom i18n provider.";
+        String errorMessage = "Missing I18nProvider implementation, loading translations is not supported.";
         if (session.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
