@@ -104,11 +104,11 @@ public final class ComponentEffect {
      *
      * <pre>
      * Registration effect = ComponentEffect.bind(mySpan, stringSignal,
-     *     Span::setText);
+     *         Span::setText);
      * effect.remove(); // to remove the effect when no longer needed
      *
-     * ComponentEffect.bind(mySpan, stringSignal.map(value -> !value.isEmpty(),
-     *     Span::setVisible);
+     * ComponentEffect.bind(mySpan, stringSignal.map(value -> !value.isEmpty()),
+     *         Span::setVisible);
      * </pre>
      *
      * @see Signal#effect(Runnable)
