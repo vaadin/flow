@@ -149,12 +149,7 @@ public class StreamResourceRegistry implements Serializable {
             ElementRequestHandler elementRequestHandler, Element owner) {
         AbstractStreamResource wrappedResource = new ElementStreamResource(
                 elementRequestHandler, owner);
-        session.checkHasLock(
-                "Session needs to be locked when registering stream resources.");
-        StreamRegistration registration = new Registration(this,
-                wrappedResource.getId(), wrappedResource.getName());
-        res.put(registration.getResourceUri(), wrappedResource);
-        return registration;
+        return registerResource(wrappedResource);
     }
 
     /**
