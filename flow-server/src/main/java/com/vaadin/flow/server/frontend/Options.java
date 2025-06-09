@@ -217,27 +217,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets the webpack related properties.
-     *
-     * @param webappResourcesDirectory
-     *            the directory to set for webpack to output its build results,
-     *            meant for serving from context root.
-     * @param resourceOutputDirectory
-     *            the directory to output generated non-served resources, such
-     *            as the "config/stats.json" stats file, and the
-     *            "config/flow-build-info.json" token file.
-     * @return this builder
-     * @deprecated to be removed, use
-     *             {@link #withBuildResultFolders(File, File)} instead.
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public Options withWebpack(File webappResourcesDirectory,
-            File resourceOutputDirectory) {
-        return withBuildResultFolders(webappResourcesDirectory,
-                resourceOutputDirectory);
-    }
-
-    /**
      * Sets whether to enable packages and frontend file updates. Default is
      * <code>true</code>.
      *
@@ -251,20 +230,8 @@ public class Options implements Serializable {
         return this;
     }
 
-    /**
-     * Sets whether to perform always perform clean up procedure. Default is
-     * <code>false</code>. When the value is false, npm related files will only
-     * be removed when a platform version update is detected.
-     *
-     * This method is only for tests.
-     *
-     * @param forceClean
-     *            <code>true</code> to clean npm files always, otherwise
-     *            <code>false</code>
-     * @return this builder
-     */
-    @Deprecated
-    public Options enableNpmFileCleaning(boolean forceClean) {
+    // Visible only for tests
+    Options enableNpmFileCleaning(boolean forceClean) {
         this.cleanNpmFiles = forceClean;
         return this;
     }
@@ -787,14 +754,6 @@ public class Options implements Serializable {
         return enableConfigUpdate;
     }
 
-    /**
-     * @deprecated use {@link #isEnableConfigUpdate()}
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public boolean isEnableWebpackConfigUpdate() {
-        return isEnableConfigUpdate();
-    }
-
     public boolean isRunNpmInstall() {
         return runNpmInstall;
     }
@@ -807,6 +766,11 @@ public class Options implements Serializable {
         return generateEmbeddableWebComponents;
     }
 
+    /**
+     * @deprecated used internally only for testing, to be removed without a
+     *             replacement.
+     */
+    @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {
         return cleanNpmFiles;
     }

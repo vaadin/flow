@@ -75,7 +75,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void webpackLiveReload_newCssAndFontCreatedAndDeleted_stylesUpdatedOnFly() {
+    public void frontendLiveReload_newCssAndFontCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
         Assert.assertFalse(
                 "Red background is not expected before applying the styles",

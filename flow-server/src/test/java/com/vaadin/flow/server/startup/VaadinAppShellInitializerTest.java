@@ -506,7 +506,6 @@ public class VaadinAppShellInitializerTest {
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
-        Mockito.when(config.frontendHotdeploy()).thenReturn(true);
 
         Mockito.when(config.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))

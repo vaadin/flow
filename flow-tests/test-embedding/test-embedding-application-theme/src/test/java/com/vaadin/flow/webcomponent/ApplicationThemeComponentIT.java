@@ -195,7 +195,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 .contains("https://fonts.googleapis.com/css?family=Poppins"));
         Assert.assertTrue("Link with media query was not found", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Oswald"));
-        Assert.assertFalse("Found import that webpack should have resolved",
+        Assert.assertFalse("Found import that Vite should have resolved",
                 linkUrls.contains("docImport.css"));
 
         final List<WebElement> mediaLinks = links.stream()

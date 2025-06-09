@@ -178,7 +178,7 @@ public class DefaultApplicationConfigurationFactory
     }
 
     /**
-     * Check if the webpack.generated.js resources is inside 2 jars
+     * Check if the vite.generated.ts resources is inside 2 jars
      * (flow-server.jar and application.jar) if this is the case then we can
      * accept a build info file from inside jar with a single jar in the path.
      * <p>

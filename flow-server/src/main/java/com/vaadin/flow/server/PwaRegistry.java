@@ -279,7 +279,7 @@ public class PwaRegistry implements Serializable {
         // Add manifest to precache
         filesToCache.add(manifestCache());
 
-        // Add user defined resources. Do not serve these via Webpack, as the
+        // Add user defined resources. Do not serve these via dev-server, as the
         // file system location from which a resource is served depends on
         // the (configurable) web app logic (#8996).
         for (String resource : pwaConfiguration.getOfflineResources()) {

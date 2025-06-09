@@ -395,34 +395,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     /**
-     * Generates a List of ClasspathElements (Run and CompileTime) from a
-     * MavenProject.
-     *
-     * @param project
-     *            a given MavenProject
-     * @return List of ClasspathElements
-     * @deprecated will be removed without replacement.
-     */
-    @Deprecated(forRemoval = true)
-    public static List<String> getClasspathElements(MavenProject project) {
-
-        try {
-            final Stream<String> classpathElements = Stream
-                    .of(project.getRuntimeClasspathElements().stream(),
-                            project.getSystemClasspathElements().stream(),
-                            project.getCompileClasspathElements().stream()
-                                    .filter(s -> s.matches(
-                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
-                    .flatMap(Function.identity());
-            return classpathElements.collect(Collectors.toList());
-        } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to retrieve runtime classpath elements from project '%s'",
-                    project), e);
-        }
-    }
-
-    /**
      * Checks if Hilla is available based on the Maven project's classpath.
      *
      * @return true if Hilla is available, false otherwise

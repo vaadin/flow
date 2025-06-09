@@ -93,7 +93,7 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
 
         ui = new UI();
         ui.getInternals().setSession(session);
-        ui.doInit(null, 1);
+        ui.doInit(null, 1, "foo");
 
         UI.setCurrent(ui);
 

@@ -42,11 +42,6 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 
     public static final String SERVLET_PARAMETER_INITIAL_UIDL = "eagerServerLoad";
-    /**
-     * Enable dev server is deprecated. use {@link #FRONTEND_HOTDEPLOY}
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed

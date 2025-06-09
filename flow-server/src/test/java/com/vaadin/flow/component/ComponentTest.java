@@ -1831,18 +1831,6 @@ public class ComponentTest {
     }
 
     @Test
-    public void getTranslation_deprecated_delegatesToActualImplementation() {
-        Component component = Mockito.mock(Component.class);
-        Mockito.doCallRealMethod().when(component).getTranslation(
-                Mockito.anyString(), Mockito.any(Locale.class),
-                Mockito.any(Object[].class));
-
-        component.getTranslation("foo", Locale.GERMAN);
-
-        Mockito.verify(component).getTranslation(Locale.GERMAN, "foo");
-    }
-
-    @Test
     public void findAncestorTest() {
         UI ui = new UI();
         TestComponentContainer componentContainer = new TestComponentContainer();
