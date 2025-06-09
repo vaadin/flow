@@ -239,4 +239,21 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.verify(event, Mockito.times(0)).setFileName("my-download.bin");
         Mockito.verify(event).setContentType("application/octet-stream");
     }
+
+    @Test
+    public void handleSetToInline_contentTypeIsInline() throws IOException {
+        DownloadHandler handler = DownloadHandler
+                .forServletResource(PATH_TO_FILE, "my-download.bin").inline();
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
 }

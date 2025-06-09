@@ -221,4 +221,21 @@ public class ClassDownloadHandlerTest {
         Mockito.verify(event, Mockito.times(0)).setFileName("my-download.pdf");
         Mockito.verify(event).setContentType("application/pdf");
     }
+
+    @Test
+    public void handleSetToInline_contentTypeIsInline() throws IOException {
+        DownloadHandler handler = DownloadHandler.forClassResource(
+                this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
 }
