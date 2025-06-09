@@ -15,13 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import javax.crypto.SecretKey;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -30,6 +24,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +56,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -300,8 +298,9 @@ public abstract class VaadinWebSecurity {
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .forEach(paths::add);
 
-        return new OrRequestMatcher(paths.build()
-                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+        return new OrRequestMatcher(
+                paths.build().map(path -> RequestUtil.pathMatchers(path)[0])
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -334,9 +333,10 @@ public abstract class VaadinWebSecurity {
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path));
         Stream<String> rootPaths = Stream
                 .of(HandlerHelper.getPublicResourcesRoot());
-        return new OrRequestMatcher(Stream
-                .concat(mappingRelativePaths, rootPaths)
-                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+        return new OrRequestMatcher(
+                Stream.concat(mappingRelativePaths, rootPaths)
+                        .map(path -> RequestUtil.pathMatchers(path)[0])
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -346,7 +346,10 @@ public abstract class VaadinWebSecurity {
      *            ant patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
+     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
+     *             {@link #pathMatchers(String...)} instead.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public RequestMatcher[] antMatchers(String... patterns) {
         return RequestUtil.antMatchers(patterns);
     }
@@ -359,9 +362,40 @@ public abstract class VaadinWebSecurity {
      *            ant patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
+     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
+     *             {@link #routePathMatchers(String...)} instead.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public RequestMatcher[] routeMatchers(String... patterns) {
         return RequestUtil.routeMatchers(Stream.of(patterns)
+                .map(this::applyUrlMapping).toArray(String[]::new));
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s from path patterns.
+     *
+     * @param patterns
+     *            ant patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
+     */
+    public RequestMatcher[] pathMatchers(String... patterns) {
+        return RequestUtil.pathMatchers(patterns);
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
+     * patterns and HTTP get method.
+     *
+     * @param patterns
+     *            ant patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
+     */
+    public RequestMatcher[] routePathMatchers(String... patterns) {
+        return RequestUtil.pathMatchers(Stream.of(patterns)
                 .map(this::applyUrlMapping).toArray(String[]::new));
     }
 
@@ -489,8 +523,8 @@ public abstract class VaadinWebSecurity {
                     getVaadinSavedRequestAwareAuthenticationSuccessHandler(
                             http));
         });
-        http.csrf(cfg -> cfg.ignoringRequestMatchers(
-                new AntPathRequestMatcher(completeLoginPath)));
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(PathPatternRequestMatcher
+                .withDefaults().matcher(completeLoginPath)));
         configureLogout(http, logoutSuccessUrl);
         http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(completeLoginPath),
@@ -634,7 +668,7 @@ public abstract class VaadinWebSecurity {
     protected void setStatelessAuthentication(HttpSecurity http,
             SecretKey secretKey, String issuer, long expiresIn)
             throws Exception {
-        VaadinStatelessSecurityConfigurer.apply(http,
+        http.with(new VaadinStatelessSecurityConfigurer<>(),
                 cfg -> cfg.withSecretKey().secretKey(secretKey).and()
                         .issuer(issuer).expiresIn(expiresIn));
     }
