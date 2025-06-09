@@ -24,6 +24,7 @@ import java.io.UncheckedIOException;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinResponse;
 
 /**
  * Download handler for serving a class resource.
@@ -104,6 +105,9 @@ public class ClassDownloadHandler
                     getContentType(resourceName, downloadEvent.getResponse()));
             if (!isInline()) {
                 downloadEvent.setFileName(resourceName);
+            } else {
+                downloadEvent.getResponse().setHeader("Content-Disposition",
+                        "inline");
             }
             TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
