@@ -687,6 +687,13 @@ public abstract class Component
      * The method never returns a null. If there is no {@link I18NProvider}
      * available or no translation for the {@code key} it returns an exception
      * string e.g. '!{key}!'.
+     * <p>
+     * For the maintainers: this method will remain deprecated but should not be
+     * removed. Removing it would cause silent runtime issues where
+     * {@link #getTranslation(String, Object...)} might be invoked instead of
+     * the correct method. By keeping this deprecated method, developers will
+     * receive deprecation warnings rather than encountering subtle runtime
+     * problems.
      *
      * @param key
      *            translation key
@@ -709,6 +716,13 @@ public abstract class Component
      * The method never returns a null. If there is no {@link I18NProvider}
      * available or no translation for the {@code key} it returns an exception
      * string e.g. '!{key}!'.
+     * <p>
+     * For the maintainers: this method will remain deprecated but should not be
+     * removed. Removing it would cause silent runtime issues where
+     * {@link #getTranslation(String, Object...)} might be invoked instead of
+     * the correct method. By keeping this deprecated method, developers will
+     * receive deprecation warnings rather than encountering subtle runtime
+     * problems.
      *
      * @param key
      *            translation key

@@ -164,19 +164,6 @@ public class ComponentTracker {
             return javaFile;
         }
 
-        /**
-         * Finds the Java file this location refers to.
-         *
-         * @param configuration
-         *            the application configuration
-         * @return the Java file the location refers to, or {@code null}
-         * @deprecated use findSourceFile
-         */
-        @Deprecated
-        public File findJavaFile(AbstractConfiguration configuration) {
-            return findSourceFile(configuration);
-        }
-
         @Override
         public String toString() {
             return "Component '" + className + "' at '" + filename + "' ("

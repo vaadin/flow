@@ -1287,18 +1287,6 @@ public class UI extends Component
     }
 
     /**
-     * Gets the router used for navigating in this UI.
-     *
-     * @return a router
-     *
-     * @deprecated For internal use only. Will be removed in the future.
-     */
-    @Deprecated
-    public Router getRouter() {
-        return internals.getRouter();
-    }
-
-    /**
      * Registers a task to be executed before the response is sent to the
      * client. The tasks are executed in order of registration. If tasks
      * register more tasks, they are executed after all already registered tasks

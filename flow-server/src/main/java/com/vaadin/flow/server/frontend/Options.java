@@ -230,20 +230,8 @@ public class Options implements Serializable {
         return this;
     }
 
-    /**
-     * Sets whether to perform always perform clean up procedure. Default is
-     * <code>false</code>. When the value is false, npm related files will only
-     * be removed when a platform version update is detected.
-     *
-     * This method is only for tests.
-     *
-     * @param forceClean
-     *            <code>true</code> to clean npm files always, otherwise
-     *            <code>false</code>
-     * @return this builder
-     */
-    @Deprecated
-    public Options enableNpmFileCleaning(boolean forceClean) {
+    // Visible only for tests
+    Options enableNpmFileCleaning(boolean forceClean) {
         this.cleanNpmFiles = forceClean;
         return this;
     }
@@ -778,6 +766,11 @@ public class Options implements Serializable {
         return generateEmbeddableWebComponents;
     }
 
+    /**
+     * @deprecated used internally only for testing, to be removed without a
+     *             replacement.
+     */
+    @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {
         return cleanNpmFiles;
     }
