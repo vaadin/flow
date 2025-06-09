@@ -28,7 +28,6 @@
         <module>flow-html-components-testbench</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-plugins</module>
         <module>flow-test-generic</module>
@@ -111,8 +110,8 @@
         <testbench.version>9.4.0.rc1</testbench.version>
         <jetty.version>12.0.22</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
-        <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
-        <maven.version>3.9.9</maven.version>
+        <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
+        <maven.version>3.9.10</maven.version>
 
         <!-- Frontend -->
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -684,6 +683,18 @@
         </pluginManagement>
     </build>
     <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <property>
+                    <name>!release</name>
+                </property>
+            </activation>
+            <modules>
+                <module>flow-tests</module>
+            </modules>
+        </profile>
+        
         <profile>
             <id>validation</id>
             <properties>

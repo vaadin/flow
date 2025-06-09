@@ -153,7 +153,7 @@ public class BuildFrontendUtil {
                 .withFrontendHotdeploy(adapter.isFrontendHotdeploy())
                 .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
-                .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                .withBuildResultFolders(adapter.frontendOutputDirectory(),
                         adapter.servletResourceOutputDirectory())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
@@ -337,7 +337,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.frontendOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
@@ -410,7 +410,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.frontendOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true).useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
@@ -596,7 +596,7 @@ public class BuildFrontendUtil {
      */
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
-        File outputFolder = adapter.webpackOutputDirectory();
+        File outputFolder = adapter.frontendOutputDirectory();
 
         String statsJsonContent = null;
         try {

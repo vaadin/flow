@@ -467,6 +467,11 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public File webpackOutputDirectory() {
+        return frontendOutputDirectory();
+    }
+
+    @Override
+    public File frontendOutputDirectory() {
         return new File(project.getBuild().getOutputDirectory(),
                 VAADIN_WEBAPP_RESOURCES);
     }

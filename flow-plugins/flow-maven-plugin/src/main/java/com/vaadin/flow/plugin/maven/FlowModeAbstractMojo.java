@@ -16,7 +16,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import javax.inject.Inject;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -219,10 +218,21 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * The folder where the frontend build tool should output index.js and other
      * generated files.
+     *
+     * @deprecated Use {@link #frontendOutputDirectory} instead.
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
             + VAADIN_WEBAPP_RESOURCES)
+    @Deprecated
     private File webpackOutputDirectory;
+
+    /**
+     * The folder where the frontend build tool should output index.js and other
+     * generated files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/"
+            + VAADIN_WEBAPP_RESOURCES)
+    private File frontendOutputDirectory;
 
     /**
      * Build directory for the project.
@@ -622,8 +632,24 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File webpackOutputDirectory() {
+        return frontendOutputDirectory();
+    }
 
-        return webpackOutputDirectory;
+    @Override
+    public File frontendOutputDirectory() {
+        if (webpackOutputDirectory != null) {
+            if (frontendOutputDirectory == null) {
+                logWarn("'webpackOutputDirectory' property is deprecated and will be removed in future releases. Please use 'frontendOutputDirectory' instead.");
+                frontendOutputDirectory = webpackOutputDirectory;
+                webpackOutputDirectory = null;
+            } else {
+                logWarn("Both 'frontendOutputDirectory' and 'webpackOutputDirectory' are set. "
+                        + "'webpackOutputDirectory' property will be removed in future releases and will be ignored. "
+                        + "Please use only 'frontendOutputDirectory'.");
+                webpackOutputDirectory = null;
+            }
+        }
+        return frontendOutputDirectory;
     }
 
     @Override

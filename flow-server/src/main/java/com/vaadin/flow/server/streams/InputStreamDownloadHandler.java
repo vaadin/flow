@@ -55,9 +55,16 @@ public class InputStreamDownloadHandler
         }
 
         String downloadName = download.getFileName();
-        downloadEvent.setContentType(getContentType(downloadName, response));
+        String contentType = download.getContentType() == null
+                ? getContentType(downloadName, response)
+                : download.getContentType();
+        downloadEvent.setContentType(contentType);
+
         if (!isInline()) {
             downloadEvent.setFileName(downloadName);
+        } else {
+            downloadEvent.getResponse().setHeader("Content-Disposition",
+                    "inline");
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();

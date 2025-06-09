@@ -252,6 +252,73 @@ public class InputStreamDownloadHandlerTest {
         });
     }
 
+    @Test
+    public void downloadResponseHasContentType_contentTypeUsed()
+            throws IOException {
+        String contentType = "custom";
+        InputStreamDownloadHandler handler = new InputStreamDownloadHandler(
+                event -> {
+                    InputStream stream = Mockito.mock(InputStream.class);
+                    Mockito.when(stream.read(Mockito.any(), Mockito.anyInt(),
+                            Mockito.anyInt())).thenReturn(-1);
+                    return new DownloadResponse(stream, "report.pdf",
+                            contentType, 0);
+                });
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("div"));
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setContentType(contentType);
+    }
+
+    @Test
+    public void downloadResponseNullContentType_fileTypeIsUsed()
+            throws IOException {
+        String contentType = "file/pdf";
+
+        Mockito.when(service.getMimeType("report.pdf")).thenReturn(contentType);
+
+        InputStreamDownloadHandler handler = new InputStreamDownloadHandler(
+                event -> {
+                    InputStream stream = Mockito.mock(InputStream.class);
+                    Mockito.when(stream.read(Mockito.any(), Mockito.anyInt(),
+                            Mockito.anyInt())).thenReturn(-1);
+                    return new DownloadResponse(stream, "report.pdf", null, 0);
+                });
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("div"));
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setContentType(contentType);
+    }
+
+    @Test
+    public void handleSetToInline_contentTypeIsInline() throws IOException {
+        InputStream stream = Mockito.mock(InputStream.class);
+        Mockito.when(
+                stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(-1);
+        DownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> new DownloadResponse(stream,
+                        "download", "application/octet-stream", 0))
+                .inline();
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getMimeType(Mockito.anyString()))
+                .thenReturn("application/octet-stream");
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
+
     private static byte[] getBytes() {
         // Simulate a download of 165000 bytes
         byte[] data = new byte[165000];
