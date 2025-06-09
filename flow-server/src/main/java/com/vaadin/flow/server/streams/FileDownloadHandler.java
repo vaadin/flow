@@ -79,6 +79,9 @@ public class FileDownloadHandler
             String resourceName = getUrlPostfix();
             if (!isInline()) {
                 downloadEvent.setFileName(resourceName);
+            } else {
+                downloadEvent.getResponse().setHeader("Content-Disposition",
+                        "inline");
             }
             downloadEvent
                     .setContentType(getContentType(resourceName, response));
