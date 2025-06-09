@@ -55,6 +55,9 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -347,6 +350,34 @@ public class Element extends Node<Element> {
         }
 
         return this;
+    }
+
+    /**
+     * Sets the given attribute to the given {@link ElementRequestHandler}
+     * value.
+     * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
+     * <p>
+     * This is a convenience method to register a {@link ElementRequestHandler}
+     * instance into the session and use the registered resource URI as an
+     * element attribute.
+     * <p>
+     *
+     * @see #setAttribute(String, String)
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param requestHandler
+     *            the resource value, not null
+     * @return this element
+     */
+    public Element setAttribute(String attribute,
+            ElementRequestHandler requestHandler) {
+        AbstractStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
+                requestHandler, this);
+
+        return setAttribute(attribute, resource);
     }
 
     /**

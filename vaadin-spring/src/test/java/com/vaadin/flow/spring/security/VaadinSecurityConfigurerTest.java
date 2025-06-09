@@ -1,12 +1,11 @@
 package com.vaadin.flow.spring.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.List;
 import java.util.Map;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.TestingAuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,6 +43,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.savedrequest.RequestCacheAwareFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -57,6 +58,7 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -232,6 +234,21 @@ class VaadinSecurityConfigurerTest {
                 .isNull();
         assertThat(http.getConfigurer(AuthorizeHttpRequestsConfigurer.class))
                 .isNull();
+    }
+
+    @Test
+    void requestCache_customRulesAreApplied() throws Exception {
+        VaadinDefaultRequestCache requestCache = applicationContext
+                .getBean(VaadinDefaultRequestCache.class);
+        requestCache.ignoreRequests(new AntPathRequestMatcher("/.my-path/**"));
+
+        http.with(configurer, Customizer.withDefaults()).build();
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setPathInfo("/.my-path/foo");
+        requestCache.saveRequest(request, response);
+        assertNull(requestCache.getRequest(request, response),
+                "Request should not have been saved");
     }
 
     @Route

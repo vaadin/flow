@@ -156,7 +156,7 @@ public final class TransferUtil {
                     parts = ((HttpServletRequest) request).getParts();
                 } catch (IOException ioe) {
                     throw new UncheckedIOException(ioe);
-                } catch (ServletException ioe) {
+                } catch (ServletException | IllegalStateException ioe) {
                     LoggerFactory.getLogger(UploadHandler.class).trace(
                             "Pretending the request did not contain any parts because of exception",
                             ioe);

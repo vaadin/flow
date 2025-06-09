@@ -36,7 +36,7 @@ public class DownloadResponse implements Serializable {
 
     private final String fileName;
     private final String contentType;
-    private final int size;
+    private final long contentLength;
 
     private Integer error;
     private String errorMessage;
@@ -52,16 +52,17 @@ public class DownloadResponse implements Serializable {
      *            Content-Disposition header to 'attachment' if the value is not
      *            <code>null</code>, otherwise the header is not set
      * @param contentType
-     *            content type
-     * @param size
+     *            content type or a value determined from fileName if
+     *            {@code null}
+     * @param contentLength
      *            byte size of a stream or <code>-1</code> if unknown
      */
     public DownloadResponse(InputStream inputStream, String fileName,
-            String contentType, int size) {
+            String contentType, long contentLength) {
         this.inputStream = inputStream;
         this.fileName = fileName;
+        this.contentLength = contentLength;
         this.contentType = contentType;
-        this.size = size;
     }
 
     /**
@@ -86,6 +87,10 @@ public class DownloadResponse implements Serializable {
 
     /**
      * Get the content type.
+     * <p>
+     * For a {@code null} value the type should be gotten from
+     * {@code VaadinService.getMimeType(fileName)} or be set to default value
+     * {@code application/octet-stream}
      *
      * @return content type
      */
@@ -98,8 +103,8 @@ public class DownloadResponse implements Serializable {
      *
      * @return content size
      */
-    public int getSize() {
-        return size;
+    public long getContentLength() {
+        return contentLength;
     }
 
     /**

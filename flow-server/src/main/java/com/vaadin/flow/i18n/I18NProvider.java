@@ -16,8 +16,12 @@
 package com.vaadin.flow.i18n;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.internal.LocaleUtil;
 
@@ -27,7 +31,6 @@ import com.vaadin.flow.internal.LocaleUtil;
  * @since 1.0
  */
 public interface I18NProvider extends Serializable {
-
     /**
      * Get the locales that we have translations for. The first locale should be
      * the default locale.
@@ -68,6 +71,36 @@ public interface I18NProvider extends Serializable {
      */
     default String getTranslation(Object key, Locale locale, Object... params) {
         return getTranslation(key.toString(), locale, params);
+    }
+
+    /**
+     * Retrieves all available translations. This is currently used only by
+     * Hilla in development mode.
+     *
+     * @param locale
+     *            locale to use
+     * @return a map of all available translations (the default implementation
+     *         just returns an empty map)
+     */
+    default Map<String, String> getAllTranslations(Locale locale) {
+        return Map.of();
+    }
+
+    /**
+     * Retrieves the translations for a collection of keys. By default, it calls
+     * `getTranslation` on each key, but this can be optimized by the
+     * implementation.
+     *
+     * @param keys
+     *            the keys to be translated
+     * @param locale
+     *            locale to use
+     * @return a map of translations
+     */
+    default Map<String, String> getTranslations(Collection<String> keys,
+            Locale locale) {
+        return keys.stream().distinct().collect(Collectors
+                .toMap(Function.identity(), k -> getTranslation(k, locale)));
     }
 
     /**

@@ -1,25 +1,27 @@
 package com.vaadin.flow.spring.security;
 
 import java.util.Collections;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.spring.SpringBootAutoConfiguration;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.spring.SpringBootAutoConfiguration;
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest()
@@ -58,6 +60,84 @@ public class VaadinDefaultRequestCacheTest {
         HttpServletRequest request = RequestUtilTest.createRequest("", null,
                 Collections.singletonMap("Referer",
                         "https://labs.vaadin.com/business/sw.js"));
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void dotWellKnownPath_requestNotSaved() {
+        HttpServletRequest request = RequestUtilTest.createRequest(
+                "/.well-known/appspecific/com.chrome.devtools.json", null);
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void favicon_requestNotSaved() {
+        HttpServletRequest request = RequestUtilTest
+                .createRequest("/favicon.ico", null);
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void xhr_requestNotSaved() {
+        HttpServletRequest request = RequestUtilTest.createRequest("/", null,
+                Collections.singletonMap("X-Requested-With", "XMLHttpRequest"));
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void jsonRequest_requestNotSaved() {
+        HttpServletRequest request = RequestUtilTest.createRequest("/", null,
+                Collections.singletonMap(HttpHeaders.ACCEPT,
+                        "application/json"));
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void imageRequest_requestNotSaved() {
+        HttpServletRequest request = RequestUtilTest.createRequest("/", null,
+                Map.of(HttpHeaders.ACCEPT,
+                        "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                        "Sec-Fetch-Dest", "image", "Sec-Fetch-Mode",
+                        "no-cors"));
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void scriptRequest_requestNotSaved() {
+        HttpServletRequest request = RequestUtilTest.createRequest("/", null,
+                Map.of(HttpHeaders.ACCEPT,
+                        "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                        "Sec-Fetch-Dest", "script", "Sec-Fetch-Mode",
+                        "no-cors"));
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
+    @Test
+    public void customMatchers_requestNotSaved() {
+        cache.ignoreRequests(new AntPathRequestMatcher("/dont-save/**"));
+        HttpServletRequest request = RequestUtilTest
+                .createRequest("/dont-save/me", null);
         HttpServletResponse response = createResponse();
         Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);

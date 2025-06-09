@@ -14,22 +14,15 @@
  * the License.
  */
 
-package com.vaadin.flow.server.streams;
-
-import java.io.File;
-
-import com.vaadin.flow.function.SerializableBiConsumer;
+package com.vaadin.flow.component.html;
 
 /**
- * Upload handler that stores the data into a temporary file. Stored temporary
- * file is returned in the successHandler for further use.
- *
- * @since 24.8
+ * Mode settings for anchor.
+ * <p>
+ * </p>
+ * {@link #DOWNLOAD} will set the download attribute to Anchor, where as
+ * {@link #INLINE} will remove it.
  */
-public class TemporaryFileUploadHandler
-        extends AbstractFileUploadHandler<TemporaryFileUploadHandler> {
-
-    public TemporaryFileUploadHandler(FileUploadCallback successCallback) {
-        super(successCallback, new TemporaryFileFactory());
-    }
+public enum AttachmentType {
+    DOWNLOAD, INLINE
 }
