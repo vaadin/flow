@@ -7,30 +7,30 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.server.auth.AccessAnnotationChecker;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
-
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 @SpringBootTest(classes = { SpringViewAccessChecker.class })
 @Deprecated(forRemoval = true)
 class SpringViewAccessCheckerTest {
 
-    @MockBean
+    @MockitoBean
     private AccessAnnotationChecker annotationChecker;
-    @MockBean
+    @MockitoBean
     private Authentication authentication;
 
     @Autowired

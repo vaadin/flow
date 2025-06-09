@@ -1,16 +1,16 @@
 package com.vaadin.flow.spring.security;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
@@ -181,7 +181,10 @@ public class RequestUtil {
      *            and patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
+     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
+     *             {@link #pathMatchers(String...)} instead.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public static RequestMatcher[] antMatchers(String... patterns) {
         return Stream.of(patterns).map(AntPathRequestMatcher::new)
                 .toArray(RequestMatcher[]::new);
@@ -195,10 +198,46 @@ public class RequestUtil {
      *            and patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
+     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
+     *             {@link #routePathMatchers(String...)} instead.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public static RequestMatcher[] routeMatchers(String... patterns) {
         return Stream.of(patterns)
                 .map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))
+                .toArray(RequestMatcher[]::new);
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s from path patterns.
+     *
+     * @param patterns
+     *            and patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     * @see PathPatternRequestMatcher#matcher(HttpServletRequest)
+     */
+    public static RequestMatcher[] pathMatchers(String... patterns) {
+        var builder = PathPatternRequestMatcher.withDefaults();
+        return Stream.of(patterns).map(builder::matcher)
+                .toArray(RequestMatcher[]::new);
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using path
+     * patterns and HTTP get method.
+     *
+     * @param patterns
+     *            and patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     * @see PathPatternRequestMatcher#matcher(HttpServletRequest)
+     */
+    public static RequestMatcher[] routePathMatchers(String... patterns) {
+        PathPatternRequestMatcher.Builder matcherBuilder = PathPatternRequestMatcher
+                .withDefaults();
+        return Stream.of(patterns)
+                .map(p -> matcherBuilder.matcher(HttpMethod.GET, p))
                 .toArray(RequestMatcher[]::new);
     }
 
