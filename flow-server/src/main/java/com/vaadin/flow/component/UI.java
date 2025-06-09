@@ -45,7 +45,6 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -91,7 +90,6 @@ import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -217,6 +215,9 @@ public class UI extends Component
      * Internal initialization method, should not be overridden. This method is
      * not declared as final because that would break compatibility with e.g.
      * CDI.
+     * <p>
+     * {@code appId} can be obtained by calling
+     * {@code getService().getMainDivId(getSession(), getRequest())}.
      *
      * @param request
      *            the initialization request
