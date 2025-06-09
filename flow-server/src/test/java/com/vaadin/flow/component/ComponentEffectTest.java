@@ -21,6 +21,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,32 +53,17 @@ import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
+@NotThreadSafe
 public class ComponentEffectTest {
 
     private TestComponent component;
     private ValueSignal<String> signal;
-
-    private static final String signalsFeatureFlagKey = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
-            + FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId();
-    private static String signalsFlag;
 
     @BeforeClass
     public static void beforeClass() {
         if (!SignalEnvironment.initialized()) {
             SignalEnvironment.tryInitialize(new ObjectMapper(),
                     Executors.newSingleThreadExecutor());
-        }
-
-        signalsFlag = System.getProperty(signalsFeatureFlagKey);
-        System.setProperty(signalsFeatureFlagKey, "true");
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        if (signalsFlag != null) {
-            System.setProperty(signalsFeatureFlagKey, signalsFlag);
-        } else {
-            System.clearProperty(signalsFeatureFlagKey);
         }
     }
 
@@ -85,112 +75,141 @@ public class ComponentEffectTest {
 
     @Test
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
-        AtomicInteger count = new AtomicInteger();
+        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
+            FeatureFlags flags = mock(FeatureFlags.class);
+            when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
+                    .thenReturn(true);
+            featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
+                    .thenReturn(flags);
 
-        Registration registration = ComponentEffect.effect(component, () -> {
-            signal.value();
-            count.incrementAndGet();
-        });
+            AtomicInteger count = new AtomicInteger();
 
-        assertEquals("Effect should not be run until component is attached", 0,
-                count.get());
+            Registration registration = ComponentEffect.effect(component,
+                    () -> {
+                        signal.value();
+                        count.incrementAndGet();
+                    });
 
-        signal.value("test");
-        assertEquals(
-                "Effect should not be run until component is attached even after signal value change",
-                0, count.get());
+            assertEquals("Effect should not be run until component is attached",
+                    0, count.get());
 
-        MockUI ui = new MockUI();
-        ui.add(component);
+            signal.value("test");
+            assertEquals(
+                    "Effect should not be run until component is attached even after signal value change",
+                    0, count.get());
 
-        assertEquals("Effect should be run once component is attached", 1,
-                count.get());
+            MockUI ui = new MockUI();
+            ui.add(component);
 
-        signal.value("test2");
-        assertEquals("Effect should be run when signal value is chaged", 2,
-                count.get());
+            assertEquals("Effect should be run once component is attached", 1,
+                    count.get());
 
-        ui.remove(component);
+            signal.value("test2");
+            assertEquals("Effect should be run when signal value is chaged", 2,
+                    count.get());
 
-        signal.value("test3");
-        assertEquals("Effect should not be run after detach", 2, count.get());
+            ui.remove(component);
 
-        ui.add(component);
-        assertEquals("Effect should be run after attach", 3, count.get());
+            signal.value("test3");
+            assertEquals("Effect should not be run after detach", 2,
+                    count.get());
 
-        registration.remove();
-        signal.value("test4");
-        assertEquals("Effect should not be run after remove", 3, count.get());
+            ui.add(component);
+            assertEquals("Effect should be run after attach", 3, count.get());
+
+            registration.remove();
+            signal.value("test4");
+            assertEquals("Effect should not be run after remove", 3,
+                    count.get());
+        }
     }
 
     @Test
     public void bind_signalValueChanges_componentUpdated() {
-        MockUI ui = new MockUI();
-        ui.add(component);
+        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
+            FeatureFlags flags = mock(FeatureFlags.class);
+            when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
+                    .thenReturn(true);
+            featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
+                    .thenReturn(flags);
 
-        Registration registration = ComponentEffect.bind(component, signal,
-                TestComponent::setValue);
+            MockUI ui = new MockUI();
+            ui.add(component);
 
-        assertEquals("Initial value should be set", "initial",
-                component.getValue());
+            Registration registration = ComponentEffect.bind(component, signal,
+                    TestComponent::setValue);
 
-        // Change signal value
-        signal.value("new value");
+            assertEquals("Initial value should be set", "initial",
+                    component.getValue());
 
-        assertEquals("Component should be updated with new value", "new value",
-                component.getValue());
+            // Change signal value
+            signal.value("new value");
 
-        // Change signal value again
-        signal.value("another value");
+            assertEquals("Component should be updated with new value",
+                    "new value", component.getValue());
 
-        assertEquals("Component should be updated with another value",
-                "another value", component.getValue());
+            // Change signal value again
+            signal.value("another value");
 
-        registration.remove();
+            assertEquals("Component should be updated with another value",
+                    "another value", component.getValue());
 
-        // Change signal value after registration is removed
-        signal.value("final value");
+            registration.remove();
 
-        assertEquals(
-                "Component should not be updated after registration is removed",
-                "another value", component.getValue());
+            // Change signal value after registration is removed
+            signal.value("final value");
+
+            assertEquals(
+                    "Component should not be updated after registration is removed",
+                    "another value", component.getValue());
+        }
     }
 
     @Test
     public void format_signalValuesChange_formattedStringUpdated() {
-        MockUI ui = new MockUI();
-        ui.add(component);
+        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
+            FeatureFlags flags = mock(FeatureFlags.class);
+            when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
+                    .thenReturn(true);
+            featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
+                    .thenReturn(flags);
 
-        ValueSignal<String> stringSignal = new ValueSignal<>("test");
-        NumberSignal numberSignal = new NumberSignal(42.23456);
+            MockUI ui = new MockUI();
+            ui.add(component);
 
-        Registration registration = ComponentEffect.format(component,
-                TestComponent::setValue, "The price of %s is %.2f",
-                stringSignal, numberSignal);
+            ValueSignal<String> stringSignal = new ValueSignal<>("test");
+            NumberSignal numberSignal = new NumberSignal(42.23456);
 
-        assertEquals("Initial formatted value should be set",
-                "The price of test is 42,23", component.getValue());
+            Registration registration = ComponentEffect.format(component,
+                    TestComponent::setValue, "The price of %s is %.2f",
+                    stringSignal, numberSignal);
 
-        // Change int signal value
-        numberSignal.value(20.12345);
+            assertEquals("Initial formatted value should be set",
+                    "The price of test is 42,23", component.getValue());
 
-        assertEquals("Formatted value should be updated with new numeric value",
-                "The price of test is 20,12", component.getValue());
+            // Change int signal value
+            numberSignal.value(20.12345);
 
-        // Change string signal value
-        stringSignal.value("updated");
+            assertEquals(
+                    "Formatted value should be updated with new numeric value",
+                    "The price of test is 20,12", component.getValue());
 
-        assertEquals("Formatted value should be updated with new string value",
-                "The price of updated is 20,12", component.getValue());
+            // Change string signal value
+            stringSignal.value("updated");
 
-        registration.remove();
+            assertEquals(
+                    "Formatted value should be updated with new string value",
+                    "The price of updated is 20,12", component.getValue());
 
-        numberSignal.value(30.3456);
-        stringSignal.value("final");
+            registration.remove();
 
-        assertEquals(
-                "Formatted value should not be updated after registration is removed",
-                "The price of updated is 20,12", component.getValue());
+            numberSignal.value(30.3456);
+            stringSignal.value("final");
+
+            assertEquals(
+                    "Formatted value should not be updated after registration is removed",
+                    "The price of updated is 20,12", component.getValue());
+        }
     }
 
     @Tag("div")

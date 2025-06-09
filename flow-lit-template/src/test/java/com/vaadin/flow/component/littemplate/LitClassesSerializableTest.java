@@ -29,8 +29,7 @@ public class LitClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.InjectableLitElementInitializer",
-                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.ComponentEffect"),
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry(\\$.*)?"),
                 super.getExcludedPatterns());
     }
 }
