@@ -1,12 +1,12 @@
 package com.vaadin.flow.spring.springnative;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aot.hint.MemberCategory;
@@ -32,11 +32,15 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 
 public class VaadinBeanFactoryInitializationAotProcessor
         implements BeanFactoryInitializationAotProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory
+            .getLogger(VaadinBeanFactoryInitializationAotProcessor.class);
 
     public static class Marker {
 
@@ -60,8 +64,6 @@ public class VaadinBeanFactoryInitializationAotProcessor
         return (generationContext, beanFactoryInitializationCode) -> {
             var hints = generationContext.getRuntimeHints();
             for (var pkg : getPackages(beanFactory)) {
-                var reflections = new Reflections(pkg);
-
                 /*
                  * This aims to register most types in the project that are
                  * needed for Flow to function properly. Examples are @Route
@@ -69,13 +71,12 @@ public class VaadinBeanFactoryInitializationAotProcessor
                  * instantiated through reflection etc
                  */
 
-                for (var c : getRouteTypesFor(reflections, pkg)) {
+                for (var c : getRouteTypesFor(pkg)) {
                     registerType(hints, c);
                     registerResources(hints, c);
                 }
                 boolean hasPWA = false;
-                for (var c : reflections
-                        .getSubTypesOf(AppShellConfigurator.class)) {
+                for (var c : getSubtypesOf(pkg, AppShellConfigurator.class)) {
                     registerType(hints, c);
                     registerResources(hints, c);
                     hasPWA = hasPWA || c.getAnnotation(PWA.class) != null;
@@ -90,29 +91,29 @@ public class VaadinBeanFactoryInitializationAotProcessor
                     }
                 }
 
-                registerSubTypes(hints, reflections, Component.class);
-                registerSubTypes(hints, reflections, RouterLayout.class);
-                registerSubTypes(hints, reflections, HasErrorParameter.class);
-                registerSubTypes(hints, reflections, ComponentEvent.class);
-                registerSubTypes(hints, reflections, HasUrlParameter.class);
-                registerSubTypes(hints, reflections,
+                registerSubTypes(hints, pkg, Component.class);
+                registerSubTypes(hints, pkg, RouterLayout.class);
+                registerSubTypes(hints, pkg, HasErrorParameter.class);
+                registerSubTypes(hints, pkg, ComponentEvent.class);
+                registerSubTypes(hints, pkg, HasUrlParameter.class);
+                registerSubTypes(hints, pkg,
                         "com.vaadin.flow.data.converter.Converter");
             }
         };
     }
 
-    private void registerSubTypes(RuntimeHints hints, Reflections reflections,
+    private void registerSubTypes(RuntimeHints hints, String pkg,
             Class<?> cls) {
-        for (var c : reflections.getSubTypesOf(cls)) {
+        for (var c : getSubtypesOf(pkg, cls)) {
             registerType(hints, c);
         }
     }
 
-    private void registerSubTypes(RuntimeHints hints, Reflections reflections,
+    private void registerSubTypes(RuntimeHints hints, String pkg,
             String className) {
         try {
             Class<?> cls = Class.forName(className);
-            for (var c : reflections.getSubTypesOf(cls)) {
+            for (var c : getSubtypesOf(pkg, cls)) {
                 registerType(hints, c);
             }
         } catch (ClassNotFoundException | NoClassDefFoundError e) {
@@ -153,8 +154,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
             logger.debug("Scanning for @{} or @{} annotated beans in {}",
                     Route.class.getSimpleName(),
                     RouteAlias.class.getSimpleName(), pkg);
-            var reflections = new Reflections(pkg);
-            for (var c : getRouteTypesFor(reflections, pkg)) {
+            for (var c : getRouteTypesFor(pkg)) {
                 if (registeredClasses.contains(c.getName())) {
                     logger.debug(
                             "Skipping route class {} as it has already been registered as a bean",
@@ -176,13 +176,9 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
     }
 
-    private static Collection<Class<?>> getRouteTypesFor(
-            Reflections reflections, String packageName) {
-        var routeTypes = new HashSet<Class<?>>();
-        routeTypes.addAll(reflections.getTypesAnnotatedWith(Route.class));
-        routeTypes.addAll(reflections.getTypesAnnotatedWith(RouteAlias.class));
-        routeTypes.addAll(reflections.getTypesAnnotatedWith(Layout.class));
-        return routeTypes;
+    private static Collection<Class<?>> getRouteTypesFor(String packageName) {
+        return getAnnotatedClasses("", Route.class, RouteAlias.class,
+                Layout.class);
     }
 
     private void registerResources(RuntimeHints hints, Class<?> c) {
@@ -304,6 +300,52 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 "sun.java2d.pipe.SpanClipRenderer",
                 "sun.java2d.pipe.SpanIterator", "sun.java2d.pipe.ValidatePipe",
                 "sun.java2d.SunGraphics2D" };
+    }
+
+    private static Collection<Class<?>> getAnnotatedClasses(String basePackage,
+            Class<?>... annotations) {
+        Set<Class<?>> result = new HashSet<>();
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
+                false);
+
+        for (Class<?> annotation : annotations) {
+            scanner.addIncludeFilter(new AnnotationTypeFilter(
+                    (Class<? extends Annotation>) annotation));
+        }
+
+        for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
+            try {
+                Class<?> clazz = Class.forName(bd.getBeanClassName());
+                result.add(clazz);
+            } catch (ClassNotFoundException e) {
+                logger.warn("Could not load class {}", bd.getBeanClassName(),
+                        e);
+            }
+        }
+
+        return result;
+    }
+
+    private static Collection<Class<?>> getSubtypesOf(String basePackage,
+            Class<?> parentType) {
+        Set<Class<?>> result = new HashSet<>();
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
+                false);
+        scanner.addIncludeFilter(new AssignableTypeFilter(parentType));
+
+        for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
+            try {
+                Class<?> clazz = Class.forName(bd.getBeanClassName());
+                if (!parentType.equals(clazz)) {
+                    result.add(clazz);
+                }
+            } catch (ClassNotFoundException e) {
+                logger.warn("Could not load class {}", bd.getBeanClassName(),
+                        e);
+            }
+        }
+
+        return result;
     }
 
 }
