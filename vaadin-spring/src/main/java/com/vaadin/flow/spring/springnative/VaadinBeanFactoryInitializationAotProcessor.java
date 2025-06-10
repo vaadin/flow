@@ -177,7 +177,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
     }
 
     private static Collection<Class<?>> getRouteTypesFor(String packageName) {
-        return getAnnotatedClasses("", Route.class, RouteAlias.class,
+        return getAnnotatedClasses(packageName, Route.class, RouteAlias.class,
                 Layout.class);
     }
 
