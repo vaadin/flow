@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.preferences</artifactId>
-            <version>3.11.300</version>
+            <version>3.11.400</version>
             <scope>test</scope>
         </dependency>
         <dependency>
