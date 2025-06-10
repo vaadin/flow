@@ -59,6 +59,10 @@ public class StyleAttributeHandler extends CustomAttribute {
         parseStyles(attributeValue).forEach(style::set);
     }
 
+    private static final char SEMICOLON = ";".charAt(0);
+    private static final char PARENTHESIS_OPEN = "(".charAt(0);
+    private static final char PARENTHESIS_CLOSED = "(".charAt(0);
+
     /**
      * Parses the given style string and populates the given style object with
      * the found styles.
@@ -71,20 +75,60 @@ public class StyleAttributeHandler extends CustomAttribute {
             String styleString) {
         try {
             LinkedHashMap<String, String> parsedStyles = new LinkedHashMap<>();
-            String[] rules = styleString.split(";");
-            for (String rule : rules) {
-                String name = rule.substring(0, rule.indexOf(":")).trim();
-                String value = rule.substring(rule.indexOf(":") + 1);
-                if (name.isEmpty() || value.isEmpty()) {
-                    throw new IllegalArgumentException(
-                            "Style rule must contain name and value");
+            StringBuilder nameBuffer = new StringBuilder();
+            StringBuilder valueBuffer = new StringBuilder();
+            boolean nameRead = false;
+            int parenthesisOpen = 0;
+            for (int i = 0; i < styleString.length(); i++) {
+                char c = styleString.charAt(i);
+                if (nameRead) {
+                    boolean valueTerminated = false;
+                    if (c == PARENTHESIS_OPEN) {
+                        parenthesisOpen++;
+                    } else if (c == PARENTHESIS_CLOSED) {
+                        parenthesisOpen--;
+                    } else if (parenthesisOpen == 0 && c == SEMICOLON) {
+                        valueTerminated = true;
+                    }
+                    if (valueTerminated) {
+                        addRule(nameBuffer, valueBuffer, parsedStyles);
+                        nameBuffer = new StringBuilder();
+                        valueBuffer = new StringBuilder();
+                        nameRead = false;
+                    } else {
+                        valueBuffer.append(c);
+                    }
+                } else {
+                    if (c == ":".charAt(0)) {
+                        nameRead = true;
+                    } else {
+                        nameBuffer.append(c);
+                    }
                 }
-                parsedStyles.put(name, value);
+            }
+            if (nameRead) {
+                addRule(nameBuffer, valueBuffer, parsedStyles);
+            } else if (!nameBuffer.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Value for CSS rule was not found.");
             }
             return parsedStyles;
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex);
         }
+    }
+
+    protected static void addRule(StringBuilder nameBuffer,
+            StringBuilder valueBuffer,
+            LinkedHashMap<String, String> parsedStyles)
+            throws IllegalArgumentException {
+        var name = nameBuffer.toString().trim();
+        var value = valueBuffer.toString().trim();
+        if (name.isEmpty() || value.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Style rule must contain name and value");
+        }
+        parsedStyles.put(name, value);
     }
 
     @Override

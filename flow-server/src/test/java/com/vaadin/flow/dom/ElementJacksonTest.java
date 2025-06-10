@@ -1114,6 +1114,13 @@ public class ElementJacksonTest extends AbstractNodeTest {
         testStyleAttribute("color:var(--mainColor)");
         testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
         testStyleAttribute("--lumo-primary-text-color:hsl(12, 12%, 12%)");
+        testStyleAttribute(
+                "background:url(\"https://example.com/images/myImg.jpg?q;param\")");
+        testStyleAttribute(
+                "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        testStyleAttribute(
+                "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
+
     }
 
     private void testStyleAttribute(String style) {
