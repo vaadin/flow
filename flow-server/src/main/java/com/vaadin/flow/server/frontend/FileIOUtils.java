@@ -126,7 +126,8 @@ public class FileIOUtils {
         // URI decodes the path so that e.g. " " works correctly
         // Path.of makes windows paths work correctly
         Path path = Path.of(rootFolder.toURI());
-        if (path.endsWith(Path.of("target", "classes"))) {
+        if (path.endsWith(Path.of("target", "classes"))
+                || path.endsWith(Path.of("target", "test-classes"))) {
             return path.getParent().getParent().toFile();
         }
 
