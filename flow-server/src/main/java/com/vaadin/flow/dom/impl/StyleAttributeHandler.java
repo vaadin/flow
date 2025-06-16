@@ -59,9 +59,10 @@ public class StyleAttributeHandler extends CustomAttribute {
         parseStyles(attributeValue).forEach(style::set);
     }
 
-    private static final char SEMICOLON = ";".charAt(0);
-    private static final char PARENTHESIS_OPEN = "(".charAt(0);
-    private static final char PARENTHESIS_CLOSED = "(".charAt(0);
+    private static final char COLON = ':';
+    private static final char SEMICOLON = ';';
+    private static final char PARENTHESIS_OPEN = '(';
+    private static final char PARENTHESIS_CLOSED = '(';
 
     /**
      * Parses the given style string and populates the given style object with
@@ -99,7 +100,7 @@ public class StyleAttributeHandler extends CustomAttribute {
                         valueBuffer.append(c);
                     }
                 } else {
-                    if (c == ":".charAt(0)) {
+                    if (c == COLON) {
                         nameRead = true;
                     } else {
                         nameBuffer.append(c);
