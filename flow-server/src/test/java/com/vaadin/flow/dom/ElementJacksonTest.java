@@ -1100,7 +1100,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         String style = "width:12em;height:2em";
         e.setAttribute("style", style);
         Assert.assertEquals(style, e.getAttribute("style"));
-
+        Assert.assertEquals("2em", e.getStyle().get("height"));
     }
 
     @Test
@@ -1120,13 +1120,16 @@ public class ElementJacksonTest extends AbstractNodeTest {
                 "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
         testStyleAttribute(
                 "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
-
+        Style style = testStyleAttribute("width:var(--widthB);color:var(--mainColor)");
+        Assert.assertEquals("var(--widthB)", style.get("width"));
+        Assert.assertEquals("var(--mainColor)", style.get("color"));
     }
 
-    private void testStyleAttribute(String style) {
+    private Style testStyleAttribute(String style) {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", style);
         Assert.assertEquals(style, e.getAttribute("style"));
+        return e.getStyle();
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -62,7 +62,7 @@ public class StyleAttributeHandler extends CustomAttribute {
     private static final char COLON = ':';
     private static final char SEMICOLON = ';';
     private static final char PARENTHESIS_OPEN = '(';
-    private static final char PARENTHESIS_CLOSED = '(';
+    private static final char PARENTHESIS_CLOSED = ')';
 
     /**
      * Parses the given style string and populates the given style object with
