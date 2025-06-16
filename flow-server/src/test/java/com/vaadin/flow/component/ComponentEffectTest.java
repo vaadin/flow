@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -142,7 +143,7 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void format_signalValuesChange_formattedStringUpdated() {
+    public void format_customLocale_signalValuesChange_formattedStringUpdated() {
         runWithSignalEnvironmentMocks(() -> {
             TestComponent component = new TestComponent();
 
@@ -153,25 +154,25 @@ public class ComponentEffectTest {
             NumberSignal numberSignal = new NumberSignal(42.23456);
 
             Registration registration = ComponentEffect.format(component,
-                    TestComponent::setValue, "The price of %s is %.2f",
-                    stringSignal, numberSignal);
+                    TestComponent::setValue, Locale.ENGLISH,
+                    "The price of %s is %.2f", stringSignal, numberSignal);
 
             assertEquals("Initial formatted value should be set",
-                    "The price of test is 42,23", component.getValue());
+                    "The price of test is 42.23", component.getValue());
 
             // Change int signal value
             numberSignal.value(20.12345);
 
             assertEquals(
                     "Formatted value should be updated with new numeric value",
-                    "The price of test is 20,12", component.getValue());
+                    "The price of test is 20.12", component.getValue());
 
             // Change string signal value
             stringSignal.value("updated");
 
             assertEquals(
                     "Formatted value should be updated with new string value",
-                    "The price of updated is 20,12", component.getValue());
+                    "The price of updated is 20.12", component.getValue());
 
             registration.remove();
 
@@ -180,7 +181,26 @@ public class ComponentEffectTest {
 
             assertEquals(
                     "Formatted value should not be updated after registration is removed",
-                    "The price of updated is 20,12", component.getValue());
+                    "The price of updated is 20.12", component.getValue());
+        });
+    }
+
+    @Test
+    public void format_defaultLocale_signalValuesChange_formattedStringUpdated() {
+        runWithSignalEnvironmentMocks(() -> {
+            TestComponent component = new TestComponent();
+
+            MockUI ui = new MockUI();
+            ui.add(component);
+
+            ValueSignal<String> stringSignal = new ValueSignal<>("test");
+            ValueSignal<Integer> numberSignal = new ValueSignal<>(42);
+
+            ComponentEffect.format(component, TestComponent::setValue,
+                    "The price of %s is %d", stringSignal, numberSignal);
+
+            assertEquals("Initial formatted value should be set",
+                    "The price of test is 42", component.getValue());
         });
     }
 
