@@ -28,13 +28,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,37 +53,16 @@ import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-@NotThreadSafe
 public class ComponentEffectTest {
-
-    private TestComponent component;
-    private ValueSignal<String> signal;
-
-    @BeforeClass
-    public static void beforeClass() {
-        if (!SignalEnvironment.initialized()) {
-            SignalEnvironment.tryInitialize(new ObjectMapper(),
-                    Executors.newSingleThreadExecutor());
-        }
-    }
-
-    @Before
-    public void setup() {
-        component = new TestComponent();
-        signal = new ValueSignal<>("initial");
-    }
+    private static final Executor executor = Runnable::run;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
-        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
-            FeatureFlags flags = mock(FeatureFlags.class);
-            when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                    .thenReturn(true);
-            featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                    .thenReturn(flags);
-
+        runWithSignalEnvironmentMocks(() -> {
+            TestComponent component = new TestComponent();
+            ValueSignal<String> signal = new ValueSignal<>("initial");
             AtomicInteger count = new AtomicInteger();
-
             Registration registration = ComponentEffect.effect(component,
                     () -> {
                         signal.value();
@@ -121,17 +100,14 @@ public class ComponentEffectTest {
             signal.value("test4");
             assertEquals("Effect should not be run after remove", 3,
                     count.get());
-        }
+        });
     }
 
     @Test
     public void bind_signalValueChanges_componentUpdated() {
-        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
-            FeatureFlags flags = mock(FeatureFlags.class);
-            when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                    .thenReturn(true);
-            featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                    .thenReturn(flags);
+        runWithSignalEnvironmentMocks(() -> {
+            TestComponent component = new TestComponent();
+            ValueSignal<String> signal = new ValueSignal<>("initial");
 
             MockUI ui = new MockUI();
             ui.add(component);
@@ -162,17 +138,13 @@ public class ComponentEffectTest {
             assertEquals(
                     "Component should not be updated after registration is removed",
                     "another value", component.getValue());
-        }
+        });
     }
 
     @Test
     public void format_signalValuesChange_formattedStringUpdated() {
-        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
-            FeatureFlags flags = mock(FeatureFlags.class);
-            when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                    .thenReturn(true);
-            featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                    .thenReturn(flags);
+        runWithSignalEnvironmentMocks(() -> {
+            TestComponent component = new TestComponent();
 
             MockUI ui = new MockUI();
             ui.add(component);
@@ -209,6 +181,34 @@ public class ComponentEffectTest {
             assertEquals(
                     "Formatted value should not be updated after registration is removed",
                     "The price of updated is 20,12", component.getValue());
+        });
+    }
+
+    /**
+     * Other tests may already have initialized the environment with the feature
+     * flag off and executors that would throw an exception, so it's too late
+     * now to mock the feature flags. Thus we need to "reinitialize" the
+     * environment.
+     */
+    private static void runWithSignalEnvironmentMocks(Runnable test) {
+        try (var environment = mockStatic(SignalEnvironment.class);
+                var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
+            FeatureFlags flags = mock(FeatureFlags.class);
+            when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
+                    .thenReturn(true);
+            featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
+                    .thenReturn(flags);
+            environment.when(() -> SignalEnvironment.initialized())
+                    .thenReturn(true);
+            environment.when(() -> SignalEnvironment.defaultDispatcher())
+                    .thenReturn(executor);
+            environment.when(() -> SignalEnvironment.synchronousDispatcher())
+                    .thenReturn(executor);
+            environment.when(() -> SignalEnvironment.asynchronousDispatcher())
+                    .thenReturn(executor);
+            environment.when(() -> SignalEnvironment.objectMapper())
+                    .thenReturn(objectMapper);
+            test.run();
         }
     }
 
