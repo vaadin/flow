@@ -451,6 +451,18 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         debug("pushOk()");
         if (isReconnecting()) {
             resolveTemporaryError(Type.PUSH);
+            if (registry.getRequestResponseTracker().hasActiveRequest()) {
+                debug("pushOk() Reset active request state when reconnecting PUSH because of a network error.");
+                endRequest();
+                // for bidirectional transport, the pending message is not sent
+                // as reconnection payload, so immediately push the pending
+                // changes on reconnect
+                if (pushConnection.isBidirectional()) {
+                    Console.debug(
+                            "Flush pending messages after PUSH reconnection.");
+                    registry.getMessageSender().sendInvocationsToServer();
+                }
+            }
         }
     }
 

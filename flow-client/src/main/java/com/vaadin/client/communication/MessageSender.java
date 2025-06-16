@@ -57,6 +57,8 @@ public class MessageSender {
 
     private ResynchronizationState resynchronizationState = ResynchronizationState.NOT_ACTIVE;
 
+    private JsonObject pushPendingMessage;
+
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -97,6 +99,17 @@ public class MessageSender {
      *
      */
     private void doSendInvocationsToServer() {
+        // If there's a stored message, resend it and postpone processing the
+        // rest of the queued messages to prevent resynchronization issues.
+        if (pushPendingMessage != null) {
+            Console.log("Sending pending push message "
+                    + pushPendingMessage.toJson());
+            JsonObject payload = pushPendingMessage;
+            pushPendingMessage = null;
+            registry.getRequestResponseTracker().startRequest();
+            send(payload);
+            return;
+        }
 
         ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
         if (serverRpcQueue.isEmpty()
@@ -174,6 +187,13 @@ public class MessageSender {
      */
     public void send(final JsonObject payload) {
         if (push != null && push.isBidirectional()) {
+            // When using bidirectional transport, the payload is not resent
+            // to the server during reconnection attempts.
+            // Keep a copy of the message, so that it could be resent to the
+            // server after a reconnection.
+            // Reference will be cleaned up once the server confirms it has
+            // seen this message
+            pushPendingMessage = payload;
             push.push(payload);
         } else {
             registry.getXhrConnection().send(payload);
@@ -253,7 +273,14 @@ public class MessageSender {
      */
     public void setClientToServerMessageId(int nextExpectedId, boolean force) {
         if (nextExpectedId == clientToServerMessageId) {
-            // No op as everything matches they way it should
+            // Everything matches they way it should
+            // Remove potential pending PUSH message if it has already been seen
+            // by the server.
+            if (pushPendingMessage != null
+                    && (int) pushPendingMessage.getNumber(
+                            ApplicationConstants.CLIENT_TO_SERVER_ID) < nextExpectedId) {
+                pushPendingMessage = null;
+            }
             return;
         }
         if (force) {
