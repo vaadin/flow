@@ -184,7 +184,7 @@ public class VaadinServletConfiguration {
             WebApplicationContext webApplicationContext,
             @Autowired(required = false) @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
         return new RootExcludeHandler(getExcludedUrls(environment),
-                vaadinForwardingController(), null);
+                vaadinForwardingController(), resourceHandlerMapping);
     }
 
     /**
