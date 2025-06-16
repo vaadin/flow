@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +38,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerExecutionChain;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
@@ -101,11 +104,11 @@ public class VaadinServletConfiguration {
         private List<String> excludeUrls;
         private AntPathMatcher matcher;
         private UrlPathHelper urlPathHelper = new UrlPathHelper();
-        private SimpleUrlHandlerMapping resourceHandlerMapping;
+        private HandlerMapping resourceHandlerMapping;
 
         public RootExcludeHandler(List<String> excludeUrls,
                 Controller vaadinForwardingController,
-                SimpleUrlHandlerMapping resourceHandlerMapping) {
+                HandlerMapping resourceHandlerMapping) {
             this.excludeUrls = excludeUrls;
             this.resourceHandlerMapping = resourceHandlerMapping;
             matcher = new AntPathMatcher();
@@ -176,23 +179,10 @@ public class VaadinServletConfiguration {
      */
     @Bean
     public RootExcludeHandler vaadinRootMapping(Environment environment,
-            WebApplicationContext webApplicationContext) {
-        SimpleUrlHandlerMapping resourceHandlerMapping = null;
-        try {
-            resourceHandlerMapping = webApplicationContext.getBean(
-                    "resourceHandlerMapping", SimpleUrlHandlerMapping.class);
-        } catch (Exception e) {
-            getLogger().debug(
-                    "Unable to find resourceHandlerMapping bean, "
-                            + "will not handle all static resources correctly",
-                    e);
-        }
+            WebApplicationContext webApplicationContext,
+            @Autowired(required = false) @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
         return new RootExcludeHandler(getExcludedUrls(environment),
-                vaadinForwardingController(), resourceHandlerMapping);
-    }
-
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
+                vaadinForwardingController(), null);
     }
 
     /**
