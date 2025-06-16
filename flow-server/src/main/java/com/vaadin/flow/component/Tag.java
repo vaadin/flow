@@ -59,6 +59,10 @@ public @interface Tag {
      */
     String CAPTION = "caption";
     /**
+     * Tag for a <code>&lt;code&gt;</code>.
+     */
+    String CODE = "code";
+    /**
      * Tag for an <code>&lt;dd&gt;</code>.
      */
     String DD = "dd";
@@ -228,10 +232,6 @@ public @interface Tag {
      * Tag for a <code>&lt;ul&gt;</code>.
      */
     String UL = "ul";
-    /**
-     * Tag for a <code>&lt;code&gt;</code>.
-     */
-    String CODE = "code";
 
     /**
      * Gets the tag name.

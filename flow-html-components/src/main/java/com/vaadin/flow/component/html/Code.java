@@ -14,14 +14,14 @@ import com.vaadin.flow.component.Tag;
 public class Code extends HtmlContainer {
 
     /**
-     * Creates a new empty code.
+     * Creates a new empty code component.
      */
     public Code() {
         super();
     }
 
     /**
-     * Creates a new code with the given child components.
+     * Creates a new code component with the given child components.
      *
      * @param components
      *            the child components
@@ -31,7 +31,7 @@ public class Code extends HtmlContainer {
     }
 
     /**
-     * Creates a new code with the given text.
+     * Creates a new code component with the given text.
      *
      * @param text
      *            the text
