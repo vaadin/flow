@@ -656,6 +656,7 @@ public class AtmospherePushConnection implements PushConnection {
             fallbackTransport: 'long-polling',
             contentType: 'application/json; charset=UTF-8',
             reconnectInterval: 5000,
+            maxWebsocketErrorRetries: 12,
             timeout: -1,
             maxReconnectOnClose: 10000000,
             trackMessageLength: true,
