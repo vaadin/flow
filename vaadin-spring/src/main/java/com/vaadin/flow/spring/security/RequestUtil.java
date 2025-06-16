@@ -184,7 +184,7 @@ public class RequestUtil {
      * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
      *             {@link #pathMatchers(String...)} instead.
      */
-    @Deprecated(since = "25.0", forRemoval = true)
+    @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] antMatchers(String... patterns) {
         return Stream.of(patterns).map(AntPathRequestMatcher::new)
                 .toArray(RequestMatcher[]::new);
@@ -201,7 +201,7 @@ public class RequestUtil {
      * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
      *             {@link #routePathMatchers(String...)} instead.
      */
-    @Deprecated(since = "25.0", forRemoval = true)
+    @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] routeMatchers(String... patterns) {
         return Stream.of(patterns)
                 .map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))

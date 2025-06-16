@@ -349,7 +349,7 @@ public abstract class VaadinWebSecurity {
      * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
      *             {@link #pathMatchers(String...)} instead.
      */
-    @Deprecated(since = "25.0", forRemoval = true)
+    @Deprecated(since = "24.8", forRemoval = true)
     public RequestMatcher[] antMatchers(String... patterns) {
         return RequestUtil.antMatchers(patterns);
     }
@@ -365,7 +365,7 @@ public abstract class VaadinWebSecurity {
      * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
      *             {@link #routePathMatchers(String...)} instead.
      */
-    @Deprecated(since = "25.0", forRemoval = true)
+    @Deprecated(since = "24.8", forRemoval = true)
     public RequestMatcher[] routeMatchers(String... patterns) {
         return RequestUtil.routeMatchers(Stream.of(patterns)
                 .map(this::applyUrlMapping).toArray(String[]::new));

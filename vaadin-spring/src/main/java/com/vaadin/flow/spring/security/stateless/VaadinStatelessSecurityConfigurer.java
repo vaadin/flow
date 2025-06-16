@@ -130,7 +130,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
      *             instead.
      */
-    @Deprecated(since = "25.0", forRemoval = true)
+    @Deprecated(since = "24.8", forRemoval = true)
     public static void apply(HttpSecurity http,
             Customizer<VaadinStatelessSecurityConfigurer<HttpSecurity>> customizer)
             throws Exception {
