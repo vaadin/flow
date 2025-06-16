@@ -141,14 +141,16 @@ public class VaadinServletConfiguration {
                 // Check if the request is for a static resource
                 HandlerExecutionChain handler = resourceHandlerMapping
                         .getHandler(request);
-                Object innerHandler = handler.getHandler();
-                if (innerHandler instanceof ResourceHttpRequestHandler resourceHttpRequestHandler) {
-                    if (!mapsToRoot(resourceHttpRequestHandler)) {
-                        // We cannot use the context resource mapped to / as
-                        // it would overwrite all
-                        // routes. Anything mapped to only a certain part of
-                        // the app is okay to use.
-                        return handler;
+                if (handler != null) {
+                    Object innerHandler = handler.getHandler();
+                    if (innerHandler instanceof ResourceHttpRequestHandler resourceHttpRequestHandler) {
+                        if (!mapsToRoot(resourceHttpRequestHandler)) {
+                            // We cannot use the context resource mapped to / as
+                            // it would overwrite all
+                            // routes. Anything mapped to only a certain part of
+                            // the app is okay to use.
+                            return handler;
+                        }
                     }
                 }
             }
