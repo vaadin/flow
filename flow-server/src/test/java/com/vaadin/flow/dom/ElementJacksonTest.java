@@ -1118,14 +1118,18 @@ public class ElementJacksonTest extends AbstractNodeTest {
                 "background:url(\"https://example.com/images/myImg.jpg?q;param\")");
         var style = testStyleAttribute(
                 "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
-        Assert.assertEquals("cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))", style.get("background-image"));
+        Assert.assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
         testStyleAttribute(
                 "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
         style = testStyleAttribute(
                 "width:var(--widthB);color:var(--mainColor);background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
         Assert.assertEquals("var(--widthB)", style.get("width"));
         Assert.assertEquals("var(--mainColor)", style.get("color"));
-        Assert.assertEquals("cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))", style.get("background-image"));
+        Assert.assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
     }
 
     private Style testStyleAttribute(String style) {
