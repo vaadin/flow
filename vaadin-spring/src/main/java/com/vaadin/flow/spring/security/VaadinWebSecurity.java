@@ -17,11 +17,12 @@ package com.vaadin.flow.spring.security;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.annotation.PostConstruct;
@@ -294,14 +295,14 @@ public abstract class VaadinWebSecurity {
             String urlMapping) {
         Objects.requireNonNull(urlMapping,
                 "Vaadin servlet url mapping is required");
-        Stream.Builder<String> paths = Stream.builder();
-        Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext())
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+        String[] paths = HandlerHelper
+                .getPublicResourcesRequiringSecurityContext();
+        assert paths.length > 0;
+        return new OrRequestMatcher(Stream.of(paths)
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
-                .forEach(paths::add);
-
-        return new OrRequestMatcher(
-                paths.build().map(path -> RequestUtil.pathMatchers(path)[0])
-                        .collect(Collectors.toList()));
+                .map(builder::matcher).toArray(RequestMatcher[]::new));
     }
 
     /**
@@ -329,15 +330,25 @@ public abstract class VaadinWebSecurity {
             String urlMapping) {
         Objects.requireNonNull(urlMapping,
                 "Vaadin servlet url mapping is required");
-        Stream<String> mappingRelativePaths = Stream
-                .of(HandlerHelper.getPublicResources())
-                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path));
-        Stream<String> rootPaths = Stream
-                .of(HandlerHelper.getPublicResourcesRoot());
-        return new OrRequestMatcher(
-                Stream.concat(mappingRelativePaths, rootPaths)
-                        .map(path -> RequestUtil.pathMatchers(path)[0])
-                        .collect(Collectors.toList()));
+
+        List<RequestMatcher> matchers = new ArrayList<>();
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+
+        String[] publicResources = HandlerHelper.getPublicResources();
+        assert publicResources.length > 0;
+
+        Stream.of(publicResources)
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
+                .map(builder::matcher).forEach(matchers::add);
+
+        String[] publicResourcesRoot = HandlerHelper.getPublicResourcesRoot();
+        assert publicResourcesRoot.length > 0;
+
+        Stream.of(publicResourcesRoot).map(builder::matcher)
+                .forEach(matchers::add);
+
+        return new OrRequestMatcher(matchers);
     }
 
     /**
