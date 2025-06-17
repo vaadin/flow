@@ -150,8 +150,8 @@ public final class ComponentEffect {
      * Example of usage:
      *
      * <pre>
-     * ComponentEffect.format(mySpan, Span::setText, "The price of %s is %.2f",
-     *         nameSignal, priceSignal);
+     * ComponentEffect.format(mySpan, Span::setText, Locale.US,
+     *         "The price of %s is %.2f", nameSignal, priceSignal);
      * </pre>
      *
      * @see Signal#effect(Runnable)
