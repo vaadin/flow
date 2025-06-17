@@ -121,13 +121,6 @@
             <version>${jsoup.version}</version>
         </dependency>
 
-        <!-- ph-css for parsing style attribute in Element API -->
-        <dependency>
-            <groupId>com.helger</groupId>
-            <artifactId>ph-css</artifactId>
-            <version>7.0.4</version>
-        </dependency>
-
         <!-- Byte code analysis -->
         <dependency>
             <groupId>org.ow2.asm</groupId>
