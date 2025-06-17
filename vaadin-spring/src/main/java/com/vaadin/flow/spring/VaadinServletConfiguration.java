@@ -34,7 +34,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ClassUtils;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerExecutionChain;
@@ -187,7 +186,6 @@ public class VaadinServletConfiguration {
      */
     @Bean
     public RootExcludeHandler vaadinRootMapping(Environment environment,
-            WebApplicationContext webApplicationContext,
             @Autowired(required = false) @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
         return new RootExcludeHandler(getExcludedUrls(environment),
                 vaadinForwardingController(), resourceHandlerMapping);
