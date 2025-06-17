@@ -346,8 +346,12 @@ public abstract class VaadinService implements Serializable {
             UsageStatistics.markAsUsed("flow/bun", null);
         }
 
-        RouteUtil.checkForClientRouteCollisions(this,
-                getRouteRegistry().getRegisteredRoutes());
+        if (getDeploymentConfiguration().isProductionMode()) {
+            // Postpone the check until dev-server is fully initialized and
+            // client routes are computed.
+            RouteUtil.checkForClientRouteCollisions(this,
+                    getRouteRegistry().getRegisteredRoutes());
+        }
 
         initialized = true;
     }
@@ -475,7 +479,7 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new StreamRequestHandler());
         handlers.add(new PwaHandler(() -> getPwaRegistry()));
         handlers.add(new TranslationFileRequestHandler(
-                getInstantiator().getI18NProvider()));
+                getInstantiator().getI18NProvider(), getClassLoader()));
 
         handlers.add(new WebComponentBootstrapHandler());
         handlers.add(new WebComponentProvider());

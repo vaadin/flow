@@ -13,27 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * File factory interface for generating file to store the uploaded data into.
+ * Callback interface for handling in-memory uploads in
+ * {@link InMemoryUploadHandler}.
+ *
+ * This interface is used to process the upload metadata after the upload is
+ * complete. The method invocation may throw an {@link IOException} to handle
+ * cases where processing the upload fails.
  *
  * @since 24.8
  */
-@FunctionalInterface
-public interface FileFactory extends Serializable {
+public interface InMemoryUploadCallback extends Serializable {
 
     /**
-     * Create a new file for given file name.
+     * Applies the given callback once the in-memory data upload is complete.
      *
-     * @param uploadMetadata
-     *            metadata for upload that should get a file created
-     * @return {@link File} that should be used
+     * @param metadata
+     *            the upload metadata containing relevant information about the
+     *            upload
+     * @throws IOException
+     *             if an I/O error occurs in the callback
      */
-    File createFile(UploadMetadata uploadMetadata) throws IOException;
+    void complete(UploadMetadata metadata, byte[] data) throws IOException;
 }

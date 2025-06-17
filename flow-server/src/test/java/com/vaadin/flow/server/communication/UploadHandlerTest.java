@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.communication;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,7 +53,9 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.streams.FileUploadHandler;
+import com.vaadin.flow.server.streams.InMemoryUploadCallback;
 import com.vaadin.flow.server.streams.InMemoryUploadHandler;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import com.vaadin.flow.server.streams.TemporaryFileUploadHandler;
 import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
@@ -208,9 +211,9 @@ public class UploadHandlerTest {
 
         // No lambda as that would require strange things from output
         InMemoryUploadHandler uploadHandler = UploadHandler
-                .inMemory(new SerializableBiConsumer<UploadMetadata, byte[]>() {
+                .inMemory(new InMemoryUploadCallback() {
                     @Override
-                    public void accept(UploadMetadata uploadMetadata,
+                    public void complete(UploadMetadata uploadMetadata,
                             byte[] bytes) {
                         Assert.assertEquals(output.length, bytes.length);
                         System.arraycopy(bytes, 0, output, 0, bytes.length);
@@ -277,8 +280,9 @@ public class UploadHandlerTest {
 
         FileUploadHandler uploadHandler = UploadHandler.toFile(
                 (uploadMetadata, file) -> outputFiles.add(file),
-                (fileName) -> new File(System.getProperty("java.io.tmpdir"),
-                        fileName));
+                (uploadMetadata) -> new File(
+                        System.getProperty("java.io.tmpdir"),
+                        uploadMetadata.fileName()));
 
         StreamRegistration streamRegistration = streamResourceRegistry
                 .registerResource(uploadHandler);
@@ -649,6 +653,28 @@ public class UploadHandlerTest {
         Assert.assertEquals("Start event was not fired", 2, startFired.get());
         Assert.assertEquals("Complete event was not fired", 2,
                 completeFired.get());
+    }
+
+    @Test
+    public void fileUploadCallback_doesNotRequireCatch() {
+        new FileUploadHandler((meta, file) -> {
+            new FileInputStream(file);
+        }, uploadMetadata -> new File("foo"));
+    }
+
+    @Test
+    public void tmpUploadCallback_doesNotRequireCatch() {
+        new TemporaryFileUploadHandler((meta, file) -> {
+            new FileInputStream(file);
+        });
+    }
+
+    @Test
+    public void inmemoryUploadCallback_doesNotRequireCatch() {
+        new InMemoryUploadHandler((meta, data) -> {
+            ByteArrayInputStream stream = new ByteArrayInputStream(data);
+            stream.close();
+        });
     }
 
     private Part createPart(InputStream inputStream, String contentType,

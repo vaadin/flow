@@ -16,11 +16,11 @@
 
 package com.vaadin.flow.i18n;
 
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -41,8 +41,6 @@ public class DefaultI18NProvider implements I18NProvider {
     // Get bundles named `translations` from `vaadin-i18n` folder.
     public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
             + BUNDLE_FILENAME;
-    // Resource path for the file that contains the list of keys for each chunk.
-    public static final String CHUNK_RESOURCE = BUNDLE_FOLDER + "/i18n.json";
 
     /**
      * Construct {@link DefaultI18NProvider} for a list of locales that we have
@@ -102,26 +100,21 @@ public class DefaultI18NProvider implements I18NProvider {
         return value;
     }
 
-    private ResourceBundle getBundle(Locale locale) {
+    @Override
+    public Map<String, String> getAllTranslations(Locale locale) {
+        var bundle = getBundle(locale);
+        return bundle == null ? Map.of()
+                : getTranslations(bundle.keySet(), locale);
+    }
+
+    ResourceBundle getBundle(Locale locale) {
         try {
-            return getBundle(locale, null);
+            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader);
         } catch (final MissingResourceException e) {
             getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX
                     + " and locale " + locale.getDisplayName(), e);
         }
         return null;
-    }
-
-    ResourceBundle getBundle(Locale locale, ResourceBundle.Control control) {
-        if (control == null) {
-            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader);
-        }
-        return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader,
-                control);
-    }
-
-    URL getChunkResource() {
-        return classLoader.getResource(CHUNK_RESOURCE);
     }
 
     static Logger getLogger() {

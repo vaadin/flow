@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -44,11 +43,11 @@ import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
  * <p>
  * The interface provides several factory methods for common upload scenarios:
  * <ul>
- * <li>{@link #toFile(SerializableBiConsumer, FileFactory)} - for uploading
- * files to the server file system</li>
- * <li>{@link #toTempFile(SerializableBiConsumer)} - for uploading to temporary
+ * <li>{@link #toFile(FileUploadCallback, FileFactory)} - for uploading files to
+ * the server file system</li>
+ * <li>{@link #toTempFile(FileUploadCallback)} - for uploading to temporary
  * files</li>
- * <li>{@link #inMemory(SerializableBiConsumer)} - for uploading files to
+ * <li>{@link #inMemory(InMemoryUploadCallback)} - for uploading files to
  * memory</li>
  * </ul>
  * Example:
@@ -176,23 +175,22 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * Generate an upload handler for storing upload stream into a file.
      *
-     * @param successHandler
+     * @param successCallback
      *            consumer to be called when upload successfully completes
      * @param fileFactory
      *            factory for generating file to write to
      * @return file upload handler
      */
-    static FileUploadHandler toFile(
-            SerializableBiConsumer<UploadMetadata, File> successHandler,
+    static FileUploadHandler toFile(FileUploadCallback successCallback,
             FileFactory fileFactory) {
-        return new FileUploadHandler(successHandler, fileFactory);
+        return new FileUploadHandler(successCallback, fileFactory);
     }
 
     /**
      * Generate an upload handler for storing upload stream into a file with
      * progress handling.
      *
-     * @param successHandler
+     * @param successCallback
      *            consumer to be called when upload successfully completes
      * @param fileFactory
      *            factory for generating file to write to
@@ -200,11 +198,10 @@ public interface UploadHandler extends ElementRequestHandler {
      *            listener for transfer progress events
      * @return file upload handler instance with progress listener
      */
-    static FileUploadHandler toFile(
-            SerializableBiConsumer<UploadMetadata, File> successHandler,
+    static FileUploadHandler toFile(FileUploadCallback successCallback,
             FileFactory fileFactory, TransferProgressListener listener) {
         FileUploadHandler fileUploadHandler = new FileUploadHandler(
-                successHandler, fileFactory);
+                successCallback, fileFactory);
         fileUploadHandler.addTransferProgressListener(listener);
         return fileUploadHandler;
     }
@@ -213,30 +210,30 @@ public interface UploadHandler extends ElementRequestHandler {
      * Generate an upload handler for storing upload stream into a temporary
      * file.
      *
-     * @param successHandler
+     * @param successCallback
      *            consumer to be called when upload successfully completes
      * @return temporary file upload handler instance
      */
     static TemporaryFileUploadHandler toTempFile(
-            SerializableBiConsumer<UploadMetadata, File> successHandler) {
-        return new TemporaryFileUploadHandler(successHandler);
+            FileUploadCallback successCallback) {
+        return new TemporaryFileUploadHandler(successCallback);
     }
 
     /**
      * Generate an upload handler for storing upload stream into a temporary
      * file with progress handling.
      *
-     * @param successHandler
+     * @param successCallback
      *            consumer to be called when upload successfully completes
      * @param listener
      *            listener for transfer progress events
      * @return temporary file upload handler instance with progress listener
      */
     static TemporaryFileUploadHandler toTempFile(
-            SerializableBiConsumer<UploadMetadata, File> successHandler,
+            FileUploadCallback successCallback,
             TransferProgressListener listener) {
         TemporaryFileUploadHandler temporaryFileUploadHandler = new TemporaryFileUploadHandler(
-                successHandler);
+                successCallback);
         temporaryFileUploadHandler.addTransferProgressListener(listener);
         return temporaryFileUploadHandler;
     }
@@ -245,30 +242,30 @@ public interface UploadHandler extends ElementRequestHandler {
      * Generate upload handler for storing download into in-memory
      * {@code byte[]}.
      *
-     * @param successHandler
+     * @param successCallback
      *            consumer to be called when upload successfully completes
      * @return in-memory upload handler
      */
     static InMemoryUploadHandler inMemory(
-            SerializableBiConsumer<UploadMetadata, byte[]> successHandler) {
-        return new InMemoryUploadHandler(successHandler);
+            InMemoryUploadCallback successCallback) {
+        return new InMemoryUploadHandler(successCallback);
     }
 
     /**
      * Generate upload handler for storing download into in-memory
      * {@code byte[]} with progress handling.
      *
-     * @param successHandler
+     * @param successCallback
      *            consumer to be called when upload successfully completes
      * @param listener
      *            listener for transfer progress events
      * @return in-memory upload handler with progress listener
      */
     static InMemoryUploadHandler inMemory(
-            SerializableBiConsumer<UploadMetadata, byte[]> successHandler,
+            InMemoryUploadCallback successCallback,
             TransferProgressListener listener) {
         InMemoryUploadHandler inMemoryUploadHandler = new InMemoryUploadHandler(
-                successHandler);
+                successCallback);
         inMemoryUploadHandler.addTransferProgressListener(listener);
         return inMemoryUploadHandler;
     }

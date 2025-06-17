@@ -656,8 +656,12 @@ public class RouteUtil {
         if (!collisions.isEmpty()) {
             String msg = String.format(
                     "Invalid route configuration. The following Hilla "
-                            + "route(s) conflict with configured Flow routes: %s",
-                    String.join(", ", collisions));
+                            + "route(s) conflict with configured Flow routes: '%s'. "
+                            + "Please double-check the Hilla and Flow routes path and resolve the conflicts. "
+                            + "If the error persists try to delete the %s folder.",
+                    String.join("', '", collisions),
+                    FrontendUtils.getFrontendGeneratedFolder(service
+                            .getDeploymentConfiguration().getFrontendFolder()));
             throw new InvalidRouteConfigurationException(msg);
         }
     }
