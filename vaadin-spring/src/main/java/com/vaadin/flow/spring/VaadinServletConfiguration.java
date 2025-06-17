@@ -106,6 +106,12 @@ public class VaadinServletConfiguration {
         private UrlPathHelper urlPathHelper = new UrlPathHelper();
         private HandlerMapping resourceHandlerMapping;
 
+        @Deprecated(forRemoval = true)
+        public RootExcludeHandler(List<String> excludeUrls,
+                Controller vaadinForwardingController) {
+            this(excludeUrls, vaadinForwardingController, null);
+        }
+
         public RootExcludeHandler(List<String> excludeUrls,
                 Controller vaadinForwardingController,
                 HandlerMapping resourceHandlerMapping) {
