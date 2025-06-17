@@ -176,13 +176,25 @@ public class RequestUtil {
 
     /**
      * Utility to create {@link RequestMatcher}s from ant patterns.
+     * <p>
+     * Since {@link AntPathRequestMatcher} is deprecated and will be removed,
+     * callers of this method should be updated to use
+     * {@link PathPatternRequestMatcher} instead.
+     *
+     * <pre>
+     * {@code
+     *  var matcherBuilder = PathPatternRequestMatcher.withDefaults():
+     *  var requestMatcher = matcherBuilder.match(path);
+     * }
+     * </pre>
      *
      * @param patterns
      *            and patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
-     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
-     *             {@link #pathMatchers(String...)} instead.
+     * @deprecated {@code AntPathRequestMatcher} is deprecated and marked for
+     *             removal. This method is deprecated without direct
+     *             replacement; use {@code PathPatternRequestMatcher} instead.
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] antMatchers(String... patterns) {
@@ -193,51 +205,30 @@ public class RequestUtil {
     /**
      * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
      * patterns and HTTP get method.
+     * <p>
+     * Since {@link AntPathRequestMatcher} is deprecated and will be removed,
+     * callers of this method should be updated to use
+     * {@link PathPatternRequestMatcher} instead.
+     *
+     * <pre>
+     * {@code
+     *  var matcherBuilder = PathPatternRequestMatcher.withDefaults():
+     *  var requestMatcher = matcherBuilder.match(HttpMethod.GET, path);
+     * }
+     * </pre>
      *
      * @param patterns
-     *            and patterns
+     *            ANT patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
-     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
-     *             {@link #routePathMatchers(String...)} instead.
+     * @deprecated {@code AntPathRequestMatcher} is deprecated and marked for
+     *             removal. This method is deprecated without direct
+     *             replacement; use {@code PathPatternRequestMatcher} instead.
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] routeMatchers(String... patterns) {
         return Stream.of(patterns)
                 .map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))
-                .toArray(RequestMatcher[]::new);
-    }
-
-    /**
-     * Utility to create {@link RequestMatcher}s from path patterns.
-     *
-     * @param patterns
-     *            and patterns
-     * @return an array or {@link RequestMatcher} instances for the given
-     *         patterns.
-     * @see PathPatternRequestMatcher#matcher(HttpServletRequest)
-     */
-    public static RequestMatcher[] pathMatchers(String... patterns) {
-        var builder = PathPatternRequestMatcher.withDefaults();
-        return Stream.of(patterns).map(builder::matcher)
-                .toArray(RequestMatcher[]::new);
-    }
-
-    /**
-     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using path
-     * patterns and HTTP get method.
-     *
-     * @param patterns
-     *            and patterns
-     * @return an array or {@link RequestMatcher} instances for the given
-     *         patterns.
-     * @see PathPatternRequestMatcher#matcher(HttpServletRequest)
-     */
-    public static RequestMatcher[] routePathMatchers(String... patterns) {
-        PathPatternRequestMatcher.Builder matcherBuilder = PathPatternRequestMatcher
-                .withDefaults();
-        return Stream.of(patterns)
-                .map(p -> matcherBuilder.matcher(HttpMethod.GET, p))
                 .toArray(RequestMatcher[]::new);
     }
 

@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -375,13 +376,19 @@ public abstract class VaadinWebSecurity {
      * Utility to create {@link RequestMatcher}s from path patterns.
      *
      * @param patterns
-     *            ant patterns
+     *            path patterns, as described in
+     *            {@link org.springframework.web.util.pattern.PathPattern}
+     *            javadoc.
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
      * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
+     * @see org.springframework.web.util.pattern.PathPattern
      */
     public RequestMatcher[] pathMatchers(String... patterns) {
-        return RequestUtil.pathMatchers(patterns);
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+        return Stream.of(patterns).map(builder::matcher)
+                .toArray(RequestMatcher[]::new);
     }
 
     /**
@@ -389,14 +396,19 @@ public abstract class VaadinWebSecurity {
      * patterns and HTTP get method.
      *
      * @param patterns
-     *            ant patterns
+     *            path patterns, as described in
+     *            {@link org.springframework.web.util.pattern.PathPattern}
+     *            javadoc.
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
      * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
+     * @see org.springframework.web.util.pattern.PathPattern
      */
     public RequestMatcher[] routePathMatchers(String... patterns) {
-        return RequestUtil.pathMatchers(Stream.of(patterns)
-                .map(this::applyUrlMapping).toArray(String[]::new));
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+        return Stream.of(patterns).map(p -> builder.matcher(HttpMethod.GET, p))
+                .toArray(RequestMatcher[]::new);
     }
 
     /**
