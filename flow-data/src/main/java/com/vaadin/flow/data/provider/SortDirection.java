@@ -48,9 +48,6 @@ public enum SortDirection {
      * @return The shortened representation of the sort direction, either "asc" or "desc"
      */
     public String getShortName() {
-        return switch (this){
-            case ASCENDING -> "asc";
-            case DESCENDING -> "desc";
-        };
+        return ASCENDING.equals(this) ? "asc" : "desc";
     }
 }
