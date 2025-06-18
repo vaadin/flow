@@ -132,7 +132,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setBackgroundPosition(String value) {
-        return set(STYLE_BACKGROUND_COLOR, value);
+        return set(STYLE_BACKGROUND_POSITION, value);
     }
 
     /**
