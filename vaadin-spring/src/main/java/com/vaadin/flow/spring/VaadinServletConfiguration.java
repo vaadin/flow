@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.spring;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,6 +174,21 @@ public class VaadinServletConfiguration {
             return LoggerFactory.getLogger(getClass());
         }
 
+    }
+
+    /**
+     * Makes an url handler mapping allowing to forward requests from a
+     * {@link DispatcherServlet} to {@link VaadinServlet}.
+     *
+     * @return an url handler mapping instance which forwards requests to vaadin
+     *         servlet
+     * @deprecated use {@link #vaadinRootMapping(Environment, HandlerMapping)}
+     *             instead.
+     */
+    @Deprecated(forRemoval = true, since = "24.8")
+    public RootExcludeHandler vaadinRootMapping(Environment environment) {
+        return new RootExcludeHandler(getExcludedUrls(environment),
+                vaadinForwardingController(), null);
     }
 
     /**
