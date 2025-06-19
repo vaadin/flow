@@ -179,7 +179,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     .createElementNS("http://www.w3.org/2000/svg", "svg");
         } else if (tag.equals("math")) {
             return Browser.getDocument().createElementNS(
-                    "https://www.w3.org/1998/Math/MathML/", "math");
+                    "http://www.w3.org/1998/Math/MathML", "math");
         }
 
         // Else, get the namespace from parent element (svg & mathml elements

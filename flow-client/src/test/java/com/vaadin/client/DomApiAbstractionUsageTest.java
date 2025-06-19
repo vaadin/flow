@@ -46,7 +46,7 @@ public class DomApiAbstractionUsageTest {
     private static final Set<String> ignoredElementMethods = Stream
             .of("getTagName", "addEventListener", "getOwnerDocument",
                     "hasAttribute", "getStyle", "getLocalName", "getAttribute",
-                    "equals", "getClass")
+                    "equals", "getClass", "getNamespaceURI")
             .collect(Collectors.toSet());
 
     private final ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM5) {
@@ -106,7 +106,6 @@ public class DomApiAbstractionUsageTest {
      * without wrapping it with a {@link DomApi#wrap(elemental.dom.Node)} call.
      */
     @Test
-    @Ignore("Don't understand the designed layers and no documentation 🤷‍ SimpleElementBindignStragety.createElement should be somehow implemented differently")
     public void testDomApiCodeNotUsed() throws IOException {
         String classesPath = getClassesLocation(Bootstrapper.class);
 
