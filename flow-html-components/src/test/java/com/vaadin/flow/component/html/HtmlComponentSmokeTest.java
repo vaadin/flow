@@ -203,12 +203,6 @@ public class HtmlComponentSmokeTest {
     }
 
     private static boolean isSpecialSetter(Method method) {
-        // Shorthand for Label.setFor(String)
-        if (method.getDeclaringClass() == Label.class
-                && method.getName().equals("setFor")
-                && method.getParameterTypes()[0] == Component.class) {
-            return true;
-        }
         if (method.getDeclaringClass() == NativeLabel.class
                 && method.getName().equals("setFor")
                 && method.getParameterTypes()[0] == Component.class) {

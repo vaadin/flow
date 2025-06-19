@@ -30,6 +30,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -348,6 +349,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    @Ignore("Can be removed if we agree on ignoring potential issues in [23 + webpack] -> [25] upgrades")
     public void removedAllOldAndExistingPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);

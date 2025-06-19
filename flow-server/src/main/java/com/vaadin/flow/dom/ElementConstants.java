@@ -301,12 +301,6 @@ public class ElementConstants {
      */
     public static final String LABEL_PROPERTY_NAME = "label";
     /**
-     * The aria-label property.
-     *
-     * @deprecated use {@link #ARIA_LABEL_ATTRIBUTE_NAME} instead
-     */
-    public static final String ARIA_LABEL_PROPERTY_NAME = "aria-label";
-    /**
      * The aria-label attribute.
      */
     public static final String ARIA_LABEL_ATTRIBUTE_NAME = "aria-label";

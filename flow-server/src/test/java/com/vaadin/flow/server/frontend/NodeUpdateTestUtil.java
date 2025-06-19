@@ -137,7 +137,7 @@ public class NodeUpdateTestUtil {
         return new File(root, jsImport);
     }
 
-    String addWebpackPrefix(String s) {
+    String addFrontendAlias(String s) {
         if (s.startsWith("./")) {
             return FRONTEND_FOLDER_ALIAS + s.substring(2);
         }

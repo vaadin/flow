@@ -313,7 +313,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> expectedLines = new ArrayList<>();
         getExpectedImports().stream().filter(imp -> imp.equals("/foo.css"))
                 .forEach(imp -> expectedLines
-                        .add("import '" + addWebpackPrefix(imp) + "';"));
+                        .add("import '" + addFrontendAlias(imp) + "';"));
 
         // An import without `.js` extension
         expectedLines.add(
@@ -781,7 +781,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     private void assertContainsImports(boolean contains, String... imports) {
         for (String line : imports) {
             boolean result = updater.getMergedOutput()
-                    .contains("import '" + addWebpackPrefix(line) + "';");
+                    .contains("import '" + addFrontendAlias(line) + "';");
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
                     + line + " IN: \n" + updater.getMergedOutput();
             if (contains) {
@@ -795,7 +795,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     private void assertImportOrder(String... imports) {
         int curIndex = -1;
         for (String line : imports) {
-            String prefixed = addWebpackPrefix(line);
+            String prefixed = addFrontendAlias(line);
             int nextIndex = updater.getMergedOutput()
                     .indexOf("import '" + prefixed + "';");
             assertTrue("import '" + prefixed + "' not found", nextIndex != -1);
