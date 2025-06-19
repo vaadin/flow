@@ -38,7 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -227,7 +226,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         for (String line : imports) {
-            assertContains(content, contains, addWebpackPrefix(line));
+            assertContains(content, contains, addFrontendAlias(line));
         }
     }
 
@@ -250,7 +249,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
         int curIndex = -1;
         for (String line : imports) {
-            String prefixed = addWebpackPrefix(line);
+            String prefixed = addFrontendAlias(line);
             int nextIndex = content.indexOf(prefixed);
             assertTrue("import '" + prefixed + "' not found", nextIndex != -1);
             assertTrue("import '" + prefixed + "' appears in the wrong order",
@@ -267,7 +266,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         Set<String> removed = current
                 .stream().filter(line -> importsList.stream()
-                        .map(this::addWebpackPrefix).anyMatch(line::contains))
+                        .map(this::addFrontendAlias).anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
@@ -278,7 +277,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.stream(imports).map(this::addWebpackPrefix)
+        String content = Arrays.stream(imports).map(this::addFrontendAlias)
                 .map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 
