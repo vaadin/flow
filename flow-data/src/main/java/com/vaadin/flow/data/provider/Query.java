@@ -116,14 +116,14 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Returns a zero-based page index to be retrieved.
+     * Computes the zero-based page index to be retrieved.
      * <p>
      * Vaadin asks data from the backend in paged manner. This shorthand
      * calculates the page index for backends using paged data access, such as
      * Spring Data repositories.
      * <p>
-     * If page offset is not evenly divisible with pageSize raise pageSize until
-     * it is. Updates the pageSize value if it has been raised.
+     * If page offset is not evenly divisible with page size raise page size
+     * until it is. Updates the page size value if it has been raised.
      *
      * @return the zero-based page index
      */
@@ -159,7 +159,7 @@ public class Query<T, F> implements Serializable {
      * Vaadin asks data from the backend in paged manner.
      * <p>
      * This is an alias for {@link #getLimit()} if the page size has not been
-     * set or page offset is not evenly divisible with pageSize. Else the page
+     * set or page offset is not evenly divisible with page size . Else the page
      * size will be increased to evenly divide offset so the items skip for page
      * will go to the correct item.
      *
