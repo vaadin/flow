@@ -18,8 +18,9 @@ package com.vaadin.viteapp;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
-@Theme("my-theme")
+@Theme(value = "my-theme", themeClass = Lumo.class)
 @PWA(name = "My PWA app", shortName = "app")
 public class AppShell implements AppShellConfigurator {
 }

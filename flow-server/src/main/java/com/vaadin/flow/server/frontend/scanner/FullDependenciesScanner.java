@@ -360,12 +360,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private void discoverTheme() {
         ThemeData data = verifyTheme();
 
-        if (data == null) {
-            setupTheme(getLumoTheme(), "", "");
-            return;
-        }
-
-        if (data.isNotheme()) {
+        if (data == null || data.isNotheme()) {
             return;
         }
 
@@ -404,12 +399,17 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<ThemeData> themes = annotatedClasses.stream()
                     .flatMap(clazz -> annotationFinder
                             .apply(clazz, loadedThemeAnnotation).stream())
-                    .map(theme -> new ThemeData(
-                            ((Class<?>) getAnnotationValue(theme, "themeClass"))
-                                    .getName(),
-                            getAnnotationValueAsString(theme, "variant"),
-                            getAnnotationValueAsString(theme, VALUE)))
-                    .collect(Collectors.toSet());
+                    .map(theme -> {
+                        String themeClassName = "";
+                        Class<?> themeClass = (Class<?>) getAnnotationValue(
+                                theme, "themeClass");
+                        if (themeClass != AbstractTheme.class) {
+                            themeClassName = themeClass.getName();
+                        }
+                        return new ThemeData(themeClassName,
+                                getAnnotationValueAsString(theme, "variant"),
+                                getAnnotationValueAsString(theme, VALUE));
+                    }).collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
                     .loadClass(NoTheme.class.getName());

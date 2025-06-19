@@ -96,24 +96,6 @@ public class FullDependenciesScannerTest {
     }
 
     @Test
-    public void getTheme_noExplicitTheme_lumoThemeIsDiscovered()
-            throws ClassNotFoundException {
-        FrontendDependenciesScanner scanner = setUpThemeScanner(
-                Collections.emptySet(), Collections.emptySet(),
-                (type, annotationType) -> Collections.emptyList());
-
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
-
-        Assert.assertNotNull(scanner.getTheme());
-        Assert.assertEquals("foo", scanner.getTheme().getBaseUrl());
-        Assert.assertEquals(FakeLumoTheme.class,
-                scanner.getThemeDefinition().getTheme());
-        Assert.assertEquals("", scanner.getThemeDefinition().getVariant());
-
-        Assert.assertEquals(0, scanner.getClasses().size());
-    }
-
-    @Test
     public void getTheme_noTheme_noThemeIsDiscovered()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpThemeScanner(
@@ -427,10 +409,6 @@ public class FullDependenciesScannerTest {
 
         return new FullDependenciesScanner(finder, annotationFinder, null,
                 true) {
-            @Override
-            protected Class<? extends AbstractTheme> getLumoTheme() {
-                return FakeLumoTheme.class;
-            }
         };
     }
 

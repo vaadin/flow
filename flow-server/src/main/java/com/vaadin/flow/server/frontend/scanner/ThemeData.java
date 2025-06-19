@@ -35,11 +35,7 @@ final class ThemeData implements Serializable {
     boolean notheme;
 
     ThemeData(String themeClass, String variant, String themeName) {
-        if (themeClass.equals(AbstractTheme.class.getName())) {
-            this.themeClass = FullDependenciesScanner.LUMO;
-        } else {
-            this.themeClass = themeClass;
-        }
+        this.themeClass = themeClass;
         this.variant = variant;
         this.themeName = themeName;
     }

@@ -10,13 +10,14 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 @Meta(name = "foo", content = "bar")
 @PWA(name = "My App", shortName = "app")
 @Viewport(Viewport.DEVICE_DIMENSIONS)
 @BodySize(height = "50vh", width = "50vw")
 @Push(PushMode.AUTOMATIC)
-@Theme("my-theme")
+@Theme(value = "my-theme", themeClass = Lumo.class)
 public class AppShell implements AppShellConfigurator {
     private final String url;
 

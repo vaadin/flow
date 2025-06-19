@@ -20,9 +20,10 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 public class BasicComponent extends Div {
-    @Theme("my-theme")
+    @Theme(value = "my-theme", themeClass = Lumo.class)
     public static class Exporter extends WebComponentExporter<BasicComponent> {
         public Exporter() {
             super("basic-component");

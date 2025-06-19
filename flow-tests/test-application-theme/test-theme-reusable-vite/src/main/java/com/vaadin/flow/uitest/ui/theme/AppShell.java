@@ -20,9 +20,10 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 
+import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
-@Theme(value = "reusable-theme")
+@Theme(value = "reusable-theme", themeClass = Lumo.class)
 @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
 public class AppShell implements AppShellConfigurator {
 }

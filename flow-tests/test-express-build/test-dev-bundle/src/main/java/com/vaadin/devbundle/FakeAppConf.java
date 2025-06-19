@@ -18,8 +18,9 @@ package com.vaadin.devbundle;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
-@Theme("vaadin-dev-bundle")
+@Theme(value = "vaadin-dev-bundle", themeClass = Lumo.class)
 @PWA(name = "vaadin-dev-bundle", shortName = "vaadin-dev-bundle")
 public class FakeAppConf implements AppShellConfigurator {
 
