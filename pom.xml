@@ -87,7 +87,7 @@
         <!-- Dependencies -->
         <spring.boot.version>4.0.0-SNAPSHOT</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
-        <hibernate.validator.version>9.0.0.CR1</hibernate.validator.version>
+        <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.19.1</jackson.version>
