@@ -128,31 +128,6 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void react19UsedWhenFeatureFlagIsOn() {
-        Map<String, String> react18Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react18DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
-        Mockito.when(options.getFeatureFlags().isEnabled(FeatureFlags.REACT19))
-                .thenReturn(true);
-
-        Map<String, String> react19Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react19DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
-
-        Assert.assertTrue(react18Deps.get("react").startsWith("18."));
-        Assert.assertTrue(react18Deps.get("react-dom").startsWith("18."));
-        Assert.assertTrue(react18DevDeps.get("@types/react").startsWith("18."));
-        Assert.assertTrue(
-                react18DevDeps.get("@types/react-dom").startsWith("18."));
-
-        Assert.assertTrue(react19Deps.get("react").startsWith("19."));
-        Assert.assertTrue(react19Deps.get("react-dom").startsWith("19."));
-        Assert.assertTrue(react19DevDeps.get("@types/react").startsWith("19."));
-        Assert.assertTrue(
-                react19DevDeps.get("@types/react-dom").startsWith("19."));
-    }
-
-    @Test
     public void getDefaultDevDependencies_includesAllDependencies_whenUsingVite() {
         Map<String, String> defaultDeps = nodeUpdater
                 .getDefaultDevDependencies();
