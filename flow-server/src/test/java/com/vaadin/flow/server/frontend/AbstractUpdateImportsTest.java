@@ -71,6 +71,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
@@ -307,11 +308,110 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void generateLines_resultingLinesContainsThemeLinesAndExpectedImportsAndCssLinesAndGeneratedImportsAndLoggerReports()
+            throws Exception {
+        List<String> expectedLines = new ArrayList<>();
+        getExpectedImports().stream().filter(imp -> imp.equals("/foo.css"))
+                .forEach(imp -> expectedLines
+                        .add("import '" + addWebpackPrefix(imp) + "';"));
+
+        // An import without `.js` extension
+        expectedLines.add(
+                "import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else';");
+        // An import not found in node_modules
+        expectedLines.add("import 'unresolved/component';");
+
+        expectedLines.add(
+                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_1 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_2 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_3 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_4 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_1.toString(), 'CSSImport end', document);");
+        expectedLines.add(
+                "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
+        expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
+        expectedLines.add(
+                "registerStyles('', $css_4, {include: 'bar', moduleId: 'baz'});");
+        expectedLines.add(
+                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});");
+        expectedLines.add(
+                "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
+
+        expectedLines
+                .add("import 'Frontend/generated/flow/generated-modules-foo';");
+        expectedLines
+                .add("import 'Frontend/generated/flow/generated-modules-bar';");
+
+        updater.run();
+
+        for (String line : expectedLines) {
+            Assert.assertTrue(
+                    "\n" + line + " IS NOT FOUND IN: \n"
+                            + updater.getMergedOutput(),
+                    updater.getMergedOutput().contains(line));
+        }
+
+        // All generated module ids are distinct
+        Pattern moduleIdPattern = Pattern
+                .compile(".*moduleId: '(flow_css_mod_[^']*)'.*");
+        List<String> moduleIds = updater.getMergedOutput().stream()
+                .map(moduleIdPattern::matcher).filter(Matcher::matches)
+                .map(m -> m.group(1)).collect(Collectors.toList());
+        long uniqueModuleIds = moduleIds.stream().distinct().count();
+        Assert.assertTrue("expected modules", moduleIds.size() > 0);
+        Assert.assertEquals("duplicates in generated " + moduleIds,
+                moduleIds.size(), uniqueModuleIds);
+
+        String output = logger.getLogs();
+
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
+                "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
+        MatcherAssert.assertThat(output, CoreMatchers
+                .containsString("Use the './' prefix for files in the '"
+                        + frontendDirectory.getPath()
+                        + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'"));
+
+        // Using regex match because of the ➜ character in TC
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
+                "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component"));
+
+        MatcherAssert.assertThat(output,
+                CoreMatchers.not(CoreMatchers.containsString(
+                        "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'")));
+    }
+
+    @Test
     public void cssFileNotFound_throws() {
         assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
                 "@vaadin/vaadin-mixed-component/bar.css").delete());
         exception.expect(IllegalStateException.class);
         updater.run();
+    }
+
+    @Test
+    public void generate_containsLumoThemeFiles() {
+        updater.run();
+
+        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/color-global.js",
+                "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/typography-global.js",
+                "@vaadin/vaadin-lumo-styles/sizing.js",
+                "@vaadin/vaadin-lumo-styles/spacing.js",
+                "@vaadin/vaadin-lumo-styles/style.js",
+                "@vaadin/vaadin-lumo-styles/icons.js");
     }
 
     @Test
@@ -376,6 +476,14 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                         .anyMatch(line -> line.contains(
                                 "injectGlobalWebcomponentCss(" + css + ");"))));
 
+    }
+
+    @Test
+    public void jsModulesOrderIsPreservedAnsAfterJsModules() {
+        updater.run();
+
+        assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",
+                "javascript/c.js");
     }
 
     @Test
@@ -669,4 +777,32 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
         return String.format("import '%s';", value);
     }
+
+    private void assertContainsImports(boolean contains, String... imports) {
+        for (String line : imports) {
+            boolean result = updater.getMergedOutput()
+                    .contains("import '" + addWebpackPrefix(line) + "';");
+            String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
+                    + line + " IN: \n" + updater.getMergedOutput();
+            if (contains) {
+                assertTrue(message, result);
+            } else {
+                assertFalse(message, result);
+            }
+        }
+    }
+
+    private void assertImportOrder(String... imports) {
+        int curIndex = -1;
+        for (String line : imports) {
+            String prefixed = addWebpackPrefix(line);
+            int nextIndex = updater.getMergedOutput()
+                    .indexOf("import '" + prefixed + "';");
+            assertTrue("import '" + prefixed + "' not found", nextIndex != -1);
+            assertTrue("import '" + prefixed + "' appears in the wrong order",
+                    curIndex <= nextIndex);
+            curIndex = nextIndex;
+        }
+    }
+
 }

@@ -219,6 +219,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         addDefaultObjects(packageJson);
         addVaadinDefaultsToJson(packageJson);
+        removeWebpackPlugins(packageJson);
 
         return packageJson;
     }
@@ -226,6 +227,32 @@ public abstract class NodeUpdater implements FallibleCommand {
     private void addDefaultObjects(ObjectNode json) {
         computeIfAbsent(json, DEPENDENCIES, JacksonUtils::createObjectNode);
         computeIfAbsent(json, DEV_DEPENDENCIES, JacksonUtils::createObjectNode);
+    }
+
+    private void removeWebpackPlugins(ObjectNode packageJson) {
+        Path targetFolder = Paths.get(options.getNpmFolder().toString(),
+                options.getBuildDirectoryName(),
+                FrontendPluginsUtil.PLUGIN_TARGET);
+
+        if (!packageJson.has(DEV_DEPENDENCIES)) {
+            return;
+        }
+        ObjectNode devDependencies = (ObjectNode) packageJson
+                .get(DEV_DEPENDENCIES);
+
+        String atVaadinPrefix = "@vaadin/";
+        String pluginTargetPrefix = "./"
+                + (options.getNpmFolder().toPath().relativize(targetFolder)
+                        + "/").replace('\\', '/');
+
+        // Clean previously installed plugins
+        for (String depKey : JacksonUtils.getKeys(devDependencies)) {
+            String depVersion = devDependencies.get(depKey).textValue();
+            if (depKey.startsWith(atVaadinPrefix)
+                    && depVersion.startsWith(pluginTargetPrefix)) {
+                devDependencies.remove(depKey);
+            }
+        }
     }
 
     static ObjectNode getJsonFileContent(File packageFile) throws IOException {

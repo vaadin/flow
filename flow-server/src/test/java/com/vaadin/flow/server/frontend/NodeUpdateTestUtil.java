@@ -136,4 +136,12 @@ public class NodeUpdateTestUtil {
                 : nodeModulesPath;
         return new File(root, jsImport);
     }
+
+    String addWebpackPrefix(String s) {
+        if (s.startsWith("./")) {
+            return FRONTEND_FOLDER_ALIAS + s.substring(2);
+        }
+        return s;
+    }
+
 }
