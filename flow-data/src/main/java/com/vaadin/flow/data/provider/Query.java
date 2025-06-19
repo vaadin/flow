@@ -159,7 +159,7 @@ public class Query<T, F> implements Serializable {
      * Vaadin asks data from the backend in paged manner.
      * <p>
      * This is an alias for {@link #getLimit()} if the page size has not been
-     * set or page offset is not evenly divisible with page size . Else the page
+     * set or page offset is evenly divisible with page size . Else the page
      * size will be increased to evenly divide offset so the items skip for page
      * will go to the correct item.
      *
